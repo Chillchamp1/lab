@@ -4,5 +4,11 @@
     "titel": "Stärkste Partei, Bundestagswahl 2025",
     "beschreibung": "431 Gebiete nach Zweitstimmen eingefärbt, mit Regler zwischen Landkarte und flächentreuem Kartogramm.",
     "datum": "2026-09"
+  },
+  {
+    "slug": "wahlkreise-2025",
+    "titel": "299 Wahlkreise, nach Menschen gewichtet",
+    "beschreibung": "Dieselbe Wahl auf Wahlkreisebene. Weil Wahlkreise nach Bevölkerung geschnitten werden, gleicht das Kartogramm die Gebiete fast an.",
+    "datum": "2026-09"
   }
 ]

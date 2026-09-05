@@ -9,6 +9,7 @@ Kleine Web-Projekte, je ein Ordner mit `index.html`, ausgeliefert über GitHub P
 <!-- PROJEKTE:START -->
 
 - **[Stärkste Partei, Bundestagswahl 2025](https://chillchamp1.github.io/lab/wahlkarte-2025/)** — 431 Gebiete nach Zweitstimmen eingefärbt, mit Regler zwischen Landkarte und flächentreuem Kartogramm. · [Doku](wahlkarte-2025/README.md)
+- **[299 Wahlkreise, nach Menschen gewichtet](https://chillchamp1.github.io/lab/wahlkreise-2025/)** — Dieselbe Wahl auf Wahlkreisebene. Weil Wahlkreise nach Bevölkerung geschnitten werden, gleicht das Kartogramm die Gebiete fast an. · [Doku](wahlkreise-2025/README.md)
 
 <!-- PROJEKTE:ENDE -->
 
