@@ -1,9 +1,19 @@
 # lab
 
-Sammel-Repo für kleine Web-Projekte. Jedes Projekt ist ein Unterordner mit einer
-`index.html` und wird direkt über GitHub Pages ausgeliefert.
+Kleine Web-Projekte, je ein Ordner mit `index.html`, ausgeliefert über GitHub Pages.
 
-**Live:** https://chillchamp1.github.io/lab/
+**Übersicht:** https://chillchamp1.github.io/lab/
+
+## Projekte
+
+<!-- PROJEKTE:START -->
+
+- **[Stärkste Partei, Bundestagswahl 2025](https://chillchamp1.github.io/lab/wahlkarte-2025/)** — 431 Gebiete nach Zweitstimmen eingefärbt, mit Regler zwischen Landkarte und flächentreuem Kartogramm. · [Doku](wahlkarte-2025/README.md)
+
+<!-- PROJEKTE:ENDE -->
+
+Diese Liste wird aus `projects.json` erzeugt — nicht von Hand bearbeiten,
+sondern `node tools/readme.mjs` laufen lassen.
 
 ## Neues Projekt hinzufügen
 
@@ -16,11 +26,24 @@ Sammel-Repo für kleine Web-Projekte. Jedes Projekt ist ein Unterordner mit eine
    { "slug": "mein-projekt", "titel": "Mein Projekt", "beschreibung": "Ein Satz dazu.", "datum": "2026-09" }
    ```
 
-4. Committen und pushen. Die Seite ist nach ein bis zwei Minuten unter
+4. `node tools/readme.mjs` — schreibt die Liste oben neu.
+5. Committen und pushen. Die Seite ist nach ein bis zwei Minuten unter
    `https://chillchamp1.github.io/lab/mein-projekt/` erreichbar.
 
-Die Startseite liest `projects.json` und listet alles automatisch auf —
-der Ordner allein reicht technisch schon, der Eintrag macht ihn nur auffindbar.
+Startseite und README lesen beide aus `projects.json`. Der Ordner allein reicht
+technisch schon — der Eintrag macht ihn nur auffindbar.
+
+## Wann ein Projekt eine eigene README bekommt
+
+`projects.json` trägt den Einzeiler, mehr nicht. Eine eigene `README.md` im
+Projektordner lohnt sich, sobald es etwas zu erklären gibt, das der Satz nicht
+fasst: Datenquellen und deren Stand, Methodik, bekannte Einschränkungen, wie das
+Ding gebaut wurde. Bei [wahlkarte-2025](wahlkarte-2025/README.md) ist das der
+Fall — Gebietsauflösung und Kartogramm-Verfahren gehören dokumentiert.
+
+Was **nicht** in eine Projekt-README gehört: eine Wiederholung von Titel und
+Beschreibung. Doppelte Pflege ist der Grund, warum solche Listen verrotten.
+Der Generator verlinkt eine vorhandene Projekt-README automatisch mit.
 
 ## Regeln, die sich bewährt haben
 
