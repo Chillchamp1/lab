@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lab</title>
+<style>
+  :root {
+    --bg: #fbfaf8; --fg: #1a1917; --dim: #6b6862;
+    --line: #e2ded7; --card: #ffffff; --accent: #7a5c3e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14140f; --fg: #ecebe6; --dim: #9c988f;
+      --line: #2c2b26; --card: #1b1b16; --accent: #c9a87c;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 4rem 1.5rem 6rem;
+    background: var(--bg); color: var(--fg);
+    font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 44rem; margin: 0 auto; }
+  header { margin-bottom: 3.5rem; }
+  h1 {
+    margin: 0 0 .4rem; font-size: 2.25rem; font-weight: 600;
+    letter-spacing: -.02em;
+  }
+  .sub { margin: 0; color: var(--dim); font-size: 1.0625rem; }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .75rem; }
+  a.card {
+    display: block; padding: 1.15rem 1.35rem;
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 10px; text-decoration: none; color: inherit;
+    transition: border-color .15s, transform .15s;
+  }
+  a.card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  a.card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .titel { font-weight: 600; font-size: 1.0625rem; }
+  .besch { color: var(--dim); font-size: .9375rem; margin-top: .2rem; }
+  .datum {
+    float: right; color: var(--dim); font-size: .8125rem;
+    font-variant-numeric: tabular-nums; padding-left: 1rem;
+  }
+  .leer {
+    padding: 2.5rem 1.5rem; border: 1px dashed var(--line);
+    border-radius: 10px; color: var(--dim); text-align: center;
+  }
+  .leer code {
+    background: var(--card); padding: .15em .4em;
+    border-radius: 4px; font-size: .875em;
+  }
+  footer {
+    margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--line);
+    color: var(--dim); font-size: .875rem;
+  }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>lab</h1>
+    <p class="sub">Kleine Web-Projekte, je ein Ordner.</p>
+  </header>
+
+  <ul id="liste"></ul>
+
+  <footer>
+    Quelle auf <a href="https://github.com/Chillchamp1/lab">GitHub</a>.
+    Neues Projekt: Ordner anlegen, <code>projects.json</code> ergänzen.
+  </footer>
+</div>
+
+<script>
+const el = document.getElementById('liste');
+
+const escape = s => String(s ?? '').replace(/[&<>"']/g, c => (
+  { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]
+));
+
+const leer = text => {
+  el.outerHTML = '<div class="leer">' + text + '</div>';
+};
+
+fetch('projects.json', { cache: 'no-cache' })
+  .then(r => r.ok ? r.json() : Promise.reject(new Error(r.status)))
+  .then(projekte => {
+    if (!Array.isArray(projekte) || projekte.length === 0) {
+      leer('Noch nichts hier. Ordner mit <code>index.html</code> anlegen und in <code>projects.json</code> eintragen.');
+      return;
+    }
+    projekte
+      .slice()
+      .sort((a, b) => String(b.datum ?? '').localeCompare(String(a.datum ?? '')))
+      .forEach(p => {
+        if (!p || !p.slug) return;
+        const li = document.createElement('li');
+        li.innerHTML =
+          '<a class="card" href="' + encodeURIComponent(p.slug) + '/">' +
+            (p.datum ? '<span class="datum">' + escape(p.datum) + '</span>' : '') +
+            '<div class="titel">' + escape(p.titel || p.slug) + '</div>' +
+            (p.beschreibung ? '<div class="besch">' + escape(p.beschreibung) + '</div>' : '') +
+          '</a>';
+        el.appendChild(li);
+      });
+  })
+  .catch(() => leer('<code>projects.json</code> konnte nicht geladen werden.'));
+</script>
+</body>
+</html>
