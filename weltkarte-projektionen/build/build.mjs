@@ -87,6 +87,8 @@ h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
 .schalter input{accent-color:var(--tinte)}
 .lgd{display:flex;flex-wrap:wrap;gap:6px 20px;margin:10px 0 0;color:var(--leise);font-size:13px}
 .lgd[hidden]{display:none}
+.hinweis{margin:14px 0 0;max-width:70ch;color:var(--leise);font-size:14px}
+.hinweis b{color:var(--tinte);font-weight:600}
 .lgd span{display:inline-flex;align-items:center;gap:8px}
 .lgd i{width:26px;height:0;border-top-width:2px;display:block;flex:none}
 .lgd i.lox{border-top-style:dashed;border-top-color:var(--akzent)}
@@ -143,16 +145,18 @@ diese Verzerrung dabei verschwindet.</p>
 </div>
 <div class="schalter">
   <label><input type="checkbox" id="cGrad" checked> Gradnetz</label>
-  <label><input type="checkbox" id="cTissot"> Tissot-Kreise (je 800 km Radius)</label>
-  <label><input type="checkbox" id="cKurs"> Kurs- und Grosskreislinien</label>
+  <label><input type="checkbox" id="cTissot"> Verzerrungskreise</label>
+  <label><input type="checkbox" id="cKurs"> Zwei Flugstrecken</label>
 </div>
-<p class="lgd" id="lgdKurs" hidden>
-  <span><i class="lox"></i>Kurslinie — gleichbleibender Kompasskurs (Loxodrome)</span>
-  <span><i class="gk"></i>kürzester Weg (Grosskreis)</span>
-  <span class="wo">New York – Lissabon und Frankfurt – Tokio</span>
-</p>
 
 <figure><canvas id="karte" role="img" aria-label="Weltkarte, überblendbar zwischen der Mercator-Projektion und einem flächentreuen Netz. Die Zahlen dazu stehen in den Tabellen darunter."></canvas></figure>
+
+<p class="hinweis" id="hinweisTissot" hidden></p>
+<p class="lgd" id="lgdKurs" hidden>
+  <span><i class="lox"></i>gleichbleibender Kompasskurs</span>
+  <span><i class="gk"></i>kürzester Weg</span>
+  <span class="wo">New York – Lissabon und Frankfurt – Tokio</span>
+</p>
 
 <div class="skala">
   <span>halb so viel Bildfläche wie zustehend</span>
@@ -192,21 +196,29 @@ Bildfläche beim Wechsel von Mercator auf <b id="zielName2">Equal Earth</b> änd
 </div>
 
 <h2 class="sec">Was Mercator dafür kann</h2>
-<p class="sec">Mercator ist nicht falsch, sondern für die Navigation gebaut: eine Linie
-konstanten Kompasskurses — eine <b>Loxodrome</b> — ist dort eine Gerade, und das war
-1569 die ganze Aufgabe. Schalte oben die Kurslinien ein: <b>gestrichelt</b> der
-konstante Kurs, <b>durchgezogen</b> der Grosskreis, also der wirklich kürzeste Weg.
-Der Bogen, den man sieht, ist immer der Grosskreis.</p>
-<p class="sec">Wie gerade die gestrichelte Linie ist, lässt sich messen — grösster
-Abstand von der geraden Verbindung, in Prozent der Streckenlänge:</p>
+<p class="sec">Am deutlichsten sagen es die <b>Verzerrungskreise</b>. Jeder von ihnen
+hat auf der Erdkugel denselben Radius, 800 km. Auf Mercator bleibt jeder einzelne
+ein <b>Kreis</b> — nur werden sie nach Norden und Süden hin immer grösser. Ein Kreis,
+der Kreis bleibt, heisst: an dieser Stelle wird in alle Richtungen gleich stark
+gedehnt. Winkel bleiben also erhalten, und damit stimmt die örtliche Form. Auf einem
+flächentreuen Netz ist es umgekehrt: alle Kreise sind gleich gross, aber zu Ellipsen
+geschert — die Fläche stimmt, die Form nicht mehr. Mehr ist über den Tausch nicht
+zu sagen, und man sieht ihn in einer einzigen Bewegung.</p>
+<p class="sec">Die beiden Flugstrecken zeigen, wozu das praktisch gut war. Weil auf
+Mercator Winkel stimmen, ist eine Linie <b>gleichbleibenden Kompasskurses</b> dort
+eine Gerade — man legt das Lineal an und liest den Kurs ab. Das war 1569 die ganze
+Aufgabe. Der <b>kürzeste Weg</b> ist etwas anderes und auf Mercator immer der Bogen;
+beide sind auf der Karte beschriftet.</p>
+<p class="sec">Wie gerade die Kurslinie ist, lässt sich messen — grösster Abstand von
+der geraden Verbindung, in Prozent der Streckenlänge:</p>
 <div class="tabelle-scroll"><table>
-<tr><th>Strecke</th><th class="z">Mercator, Kurslinie</th><th class="z">Mercator, Grosskreis</th><th class="z">Equal Earth, Grosskreis</th></tr>
+<tr><th>Strecke</th><th class="z">Mercator, Kurslinie</th><th class="z">Mercator, kürzester Weg</th><th class="z">Equal Earth, kürzester Weg</th></tr>
 <tr><td>New York – Lissabon</td><td class="z">0,00 %</td><td class="z">10,1 %</td><td class="z">9,8 %</td></tr>
 <tr><td>Frankfurt – Tokio</td><td class="z">0,00 %</td><td class="z">31,4 %</td><td class="z">17,8 %</td></tr>
 </table></div>
 <p class="sec">Null Prozent, und zwar für jede beliebige Strecke — das ist keine
 Näherung, sondern die Eigenschaft, für die das Netz gebaut wurde. Umgekehrt gilt es
-nicht: der Grosskreis wird auf keinem der Netze hier gerade, er biegt sich nur
+nicht: der kürzeste Weg wird auf keinem der Netze hier gerade, er biegt sich nur
 weniger. Dafür bräuchte es ein gnomonisches Netz, das dann wiederum nicht einmal eine
 Halbkugel am Stück zeigen kann. Der Preis für die gerade Kurslinie ist die
 Flächenverzerrung; beides zugleich geht auf einer ebenen Karte nicht.</p>
