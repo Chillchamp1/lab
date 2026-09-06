@@ -13,6 +13,7 @@ Kleine Web-Projekte, je ein Ordner mit `index.html`, ausgeliefert über GitHub P
 - **[Vier Jahre später, die Hälfte gewechselt](https://chillchamp1.github.io/lab/wandel-2021-2025/)** — Bundestagswahl 2021 und 2025 im selben Bild: in 149 von 299 Wahlkreisen führt eine andere Partei. · [Doku](wandel-2021-2025/README.md)
 - **[Die Wahl 2024, nach Stimmen gewichtet](https://chillchamp1.github.io/lab/usa-wahl-2024/)** — US-Präsidentschaftswahl: 3114 Gebiete samt Alaska und Hawaii, verzogen von der Fläche zur Wählerschaft — der Farbdurchschnitt der Karte trifft dabei fast das Landesergebnis. · [Doku](usa-wahl-2024/README.md)
 - **[164 zu 1 für eine neue Weltkarte](https://chillchamp1.github.io/lab/weltkarte-projektionen/)** — Die UN hat am 4. September 2026 auf Antrag Togos für flächentreue Weltkarten gestimmt. Ein Regler blendet von Mercator auf Equal Earth um und färbt jedes Land danach, wie viel Bildfläche es zu viel oder zu wenig bekommt. · [Doku](weltkarte-projektionen/README.md)
+- **[312 zu 226, entschieden in 3 Staaten](https://chillchamp1.github.io/lab/usa-wahlleute-2024/)** — Dieselbe Wahl nach Wahlleuten statt nach Stimmen. Drei Staaten mit zusammen 44 Wahlleuten hätten das Ergebnis gekippt. · [Doku](usa-wahlleute-2024/README.md)
 
 <!-- PROJEKTE:ENDE -->
 
