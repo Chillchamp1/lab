@@ -108,11 +108,18 @@ export function baueNutzlast({ log = () => {} } = {}) {
 // Gradnetz, Tissot-Kreise und die beiden Kurslinien entstehen aus Formeln —
 // sie kosten Rechenzeit im Browser, aber kein einziges Byte Nutzlast. Hier
 // stehen nur die Parameter, die die Seite dafür braucht.
+// Die Kreise sitzen auf Kreuzungen des Gradnetzes: alle Werte sind Vielfache
+// von 30. In der Breite steht auf jedem gezeichneten Breitenkreis einer, in der
+// Länge nur auf jedem zweiten Meridian — sonst stünden 60 Kreise auf der Karte,
+// und auf beiden Netzen hängt die Verzerrung ohnehin nur von der Breite ab, in
+// einer Zeile sieht also einer aus wie der nächste. Sechs Spalten reichen, um
+// die Scherung zum Kartenrand hin mitzuzeigen. ±180 bleibt frei: dort läge ein
+// Kreis auf der Nahtstelle und liefe als Streifen über die ganze Karte.
 export const ZUGABEN = {
   gradnetzSchritt: 30,
   tissotRadiusKm: 800,
   tissotBreiten: [-60, -30, 0, 30, 60],
-  tissotLaengen: [-160, -120, -80, -40, 0, 40, 80, 120, 160],
+  tissotLaengen: [-150, -90, -30, 30, 90, 150],
   kurse: [
     { name: 'New York – Lissabon', von: [-74.01, 40.71], nach: [-9.14, 38.72] },
     { name: 'Frankfurt – Tokio', von: [8.68, 50.11], nach: [139.69, 35.69] },
