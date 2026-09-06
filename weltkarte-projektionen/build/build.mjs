@@ -68,10 +68,16 @@ h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
 .deck{color:var(--leise);max-width:62ch;margin:0 0 26px;font-size:16px}
 .deck b{color:var(--tinte);font-weight:600}
 .ctrl{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 6px}
-.seg{display:inline-flex;border:1px solid var(--linie);border-radius:3px;overflow:hidden}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--linie);border-radius:3px;overflow:hidden}
 .seg button{background:transparent;color:var(--leise);border:0;font:inherit;font-size:13.5px;
- padding:9px 15px;cursor:pointer}
+ padding:9px 13px;cursor:pointer;white-space:nowrap}
 .seg button+button{border-left:1px solid var(--linie)}
+@media(max-width:520px){
+  .seg{display:grid;grid-template-columns:1fr 1fr;width:100%}
+  .seg button+button{border-left:0}
+  .seg button:nth-child(2n){border-left:1px solid var(--linie)}
+  .seg button:nth-child(n+3){border-top:1px solid var(--linie)}
+}
 .seg button[aria-pressed="true"]{background:var(--tinte);color:var(--papier)}
 .seg button:focus-visible{outline:2px solid var(--akzent);outline-offset:-2px}
 .ctrl input[type=range]{flex:1;min-width:190px;accent-color:var(--tinte)}
@@ -116,10 +122,10 @@ Der Regler blendet auf ein flächentreues Netz um. Die Farbe zeigt für jedes La
 wie viel Bildfläche es bekommt, gemessen an seinem wirklichen Anteil an der
 Landfläche der Erde — und wie diese Verzerrung dabei verschwindet.</p>
 
-<div class="ends"><span>Mercator, 1569</span><span id="zielName">Equal Earth, 2018</span></div>
+<div class="ends"><span id="startName"></span><span id="zielName"></span></div>
 <div class="ctrl">
-  <input type="range" id="reg" min="0" max="1000" value="0" step="1" aria-label="Überblendung zwischen Mercator und dem Zielnetz">
-  <div class="seg" id="ziele" role="group" aria-label="Zielnetz"></div>
+  <input type="range" id="reg" min="0" max="1000" value="0" step="1" aria-label="Überblendung zwischen Mercator und dem gewählten Netz">
+  <div class="seg" id="ziele" role="group" aria-label="Kartennetz"></div>
 </div>
 <div class="schalter">
   <label><input type="checkbox" id="cGrad" checked> Gradnetz</label>

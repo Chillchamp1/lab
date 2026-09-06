@@ -18,7 +18,10 @@ UN-Karte". Darunter werden mindestens drei verschiedene Karten verstanden:
   Arno Peters, übernommen von UN-Entwicklungsorganisationen und Hilfswerken.
 - **Robinson** (1963) — das Kompromissnetz vieler Atlanten und Institutionen.
 
-Die Seite entscheidet sich nicht, sondern lässt alle drei zu. Das kostet nichts:
+Die Seite entscheidet sich nicht, sondern lässt alle drei zu — Mercator steht
+als vierter Knopf daneben, denn der Ausgangszustand braucht einen Weg zurück.
+Die Beschriftung an beiden Reglerenden nennt zum Namen auch, was das Netz
+bewahrt: winkeltreu, flächentreu oder Kompromiss. Das kostet nichts:
 ausgeliefert wird ein einziger Satz Koordinaten in geografischen Graden, und
 jedes weitere Netz ist eine Formel von acht Zeilen. Der interessantere Vergleich
 liegt ohnehin zwischen Gall-Peters und Equal Earth — beide flächentreu, und
