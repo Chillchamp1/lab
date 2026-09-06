@@ -63,17 +63,24 @@ Nigeria 0,43.
 
 ## Was die Karte sonst noch zeigt
 
-- **Tissot-Indikatrizen**: Kreise gleichen wahren Radius (800 km). Bei Mercator
-  bleiben es Kreise, werden aber riesig; bei den flächentreuen Netzen bleibt die
-  Fläche gleich und die Form schert. Das ist die Erklärung, die kein Text leistet.
-- **Loxodrome gegen Grosskreis**: Mercator ist nicht falsch, sondern für die
-  Navigation gebaut — eine Linie konstanten Kompasskurses ist dort eine Gerade.
-  Nachgemessen: die Kurslinie weicht auf Mercator um **0,00 %** der
-  Streckenlänge von der Geraden ab, für jede beliebige Strecke. Der Bogen, den
-  man sieht, ist immer der Grosskreis, der auf Mercator um 10 bis 31 % ausholt.
-  Umgekehrt gilt es nicht: auf Equal Earth wird der Grosskreis nicht gerade,
-  er biegt sich nur weniger (10 bis 18 %). Dafür bräuchte es ein gnomonisches
-  Netz. Eine Legende unter den Schaltern sagt, welche Linie welche ist.
+- **Verzerrungskreise** (Tissot-Indikatrizen): Kreise gleichen wahren Radius
+  (800 km). Sie sind die eigentliche Antwort auf die Frage, was Mercator besser
+  kann. Dort bleibt jeder ein Kreis und wird nur grösser — gleich stark gedehnt
+  in alle Richtungen, also bleiben Winkel und örtliche Form erhalten. Auf einem
+  flächentreuen Netz sind alle gleich gross und zu Ellipsen geschert. Ein
+  mitlaufender Satz unter der Karte sagt, was gerade zu sehen ist.
+- **Zwei Flugstrecken**, Loxodrome gegen Grosskreis: die praktische Folge
+  daraus. Weil Winkel stimmen, ist eine Linie konstanten Kompasskurses auf
+  Mercator eine Gerade — nachgemessen weicht sie um **0,00 %** der
+  Streckenlänge ab, für jede beliebige Strecke. Der Bogen, den man sieht, ist
+  immer der kürzeste Weg, der auf Mercator um 10 bis 31 % ausholt. Umgekehrt
+  gilt es nicht: auf Equal Earth wird er nicht gerade, nur weniger krumm
+  (10 bis 18 %). Dafür bräuchte es ein gnomonisches Netz.
+
+  Die beiden Linien werden **auf der Karte selbst beschriftet**, nicht in einer
+  Legende darunter. Zwei Linien, die einander ähnlich sehen, und eine Erklärung
+  drei Zeilen weiter unten — daran springt der Blick hin und her, und man weiss
+  am Ende trotzdem nicht, welcher Bogen welcher ist.
 - **Gradnetz**, weil man sonst sieht, *dass* sich etwas verschiebt, aber nicht
   *warum*.
 

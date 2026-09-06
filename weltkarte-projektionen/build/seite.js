@@ -96,6 +96,10 @@ const tissot = (() => {
 
 // Loxodrome (konstanter Kurs) und Grosskreis (kürzester Weg) für dieselben
 // Endpunkte. Gestrichelt ist der Kurs, durchgezogen der kurze Weg.
+// Nur das längere Streckenpaar wird beschriftet — bei vier Beschriftungen
+// stünde die Karte voll, und die kurze Strecke zeigt dasselbe.
+const BESCHRIFTUNG = [[2, 'gleicher Kompasskurs', false], [3, 'kürzester Weg', true]];
+
 const kurse = (() => {
   const psi = p => Math.log(Math.tan(Math.PI / 4 + p * RAD / 2)), z = [], art = [];
   for (const k of D.zugaben.kurse) {
@@ -310,7 +314,59 @@ function zeichne() {
     }
     ctx.setLineDash([]);
   }
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  // Die Linien werden an Ort und Stelle beschriftet. Eine Legende unter der
+  // Karte zwingt den Blick zum Hin- und Herspringen; bei zwei Linien, die
+  // einander ähnlich sehen, reicht das nicht.
+  if (zeigKurs) {
+    ctx.font = '600 12.5px "Inter","Helvetica Neue",Helvetica,Arial,sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.lineJoin = 'round';
+    for (const [i, text, hoch] of BESCHRIFTUNG) {
+      const [a, n] = kurse.abschnitt[i], p = a + Math.round(n * 0.55);
+      const x = (kurse.cx[p] - mx) * skala + breite / 2;
+      const y = hoehe / 2 - (kurse.cy[p] - my) * skala + (hoch ? -13 : 15);
+      ctx.lineWidth = 3.5;
+      ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--karte').trim() || '#eceae4';
+      ctx.strokeText(text, x, y);
+      ctx.fillStyle = kurse.art[i] === 'gk' ? '#16181d' : '#8a5a2b';
+      ctx.fillText(text, x, y);
+    }
+  }
+
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+  hinweis();
+}
+
+// Was die Kreise im gerade gezeigten Zustand aussagen. Das ist die eigentliche
+// Antwort auf „was kann Mercator besser": ein Kreis, der Kreis bleibt, heisst,
+// dass in alle Richtungen gleich stark gedehnt wird — also bleiben Winkel und
+// örtliche Form erhalten. Genau daraus folgt die gerade Kurslinie.
+let letzterHinweis = '';
+function hinweis() {
+  const el = document.getElementById('hinweisTissot');
+  el.hidden = !zeigTissot;
+  if (!zeigTissot) return;
+  const flaechentreu = D.netze[zielB].art === 'flächentreu';
+  let s;
+  if (t < .12) {
+    s = '<b>Alle Kreise sind Kreise geblieben</b> — nur verschieden gross. Das ist Mercators '
+      + 'Stärke: in alle Richtungen wird gleich stark gedehnt, also stimmen Winkel und örtliche '
+      + 'Form. Daraus folgt die gerade Kurslinie. Bezahlt wird es mit der Grösse.';
+  } else if (t > .88) {
+    s = flaechentreu
+      ? '<b>Alle Kreise sind jetzt gleich gross</b> — dafür zu Ellipsen geschert. Die Fläche '
+        + 'stimmt überall, die Form nicht mehr. Das ist der Tausch.'
+      : '<b>Robinson macht beides halb.</b> Die Kreise sind weder gleich gross geblieben noch '
+        + 'rund — ein Kompromiss, der keine der beiden Eigenschaften ganz einlöst.';
+  } else {
+    s = 'Dazwischen: die Kreise gleichen sich in der Grösse an und verlieren dabei ihre runde Form. '
+      + 'Beides zugleich geht auf einer ebenen Karte nicht.';
+  }
+  s += ' <span class="wo">Jeder Kreis hat auf der Erde 800 km Radius (Tissot-Indikatrix).</span>';
+  if (s !== letzterHinweis) { el.innerHTML = s; letzterHinweis = s; }
 }
 
 // ---------- Bedienung ----------
