@@ -2,8 +2,10 @@
 
 → **https://chillchamp1.github.io/lab/usa-wahl-2024/**
 
-Die US-Präsidentschaftswahl 2024 auf Ebene der Countys. Jedes in der Farbe des
-Siegers, ein Regler verzieht die Karte von der Fläche zur Einwohnerzahl.
+Die US-Präsidentschaftswahl 2024 auf Ebene der Countys. Ein Regler verzieht die
+Karte von der Fläche zur Einwohnerzahl; Alaska und Hawaii stehen oben, im selben
+Massstab. Umschaltbar zwischen einer Skala für den Vorsprung und der üblichen
+Sieger-Einfärbung.
 
 Trump gewann **2661 der 3109 Countys**, Harris **448**. Bei den Stimmen stand es
 76,92 zu 74,55 Millionen. Diese Lücke zwischen gewonnener Fläche und gewonnenen
@@ -12,13 +14,31 @@ Kartogramm auf ein Netz zwischen den Ballungsräumen zusammen.
 
 ## Umfang
 
-Die Countys des Festlands plus Washington DC. **Alaska und Hawaii fehlen.**
-Im Kartogramm blieben sie als leere Ozeanfläche stehen, und eine
-Verbundprojektion, die sie heranrückt, bricht die Flächentreue, auf der das
-Verfahren beruht. Zusammen sind das sieben Wahlleute und rund 0,8 Millionen
-Stimmen.
+Alle 3109 Countys des Festlands plus Washington DC, dazu Hawaii mit vier
+Countys und Alaska — zusammen 3114 Gebiete. Alle im **selben Massstab**: auf
+der Landkarte überall dieselbe Fläche je Bildpunkt, im Kartogramm überall
+dieselbe Zahl Menschen.
 
-Zwei Eigenheiten der Gebietsgliederung sind berücksichtigt: Connecticut hat
+Übliche US-Karten verkleinern Alaska stillschweigend auf etwa ein Drittel.
+Hier wäre das gerade der Fehler, den die Darstellung zeigen will: Alaska
+erscheint auf der Landkarte so gross, wie es ist, und schrumpft im Kartogramm
+auf ein Zehntel seiner Kantenlänge — 3651 mal 1922 Kilometer werden zu 382 mal
+201.
+
+## Drei Sonderfälle
+
+**Alaska erscheint ungeteilt.** Der Staat zählt nicht nach Boroughs aus,
+sondern nach Wahlbezirken des Staatsparlaments; auf Borough-Ebene gibt es
+keine Zahlen. Alaska trägt deshalb das Landesergebnis (Trump 56,9 zu Harris
+43,1 Prozent) als ein einziges Gebiet, ohne Binnengrenzen. Innerhalb Alaskas
+ist die Karte stumm. Nebenbei überschreitet der Staat mit den Aleuten die
+Datumsgrenze, was vor dem Projizieren entwirrt werden muss.
+
+**Kalawao gehört zu Maui.** Das County auf Molokaʻi — 81 Einwohner, die
+frühere Leprakolonie — wählt wahlrechtlich mit Maui und hat keine eigenen
+Ergebnisse. Es ist dort eingerechnet.
+
+Zwei weitere Eigenheiten: Connecticut hat
 2022 seine Countys durch Planungsregionen ersetzt, mit neuen FIPS-Codes — hier
 erscheinen die Planungsregionen, weil Geometrie und Ergebnisse beide darauf
 liegen. Und die Ergebnisquelle teilt Washington DC in acht Wards auf, während
@@ -48,10 +68,39 @@ der Kartenfläche** entfallen auf Countys mit weniger als 20 Prozent Abweichung.
 Das Verhältnis Ist zu Soll liegt für vier Fünftel der Countys zwischen 0,89
 und 1,22.
 
+## Die Farben
+
+Eine naive Wahlkartenpalette aus reinem Rot und Blau ist wahrnehmungstechnisch
+schief. In OKLab gemessen:
+
+| Farbe | Helligkeit L | Buntheit C |
+|---|---|---|
+| reines Rot | 0,628 | 0,258 |
+| reines Blau | 0,452 | 0,313 |
+
+0,18 Helligkeitspunkte Unterschied — Rot wirkt dadurch heller, näher und
+schwerer, und das Auge zählt Fläche falsch.
+
+Die Skala hier ist in OKLab konstruiert und hat an beiden Enden **dieselbe
+Helligkeit und dieselbe Buntheit** (gemessen 0,004 Unterschied) sowie eine
+neutrale graue Mitte. Der Vorsprung wird linear aufgetragen: die Menge an Farbe
+entspricht dem Vorsprung, ein Gebiet bei fünfzig zu fünfzig ist grau statt
+kräftig violett.
+
+Was das **nicht** leistet: verlässlich zeigen, wer landesweit führt. Grosse
+zusammenhängende Flächen wirken schwerer als ein feines Netz gleicher
+Gesamtfläche. Rechnerisch liegt der einwohnergewichtete Farbwert nahe am
+Landesergebnis (0,008 gegen 0,016), optisch bleibt ein Rest. Dafür ist der
+Balken unter der Karte da. Der Umschalter *nur Sieger* zeigt zum Vergleich die
+übliche Darstellung, in der ein Gebiet mit 50,1 Prozent aussieht wie eines mit
+90.
+
 ## Verfahren
 
 Diffusionskartogramm nach Gastner und Newman (2004) auf einer flächentreuen
-Albers-Projektion (Bezugsbreiten 29,5° und 45,5° N). Beide Zustände benutzen
+Albers-Projektion (Bezugsbreiten 29,5° und 45,5° N). Festland und Hawaii werden
+gerechnet; Alaska ist ein einziges Gebiet, sein Kartogramm ist deshalb eine
+reine Skalierung um den Schwerpunkt und exakt. Beide Zustände benutzen
 dieselben 22.789 Stützpunkte; Punkte gleicher Ausgangslage sind zu einem Knoten
 verschweisst, damit gemeinsame Grenzen beim Verziehen gemeinsam bleiben.
 

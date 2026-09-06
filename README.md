@@ -11,7 +11,7 @@ Kleine Web-Projekte, je ein Ordner mit `index.html`, ausgeliefert über GitHub P
 - **[Stärkste Partei, Bundestagswahl 2025](https://chillchamp1.github.io/lab/wahlkarte-2025/)** — 431 Gebiete nach Zweitstimmen eingefärbt, mit Regler zwischen Landkarte und flächentreuem Kartogramm. · [Doku](wahlkarte-2025/README.md)
 - **[299 Wahlkreise, nach Menschen gewichtet](https://chillchamp1.github.io/lab/wahlkreise-2025/)** — Dieselbe Wahl auf Wahlkreisebene. Weil Wahlkreise nach Bevölkerung geschnitten werden, gleicht das Kartogramm die Gebiete fast an. · [Doku](wahlkreise-2025/README.md)
 - **[Vier Jahre später, die Hälfte gewechselt](https://chillchamp1.github.io/lab/wandel-2021-2025/)** — Bundestagswahl 2021 und 2025 im selben Bild: in 149 von 299 Wahlkreisen führt eine andere Partei. · [Doku](wandel-2021-2025/README.md)
-- **[Die Wahl 2024, nach Menschen gewichtet](https://chillchamp1.github.io/lab/usa-wahl-2024/)** — US-Präsidentschaftswahl: 3109 Countys, verzogen von der Fläche zur Einwohnerzahl. Trump gewann 2661 Countys, Harris 448 — in denen die Hälfte des Landes lebt. · [Doku](usa-wahl-2024/README.md)
+- **[Die Wahl 2024, nach Menschen gewichtet](https://chillchamp1.github.io/lab/usa-wahl-2024/)** — US-Präsidentschaftswahl: 3114 Gebiete samt Alaska und Hawaii, verzogen von der Fläche zur Einwohnerzahl, mit wahrnehmungsgleicher Farbskala. · [Doku](usa-wahl-2024/README.md)
 
 <!-- PROJEKTE:ENDE -->
 
