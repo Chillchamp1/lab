@@ -59,7 +59,16 @@ das alte und das neue Ziel ineinander übergehen. Ohne das müsste man für dies
 Vergleich den Umweg über Mercator nehmen, und der Vergleich wäre keiner mehr.
 
 Jede Handbewegung hält den Rundlauf an — der Regler, ein Netzknopf, ein Druck
-auf die Karte. Wer eingreift, will selbst schauen.
+auf die Karte. Wer eingreift, will selbst schauen. Wird dabei ein Zielwechsel
+abgebrochen, rastet er auf das nähere der beiden Netze ein, statt zwei Netze
+halb ineinander stehen zu lassen.
+
+Laufende Bewegungen werden beim Start der nächsten stillgelegt, damit nicht
+zwei Schleifen an derselben Zahl zerren — aber **je Kanal getrennt**. Ein
+Netzknopf startet nämlich zwei zugleich: der Regler fährt ans Ende, und
+gleichzeitig blendet das alte Ziel ins neue. Ein gemeinsamer Zähler liess die
+eine die andere erschlagen, und der Globus erschien nach einem Knopfdruck gar
+nicht mehr — nur noch über den Rundlauf, der die beiden nie zusammen auslöst.
 
 Die Überblendungen dauern 1,7 Sekunden, ein Zielwechsel 1,24, dazu 0,9 Sekunden
 Stand auf jedem Zustand. Das ist halb so schnell wie in der ersten Fassung: bei
@@ -121,6 +130,30 @@ fertigen Globus wird er dann weggelassen, vorher nicht, damit nichts springt.
 Linien auf der Rückseite werden beim Aufwickeln ausgeblendet. Ohne das
 schlingern sie: ihre Punkte laufen alle auf den Rand zu, und die
 Zwischenzustände dieser Bewegung sehen aus wie Schlaufen.
+
+### Die Farbe des Meeres
+
+Auf dem Blatt gibt es kein Meer — die Länder schwimmen auf dem Papier, und was
+sie voneinander trennt, ist eine Linie in Papierfarbe. Auf der Kugel geht das
+nicht: dort steht jedes Land auf Faktor 1 und damit auf der neutralen Mitte der
+Farbskala, die ganze Kugel hat also eine einzige Farbe. Ohne ein Meer, das sich
+davon abhebt, ist nichts zu erkennen.
+
+Der erste Anlauf nahm ein sehr helles Blaugrau und war damit **falsch**: der
+Kontrast zwischen Land und Meer lag bei **1,16:1**, das Meer war sogar heller
+als das Land. Auf einem Bildschirm sah das aus wie eine weisse Scheibe mit
+angedeuteten Umrissen. Jetzt steht dort ein Schieferblau, das die **3:1** aus
+den Barrierefreiheits-Richtlinien für grafische Elemente erreicht — gemessen
+**3,14:1**.
+
+Zwei Kleinigkeiten hängen daran. Die Trennlinie zwischen den Ländern bekommt
+die Farbe dessen, was hinter der Karte liegt, überblendet mit dem Rest — sonst
+hätte jede Küste auf dem Globus einen hellen Saum in Papierfarbe. Und Gradnetz
+wie Verzerrungskreise werden auf dem dunkleren Meer etwas kräftiger gezogen.
+
+Die Meeresscheibe wird erst im letzten Zehntel des Aufwickelns eingeblendet.
+Früher ragte die noch halb ebene Karte weit darüber hinaus, und die Scheibe sah
+aus wie ein Ball dahinter statt wie das Ziel der Bewegung.
 
 ## Verfahren
 

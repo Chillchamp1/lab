@@ -258,6 +258,16 @@ const M = NETZ.indexOf('mercator');
 // ebenen Netze sind auf die Äquatorlänge 2π normiert, und eine Karte dieser
 // Breite wickelt sich genau auf eine Kugel dieses Radius. Die Überblendung
 // zeigt also wirklich das Aufwickeln und nicht nebenbei eine Grössenänderung.
+// Das Meer auf der Kugel. Auf dem Blatt gibt es keins — dort schwimmen die
+// Länder auf dem Papier. Auf dem Globus muss es eins geben, und es muss sich
+// deutlich vom Land abheben: dort steht jedes Land auf Faktor 1 und damit auf
+// der neutralen Mitte der Skala, sodass die ganze Kugel eine einzige Farbe
+// hätte. Der Wert ist so gewählt, dass er die 3:1 aus den
+// Barrierefreiheits-Richtlinien für grafische Elemente erreicht.
+const MEER = '#5c7789';
+const MEER_RGB = [92, 119, 137];
+const PAPIER_RGB = [237, 235, 230];
+
 const R_GLOBUS = 1;
 const GLOBUS = NETZ.length;          // Steckplatz hinter den ebenen Netzen
 
@@ -537,11 +547,12 @@ function zeichne() {
   const CX = land.cx, CY = land.cy, gA = globusAnteil();
 
   // Das Meer. Erst spät eingeblendet: solange die Karte noch überwiegend eben
-  // ist, wäre eine Scheibe hinter ihr nur ein Fleck.
-  const meer = Math.max(0, (gA - .55) / .45);
+  // ist, ragt sie weit über die Scheibe hinaus, und die sähe aus wie ein Ball
+  // dahinter statt wie das Ziel des Aufwickelns.
+  const meer = Math.max(0, (gA - .9) / .1);
   if (meer > 0) {
     ctx.globalAlpha = meer;
-    ctx.fillStyle = '#dfe3e6';
+    ctx.fillStyle = MEER;
     ctx.beginPath();
     ctx.arc(0, 0, R_GLOBUS, 0, 2 * Math.PI);
     ctx.fill();
@@ -554,8 +565,11 @@ function zeichne() {
   const rueckseiteWeg = gA > .995;
   const vorn = land.vorn;
 
+  // Die Trennlinie zwischen den Ländern hat die Farbe dessen, was hinter der
+  // Karte liegt — auf dem Blatt das Papier, auf der Kugel das Meer. Sonst
+  // bekäme jede Küste auf dem Globus einen hellen Saum in Papierfarbe.
   ctx.lineJoin = 'round';
-  ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--karte').trim() || '#eceae4';
+  ctx.strokeStyle = hex(misch(PAPIER_RGB, MEER_RGB, meer));
   ctx.lineWidth = .7 / skala;
 
   for (const l of LAND) {
@@ -598,7 +612,8 @@ function zeichne() {
   };
 
   if (zeigGrad) {
-    ctx.strokeStyle = 'rgba(22,24,29,.19)'; ctx.lineWidth = .8 / skala;
+    ctx.strokeStyle = 'rgba(22,24,29,' + (.19 + .16 * meer).toFixed(3) + ')';
+    ctx.lineWidth = .8 / skala;
     for (let i = 0; i < gradnetz.abschnitt.length; i++) {
       const al = zugAlpha(gradnetz, i);
       if (al < .02) continue;
@@ -608,7 +623,8 @@ function zeichne() {
     ctx.globalAlpha = 1;
   }
   if (zeigTissot) {
-    ctx.fillStyle = 'rgba(22,24,29,.10)'; ctx.strokeStyle = 'rgba(22,24,29,.42)';
+    ctx.fillStyle = 'rgba(22,24,29,' + (.10 + .06 * meer).toFixed(3) + ')';
+    ctx.strokeStyle = 'rgba(22,24,29,' + (.42 + .18 * meer).toFixed(3) + ')';
     ctx.lineWidth = 1.1 / skala;
     for (let i = 0; i < tissot.abschnitt.length; i++) {
       const al = zugAlpha(tissot, i);
@@ -708,14 +724,16 @@ const DAUER = 1700;          // der Regler von einem Ende zum anderen
 const DAUER_WECHSEL = 1240;  // ein Zielwechsel bei stehendem Regler
 const HALT = 900;            // Standzeit auf jedem Zustand im Rundlauf
 
-// Läuft schon eine Bewegung, wird sie beim Start der nächsten stillgelegt.
-// Sonst zerren zwei Schleifen an derselben Zahl.
-let lauffolge = 0;
+// Läuft schon eine Bewegung, wird sie beim Start der nächsten stillgelegt —
+// aber nur die auf demselben Kanal. Ein Netzknopf startet zwei zugleich: der
+// Regler fährt ans Ende, und gleichzeitig blendet das alte Ziel ins neue. Ein
+// gemeinsamer Zähler hätte die eine die andere erschlagen lassen.
+const lauffolge = { t: 0, u: 0 };
 
-function animiere(schritt, dauer, fertig) {
-  const meine = ++lauffolge, t0 = performance.now();
+function animiere(schritt, dauer, fertig, kanal = 't') {
+  const meine = ++lauffolge[kanal], t0 = performance.now();
   (function lauf(jetzt) {
-    if (meine !== lauffolge) return;
+    if (meine !== lauffolge[kanal]) return;
     const p = Math.min(1, (jetzt - t0) / dauer);
     schritt(p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
     if (p < 1) requestAnimationFrame(lauf); else if (fertig) fertig();
@@ -746,7 +764,7 @@ function knoepfe() {
 function zuT(ziel, fertig) {
   const start = t;
   if (Math.abs(ziel - start) < .002) { setze(ziel); if (fertig) fertig(); return; }
-  animiere(e => setze(start + (ziel - start) * e), DAUER, fertig);
+  animiere(e => setze(start + (ziel - start) * e), DAUER, fertig, 't');
 }
 
 // Ein Zielwechsel bei stehendem Regler: das alte und das neue Netz werden
@@ -757,7 +775,7 @@ function wechsleZiel(i, fertig) {
   beschrifte();
   tabellen();
   animiere(e => { u = e; neuZeichnen(); }, DAUER_WECHSEL,
-    () => { zielA = zielB; u = 1; knoepfe(); if (fertig) fertig(); });
+    () => { zielA = zielB; u = 1; knoepfe(); if (fertig) fertig(); }, 'u');
 }
 
 function waehle(i) {
@@ -807,7 +825,11 @@ function rundlaufStopp() {
   if (!rundlauf) return;
   clearTimeout(rundlauf.uhr);
   rundlauf = null;
-  lauffolge++;                       // laufende Bewegung stilllegen
+  lauffolge.t++; lauffolge.u++;      // laufende Bewegungen stilllegen
+  // Ein abgebrochener Zielwechsel liesse zwei Netze halb ineinander stehen.
+  // Auf das nähere von beiden einrasten, damit ein Netz gezeigt wird.
+  if (zielA !== zielB) { if (u < .5) zielB = zielA; else zielA = zielB; u = 1; }
+  knoepfe(); beschrifte(); tabellen(); neuZeichnen();
   knopfSpiel.textContent = 'Abspielen';
   knopfSpiel.setAttribute('aria-pressed', 'false');
 }
