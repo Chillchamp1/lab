@@ -322,6 +322,13 @@ both.</p>
 <code>ne_50m_admin_0_countries</code> — ${laender.length} countries and territories,
 ${punkte.toLocaleString('en-US')} points. Public domain. Population figures from the same
 dataset (<code>POP_EST</code>, mostly as of 2019) and therefore only rough.</p>
+<p><b>Crimea</b> is drawn as part of Ukraine. Natural Earth's default layer maps control on
+the ground and puts it with Russia; this page follows the position of the UN General
+Assembly (resolution 68/262 of 27 March 2014). One polygon is reassigned in the build, which
+moves 26,970 km² from Russia to Ukraine and leaves every other border as the source draws
+it — so other disputed areas, from Western Sahara to Kashmir, still appear the way Natural
+Earth's de-facto layer has them. The population figures are the dataset's own and were not
+adjusted.</p>
 <p><b>Areas</b> are computed from the geometry itself, as a line integral on the sphere,
 not taken from a table. Check: the result agrees to four decimal places with the route via
 an equal-area projection, and the two equal-area projections agree with each other on the
