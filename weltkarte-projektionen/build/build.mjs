@@ -32,12 +32,12 @@ const kompakt = laender.map(l => [
   1000,                                   // Globus: keine Verzerrung, Faktor 1
 ]);
 
+// Die Kontinentnamen kommen schon englisch aus Natural Earth (CONTINENT).
 const kontinentZeilen = Object.entries(kont)
   .filter(([k]) => k !== 'Seven seas (open ocean)')
   .sort((a, b) => b[1].anteil[iM] - a[1].anteil[iM])
   .map(([k, v]) => [
-    { Europe: 'Europa', 'North America': 'Nordamerika', Asia: 'Asien', Africa: 'Afrika',
-      'South America': 'Südamerika', Oceania: 'Ozeanien' }[k] ?? k,
+    k,
     ...v.anteil.map(a => +(a * 100).toFixed(1)),
     Math.round(v.einw / 1e6),
   ]);
@@ -47,7 +47,7 @@ const daten = {
     ...NETZE.map(n => ({ id: n.id, name: n.name, jahr: n.jahr, art: n.art })),
     // Der Globus wird nicht hier gerechnet, sondern im Browser aus den
     // Einheitsvektoren auf der Kugel — er hängt an der Drehung.
-    { id: 'globus', name: 'Globus', jahr: null, art: 'unverzerrt' },
+    { id: 'globus', name: 'Globe', jahr: null, art: 'undistorted' },
   ],
   kappung: +(KAPPUNG / GRAD).toFixed(0),
   gitter: nutz.gitter,
@@ -58,22 +58,41 @@ const daten = {
 };
 
 const SEITE = `<!doctype html>
-<html lang="de"><head><meta charset="utf-8">
+<html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>164 zu 1 für eine neue Weltkarte</title>
-<meta name="description" content="Die UN-Vollversammlung hat am 4. September 2026 auf Antrag Togos für flächentreue Weltkarten gestimmt. Ein Regler zeigt, was der Wechsel von Mercator auf Equal Earth ausmacht.">
+<title>164 to 1 for a new world map</title>
+<meta name="description" content="On 4 September 2026 the UN General Assembly voted, on Togo's motion, for equal-area world maps. A slider shows what the switch from Mercator to Equal Earth actually changes.">
 <style>
 :root{--papier:#f4f4f2;--tinte:#16181d;--leise:#6a6f79;--linie:#d8d8d4;--karte:#edebe6;
  --zuklein:#1d6f78;--mitte:#e6e0d3;--zugross:#a8402b;--akzent:#8a5a2b}
 *{box-sizing:border-box}
 body{margin:0;background:var(--papier);color:var(--tinte);
  font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55}
-.wrap{max-width:1020px;margin:0 auto;padding:38px 20px 70px}
-h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
- font-size:clamp(30px,5.4vw,50px);line-height:1.08;letter-spacing:-.015em;margin:0 0 14px}
-.deck{color:var(--leise);max-width:62ch;margin:0 0 26px;font-size:16px}
-.deck b{color:var(--tinte);font-weight:600}
-.ctrl{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 6px}
+.wrap{max-width:1020px;margin:0 auto;padding:22px 20px 70px}
+
+/* ---- Der Kopf der Seite: Karte, Zustandszeile, Legende, Bedienung ---- */
+figure{margin:0 -8px}
+canvas{width:100%;height:auto;display:block;background:var(--karte);border-radius:2px;touch-action:pan-y}
+
+.jetzt{margin:14px 0 0;font-size:17px;line-height:1.35}
+.jetzt b{font-weight:600}
+.jetzt .pfeil{color:var(--leise);margin:0 .38em;font-weight:400}
+.jetzt .proz{color:var(--leise);font-size:14px;font-variant-numeric:tabular-nums;margin-left:.5em}
+.jetzt .wie{display:block;color:var(--leise);font-size:13px;margin-top:1px}
+
+.skala{margin:14px 0 0;max-width:460px}
+.skala .titel{display:block;color:var(--leise);font-size:12.5px;margin:0 0 6px}
+.skala .bar{position:relative;display:block;height:10px;border-radius:2px;
+ background:linear-gradient(90deg,var(--zuklein),var(--mitte),var(--zugross))}
+.skala .bar i{position:absolute;top:0;bottom:0;width:1px;background:rgba(244,244,242,.7)}
+.skala .marken{position:relative;display:block;height:15px;margin-top:4px;
+ color:var(--leise);font-size:11.5px;font-variant-numeric:tabular-nums}
+.skala .marken span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.skala .marken span:first-child{transform:none}
+.skala .marken span:last-child{transform:translateX(-100%)}
+.skala .marken b{color:var(--tinte);font-weight:600}
+
+.ctrl{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:22px 0 0}
 .seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--linie);border-radius:3px;overflow:hidden}
 .seg button{background:transparent;color:var(--leise);border:0;font:inherit;font-size:13.5px;
  padding:9px 13px;cursor:pointer;white-space:nowrap}
@@ -92,24 +111,25 @@ h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
  white-space:nowrap}
 .spiel[aria-pressed="true"]{background:var(--tinte);color:var(--papier);border-color:var(--tinte)}
 .spiel:focus-visible{outline:2px solid var(--akzent);outline-offset:2px}
-.ends{display:flex;justify-content:space-between;color:var(--leise);font-size:12.5px;margin:0 0 4px}
 .schalter{display:flex;gap:18px;flex-wrap:wrap;margin:12px 0 0;color:var(--leise);font-size:13.5px}
 .schalter label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
 .schalter input{accent-color:var(--tinte)}
 .lgd{display:flex;flex-wrap:wrap;gap:6px 20px;margin:10px 0 0;color:var(--leise);font-size:13px}
 .lgd[hidden]{display:none}
-.hinweis{margin:14px 0 0;max-width:70ch;color:var(--leise);font-size:14px}
-.hinweis b{color:var(--tinte);font-weight:600}
 .lgd span{display:inline-flex;align-items:center;gap:8px}
 .lgd i{width:26px;height:0;border-top-width:2px;display:block;flex:none}
 .lgd i.lox{border-top-style:dashed;border-top-color:var(--akzent)}
 .lgd i.gk{border-top-style:solid;border-top-color:var(--tinte)}
 .lgd .wo{opacity:.75;font-style:italic}
-figure{margin:14px -8px 0}
-canvas{width:100%;height:auto;display:block;background:var(--karte);border-radius:2px;touch-action:pan-y}
-.skala{display:flex;align-items:center;gap:10px;margin:16px 0 0;color:var(--leise);font-size:12.5px}
-.skala .bar{flex:0 0 210px;height:10px;border-radius:2px;
- background:linear-gradient(90deg,var(--zuklein),var(--mitte),var(--zugross))}
+.hinweis{margin:14px 0 0;max-width:70ch;color:var(--leise);font-size:14px}
+.hinweis b{color:var(--tinte);font-weight:600}
+
+/* ---- Darunter: worum es geht ---- */
+h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+ font-size:clamp(28px,4.8vw,44px);line-height:1.1;letter-spacing:-.015em;
+ margin:54px 0 14px;padding-top:30px;border-top:1px solid var(--linie)}
+.deck{color:var(--leise);max-width:62ch;margin:0 0 20px;font-size:16px}
+.deck b{color:var(--tinte);font-weight:600}
 h2.sec{font-family:Georgia,serif;font-weight:400;font-size:26px;margin:46px 0 10px;
  padding-top:26px;border-top:1px solid var(--linie)}
 p.sec{max-width:70ch;color:var(--leise)}
@@ -134,155 +154,156 @@ footer p{margin:0 0 11px}
 </style></head><body>
 <div class="wrap">
 
-<h1>164 zu 1 für<br>eine neue Weltkarte</h1>
-<p class="deck">Am <b>4. September 2026</b> hat die UN-Vollversammlung auf Antrag
-<b>Togos</b>, eingebracht für die afrikanischen Mitgliedstaaten, die Resolution
-<b>„Correct the Map"</b> angenommen: 164 Stimmen dafür, eine dagegen, sechs Enthaltungen.
-Sie verbietet Mercator nicht, sondern ruft Regierungen, Schulen, Organisationen und
-Technikkonzerne dazu auf, <b>flächentreue</b> Karten zu benutzen, wo es auf
-Grössenverhältnisse ankommt — namentlich <b>Equal Earth</b>.</p>
-<p class="deck">Worum es dabei geht, lässt sich messen. Auf der Mercator-Karte belegen
-Europa und Nordamerika zusammen <b>${nordAnteil(iM).toFixed(0)} %</b> der gezeigten
-Landfläche; zustehen würden ihnen
-<b>${((kont['Europe'].wahr + kont['North America'].wahr) * 100).toFixed(0)} %</b>.
-Der Regler blendet um. Die Farbe zeigt für jedes Land, wie viel Bildfläche es
-bekommt, gemessen an seinem wirklichen Anteil an der Landfläche der Erde — und wie
-diese Verzerrung dabei verschwindet. Daneben steht der <b>Globus</b>: die einzige
-Darstellung ohne jede Verzerrung, und damit der Massstab, an dem sich beide Karten
-messen lassen.</p>
+<figure><canvas id="karte" role="img" aria-label="World map that cross-fades between the Mercator projection, an equal-area projection and a globe. Colour shows how much image area each country gets compared with its true share of the world's land. The numbers are in the tables further down."></canvas></figure>
 
-<div class="ends"><span id="startName"></span><span id="zielName"></span></div>
+<p class="jetzt" id="jetzt" aria-live="polite"></p>
+
+<div class="skala">
+  <span class="titel">Image area a country gets, against its true share of the world's land</span>
+  <span class="bar" aria-hidden="true"><i style="left:18.4%"></i><i style="left:50%"></i><i style="left:81.6%"></i></span>
+  <span class="marken" aria-hidden="true">
+    <span style="left:0%">⅓×</span><span style="left:18.4%">½×</span>
+    <span style="left:50%"><b>1×</b></span>
+    <span style="left:81.6%">2×</span><span style="left:100%">3×</span>
+  </span>
+</div>
+
 <div class="ctrl">
-  <input type="range" id="reg" min="0" max="1000" value="0" step="1" aria-label="Überblendung zwischen Mercator und dem gewählten Netz">
-  <div class="seg" id="ziele" role="group" aria-label="Kartennetz"></div>
-  <button class="spiel" id="spiel" aria-pressed="false">Abspielen</button>
+  <input type="range" id="reg" min="0" max="1000" value="0" step="1" aria-label="Cross-fade between Mercator and the selected projection">
+  <div class="seg" id="ziele" role="group" aria-label="Projection"></div>
+  <button class="spiel" id="spiel" aria-pressed="false">Play</button>
 </div>
 <div class="schalter">
-  <label><input type="checkbox" id="cGrad" checked> Gradnetz</label>
-  <label><input type="checkbox" id="cTissot"> Verzerrungskreise</label>
-  <label><input type="checkbox" id="cFest"> Mercators Verzerrung festhalten</label>
-  <label><input type="checkbox" id="cKurs"> Zwei Flugstrecken</label>
+  <label><input type="checkbox" id="cGrad" checked> Graticule</label>
+  <label><input type="checkbox" id="cTissot"> Distortion circles</label>
+  <label><input type="checkbox" id="cFest"> Hold Mercator's distortion</label>
+  <label><input type="checkbox" id="cKurs"> Two flight routes</label>
 </div>
 
-<figure><canvas id="karte" role="img" aria-label="Weltkarte, überblendbar zwischen der Mercator-Projektion und einem flächentreuen Netz. Die Zahlen dazu stehen in den Tabellen darunter."></canvas></figure>
-
-<p class="hinweis" id="hinweisGlobus" hidden><b>Ziehen dreht die Kugel.</b> Auf der Kugel selbst stimmt alles zugleich — Fläche, Form, Winkel —, weil nichts in die Ebene gezwungen wird. Ihr Bild auf einem flachen Schirm ist aber wieder eine Projektion. <b>Wo Sie senkrecht draufschauen, stimmt der Massstab genau</b>; zum Rand hin schrumpft alles, bei 60° auf die Hälfte, am Rand auf nichts. Die Farbe misst das mit und wandert beim Drehen mit. Anders als auf einer ebenen Karte gibt es hier nur eine Richtung: der Globus zeigt nirgends zu viel, aber fast überall zu wenig.</p>
+<p class="hinweis" id="hinweisGlobus" hidden><b>Drag to turn the globe.</b> On the sphere itself everything is right at once — area, shape, angles — because nothing is forced into a plane. But its <i>image</i> on a flat screen is a projection again. <b>Where you look straight down, the scale is exact</b>; towards the rim everything shrinks, at 60° to half, at the edge to nothing. The colour measures that too and travels with the rotation. Unlike a flat map there is only one direction here: the globe shows nothing too large, but almost everything too small.</p>
 <p class="hinweis" id="hinweisFarbe" hidden></p>
 <p class="hinweis" id="hinweisTissot" hidden></p>
 <p class="lgd" id="lgdKurs" hidden>
-  <span><i class="lox"></i>gleichbleibender Kompasskurs</span>
-  <span><i class="gk"></i>kürzester Weg</span>
-  <span class="wo">New York – Lissabon und Frankfurt – Tokio</span>
+  <span><i class="lox"></i>constant compass course</span>
+  <span><i class="gk"></i>shortest path</span>
+  <span class="wo">New York – Lisbon and Frankfurt – Tokyo</span>
 </p>
 
-<div class="skala">
-  <span>halb so viel Bildfläche wie zustehend</span>
-  <span class="bar" aria-hidden="true"></span>
-  <span>doppelt so viel</span>
-</div>
+<h1>164 to 1 for<br>a new world map</h1>
+<p class="deck">On <b>4 September 2026</b> the UN General Assembly adopted the
+resolution <b>&ldquo;Correct the Map&rdquo;</b>, moved by <b>Togo</b> on behalf of the
+African member states: 164 votes in favour, one against, six abstentions. It does not
+ban Mercator; it calls on governments, schools, organisations and technology companies
+to use <b>equal-area</b> maps wherever relative size matters — naming
+<b>Equal Earth</b> in particular.</p>
+<p class="deck">What is at stake can be measured. On the Mercator map, Europe and North
+America together take up <b>${nordAnteil(iM).toFixed(0)} %</b> of the land area shown;
+their true share is
+<b>${((kont['Europe'].wahr + kont['North America'].wahr) * 100).toFixed(0)} %</b>.
+The slider fades between them. The colour shows, for every country, how much image area
+it gets measured against its real share of the world's land — and how that distortion
+disappears along the way. Next to the two maps stands the <b>globe</b>: the one
+depiction without any distortion at all, and therefore the yardstick both maps are
+measured against.</p>
 
-<h2 class="sec">Was beschlossen wurde</h2>
-<p class="sec">Die Resolution trägt den Titel <i>„Correct the Map: Rebalancing global
+<h2 class="sec">What was decided</h2>
+<p class="sec">The resolution is titled <i>&ldquo;Correct the Map: Rebalancing global
 cartographic representation and promoting equitable representation of the world's
-regions, particularly Africa"</i>. Sie ist <b>nicht bindend</b> — die UN kann weder
-Google Maps noch Schulbuchverlage oder Landesvermessungsämter zu etwas zwingen.
-Gegen die Resolution stimmten die Vereinigten Staaten als einziges Land; enthalten
-haben sich Estland, Georgien, Litauen, Moldau, Serbien und die Ukraine.</p>
-<p class="sec">Vorgeschrieben wird kein bestimmtes Netz, gefordert wird
-<b>Flächentreue</b>. Genannt wird Equal Earth, entwickelt 2018 von Bojan Šavrič,
-Tom Patterson und Bernhard Jenny — flächentreu und dabei auf erkennbare Umrisse hin
-gebaut.</p>
-<p class="sec">Der dritte Knopf ist die Gegenprobe. Auf dem <b>Globus</b> stellt sich
-die Frage nach der richtigen Projektion gar nicht: Fläche, Form und Winkel stimmen
-alle, weil nichts in die Ebene gezwungen wird. Er kostet die halbe Welt — man sieht
-immer nur eine Seite. Genau das ist der Handel, den jede Weltkarte eingeht, und der
-Regler zeigt ihn in beide Richtungen. <b>Ziehen dreht die Kugel.</b></p>
-<p class="sec">Ganz aus dem Schneider ist aber auch er nicht, und die Karte sagt das:
-sein <i>Bild</i> auf einem flachen Schirm ist wieder eine Projektion. Der
-Flächenmassstab ist dort der Kosinus des Abstands zur Bildmitte — wo man senkrecht
-draufschaut, stimmt er genau, bei 60° ist er halbiert, am Rand null. Die Farbe wird
-deshalb nicht aus einer Tabelle geholt, sondern in jedem Bild an dem gemessen, was
-tatsächlich auf dem Schirm steht. Auf Mercator kommt dabei aufs Hundertstel dasselbe
-heraus wie in der Tabelle unten; auf dem Globus zeigt sie die Randstauchung, und beim
-Drehen wandert sie mit.</p>
-<p class="sec">Woran gemessen wird, ist dabei nicht dasselbe. Eine ebene Karte zeigt
-die ganze Welt: das Blatt ist ein fester Vorrat, der verteilt wird, und die Frage
-lautet, ob ein Land mehr oder weniger davon bekommt, als ihm zusteht — beide
-Richtungen sind möglich. Die Kugel zeigt eine Hälfte und hat einen natürlichen
-Massstab, nämlich den am Punkt, auf den man schaut. Dort ist sie unverzerrt, überall
-sonst zu klein. <b>Der Globus zeigt nirgends zu viel, aber fast überall zu wenig</b> —
-und deshalb ist er dort einfarbig hell in der Mitte und wird zum Rand hin immer
-kräftiger.</p>
+regions, particularly Africa&rdquo;</i>. It is <b>not binding</b> — the UN can compel
+neither Google Maps nor textbook publishers nor national mapping agencies. The United
+States was the only country to vote against; Estonia, Georgia, Lithuania, Moldova,
+Serbia and Ukraine abstained.</p>
+<p class="sec">No particular projection is prescribed; what is asked for is
+<b>equal area</b>. Equal Earth is named — built in 2018 by Bojan Šavrič,
+Tom Patterson and Bernhard Jenny, equal-area and designed for recognisable outlines
+at the same time.</p>
+<p class="sec">The third button is the control case. On the <b>globe</b> the question of
+the right projection does not arise: area, shape and angles are all correct, because
+nothing is forced into a plane. It costs half the world — you only ever see one side.
+That is exactly the bargain every world map strikes, and the slider shows it in both
+directions. <b>Drag to turn the globe.</b></p>
+<p class="sec">Even the globe is not entirely off the hook, and the map says so: its
+<i>image</i> on a flat screen is a projection again. There the areal scale is the cosine
+of the distance from the centre of the image — where you look straight down it is exact,
+at 60° it is halved, at the rim it is zero. That is why the colour is not looked up in a
+table but measured, in every single frame, from what is actually on the screen. On
+Mercator this comes out to the same value as the table below, to two decimal places; on
+the globe it shows the rim compression, and it travels with the rotation.</p>
+<p class="sec">What it is measured against is not the same thing in both cases. A flat map
+shows the whole world: the sheet is a fixed stock that gets shared out, and the question is
+whether a country gets more or less of it than it is due — both directions are possible.
+The sphere shows one half and has a natural scale, the one at the point you are looking at.
+There it is undistorted; everywhere else it is too small. <b>The globe shows nothing too
+large, but almost everything too small</b> — which is why it is pale in the middle and
+grows steadily stronger towards the rim.</p>
 
-<h2 class="sec">Wer wie viel Platz bekommt</h2>
-<p class="sec">Anteil an der gezeigten Landfläche, Antarktis nicht mitgerechnet.
-Equal Earth und der Globus stehen in derselben Spalte: beide sind flächentreu, der
-eine, weil er dafür gebaut wurde, der andere, weil auf einer Kugel nichts zu
-verzerren ist. Die zweite Spalte ist damit nicht bloss eine dritte Meinung, sondern
-der wahre Anteil.</p>
+<h2 class="sec">Who gets how much room</h2>
+<p class="sec">Share of the land area shown, Antarctica not counted. Equal Earth and the
+globe share a column: both are equal-area, one because it was built that way, the other
+because there is nothing to distort on a sphere. That second column is therefore not just
+a third opinion — it is the true share.</p>
 <div class="tabelle-scroll"><table id="tKont"></table></div>
 
-<h2 class="sec">Grösste Veränderung</h2>
-<p class="sec">Länder über 150.000 km², sortiert danach, wie sich ihr Anteil an der
-Bildfläche beim Wechsel von Mercator auf <b id="zielName2">Equal Earth</b> ändert.</p>
+<h2 class="sec">Biggest change</h2>
+<p class="sec">Countries above 150,000 km², sorted by how their share of the image area
+changes when switching from Mercator to <b id="zielName2">Equal Earth</b>.</p>
 <div class="zwei">
   <div class="tabelle-scroll"><table id="tVerlust"></table></div>
   <div class="tabelle-scroll"><table id="tGewinn"></table></div>
 </div>
 
-<h2 class="sec">Was Mercator dafür kann</h2>
-<p class="sec">Am deutlichsten sagen es die <b>Verzerrungskreise</b>. Jeder von ihnen
-hat auf der Erdkugel denselben Radius, 800 km. Auf Mercator bleibt jeder einzelne
-ein <b>Kreis</b> — nur werden sie nach Norden und Süden hin immer grösser. Ein Kreis,
-der Kreis bleibt, heisst: an dieser Stelle wird in alle Richtungen gleich stark
-gedehnt. Winkel bleiben also erhalten, und damit stimmt die örtliche Form. Auf einem
-flächentreuen Netz ist es umgekehrt: alle Kreise sind gleich gross, aber zu Ellipsen
-geschert — die Fläche stimmt, die Form nicht mehr. Mehr ist über den Tausch nicht
-zu sagen, und man sieht ihn in einer einzigen Bewegung. Auf dem <b>Globus</b> sind
-die Kreise dann gleich gross <i>und</i> rund: der Kontrollfall, an dem man sieht,
-dass beides zugleich geht — nur eben nicht auf einem Blatt Papier.</p>
-<p class="sec">Die beiden Flugstrecken zeigen, wozu das praktisch gut war. Weil auf
-Mercator Winkel stimmen, ist eine Linie <b>gleichbleibenden Kompasskurses</b> dort
-eine Gerade — man legt das Lineal an und liest den Kurs ab. Das war 1569 die ganze
-Aufgabe. Der <b>kürzeste Weg</b> ist etwas anderes und auf Mercator immer der Bogen;
-beide sind auf der Karte beschriftet.</p>
-<p class="sec">Wie gerade die Kurslinie ist, lässt sich messen — grösster Abstand von
-der geraden Verbindung, in Prozent der Streckenlänge:</p>
+<h2 class="sec">What Mercator is good at</h2>
+<p class="sec">The <b>distortion circles</b> say it most clearly. Every one of them has the
+same radius on the earth, 800 km. On Mercator each one stays a <b>circle</b> — they merely
+grow larger towards the north and the south. A circle that stays a circle means: at this
+spot the stretching is the same in every direction. So angles are preserved, and with them
+the local shape. On an equal-area projection it is the other way round: every circle is the
+same size, but sheared into an ellipse — the area is right, the shape is not. There is
+nothing more to say about the trade, and you see it in a single movement. On the
+<b>globe</b> the circles are then the same size <i>and</i> round: the control case that
+shows both are possible at once — just not on a sheet of paper.</p>
+<p class="sec">The two flight routes show what that was practically good for. Because
+angles are correct on Mercator, a line of <b>constant compass course</b> is a straight line
+there — you lay down a ruler and read off the bearing. In 1569 that was the entire job. The
+<b>shortest path</b> is a different thing and on Mercator always the arc; both are labelled
+on the map.</p>
+<p class="sec">How straight the course line is can be measured — greatest deviation from
+the straight connection, as a percentage of the route length:</p>
 <div class="tabelle-scroll"><table>
-<tr><th>Strecke</th><th class="z">Mercator, Kurslinie</th><th class="z">Mercator, kürzester Weg</th><th class="z">Equal Earth, kürzester Weg</th></tr>
-<tr><td>New York – Lissabon</td><td class="z">0,00 %</td><td class="z">10,1 %</td><td class="z">9,8 %</td></tr>
-<tr><td>Frankfurt – Tokio</td><td class="z">0,00 %</td><td class="z">31,4 %</td><td class="z">17,8 %</td></tr>
+<tr><th>Route</th><th class="z">Mercator, course line</th><th class="z">Mercator, shortest path</th><th class="z">Equal Earth, shortest path</th></tr>
+<tr><td>New York – Lisbon</td><td class="z">0.00 %</td><td class="z">10.1 %</td><td class="z">9.8 %</td></tr>
+<tr><td>Frankfurt – Tokyo</td><td class="z">0.00 %</td><td class="z">31.4 %</td><td class="z">17.8 %</td></tr>
 </table></div>
-<p class="sec">Null Prozent, und zwar für jede beliebige Strecke — das ist keine
-Näherung, sondern die Eigenschaft, für die das Netz gebaut wurde. Umgekehrt gilt es
-nicht: der kürzeste Weg wird auf keinem der Netze hier gerade, er biegt sich nur
-weniger. Dafür bräuchte es ein gnomonisches Netz, das dann wiederum nicht einmal eine
-Halbkugel am Stück zeigen kann. Der Preis für die gerade Kurslinie ist die
-Flächenverzerrung; beides zugleich geht auf einer ebenen Karte nicht.</p>
+<p class="sec">Zero per cent, and that for any route whatsoever — not an approximation but
+the property the projection was built for. The converse does not hold: the shortest path
+becomes straight on neither projection here, it merely bends less. That would take a
+gnomonic projection, which in turn cannot show even a full hemisphere in one piece. The
+price of the straight course line is the area distortion; on a flat map you cannot have
+both.</p>
 
 <footer>
-<p><b>Geometrie:</b> <a href="https://www.naturalearthdata.com/">Natural Earth</a>,
-<code>ne_50m_admin_0_countries</code> — ${laender.length} Staaten und Gebiete,
-${punkte.toLocaleString('de-DE')} Punkte. Gemeinfrei. Einwohnerzahlen aus demselben
-Datensatz (<code>POP_EST</code>, überwiegend Stand 2019) und deshalb nur grob.</p>
-<p><b>Flächen</b> sind aus der Geometrie selbst gerechnet, als Linienintegral auf der
-Kugel, nicht aus einer Tabelle übernommen. Probe: das Ergebnis stimmt auf vier
-Nachkommastellen mit dem Weg über eine flächentreue Projektion überein, und die
-beiden flächentreuen Netze liefern untereinander auf 0,03 % dieselben Anteile.</p>
-<p><b>Mercator</b> ist bei ${(KAPPUNG / GRAD).toFixed(0)}° gekappt — der Flächenmassstab beträgt dort schon
-das ${(1 / Math.cos(KAPPUNG) ** 2).toFixed(0)}-fache, bei 85° das ${(1 / Math.cos(85 * GRAD) ** 2).toFixed(0)}-fache. Die Antarktis bleibt trotzdem im
-Bild; gerade sie zeigt, was an den Polen passiert. Bei den Anteilen zählt sie nicht mit.
-Beide ebenen Netze sind auf dieselbe Äquatorlänge normiert, damit die Überblendung
-nur das Netz ändert und nicht zusätzlich die Grösse. Der <b>Globus</b> hat aus
-demselben Grund den Radius 1: eine Karte dieser Äquatorlänge wickelt sich genau auf
-eine Kugel dieser Grösse. Gezeichnet wird er orthografisch, also so, wie eine Kugel
-aus grosser Entfernung aussieht; Punkte hinter dem Horizont wandern auf den Rand,
-wodurch ein Umriss, der über den Horizont läuft, dort sauber abschliesst.</p>
-<p><b>Zur Resolution:</b> <a href="https://news.un.org/en/story/2026/09/1168284">UN
+<p><b>Geometry:</b> <a href="https://www.naturalearthdata.com/">Natural Earth</a>,
+<code>ne_50m_admin_0_countries</code> — ${laender.length} countries and territories,
+${punkte.toLocaleString('en-US')} points. Public domain. Population figures from the same
+dataset (<code>POP_EST</code>, mostly as of 2019) and therefore only rough.</p>
+<p><b>Areas</b> are computed from the geometry itself, as a line integral on the sphere,
+not taken from a table. Check: the result agrees to four decimal places with the route via
+an equal-area projection, and the two equal-area projections agree with each other on the
+shares to within 0.03 %.</p>
+<p><b>Mercator</b> is clipped at ${(KAPPUNG / GRAD).toFixed(0)}° — the areal scale there is already
+${(1 / Math.cos(KAPPUNG) ** 2).toFixed(0)}×, and at 85° it is ${(1 / Math.cos(85 * GRAD) ** 2).toFixed(0)}×. Antarctica stays in the picture all the
+same; it is precisely what shows what happens at the poles. It does not count towards the
+shares. Both flat projections are normalised to the same equator length, so that the
+cross-fade changes only the projection and not the size along with it. The <b>globe</b> has
+radius 1 for the same reason: a map of that equator length wraps exactly onto a sphere of
+that size. It is drawn orthographically, the way a sphere looks from far away; points
+behind the horizon move onto the rim, so an outline crossing the horizon closes cleanly
+there.</p>
+<p><b>On the resolution:</b> <a href="https://news.un.org/en/story/2026/09/1168284">UN
 News</a>, <a href="https://www.handelsblatt.com/politik/international/kritik-an-ueblicher-darstellung-un-stimmen-auf-antrag-togos-fuer-reform-der-weltkarte/100252209.html">Handelsblatt</a>,
 <a href="https://www.zdfheute.de/panorama/un-resolution-weltkarten-100.html">ZDF</a>.
-Abstimmung vom 4. September 2026.</p>
-<p>Teil von <a href="../">lab</a>. Quelle und Bauskripte auf
+Vote of 4 September 2026.</p>
+<p>Part of <a href="../">lab</a>. Source and build scripts on
 <a href="https://github.com/Chillchamp1/lab/tree/main/weltkarte-projektionen">GitHub</a>.</p>
 </footer>
 

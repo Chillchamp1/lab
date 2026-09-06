@@ -37,7 +37,7 @@ export function baueNutzlast({ log = () => {} } = {}) {
     }
 
     laender.push({
-      name: p.NAME_DE || p.NAME,
+      name: p.NAME_EN || p.NAME,
       iso: p.ISO_A3 && p.ISO_A3 !== '-99' ? p.ISO_A3 : p.ADM0_A3,
       kontinent: p.CONTINENT,
       einwohner: p.POP_EST || 0,
@@ -121,7 +121,7 @@ export const ZUGABEN = {
   tissotBreiten: [-60, -30, 0, 30, 60],
   tissotLaengen: [-150, -90, -30, 30, 90, 150],
   kurse: [
-    { name: 'New York – Lissabon', von: [-74.01, 40.71], nach: [-9.14, 38.72] },
-    { name: 'Frankfurt – Tokio', von: [8.68, 50.11], nach: [139.69, 35.69] },
+    { name: 'New York – Lisbon', von: [-74.01, 40.71], nach: [-9.14, 38.72] },
+    { name: 'Frankfurt – Tokyo', von: [8.68, 50.11], nach: [139.69, 35.69] },
   ],
 };

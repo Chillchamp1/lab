@@ -613,37 +613,37 @@ function hinweis() {
   fe.hidden = !farbeFest;
   if (farbeFest) {
     fe.innerHTML = globusAnteil() > .5
-      ? '<b>Die Farbe steht auf Mercator, die Gestalt auf der Wahrheit.</b> Türkis heisst: '
-        + 'dieses Land bekommt auf der Mercator-Karte weniger Bildfläche, als ihm zusteht — '
-        + 'und hier sieht man auf der richtigen Kugel, um welche Länder es dabei geht. '
-        + 'Ziehen dreht sie.'
-      : '<b>Die Farbe bleibt bei Mercator stehen.</b> Sie sagt nicht mehr, was die gerade '
-        + 'gezeigte Darstellung tut, sondern was Mercator tut — und wandert deshalb beim '
-        + 'Umblenden mit dem Land mit, während sich die Gestalt korrigiert.';
+      ? '<b>The colour is Mercator\u2019s, the shape is the truth.</b> Teal means: on the '
+        + 'Mercator map this country gets less image area than it is due — and here you see, '
+        + 'on the correct sphere, which countries those are. Drag to turn it.'
+      : '<b>The colour is held at Mercator.</b> It no longer says what the view on screen is '
+        + 'doing, but what Mercator does — so it travels with each country through the '
+        + 'cross-fade while the shape corrects itself.';
   }
   const el = document.getElementById('hinweisTissot');
   el.hidden = !zeigTissot;
   if (!zeigTissot) return;
   let s;
   if (globusAnteil() > .88) {
-    s = '<b>Auf der Kugel wären alle Kreise gleich gross und rund</b> — auf der Kugel. '
-      + 'Was Sie sehen, ist ihr Bild auf einem flachen Schirm: in der Mitte, wo Sie '
-      + 'senkrecht draufschauen, stimmt es genau, zum Rand hin werden dieselben Kreise '
-      + 'zu schmalen Sicheln. Der Globus löst das Problem also nicht, er verschiebt es '
-      + 'an den Rand — und dreht es weg, sobald Sie ziehen.';
+    s = '<b>On the sphere all the circles would be the same size and round</b> — on the '
+      + 'sphere. What you see is their image on a flat screen: in the middle, where you look '
+      + 'straight down, it is exact; towards the rim the very same circles become narrow '
+      + 'slivers. So the globe does not solve the problem, it moves it to the rim — and turns '
+      + 'it out of the way as soon as you drag.';
   } else if (t < .12) {
-    s = '<b>Alle Kreise sind Kreise geblieben</b> — nur verschieden gross. Das ist Mercators '
-      + 'Stärke: in alle Richtungen wird gleich stark gedehnt, also stimmen Winkel und örtliche '
-      + 'Form. Daraus folgt die gerade Kurslinie. Bezahlt wird es mit der Grösse.';
+    s = '<b>Every circle has stayed a circle</b> — only the sizes differ. That is Mercator\u2019s '
+      + 'strength: the stretching is equal in every direction, so angles and local shape are '
+      + 'right. The straight course line follows from it. It is paid for in size.';
   } else if (t > .88) {
-    s = '<b>Alle Kreise sind jetzt gleich gross</b> — dafür zu Ellipsen geschert. Die Fläche '
-      + 'stimmt überall, die Form nicht mehr. Das ist der Tausch, den eine ebene Karte '
-      + 'nicht umgehen kann.';
+    s = '<b>Every circle is now the same size</b> — sheared into an ellipse in return. The '
+      + 'area is right everywhere, the shape is not. That is the trade a flat map cannot '
+      + 'get around.';
   } else {
-    s = 'Dazwischen: die Kreise gleichen sich in der Grösse an und verlieren dabei ihre runde Form. '
-      + 'Beides zugleich geht auf einer ebenen Karte nicht.';
+    s = 'In between: the circles even out in size and lose their round shape doing it. On a '
+      + 'flat map you cannot have both at once.';
   }
-  s += ' <span class="wo">Jeder Kreis hat auf der Erde 800 km Radius (Tissot-Indikatrix).</span>';
+  s += ' <span class="wo">Every circle has a radius of 800 km on the earth (Tissot\u2019s indicatrix). '
+    + 'They sit on the graticule intersections, on every second meridian.</span>';
   if (s !== letzterHinweis) { el.innerHTML = s; letzterHinweis = s; }
 }
 
@@ -655,7 +655,7 @@ function neuZeichnen() {
   wartet = true;
   requestAnimationFrame(() => { wartet = false; zeichne(); });
 }
-function setze(v, { schieber = true } = {}) { t = v; if (schieber) reg.value = Math.round(v * 1000); knoepfe(); zeigerHaltung(); neuZeichnen(); }
+function setze(v, { schieber = true } = {}) { t = v; if (schieber) reg.value = Math.round(v * 1000); knoepfe(); beschrifte(); zeigerHaltung(); neuZeichnen(); }
 reg.addEventListener('input', () => { rundlaufStopp(); setze(reg.value / 1000, { schieber: false }); });
 
 // Überblendungsdauern. Ein Achtel des ursprünglichen Tempos: die Bewegung
@@ -715,7 +715,7 @@ function wechsleZiel(i, fertig) {
   zielA = zielB; zielB = i; u = 0;
   beschrifte();
   tabellen();
-  animiere(e => { u = e; neuZeichnen(); }, DAUER_WECHSEL,
+  animiere(e => { u = e; beschrifte(); neuZeichnen(); }, DAUER_WECHSEL,
     () => { zielA = zielB; u = 1; knoepfe(); if (fertig) fertig(); }, 'u');
 }
 
@@ -755,7 +755,7 @@ function rundlaufSchritt() {
 
 function rundlaufStart() {
   rundlauf = { i: 0, uhr: null };
-  knopfSpiel.textContent = 'Anhalten';
+  knopfSpiel.textContent = 'Pause';
   knopfSpiel.setAttribute('aria-pressed', 'true');
   // Von Mercator aus ist die Folge vollständig; steht der Regler woanders,
   // fährt der erste Schritt ihn ohnehin an ein Ende.
@@ -771,17 +771,36 @@ function rundlaufStopp() {
   // Auf das nähere von beiden einrasten, damit ein Netz gezeigt wird.
   if (zielA !== zielB) { if (u < .5) zielB = zielA; else zielA = zielB; u = 1; }
   knoepfe(); beschrifte(); tabellen(); neuZeichnen();
-  knopfSpiel.textContent = 'Abspielen';
+  knopfSpiel.textContent = 'Play';
   knopfSpiel.setAttribute('aria-pressed', 'false');
 }
 
 knopfSpiel.addEventListener('click', () => rundlauf ? rundlaufStopp() : rundlaufStart());
 
+// Die einzige Zeile unter der Karte: was geht gerade in was über, und wie weit.
+// Sie muss drei Fälle treffen — ein Netz steht still, der Regler fährt von
+// Mercator zum Ziel, oder das Ziel selbst wechselt bei stehendem Regler. Der
+// dritte ist der, den eine Beschriftung der beiden Reglerenden nie sagen konnte.
+const jetztEl = document.getElementById('jetzt');
+let letztesJetzt = '';
+
 function beschrifte() {
-  const nenne = n => n.name + (n.jahr ? ', ' + n.jahr : '') + ' \u00b7 ' + n.art;
-  document.getElementById('startName').textContent = nenne(D.netze[M]);
-  document.getElementById('zielName').textContent = nenne(D.netze[zielB]);
   document.getElementById('zielName2').textContent = D.netze[zielB].name;
+
+  const wie = n => n.jahr ? n.jahr + ' \u00b7 ' + n.art : n.art;
+  const steht = n => '<b>' + n.name + '</b><span class="wie">' + wie(n) + '</span>';
+  const geht = (a, b, p) => '<b>' + a.name + '</b><span class="pfeil">\u2192</span><b>'
+    + b.name + '</b><span class="proz">' + Math.round(p * 100) + ' %</span>'
+    + '<span class="wie">' + a.art + ' \u2192 ' + b.art + '</span>';
+
+  const A = D.netze[zielA], B = D.netze[zielB], MER = D.netze[M];
+  let s;
+  if (zielA !== zielB && u > .002 && u < .998) s = geht(A, B, u);   // Zielwechsel
+  else if (t < .002) s = steht(MER);
+  else if (t > .998) s = steht(B);
+  else s = geht(MER, B, t);
+
+  if (s !== letztesJetzt) { jetztEl.innerHTML = s; letztesJetzt = s; }
 }
 
 document.getElementById('cGrad').addEventListener('change', e => { zeigGrad = e.target.checked; neuZeichnen(); });
@@ -798,18 +817,18 @@ document.getElementById('cKurs').addEventListener('change', e => {
 });
 
 // ---------- Tabellen ----------
-const nf = (n, d = 0) => n.toLocaleString('de-DE', { minimumFractionDigits: d, maximumFractionDigits: d });
+const nf = (n, d = 0) => n.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
 function tabellen() {
   const z = zielB;
   // Der Globus steht nicht als eigene Spalte da: er ist unverzerrt, liefert also
   // dieselben Anteile wie das flächentreue Netz. Die zweite Spalte ist beides.
   const spalten = NETZ.length;
   document.getElementById('tKont').innerHTML =
-    '<tr><th>Kontinent</th><th class="z">Mercator</th>' +
-    '<th class="z">Equal Earth und Globus</th><th class="z">Einwohner</th></tr>' +
+    '<tr><th>Continent</th><th class="z">Mercator</th>' +
+    '<th class="z">Equal Earth and globe</th><th class="z">Population</th></tr>' +
     D.kontinente.map(r => '<tr><td>' + r[0] + '</td>' +
       r.slice(1, 1 + spalten).map(v => '<td class="z">' + nf(v, 1) + ' %</td>').join('') +
-      '<td class="z">' + nf(r[1 + spalten]) + ' Mio</td></tr>').join('');
+      '<td class="z">' + nf(r[1 + spalten]) + ' m</td></tr>').join('');
 
   // Sortiert wird nach der absolut gewonnenen oder verlorenen Bildfläche, nicht
   // nach Prozent: sonst stünden auf der Gewinnerseite nur winzige Äquatorländer,
@@ -818,12 +837,12 @@ function tabellen() {
     .map(l => ({ l, v: l.faktor[z] / l.faktor[M] - 1, d: l.wahr * (l.faktor[z] - l.faktor[M]) }))
     .sort((a, b) => a.d - b.d);
   const tab = (titel, zeilen) =>
-    '<tr><th>' + titel + '</th><th class="z">Fläche</th><th class="z">Bildanteil</th></tr>' +
+    '<tr><th>' + titel + '</th><th class="z">Area</th><th class="z">Image share</th></tr>' +
     zeilen.map(({ l, v }) => '<tr><td>' + l.name + '</td><td class="z">' +
-      nf(l.wahr / 1e6, 2) + ' Mio km²</td><td class="z">' +
-      (v >= 0 ? '+' : '−') + nf(Math.abs(v) * 100) + ' %</td></tr>').join('');
-  document.getElementById('tVerlust').innerHTML = tab('verliert Bildfläche', kandidaten.slice(0, 8));
-  document.getElementById('tGewinn').innerHTML = tab('gewinnt Bildfläche', kandidaten.slice(-8).reverse());
+      nf(l.wahr / 1e6, 2) + ' m km²</td><td class="z">' +
+      (v >= 0 ? '+' : '\u2212') + nf(Math.abs(v) * 100) + ' %</td></tr>').join('');
+  document.getElementById('tVerlust').innerHTML = tab('loses image area', kandidaten.slice(0, 8));
+  document.getElementById('tGewinn').innerHTML = tab('gains image area', kandidaten.slice(-8).reverse());
 }
 
 // ---------- Tooltip ----------
@@ -858,14 +877,14 @@ function treffer(px, py) {
 function zeigeTip(l, ev) {
   const f = Math.exp(farbwert(l));
   const ab = Math.round(Math.abs(f - 1) * 100);
-  const wo = farbeFest ? 'auf Mercator ' : '';
-  const satz = ab < 3 ? wo + 'so gross wie zustehend'
-    : f > 1 ? wo + nf(ab) + ' % mehr Bildfläche als zustehend'
-            : wo + nf(ab) + ' % weniger Bildfläche als zustehend';
+  const wo = farbeFest ? ' on Mercator' : '';
+  const satz = ab < 3 ? 'the size it is due' + wo
+    : f > 1 ? nf(ab) + ' % more image area than it is due' + wo
+            : nf(ab) + ' % less image area than it is due' + wo;
   tip.innerHTML = '<div class="n">' + l.name + '</div>' +
-    '<div class="m">' + nf(l.wahr / 1e6, 3) + ' Mio km²' +
-    (l.einwohner ? ' · ' + nf(l.einwohner / 1e6, 1) + ' Mio Einw.' : '') + '</div>' +
-    '<div class="f">' + satz + '<br>Faktor ' + nf(f, 2) + '</div>';
+    '<div class="m">' + nf(l.wahr / 1e6, 3) + ' m km²' +
+    (l.einwohner ? ' \u00b7 ' + nf(l.einwohner / 1e6, 1) + ' m people' : '') + '</div>' +
+    '<div class="f">' + satz + '<br>factor ' + nf(f, 2) + '</div>';
   tip.style.left = ev.clientX + 'px';
   tip.style.top = ev.clientY + 'px';
   tip.style.opacity = '1';
