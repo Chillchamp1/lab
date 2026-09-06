@@ -545,9 +545,14 @@ function zeichne() {
     ctx.globalAlpha = 1;
   }
   if (zeigTissot) {
-    ctx.fillStyle = 'rgba(22,24,29,.10)';
-    ctx.strokeStyle = 'rgba(22,24,29,.42)';
-    ctx.lineWidth = 1.1 / skala;
+    // Zurückhaltender als früher (.10/.42 bei 1,1 px). Die Kreise sitzen jetzt
+    // auf den Kreuzungen des Gradnetzes, und dort liegt ohnehin schon Linie auf
+    // Linie; kräftig gezogen ergäbe das einen Knoten. Ihre Aussage steckt in
+    // Grösse und Form, nicht in der Deckkraft — sie müssen nur eine Spur
+    // deutlicher sein als das Gradnetz (.19), auf dem sie stehen.
+    ctx.fillStyle = 'rgba(22,24,29,.055)';
+    ctx.strokeStyle = 'rgba(22,24,29,.26)';
+    ctx.lineWidth = .9 / skala;
     for (let i = 0; i < tissot.abschnitt.length; i++) {
       const al = zugAlpha(tissot, i);
       if (al < .02) continue;

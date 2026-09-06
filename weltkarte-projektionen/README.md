@@ -77,6 +77,36 @@ Achtel des ursprünglichen Tempos: die Bewegung trägt die eigentliche Aussage,
 und beim Aufwickeln gibt es viel zu sehen. Die Standzeit ist dabei unverändert
 geblieben — sie ist keine Geschwindigkeit.
 
+## Wo die Kreise stehen
+
+Die Verzerrungskreise sassen anfangs alle 40° Länge — also **neben** dem
+Gradnetz, das alle 30° gezogen wird. 30 der 45 Kreise trafen keine Kreuzung,
+der schlimmste lag 10° daneben. Das sah aus wie zwei Raster übereinander, die
+nichts miteinander zu tun haben.
+
+Jetzt sitzt jeder Kreis auf einer Kreuzung: Breiten −60°, −30°, 0°, 30°, 60° —
+jeder gezeichnete Breitenkreis —, Längen −150°, −90°, −30°, 30°, 90°, 150° —
+jeder zweite gezeichnete Meridian. Abstand zur nächsten Kreuzung: **0**.
+
+Warum in der Länge nur jeder zweite? Alle 30° wären es 60 Kreise, und die
+brächten nichts dazu: auf beiden ebenen Netzen hängt die Flächenverzerrung
+allein von der Breite ab, in einer Zeile sieht also einer aus wie der nächste.
+Sechs Spalten reichen, um die Scherung zum Kartenrand hin mitzuzeigen — auf
+Equal Earth ist genau das an den äusseren Spalten zu sehen. ±180° bleibt frei:
+dort läge ein Kreis auf der Nahtstelle der Karte und liefe als Streifen quer
+durchs Bild.
+
+Versetzt statt in Spalten — jede zweite Zeile um 30° geschoben — wäre die
+gleichmässigere Verteilung, aber die schlechtere Karte: die Aussage steckt
+darin, dass die Kreise **nach oben** wachsen, und dafür will man eine Spalte
+mit dem Auge hochfahren können.
+
+Leiser sind sie ausserdem: Füllung 0,055 statt 0,10, Umriss 0,26 statt 0,42,
+Strich 0,9 px statt 1,1. Gemessen als mittlere Abdunklung, die die Kreisebene
+aufs fertige Bild legt, sind das **0,32 statt 0,94** — gut ein Drittel. Sie
+müssen nur eine Spur deutlicher sein als das Gradnetz (0,19), auf dem sie
+stehen; sie sagen ihre Sache über Grösse und Form, nicht über Deckkraft.
+
 ## Die Kennzahl
 
 Nicht der lokale Flächenmassstab (bei Mercator `sec²φ`), sondern der **Anteil an
@@ -98,7 +128,8 @@ Nigeria 0,43.
   kann. Dort bleibt jeder ein Kreis und wird nur grösser — gleich stark gedehnt
   in alle Richtungen, also bleiben Winkel und örtliche Form erhalten. Auf einem
   flächentreuen Netz sind alle gleich gross und zu Ellipsen geschert. Ein
-  mitlaufender Satz unter der Karte sagt, was gerade zu sehen ist.
+  mitlaufender Satz unter der Karte sagt, was gerade zu sehen ist. Wo sie
+  stehen und wie laut, steht unter [Wo die Kreise stehen](#wo-die-kreise-stehen).
 - **Zwei Flugstrecken**, Loxodrome gegen Grosskreis: die praktische Folge
   daraus. Weil Winkel stimmen, ist eine Linie konstanten Kompasskurses auf
   Mercator eine Gerade — nachgemessen weicht sie um **0,00 %** der
