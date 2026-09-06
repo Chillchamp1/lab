@@ -3,12 +3,16 @@
 → **https://chillchamp1.github.io/lab/usa-wahl-2024/**
 
 Die US-Präsidentschaftswahl 2024 auf Ebene der Countys. Ein Regler verzieht die
-Karte von der Fläche zur Einwohnerzahl; Alaska und Hawaii stehen oben, im selben
-Massstab. Umschaltbar zwischen einer Skala für den Vorsprung und der üblichen
-Sieger-Einfärbung.
+Karte von der Fläche zur Einwohnerzahl, ein Abspiel-Knopf lässt den Übergang in
+Schleife laufen. Hawaii und Alaska stehen oben, im selben Massstab, in jedem
+Zustand ans Festland herangerückt — die Einsätze sitzen deshalb nicht fest,
+sondern werden für Landkarte und Kartogramm getrennt ausgerichtet, weil Alaska
+zwischen beiden um das Zehnfache schrumpft. Auch der Bildausschnitt zieht mit,
+sonst bliebe im Kartogramm oben eine grosse leere Fläche stehen. Umschaltbar
+zwischen einer Skala für den Vorsprung und der üblichen Sieger-Einfärbung.
 
-Trump gewann **2661 der 3109 Countys**, Harris **448**. Bei den Stimmen stand es
-76,92 zu 74,55 Millionen. Diese Lücke zwischen gewonnener Fläche und gewonnenen
+Trump gewann **2662 der 3114 Gebiete**, Harris **452**. Bei den Stimmen stand es
+77,29 zu 75,01 Millionen — landesweit trennt beide nur 1,5 Punkte. Diese Lücke zwischen gewonnener Fläche und gewonnenen
 Stimmen ist der ganze Punkt der Karte: das rote Meer der Landkarte schrumpft im
 Kartogramm auf ein Netz zwischen den Ballungsräumen zusammen.
 
@@ -119,8 +123,9 @@ belegen — nach dem ersten Durchgang sind sie gewachsen und werden auflösbar.
 Geometrie und Bevölkerung sind amtlich. Die Ergebnisse sind es **nicht**: in
 den USA führt keine Bundesbehörde die Wahlergebnisse zusammen, Wahlen sind
 Sache der Staaten. Benutzt wird eine gepflegte Sammlung. Als Gegenprobe ergeben
-Festland und DC 76,92 Millionen Stimmen für Trump und 74,55 Millionen für
-Harris; die Differenz zum landesweiten Ergebnis entspricht Alaska und Hawaii.
+alle Gebiete zusammen 77,29 Millionen Stimmen für Trump und 75,01 Millionen für
+Harris — das landesweite Ergebnis. Alaskas Anteil daran ist die Summe seiner
+vierzig Wahlbezirke.
 Eine akademisch dokumentierte Alternative wäre das
 [MIT Election Lab](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/VOQCHQ).
 

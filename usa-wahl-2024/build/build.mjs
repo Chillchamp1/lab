@@ -42,6 +42,7 @@ const D = {
   gx: nutz.gx, gy: nutz.gy, kx: nutz.kx, ky: nutz.ky,
   idx: nutz.idx, ringe: nutz.ringe, ringzahl: nutz.ringzahl,
   lut: LUT, countys: kompakt,
+  sichtGeo: nutz.sichtGeo, sichtKar: nutz.sichtKar,
 };
 
 const zahl = n => Math.round(n).toLocaleString('de-DE');
@@ -127,6 +128,9 @@ in diesen ${(harrisC.length / daten.length * 100).toFixed(0)} Prozent der Gebiet
 <div class="ends"><span>Fläche</span><span>Einwohner</span></div>
 <div class="ctrl">
   <input type="range" id="reg" min="0" max="1000" value="0" step="1" aria-label="Verzerrung zwischen Fläche und Einwohnerzahl">
+  <div class="seg">
+    <button id="bPlay" aria-pressed="false">Abspielen</button>
+  </div>
   <div class="seg">
     <button id="bF" aria-pressed="true">Fläche</button>
     <button id="bE" aria-pressed="false">Einwohner</button>
@@ -279,6 +283,9 @@ function zeichne(){
     }
     pfade[i].setAttribute('d',teile.join(''));
   }
+  // Ausschnitt mitziehen, damit die Grafik in beiden Zuständen dicht bleibt
+  const v=D.sichtGeo.map((g,k)=>g+(D.sichtKar[k]-g)*t);
+  map.setAttribute('viewBox', v[0].toFixed(0)+' '+v[1].toFixed(0)+' '+v[2].toFixed(0)+' '+v[3].toFixed(0));
 }
 function faerbe(){
   for(let i=0;i<pfade.length;i++)
@@ -305,8 +312,39 @@ function animiere(ziel){
     if(p<1) requestAnimationFrame(schritt);
   })(t0);
 }
-bF.addEventListener('click',()=>animiere(0));
-bE.addEventListener('click',()=>animiere(1));
+bF.addEventListener('click',()=>{ halte(); animiere(0) });
+bE.addEventListener('click',()=>{ halte(); animiere(1) });
+
+// Endlosschleife zwischen Fläche und Einwohnerzahl, mit Halt an beiden Enden.
+const bPlay=document.getElementById('bPlay');
+let laeuft=false, phase=0, letzte=performance.now();
+function halte(){
+  if(!laeuft) return;
+  laeuft=false; bPlay.textContent='Abspielen'; bPlay.setAttribute('aria-pressed','false');
+}
+bPlay.addEventListener('click',()=>{
+  laeuft=!laeuft;
+  bPlay.textContent = laeuft ? 'Pause' : 'Abspielen';
+  bPlay.setAttribute('aria-pressed', laeuft?'true':'false');
+  letzte=performance.now();
+  // dort einsteigen, wo der Regler steht: Vorwaertsschenkel der Schleife
+  if(laeuft) phase = 0.15 + t * 0.35;
+});
+function takt(jetzt){
+  const dt=Math.min(64, jetzt-letzte); letzte=jetzt;
+  if(laeuft){
+    phase=(phase+dt/5200)%1;
+    let v;
+    if(phase<0.15) v=0;
+    else if(phase<0.5) v=(phase-0.15)/0.35;
+    else if(phase<0.65) v=1;
+    else v=1-(phase-0.65)/0.35;
+    setze(v<0.5?4*v*v*v:1-Math.pow(-2*v+2,3)/2);
+  }
+  requestAnimationFrame(takt);
+}
+requestAnimationFrame(takt);
+reg.addEventListener('pointerdown', halte);
 function setzeModus(m){
   modus=m;
   mVor.setAttribute('aria-pressed', m==='vorsprung'?'true':'false');

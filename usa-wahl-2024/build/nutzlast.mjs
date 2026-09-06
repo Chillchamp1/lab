@@ -5,18 +5,22 @@ import { packe } from './code.mjs';
 const BREITE = 10000;
 const CACHE = 'kartogramm-cache.json';
 
-// Legt Alaska und Hawaii über dem Festland ab, in Kilometern des gemeinsamen
-// Massstabs. Verankert wird am Schwerpunkt: Alaska schrumpft dadurch an Ort
-// und Stelle, statt in eine Ecke zu wandern.
-const PLATZ = {
-  alaska: { x: 1150, y: -1180 },
-  hawaii: { x: 3650, y: -720 },
-};
+// Abstände in Kilometern des gemeinsamen Massstabs. Senkrecht knapp, damit
+// die Einsätze am Festland kleben; waagerecht grosszügiger, weil Alaskas
+// Aleutenkette sonst optisch mit Hawaiis Inseln verschmilzt.
+const LUECKE_Y = 130, LUECKE_X = 420;
 
-function schwerpunkt(X, Y) {
-  let cx = 0, cy = 0;
-  for (let i = 0; i < X.length; i++) { cx += X[i]; cy += Y[i]; }
-  return { cx: cx / X.length, cy: cy / Y.length };
+function rahmen(X, Y) {
+  let a = Infinity, b = -Infinity, c = Infinity, d = -Infinity;
+  for (let i = 0; i < X.length; i++) {
+    if (X[i] < a) a = X[i]; if (X[i] > b) b = X[i];
+    if (Y[i] < c) c = Y[i]; if (Y[i] > d) d = Y[i];
+  }
+  return { minX: a, maxX: b, minY: c, maxY: d, w: b - a, h: d - c };
+}
+
+function schiebe(X, Y, dx, dy) {
+  for (let i = 0; i < X.length; i++) { X[i] += dx; Y[i] += dy; }
 }
 
 export function baueNutzlast({ gitter = 2000, durchgaenge = 6, log = () => {} } = {}) {
@@ -48,28 +52,43 @@ export function baueNutzlast({ gitter = 2000, durchgaenge = 6, log = () => {} } 
     log('  Kartogramm in ' + CACHE + ' abgelegt');
   }
 
-  // Einsätze an ihren Platz schieben, in beiden Zuständen gleich
+  // Die Einsätze werden in jedem Zustand einzeln ans Festland herangerückt.
+  // Wären sie fest verankert, klebte es entweder auf der Landkarte oder im
+  // Kartogramm: Alaska schrumpft zwischen beiden auf ein Zehntel.
+  // Reihenfolge über dem Festland: Hawaii links, Alaska rechts daneben.
   const verschoben = {};
   for (const name of ['conus', 'alaska', 'hawaii']) {
     const g = r[name];
-    const X = g.X.slice(), Y = g.Y.slice(), gX = g.geoX.slice(), gY = g.geoY.slice();
-    if (PLATZ[name]) {
-      const zielX = PLATZ[name].x * 1000, zielY = PLATZ[name].y * 1000;
-      for (const [px, py] of [[X, Y], [gX, gY]]) {
-        const { cx, cy } = schwerpunkt(px, py);
-        for (let i = 0; i < px.length; i++) { px[i] += zielX - cx; py[i] += zielY - cy; }
-      }
-    } else {
-      // Festland: linke obere Ecke der Geografie auf den Ursprung
-      let minX = Infinity, minY = Infinity;
-      for (let i = 0; i < gX.length; i++) { if (gX[i] < minX) minX = gX[i]; if (gY[i] < minY) minY = gY[i]; }
-      const mitteGeo = schwerpunkt(gX, gY), mitteKar = schwerpunkt(X, Y);
-      for (let i = 0; i < gX.length; i++) { gX[i] -= minX; gY[i] -= minY; }
-      // Kartogramm auf denselben Schwerpunkt legen wie die Geografie
-      const dx = (mitteGeo.cx - minX) - mitteKar.cx, dy = (mitteGeo.cy - minY) - mitteKar.cy;
-      for (let i = 0; i < X.length; i++) { X[i] += dx; Y[i] += dy; }
+    verschoben[name] = {
+      gebiete: g.gebiete, daten: g.daten,
+      X: g.X.slice(), Y: g.Y.slice(), geoX: g.geoX.slice(), geoY: g.geoY.slice(),
+    };
+  }
+
+  // Festland: Geografie auf den Ursprung, Kartogramm auf denselben Schwerpunkt
+  {
+    const c = verschoben.conus;
+    const rG = rahmen(c.geoX, c.geoY);
+    schiebe(c.geoX, c.geoY, -rG.minX, -rG.minY);
+    const rG2 = rahmen(c.geoX, c.geoY), rK = rahmen(c.X, c.Y);
+    schiebe(c.X, c.Y,
+      (rG2.minX + rG2.w / 2) - (rK.minX + rK.w / 2),
+      (rG2.minY + rG2.h / 2) - (rK.minY + rK.h / 2));
+  }
+
+  // Einsätze je Zustand: Unterkante knapp über das Festland, von links nach
+  // rechts aufgereiht.
+  for (const zustand of [['geoX', 'geoY'], ['X', 'Y']]) {
+    const [fx, fy] = zustand;
+    const rC = rahmen(verschoben.conus[fx], verschoben.conus[fy]);
+    const unten = rC.minY - LUECKE_Y * 1000;
+    let links = rC.minX;
+    for (const name of ['hawaii', 'alaska']) {
+      const g = verschoben[name];
+      const rr = rahmen(g[fx], g[fy]);
+      schiebe(g[fx], g[fy], links - rr.minX, (unten - rr.maxY));
+      links += rr.w + LUECKE_X * 1000;
     }
-    verschoben[name] = { gebiete: g.gebiete, daten: g.daten, X, Y, geoX: gX, geoY: gY };
   }
 
   // Alles zu einer Knotenliste zusammenfassen
@@ -106,9 +125,22 @@ export function baueNutzlast({ gitter = 2000, durchgaenge = 6, log = () => {} } 
   };
   const G = raster(alleGeoX, alleGeoY), K = raster(alleKarX, alleKarY);
 
+  // Bildausschnitt je Zustand. Im Kartogramm ist Alaska ein Fleck; wäre der
+  // Ausschnitt fest, bliebe oben eine grosse leere Fläche stehen.
+  const kasten = (qx, qy) => {
+    let a = Infinity, b = -Infinity, c = Infinity, d = -Infinity;
+    for (let i = 0; i < qx.length; i++) {
+      if (qx[i] < a) a = qx[i]; if (qx[i] > b) b = qx[i];
+      if (qy[i] < c) c = qy[i]; if (qy[i] > d) d = qy[i];
+    }
+    const luft = (b - a) * 0.012;
+    return [Math.round(a - luft), Math.round(c - luft), Math.round(b - a + 2 * luft), Math.round(d - c + 2 * luft)];
+  };
+  const sichtGeo = kasten(G.qx, G.qy), sichtKar = kasten(K.qx, K.qy);
+
   const delta = arr => { const o = new Array(arr.length); let v = 0; for (let i = 0; i < arr.length; i++) { o[i] = arr[i] - v; v = arr[i]; } return o; };
   const nutz = {
-    breite: BREITE, hoehe,
+    breite: BREITE, hoehe, sichtGeo, sichtKar,
     gx: packe(delta(G.qx)), gy: packe(delta(G.qy)),
     kx: packe(delta(K.qx)), ky: packe(delta(K.qy)),
     ringe: packe(gebiete.flatMap(g => g.map(rr => rr.length))),
