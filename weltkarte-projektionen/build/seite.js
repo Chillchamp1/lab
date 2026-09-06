@@ -81,8 +81,15 @@ function ebene(lo, la) {
            cx: new Float32Array(n), cy: new Float32Array(n) };
 }
 
-// Blickmitte des Globus. Vorbelegt auf Afrika und Europa — das ist der Streit.
-let dreheLam = 10 * RAD, drehePhi = 20 * RAD;
+// Blickmitte des Globus. In der Länge auf Afrika und Europa — das ist der
+// Streit. In der Breite aber auf den Äquator, und das ist keine Kleinigkeit:
+// der Flächenmassstab der Kugelansicht ist der Kosinus des Abstands zur
+// Bildmitte, ein Schwenk nach Norden rückte also die Nordhalbkugel näher an
+// den unverzerrten Punkt und schöbe die Südhalbkugel zum schrumpfenden Rand.
+// Auf einer Seite über nördliche Überrepräsentation wäre ausgerechnet der
+// Massstab dann wieder nach Norden geneigt. Bei 0° ist er zwischen den
+// Halbkugeln symmetrisch.
+let dreheLam = 15 * RAD, drehePhi = 0;
 
 // Die Rückseite bekommt zwei Lagen, weil das Aufwickeln und die fertige Kugel
 // Verschiedenes brauchen.
@@ -229,21 +236,27 @@ const LAND = D.laender.map((r, i) => {
 const misch = (a, b, f) => a.map((v, i) => Math.round(v + (b[i] - v) * f));
 const hex = c => '#' + c.map(v => Math.max(0, Math.min(255, v)).toString(16).padStart(2, '0')).join('');
 
-// Stützstellen statt zweier Endpunkte: der direkte Weg von Blaugrün nach
-// Rostrot führt im RGB-Raum durch ein schlammiges Grau. Die Mitte ist bewusst
-// ein satter Sandton und kein Papierweiss — bei einem flächentreuen Netz
-// stehen alle Länder auf 1, und die Karte muss dann noch auf dem Papier zu
-// sehen sein. Viel ist es nicht: 1,25:1 gegen das Papier, die schwächste der
-// 65 Stufen. Das ist der Preis dafür, dass alle drei Ansichten gleich
-// aussehen, und er fällt in allen dreien gleich an.
+// Blau gegen Orange, nicht Türkis gegen Rost. Nachgerechnet mit der
+// Simulation von Machado u. a. (2009): bei Protanopie fallen bei Türkis/Rost
+// zwei acht Stufen auseinanderliegende Farben auf einen RGB-Abstand von 20
+// zusammen und die beiden Skalenenden auf 104 — mit Blau/Orange sind es 36
+// und 119. Blau gegen Orange ist die farbsicherste divergierende Paarung, und
+// die Zahlen sagen dasselbe.
+//
+// Stützstellen statt zweier Endpunkte: der direkte Weg führt im RGB-Raum durch
+// ein schlammiges Grau. Die Mitte ist ein warmes Hellgrau, kein Papierweiss —
+// auf einem flächentreuen Netz stehen alle Länder auf 1, und die Karte muss
+// dann noch auf dem Papier zu sehen sein. Sie steht mit 1,47:1 gegen das
+// Papier (vorher 1,25:1) und bleibt trotzdem leise genug, dass „stimmt so"
+// nicht wie eine Aussage aussieht.
 const STUETZEN = [
-  [-1.000, [ 18, 105, 122]],
-  [-0.585, [ 74, 154, 163]],
-  [-0.256, [154, 190, 185]],
-  [ 0.000, [222, 211, 186]],
-  [ 0.369, [208, 154, 114]],
-  [ 0.631, [184,  95,  60]],
-  [ 1.000, [141,  48,  30]],
+  [-1.000, [ 12,  84, 128]],
+  [-0.585, [ 62, 136, 178]],
+  [-0.256, [140, 180, 204]],
+  [ 0.000, [201, 195, 185]],
+  [ 0.369, [224, 153,  88]],
+  [ 0.631, [197, 106,  42]],
+  [ 1.000, [138,  57,  16]],
 ];
 const SKALA = [];
 for (let i = 0; i <= 64; i++) {
@@ -265,7 +278,7 @@ const VERHAELTNIS = 1.30;
 let breite = 0, hoehe = 0, dpr = 1, skala = 1, mx = 0, my = 0;
 
 let t = 0, u = 1, zielA = 1, zielB = 1;              // Ziel 1 = Equal Earth
-let zeigGrad = true, zeigTissot = false, zeigKurs = false;
+let zeigGrad = true, zeigTissot = true, zeigKurs = false;
 
 // Normalerweise sagt die Farbe, wie stark die *gerade gezeigte* Darstellung ein
 // Land verzerrt. Festgehalten sagt sie stattdessen, wie stark *Mercator* es
@@ -369,6 +382,63 @@ function istVorn(i) {
 }
 
 const farbwert = l => farbeFest ? l.logF[M] : liveLog[l.i];
+
+// Wo auf dem Balken liegt ein Faktor? Die Skala läuft über ±ln 3.
+const balkenOrt = lf => Math.max(0, Math.min(1, (lf / LN3 + 1) / 2));
+
+// Die Spanne, die gerade auf dem Schirm steht, als Klammer unter dem Balken.
+//
+// Das ist die Antwort auf „Equal Earth hat kaum Kontrast": stimmt, und zwar
+// weil dort nichts zu zeigen ist — jedes Land steht auf 1. Ohne diese Klammer
+// sieht das aus wie eine blasse Karte, mit ihr ist es eine Aussage. Auf
+// Mercator spannt sie fast über den ganzen Balken, auf Equal Earth fällt sie
+// zu einem Strich in der Mitte zusammen.
+//
+// Gezählt wird derselbe Satz wie in den Tabellen: über 150.000 km², ohne die
+// Antarktis. Ohne die Schwelle hiesse das Minimum auf Mercator „Nauru 0,42×" —
+// 21 km² gross, auf dem Schirm nicht zu finden, und auf zwei Stellen derselbe
+// Wert wie Nigeria. Die Schranke kostet also nichts und liefert einen Namen,
+// den man auf der Karte auch sieht. Ohne die Antarktis, weil ihr Wert auf
+// Mercator dauerhaft am Anschlag klebte.
+//
+// Auf der Kugel zählt ausserdem nur die zugewandte Seite. Ein Land dahinter
+// steht rechnerisch auf 0 — es als Minimum zu melden hiesse, über etwas zu
+// reden, das gar nicht im Bild ist.
+const spanneEl = document.getElementById('spanne');
+const spanneTextEl = document.getElementById('spanneText');
+let letzteSpanne = '';
+
+function spanneZeigen() {
+  let lo = Infinity, hi = -Infinity, lL = null, hL = null;
+  const gA = globusAnteil();
+  for (const l of LAND) {
+    if (l.iso === 'ATA' || l.wahr <= 150000) continue;
+    if (gA > .5 && !farbeFest && !istVorn(l.i)) continue;
+    const v = farbwert(l);
+    if (!Number.isFinite(v)) continue;
+    if (v < lo) { lo = v; lL = l; }
+    if (v > hi) { hi = v; hL = l; }
+  }
+  if (lL === null) return;
+  const a = balkenOrt(lo), b = balkenOrt(hi);
+  spanneEl.style.left = (a * 100).toFixed(2) + '%';
+  spanneEl.style.width = Math.max(.4, (b - a) * 100).toFixed(2) + '%';
+
+  // Auf der Kugel ist der Wert keine Eigenschaft des Landes, sondern des Orts
+  // im Bild: cos des Abstands zur Blickmitte. Jedes Land, das den Rand
+  // berührt, misst dort nahe null — „Vereinigte Staaten 0,00×" wäre zwar die
+  // gemessene Wahrheit, sagte aber das Falsche. Auf der Kugel nennt die Zeile
+  // deshalb Orte statt Namen.
+  const f = v => Math.exp(v).toFixed(2);
+  const eng = hi - lo < Math.log(1.02);
+  const s = eng
+    ? 'on screen now: every country at ' + f((lo + hi) / 2) + '\u00d7 — nothing is distorted here'
+    : (gA > .5 && !farbeFest)
+      ? 'on screen now: ' + f(hi) + '\u00d7 where you look straight down, down to '
+        + f(lo) + '\u00d7 at the rim'
+      : 'on screen now: ' + lL.name + ' ' + f(lo) + '\u00d7 \u2026 ' + hL.name + ' ' + f(hi) + '\u00d7';
+  if (s !== letzteSpanne) { spanneTextEl.textContent = s; letzteSpanne = s; }
+}
 
 const dreiFach = (m, a, b) => m + ((a + (b - a) * u) - m) * t;
 
@@ -545,14 +615,14 @@ function zeichne() {
     ctx.globalAlpha = 1;
   }
   if (zeigTissot) {
-    // Zurückhaltender als früher (.10/.42 bei 1,1 px). Die Kreise sitzen jetzt
-    // auf den Kreuzungen des Gradnetzes, und dort liegt ohnehin schon Linie auf
-    // Linie; kräftig gezogen ergäbe das einen Knoten. Ihre Aussage steckt in
-    // Grösse und Form, nicht in der Deckkraft — sie müssen nur eine Spur
-    // deutlicher sein als das Gradnetz (.19), auf dem sie stehen.
-    ctx.fillStyle = 'rgba(22,24,29,.055)';
-    ctx.strokeStyle = 'rgba(22,24,29,.26)';
-    ctx.lineWidth = .9 / skala;
+    // Noch einmal leiser, weil sie jetzt von Anfang an mitlaufen und nicht mehr
+    // eine Sache sind, die man eigens einschaltet. Sie sitzen auf den Kreuzungen
+    // des Gradnetzes, wo ohnehin Linie auf Linie liegt; kräftig gezogen ergäbe
+    // das einen Knoten. Ihre Aussage steckt in Grösse und Form, nicht in der
+    // Deckkraft — eine Spur über dem Gradnetz (.19) reicht.
+    ctx.fillStyle = 'rgba(22,24,29,.04)';
+    ctx.strokeStyle = 'rgba(22,24,29,.22)';
+    ctx.lineWidth = .8 / skala;
     for (let i = 0; i < tissot.abschnitt.length; i++) {
       const al = zugAlpha(tissot, i);
       if (al < .02) continue;
@@ -562,15 +632,22 @@ function zeichne() {
     ctx.globalAlpha = 1;
   }
   if (zeigKurs) {
-    ctx.lineWidth = 2 / skala; ctx.lineCap = 'round';
-    for (let i = 0; i < kurse.abschnitt.length; i++) {
-      const al = zugAlpha(kurse, i);
-      if (al < .02) continue;
-      ctx.globalAlpha = al;
-      const gk = kurse.art[i] === 'gk';
-      ctx.strokeStyle = gk ? '#16181d' : '#8a5a2b';
-      ctx.setLineDash(gk ? [] : [6 / skala, 5 / skala]);
-      ctx.beginPath(); zug(kurse, i); ctx.stroke();
+    // Erst eine Fassung in Papierfarbe, dann die Linie darauf. Das Ockergelb der
+    // Kurslinie steht gegen das orange Ende der Skala nur auf 1,34:1 — über
+    // Grönland auf Mercator wäre sie sonst kaum zu sehen. Die Fassung löst das
+    // unabhängig von der Füllung, so wie die Beschriftung darunter es auch tut.
+    ctx.lineCap = 'round';
+    for (const fassung of [true, false]) {
+      ctx.lineWidth = (fassung ? 4.4 : 2) / skala;
+      for (let i = 0; i < kurse.abschnitt.length; i++) {
+        const al = zugAlpha(kurse, i);
+        if (al < .02) continue;
+        ctx.globalAlpha = fassung ? al * .85 : al;
+        const gk = kurse.art[i] === 'gk';
+        ctx.strokeStyle = fassung ? hex(PAPIER_RGB) : (gk ? '#16181d' : '#8a5a2b');
+        ctx.setLineDash(fassung ? [] : (gk ? [] : [6 / skala, 5 / skala]));
+        ctx.beginPath(); zug(kurse, i); ctx.stroke();
+      }
     }
     ctx.globalAlpha = 1;
     ctx.setLineDash([]);
@@ -599,6 +676,7 @@ function zeichne() {
   }
 
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+  spanneZeigen();
   hinweis();
 }
 
@@ -633,11 +711,14 @@ function hinweis() {
   } else if (t < .12) {
     s = '<b>Every circle has stayed a circle</b> — only the sizes differ. That is Mercator\u2019s '
       + 'strength: the stretching is equal in every direction, so angles and local shape are '
-      + 'right. The straight course line follows from it. It is paid for in size.';
+      + 'right. The straight course line follows from it. It is paid for in size: from the '
+      + 'equator to 60° the areas grow 1.00, 1.34, 4.10. (Not perfectly circles, measured — '
+      + '1.25:1 at 60°. These are 800 km wide, and a Tissot indicatrix is infinitesimal.)';
   } else if (t > .88) {
-    s = '<b>Every circle is now the same size</b> — sheared into an ellipse in return. The '
-      + 'area is right everywhere, the shape is not. That is the trade a flat map cannot '
-      + 'get around.';
+    s = '<b>Every circle is now the same size</b> — all thirty to the last digit, 0.0000 % '
+      + 'spread — sheared into an ellipse in return, from 1.23:1 to 3.16:1. Even on the '
+      + 'equator it is 1.36:1, so Equal Earth is nowhere conformal. That is the trade a flat '
+      + 'map cannot get around.';
   } else {
     s = 'In between: the circles even out in size and lose their round shape doing it. On a '
       + 'flat map you cannot have both at once.';
