@@ -28,5 +28,11 @@
     "titel": "164 zu 1 für eine neue Weltkarte",
     "beschreibung": "Die UN hat am 4. September 2026 auf Antrag Togos für flächentreue Weltkarten gestimmt. Ein Regler blendet von Mercator auf Equal Earth um und färbt jedes Land danach, wie viel Bildfläche es zu viel oder zu wenig bekommt.",
     "datum": "2026-09"
+  },
+  {
+    "slug": "usa-wahlleute-2024",
+    "titel": "312 zu 226, entschieden in 3 Staaten",
+    "beschreibung": "Dieselbe Wahl nach Wahlleuten statt nach Stimmen. Drei Staaten mit zusammen 44 Wahlleuten hätten das Ergebnis gekippt.",
+    "datum": "2026-09"
   }
 ]
