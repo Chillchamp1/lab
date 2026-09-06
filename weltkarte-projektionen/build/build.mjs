@@ -77,12 +77,24 @@ body{margin:0;background:var(--papier);color:var(--tinte);
 /* ---- Der Kopf der Seite: Karte, Zustandszeile, Legende, Bedienung ---- */
 figure{margin:0 -8px}
 canvas{width:100%;height:auto;display:block;background:var(--karte);border-radius:2px;touch-action:pan-y}
+/* Solange der Globus im Bild ist, gehört der Zug der Kugel, nicht der Seite.
+   touch-action wird dafür in zeigerHaltung() umgeschaltet. */
 
-.tri{display:block;width:100%;max-width:300px;height:auto;margin:22px 0 0;overflow:visible}
+.triWrap{position:relative;width:100%;max-width:300px;margin:22px 0 0}
+.tri{display:block;width:100%;height:auto;overflow:visible;cursor:grab;touch-action:none}
+.tri.zieht{cursor:grabbing}
 .tri .kante{fill:none;stroke:var(--linie);stroke-width:1.5}
 .tri .ecke{fill:var(--linie)}
 .tri text{fill:var(--leise);font-family:inherit;font-size:12px}
-.tri .kugel{fill:var(--tinte);stroke:var(--papier);stroke-width:2.5}
+.tri .kugel{fill:var(--tinte);stroke:var(--papier);stroke-width:2.5;pointer-events:none}
+.tri .feld{fill:transparent}
+.triSpiel{position:absolute;left:50%;top:63.4%;transform:translate(-50%,-50%);
+ width:52px;height:52px;border-radius:50%;border:1px solid var(--linie);
+ background:var(--papier);color:var(--leise);font:inherit;font-size:12px;
+ cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.triSpiel:hover{border-color:var(--leise);color:var(--tinte)}
+.triSpiel[aria-pressed="true"]{background:var(--tinte);color:var(--papier);border-color:var(--tinte)}
+.triSpiel:focus-visible{outline:2px solid var(--akzent);outline-offset:2px}
 
 .skala{margin:16px 0 0;max-width:460px}
 .skala .titel{display:block;color:var(--leise);font-size:12.5px;margin:0 0 6px}
@@ -112,11 +124,6 @@ canvas{width:100%;height:auto;display:block;background:var(--karte);border-radiu
 .seg button[aria-pressed="true"]{background:var(--tinte);color:var(--papier)}
 .seg button:focus-visible{outline:2px solid var(--akzent);outline-offset:-2px}
 .ctrl input[type=range]{flex:1;min-width:190px;accent-color:var(--tinte)}
-.spiel{background:transparent;color:var(--leise);border:1px solid var(--linie);
- border-radius:3px;font:inherit;font-size:13.5px;padding:9px 15px;cursor:pointer;
- white-space:nowrap}
-.spiel[aria-pressed="true"]{background:var(--tinte);color:var(--papier);border-color:var(--tinte)}
-.spiel:focus-visible{outline:2px solid var(--akzent);outline-offset:2px}
 .schalter{display:flex;gap:18px;flex-wrap:wrap;margin:12px 0 0;color:var(--leise);font-size:13.5px}
 .schalter label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
 .schalter input{accent-color:var(--tinte)}
@@ -172,7 +179,9 @@ footer p{margin:0 0 11px}
   </span>
 </div>
 
+<div class="triWrap">
 <svg class="tri" id="tri" viewBox="0 0 330 262" role="img" aria-label="Mercator">
+  <rect class="feld" x="0" y="0" width="330" height="262"/>
   <polygon class="kante" points="165,30 47.2,234 282.8,234"/>
   <circle class="ecke" cx="165" cy="30" r="3"/>
   <circle class="ecke" cx="47.2" cy="234" r="3"/>
@@ -182,11 +191,12 @@ footer p{margin:0 0 11px}
   <text x="282.8" y="253" text-anchor="middle">Equal Earth</text>
   <circle class="kugel" id="kugel" cx="47.2" cy="234" r="6.5"/>
 </svg>
+<button class="triSpiel" id="spiel" aria-pressed="false" aria-label="Play the tour">Play</button>
+</div>
 
 <div class="ctrl">
   <input type="range" id="reg" min="0" max="1000" value="0" step="1" aria-label="Cross-fade between Mercator and the selected projection">
   <div class="seg" id="ziele" role="group" aria-label="Projection"></div>
-  <button class="spiel" id="spiel" aria-pressed="false">Play</button>
 </div>
 <div class="schalter">
   <label><input type="checkbox" id="cGrad" checked> Graticule</label>

@@ -274,8 +274,41 @@ Earth auf Globus: Gewichte 0,5 / 0,25 / 0,25, Kugel bei (131,8 | 89,5) —
 gerechnet 0,5 · 32 + 0,25 · 298 + 0,25 · 165 = 131,75 und
 0,5 · 110 + 0,25 · 110 + 0,25 · 28 = 89,5.
 
-Die Ecken und die drei Kantenmitten sind einzeln nachgeprüft und treffen auf
-die Zehntelstelle.
+Die Ecken, die drei Kantenmitten und der Schwerpunkt sind einzeln nachgeprüft
+und treffen auf die Zehntelstelle.
+
+### Das Dreieck ist auch die Bedienung
+
+Ziehen setzt die Karte, Tippen springt hin — die Umkehrung von `kugelSetzen`:
+aus dem Punkt werden baryzentrische Gewichte, daraus Regler und Ziel. Ausserhalb
+des Dreiecks werden die Gewichte auf null gekappt und neu normiert, ein Zug
+knapp neben einer Kante rastet also auf diese Kante ein statt zu springen.
+
+Die Ränder werden dabei eingerastet: liegt kein Gewicht auf dem Globus, sind
+beide Ziele Equal Earth, und umgekehrt. Ohne das zeigte an der Ecke Equal Earth
+kein Knopf als gedrückt an, obwohl genau dieses Netz zu sehen ist.
+
+Bei der Gelegenheit ist ein alter Fehler aufgefallen: `knoepfe()` prüfte
+`i === zielB && t > .98`. Das leuchtete auch **mitten auf der Kante Equal
+Earth–Globus**, weil der Regler dort ja am Ende steht. Jetzt liest die Funktion
+dieselben Gewichte wie die Kugel und stimmt in jedem Punkt des Dreiecks.
+
+**Play sitzt im Schwerpunkt** (165 | 166) und startet denselben Rundlauf wie
+zuvor: einmal im Kreis, dann rückwärts wieder herum. Der Knopf deckte damit
+aber genau die Stelle ab, an der alle drei Zustände gemischt sind — dort liess
+sich nicht mehr ziehen. Deshalb hängen die Zeiger am Umschlag statt am SVG, und
+ein Zug wird erst ab vier Pixeln einer: ein Tipp auf den Knopf bleibt ein Tipp,
+ein Zug darüber hinweg wird zum Ziehen, und der Klick des Knopfes wird dann
+einmal geschluckt.
+
+### Drehen darf die Seite nicht mitnehmen
+
+Auf dem Telefon rollte der Browser beim Drehen des Globus nebenher die Seite
+mit — man drehte die Kugel, während einem das Menü davonlief. Die Karte hatte
+`touch-action: pan-y`, was genau das erlaubt. Jetzt schaltet `zeigerHaltung()`
+mit: solange der Globus im Bild ist (`globusAnteil() > 0,3`) steht dort `none`
+und der Zug gehört der Kugel, auf den ebenen Netzen bleibt es `pan-y`, damit man
+über der Karte weiterscrollen kann.
 
 Für eine Vorlesesoftware ist ein SVG ein Bild ohne Inhalt. Das Dreieck trägt
 deshalb eine Beschriftung, die dieselbe Aussage in Worten führt und mitläuft —
