@@ -42,8 +42,8 @@ export const lambert = (lam, phi) => [lam, Math.sin(phi)];
 // das sie nennt. Der dritte Zustand ist der Globus, und der entsteht nicht
 // hier, sondern im Browser — er hängt an der Drehung.
 export const NETZE = [
-  { id: 'mercator', name: 'Mercator', jahr: 1569, art: 'conformal', punkt: mercator },
-  { id: 'equalearth', name: 'Equal Earth', jahr: 2018, art: 'equal-area', punkt: equalEarth },
+  { id: 'mercator', name: 'Mercator', jahr: 1569, art: 'made for navigation', punkt: mercator },
+  { id: 'equalearth', name: 'Equal Earth', jahr: 2018, art: 'made for equal area', punkt: equalEarth },
 ];
 
 // Fläche eines geschlossenen Rings auf der Kugel, km². Linienintegral über die

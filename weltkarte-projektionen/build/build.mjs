@@ -47,7 +47,11 @@ const daten = {
     ...NETZE.map(n => ({ id: n.id, name: n.name, jahr: n.jahr, art: n.art })),
     // Der Globus wird nicht hier gerechnet, sondern im Browser aus den
     // Einheitsvektoren auf der Kugel — er hängt an der Drehung.
-    { id: 'globus', name: 'Globe', jahr: null, art: 'undistorted' },
+    // Nicht „undistorted". Die Kugel selbst ist es, ihr Bild auf einem flachen
+    // Schirm aber nicht — und genau das misst die Seite ja mit und schreibt es
+    // eine Zeile tiefer hin (1,00× in der Mitte, 0,00× am Rand). „Unverzerrt"
+    // hätte der eigenen Messung widersprochen.
+    { id: 'globus', name: 'Globe', jahr: null, art: 'the sphere itself, seen from outside' },
   ],
   kappung: +(KAPPUNG / GRAD).toFixed(0),
   gitter: nutz.gitter,
@@ -74,21 +78,19 @@ body{margin:0;background:var(--papier);color:var(--tinte);
 figure{margin:0 -8px}
 canvas{width:100%;height:auto;display:block;background:var(--karte);border-radius:2px;touch-action:pan-y}
 
-.jetzt{margin:14px 0 0;font-size:17px;line-height:1.35}
-.jetzt b{font-weight:600}
-.jetzt .pfeil{color:var(--leise);margin:0 .38em;font-weight:400}
-.jetzt .proz{color:var(--leise);font-size:14px;font-variant-numeric:tabular-nums;margin-left:.5em}
-.jetzt .wie{display:block;color:var(--leise);font-size:13px;margin-top:1px}
+.tri{display:block;width:100%;max-width:300px;height:auto;margin:22px 0 0;overflow:visible}
+.tri .kante{fill:none;stroke:var(--linie);stroke-width:1.5}
+.tri .ecke{fill:var(--linie)}
+.tri text{fill:var(--leise);font-family:inherit;font-size:12px}
+.tri .kugel{fill:var(--tinte);stroke:var(--papier);stroke-width:2.5}
 
-.skala{margin:14px 0 0;max-width:460px}
+.skala{margin:16px 0 0;max-width:460px}
 .skala .titel{display:block;color:var(--leise);font-size:12.5px;margin:0 0 6px}
 .skala .bar{position:relative;display:block;height:10px;border-radius:2px;
  background:linear-gradient(90deg,var(--zuklein),var(--mitte),var(--zugross))}
 .skala .bar i{position:absolute;top:0;bottom:0;width:1px;background:rgba(244,244,242,.7)}
 .skala .bar b{position:absolute;left:0;width:100%;top:calc(100% + 3px);height:3px;
  border-radius:2px;background:var(--tinte);transition:left .12s linear,width .12s linear}
-.skala .jetztwert{display:block;margin-top:5px;color:var(--tinte);font-size:12.5px;
- font-variant-numeric:tabular-nums;min-height:1.2em}
 .skala .marken{position:relative;display:block;height:15px;margin-top:9px;
  color:var(--leise);font-size:11.5px;font-variant-numeric:tabular-nums}
 .skala .marken span{position:absolute;transform:translateX(-50%);white-space:nowrap}
@@ -160,8 +162,6 @@ footer p{margin:0 0 11px}
 
 <figure><canvas id="karte" role="img" aria-label="World map that cross-fades between the Mercator projection, an equal-area projection and a globe. Colour shows how much image area each country gets compared with its true share of the world's land. The numbers are in the tables further down."></canvas></figure>
 
-<p class="jetzt" id="jetzt" aria-live="polite"></p>
-
 <div class="skala">
   <span class="titel">Image area a country gets, against its true share of the world's land</span>
   <span class="bar" aria-hidden="true"><i style="left:18.4%"></i><i style="left:50%"></i><i style="left:81.6%"></i><b id="spanne"></b></span>
@@ -170,8 +170,18 @@ footer p{margin:0 0 11px}
     <span style="left:50%"><b>1×</b></span>
     <span style="left:81.6%">2×</span><span style="left:100%">3×</span>
   </span>
-  <span class="jetztwert" id="spanneText" aria-live="polite"></span>
 </div>
+
+<svg class="tri" id="tri" viewBox="0 0 330 262" role="img" aria-label="Mercator">
+  <polygon class="kante" points="165,30 47.2,234 282.8,234"/>
+  <circle class="ecke" cx="165" cy="30" r="3"/>
+  <circle class="ecke" cx="47.2" cy="234" r="3"/>
+  <circle class="ecke" cx="282.8" cy="234" r="3"/>
+  <text x="165" y="18" text-anchor="middle">Globe</text>
+  <text x="47.2" y="253" text-anchor="middle">Mercator</text>
+  <text x="282.8" y="253" text-anchor="middle">Equal Earth</text>
+  <circle class="kugel" id="kugel" cx="47.2" cy="234" r="6.5"/>
+</svg>
 
 <div class="ctrl">
   <input type="range" id="reg" min="0" max="1000" value="0" step="1" aria-label="Cross-fade between Mercator and the selected projection">

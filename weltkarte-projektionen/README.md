@@ -115,15 +115,15 @@ ihre Sache über Grösse und Form, nicht über Deckkraft.
 Die Karte steht ganz oben, ohne Titel und ohne Vorrede darüber. Wer die Seite
 öffnet, soll das Bild sehen, um das es geht, und nicht erst scrollen.
 
-Darunter steht genau eine Zeile: **was geht gerade in was über**. Sie trifft
-drei Fälle — ein Netz steht still (`Mercator · 1569 · winkeltreu`), der Regler
-fährt von Mercator zum Ziel (`Mercator → Equal Earth · 44 %`), oder das Ziel
-selbst wechselt bei stehendem Regler (`Equal Earth → Globus · 42 %`). Der dritte
-Fall ist der Grund für die Umstellung: vorher standen die Namen der beiden
-Reglerenden links und rechts, und ein Zielwechsel — genau der Übergang, den man
-sonst nirgends bekommt — kam darin schlicht nicht vor.
+Darunter die **Legende**: der Farbbalken mit fünf beschrifteten Marken, und
+darunter das **Dreieck**, das sagt, wo die Karte gerade steht.
 
-Direkt darunter die **Legende**: der Farbbalken mit fünf beschrifteten Marken.
+Text steht dazwischen keiner mehr. Eine Zeile „Mercator → Equal Earth · 44 %"
+stand eine Weile dort; das Dreieck sagt dasselbe genauer und ohne Worte, und
+eine Zeile „on screen now: Gabon 0,42× … Greenland 6,67×" unter dem Balken sagte
+das, was die Klammer auf dem Balken ohnehin zeigt. Beides ist weg. Was die
+Klammer nicht zeigen kann — welches Land wo steht — steht im Tooltip und in den
+Tabellen.
 Die alten Enden waren dabei schlicht falsch beschriftet. Sie sagten „halb so
 viel" und „doppelt so viel"; die Skala läuft aber über `±ln 3`, ihre Enden sind
 also **⅓× und 3×**. Die Marken sitzen jetzt an den logarithmisch richtigen
@@ -201,25 +201,88 @@ unabhängig von der Füllung, so wie die Beschriftung darunter es auch schon tut
 ## Was gerade auf dem Schirm steht
 
 Unter dem Farbbalken sitzt eine Klammer, die die Spanne der gerade gezeigten
-Werte markiert, dazu eine Zeile mit den beiden Enden. Das ist die Antwort auf
-den Eindruck, Equal Earth habe „kaum Kontrast":
+Werte markiert. Das ist die Antwort auf den Eindruck, Equal Earth habe „kaum
+Kontrast":
 
-| Ansicht | Zeile |
+| Ansicht | Klammer |
 |---|---|
-| Mercator | `Gabon 0,42× … Greenland 6,67×` — Klammer über 90 % des Balkens |
-| Equal Earth | `every country at 1,00× — nothing is distorted here` — Klammer fällt zum Strich zusammen |
-| Globus | `1,00× where you look straight down, down to 0,00× at the rim` — Klammer über die linke Hälfte |
+| Mercator | über 94 % des Balkens |
+| Equal Earth | fällt zu einem Strich in der Mitte zusammen |
+| Globus | über die linke Hälfte |
 
-Stimmt also: Equal Earth hat kaum Kontrast, weil es dort nichts zu zeigen
-gibt. Ohne die Klammer sah das aus wie eine blasse Karte, mit ihr ist es eine
+Stimmt also: Equal Earth hat kaum Kontrast, weil es dort nichts zu zeigen gibt.
+Ohne die Klammer sähe das aus wie eine blasse Karte, mit ihr ist es eine
 Aussage.
 
-Gezählt wird derselbe Satz wie in den Tabellen — über 150.000 km², ohne die
-Antarktis. Ohne die Schranke hiesse das Minimum auf Mercator „Nauru 0,42×":
-21 km² gross, auf dem Schirm nicht zu finden, und auf zwei Stellen derselbe
-Wert wie Gabun. Auf der Kugel nennt die Zeile Orte statt Namen, weil der Wert
-dort keine Eigenschaft des Landes ist, sondern des Orts im Bild — jedes Land,
-das den Rand berührt, misst dort nahe null.
+Eine Zeile mit den beiden Enden (`on screen now: Gabon 0,42× … Greenland 6,67×`)
+stand eine Weile darunter und ist wieder weg — sie wiederholte in Worten, was
+die Klammer zeigt. Welches Land wo steht, sagen Tooltip und Tabellen.
+
+Gezählt wird derselbe Satz wie in den Tabellen: über 150.000 km², ohne die
+Antarktis. Ohne die Schranke klebte das Maximum auf Mercator dauerhaft am
+Anschlag, und das Minimum hinge an einer Insel von 21 km². Auf der Kugel zählt
+ausserdem nur die zugewandte Seite — ein Land dahinter steht rechnerisch auf 0
+und sagte über das Bild nichts aus.
+
+## Wie die drei Zustände beschriftet sind
+
+Der Globus hiess eine Weile **„undistorted"**, und das war falsch — auf
+derselben Seite, zwei Zeilen tiefer, steht ja gemessen `1,00× where you look
+straight down, down to 0,00× at the rim`. Unverzerrt ist die *Kugel*, nicht ihr
+Bild auf einem flachen Schirm. Jetzt steht dort `the sphere itself, seen from
+outside`: was sie ist, und der Hinweis, dass man eine Ansicht davon sieht.
+
+Bei den beiden Karten stand die mathematische Eigenschaft — `conformal` und
+`equal-area`. „Winkeltreu" ist zwar richtig, sagt aber niemandem etwas, der es
+nicht ohnehin weiss, und es verschweigt das Interessante: **wozu** das Netz
+gebaut wurde. Jetzt steht der Zweck da:
+
+| | vorher | jetzt |
+|---|---|---|
+| Mercator | `1569 · conformal` | `1569 · made for navigation` |
+| Equal Earth | `2018 · equal-area` | `2018 · made for equal area` |
+| Globus | `undistorted` | `the sphere itself, seen from outside` |
+
+Unterwegs, während der Überblendung, fällt die zweite Zeile ganz weg: die
+beiden Namen sagen dort alles, und `made for navigation → made for equal area`
+läse niemand, während sich das Bild bewegt. Der Platz bleibt stehen, damit
+nichts springt.
+
+## Das Dreieck
+
+Drei Zustände spannen ein **gleichseitiges** Dreieck auf — Mercator und Equal
+Earth unten, der Globus als Massstab darüber. Eine Kugel darin sagt, wo die
+Karte gerade steht; eine Prozentzahl braucht es dafür nicht.
+
+(Der erste Anlauf war flach: Grundseite 266, Höhe 82. Gleichschenklig war er
+schon, aber er sah nach einem Dach aus statt nach einem Dreieck. Jetzt
+Grundseite 235,60 und Schenkel 235,57 — gleichseitig auf zwei Nachkommastellen,
+und das ist gleichschenklig sowieso.)
+
+Das ist keine Metapher, sondern dieselbe Rechnung. Das Bild ist die Mischung
+
+    Mercator · (1−t)  +  zielA · t(1−u)  +  zielB · t·u
+
+(so steht es in `dreiFach`), und das sind **baryzentrische Gewichte** auf dem
+Dreieck. Die Kugel ist der so gewichtete Schwerpunkt der drei Ecken.
+
+Damit stimmt sie auch in dem Fall, den ein Fortschrittsbalken nicht könnte: ein
+Netzknopf startet Regler **und** Zielwechsel gleichzeitig, die Karte ist dann
+eine Mischung aus allen dreien, und die Kugel läuft quer durch die Fläche statt
+an einer Kante entlang. Nachgemessen bei `t = 0,5`, `u = 0,5`, Ziel von Equal
+Earth auf Globus: Gewichte 0,5 / 0,25 / 0,25, Kugel bei (131,8 | 89,5) —
+gerechnet 0,5 · 32 + 0,25 · 298 + 0,25 · 165 = 131,75 und
+0,5 · 110 + 0,25 · 110 + 0,25 · 28 = 89,5.
+
+Die Ecken und die drei Kantenmitten sind einzeln nachgeprüft und treffen auf
+die Zehntelstelle.
+
+Für eine Vorlesesoftware ist ein SVG ein Bild ohne Inhalt. Das Dreieck trägt
+deshalb eine Beschriftung, die dieselbe Aussage in Worten führt und mitläuft —
+`Mercator`, `Mercator to Equal Earth`, `Globe`.
+
+Im Fliesstext bleibt „conformal" stehen, wo der Begriff vorher erklärt wird —
+dort ist er präzise und trägt etwas bei.
 
 ## Warum der Globus den Äquator in der Mitte hat
 
@@ -497,6 +560,27 @@ Ländernamen aus dem Feld `NAME_EN`, Kontinentnamen aus `CONTINENT`. Gemeinfrei.
 Die **Seite** ist englisch — Texte, Bedienung, Ländernamen, Zahlformat. Diese
 README, `CLAUDE.md` und die Kommentare im Quelltext sind deutsch geblieben: sie
 sind die Werkstatt, nicht das Erzeugnis.
+
+## Ein Video fürs Hochformat
+
+`build/film.mjs` erzeugt eine MP4-Datei im Format 1080 × 1920 für Telefone —
+nur Karte, Legende und Dreieck, alles darunter fällt weg, kein Titel.
+
+Nicht in Echtzeit mitgeschnitten. Der Treiber stellt jedes Bild einzeln: er
+rechnet dieselbe Beschleunigungskurve wie `animiere()` in der Seite, setzt den
+Zustand über `setze()` beziehungsweise `zielA/zielB/u` und ruft `zeichne()` auf.
+Die Bewegung ist damit exakt die der Webseite und hängt nicht davon ab, wie
+lange das Rendern eines einzelnen Bildes dauert. Die Bilder gehen als PNG durch
+eine Pipe direkt an ffmpeg, es liegt also nie ein Einzelbild auf der Platte.
+
+Fürs Hochformat bekommt die Karte ein fast quadratisches Feld (1,02:1) statt der
+1,30:1 der Webseite. Equal Earth ist ohnehin breitenbegrenzt und bleibt gleich
+gross; Mercator und der Globus nutzen die gewonnene Höhe.
+
+    node film.mjs [zieldatei.mp4]
+
+Braucht Playwright und ein ffmpeg mit libx264 — beides keine Abhängigkeit der
+Seite selbst, die bleibt ohne npm.
 
 ## Neu bauen
 
