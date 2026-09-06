@@ -317,33 +317,76 @@ function ebene(lo, la) {
   kasten.push([-R_GLOBUS, R_GLOBUS, -R_GLOBUS, R_GLOBUS]);
 
   return { n, X, Y, kasten, vx, vy, vz, vorn: new Uint8Array(n),
+           // Zwei Lagen für die Rückseite: durchgefaltet und an den Rand geklemmt.
+           fx: new Float32Array(n), fy: new Float32Array(n),
+           kx: new Float32Array(n), ky: new Float32Array(n),
            cx: new Float32Array(n), cy: new Float32Array(n) };
 }
 
 // Blickmitte des Globus. Vorbelegt auf Afrika und Europa — das ist der Streit.
 let dreheLam = 10 * RAD, drehePhi = 20 * RAD;
 
-// Punkte auf der Rückseite werden längs ihrer Richtung auf den Rand geschoben,
-// statt nach innen zurückzuklappen. Ein Umriss, der über den Horizont läuft,
-// bekommt dadurch genau den Randbogen als Abschluss — ohne dass man Vielecke
-// an einem Kreis beschneiden müsste.
+// Die Rückseite bekommt zwei Lagen, weil das Aufwickeln und die fertige Kugel
+// Verschiedenes brauchen.
+//
+// *Durchgefaltet* ist die schlichte orthografische Lage: ein Punkt hinter dem
+// Horizont klappt nach innen zurück. Das ist die Bewegung, die das Aufwickeln
+// braucht — die abgewandte Seite läuft weiter, taucht am Rand ein und geht
+// hinter der Vorderseite durch, statt sich als Wand am Rand aufzustauen.
+//
+// *Geklemmt* schiebt denselben Punkt längs seiner Richtung auf den Rand. Das
+// braucht die fertige Kugel: ein Umriss, der über den Horizont läuft, bekommt
+// dadurch genau den Randbogen als Abschluss, ohne dass man Vielecke an einem
+// Kreis beschneiden müsste.
 function dreheEbene(e) {
   const sl = Math.sin(dreheLam), cl = Math.cos(dreheLam);
   const sp = Math.sin(drehePhi), cp = Math.cos(drehePhi);
-  const X = e.X[GLOBUS], Y = e.Y[GLOBUS], V = e.vorn;
+  const { fx, fy, kx, ky, vorn: V } = e;
   for (let i = 0; i < e.n; i++) {
     const x = e.vx[i], y = e.vy[i], z = e.vz[i];
     const px = x * cl + y * sl, py = y * cl - x * sl;
     const qy = z * cp - px * sp, qz = px * cp + z * sp;
     V[i] = qz > 0 ? 1 : 0;
-    if (qz > 0) { X[i] = R_GLOBUS * py; Y[i] = R_GLOBUS * qy; }
+    fx[i] = R_GLOBUS * py; fy[i] = R_GLOBUS * qy;
+    if (qz > 0) { kx[i] = fx[i]; ky[i] = fy[i]; }
     else {
       const r = Math.hypot(py, qy);
-      if (r < 1e-9) { X[i] = R_GLOBUS; Y[i] = 0; }
-      else { X[i] = R_GLOBUS * py / r; Y[i] = R_GLOBUS * qy / r; }
+      if (r < 1e-9) { kx[i] = R_GLOBUS; ky[i] = 0; }
+      else { kx[i] = R_GLOBUS * py / r; ky[i] = R_GLOBUS * qy / r; }
     }
   }
+  e.klemmeStand = -1;
 }
+
+// Erst zum Schluss des Aufwickelns wird geklemmt. Vorher geht die Rückseite
+// durch sich selbst hindurch; das Klemmen zieht sie dann in den Rand, während
+// sie ohnehin schon verblasst.
+function klemmeSetzen(e, k) {
+  if (e.klemmeStand === k) return;
+  e.klemmeStand = k;
+  const X = e.X[GLOBUS], Y = e.Y[GLOBUS], { fx, fy, kx, ky } = e;
+  if (k <= 0) { X.set(fx); Y.set(fy); return; }
+  if (k >= 1) { X.set(kx); Y.set(ky); return; }
+  for (let i = 0; i < e.n; i++) {
+    X[i] = fx[i] + (kx[i] - fx[i]) * k;
+    Y[i] = fy[i] + (ky[i] - fy[i]) * k;
+  }
+}
+
+// Zwei Vorgänge, die sich nicht überschneiden dürfen.
+//
+// Erst *verblasst* die abgewandte Seite: sie ist bis dahin durchgefaltet, läuft
+// also hinter der Vorderseite durch, und geht dort aus, wo sie hingehört —
+// hinten. Danach erst *klemmt* der Rest an den Rand. Überschnitten sie sich,
+// zöge die Klemme die Rückseite noch einmal nach aussen und machte das
+// Durchgehen wieder zunichte.
+//
+// Was am Ende noch geklemmt wird, sind die Zipfel der Länder, die über den
+// Horizont ragen. Die liegen dicht am Rand, wo durchgefaltet und geklemmt fast
+// dasselbe ist — deshalb fällt dieser Teil nicht auf.
+const weich = x => { const s = Math.max(0, Math.min(1, x)); return s * s * (3 - 2 * s); };
+const verblassenAus = gA => weich((gA - .6) / .25);
+const klemmeAus = gA => weich((gA - .85) / .15);
 
 const land = ebene(LON, LAT);
 
@@ -411,6 +454,7 @@ const kurse = (() => {
 
 const EBENEN = [land, gradnetz, tissot, kurse];
 function dreheAlle() { for (const e of EBENEN) dreheEbene(e); }
+function klemmeAlle(k) { for (const e of EBENEN) klemmeSetzen(e, k); }
 dreheAlle();
 
 // ---------- Länder ----------
@@ -651,6 +695,7 @@ function kaesten() {
 
 function zeichne() {
   bildNr++;
+  klemmeAlle(klemmeAus(globusAnteil()));
   mischeEbene(land);
   messeLive();
   if (zeigGrad) mischeEbene(gradnetz);
@@ -683,10 +728,11 @@ function zeichne() {
     ctx.globalAlpha = 1;
   }
 
-  // Umrisse, die ganz auf der Rückseite liegen, sind beim fertigen Globus zu
-  // einem Strich auf dem Rand zusammengefallen. Erst dann fallen sie weg —
-  // vorher sind sie noch echte Flächen und dürfen nicht springen.
-  const rueckseiteWeg = gA > .995;
+  // Ein Land ganz auf der Rückseite verblasst über dasselbe letzte Fünftel, in
+  // dem es in den Rand gezogen wird. Vorher ist es eine echte Fläche, die durch
+  // die Vorderseite hindurchwandert und dabei zu sehen sein soll.
+  const klemme = klemmeAus(gA), verblassen = verblassenAus(gA);
+  const rueckseiteWeg = verblassen >= 1;
   const vorn = land.vorn;
 
   // Auf dem Blatt trennt eine Linie in Papierfarbe die Länder voneinander; ein
@@ -703,6 +749,9 @@ function zeichne() {
   ctx.lineWidth = (.7 + .35 * meer) / skala;
 
   for (const l of LAND) {
+    const hinten = verblassen > 0 && !istVorn(l.i);
+    if (hinten && verblassen >= 1) continue;
+    ctx.globalAlpha = hinten ? 1 - verblassen : 1;
     ctx.fillStyle = SKALA[skalaIndex(farbwert(l))];
     ctx.beginPath();
     let gezeichnet = false;
@@ -722,6 +771,7 @@ function zeichne() {
     ctx.fill('evenodd');
     ctx.stroke();
   }
+  ctx.globalAlpha = 1;
 
   const zug = (e, i) => {
     const [a, n] = e.abschnitt[i];
@@ -737,7 +787,7 @@ function zeichne() {
     const [a, n] = e.abschnitt[i];
     let v = 0;
     for (let p = a; p < a + n; p++) if (e.vorn[p]) v++;
-    return 1 - gA * (1 - v / n);
+    return 1 - verblassen * (1 - v / n);
   };
 
   if (zeigGrad) {
@@ -860,10 +910,10 @@ function neuZeichnen() {
 function setze(v, { schieber = true } = {}) { t = v; if (schieber) reg.value = Math.round(v * 1000); knoepfe(); zeigerHaltung(); neuZeichnen(); }
 reg.addEventListener('input', () => { rundlaufStopp(); setze(reg.value / 1000, { schieber: false }); });
 
-// Überblendungsdauern. Halb so schnell wie ursprünglich: bei einer Bewegung,
-// die die eigentliche Aussage trägt, ist Gemächlichkeit kein Verlust.
-const DAUER = 1700;          // der Regler von einem Ende zum anderen
-const DAUER_WECHSEL = 1240;  // ein Zielwechsel bei stehendem Regler
+// Überblendungsdauern. Ein Viertel des ursprünglichen Tempos: die Bewegung
+// trägt die eigentliche Aussage, und beim Aufwickeln gibt es viel zu sehen.
+const DAUER = 3400;          // der Regler von einem Ende zum anderen
+const DAUER_WECHSEL = 2480;  // ein Zielwechsel bei stehendem Regler
 const HALT = 900;            // Standzeit auf jedem Zustand im Rundlauf
 
 // Läuft schon eine Bewegung, wird sie beim Start der nächsten stillgelegt —

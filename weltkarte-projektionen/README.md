@@ -70,10 +70,10 @@ gleichzeitig blendet das alte Ziel ins neue. Ein gemeinsamer Zähler liess die
 eine die andere erschlagen, und der Globus erschien nach einem Knopfdruck gar
 nicht mehr — nur noch über den Rundlauf, der die beiden nie zusammen auslöst.
 
-Die Überblendungen dauern 1,7 Sekunden, ein Zielwechsel 1,24, dazu 0,9 Sekunden
-Stand auf jedem Zustand. Das ist halb so schnell wie in der ersten Fassung: bei
-einer Bewegung, die die eigentliche Aussage trägt, ist Gemächlichkeit kein
-Verlust.
+Die Überblendungen dauern 3,4 Sekunden, ein Zielwechsel 2,48, dazu 0,9 Sekunden
+Stand auf jedem Zustand — ein Rundlauf also gut 24 Sekunden. Das ist ein Viertel
+des ursprünglichen Tempos: die Bewegung trägt die eigentliche Aussage, und beim
+Aufwickeln gibt es viel zu sehen.
 
 ## Die Kennzahl
 
@@ -120,16 +120,32 @@ Handvoll Multiplikationen je Punkt, ganz ohne Winkelfunktionen; deshalb kann die
 Kugel am Zeiger hängen und nicht bloss in Stufen springen.
 
 Gezeichnet wird orthografisch, also so, wie eine Kugel aus grosser Entfernung
-aussieht. Punkte hinter dem Horizont werden nicht weggeworfen und auch nicht
-nach innen zurückgeklappt, sondern längs ihrer Richtung auf den Rand geschoben.
-Das ist der Trick, der die ganze Beschneidung erspart: ein Umriss, der über den
-Horizont läuft, bekommt dadurch von selbst den Randbogen als Abschluss, und ein
-Umriss ganz auf der Rückseite fällt zu einer Linie auf dem Rand zusammen — beim
-fertigen Globus wird er dann weggelassen, vorher nicht, damit nichts springt.
+aussieht.
 
-Linien auf der Rückseite werden beim Aufwickeln ausgeblendet. Ohne das
-schlingern sie: ihre Punkte laufen alle auf den Rand zu, und die
-Zwischenzustände dieser Bewegung sehen aus wie Schlaufen.
+### Zwei Lagen für die Rückseite
+
+Was mit Punkten hinter dem Horizont geschieht, ist beim Aufwickeln und bei der
+fertigen Kugel Verschiedenes, und beides zugleich zu wollen war ein Fehler.
+
+**Geklemmt** heisst: der Punkt wird längs seiner Richtung auf den Rand
+geschoben. Das braucht die fertige Kugel. Ein Umriss, der über den Horizont
+läuft, bekommt dadurch von selbst den Randbogen als Abschluss, ohne dass man
+Vielecke an einem Kreis beschneiden müsste.
+
+**Durchgefaltet** heisst: der Punkt klappt nach innen zurück, wie es die
+Projektion von sich aus tut. Das braucht das Aufwickeln. Die abgewandte Seite
+läuft dann weiter, taucht am Rand ein und geht hinter der Vorderseite durch —
+statt sich als Wand am Rand aufzustauen. Vorher wurde durchgehend geklemmt, und
+mitten in der Bewegung standen Amerika links und Australien rechts als schmale
+senkrechte Streifen an den Kanten.
+
+Die beiden Vorgänge dürfen sich nicht überschneiden. Zuerst **verblasst** die
+abgewandte Seite (60 bis 85 % der Überblendung) — durchgefaltet, also dort, wo
+sie hingehört: hinten. Erst danach **klemmt** der Rest an den Rand (85 bis
+100 %). Läuft beides gleichzeitig, zieht die Klemme die Rückseite noch einmal
+nach aussen und macht das Durchgehen wieder zunichte. Was zuletzt geklemmt
+wird, sind nur noch die Zipfel der Länder, die über den Horizont ragen, und die
+liegen dicht am Rand, wo durchgefaltet und geklemmt fast dasselbe ist.
 
 ### Die Verzerrung wird gemessen, nicht behauptet
 
