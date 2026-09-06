@@ -107,12 +107,55 @@ aufs fertige Bild legt, sind das **0,32 statt 0,94** — gut ein Drittel. Sie
 müssen nur eine Spur deutlicher sein als das Gradnetz (0,19), auf dem sie
 stehen; sie sagen ihre Sache über Grösse und Form, nicht über Deckkraft.
 
+## Der Aufbau der Seite
+
+Die Karte steht ganz oben, ohne Titel und ohne Vorrede darüber. Wer die Seite
+öffnet, soll das Bild sehen, um das es geht, und nicht erst scrollen.
+
+Darunter steht genau eine Zeile: **was geht gerade in was über**. Sie trifft
+drei Fälle — ein Netz steht still (`Mercator · 1569 · winkeltreu`), der Regler
+fährt von Mercator zum Ziel (`Mercator → Equal Earth · 44 %`), oder das Ziel
+selbst wechselt bei stehendem Regler (`Equal Earth → Globus · 42 %`). Der dritte
+Fall ist der Grund für die Umstellung: vorher standen die Namen der beiden
+Reglerenden links und rechts, und ein Zielwechsel — genau der Übergang, den man
+sonst nirgends bekommt — kam darin schlicht nicht vor.
+
+Direkt darunter die **Legende**: der Farbbalken mit fünf beschrifteten Marken.
+Die alten Enden waren dabei schlicht falsch beschriftet. Sie sagten „halb so
+viel" und „doppelt so viel"; die Skala läuft aber über `±ln 3`, ihre Enden sind
+also **⅓× und 3×**. Die Marken sitzen jetzt an den logarithmisch richtigen
+Stellen: ⅓ bei 0 %, ½ bei 18,4 %, 1 bei 50 %, 2 bei 81,6 %, 3 bei 100 %.
+
+Erst danach kommen Regler, Knöpfe, Schalter — und dann Titel, Text und
+Tabellen.
+
+## Warum die Länder je eine Farbe tragen
+
+Naheliegend wäre ein **stetiger Farbverlauf** über die Karte statt einer
+Vollfarbe je Land. Ausprobiert und verworfen, aus vier Gründen:
+
+1. Die Aussage der Seite ist **pro Land** — Grönland 6,7, Nigeria 0,43,
+   Deutschland 1,06. Eine Vollfläche hat einen Wert, den man an der Legende
+   ablesen und in der Tabelle wiederfinden kann. Ein Verlauf innerhalb eines
+   Landes hat keinen.
+2. Auf beiden ebenen Netzen hängt die Flächenverzerrung **allein von der
+   Breite** ab. Ein stetiges Feld wäre dort also nichts als waagrechte
+   Streifen — hübsch, aber es sagte weniger und stritte mit den Umrissen.
+3. Flächen gleicher Farbe lassen sich deutlich genauer vergleichen als
+   Verläufe; ein Verlauf holt sich Simultankontrast-Fehler ins Bild.
+4. Wo Stetigkeit wirklich hilft, ist die **Skala** — und die ist längst ein
+   stetiger Verlauf.
+
+Was bleibt, ist die Frage nach der Quantisierung: die Skala hat 65 Stufen über
+ein Verhältnis von 9:1 (⅓ bis 3), eine Stufe ist also rund 1,7 % — weit unter
+dem, was als Bänderung auffiele.
+
 ## Die Kennzahl
 
 Nicht der lokale Flächenmassstab (bei Mercator `sec²φ`), sondern der **Anteil an
 der gezeigten Landfläche**, geteilt durch den wirklichen Anteil an der
 Landfläche der Erde. 1 heisst richtig gross, 2 heisst doppelt so viel Bildfläche
-wie zustehend.
+wie zustehend; die Farbskala reicht von ⅓ bis 3.
 
 Das ist der ehrlichere Massstab, weil er die Frage beantwortet, die man
 tatsächlich hat: wie viel Platz auf dem Blatt bekommt ein Land im Vergleich zu
@@ -341,9 +384,15 @@ unter der Strichbreite, mit der die Länder ohnehin gegeneinander abgesetzt sind
 ## Daten
 
 **Geometrie und Einwohnerzahlen** — [Natural Earth](https://www.naturalearthdata.com/),
-`ne_50m_admin_0_countries`: 242 Staaten und Gebiete, 97.866 Punkte, deutsche
-Ländernamen aus dem Feld `NAME_DE`. Gemeinfrei. Die Einwohnerzahlen
+`ne_50m_admin_0_countries`: 242 Staaten und Gebiete, 97.866 Punkte, englische
+Ländernamen aus dem Feld `NAME_EN`, Kontinentnamen aus `CONTINENT`. Gemeinfrei. Die Einwohnerzahlen
 (`POP_EST`) stammen überwiegend aus dem Stand 2019 und sind nur grob.
+
+## Sprache
+
+Die **Seite** ist englisch — Texte, Bedienung, Ländernamen, Zahlformat. Diese
+README, `CLAUDE.md` und die Kommentare im Quelltext sind deutsch geblieben: sie
+sind die Werkstatt, nicht das Erzeugnis.
 
 ## Neu bauen
 
