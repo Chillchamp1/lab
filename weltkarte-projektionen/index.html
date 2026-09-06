@@ -101,12 +101,14 @@ messen lassen.</p>
 <div class="schalter">
   <label><input type="checkbox" id="cGrad" checked> Gradnetz</label>
   <label><input type="checkbox" id="cTissot"> Verzerrungskreise</label>
+  <label><input type="checkbox" id="cFest"> Mercators Verzerrung festhalten</label>
   <label><input type="checkbox" id="cKurs"> Zwei Flugstrecken</label>
 </div>
 
 <figure><canvas id="karte" role="img" aria-label="Weltkarte, überblendbar zwischen der Mercator-Projektion und einem flächentreuen Netz. Die Zahlen dazu stehen in den Tabellen darunter."></canvas></figure>
 
 <p class="hinweis" id="hinweisGlobus" hidden><b>Ziehen dreht die Kugel.</b> Sie ist der Massstab: hier stimmen Fläche, Form und Winkel zugleich, weil nichts in die Ebene gezwungen wird. Bezahlt wird das damit, dass immer nur eine Hälfte zu sehen ist.</p>
+<p class="hinweis" id="hinweisFarbe" hidden></p>
 <p class="hinweis" id="hinweisTissot" hidden></p>
 <p class="lgd" id="lgdKurs" hidden>
   <span><i class="lox"></i>gleichbleibender Kompasskurs</span>
@@ -267,6 +269,7 @@ const M = NETZ.indexOf('mercator');
 const MEER = '#5c7789';
 const MEER_RGB = [92, 119, 137];
 const PAPIER_RGB = [237, 235, 230];
+const KUESTE_RGB = [26, 36, 44];
 
 const R_GLOBUS = 1;
 const GLOBUS = NETZ.length;          // Steckplatz hinter den ebenen Netzen
@@ -443,6 +446,14 @@ let breite = 0, hoehe = 0, dpr = 1, skala = 1, mx = 0, my = 0;
 let t = 0, u = 1, zielA = 1, zielB = 1;              // Ziel 1 = Equal Earth
 let zeigGrad = true, zeigTissot = false, zeigKurs = false;
 
+// Normalerweise sagt die Farbe, wie stark die *gerade gezeigte* Darstellung ein
+// Land verzerrt — auf einem flächentreuen Netz und auf der Kugel ist das nichts,
+// und die Farbe läuft aus der Karte. Festgehalten sagt sie stattdessen, wie
+// stark *Mercator* es verzerrt, und bleibt beim Umblenden stehen: dann sieht man
+// auf der richtigen Gestalt, wen die alte Karte kleinrechnet.
+let farbeFest = false;
+const farbwert = l => farbeFest ? l.logF[M] : dreiFach(l.logF[M], l.logF[zielA], l.logF[zielB]);
+
 const dreiFach = (m, a, b) => m + ((a + (b - a) * u) - m) * t;
 
 // Wie stark der Globus gerade im Bild ist. Steuert die Meeresscheibe, das
@@ -565,16 +576,21 @@ function zeichne() {
   const rueckseiteWeg = gA > .995;
   const vorn = land.vorn;
 
-  // Die Trennlinie zwischen den Ländern hat die Farbe dessen, was hinter der
-  // Karte liegt — auf dem Blatt das Papier, auf der Kugel das Meer. Sonst
-  // bekäme jede Küste auf dem Globus einen hellen Saum in Papierfarbe.
+  // Auf dem Blatt trennt eine Linie in Papierfarbe die Länder voneinander; ein
+  // Meer gibt es dort nicht. Auf der Kugel wird daraus eine dunkle Küstenlinie.
+  //
+  // Das ist nicht bloss Geschmack. Die Farbskala reicht von hell in der Mitte
+  // nach dunkel an beiden Enden, und gegen alle 65 Stufen zugleich kommt keine
+  // einzige Meeresfarbe an — durchgerechnet liegt der beste erreichbare Wert
+  // bei 1,74:1. Ein türkis eingefärbtes Afrika verschwämme sonst mit dem Meer,
+  // sobald man die Verzerrung festhält. Eine Umrisslinie löst das unabhängig
+  // von der Füllung, und genau dafür haben Karten seit jeher Küsten.
   ctx.lineJoin = 'round';
-  ctx.strokeStyle = hex(misch(PAPIER_RGB, MEER_RGB, meer));
-  ctx.lineWidth = .7 / skala;
+  ctx.strokeStyle = hex(misch(PAPIER_RGB, KUESTE_RGB, meer));
+  ctx.lineWidth = (.7 + .35 * meer) / skala;
 
   for (const l of LAND) {
-    const f = dreiFach(l.logF[M], l.logF[zielA], l.logF[zielB]);
-    ctx.fillStyle = SKALA[skalaIndex(f)];
+    ctx.fillStyle = SKALA[skalaIndex(farbwert(l))];
     ctx.beginPath();
     let gezeichnet = false;
     for (let r = landRing[l.i]; r < landRing[l.i + 1]; r++) {
@@ -681,7 +697,19 @@ function zeichne() {
 // örtliche Form erhalten. Genau daraus folgt die gerade Kurslinie.
 let letzterHinweis = '';
 function hinweis() {
-  document.getElementById('hinweisGlobus').hidden = globusAnteil() < .5;
+  document.getElementById('hinweisGlobus').hidden = globusAnteil() < .5 || farbeFest;
+  const fe = document.getElementById('hinweisFarbe');
+  fe.hidden = !farbeFest;
+  if (farbeFest) {
+    fe.innerHTML = globusAnteil() > .5
+      ? '<b>Die Farbe steht auf Mercator, die Gestalt auf der Wahrheit.</b> Türkis heisst: '
+        + 'dieses Land bekommt auf der Mercator-Karte weniger Bildfläche, als ihm zusteht — '
+        + 'und hier sieht man auf der richtigen Kugel, um welche Länder es dabei geht. '
+        + 'Ziehen dreht sie.'
+      : '<b>Die Farbe bleibt bei Mercator stehen.</b> Sie sagt nicht mehr, was die gerade '
+        + 'gezeigte Darstellung tut, sondern was Mercator tut — und wandert deshalb beim '
+        + 'Umblenden mit dem Land mit, während sich die Gestalt korrigiert.';
+  }
   const el = document.getElementById('hinweisTissot');
   el.hidden = !zeigTissot;
   if (!zeigTissot) return;
@@ -845,6 +873,11 @@ function beschrifte() {
 
 document.getElementById('cGrad').addEventListener('change', e => { zeigGrad = e.target.checked; neuZeichnen(); });
 document.getElementById('cTissot').addEventListener('change', e => { zeigTissot = e.target.checked; neuZeichnen(); });
+document.getElementById('cFest').addEventListener('change', e => {
+  farbeFest = e.target.checked;
+  hinweis();
+  neuZeichnen();
+});
 document.getElementById('cKurs').addEventListener('change', e => {
   zeigKurs = e.target.checked;
   document.getElementById('lgdKurs').hidden = !zeigKurs;
@@ -910,11 +943,12 @@ function treffer(px, py) {
 }
 
 function zeigeTip(l, ev) {
-  const f = Math.exp(dreiFach(l.logF[M], l.logF[zielA], l.logF[zielB]));
+  const f = Math.exp(farbwert(l));
   const ab = Math.round(Math.abs(f - 1) * 100);
-  const satz = ab < 3 ? 'so gross wie zustehend'
-    : f > 1 ? nf(ab) + ' % mehr Bildfläche als zustehend'
-            : nf(ab) + ' % weniger Bildfläche als zustehend';
+  const wo = farbeFest ? 'auf Mercator ' : '';
+  const satz = ab < 3 ? wo + 'so gross wie zustehend'
+    : f > 1 ? wo + nf(ab) + ' % mehr Bildfläche als zustehend'
+            : wo + nf(ab) + ' % weniger Bildfläche als zustehend';
   tip.innerHTML = '<div class="n">' + l.name + '</div>' +
     '<div class="m">' + nf(l.wahr / 1e6, 3) + ' Mio km²' +
     (l.einwohner ? ' · ' + nf(l.einwohner / 1e6, 1) + ' Mio Einw.' : '') + '</div>' +
