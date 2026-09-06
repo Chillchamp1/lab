@@ -19,7 +19,7 @@ führt keine Bundesbehörde die Wahlergebnisse zusammen.
 node build.mjs > ../index.html
 ```
 
-Rechnet beim ersten Mal etwa fünf Minuten (Gitter 2000, sechs Durchgänge) und
+Rechnet beim ersten Mal je nach Rechner fünf bis dreissig Minuten (Gitter 2000, sechs Durchgänge Festland, fünf Hawaii; Alaska braucht keine Diffusion) und
 legt das Ergebnis in `kartogramm-cache.json` ab; weitere Läufe sind sofort
 fertig. Die Datei löschen erzwingt eine Neuberechnung.
 
@@ -30,10 +30,12 @@ fertig. Die Datei löschen erzwingt eine Neuberechnung.
 | `shp.mjs` | Shapefile- und DBF-Leser, ohne Fremdbibliothek |
 | `geometrie.mjs` | Albers-Projektion, Ringflächen, Schwerpunkte, Faltungsprüfung |
 | `daten.mjs` | CSV-Leser, Filter auf das Festland, Zusammenfassung der DC-Wards |
-| `vorbereiten.mjs` | Knotenmodell: gleiche Punkte werden verschweisst |
+| `vorbereiten.mjs` | Drei Gruppen, Datumsgrenze bei den Aleuten, Sonderfälle |
 | `raster.mjs` | Dichtefeld auf ein Gitter, mit „Meer" am Rand |
 | `diffusion.mjs` | Wärmeleitung per Gaussglättung, Punkte schwimmen mit |
-| `gn.mjs` | Mehrere Durchgänge, bis der Restfehler klein ist |
+| `kartogramme.mjs` | Drei Gruppen (Festland, Alaska, Hawaii), mehrere Durchgänge |
+| `oklab.mjs` | Umrechnung sRGB nach OKLab und zurück |
+| `palette.mjs` | Wahrnehmungsgleiche divergierende Farbskala |
 | `code.mjs` | Kompakte Kodierung der Koordinaten für die Seite |
 | `nutzlast.mjs` | Beides zusammen in die Nutzlast, mit Cache |
 | `build.mjs` | Erzeugt die fertige `index.html` |
