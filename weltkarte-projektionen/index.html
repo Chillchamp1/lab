@@ -107,7 +107,7 @@ messen lassen.</p>
 
 <figure><canvas id="karte" role="img" aria-label="Weltkarte, überblendbar zwischen der Mercator-Projektion und einem flächentreuen Netz. Die Zahlen dazu stehen in den Tabellen darunter."></canvas></figure>
 
-<p class="hinweis" id="hinweisGlobus" hidden><b>Ziehen dreht die Kugel.</b> Auf der Kugel selbst stimmt alles zugleich — Fläche, Form, Winkel —, weil nichts in die Ebene gezwungen wird. Ihr Bild auf einem flachen Schirm ist aber wieder eine Projektion, und die staucht zum Rand hin: der Flächenmassstab ist der Kosinus des Abstands zur Mitte, bei 60° also die Hälfte, am Rand null. <b>Die Farbe misst das mit</b> und wandert beim Drehen mit. Was Ihnen zugewandt liegt, bekommt mehr als seinen Anteil, der Rand fast nichts.</p>
+<p class="hinweis" id="hinweisGlobus" hidden><b>Ziehen dreht die Kugel.</b> Auf der Kugel selbst stimmt alles zugleich — Fläche, Form, Winkel —, weil nichts in die Ebene gezwungen wird. Ihr Bild auf einem flachen Schirm ist aber wieder eine Projektion. <b>Wo Sie senkrecht draufschauen, stimmt der Massstab genau</b>; zum Rand hin schrumpft alles, bei 60° auf die Hälfte, am Rand auf nichts. Die Farbe misst das mit und wandert beim Drehen mit. Anders als auf einer ebenen Karte gibt es hier nur eine Richtung: der Globus zeigt nirgends zu viel, aber fast überall zu wenig.</p>
 <p class="hinweis" id="hinweisFarbe" hidden></p>
 <p class="hinweis" id="hinweisTissot" hidden></p>
 <p class="lgd" id="lgdKurs" hidden>
@@ -140,12 +140,20 @@ immer nur eine Seite. Genau das ist der Handel, den jede Weltkarte eingeht, und 
 Regler zeigt ihn in beide Richtungen. <b>Ziehen dreht die Kugel.</b></p>
 <p class="sec">Ganz aus dem Schneider ist aber auch er nicht, und die Karte sagt das:
 sein <i>Bild</i> auf einem flachen Schirm ist wieder eine Projektion. Der
-Flächenmassstab ist dort der Kosinus des Abstands zur Bildmitte — was Ihnen
-zugewandt liegt, bekommt mehr als seinen Anteil, bei 60° stimmt es gerade, und zum
-Rand hin geht alles gegen null. Die Farbe wird deshalb nicht aus einer Tabelle
-geholt, sondern in jedem Bild an dem gemessen, was tatsächlich auf dem Schirm steht.
-Auf Mercator kommt dabei aufs Hundertstel dasselbe heraus wie in der Tabelle unten;
-auf dem Globus zeigt sie die Randstauchung, und beim Drehen wandert sie mit.</p>
+Flächenmassstab ist dort der Kosinus des Abstands zur Bildmitte — wo man senkrecht
+draufschaut, stimmt er genau, bei 60° ist er halbiert, am Rand null. Die Farbe wird
+deshalb nicht aus einer Tabelle geholt, sondern in jedem Bild an dem gemessen, was
+tatsächlich auf dem Schirm steht. Auf Mercator kommt dabei aufs Hundertstel dasselbe
+heraus wie in der Tabelle unten; auf dem Globus zeigt sie die Randstauchung, und beim
+Drehen wandert sie mit.</p>
+<p class="sec">Woran gemessen wird, ist dabei nicht dasselbe. Eine ebene Karte zeigt
+die ganze Welt: das Blatt ist ein fester Vorrat, der verteilt wird, und die Frage
+lautet, ob ein Land mehr oder weniger davon bekommt, als ihm zusteht — beide
+Richtungen sind möglich. Die Kugel zeigt eine Hälfte und hat einen natürlichen
+Massstab, nämlich den am Punkt, auf den man schaut. Dort ist sie unverzerrt, überall
+sonst zu klein. <b>Der Globus zeigt nirgends zu viel, aber fast überall zu wenig</b> —
+und deshalb ist er dort einfarbig hell in der Mitte und wird zum Rand hin immer
+kräftiger.</p>
 
 <h2 class="sec">Wer wie viel Platz bekommt</h2>
 <p class="sec">Anteil an der gezeigten Landfläche, Antarktis nicht mitgerechnet.
@@ -504,6 +512,27 @@ function messeBezug() {
   }
 }
 
+// Woran der Vergleich hängt, ist bei der ebenen Karte und bei der Kugel nicht
+// dasselbe, und das eine auf das andere zu zwingen war der Fehler.
+//
+// Die ebene Karte zeigt die ganze Welt. Das Blatt ist ein fester Vorrat, der
+// verteilt wird, und die Frage lautet: bekommt ein Land mehr oder weniger davon,
+// als ihm zusteht? Deshalb wird auf die gezeigte Gesamtfläche normiert, und
+// deshalb gibt es beide Richtungen — zu gross und zu klein.
+//
+// Die Kugel zeigt eine Hälfte, und sie hat einen natürlichen Massstab: dort, wo
+// man senkrecht draufschaut, ist sie unverzerrt. Der Flächenmassstab ist genau
+// der Kosinus des Abstands zu diesem Punkt, also 1 in der Mitte und 0 am Rand.
+// Hier gibt es nur eine Richtung: zu klein, nirgends zu gross. Auf die gezeigte
+// Fläche zu normieren hätte behauptet, die Mitte bekomme mehr als ihren Anteil —
+// sie bekommt genau ihren, alles andere weniger.
+//
+// Der feste Umrechnungsfaktor für die Kugel ist kein angepasster Wert: die
+// Bezugsgrössen liegen im auf Äquatorlänge 2π gestreckten Equal-Earth-Netz, und
+// diese Streckung vergrössert Flächen um S_EE². Das wieder herausgerechnet
+// liefert den Kosinus blank.
+const NORM_GLOBUS = S_EE * S_EE;
+
 function messeLive() {
   if (!liveLog) liveLog = new Float64Array(LAND.length);
   let summe = 0;
@@ -512,11 +541,26 @@ function messeLive() {
     jetzt[l.i] = bildFlaeche(l.i, land.cx, land.cy);
     if (l.iso !== 'ATA') summe += jetzt[l.i];
   }
-  const norm = summe > 0 ? bezugSumme / summe : 1;
+  const gA = globusAnteil();
+  const flach = summe > 0 ? bezugSumme / summe : 1;
+  const norm = Math.pow(flach, 1 - gA) * Math.pow(NORM_GLOBUS, gA);
   for (const l of LAND) {
-    const f = bezug[l.i] > 0 ? jetzt[l.i] * norm / bezug[l.i] : 1;
+    let f = bezug[l.i] > 0 ? jetzt[l.i] * norm / bezug[l.i] : 1;
+    // Ein Land ganz auf der Rückseite ist auf den Rand zusammengefallen. Seine
+    // gemessene Fläche ist dann nur noch Rauschen, und bei einer winzigen Insel
+    // kann das den eigenen Bezugswert übersteigen — Niue kam so auf 12,56 und
+    // wäre tiefrot geworden, obwohl es gar nicht zu sehen ist. Auf der Kugel ist
+    // der richtige Wert null.
+    if (gA > 0) f *= 1 - gA * (istVorn(l.i) ? 0 : 1);
     liveLog[l.i] = f > 1e-6 ? Math.log(f) : Math.log(1e-6);
   }
+}
+
+// Liegt irgendein Punkt des Landes auf der zugewandten Seite?
+function istVorn(i) {
+  const V = land.vorn;
+  for (let p = ringOff[landRing[i]], b = ringOff[landRing[i + 1]]; p < b; p++) if (V[p]) return true;
+  return false;
 }
 
 const farbwert = l => farbeFest ? l.logF[M] : liveLog[l.i];
@@ -785,10 +829,10 @@ function hinweis() {
   let s;
   if (globusAnteil() > .88) {
     s = '<b>Auf der Kugel wären alle Kreise gleich gross und rund</b> — auf der Kugel. '
-      + 'Was Sie sehen, ist ihr Bild auf einem flachen Schirm, und das staucht zum Rand '
-      + 'hin: dort werden dieselben Kreise zu schmalen Sicheln. Der Globus löst das '
-      + 'Problem also nicht, er verschiebt es an den Rand — und dreht es weg, sobald Sie '
-      + 'ziehen.';
+      + 'Was Sie sehen, ist ihr Bild auf einem flachen Schirm: in der Mitte, wo Sie '
+      + 'senkrecht draufschauen, stimmt es genau, zum Rand hin werden dieselben Kreise '
+      + 'zu schmalen Sicheln. Der Globus löst das Problem also nicht, er verschiebt es '
+      + 'an den Rand — und dreht es weg, sobald Sie ziehen.';
   } else if (t < .12) {
     s = '<b>Alle Kreise sind Kreise geblieben</b> — nur verschieden gross. Das ist Mercators '
       + 'Stärke: in alle Richtungen wird gleich stark gedehnt, also stimmen Winkel und örtliche '

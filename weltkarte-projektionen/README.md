@@ -146,8 +146,33 @@ Projektion. Der Flächenmassstab ist dort der Kosinus des Abstands zur
 Bildmitte: bei 60° die Hälfte, am Rand null. Der Globus löst das Problem also
 nicht, er verschiebt es an den Rand — und dreht es weg, sobald man zieht.
 
-Gemessen statt behauptet zeigt die Karte das mit. Auf dem Globus liegt die
-Mitte rostrot und der Rand türkis, und beim Drehen wandert es mit.
+Gemessen statt behauptet zeigt die Karte das mit. Auf dem Globus ist die Mitte
+hell und der Rand türkis, und beim Drehen wandert es mit.
+
+**Woran gemessen wird, ist dabei nicht dasselbe**, und das eine auf das andere
+zu zwingen war ein Fehler. Eine ebene Karte zeigt die ganze Welt: das Blatt ist
+ein fester Vorrat, der verteilt wird, und die Frage lautet, ob ein Land mehr
+oder weniger davon bekommt, als ihm zusteht. Deshalb wird dort auf die gezeigte
+Gesamtfläche normiert, und deshalb gibt es beide Richtungen.
+
+Die Kugel zeigt eine Hälfte und hat einen **natürlichen Massstab**: am Punkt,
+auf den man senkrecht schaut, ist sie unverzerrt, und der Flächenmassstab ist
+genau der Kosinus des Abstands dorthin. Hier gibt es nur eine Richtung. Auf die
+gezeigte Fläche zu normieren behauptete, die Mitte bekomme *mehr* als ihren
+Anteil — sie bekommt genau ihren, und alles andere weniger. Der Globus zeigt
+nirgends zu viel, aber fast überall zu wenig.
+
+Der Umrechnungsfaktor für die Kugel ist kein angepasster Wert: die
+Bezugsgrössen liegen im auf Äquatorlänge 2π gestreckten Equal-Earth-Netz, und
+diese Streckung vergrössert Flächen um S²ₑₑ. Das wieder herausgerechnet liefert
+den Kosinus blank — nachgemessen 1,00 am Blickpunkt, und in keiner
+Blickrichtung kommt ein Land über 1.
+
+Ein Sonderfall musste abgefangen werden. Ein Land ganz auf der Rückseite ist
+auf den Rand zusammengefallen, seine gemessene Fläche ist dann nur noch
+Rauschen — bei einer winzigen Insel kann das den eigenen Bezugswert
+übersteigen. Niue kam so auf 12,56 und wäre tiefrot geworden, obwohl es gar
+nicht zu sehen ist.
 
 Die Umstellung prüft sich selbst: auf Mercator muss die Messung dasselbe
 liefern wie die vorberechnete Tabelle. Über alle 241 Länder liegt die grösste
