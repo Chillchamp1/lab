@@ -389,56 +389,36 @@ const balkenOrt = lf => Math.max(0, Math.min(1, (lf / LN3 + 1) / 2));
 // Die Spanne, die gerade auf dem Schirm steht, als Klammer unter dem Balken.
 //
 // Das ist die Antwort auf „Equal Earth hat kaum Kontrast": stimmt, und zwar
-// weil dort nichts zu zeigen ist — jedes Land steht auf 1. Ohne diese Klammer
-// sieht das aus wie eine blasse Karte, mit ihr ist es eine Aussage. Auf
+// weil dort nichts zu zeigen ist — jedes Land steht auf 1. Ohne die Klammer
+// sähe das aus wie eine blasse Karte, mit ihr ist es eine Aussage. Auf
 // Mercator spannt sie fast über den ganzen Balken, auf Equal Earth fällt sie
 // zu einem Strich in der Mitte zusammen.
 //
 // Gezählt wird derselbe Satz wie in den Tabellen: über 150.000 km², ohne die
-// Antarktis. Ohne die Schwelle hiesse das Minimum auf Mercator „Nauru 0,42×" —
-// 21 km² gross, auf dem Schirm nicht zu finden, und auf zwei Stellen derselbe
-// Wert wie Nigeria. Die Schranke kostet also nichts und liefert einen Namen,
-// den man auf der Karte auch sieht. Ohne die Antarktis, weil ihr Wert auf
-// Mercator dauerhaft am Anschlag klebte.
-//
-// Auf der Kugel zählt ausserdem nur die zugewandte Seite. Ein Land dahinter
-// steht rechnerisch auf 0 — es als Minimum zu melden hiesse, über etwas zu
-// reden, das gar nicht im Bild ist.
+// Antarktis. Ohne die Schwelle klebte das Maximum auf Mercator dauerhaft am
+// Anschlag, und das Minimum hinge an einer Insel von 21 km². Auf der Kugel
+// zählt ausserdem nur die zugewandte Seite: ein Land dahinter steht
+// rechnerisch auf 0 und sagte über das Bild nichts aus.
 const spanneEl = document.getElementById('spanne');
-const spanneTextEl = document.getElementById('spanneText');
-let letzteSpanne = '';
 
 function spanneZeigen() {
-  let lo = Infinity, hi = -Infinity, lL = null, hL = null;
+  let lo = Infinity, hi = -Infinity, gefunden = false;
   const gA = globusAnteil();
   for (const l of LAND) {
     if (l.iso === 'ATA' || l.wahr <= 150000) continue;
     if (gA > .5 && !farbeFest && !istVorn(l.i)) continue;
     const v = farbwert(l);
     if (!Number.isFinite(v)) continue;
-    if (v < lo) { lo = v; lL = l; }
-    if (v > hi) { hi = v; hL = l; }
+    if (v < lo) lo = v;
+    if (v > hi) hi = v;
+    gefunden = true;
   }
-  if (lL === null) return;
+  if (!gefunden) return;
   const a = balkenOrt(lo), b = balkenOrt(hi);
   spanneEl.style.left = (a * 100).toFixed(2) + '%';
   spanneEl.style.width = Math.max(.4, (b - a) * 100).toFixed(2) + '%';
-
-  // Auf der Kugel ist der Wert keine Eigenschaft des Landes, sondern des Orts
-  // im Bild: cos des Abstands zur Blickmitte. Jedes Land, das den Rand
-  // berührt, misst dort nahe null — „Vereinigte Staaten 0,00×" wäre zwar die
-  // gemessene Wahrheit, sagte aber das Falsche. Auf der Kugel nennt die Zeile
-  // deshalb Orte statt Namen.
-  const f = v => Math.exp(v).toFixed(2);
-  const eng = hi - lo < Math.log(1.02);
-  const s = eng
-    ? 'on screen now: every country at ' + f((lo + hi) / 2) + '\u00d7 — nothing is distorted here'
-    : (gA > .5 && !farbeFest)
-      ? 'on screen now: ' + f(hi) + '\u00d7 where you look straight down, down to '
-        + f(lo) + '\u00d7 at the rim'
-      : 'on screen now: ' + lL.name + ' ' + f(lo) + '\u00d7 \u2026 ' + hL.name + ' ' + f(hi) + '\u00d7';
-  if (s !== letzteSpanne) { spanneTextEl.textContent = s; letzteSpanne = s; }
 }
+
 
 const dreiFach = (m, a, b) => m + ((a + (b - a) * u) - m) * t;
 
@@ -858,31 +838,55 @@ function rundlaufStopp() {
 
 knopfSpiel.addEventListener('click', () => rundlauf ? rundlaufStopp() : rundlaufStart());
 
-// Die einzige Zeile unter der Karte: was geht gerade in was über, und wie weit.
-// Sie muss drei Fälle treffen — ein Netz steht still, der Regler fährt von
-// Mercator zum Ziel, oder das Ziel selbst wechselt bei stehendem Regler. Der
-// dritte ist der, den eine Beschriftung der beiden Reglerenden nie sagen konnte.
-const jetztEl = document.getElementById('jetzt');
+// Das Dreieck unter der Legende ist die Zustandsanzeige. Ein Satz darunter
+// steht nicht mehr; für eine Vorlesesoftware ist das SVG aber ein Bild ohne
+// Inhalt, also bekommt es dieselbe Aussage als Beschriftung.
+const triEl = document.getElementById('tri');
 let letztesJetzt = '';
 
 function beschrifte() {
   document.getElementById('zielName2').textContent = D.netze[zielB].name;
-
-  const wie = n => n.jahr ? n.jahr + ' \u00b7 ' + n.art : n.art;
-  const steht = n => '<b>' + n.name + '</b><span class="wie">' + wie(n) + '</span>';
-  const geht = (a, b, p) => '<b>' + a.name + '</b><span class="pfeil">\u2192</span><b>'
-    + b.name + '</b><span class="proz">' + Math.round(p * 100) + ' %</span>'
-    + '<span class="wie">' + a.art + ' \u2192 ' + b.art + '</span>';
+  kugelSetzen();
 
   const A = D.netze[zielA], B = D.netze[zielB], MER = D.netze[M];
   let s;
-  if (zielA !== zielB && u > .002 && u < .998) s = geht(A, B, u);   // Zielwechsel
-  else if (t < .002) s = steht(MER);
-  else if (t > .998) s = steht(B);
-  else s = geht(MER, B, t);
-
-  if (s !== letztesJetzt) { jetztEl.innerHTML = s; letztesJetzt = s; }
+  if (zielA !== zielB && u > .002 && u < .998) s = A.name + ' to ' + B.name;
+  else if (t < .002) s = MER.name;
+  else if (t > .998) s = B.name;
+  else s = MER.name + ' to ' + B.name;
+  if (s !== letztesJetzt) { triEl.setAttribute('aria-label', s); letztesJetzt = s; }
 }
+
+// Die drei Zustände spannen ein gleichseitiges Dreieck auf, und die Kugel steht
+// darin genau dort, wo die Karte gerade steht. Das ist keine Metapher, sondern
+// dieselbe Rechnung: das Bild ist die Mischung
+//
+//     Mercator · (1−t)  +  zielA · t(1−u)  +  zielB · t·u
+//
+// (siehe dreiFach), und das sind baryzentrische Gewichte auf dem Dreieck. Die
+// Kugel ist der so gewichtete Schwerpunkt der drei Ecken. Damit stimmt sie auch
+// in dem Fall, den ein Fortschrittsbalken nicht könnte: ein Netzknopf startet
+// Regler und Zielwechsel gleichzeitig, die Karte ist dann eine Mischung aus
+// allen dreien, und die Kugel läuft quer durch die Fläche statt an einer Kante
+// entlang.
+const ECKEN = { mercator: [47.2, 234], equalearth: [282.8, 234], globus: [165, 30] };
+const kugelEl = document.getElementById('kugel');
+
+function kugelSetzen() {
+  const g = new Float64Array(D.netze.length);
+  g[M] += 1 - t;
+  g[zielA] += t * (1 - u);
+  g[zielB] += t * u;
+  let x = 0, y = 0;
+  for (let i = 0; i < g.length; i++) {
+    if (!g[i]) continue;
+    const e = ECKEN[D.netze[i].id];
+    x += g[i] * e[0]; y += g[i] * e[1];
+  }
+  kugelEl.setAttribute('cx', x.toFixed(2));
+  kugelEl.setAttribute('cy', y.toFixed(2));
+}
+
 
 document.getElementById('cGrad').addEventListener('change', e => { zeigGrad = e.target.checked; neuZeichnen(); });
 document.getElementById('cTissot').addEventListener('change', e => { zeigTissot = e.target.checked; neuZeichnen(); });
