@@ -321,7 +321,7 @@ function neuZeichnen() {
   wartet = true;
   requestAnimationFrame(() => { wartet = false; zeichne(); });
 }
-function setze(v, { schieber = true } = {}) { t = v; if (schieber) reg.value = Math.round(v * 1000); neuZeichnen(); }
+function setze(v, { schieber = true } = {}) { t = v; if (schieber) reg.value = Math.round(v * 1000); knoepfe(); neuZeichnen(); }
 reg.addEventListener('input', () => setze(reg.value / 1000, { schieber: false }));
 
 function animiere(schritt, dauer, fertig) {
@@ -333,36 +333,58 @@ function animiere(schritt, dauer, fertig) {
   })(t0);
 }
 
+// Mercator gehört mit in die Knopfreihe. Es ist der Ausgangszustand, um den es
+// der Seite geht — ohne eigenen Knopf steht es nur als graue Beschriftung am
+// Reglerende, und zurück kommt man gar nicht mehr.
 const ziele = document.getElementById('ziele');
 D.netze.forEach((n, i) => {
-  if (i === M) return;
   const b = document.createElement('button');
   b.textContent = n.name;
   b.dataset.netz = i;
-  b.setAttribute('aria-pressed', i === zielB ? 'true' : 'false');
   b.addEventListener('click', () => waehle(i));
   ziele.appendChild(b);
 });
 
+// Gedrückt ist der Knopf, dessen Netz gerade zu sehen ist: am einen Reglerende
+// Mercator, am anderen das Zielnetz, dazwischen keiner.
+function knoepfe() {
+  for (const b of ziele.children) {
+    const i = +b.dataset.netz;
+    b.setAttribute('aria-pressed', (i === M ? t < .02 : i === zielB && t > .98) ? 'true' : 'false');
+  }
+}
+
+function zuT(ziel) {
+  const start = t;
+  if (Math.abs(ziel - start) < .002) { setze(ziel); return; }
+  animiere(e => setze(start + (ziel - start) * e), 850);
+}
+
 function waehle(i) {
-  if (i === zielB) { if (t < .999) animiere(e => setze(e), 850); return; }
-  zielA = zielB; zielB = i; u = 0;
-  for (const b of ziele.children) b.setAttribute('aria-pressed', +b.dataset.netz === i ? 'true' : 'false');
-  beschrifte();
-  tabellen();
-  animiere(e => { u = e; neuZeichnen(); }, 620, () => { zielA = zielB; u = 1; });
-  if (t < .999) animiere(e => setze(e), 850);
+  if (i === M) { zuT(0); return; }
+  if (i !== zielB) {
+    zielA = zielB; zielB = i; u = 0;
+    beschrifte();
+    tabellen();
+    animiere(e => { u = e; neuZeichnen(); }, 620, () => { zielA = zielB; u = 1; });
+  }
+  zuT(1);
 }
 
 function beschrifte() {
-  const n = D.netze[zielB];
-  document.getElementById('zielName').textContent = n.name + ', ' + n.jahr;
-  document.getElementById('zielName2').textContent = n.name;
+  const nenne = n => n.name + ', ' + n.jahr + ' \u00b7 ' + n.art;
+  document.getElementById('startName').textContent = nenne(D.netze[M]);
+  document.getElementById('zielName').textContent = nenne(D.netze[zielB]);
+  document.getElementById('zielName2').textContent = D.netze[zielB].name;
 }
 
 document.getElementById('cGrad').addEventListener('change', e => { zeigGrad = e.target.checked; neuZeichnen(); });
 document.getElementById('cTissot').addEventListener('change', e => { zeigTissot = e.target.checked; neuZeichnen(); });
-document.getElementById('cKurs').addEventListener('change', e => { zeigKurs = e.target.checked; neuZeichnen(); });
+document.getElementById('cKurs').addEventListener('change', e => {
+  zeigKurs = e.target.checked;
+  document.getElementById('lgdKurs').hidden = !zeigKurs;
+  neuZeichnen();
+});
 
 // ---------- Tabellen ----------
 const nf = (n, d = 0) => n.toLocaleString('de-DE', { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -438,4 +460,4 @@ cv.addEventListener('pointerleave', () => { aktiv = null; tip.style.opacity = '0
 
 // ---------- Start ----------
 addEventListener('resize', () => { messe(); zeichne(); });
-messe(); beschrifte(); tabellen(); zeichne();
+messe(); beschrifte(); knoepfe(); tabellen(); zeichne();

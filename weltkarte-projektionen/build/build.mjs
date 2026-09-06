@@ -54,8 +54,8 @@ const daten = {
 const SEITE = `<!doctype html>
 <html lang="de"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Grönland schrumpft um 85 Prozent</title>
-<meta name="description" content="Regler von der Mercator-Karte zu flächentreuen Netzen: Gall-Peters, Equal Earth, Robinson. Mit Gradnetz, Tissot-Indikatrizen und dem Bildflächen-Faktor je Land.">
+<title>164 zu 1 für eine neue Weltkarte</title>
+<meta name="description" content="Die UN-Vollversammlung hat am 4. September 2026 auf Antrag Togos für flächentreue Weltkarten gestimmt. Ein Regler zeigt, was der Wechsel von Mercator auf Equal Earth ausmacht.">
 <style>
 :root{--papier:#f4f4f2;--tinte:#16181d;--leise:#6a6f79;--linie:#d8d8d4;--karte:#edebe6;
  --zuklein:#1d6f78;--mitte:#e6e0d3;--zugross:#a8402b;--akzent:#8a5a2b}
@@ -68,10 +68,16 @@ h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
 .deck{color:var(--leise);max-width:62ch;margin:0 0 26px;font-size:16px}
 .deck b{color:var(--tinte);font-weight:600}
 .ctrl{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 6px}
-.seg{display:inline-flex;border:1px solid var(--linie);border-radius:3px;overflow:hidden}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--linie);border-radius:3px;overflow:hidden}
 .seg button{background:transparent;color:var(--leise);border:0;font:inherit;font-size:13.5px;
- padding:9px 15px;cursor:pointer}
+ padding:9px 13px;cursor:pointer;white-space:nowrap}
 .seg button+button{border-left:1px solid var(--linie)}
+@media(max-width:520px){
+  .seg{display:grid;grid-template-columns:1fr 1fr;width:100%}
+  .seg button+button{border-left:0}
+  .seg button:nth-child(2n){border-left:1px solid var(--linie)}
+  .seg button:nth-child(n+3){border-top:1px solid var(--linie)}
+}
 .seg button[aria-pressed="true"]{background:var(--tinte);color:var(--papier)}
 .seg button:focus-visible{outline:2px solid var(--akzent);outline-offset:-2px}
 .ctrl input[type=range]{flex:1;min-width:190px;accent-color:var(--tinte)}
@@ -79,6 +85,13 @@ h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
 .schalter{display:flex;gap:18px;flex-wrap:wrap;margin:12px 0 0;color:var(--leise);font-size:13.5px}
 .schalter label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
 .schalter input{accent-color:var(--tinte)}
+.lgd{display:flex;flex-wrap:wrap;gap:6px 20px;margin:10px 0 0;color:var(--leise);font-size:13px}
+.lgd[hidden]{display:none}
+.lgd span{display:inline-flex;align-items:center;gap:8px}
+.lgd i{width:26px;height:0;border-top-width:2px;display:block;flex:none}
+.lgd i.lox{border-top-style:dashed;border-top-color:var(--akzent)}
+.lgd i.gk{border-top-style:solid;border-top-color:var(--tinte)}
+.lgd .wo{opacity:.75;font-style:italic}
 figure{margin:14px -8px 0}
 canvas{width:100%;height:auto;display:block;background:var(--karte);border-radius:2px;touch-action:pan-y}
 .skala{display:flex;align-items:center;gap:10px;margin:16px 0 0;color:var(--leise);font-size:12.5px}
@@ -108,24 +121,36 @@ footer p{margin:0 0 11px}
 </style></head><body>
 <div class="wrap">
 
-<h1>Grönland schrumpft<br>um 85 Prozent</h1>
-<p class="deck">Auf der Mercator-Karte belegen Europa und Nordamerika zusammen
-<b>${nordAnteil(iM).toFixed(0)} %</b> der gezeigten Landfläche. Zustehen würden ihnen
+<h1>164 zu 1 für<br>eine neue Weltkarte</h1>
+<p class="deck">Am <b>4. September 2026</b> hat die UN-Vollversammlung auf Antrag
+<b>Togos</b>, eingebracht für die afrikanischen Mitgliedstaaten, die Resolution
+<b>„Correct the Map"</b> angenommen: 164 Stimmen dafür, eine dagegen, sechs Enthaltungen.
+Sie verbietet Mercator nicht, sondern ruft Regierungen, Schulen, Organisationen und
+Technikkonzerne dazu auf, <b>flächentreue</b> Karten zu benutzen, wo es auf
+Grössenverhältnisse ankommt — namentlich <b>Equal Earth</b>.</p>
+<p class="deck">Worum es dabei geht, lässt sich messen. Auf der Mercator-Karte belegen
+Europa und Nordamerika zusammen <b>${nordAnteil(iM).toFixed(0)} %</b> der gezeigten
+Landfläche; zustehen würden ihnen
 <b>${((kont['Europe'].wahr + kont['North America'].wahr) * 100).toFixed(0)} %</b>.
-Der Regler blendet auf ein flächentreues Netz um. Die Farbe zeigt für jedes Land,
-wie viel Bildfläche es bekommt, gemessen an seinem wirklichen Anteil an der
-Landfläche der Erde — und wie diese Verzerrung dabei verschwindet.</p>
+Der Regler blendet um. Die Farbe zeigt für jedes Land, wie viel Bildfläche es
+bekommt, gemessen an seinem wirklichen Anteil an der Landfläche der Erde — und wie
+diese Verzerrung dabei verschwindet.</p>
 
-<div class="ends"><span>Mercator, 1569</span><span id="zielName">Equal Earth, 2018</span></div>
+<div class="ends"><span id="startName"></span><span id="zielName"></span></div>
 <div class="ctrl">
-  <input type="range" id="reg" min="0" max="1000" value="0" step="1" aria-label="Überblendung zwischen Mercator und dem Zielnetz">
-  <div class="seg" id="ziele" role="group" aria-label="Zielnetz"></div>
+  <input type="range" id="reg" min="0" max="1000" value="0" step="1" aria-label="Überblendung zwischen Mercator und dem gewählten Netz">
+  <div class="seg" id="ziele" role="group" aria-label="Kartennetz"></div>
 </div>
 <div class="schalter">
   <label><input type="checkbox" id="cGrad" checked> Gradnetz</label>
   <label><input type="checkbox" id="cTissot"> Tissot-Kreise (je 800 km Radius)</label>
   <label><input type="checkbox" id="cKurs"> Kurs- und Grosskreislinien</label>
 </div>
+<p class="lgd" id="lgdKurs" hidden>
+  <span><i class="lox"></i>Kurslinie — gleichbleibender Kompasskurs (Loxodrome)</span>
+  <span><i class="gk"></i>kürzester Weg (Grosskreis)</span>
+  <span class="wo">New York – Lissabon und Frankfurt – Tokio</span>
+</p>
 
 <figure><canvas id="karte" role="img" aria-label="Weltkarte, überblendbar zwischen der Mercator-Projektion und einem flächentreuen Netz. Die Zahlen dazu stehen in den Tabellen darunter."></canvas></figure>
 
@@ -134,6 +159,22 @@ Landfläche der Erde — und wie diese Verzerrung dabei verschwindet.</p>
   <span class="bar" aria-hidden="true"></span>
   <span>doppelt so viel</span>
 </div>
+
+<h2 class="sec">Was beschlossen wurde</h2>
+<p class="sec">Die Resolution trägt den Titel <i>„Correct the Map: Rebalancing global
+cartographic representation and promoting equitable representation of the world's
+regions, particularly Africa"</i>. Sie ist <b>nicht bindend</b> — die UN kann weder
+Google Maps noch Schulbuchverlage oder Landesvermessungsämter zu etwas zwingen.
+Gegen die Resolution stimmten die Vereinigten Staaten als einziges Land; enthalten
+haben sich Estland, Georgien, Litauen, Moldau, Serbien und die Ukraine.</p>
+<p class="sec">Vorgeschrieben wird kein bestimmtes Netz, gefordert wird
+<b>Flächentreue</b>. Genannt wird Equal Earth, entwickelt 2018 von Bojan Šavrič,
+Tom Patterson und Bernhard Jenny — flächentreu und dabei auf erkennbare Umrisse hin
+gebaut. Dass „flächentreu" die Form noch nicht festlegt, zeigt der Vergleich mit
+<b>Gall-Peters</b>: dieselbe Flächenbilanz, in der Tabelle unten deshalb dieselbe
+Spalte, und trotzdem eine ganz andere Karte. <b>Robinson</b> ist zum Vergleich mit
+dabei und gehört nicht dazu — es ist ein Kompromissnetz und bleibt auf halbem Weg
+stehen, wie die Zahlen zeigen.</p>
 
 <h2 class="sec">Wer wie viel Platz bekommt</h2>
 <p class="sec">Anteil an der gezeigten Landfläche, Antarktis nicht mitgerechnet.
@@ -153,11 +194,22 @@ Bildfläche beim Wechsel von Mercator auf <b id="zielName2">Equal Earth</b> änd
 <h2 class="sec">Was Mercator dafür kann</h2>
 <p class="sec">Mercator ist nicht falsch, sondern für die Navigation gebaut: eine Linie
 konstanten Kompasskurses — eine <b>Loxodrome</b> — ist dort eine Gerade, und das war
-1569 die ganze Aufgabe. Schalte oben die Kurslinien ein: gestrichelt der konstante
-Kurs, durchgezogen der <b>Grosskreis</b>, also der wirklich kürzeste Weg. Auf Mercator
-ist die gestrichelte Linie gerade und die durchgezogene krumm. Beim Umblenden dreht
-sich das Verhältnis um. Der Preis für die gerade Kurslinie ist die Flächenverzerrung;
-beides zugleich geht auf einer ebenen Karte nicht.</p>
+1569 die ganze Aufgabe. Schalte oben die Kurslinien ein: <b>gestrichelt</b> der
+konstante Kurs, <b>durchgezogen</b> der Grosskreis, also der wirklich kürzeste Weg.
+Der Bogen, den man sieht, ist immer der Grosskreis.</p>
+<p class="sec">Wie gerade die gestrichelte Linie ist, lässt sich messen — grösster
+Abstand von der geraden Verbindung, in Prozent der Streckenlänge:</p>
+<div class="tabelle-scroll"><table>
+<tr><th>Strecke</th><th class="z">Mercator, Kurslinie</th><th class="z">Mercator, Grosskreis</th><th class="z">Equal Earth, Grosskreis</th></tr>
+<tr><td>New York – Lissabon</td><td class="z">0,00 %</td><td class="z">10,1 %</td><td class="z">9,8 %</td></tr>
+<tr><td>Frankfurt – Tokio</td><td class="z">0,00 %</td><td class="z">31,4 %</td><td class="z">17,8 %</td></tr>
+</table></div>
+<p class="sec">Null Prozent, und zwar für jede beliebige Strecke — das ist keine
+Näherung, sondern die Eigenschaft, für die das Netz gebaut wurde. Umgekehrt gilt es
+nicht: der Grosskreis wird auf keinem der Netze hier gerade, er biegt sich nur
+weniger. Dafür bräuchte es ein gnomonisches Netz, das dann wiederum nicht einmal eine
+Halbkugel am Stück zeigen kann. Der Preis für die gerade Kurslinie ist die
+Flächenverzerrung; beides zugleich geht auf einer ebenen Karte nicht.</p>
 
 <footer>
 <p><b>Geometrie:</b> <a href="https://www.naturalearthdata.com/">Natural Earth</a>,
@@ -173,6 +225,10 @@ das ${(1 / Math.cos(KAPPUNG) ** 2).toFixed(0)}-fache, bei 85° das ${(1 / Math.c
 Bild; gerade sie zeigt, was an den Polen passiert. Bei den Anteilen zählt sie nicht mit.
 Alle Netze sind auf dieselbe Äquatorlänge normiert, damit die Überblendung nur das
 Netz ändert und nicht zusätzlich die Grösse.</p>
+<p><b>Zur Resolution:</b> <a href="https://news.un.org/en/story/2026/09/1168284">UN
+News</a>, <a href="https://www.handelsblatt.com/politik/international/kritik-an-ueblicher-darstellung-un-stimmen-auf-antrag-togos-fuer-reform-der-weltkarte/100252209.html">Handelsblatt</a>,
+<a href="https://www.zdfheute.de/panorama/un-resolution-weltkarten-100.html">ZDF</a>.
+Abstimmung vom 4. September 2026.</p>
 <p>Teil von <a href="../">lab</a>. Quelle und Bauskripte auf
 <a href="https://github.com/Chillchamp1/lab/tree/main/weltkarte-projektionen">GitHub</a>.</p>
 </footer>

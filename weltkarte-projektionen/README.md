@@ -1,33 +1,51 @@
-# Grönland schrumpft um 85 Prozent
+# 164 zu 1 für eine neue Weltkarte
 
 → **https://chillchamp1.github.io/lab/weltkarte-projektionen/**
+
+Am 4. September 2026 hat die UN-Vollversammlung auf Antrag Togos, eingebracht
+für die afrikanischen Mitgliedstaaten, die Resolution „Correct the Map"
+angenommen: 164 Stimmen dafür, eine dagegen, sechs Enthaltungen. Diese Seite
+zeigt, was der Beschluss praktisch bedeutet.
 
 Ein Regler blendet die Weltkarte von Mercator auf ein flächentreues Netz um.
 Jedes Land ist danach eingefärbt, wie viel Bildfläche es bekommt, gemessen an
 seinem wirklichen Anteil an der Landfläche der Erde. Beim Umblenden läuft die
 Farbe aus der Karte heraus — das ist die ganze Aussage in einer Bewegung.
 
-## Welche „UN-Karte"
+## Welches Netz die UN meint
 
-Der Anstoss war die Frage nach einer Überblendung von Mercator auf „die neue
-UN-Karte". Darunter werden mindestens drei verschiedene Karten verstanden:
+Die Resolution heisst vollständig *„Correct the Map: Rebalancing global
+cartographic representation and promoting equitable representation of the
+world's regions, particularly Africa"*. Sie ist **nicht bindend** und verbietet
+Mercator nicht, sondern ruft Regierungen, Schulen, Organisationen und
+Technikkonzerne dazu auf, flächentreue Karten zu benutzen, wo es auf
+Grössenverhältnisse ankommt — namentlich **Equal Earth**, entwickelt 2018 von
+Šavrič, Patterson und Jenny. Dagegen stimmten die Vereinigten Staaten als
+einziges Land; enthalten haben sich Estland, Georgien, Litauen, Moldau,
+Serbien und die Ukraine.
 
-- **Equal Earth** (2018) — die Karte hinter der „Correct the Map"-Kampagne, die
-  seit 2025 den Wechsel weg von Mercator bei UN und Weltbank fordert.
-- **Gall-Peters** (1855/1973) — in Deutschland die klassische „UN-Karte":
-  Arno Peters, übernommen von UN-Entwicklungsorganisationen und Hilfswerken.
-- **Robinson** (1963) — das Kompromissnetz vieler Atlanten und Institutionen.
+Equal Earth ist deshalb das voreingestellte Zielnetz. Zwei weitere stehen zum
+Vergleich daneben, und beide haben einen Grund:
 
-Die Seite entscheidet sich nicht, sondern lässt alle drei zu. Das kostet nichts:
-ausgeliefert wird ein einziger Satz Koordinaten in geografischen Graden, und
-jedes weitere Netz ist eine Formel von acht Zeilen. Der interessantere Vergleich
-liegt ohnehin zwischen Gall-Peters und Equal Earth — beide flächentreu, und
-trotzdem sieht das eine schlecht aus.
+- **Gall-Peters** (1855/1973) ist genauso flächentreu und in Deutschland als
+  „Peters-Karte" von UN-Entwicklungsorganisationen und Hilfswerken bekannt. In
+  der Anteilstabelle steht es deshalb in derselben Spalte wie Equal Earth —
+  und sieht trotzdem völlig anders aus. Das ist der Beweis dafür, dass
+  „flächentreu" die Form noch nicht festlegt, und die beste Begründung dafür,
+  warum die Resolution ein bestimmtes Netz nennt und nicht nur eine
+  Eigenschaft fordert.
+- **Robinson** (1963) ist das Kompromissnetz vieler Atlanten und gehört
+  ausdrücklich *nicht* dazu. Es ist nicht flächentreu und bleibt in den Zahlen
+  auf halbem Weg stehen — Grönland behält dort noch das 1,6-fache seines
+  Anteils statt des 6,7-fachen bei Mercator.
 
-Die vierte Kandidatin, die azimutal-äquidistante Polkarte aus dem UN-Emblem,
-fehlt bewusst. Sie bricht die Überblendung: der Südpol wird bei ihr zum ganzen
-Kartenrand, weshalb schon das Emblem bei 60° Süd aufhört. Ein Ein- und
-Ausblenden der Antarktis mitten in der Bewegung wäre mehr Störung als Erkenntnis.
+Mercator selbst hat einen eigenen Knopf: es ist der Ausgangszustand, und man
+muss zurückkönnen.
+
+Nicht dabei ist die azimutal-äquidistante Polkarte aus dem UN-Emblem. Sie hat
+mit dem Beschluss nichts zu tun und bricht ausserdem die Überblendung: der
+Südpol wird bei ihr zum ganzen Kartenrand, weshalb schon das Emblem bei 60°
+Süd aufhört.
 
 ## Die Kennzahl
 
@@ -50,7 +68,12 @@ Nigeria 0,43.
   Fläche gleich und die Form schert. Das ist die Erklärung, die kein Text leistet.
 - **Loxodrome gegen Grosskreis**: Mercator ist nicht falsch, sondern für die
   Navigation gebaut — eine Linie konstanten Kompasskurses ist dort eine Gerade.
-  Zwei Strecken zeigen, was das kostet und was es einbringt.
+  Nachgemessen: die Kurslinie weicht auf Mercator um **0,00 %** der
+  Streckenlänge von der Geraden ab, für jede beliebige Strecke. Der Bogen, den
+  man sieht, ist immer der Grosskreis, der auf Mercator um 10 bis 31 % ausholt.
+  Umgekehrt gilt es nicht: auf Equal Earth wird der Grosskreis nicht gerade,
+  er biegt sich nur weniger (10 bis 18 %). Dafür bräuchte es ein gnomonisches
+  Netz. Eine Legende unter den Schaltern sagt, welche Linie welche ist.
 - **Gradnetz**, weil man sonst sieht, *dass* sich etwas verschiebt, aber nicht
   *warum*.
 
