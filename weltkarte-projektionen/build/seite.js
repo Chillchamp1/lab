@@ -22,27 +22,24 @@ function eeRoh(l, p) {
           A4 * t8 * th + A3 * t6 * th + A2 * t2 * th + A1 * th];
 }
 const S_EE = Math.PI / eeRoh(Math.PI, 0)[0];
-const R_X = [1, .9986, .9954, .99, .9822, .973, .96, .9427, .9216, .8962, .8679, .835,
-             .7986, .7597, .7186, .6732, .6213, .5722, .5322];
-const R_Y = [0, .062, .124, .186, .248, .31, .372, .434, .4958, .5571, .6176, .6769,
-             .7346, .7903, .8435, .8936, .9394, .9761, 1];
-const S_ROB = 1 / .8487;
-
 const PROJ = {
   mercator(l, p) { const q = Math.max(-KAPP, Math.min(KAPP, p)); return [l, Math.log(Math.tan(Math.PI / 4 + q / 2))]; },
-  peters(l, p) { return [l, 2 * Math.sin(p)]; },
   equalearth(l, p) { const r = eeRoh(l, p); return [r[0] * S_EE, r[1] * S_EE]; },
-  robinson(l, p) {
-    const a = Math.abs(p) / RAD / 5, i = Math.min(17, Math.floor(a)), f = a - i;
-    return [.8487 * l * (R_X[i] + (R_X[i + 1] - R_X[i]) * f) * S_ROB,
-            Math.sign(p) * 1.3523 * (R_Y[i] + (R_Y[i + 1] - R_Y[i]) * f) * S_ROB];
-  },
 };
-const NETZ = D.netze.map(n => n.id);
+// Nur die ebenen Netze werden hier projiziert. Der Globus steht in D.netze
+// mit dabei, wird aber gedreht statt projiziert und hängt hinten dran.
+const NETZ = D.netze.filter(n => PROJ[n.id]).map(n => n.id);
 const M = NETZ.indexOf('mercator');
 
 // Eine Ebene hält dieselben Punkte in allen vier Netzen. Das kostet vier
 // Float32Arrays und macht das Überblenden zu einer reinen Interpolation.
+// Der Globus ist eine Kugel vom Radius 1. Das ist nicht willkürlich: die
+// ebenen Netze sind auf die Äquatorlänge 2π normiert, und eine Karte dieser
+// Breite wickelt sich genau auf eine Kugel dieses Radius. Die Überblendung
+// zeigt also wirklich das Aufwickeln und nicht nebenbei eine Grössenänderung.
+const R_GLOBUS = 1;
+const GLOBUS = NETZ.length;          // Steckplatz hinter den ebenen Netzen
+
 function ebene(lo, la) {
   const n = lo.length, X = [], Y = [], kasten = [];
   for (const id of NETZ) {
@@ -56,7 +53,46 @@ function ebene(lo, la) {
     }
     X.push(x); Y.push(y); kasten.push([x0, x1, y0, y1]);
   }
-  return { n, X, Y, kasten, cx: new Float32Array(n), cy: new Float32Array(n) };
+
+  // Für den Globus wird nicht projiziert, sondern gedreht. Die Einheitsvektoren
+  // auf der Kugel hängen nicht von der Drehung ab und werden einmal gerechnet;
+  // eine Drehung ist danach eine Handvoll Multiplikationen je Punkt, ganz ohne
+  // Winkelfunktionen. Deshalb kann der Globus am Zeiger hängen.
+  const vx = new Float32Array(n), vy = new Float32Array(n), vz = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const l = lo[i] * RAD, p = la[i] * RAD, c = Math.cos(p);
+    vx[i] = c * Math.cos(l); vy[i] = c * Math.sin(l); vz[i] = Math.sin(p);
+  }
+  X.push(new Float32Array(n)); Y.push(new Float32Array(n));
+  kasten.push([-R_GLOBUS, R_GLOBUS, -R_GLOBUS, R_GLOBUS]);
+
+  return { n, X, Y, kasten, vx, vy, vz, vorn: new Uint8Array(n),
+           cx: new Float32Array(n), cy: new Float32Array(n) };
+}
+
+// Blickmitte des Globus. Vorbelegt auf Afrika und Europa — das ist der Streit.
+let dreheLam = 10 * RAD, drehePhi = 20 * RAD;
+
+// Punkte auf der Rückseite werden längs ihrer Richtung auf den Rand geschoben,
+// statt nach innen zurückzuklappen. Ein Umriss, der über den Horizont läuft,
+// bekommt dadurch genau den Randbogen als Abschluss — ohne dass man Vielecke
+// an einem Kreis beschneiden müsste.
+function dreheEbene(e) {
+  const sl = Math.sin(dreheLam), cl = Math.cos(dreheLam);
+  const sp = Math.sin(drehePhi), cp = Math.cos(drehePhi);
+  const X = e.X[GLOBUS], Y = e.Y[GLOBUS], V = e.vorn;
+  for (let i = 0; i < e.n; i++) {
+    const x = e.vx[i], y = e.vy[i], z = e.vz[i];
+    const px = x * cl + y * sl, py = y * cl - x * sl;
+    const qy = z * cp - px * sp, qz = px * cp + z * sp;
+    V[i] = qz > 0 ? 1 : 0;
+    if (qz > 0) { X[i] = R_GLOBUS * py; Y[i] = R_GLOBUS * qy; }
+    else {
+      const r = Math.hypot(py, qy);
+      if (r < 1e-9) { X[i] = R_GLOBUS; Y[i] = 0; }
+      else { X[i] = R_GLOBUS * py / r; Y[i] = R_GLOBUS * qy / r; }
+    }
+  }
 }
 
 const land = ebene(LON, LAT);
@@ -123,13 +159,19 @@ const kurse = (() => {
   const e = zuegeZuEbene(z); e.art = art; return e;
 })();
 
+const EBENEN = [land, gradnetz, tissot, kurse];
+function dreheAlle() { for (const e of EBENEN) dreheEbene(e); }
+dreheAlle();
+
 // ---------- Länder ----------
-const LAND = D.laender.map((r, i) => ({
-  i, name: r[0], iso: r[1], kontinent: r[2], wahr: r[3], einwohner: r[4],
-  faktor: [r[5] / 1000, r[6] / 1000, r[7] / 1000, r[8] / 1000],
-  logF: [Math.log(r[5] / 1000), Math.log(r[6] / 1000), Math.log(r[7] / 1000), Math.log(r[8] / 1000)],
-  x0: 0, x1: 0, y0: 0, y1: 0,
-}));
+const LAND = D.laender.map((r, i) => {
+  const f = r.slice(5).map(v => v / 1000);        // Mercator, Equal Earth, Globus
+  return {
+    i, name: r[0], iso: r[1], kontinent: r[2], wahr: r[3], einwohner: r[4],
+    faktor: f, logF: f.map(Math.log),
+    x0: 0, x1: 0, y0: 0, y1: 0,
+  };
+});
 
 // ---------- Farbskala ----------
 const misch = (a, b, f) => a.map((v, i) => Math.round(v + (b[i] - v) * f));
@@ -167,10 +209,15 @@ const cv = document.getElementById('karte'), ctx = cv.getContext('2d');
 const VERHAELTNIS = 1.30;
 let breite = 0, hoehe = 0, dpr = 1, skala = 1, mx = 0, my = 0;
 
-let t = 0, u = 1, zielA = 2, zielB = 2;              // Ziel 2 = Equal Earth
+let t = 0, u = 1, zielA = 1, zielB = 1;              // Ziel 1 = Equal Earth
 let zeigGrad = true, zeigTissot = false, zeigKurs = false;
 
 const dreiFach = (m, a, b) => m + ((a + (b - a) * u) - m) * t;
+
+// Wie stark der Globus gerade im Bild ist. Steuert die Meeresscheibe, das
+// Wegfallen der Rückseite und ob ein Zug am Zeiger dreht statt zu zeigen.
+const globusAnteil = () =>
+  dreiFach(0, zielA === GLOBUS ? 1 : 0, zielB === GLOBUS ? 1 : 0);
 
 function mischeEbene(e, auswahl) {
   const ax = e.X[zielA], ay = e.Y[zielA], bx = e.X[zielB], by = e.Y[zielB], mxA = e.X[M], myA = e.Y[M];
@@ -266,7 +313,26 @@ function zeichne() {
   ctx.setTransform(skala * dpr, 0, 0, -skala * dpr,
     (breite / 2 - mx * skala) * dpr, (hoehe / 2 + my * skala) * dpr);
 
-  const CX = land.cx, CY = land.cy;
+  const CX = land.cx, CY = land.cy, gA = globusAnteil();
+
+  // Das Meer. Erst spät eingeblendet: solange die Karte noch überwiegend eben
+  // ist, wäre eine Scheibe hinter ihr nur ein Fleck.
+  const meer = Math.max(0, (gA - .55) / .45);
+  if (meer > 0) {
+    ctx.globalAlpha = meer;
+    ctx.fillStyle = '#dfe3e6';
+    ctx.beginPath();
+    ctx.arc(0, 0, R_GLOBUS, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // Umrisse, die ganz auf der Rückseite liegen, sind beim fertigen Globus zu
+  // einem Strich auf dem Rand zusammengefallen. Erst dann fallen sie weg —
+  // vorher sind sie noch echte Flächen und dürfen nicht springen.
+  const rueckseiteWeg = gA > .995;
+  const vorn = land.vorn;
+
   ctx.lineJoin = 'round';
   ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--karte').trim() || '#eceae4';
   ctx.lineWidth = .7 / skala;
@@ -275,12 +341,20 @@ function zeichne() {
     const f = dreiFach(l.logF[M], l.logF[zielA], l.logF[zielB]);
     ctx.fillStyle = SKALA[skalaIndex(f)];
     ctx.beginPath();
+    let gezeichnet = false;
     for (let r = landRing[l.i]; r < landRing[l.i + 1]; r++) {
       const a = zRingVon[r], b = zRingVon[r + 1];
+      if (rueckseiteWeg) {
+        let sichtbar = false;
+        for (let k = a; k < b; k++) if (vorn[AUSWAHL[k]]) { sichtbar = true; break; }
+        if (!sichtbar) continue;
+      }
       ctx.moveTo(CX[AUSWAHL[a]], CY[AUSWAHL[a]]);
       for (let k = a + 1; k < b; k++) ctx.lineTo(CX[AUSWAHL[k]], CY[AUSWAHL[k]]);
       ctx.closePath();
+      gezeichnet = true;
     }
+    if (!gezeichnet) continue;
     ctx.fill('evenodd');
     ctx.stroke();
   }
@@ -290,28 +364,51 @@ function zeichne() {
     ctx.moveTo(e.cx[a], e.cy[a]);
     for (let p = a + 1; p < a + n; p++) ctx.lineTo(e.cx[p], e.cy[p]);
   };
+  // Linien auf der Rückseite werden beim Aufwickeln ausgeblendet, je weiter der
+  // Globus im Bild ist. Ohne das schlingern sie: ihre Punkte laufen alle auf den
+  // Rand zu, und die Zwischenzustände dieser Bewegung sehen aus wie Schlaufen.
+  // Ein Zug halb vorn, halb hinten verblasst entsprechend halb.
+  const zugAlpha = (e, i) => {
+    if (gA <= 0) return 1;
+    const [a, n] = e.abschnitt[i];
+    let v = 0;
+    for (let p = a; p < a + n; p++) if (e.vorn[p]) v++;
+    return 1 - gA * (1 - v / n);
+  };
 
   if (zeigGrad) {
     ctx.strokeStyle = 'rgba(22,24,29,.19)'; ctx.lineWidth = .8 / skala;
-    ctx.beginPath();
-    for (let i = 0; i < gradnetz.abschnitt.length; i++) zug(gradnetz, i);
-    ctx.stroke();
+    for (let i = 0; i < gradnetz.abschnitt.length; i++) {
+      const al = zugAlpha(gradnetz, i);
+      if (al < .02) continue;
+      ctx.globalAlpha = al;
+      ctx.beginPath(); zug(gradnetz, i); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
   }
   if (zeigTissot) {
     ctx.fillStyle = 'rgba(22,24,29,.10)'; ctx.strokeStyle = 'rgba(22,24,29,.42)';
     ctx.lineWidth = 1.1 / skala;
     for (let i = 0; i < tissot.abschnitt.length; i++) {
+      const al = zugAlpha(tissot, i);
+      if (al < .02) continue;
+      ctx.globalAlpha = al;
       ctx.beginPath(); zug(tissot, i); ctx.closePath(); ctx.fill(); ctx.stroke();
     }
+    ctx.globalAlpha = 1;
   }
   if (zeigKurs) {
     ctx.lineWidth = 2 / skala; ctx.lineCap = 'round';
     for (let i = 0; i < kurse.abschnitt.length; i++) {
+      const al = zugAlpha(kurse, i);
+      if (al < .02) continue;
+      ctx.globalAlpha = al;
       const gk = kurse.art[i] === 'gk';
       ctx.strokeStyle = gk ? '#16181d' : '#8a5a2b';
       ctx.setLineDash(gk ? [] : [6 / skala, 5 / skala]);
       ctx.beginPath(); zug(kurse, i); ctx.stroke();
     }
+    ctx.globalAlpha = 1;
     ctx.setLineDash([]);
   }
 
@@ -326,6 +423,7 @@ function zeichne() {
     ctx.lineJoin = 'round';
     for (const [i, text, hoch] of BESCHRIFTUNG) {
       const [a, n] = kurse.abschnitt[i], p = a + Math.round(n * 0.55);
+      if (gA > .5 && !kurse.vorn[p]) continue;
       const x = (kurse.cx[p] - mx) * skala + breite / 2;
       const y = hoehe / 2 - (kurse.cy[p] - my) * skala + (hoch ? -13 : 15);
       ctx.lineWidth = 3.5;
@@ -346,21 +444,24 @@ function zeichne() {
 // örtliche Form erhalten. Genau daraus folgt die gerade Kurslinie.
 let letzterHinweis = '';
 function hinweis() {
+  document.getElementById('hinweisGlobus').hidden = globusAnteil() < .5;
   const el = document.getElementById('hinweisTissot');
   el.hidden = !zeigTissot;
   if (!zeigTissot) return;
-  const flaechentreu = D.netze[zielB].art === 'flächentreu';
   let s;
-  if (t < .12) {
+  if (globusAnteil() > .88) {
+    s = '<b>Auf der Kugel sind alle Kreise gleich gross und rund.</b> Hier gibt es nichts '
+      + 'zu tauschen — Fläche und Form stimmen beide, weil nichts in die Ebene gezwungen '
+      + 'wird. Dass die Kreise zum Rand hin flacher aussehen, ist echte Verkürzung durch '
+      + 'die Wölbung und keine Behauptung über ihre Grösse.';
+  } else if (t < .12) {
     s = '<b>Alle Kreise sind Kreise geblieben</b> — nur verschieden gross. Das ist Mercators '
       + 'Stärke: in alle Richtungen wird gleich stark gedehnt, also stimmen Winkel und örtliche '
       + 'Form. Daraus folgt die gerade Kurslinie. Bezahlt wird es mit der Grösse.';
   } else if (t > .88) {
-    s = flaechentreu
-      ? '<b>Alle Kreise sind jetzt gleich gross</b> — dafür zu Ellipsen geschert. Die Fläche '
-        + 'stimmt überall, die Form nicht mehr. Das ist der Tausch.'
-      : '<b>Robinson macht beides halb.</b> Die Kreise sind weder gleich gross geblieben noch '
-        + 'rund — ein Kompromiss, der keine der beiden Eigenschaften ganz einlöst.';
+    s = '<b>Alle Kreise sind jetzt gleich gross</b> — dafür zu Ellipsen geschert. Die Fläche '
+      + 'stimmt überall, die Form nicht mehr. Das ist der Tausch, den eine ebene Karte '
+      + 'nicht umgehen kann.';
   } else {
     s = 'Dazwischen: die Kreise gleichen sich in der Grösse an und verlieren dabei ihre runde Form. '
       + 'Beides zugleich geht auf einer ebenen Karte nicht.';
@@ -377,7 +478,7 @@ function neuZeichnen() {
   wartet = true;
   requestAnimationFrame(() => { wartet = false; zeichne(); });
 }
-function setze(v, { schieber = true } = {}) { t = v; if (schieber) reg.value = Math.round(v * 1000); knoepfe(); neuZeichnen(); }
+function setze(v, { schieber = true } = {}) { t = v; if (schieber) reg.value = Math.round(v * 1000); knoepfe(); zeigerHaltung(); neuZeichnen(); }
 reg.addEventListener('input', () => setze(reg.value / 1000, { schieber: false }));
 
 function animiere(schritt, dauer, fertig) {
@@ -428,7 +529,7 @@ function waehle(i) {
 }
 
 function beschrifte() {
-  const nenne = n => n.name + ', ' + n.jahr + ' \u00b7 ' + n.art;
+  const nenne = n => n.name + (n.jahr ? ', ' + n.jahr : '') + ' \u00b7 ' + n.art;
   document.getElementById('startName').textContent = nenne(D.netze[M]);
   document.getElementById('zielName').textContent = nenne(D.netze[zielB]);
   document.getElementById('zielName2').textContent = D.netze[zielB].name;
@@ -446,12 +547,15 @@ document.getElementById('cKurs').addEventListener('change', e => {
 const nf = (n, d = 0) => n.toLocaleString('de-DE', { minimumFractionDigits: d, maximumFractionDigits: d });
 function tabellen() {
   const z = zielB;
+  // Der Globus steht nicht als eigene Spalte da: er ist unverzerrt, liefert also
+  // dieselben Anteile wie das flächentreue Netz. Die zweite Spalte ist beides.
+  const spalten = NETZ.length;
   document.getElementById('tKont').innerHTML =
-    '<tr><th>Kontinent</th>' + D.netze.map(n => '<th class="z">' + n.name + '</th>').join('') +
-    '<th class="z">Einwohner</th></tr>' +
+    '<tr><th>Kontinent</th><th class="z">Mercator</th>' +
+    '<th class="z">Equal Earth und Globus</th><th class="z">Einwohner</th></tr>' +
     D.kontinente.map(r => '<tr><td>' + r[0] + '</td>' +
-      r.slice(1, 5).map(v => '<td class="z">' + nf(v, 1) + ' %</td>').join('') +
-      '<td class="z">' + nf(r[5]) + ' Mio</td></tr>').join('');
+      r.slice(1, 1 + spalten).map(v => '<td class="z">' + nf(v, 1) + ' %</td>').join('') +
+      '<td class="z">' + nf(r[1 + spalten]) + ' Mio</td></tr>').join('');
 
   // Sortiert wird nach der absolut gewonnenen oder verlorenen Bildfläche, nicht
   // nach Prozent: sonst stünden auf der Gewinnerseite nur winzige Äquatorländer,
@@ -475,11 +579,17 @@ let aktiv = null;
 function treffer(px, py) {
   kaesten();
   const x = (px - breite / 2) / skala + mx, y = (hoehe / 2 - py) / skala + my;
+  const hinten = globusAnteil() > .5, vorn = land.vorn;
   for (const l of LAND) {
     if (x < l.x0 || x > l.x1 || y < l.y0 || y > l.y1) continue;
     let drin = false;
     for (let r = landRing[l.i]; r < landRing[l.i + 1]; r++) {
       const a = zRingVon[r], b = zRingVon[r + 1];
+      if (hinten) {
+        let sichtbar = false;
+        for (let k = a; k < b; k++) if (vorn[AUSWAHL[k]]) { sichtbar = true; break; }
+        if (!sichtbar) continue;
+      }
       for (let k = a, m = b - 1; k < b; m = k++) {
         const i = AUSWAHL[k], j = AUSWAHL[m], yi = land.cy[i], yj = land.cy[j];
         if ((yi > y) !== (yj > y) &&
@@ -506,7 +616,42 @@ function zeigeTip(l, ev) {
   tip.style.opacity = '1';
 }
 
+// Solange der Globus im Bild ist, dreht ein Zug ihn, statt zu zeigen. Darunter
+// bleibt der Zeiger, was er war.
+let zieht = null;
+
+function zeigerHaltung() {
+  cv.style.cursor = zieht ? 'grabbing' : (globusAnteil() > .3 ? 'grab' : 'default');
+}
+
+cv.addEventListener('pointerdown', ev => {
+  if (globusAnteil() <= .3) return;
+  zieht = { x: ev.clientX, y: ev.clientY };
+  cv.setPointerCapture(ev.pointerId);
+  tip.style.opacity = '0';
+  zeigerHaltung();
+  ev.preventDefault();
+});
+
+const zugEnde = ev => {
+  if (!zieht) return;
+  zieht = null;
+  if (cv.hasPointerCapture(ev.pointerId)) cv.releasePointerCapture(ev.pointerId);
+  zeigerHaltung();
+};
+cv.addEventListener('pointerup', zugEnde);
+cv.addEventListener('pointercancel', zugEnde);
+
 cv.addEventListener('pointermove', ev => {
+  if (zieht) {
+    const dx = ev.clientX - zieht.x, dy = ev.clientY - zieht.y;
+    zieht.x = ev.clientX; zieht.y = ev.clientY;
+    dreheLam -= dx * .38 * RAD;
+    drehePhi = Math.max(-85 * RAD, Math.min(85 * RAD, drehePhi + dy * .38 * RAD));
+    dreheAlle();
+    neuZeichnen();
+    return;
+  }
   const r = cv.getBoundingClientRect();
   const l = treffer(ev.clientX - r.left, ev.clientY - r.top);
   aktiv = l;
@@ -516,4 +661,4 @@ cv.addEventListener('pointerleave', () => { aktiv = null; tip.style.opacity = '0
 
 // ---------- Start ----------
 addEventListener('resize', () => { messe(); zeichne(); });
-messe(); beschrifte(); knoepfe(); tabellen(); zeichne();
+messe(); beschrifte(); knoepfe(); tabellen(); zeigerHaltung(); zeichne();

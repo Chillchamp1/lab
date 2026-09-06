@@ -59,11 +59,11 @@ export function baueNutzlast({ log = () => {} } = {}) {
     l.faktor = NETZE.map((n, i) => (l.netzFlaeche[i] / sNetz[i]) / l.anteilWahr);
   }
 
-  // Probe 1: die beiden flächentreuen Netze müssen dieselben Anteile liefern.
-  const iP = NETZE.findIndex(n => n.id === 'peters');
+  // Probe 1: Equal Earth ist flächentreu, also muss jedes Land dort genau den
+  // Anteil bekommen, der ihm zusteht — Faktor 1, für alle 242.
   const iE = NETZE.findIndex(n => n.id === 'equalearth');
-  const abw = Math.max(...laender.filter(zaehlt).map(l => Math.abs(l.faktor[iP] / l.faktor[iE] - 1)));
-  log(`  Probe Gall-Peters gegen Equal Earth: grösste Abweichung ${(abw * 100).toFixed(4)} %`);
+  const abw = Math.max(...laender.filter(zaehlt).map(l => Math.abs(l.faktor[iE] - 1)));
+  log(`  Probe Equal Earth flächentreu: grösste Abweichung vom Faktor 1: ${(abw * 100).toFixed(4)} %`);
 
   // Probe 2: Kugelfläche gegen Lambert, der ja flächentreu ist. Beide Wege
   // müssen dasselbe Verhältnis liefern.

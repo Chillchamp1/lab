@@ -29,6 +29,7 @@ const kompakt = laender.map(l => [
   Math.round(l.wahr),
   l.einwohner,
   ...l.faktor.map(f => Math.round(f * 1000)),
+  1000,                                   // Globus: keine Verzerrung, Faktor 1
 ]);
 
 const kontinentZeilen = Object.entries(kont)
@@ -42,7 +43,12 @@ const kontinentZeilen = Object.entries(kont)
   ]);
 
 const daten = {
-  netze: NETZE.map(n => ({ id: n.id, name: n.name, jahr: n.jahr, art: n.art })),
+  netze: [
+    ...NETZE.map(n => ({ id: n.id, name: n.name, jahr: n.jahr, art: n.art })),
+    // Der Globus wird nicht hier gerechnet, sondern im Browser aus den
+    // Einheitsvektoren auf der Kugel — er hängt an der Drehung.
+    { id: 'globus', name: 'Globus', jahr: null, art: 'unverzerrt' },
+  ],
   kappung: +(KAPPUNG / GRAD).toFixed(0),
   gitter: nutz.gitter,
   lon: nutz.lon, lat: nutz.lat, ringe: nutz.ringe, ringzahl: nutz.ringzahl,
@@ -136,7 +142,9 @@ Landfläche; zustehen würden ihnen
 <b>${((kont['Europe'].wahr + kont['North America'].wahr) * 100).toFixed(0)} %</b>.
 Der Regler blendet um. Die Farbe zeigt für jedes Land, wie viel Bildfläche es
 bekommt, gemessen an seinem wirklichen Anteil an der Landfläche der Erde — und wie
-diese Verzerrung dabei verschwindet.</p>
+diese Verzerrung dabei verschwindet. Daneben steht der <b>Globus</b>: die einzige
+Darstellung ohne jede Verzerrung, und damit der Massstab, an dem sich beide Karten
+messen lassen.</p>
 
 <div class="ends"><span id="startName"></span><span id="zielName"></span></div>
 <div class="ctrl">
@@ -151,6 +159,7 @@ diese Verzerrung dabei verschwindet.</p>
 
 <figure><canvas id="karte" role="img" aria-label="Weltkarte, überblendbar zwischen der Mercator-Projektion und einem flächentreuen Netz. Die Zahlen dazu stehen in den Tabellen darunter."></canvas></figure>
 
+<p class="hinweis" id="hinweisGlobus" hidden><b>Ziehen dreht die Kugel.</b> Sie ist der Massstab: hier stimmen Fläche, Form und Winkel zugleich, weil nichts in die Ebene gezwungen wird. Bezahlt wird das damit, dass immer nur eine Hälfte zu sehen ist.</p>
 <p class="hinweis" id="hinweisTissot" hidden></p>
 <p class="lgd" id="lgdKurs" hidden>
   <span><i class="lox"></i>gleichbleibender Kompasskurs</span>
@@ -174,17 +183,19 @@ haben sich Estland, Georgien, Litauen, Moldau, Serbien und die Ukraine.</p>
 <p class="sec">Vorgeschrieben wird kein bestimmtes Netz, gefordert wird
 <b>Flächentreue</b>. Genannt wird Equal Earth, entwickelt 2018 von Bojan Šavrič,
 Tom Patterson und Bernhard Jenny — flächentreu und dabei auf erkennbare Umrisse hin
-gebaut. Dass „flächentreu" die Form noch nicht festlegt, zeigt der Vergleich mit
-<b>Gall-Peters</b>: dieselbe Flächenbilanz, in der Tabelle unten deshalb dieselbe
-Spalte, und trotzdem eine ganz andere Karte. <b>Robinson</b> ist zum Vergleich mit
-dabei und gehört nicht dazu — es ist ein Kompromissnetz und bleibt auf halbem Weg
-stehen, wie die Zahlen zeigen.</p>
+gebaut.</p>
+<p class="sec">Der dritte Knopf ist die Gegenprobe. Auf dem <b>Globus</b> stellt sich
+die Frage nach der richtigen Projektion gar nicht: Fläche, Form und Winkel stimmen
+alle, weil nichts in die Ebene gezwungen wird. Er kostet nur die halbe Welt — man
+sieht immer nur eine Seite. Genau das ist der Handel, den jede Weltkarte eingeht,
+und der Regler zeigt ihn in beide Richtungen. <b>Ziehen dreht die Kugel.</b></p>
 
 <h2 class="sec">Wer wie viel Platz bekommt</h2>
 <p class="sec">Anteil an der gezeigten Landfläche, Antarktis nicht mitgerechnet.
-Gall-Peters und Equal Earth sind beide flächentreu und liefern deshalb dieselbe
-Spalte — der Unterschied zwischen ihnen liegt allein in der Form.
-Robinson ist ein Kompromiss und bleibt auf halbem Weg stehen.</p>
+Equal Earth und der Globus stehen in derselben Spalte: beide sind flächentreu, der
+eine, weil er dafür gebaut wurde, der andere, weil auf einer Kugel nichts zu
+verzerren ist. Die zweite Spalte ist damit nicht bloss eine dritte Meinung, sondern
+der wahre Anteil.</p>
 <div class="tabelle-scroll"><table id="tKont"></table></div>
 
 <h2 class="sec">Grösste Veränderung</h2>
@@ -203,7 +214,9 @@ der Kreis bleibt, heisst: an dieser Stelle wird in alle Richtungen gleich stark
 gedehnt. Winkel bleiben also erhalten, und damit stimmt die örtliche Form. Auf einem
 flächentreuen Netz ist es umgekehrt: alle Kreise sind gleich gross, aber zu Ellipsen
 geschert — die Fläche stimmt, die Form nicht mehr. Mehr ist über den Tausch nicht
-zu sagen, und man sieht ihn in einer einzigen Bewegung.</p>
+zu sagen, und man sieht ihn in einer einzigen Bewegung. Auf dem <b>Globus</b> sind
+die Kreise dann gleich gross <i>und</i> rund: der Kontrollfall, an dem man sieht,
+dass beides zugleich geht — nur eben nicht auf einem Blatt Papier.</p>
 <p class="sec">Die beiden Flugstrecken zeigen, wozu das praktisch gut war. Weil auf
 Mercator Winkel stimmen, ist eine Linie <b>gleichbleibenden Kompasskurses</b> dort
 eine Gerade — man legt das Lineal an und liest den Kurs ab. Das war 1569 die ganze
@@ -235,8 +248,12 @@ beiden flächentreuen Netze liefern untereinander auf 0,03 % dieselben Anteile.<
 <p><b>Mercator</b> ist bei ${(KAPPUNG / GRAD).toFixed(0)}° gekappt — der Flächenmassstab beträgt dort schon
 das ${(1 / Math.cos(KAPPUNG) ** 2).toFixed(0)}-fache, bei 85° das ${(1 / Math.cos(85 * GRAD) ** 2).toFixed(0)}-fache. Die Antarktis bleibt trotzdem im
 Bild; gerade sie zeigt, was an den Polen passiert. Bei den Anteilen zählt sie nicht mit.
-Alle Netze sind auf dieselbe Äquatorlänge normiert, damit die Überblendung nur das
-Netz ändert und nicht zusätzlich die Grösse.</p>
+Beide ebenen Netze sind auf dieselbe Äquatorlänge normiert, damit die Überblendung
+nur das Netz ändert und nicht zusätzlich die Grösse. Der <b>Globus</b> hat aus
+demselben Grund den Radius 1: eine Karte dieser Äquatorlänge wickelt sich genau auf
+eine Kugel dieser Grösse. Gezeichnet wird er orthografisch, also so, wie eine Kugel
+aus grosser Entfernung aussieht; Punkte hinter dem Horizont wandern auf den Rand,
+wodurch ein Umriss, der über den Horizont läuft, dort sauber abschliesst.</p>
 <p><b>Zur Resolution:</b> <a href="https://news.un.org/en/story/2026/09/1168284">UN
 News</a>, <a href="https://www.handelsblatt.com/politik/international/kritik-an-ueblicher-darstellung-un-stimmen-auf-antrag-togos-fuer-reform-der-weltkarte/100252209.html">Handelsblatt</a>,
 <a href="https://www.zdfheute.de/panorama/un-resolution-weltkarten-100.html">ZDF</a>.
