@@ -131,13 +131,44 @@ Linien auf der Rückseite werden beim Aufwickeln ausgeblendet. Ohne das
 schlingern sie: ihre Punkte laufen alle auf den Rand zu, und die
 Zwischenzustände dieser Bewegung sehen aus wie Schlaufen.
 
+### Die Verzerrung wird gemessen, nicht behauptet
+
+Die Farbe kommt nicht aus einer Tabelle, sondern wird in jedem Bild an dem
+gemessen, was tatsächlich auf dem Schirm steht: Flächeninhalt jedes Landes im
+aktuellen Bild, geteilt durch seinen Anteil an der Wahrheit. Bezugsgrösse ist
+dasselbe Land im flächentreuen Netz.
+
+Nötig wurde das durch den Globus. Eine vorberechnete Tabelle kennt nur die
+Netze und behauptet für die Kugel überall Faktor 1 — schliesslich wird dort
+nichts in die Ebene gezwungen. Nur ist das, was man sieht, nicht die Kugel,
+sondern **ihr Bild auf einem flachen Schirm**, und das ist wieder eine
+Projektion. Der Flächenmassstab ist dort der Kosinus des Abstands zur
+Bildmitte: bei 60° die Hälfte, am Rand null. Der Globus löst das Problem also
+nicht, er verschiebt es an den Rand — und dreht es weg, sobald man zieht.
+
+Gemessen statt behauptet zeigt die Karte das mit. Auf dem Globus liegt die
+Mitte rostrot und der Rand türkis, und beim Drehen wandert es mit.
+
+Die Umstellung prüft sich selbst: auf Mercator muss die Messung dasselbe
+liefern wie die vorberechnete Tabelle. Über alle 241 Länder liegt die grösste
+Abweichung bei **0,139 %** (Marshallinseln), und das ist die Rasterung der
+Koordinaten auf hundertstel Grad, nicht das Verfahren. Auf Equal Earth kommt
+für jedes Land 1,00 heraus.
+
+Ein Fallstrick steckte darin. Gezeichnet wird auf der ausgedünnten Geometrie —
+was unter einem halben Bildpunkt liegt, fällt weg. Fürs Zeichnen ist das
+unsichtbar, für eine Flächenmessung nicht: ein Zwergstaat schrumpft dabei auf
+die drei Ecken, die ein Ring mindestens braucht, und daran ist nichts mehr zu
+messen. Saint-Barthélemy lag so um **118 %** daneben — ausgerechnet auf einer
+Seite über zu klein dargestellte Länder. Gemessen wird deshalb über alle
+Punkte, gezeichnet weiter über die ausgedünnten: Rechnen ist billig, das Bauen
+der Pfade ist es nicht. Der Unterschied kostet 0,4 Millisekunden je Bild.
+
 ### Mercators Verzerrung festhalten
 
-Normalerweise sagt die Farbe, wie stark die *gerade gezeigte* Darstellung ein
-Land verzerrt. Auf einem flächentreuen Netz und auf der Kugel ist das nichts,
-also läuft die Farbe beim Umblenden aus der Karte — schön als Bewegung, aber am
-Ende steht man auf dem Globus vor lauter gleichfarbigen Ländern und sieht nicht
-mehr, worum es ging.
+Die gemessene Farbe sagt, wie stark die *gerade gezeigte* Ansicht ein Land
+verzerrt. Auf einem flächentreuen Netz ist das nichts, also läuft sie dort aus
+der Karte.
 
 Ein Schalter hält sie deshalb bei Mercator fest. Dann bedeutet sie eine feste
 Eigenschaft des Landes — wie stark Mercator es verzerrt — und bleibt beim
