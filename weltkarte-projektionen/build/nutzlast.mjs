@@ -17,9 +17,55 @@ const GITTER = 100;
 // gerade sie zeigt, was Mercator an den Polen anrichtet.
 const OHNE = new Set(['ATA']);
 
+// Natural Earths Standardebene zeichnet die Lage vor Ort („de facto"), und
+// dort liegt die Krim seit 2014 bei Russland. Diese Seite zeigt sie bei der
+// Ukraine — das ist die völkerrechtliche Zuordnung, der auch die UN folgt
+// (Resolution 68/262 vom 27. März 2014, 100 Stimmen dafür). Eine Seite über
+// eine UN-Resolution zu Landkarten sollte dabei nicht ausgerechnet in einer
+// anderen UN-Frage die Gegenposition zeichnen.
+//
+// Natural Earth liefert dafür eigene Sichtweisen-Dateien (`_ukr`, `_rus`, …).
+// Hier wird stattdessen das eine Polygon umgehängt: das ändert nur die eine
+// Zuordnung und lässt alle anderen Grenzen so, wie die Standardebene sie zieht.
+const KRIM = [34.10, 44.95];        // Simferopol
+
+const imRing = (pt, ring) => {
+  let d = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const a = ring[i], b = ring[j];
+    if ((a[1] > pt[1]) !== (b[1] > pt[1]) &&
+        pt[0] < (b[0] - a[0]) * (pt[1] - a[1]) / (b[1] - a[1]) + a[0]) d = !d;
+  }
+  return d;
+};
+const polygone = f => f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates;
+
+// Das Polygon wird gesucht, nicht abgezählt: über den Punkt Simferopol. Ein
+// fester Index wäre still falsch geworden, sobald Natural Earth die Datei
+// einmal neu ordnet.
+function krimZurUkraine(roh, log) {
+  const rus = roh.features.find(f => f.properties.ISO_A3 === 'RUS');
+  const ukr = roh.features.find(f => f.properties.ISO_A3 === 'UKR');
+  if (!rus || !ukr) throw new Error('RUS oder UKR nicht in der Quelle gefunden');
+
+  const rp = polygone(rus), up = polygone(ukr);
+  const krim = rp.filter(p => imRing(KRIM, p[0]));
+  if (krim.length !== 1) throw new Error(`Krim: ${krim.length} Polygone bei RUS statt genau eines`);
+
+  rus.geometry = { type: 'MultiPolygon', coordinates: rp.filter(p => !krim.includes(p)) };
+  ukr.geometry = { type: 'MultiPolygon', coordinates: [...up, ...krim] };
+
+  // Gegenprobe, damit die Verschiebung nicht still danebengeht.
+  const nochBeiRus = polygone(rus).some(p => imRing(KRIM, p[0]));
+  const jetztBeiUkr = polygone(ukr).some(p => imRing(KRIM, p[0]));
+  if (nochBeiRus || !jetztBeiUkr) throw new Error('Krim-Verschiebung fehlgeschlagen');
+  log(`  Krim (${krim[0][0].length} Punkte) von Russland zur Ukraine verschoben; Probe: Simferopol liegt bei UKR`);
+}
+
 export function baueNutzlast({ log = () => {} } = {}) {
   const roh = JSON.parse(readFileSync(QUELLE, 'utf8'));
   log(`  ${roh.features.length} Länder aus ${QUELLE}`);
+  krimZurUkraine(roh, log);
 
   const laender = [];
   for (const f of roh.features) {

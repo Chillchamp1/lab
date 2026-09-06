@@ -132,6 +132,58 @@ Stellen: ⅓ bei 0 %, ½ bei 18,4 %, 1 bei 50 %, 2 bei 81,6 %, 3 bei 100 %.
 Erst danach kommen Regler, Knöpfe, Schalter — und dann Titel, Text und
 Tabellen.
 
+## Die Krim
+
+Natural Earths Standardebene `ne_50m_admin_0_countries` zeichnet die Lage vor
+Ort — „de facto" — und legt die Krim damit zu Russland. Nachgemessen: Simferopol,
+Sewastopol und Kertsch lagen alle bei `RUS`.
+
+Diese Seite zeichnet sie bei der Ukraine. Das ist die Position der
+UN-Vollversammlung (Resolution 68/262 vom 27. März 2014), und eine Seite über
+eine UN-Resolution zu Landkarten sollte in einer anderen UN-Frage nicht
+ausgerechnet die Gegenposition zeichnen.
+
+Natural Earth liefert dafür eigene Sichtweisen-Dateien (`_ukr`, `_rus`, `_deu`,
+…). Statt die ganze Datei zu tauschen hängt `nutzlast.mjs` das eine Polygon um:
+das ändert nur diese eine Zuordnung und lässt alle anderen Grenzen so, wie die
+Standardebene sie zieht. Gesucht wird es **geometrisch**, über den Punkt
+Simferopol — ein fester Index wäre still falsch geworden, sobald Natural Earth
+die Datei einmal neu ordnet. Der Bau bricht ab, wenn nicht genau ein Polygon
+gefunden wird oder die Gegenprobe danach nicht stimmt.
+
+| | vorher | jetzt |
+|---|---|---|
+| Ukraine | 570.157 km² | **597.127 km²** |
+| Russland | 16.879.675 km² | **16.852.705 km²** |
+
+Die verschobenen 26.970 km² decken sich mit der amtlichen Fläche der Krim
+(rund 27.000 km² mit Sewastopol). Am Isthmus entsteht dabei kein Loch: der
+Krimring und Ukraines Festlandring teilen sich 16 Stützpunkte exakt, von
+33,59°/46,10° bis 35,00°/45,73°, kleinster Abstand 0,000 km.
+
+Die Einwohnerzahlen bleiben, wie die Quelle sie führt — `POP_EST` ist ohnehin
+grob und im Fuss der Seite als solches benannt.
+
+**Was das nicht heisst:** alle anderen umstrittenen Gebiete stehen weiterhin so,
+wie Natural Earths De-facto-Ebene sie zeichnet — Westsahara, Kaschmir, die
+Golanhöhen, Abchasien, Nordzypern und andere. Die Seite sagt das im Fuss dazu,
+statt so zu tun, als wäre die Frage mit einem Polygon erledigt.
+
+### Wie das durchgehen konnte
+
+Der Fehler sass in der Quelle, nicht in der Rechnung — und genau deshalb hat ihn
+keine der Proben gefangen. Alle Selbstprüfungen dieses Projekts messen
+**Geometrie und Arithmetik**: ob Equal Earth flächentreu ist, ob das
+Kugelintegral zu Lambert passt, ob die Tissot-Flächen übereinstimmen, ob die
+Netze ihrer Definition folgen. Welchem Land ein Umriss zugeschlagen wird, ist
+für all das eine *Eingabe*, kein Ergebnis. Man kann jede dieser Proben bestehen
+und trotzdem die falsche Grenze zeichnen.
+
+Dazu kam die Wahl der Datei. `ne_50m_admin_0_countries` sieht nach dem neutralen
+Standard aus — ist aber die De-facto-Ebene, also bereits eine Position. Dass
+Natural Earth überhaupt Sichtweisen-Dateien anbietet, ist das Schild, das genau
+darauf zeigt; ich habe es nicht gelesen.
+
 ## Sind die Netze richtig gerechnet?
 
 Nachgeprüft, und zwar nicht gegen den eigenen Code, sondern gegen die
