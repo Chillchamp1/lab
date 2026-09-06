@@ -224,12 +224,71 @@ let t = 0, u = 1, zielA = 1, zielB = 1;              // Ziel 1 = Equal Earth
 let zeigGrad = true, zeigTissot = false, zeigKurs = false;
 
 // Normalerweise sagt die Farbe, wie stark die *gerade gezeigte* Darstellung ein
-// Land verzerrt — auf einem flächentreuen Netz und auf der Kugel ist das nichts,
-// und die Farbe läuft aus der Karte. Festgehalten sagt sie stattdessen, wie
-// stark *Mercator* es verzerrt, und bleibt beim Umblenden stehen: dann sieht man
-// auf der richtigen Gestalt, wen die alte Karte kleinrechnet.
+// Land verzerrt. Festgehalten sagt sie stattdessen, wie stark *Mercator* es
+// verzerrt, und bleibt beim Umblenden stehen: dann sieht man auf der richtigen
+// Gestalt, wen die alte Karte kleinrechnet.
 let farbeFest = false;
-const farbwert = l => farbeFest ? l.logF[M] : dreiFach(l.logF[M], l.logF[zielA], l.logF[zielB]);
+
+// Die laufende Verzerrung wird nicht aus einer Tabelle geholt, sondern in jedem
+// Bild an dem gemessen, was tatsächlich auf dem Schirm steht: Flächeninhalt
+// jedes Landes im aktuellen Bild, geteilt durch seinen Anteil an der Wahrheit.
+//
+// Das war nötig, weil die Kugel selbst verzerrt. Eine vorberechnete Tabelle
+// kennt nur die Netze und behauptet für den Globus überall Faktor 1 — aber die
+// Ansicht einer Kugel staucht zum Rand hin alles zusammen, bei 60° vom
+// Mittelpunkt auf die Hälfte, am Rand auf null. Gemessen statt behauptet zeigt
+// die Farbe das mit, und sie wandert beim Drehen mit.
+let liveLog = null, bezug = null, bezugSumme = 0;
+
+// Flächeninhalt eines Landes im gerade gezeichneten Bild (Gausssche
+// Trapezformel über seine Ringe). Löcher zählen mit, aber weil die Bezugsgrösse
+// mit derselben Regel gemessen wird, kürzt sich das im Verhältnis heraus.
+//
+// Gemessen wird über *alle* Punkte, nicht über die ausgedünnten. Die Ausdünnung
+// wirft weg, was unter einem halben Bildpunkt liegt — für das Zeichnen ist das
+// unsichtbar, für eine Flächenmessung nicht: ein Zwergstaat schrumpft dabei auf
+// die drei Ecken, die ein Ring mindestens braucht, und daran ist nichts mehr zu
+// messen. Saint-Barthélemy lag so um 118 % daneben. Rechnen ist billig, das
+// Bauen der Pfade ist es nicht — also volle Geometrie fürs Messen, ausgedünnte
+// fürs Zeichnen.
+function bildFlaeche(i, X, Y) {
+  let f = 0;
+  for (let r = landRing[i]; r < landRing[i + 1]; r++) {
+    const a = ringOff[r], b = ringOff[r + 1];
+    let s = 0;
+    for (let p = a, q = b - 1; p < b; q = p++) s += X[q] * Y[p] - X[p] * Y[q];
+    f += Math.abs(s / 2);
+  }
+  return f;
+}
+
+// Bezug ist das flächentreue Netz: dort bekommt jedes Land genau seinen Anteil.
+function messeBezug() {
+  const iE = NETZ.indexOf('equalearth');
+  bezug = new Float64Array(LAND.length);
+  bezugSumme = 0;
+  for (const l of LAND) {
+    bezug[l.i] = bildFlaeche(l.i, land.X[iE], land.Y[iE]);
+    if (l.iso !== 'ATA') bezugSumme += bezug[l.i];
+  }
+}
+
+function messeLive() {
+  if (!liveLog) liveLog = new Float64Array(LAND.length);
+  let summe = 0;
+  const jetzt = new Float64Array(LAND.length);
+  for (const l of LAND) {
+    jetzt[l.i] = bildFlaeche(l.i, land.cx, land.cy);
+    if (l.iso !== 'ATA') summe += jetzt[l.i];
+  }
+  const norm = summe > 0 ? bezugSumme / summe : 1;
+  for (const l of LAND) {
+    const f = bezug[l.i] > 0 ? jetzt[l.i] * norm / bezug[l.i] : 1;
+    liveLog[l.i] = f > 1e-6 ? Math.log(f) : Math.log(1e-6);
+  }
+}
+
+const farbwert = l => farbeFest ? l.logF[M] : liveLog[l.i];
 
 const dreiFach = (m, a, b) => m + ((a + (b - a) * u) - m) * t;
 
@@ -285,6 +344,7 @@ function duenneAus() {
   }
   von[ringLen.length] = idx.length;
   AUSWAHL = Int32Array.from(idx); zRingVon = von;
+  messeBezug();
 }
 
 function messe() {
@@ -316,7 +376,8 @@ function kaesten() {
 
 function zeichne() {
   bildNr++;
-  mischeEbene(land, AUSWAHL);
+  mischeEbene(land);
+  messeLive();
   if (zeigGrad) mischeEbene(gradnetz);
   if (zeigTissot) mischeEbene(tissot);
   if (zeigKurs) mischeEbene(kurse);
@@ -492,10 +553,11 @@ function hinweis() {
   if (!zeigTissot) return;
   let s;
   if (globusAnteil() > .88) {
-    s = '<b>Auf der Kugel sind alle Kreise gleich gross und rund.</b> Hier gibt es nichts '
-      + 'zu tauschen — Fläche und Form stimmen beide, weil nichts in die Ebene gezwungen '
-      + 'wird. Dass die Kreise zum Rand hin flacher aussehen, ist echte Verkürzung durch '
-      + 'die Wölbung und keine Behauptung über ihre Grösse.';
+    s = '<b>Auf der Kugel wären alle Kreise gleich gross und rund</b> — auf der Kugel. '
+      + 'Was Sie sehen, ist ihr Bild auf einem flachen Schirm, und das staucht zum Rand '
+      + 'hin: dort werden dieselben Kreise zu schmalen Sicheln. Der Globus löst das '
+      + 'Problem also nicht, er verschiebt es an den Rand — und dreht es weg, sobald Sie '
+      + 'ziehen.';
   } else if (t < .12) {
     s = '<b>Alle Kreise sind Kreise geblieben</b> — nur verschieden gross. Das ist Mercators '
       + 'Stärke: in alle Richtungen wird gleich stark gedehnt, also stimmen Winkel und örtliche '
