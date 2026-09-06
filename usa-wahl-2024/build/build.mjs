@@ -42,7 +42,7 @@ const D = {
   gx: nutz.gx, gy: nutz.gy, kx: nutz.kx, ky: nutz.ky,
   idx: nutz.idx, ringe: nutz.ringe, ringzahl: nutz.ringzahl,
   lut: LUT, countys: kompakt,
-  sichtGeo: nutz.sichtGeo, sichtKar: nutz.sichtKar,
+
 };
 
 const zahl = n => Math.round(n).toLocaleString('de-DE');
@@ -142,7 +142,7 @@ in diesen ${(harrisC.length / daten.length * 100).toFixed(0)} Prozent der Gebiet
 </div>
 
 <figure>
-  <svg class="map" id="map" viewBox="0 0 ${nutz.breite} ${nutz.hoehe}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Karte aller Countys, Alaska und Hawaii oben"></svg>
+  <svg class="map" id="map" viewBox="${nutz.sicht.join(' ')}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Karte aller Countys, Alaska und Hawaii oben"></svg>
 </figure>
 
 <div class="skala">
@@ -283,9 +283,6 @@ function zeichne(){
     }
     pfade[i].setAttribute('d',teile.join(''));
   }
-  // Ausschnitt mitziehen, damit die Grafik in beiden Zuständen dicht bleibt
-  const v=D.sichtGeo.map((g,k)=>g+(D.sichtKar[k]-g)*t);
-  map.setAttribute('viewBox', v[0].toFixed(0)+' '+v[1].toFixed(0)+' '+v[2].toFixed(0)+' '+v[3].toFixed(0));
 }
 function faerbe(){
   for(let i=0;i<pfade.length;i++)

@@ -52,9 +52,9 @@ export function baueNutzlast({ gitter = 2000, durchgaenge = 6, log = () => {} } 
     log('  Kartogramm in ' + CACHE + ' abgelegt');
   }
 
-  // Die Einsätze werden in jedem Zustand einzeln ans Festland herangerückt.
-  // Wären sie fest verankert, klebte es entweder auf der Landkarte oder im
-  // Kartogramm: Alaska schrumpft zwischen beiden auf ein Zehntel.
+  // Ruhige Komposition: nur Alaska wechselt zwischen den Zuständen seinen
+  // Platz, weil es dabei auf ein Zehntel schrumpft. Festland und Hawaii
+  // bleiben stehen und verformen sich an Ort und Stelle.
   // Reihenfolge über dem Festland: Hawaii links, Alaska rechts daneben.
   const verschoben = {};
   for (const name of ['conus', 'alaska', 'hawaii']) {
@@ -76,19 +76,35 @@ export function baueNutzlast({ gitter = 2000, durchgaenge = 6, log = () => {} } 
       (rG2.minY + rG2.h / 2) - (rK.minY + rK.h / 2));
   }
 
-  // Einsätze je Zustand: Unterkante knapp über das Festland, von links nach
-  // rechts aufgereiht.
-  for (const zustand of [['geoX', 'geoY'], ['X', 'Y']]) {
-    const [fx, fy] = zustand;
-    const rC = rahmen(verschoben.conus[fx], verschoben.conus[fy]);
-    const unten = rC.minY - LUECKE_Y * 1000;
-    let links = rC.minX;
-    for (const name of ['hawaii', 'alaska']) {
-      const g = verschoben[name];
-      const rr = rahmen(g[fx], g[fy]);
-      schiebe(g[fx], g[fy], links - rr.minX, (unten - rr.maxY));
-      links += rr.w + LUECKE_X * 1000;
+  // Ein gemeinsames Regal über dem Festland, hoch genug für beide Zustände.
+  const rCg = rahmen(verschoben.conus.geoX, verschoben.conus.geoY);
+  const rCk = rahmen(verschoben.conus.X, verschoben.conus.Y);
+  const regal = Math.min(rCg.minY, rCk.minY) - LUECKE_Y * 1000;
+  const linkeKante = Math.min(rCg.minX, rCk.minX);
+
+  // Hawaii steht fest: derselbe Schwerpunkt in beiden Zuständen, damit es sich
+  // nur verformt und nicht wandert. Ausgerichtet wird am grösseren der beiden
+  // Zustände, sonst ragte das Kartogramm ins Festland.
+  let hawaiiRechts;
+  {
+    const h = verschoben.hawaii;
+    const rG = rahmen(h.geoX, h.geoY), rK = rahmen(h.X, h.Y);
+    const breiteste = Math.max(rG.w, rK.w), hoechste = Math.max(rG.h, rK.h);
+    const zielX = linkeKante + breiteste / 2;
+    const zielY = regal - hoechste / 2;
+    for (const [fx, fy] of [['geoX', 'geoY'], ['X', 'Y']]) {
+      const rr = rahmen(h[fx], h[fy]);
+      schiebe(h[fx], h[fy], zielX - (rr.minX + rr.w / 2), zielY - (rr.minY + rr.h / 2));
     }
+    hawaiiRechts = zielX + breiteste / 2;
+  }
+
+  // Alaska wandert: es schrumpft zwischen den Zuständen auf ein Zehntel und
+  // stünde sonst in einem von beiden verloren im Leeren.
+  for (const [fx, fy] of [['geoX', 'geoY'], ['X', 'Y']]) {
+    const a = verschoben.alaska;
+    const rr = rahmen(a[fx], a[fy]);
+    schiebe(a[fx], a[fy], (hawaiiRechts + LUECKE_X * 1000) - rr.minX, regal - rr.maxY);
   }
 
   // Alles zu einer Knotenliste zusammenfassen
@@ -125,8 +141,11 @@ export function baueNutzlast({ gitter = 2000, durchgaenge = 6, log = () => {} } 
   };
   const G = raster(alleGeoX, alleGeoY), K = raster(alleKarX, alleKarY);
 
-  // Bildausschnitt je Zustand. Im Kartogramm ist Alaska ein Fleck; wäre der
-  // Ausschnitt fest, bliebe oben eine grosse leere Fläche stehen.
+  // Ein fester Bildausschnitt für beide Zustände, als Vereinigung der beiden
+  // Ausdehnungen. Ein mitwandernder Ausschnitt würde beim Übergang die ganze
+  // Grafik über den Schirm schieben; hier soll sich nur Alaska bewegen. Dass
+  // im Kartogramm oben Platz frei bleibt, ist die Aussage: so viel Fläche hat
+  // Alaska auf der Landkarte belegt.
   const kasten = (qx, qy) => {
     let a = Infinity, b = -Infinity, c = Infinity, d = -Infinity;
     for (let i = 0; i < qx.length; i++) {
@@ -136,11 +155,15 @@ export function baueNutzlast({ gitter = 2000, durchgaenge = 6, log = () => {} } 
     const luft = (b - a) * 0.012;
     return [Math.round(a - luft), Math.round(c - luft), Math.round(b - a + 2 * luft), Math.round(d - c + 2 * luft)];
   };
-  const sichtGeo = kasten(G.qx, G.qy), sichtKar = kasten(K.qx, K.qy);
+  const kG = kasten(G.qx, G.qy), kK = kasten(K.qx, K.qy);
+  const links = Math.min(kG[0], kK[0]), oben = Math.min(kG[1], kK[1]);
+  const sicht = [links, oben,
+    Math.max(kG[0] + kG[2], kK[0] + kK[2]) - links,
+    Math.max(kG[1] + kG[3], kK[1] + kK[3]) - oben];
 
   const delta = arr => { const o = new Array(arr.length); let v = 0; for (let i = 0; i < arr.length; i++) { o[i] = arr[i] - v; v = arr[i]; } return o; };
   const nutz = {
-    breite: BREITE, hoehe, sichtGeo, sichtKar,
+    breite: BREITE, hoehe, sicht,
     gx: packe(delta(G.qx)), gy: packe(delta(G.qy)),
     kx: packe(delta(K.qx)), ky: packe(delta(K.qy)),
     ringe: packe(gebiete.flatMap(g => g.map(rr => rr.length))),

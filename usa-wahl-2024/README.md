@@ -4,12 +4,15 @@
 
 Die US-Präsidentschaftswahl 2024 auf Ebene der Countys. Ein Regler verzieht die
 Karte von der Fläche zur Einwohnerzahl, ein Abspiel-Knopf lässt den Übergang in
-Schleife laufen. Hawaii und Alaska stehen oben, im selben Massstab, in jedem
-Zustand ans Festland herangerückt — die Einsätze sitzen deshalb nicht fest,
-sondern werden für Landkarte und Kartogramm getrennt ausgerichtet, weil Alaska
-zwischen beiden um das Zehnfache schrumpft. Auch der Bildausschnitt zieht mit,
-sonst bliebe im Kartogramm oben eine grosse leere Fläche stehen. Umschaltbar
+Schleife laufen. Hawaii und Alaska stehen oben, im selben Massstab. Umschaltbar
 zwischen einer Skala für den Vorsprung und der üblichen Sieger-Einfärbung.
+
+Beim Übergang bewegt sich **nur Alaska**. Festland und Hawaii sind fest
+verankert und verformen sich an Ort und Stelle; Alaska wandert, weil es dabei
+auf ein Zehntel seiner Kantenlänge schrumpft und sonst verloren im Leeren
+stünde. Der Bildausschnitt bleibt ebenfalls fest — ein mitwandernder würde die
+ganze Grafik über den Schirm schieben. Dass im Kartogramm oben Platz frei
+bleibt, ist die Aussage: so viel Fläche hat Alaska auf der Landkarte belegt.
 
 Trump gewann **2662 der 3114 Gebiete**, Harris **452**. Bei den Stimmen stand es
 77,29 zu 75,01 Millionen — landesweit trennt beide nur 1,5 Punkte. Diese Lücke zwischen gewonnener Fläche und gewonnenen
