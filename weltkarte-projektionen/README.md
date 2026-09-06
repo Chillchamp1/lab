@@ -45,6 +45,27 @@ Die azimutal-äquidistante Polkarte aus dem UN-Emblem ist weiterhin nicht dabei.
 Sie hat mit dem Beschluss nichts zu tun, und der echte Globus leistet ohnehin
 mehr.
 
+## Der Rundlauf
+
+Drei Zustände ergeben sechs Übergänge, und die Seite kann sie alle nacheinander
+zeigen. Die Folge ist so gewählt, dass jeder Übergang genau einmal vorkommt und
+sie wieder am Anfang endet:
+
+    Mercator → Equal Earth → Globus → Mercator → Globus → Equal Earth → Mercator
+
+Zwei davon laufen anders als der Regler: **Equal Earth gegen Globus** hat mit
+Mercator nichts zu tun und wird deshalb bei stehendem Regler geblendet, indem
+das alte und das neue Ziel ineinander übergehen. Ohne das müsste man für diesen
+Vergleich den Umweg über Mercator nehmen, und der Vergleich wäre keiner mehr.
+
+Jede Handbewegung hält den Rundlauf an — der Regler, ein Netzknopf, ein Druck
+auf die Karte. Wer eingreift, will selbst schauen.
+
+Die Überblendungen dauern 1,7 Sekunden, ein Zielwechsel 1,24, dazu 0,9 Sekunden
+Stand auf jedem Zustand. Das ist halb so schnell wie in der ersten Fassung: bei
+einer Bewegung, die die eigentliche Aussage trägt, ist Gemächlichkeit kein
+Verlust.
+
 ## Die Kennzahl
 
 Nicht der lokale Flächenmassstab (bei Mercator `sec²φ`), sondern der **Anteil an
