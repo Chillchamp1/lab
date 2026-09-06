@@ -22,5 +22,11 @@
     "titel": "Die Wahl 2024, nach Menschen gewichtet",
     "beschreibung": "US-Präsidentschaftswahl: 3114 Gebiete samt Alaska und Hawaii, verzogen von der Fläche zur Einwohnerzahl, mit wahrnehmungsgleicher Farbskala.",
     "datum": "2026-09"
+  },
+  {
+    "slug": "weltkarte-projektionen",
+    "titel": "Grönland schrumpft um 85 Prozent",
+    "beschreibung": "Regler von der Mercator-Karte zu flächentreuen Netzen — Gall-Peters, Equal Earth, Robinson —, jedes Land eingefärbt nach der Bildfläche, die es zu viel oder zu wenig bekommt.",
+    "datum": "2026-09"
   }
 ]
