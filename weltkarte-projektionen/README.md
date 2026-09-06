@@ -131,6 +131,36 @@ Linien auf der Rückseite werden beim Aufwickeln ausgeblendet. Ohne das
 schlingern sie: ihre Punkte laufen alle auf den Rand zu, und die
 Zwischenzustände dieser Bewegung sehen aus wie Schlaufen.
 
+### Mercators Verzerrung festhalten
+
+Normalerweise sagt die Farbe, wie stark die *gerade gezeigte* Darstellung ein
+Land verzerrt. Auf einem flächentreuen Netz und auf der Kugel ist das nichts,
+also läuft die Farbe beim Umblenden aus der Karte — schön als Bewegung, aber am
+Ende steht man auf dem Globus vor lauter gleichfarbigen Ländern und sieht nicht
+mehr, worum es ging.
+
+Ein Schalter hält sie deshalb bei Mercator fest. Dann bedeutet sie eine feste
+Eigenschaft des Landes — wie stark Mercator es verzerrt — und bleibt beim
+Umblenden stehen, während sich die Gestalt korrigiert. Auf dem Globus sieht man
+damit auf der **richtigen** Kugelgestalt, welche Länder die Karte kleinrechnet:
+Afrika, Indonesien, Indien und Brasilien türkis, Grönland und Norwegen rostrot.
+Der Schalter gilt für alle drei Ansichten; auf Mercator selbst sind beide Modi
+ohnehin dasselbe.
+
+### Die Küstenlinie
+
+Damit kam ein Problem, das sich nicht durch Farbwahl lösen liess. Die Skala
+reicht von hell in der Mitte nach dunkel an beiden Enden. Gegen alle 65 Stufen
+zugleich kommt **keine einzige** Meeresfarbe an: durchgerechnet liegt der beste
+erreichbare kleinste Kontrast bei 1,74:1, und der gehört zu einem fast
+schwarzen Meer. Ein türkis eingefärbtes Afrika verschwimmt sonst mit dem Meer,
+sobald man die Verzerrung festhält.
+
+Gelöst ist es dort, wo Karten es seit jeher lösen: mit einer Umrisslinie. Auf
+dem Blatt trennt eine Linie in Papierfarbe die Länder voneinander, auf der
+Kugel wird daraus eine dunkle Küstenlinie. Die wirkt unabhängig von der
+Füllung, und damit ist die Meeresfarbe wieder frei wählbar.
+
 ### Die Farbe des Meeres
 
 Auf dem Blatt gibt es kein Meer — die Länder schwimmen auf dem Papier, und was

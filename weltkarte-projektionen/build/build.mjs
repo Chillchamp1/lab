@@ -160,12 +160,14 @@ messen lassen.</p>
 <div class="schalter">
   <label><input type="checkbox" id="cGrad" checked> Gradnetz</label>
   <label><input type="checkbox" id="cTissot"> Verzerrungskreise</label>
+  <label><input type="checkbox" id="cFest"> Mercators Verzerrung festhalten</label>
   <label><input type="checkbox" id="cKurs"> Zwei Flugstrecken</label>
 </div>
 
 <figure><canvas id="karte" role="img" aria-label="Weltkarte, überblendbar zwischen der Mercator-Projektion und einem flächentreuen Netz. Die Zahlen dazu stehen in den Tabellen darunter."></canvas></figure>
 
 <p class="hinweis" id="hinweisGlobus" hidden><b>Ziehen dreht die Kugel.</b> Sie ist der Massstab: hier stimmen Fläche, Form und Winkel zugleich, weil nichts in die Ebene gezwungen wird. Bezahlt wird das damit, dass immer nur eine Hälfte zu sehen ist.</p>
+<p class="hinweis" id="hinweisFarbe" hidden></p>
 <p class="hinweis" id="hinweisTissot" hidden></p>
 <p class="lgd" id="lgdKurs" hidden>
   <span><i class="lox"></i>gleichbleibender Kompasskurs</span>
