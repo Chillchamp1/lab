@@ -219,43 +219,39 @@ Afrika, Indonesien, Indien und Brasilien türkis, Grönland und Norwegen rostrot
 Der Schalter gilt für alle drei Ansichten; auf Mercator selbst sind beide Modi
 ohnehin dasselbe.
 
-### Die Küstenlinie
+### Eine Handschrift für alle drei Ansichten
 
-Damit kam ein Problem, das sich nicht durch Farbwahl lösen liess. Die Skala
-reicht von hell in der Mitte nach dunkel an beiden Enden. Gegen alle 65 Stufen
-zugleich kommt **keine einzige** Meeresfarbe an: durchgerechnet liegt der beste
-erreichbare kleinste Kontrast bei 1,74:1, und der gehört zu einem fast
-schwarzen Meer. Ein türkis eingefärbtes Afrika verschwimmt sonst mit dem Meer,
-sobald man die Verzerrung festhält.
+Der Globus hatte eine Weile ein eigenes Aussehen: eine schieferblaue
+Meeresscheibe, dunkle Küstenlinien, kräftiger gezogenes Gradnetz. Für sich
+genommen war das die bessere Karte — nur war es eben eine *andere* Karte. Beim
+Überblenden wechselte damit nicht nur die Projektion, sondern auch der
+Kartenstil, und das Auge liest den Farbwechsel zuerst und die Form danach. Wer
+vergleichen soll, wie Mercator ein Land verzerrt, darf nicht gleichzeitig
+vergleichen müssen, wie zwei Kartenstile aussehen.
 
-Gelöst ist es dort, wo Karten es seit jeher lösen: mit einer Umrisslinie. Auf
-dem Blatt trennt eine Linie in Papierfarbe die Länder voneinander, auf der
-Kugel wird daraus eine dunkle Küstenlinie. Die wirkt unabhängig von der
-Füllung, und damit ist die Meeresfarbe wieder frei wählbar.
+Jetzt tragen alle drei Zustände dieselbe Handschrift: Länder schwimmen auf dem
+Papier, getrennt von einer Linie in Papierfarbe (0,7 px), Gradnetz und
+Verzerrungskreise immer gleich stark. Ein Meer gibt es nirgends, auch auf der
+Kugel nicht. Nichts an der Darstellung hängt mehr am Stand des Reglers — der
+Übergang ist eine reine Formänderung.
 
-### Die Farbe des Meeres
+Das kostet etwas, und zwar messbar. Die schwächste der 65 Skalenstufen ist die
+neutrale Mitte, und die steht mit **1,25:1** gegen das Papier. Auf einem
+flächentreuen Netz mit gemessener Farbe ist die ganze Karte diese eine Stufe —
+eine blasse Welt auf hellem Grund. Das war auf dem Blatt schon immer so; neu
+ist nur, dass die Kugel es jetzt teilt statt sich mit einem Meer davonzustehlen
+(gegen das Papier kam das alte Schieferblau auf 3,96:1).
 
-Auf dem Blatt gibt es kein Meer — die Länder schwimmen auf dem Papier, und was
-sie voneinander trennt, ist eine Linie in Papierfarbe. Auf der Kugel geht das
-nicht: dort steht jedes Land auf Faktor 1 und damit auf der neutralen Mitte der
-Farbskala, die ganze Kugel hat also eine einzige Farbe. Ohne ein Meer, das sich
-davon abhebt, ist nichts zu erkennen.
+Dagegen hilft nicht die Meeresfarbe, sondern der Schalter »Farbe bei Mercator
+festhalten«: dann steht jedes Land auf seinem Mercator-Faktor, und die Skala
+ist wieder über ihre ganze Breite in Gebrauch — auf allen drei Ansichten
+gleichermassen. Genau dafür ist der Schalter da.
 
-Der erste Anlauf nahm ein sehr helles Blaugrau und war damit **falsch**: der
-Kontrast zwischen Land und Meer lag bei **1,16:1**, das Meer war sogar heller
-als das Land. Auf einem Bildschirm sah das aus wie eine weisse Scheibe mit
-angedeuteten Umrissen. Jetzt steht dort ein Schieferblau, das die **3:1** aus
-den Barrierefreiheits-Richtlinien für grafische Elemente erreicht — gemessen
-**3,14:1**.
-
-Zwei Kleinigkeiten hängen daran. Die Trennlinie zwischen den Ländern bekommt
-die Farbe dessen, was hinter der Karte liegt, überblendet mit dem Rest — sonst
-hätte jede Küste auf dem Globus einen hellen Saum in Papierfarbe. Und Gradnetz
-wie Verzerrungskreise werden auf dem dunkleren Meer etwas kräftiger gezogen.
-
-Die Meeresscheibe wird erst im letzten Zehntel des Aufwickelns eingeblendet.
-Früher ragte die noch halb ebene Karte weit darüber hinaus, und die Scheibe sah
-aus wie ein Ball dahinter statt wie das Ziel der Bewegung.
+Der Rand der Kugel wird nicht eigens gezeichnet. Die Länder verkürzen sich zum
+Rand hin so deutlich, dass die Gestalt auch ohne Kreis zu lesen ist, und mit
+eingeschaltetem Gradnetz zeichnen der äusserste Meridian und die Breitenkreise
+ihn ohnehin nach. Ein Kreis in einer eigenen Farbe wäre wieder genau das
+gewesen, was hier weg sollte.
 
 ## Verfahren
 
