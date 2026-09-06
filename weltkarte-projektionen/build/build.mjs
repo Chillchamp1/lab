@@ -87,6 +87,11 @@ h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
 .seg button[aria-pressed="true"]{background:var(--tinte);color:var(--papier)}
 .seg button:focus-visible{outline:2px solid var(--akzent);outline-offset:-2px}
 .ctrl input[type=range]{flex:1;min-width:190px;accent-color:var(--tinte)}
+.spiel{background:transparent;color:var(--leise);border:1px solid var(--linie);
+ border-radius:3px;font:inherit;font-size:13.5px;padding:9px 15px;cursor:pointer;
+ white-space:nowrap}
+.spiel[aria-pressed="true"]{background:var(--tinte);color:var(--papier);border-color:var(--tinte)}
+.spiel:focus-visible{outline:2px solid var(--akzent);outline-offset:2px}
 .ends{display:flex;justify-content:space-between;color:var(--leise);font-size:12.5px;margin:0 0 4px}
 .schalter{display:flex;gap:18px;flex-wrap:wrap;margin:12px 0 0;color:var(--leise);font-size:13.5px}
 .schalter label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
@@ -150,6 +155,7 @@ messen lassen.</p>
 <div class="ctrl">
   <input type="range" id="reg" min="0" max="1000" value="0" step="1" aria-label="Überblendung zwischen Mercator und dem gewählten Netz">
   <div class="seg" id="ziele" role="group" aria-label="Kartennetz"></div>
+  <button class="spiel" id="spiel" aria-pressed="false">Abspielen</button>
 </div>
 <div class="schalter">
   <label><input type="checkbox" id="cGrad" checked> Gradnetz</label>

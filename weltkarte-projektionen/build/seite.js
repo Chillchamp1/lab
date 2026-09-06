@@ -479,11 +479,22 @@ function neuZeichnen() {
   requestAnimationFrame(() => { wartet = false; zeichne(); });
 }
 function setze(v, { schieber = true } = {}) { t = v; if (schieber) reg.value = Math.round(v * 1000); knoepfe(); zeigerHaltung(); neuZeichnen(); }
-reg.addEventListener('input', () => setze(reg.value / 1000, { schieber: false }));
+reg.addEventListener('input', () => { rundlaufStopp(); setze(reg.value / 1000, { schieber: false }); });
+
+// Überblendungsdauern. Halb so schnell wie ursprünglich: bei einer Bewegung,
+// die die eigentliche Aussage trägt, ist Gemächlichkeit kein Verlust.
+const DAUER = 1700;          // der Regler von einem Ende zum anderen
+const DAUER_WECHSEL = 1240;  // ein Zielwechsel bei stehendem Regler
+const HALT = 900;            // Standzeit auf jedem Zustand im Rundlauf
+
+// Läuft schon eine Bewegung, wird sie beim Start der nächsten stillgelegt.
+// Sonst zerren zwei Schleifen an derselben Zahl.
+let lauffolge = 0;
 
 function animiere(schritt, dauer, fertig) {
-  const t0 = performance.now();
+  const meine = ++lauffolge, t0 = performance.now();
   (function lauf(jetzt) {
+    if (meine !== lauffolge) return;
     const p = Math.min(1, (jetzt - t0) / dauer);
     schritt(p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
     if (p < 1) requestAnimationFrame(lauf); else if (fertig) fertig();
@@ -511,22 +522,76 @@ function knoepfe() {
   }
 }
 
-function zuT(ziel) {
+function zuT(ziel, fertig) {
   const start = t;
-  if (Math.abs(ziel - start) < .002) { setze(ziel); return; }
-  animiere(e => setze(start + (ziel - start) * e), 850);
+  if (Math.abs(ziel - start) < .002) { setze(ziel); if (fertig) fertig(); return; }
+  animiere(e => setze(start + (ziel - start) * e), DAUER, fertig);
+}
+
+// Ein Zielwechsel bei stehendem Regler: das alte und das neue Netz werden
+// ineinander geblendet. Damit lässt sich auch Equal Earth gegen Globus zeigen,
+// ohne den Umweg über Mercator.
+function wechsleZiel(i, fertig) {
+  zielA = zielB; zielB = i; u = 0;
+  beschrifte();
+  tabellen();
+  animiere(e => { u = e; neuZeichnen(); }, DAUER_WECHSEL,
+    () => { zielA = zielB; u = 1; knoepfe(); if (fertig) fertig(); });
 }
 
 function waehle(i) {
+  rundlaufStopp();
   if (i === M) { zuT(0); return; }
-  if (i !== zielB) {
-    zielA = zielB; zielB = i; u = 0;
-    beschrifte();
-    tabellen();
-    animiere(e => { u = e; neuZeichnen(); }, 620, () => { zielA = zielB; u = 1; });
-  }
+  if (i !== zielB) wechsleZiel(i);
   zuT(1);
 }
+
+// Drei Zustände ergeben sechs Übergänge. Diese Folge zeigt jeden genau einmal
+// und endet wieder am Anfang, läuft also rund:
+//   Mercator → Equal Earth → Globus → Mercator → Globus → Equal Earth → Mercator
+const RUNDLAUF = [
+  { ziel: 1, t: 1 },   // Mercator → Equal Earth
+  { ziel: 2, t: 1 },   // Equal Earth → Globus   (Zielwechsel, Regler steht)
+  { ziel: 2, t: 0 },   // Globus → Mercator
+  { ziel: 2, t: 1 },   // Mercator → Globus
+  { ziel: 1, t: 1 },   // Globus → Equal Earth   (Zielwechsel, Regler steht)
+  { ziel: 1, t: 0 },   // Equal Earth → Mercator
+];
+
+let rundlauf = null;
+const knopfSpiel = document.getElementById('spiel');
+
+function rundlaufSchritt() {
+  if (!rundlauf) return;
+  const s = RUNDLAUF[rundlauf.i % RUNDLAUF.length];
+  rundlauf.i++;
+  const weiter = () => {
+    if (!rundlauf) return;
+    rundlauf.uhr = setTimeout(rundlaufSchritt, HALT);
+  };
+  if (s.ziel !== zielB) wechsleZiel(s.ziel, weiter);
+  else zuT(s.t, weiter);
+}
+
+function rundlaufStart() {
+  rundlauf = { i: 0, uhr: null };
+  knopfSpiel.textContent = 'Anhalten';
+  knopfSpiel.setAttribute('aria-pressed', 'true');
+  // Von Mercator aus ist die Folge vollständig; steht der Regler woanders,
+  // fährt der erste Schritt ihn ohnehin an ein Ende.
+  rundlaufSchritt();
+}
+
+function rundlaufStopp() {
+  if (!rundlauf) return;
+  clearTimeout(rundlauf.uhr);
+  rundlauf = null;
+  lauffolge++;                       // laufende Bewegung stilllegen
+  knopfSpiel.textContent = 'Abspielen';
+  knopfSpiel.setAttribute('aria-pressed', 'false');
+}
+
+knopfSpiel.addEventListener('click', () => rundlauf ? rundlaufStopp() : rundlaufStart());
 
 function beschrifte() {
   const nenne = n => n.name + (n.jahr ? ', ' + n.jahr : '') + ' \u00b7 ' + n.art;
@@ -625,6 +690,8 @@ function zeigerHaltung() {
 }
 
 cv.addEventListener('pointerdown', ev => {
+  // Ein Druck auf die Karte ist eine Übernahme, ob danach gedreht wird oder nicht.
+  rundlaufStopp();
   if (globusAnteil() <= .3) return;
   zieht = { x: ev.clientX, y: ev.clientY };
   cv.setPointerCapture(ev.pointerId);
