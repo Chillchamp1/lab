@@ -1,6 +1,6 @@
 # Zwischenergebnis der Kartogramm-Berechnung, entsteht beim Bauen neu
 kartogramm-cache.json
-# Rohdaten der Bundeswahlleiterin, siehe build/DATEN.md
+# Rohdaten der Quellen, siehe das jeweilige build/DATEN.md
 *.shp
 *.dbf
 *.shx
@@ -10,5 +10,9 @@ kartogramm-cache.json
 *.cpg
 kerg2.csv
 strukturdaten.csv
-# Rohdaten von Natural Earth, siehe weltkarte-projektionen/build/DATEN.md
+pop.csv
+results.csv
+counties.zip
+*.shp.xml
+*.shp.*.xml
 ne_*.geojson
