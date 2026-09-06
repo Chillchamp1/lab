@@ -37,16 +37,13 @@ const M = NETZ.indexOf('mercator');
 // ebenen Netze sind auf die Äquatorlänge 2π normiert, und eine Karte dieser
 // Breite wickelt sich genau auf eine Kugel dieses Radius. Die Überblendung
 // zeigt also wirklich das Aufwickeln und nicht nebenbei eine Grössenänderung.
-// Das Meer auf der Kugel. Auf dem Blatt gibt es keins — dort schwimmen die
-// Länder auf dem Papier. Auf dem Globus muss es eins geben, und es muss sich
-// deutlich vom Land abheben: dort steht jedes Land auf Faktor 1 und damit auf
-// der neutralen Mitte der Skala, sodass die ganze Kugel eine einzige Farbe
-// hätte. Der Wert ist so gewählt, dass er die 3:1 aus den
-// Barrierefreiheits-Richtlinien für grafische Elemente erreicht.
-const MEER = '#5c7789';
-const MEER_RGB = [92, 119, 137];
+// Alle drei Zustände tragen dieselbe Handschrift: Länder schwimmen auf dem
+// Papier, getrennt von einer Linie in Papierfarbe, und ein Meer gibt es
+// nirgends — auch auf der Kugel nicht. Ein eigenes Blau nur für den Globus
+// hätte den Vergleich zu einem Vergleich zweier Kartenstile gemacht statt
+// zweier Projektionen; das Auge liest den Farbwechsel zuerst und die Form
+// danach.
 const PAPIER_RGB = [237, 235, 230];
-const KUESTE_RGB = [26, 36, 44];
 
 const R_GLOBUS = 1;
 const GLOBUS = NETZ.length;          // Steckplatz hinter den ebenen Netzen
@@ -234,8 +231,11 @@ const hex = c => '#' + c.map(v => Math.max(0, Math.min(255, v)).toString(16).pad
 
 // Stützstellen statt zweier Endpunkte: der direkte Weg von Blaugrün nach
 // Rostrot führt im RGB-Raum durch ein schlammiges Grau. Die Mitte ist bewusst
-// ein sattes Sandton und kein Papierweiss — bei einem flächentreuen Netz
-// stehen alle Länder auf 1, und die Karte muss dann noch im Meer zu sehen sein.
+// ein satter Sandton und kein Papierweiss — bei einem flächentreuen Netz
+// stehen alle Länder auf 1, und die Karte muss dann noch auf dem Papier zu
+// sehen sein. Viel ist es nicht: 1,25:1 gegen das Papier, die schwächste der
+// 65 Stufen. Das ist der Preis dafür, dass alle drei Ansichten gleich
+// aussehen, und er fällt in allen dreien gleich an.
 const STUETZEN = [
   [-1.000, [ 18, 105, 122]],
   [-0.585, [ 74, 154, 163]],
@@ -372,8 +372,9 @@ const farbwert = l => farbeFest ? l.logF[M] : liveLog[l.i];
 
 const dreiFach = (m, a, b) => m + ((a + (b - a) * u) - m) * t;
 
-// Wie stark der Globus gerade im Bild ist. Steuert die Meeresscheibe, das
-// Wegfallen der Rückseite und ob ein Zug am Zeiger dreht statt zu zeigen.
+// Wie stark der Globus gerade im Bild ist. Steuert das Wegfallen der
+// Rückseite und ob ein Zug am Zeiger dreht statt zu zeigen. An der Farbgebung
+// hängt nichts mehr: die ist in allen drei Ansichten dieselbe.
 const globusAnteil = () =>
   dreiFach(0, zielA === GLOBUS ? 1 : 0, zielB === GLOBUS ? 1 : 0);
 
@@ -476,19 +477,6 @@ function zeichne() {
 
   const CX = land.cx, CY = land.cy, gA = globusAnteil();
 
-  // Das Meer. Erst spät eingeblendet: solange die Karte noch überwiegend eben
-  // ist, ragt sie weit über die Scheibe hinaus, und die sähe aus wie ein Ball
-  // dahinter statt wie das Ziel des Aufwickelns.
-  const meer = Math.max(0, (gA - .9) / .1);
-  if (meer > 0) {
-    ctx.globalAlpha = meer;
-    ctx.fillStyle = MEER;
-    ctx.beginPath();
-    ctx.arc(0, 0, R_GLOBUS, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-  }
-
   // Ein Land ganz auf der Rückseite verblasst über dasselbe letzte Fünftel, in
   // dem es in den Rand gezogen wird. Vorher ist es eine echte Fläche, die durch
   // die Vorderseite hindurchwandert und dabei zu sehen sein soll.
@@ -496,18 +484,12 @@ function zeichne() {
   const rueckseiteWeg = verblassen >= 1;
   const vorn = land.vorn;
 
-  // Auf dem Blatt trennt eine Linie in Papierfarbe die Länder voneinander; ein
-  // Meer gibt es dort nicht. Auf der Kugel wird daraus eine dunkle Küstenlinie.
-  //
-  // Das ist nicht bloss Geschmack. Die Farbskala reicht von hell in der Mitte
-  // nach dunkel an beiden Enden, und gegen alle 65 Stufen zugleich kommt keine
-  // einzige Meeresfarbe an — durchgerechnet liegt der beste erreichbare Wert
-  // bei 1,74:1. Ein türkis eingefärbtes Afrika verschwämme sonst mit dem Meer,
-  // sobald man die Verzerrung festhält. Eine Umrisslinie löst das unabhängig
-  // von der Füllung, und genau dafür haben Karten seit jeher Küsten.
+  // Die trennende Linie in Papierfarbe — dieselbe auf dem Blatt wie auf der
+  // Kugel, und in derselben Stärke. Sie hängt an nichts, was sich während der
+  // Überblendung ändert, also ändert sich auch nichts an ihr.
   ctx.lineJoin = 'round';
-  ctx.strokeStyle = hex(misch(PAPIER_RGB, KUESTE_RGB, meer));
-  ctx.lineWidth = (.7 + .35 * meer) / skala;
+  ctx.strokeStyle = hex(PAPIER_RGB);
+  ctx.lineWidth = .7 / skala;
 
   for (const l of LAND) {
     const hinten = verblassen > 0 && !istVorn(l.i);
@@ -552,7 +534,7 @@ function zeichne() {
   };
 
   if (zeigGrad) {
-    ctx.strokeStyle = 'rgba(22,24,29,' + (.19 + .16 * meer).toFixed(3) + ')';
+    ctx.strokeStyle = 'rgba(22,24,29,.19)';
     ctx.lineWidth = .8 / skala;
     for (let i = 0; i < gradnetz.abschnitt.length; i++) {
       const al = zugAlpha(gradnetz, i);
@@ -563,8 +545,8 @@ function zeichne() {
     ctx.globalAlpha = 1;
   }
   if (zeigTissot) {
-    ctx.fillStyle = 'rgba(22,24,29,' + (.10 + .06 * meer).toFixed(3) + ')';
-    ctx.strokeStyle = 'rgba(22,24,29,' + (.42 + .18 * meer).toFixed(3) + ')';
+    ctx.fillStyle = 'rgba(22,24,29,.10)';
+    ctx.strokeStyle = 'rgba(22,24,29,.42)';
     ctx.lineWidth = 1.1 / skala;
     for (let i = 0; i < tissot.abschnitt.length; i++) {
       const al = zugAlpha(tissot, i);
