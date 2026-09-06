@@ -166,7 +166,7 @@ messen lassen.</p>
 
 <figure><canvas id="karte" role="img" aria-label="Weltkarte, überblendbar zwischen der Mercator-Projektion und einem flächentreuen Netz. Die Zahlen dazu stehen in den Tabellen darunter."></canvas></figure>
 
-<p class="hinweis" id="hinweisGlobus" hidden><b>Ziehen dreht die Kugel.</b> Auf der Kugel selbst stimmt alles zugleich — Fläche, Form, Winkel —, weil nichts in die Ebene gezwungen wird. Ihr Bild auf einem flachen Schirm ist aber wieder eine Projektion, und die staucht zum Rand hin: der Flächenmassstab ist der Kosinus des Abstands zur Mitte, bei 60° also die Hälfte, am Rand null. <b>Die Farbe misst das mit</b> und wandert beim Drehen mit. Was Ihnen zugewandt liegt, bekommt mehr als seinen Anteil, der Rand fast nichts.</p>
+<p class="hinweis" id="hinweisGlobus" hidden><b>Ziehen dreht die Kugel.</b> Auf der Kugel selbst stimmt alles zugleich — Fläche, Form, Winkel —, weil nichts in die Ebene gezwungen wird. Ihr Bild auf einem flachen Schirm ist aber wieder eine Projektion. <b>Wo Sie senkrecht draufschauen, stimmt der Massstab genau</b>; zum Rand hin schrumpft alles, bei 60° auf die Hälfte, am Rand auf nichts. Die Farbe misst das mit und wandert beim Drehen mit. Anders als auf einer ebenen Karte gibt es hier nur eine Richtung: der Globus zeigt nirgends zu viel, aber fast überall zu wenig.</p>
 <p class="hinweis" id="hinweisFarbe" hidden></p>
 <p class="hinweis" id="hinweisTissot" hidden></p>
 <p class="lgd" id="lgdKurs" hidden>
@@ -199,12 +199,20 @@ immer nur eine Seite. Genau das ist der Handel, den jede Weltkarte eingeht, und 
 Regler zeigt ihn in beide Richtungen. <b>Ziehen dreht die Kugel.</b></p>
 <p class="sec">Ganz aus dem Schneider ist aber auch er nicht, und die Karte sagt das:
 sein <i>Bild</i> auf einem flachen Schirm ist wieder eine Projektion. Der
-Flächenmassstab ist dort der Kosinus des Abstands zur Bildmitte — was Ihnen
-zugewandt liegt, bekommt mehr als seinen Anteil, bei 60° stimmt es gerade, und zum
-Rand hin geht alles gegen null. Die Farbe wird deshalb nicht aus einer Tabelle
-geholt, sondern in jedem Bild an dem gemessen, was tatsächlich auf dem Schirm steht.
-Auf Mercator kommt dabei aufs Hundertstel dasselbe heraus wie in der Tabelle unten;
-auf dem Globus zeigt sie die Randstauchung, und beim Drehen wandert sie mit.</p>
+Flächenmassstab ist dort der Kosinus des Abstands zur Bildmitte — wo man senkrecht
+draufschaut, stimmt er genau, bei 60° ist er halbiert, am Rand null. Die Farbe wird
+deshalb nicht aus einer Tabelle geholt, sondern in jedem Bild an dem gemessen, was
+tatsächlich auf dem Schirm steht. Auf Mercator kommt dabei aufs Hundertstel dasselbe
+heraus wie in der Tabelle unten; auf dem Globus zeigt sie die Randstauchung, und beim
+Drehen wandert sie mit.</p>
+<p class="sec">Woran gemessen wird, ist dabei nicht dasselbe. Eine ebene Karte zeigt
+die ganze Welt: das Blatt ist ein fester Vorrat, der verteilt wird, und die Frage
+lautet, ob ein Land mehr oder weniger davon bekommt, als ihm zusteht — beide
+Richtungen sind möglich. Die Kugel zeigt eine Hälfte und hat einen natürlichen
+Massstab, nämlich den am Punkt, auf den man schaut. Dort ist sie unverzerrt, überall
+sonst zu klein. <b>Der Globus zeigt nirgends zu viel, aber fast überall zu wenig</b> —
+und deshalb ist er dort einfarbig hell in der Mitte und wird zum Rand hin immer
+kräftiger.</p>
 
 <h2 class="sec">Wer wie viel Platz bekommt</h2>
 <p class="sec">Anteil an der gezeigten Landfläche, Antarktis nicht mitgerechnet.

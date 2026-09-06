@@ -273,6 +273,27 @@ function messeBezug() {
   }
 }
 
+// Woran der Vergleich hängt, ist bei der ebenen Karte und bei der Kugel nicht
+// dasselbe, und das eine auf das andere zu zwingen war der Fehler.
+//
+// Die ebene Karte zeigt die ganze Welt. Das Blatt ist ein fester Vorrat, der
+// verteilt wird, und die Frage lautet: bekommt ein Land mehr oder weniger davon,
+// als ihm zusteht? Deshalb wird auf die gezeigte Gesamtfläche normiert, und
+// deshalb gibt es beide Richtungen — zu gross und zu klein.
+//
+// Die Kugel zeigt eine Hälfte, und sie hat einen natürlichen Massstab: dort, wo
+// man senkrecht draufschaut, ist sie unverzerrt. Der Flächenmassstab ist genau
+// der Kosinus des Abstands zu diesem Punkt, also 1 in der Mitte und 0 am Rand.
+// Hier gibt es nur eine Richtung: zu klein, nirgends zu gross. Auf die gezeigte
+// Fläche zu normieren hätte behauptet, die Mitte bekomme mehr als ihren Anteil —
+// sie bekommt genau ihren, alles andere weniger.
+//
+// Der feste Umrechnungsfaktor für die Kugel ist kein angepasster Wert: die
+// Bezugsgrössen liegen im auf Äquatorlänge 2π gestreckten Equal-Earth-Netz, und
+// diese Streckung vergrössert Flächen um S_EE². Das wieder herausgerechnet
+// liefert den Kosinus blank.
+const NORM_GLOBUS = S_EE * S_EE;
+
 function messeLive() {
   if (!liveLog) liveLog = new Float64Array(LAND.length);
   let summe = 0;
@@ -281,11 +302,26 @@ function messeLive() {
     jetzt[l.i] = bildFlaeche(l.i, land.cx, land.cy);
     if (l.iso !== 'ATA') summe += jetzt[l.i];
   }
-  const norm = summe > 0 ? bezugSumme / summe : 1;
+  const gA = globusAnteil();
+  const flach = summe > 0 ? bezugSumme / summe : 1;
+  const norm = Math.pow(flach, 1 - gA) * Math.pow(NORM_GLOBUS, gA);
   for (const l of LAND) {
-    const f = bezug[l.i] > 0 ? jetzt[l.i] * norm / bezug[l.i] : 1;
+    let f = bezug[l.i] > 0 ? jetzt[l.i] * norm / bezug[l.i] : 1;
+    // Ein Land ganz auf der Rückseite ist auf den Rand zusammengefallen. Seine
+    // gemessene Fläche ist dann nur noch Rauschen, und bei einer winzigen Insel
+    // kann das den eigenen Bezugswert übersteigen — Niue kam so auf 12,56 und
+    // wäre tiefrot geworden, obwohl es gar nicht zu sehen ist. Auf der Kugel ist
+    // der richtige Wert null.
+    if (gA > 0) f *= 1 - gA * (istVorn(l.i) ? 0 : 1);
     liveLog[l.i] = f > 1e-6 ? Math.log(f) : Math.log(1e-6);
   }
+}
+
+// Liegt irgendein Punkt des Landes auf der zugewandten Seite?
+function istVorn(i) {
+  const V = land.vorn;
+  for (let p = ringOff[landRing[i]], b = ringOff[landRing[i + 1]]; p < b; p++) if (V[p]) return true;
+  return false;
 }
 
 const farbwert = l => farbeFest ? l.logF[M] : liveLog[l.i];
@@ -554,10 +590,10 @@ function hinweis() {
   let s;
   if (globusAnteil() > .88) {
     s = '<b>Auf der Kugel wären alle Kreise gleich gross und rund</b> — auf der Kugel. '
-      + 'Was Sie sehen, ist ihr Bild auf einem flachen Schirm, und das staucht zum Rand '
-      + 'hin: dort werden dieselben Kreise zu schmalen Sicheln. Der Globus löst das '
-      + 'Problem also nicht, er verschiebt es an den Rand — und dreht es weg, sobald Sie '
-      + 'ziehen.';
+      + 'Was Sie sehen, ist ihr Bild auf einem flachen Schirm: in der Mitte, wo Sie '
+      + 'senkrecht draufschauen, stimmt es genau, zum Rand hin werden dieselben Kreise '
+      + 'zu schmalen Sicheln. Der Globus löst das Problem also nicht, er verschiebt es '
+      + 'an den Rand — und dreht es weg, sobald Sie ziehen.';
   } else if (t < .12) {
     s = '<b>Alle Kreise sind Kreise geblieben</b> — nur verschieden gross. Das ist Mercators '
       + 'Stärke: in alle Richtungen wird gleich stark gedehnt, also stimmen Winkel und örtliche '
