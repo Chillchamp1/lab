@@ -653,10 +653,11 @@ function neuZeichnen() {
 function setze(v, { schieber = true } = {}) { t = v; if (schieber) reg.value = Math.round(v * 1000); knoepfe(); zeigerHaltung(); neuZeichnen(); }
 reg.addEventListener('input', () => { rundlaufStopp(); setze(reg.value / 1000, { schieber: false }); });
 
-// Überblendungsdauern. Ein Viertel des ursprünglichen Tempos: die Bewegung
+// Überblendungsdauern. Ein Achtel des ursprünglichen Tempos: die Bewegung
 // trägt die eigentliche Aussage, und beim Aufwickeln gibt es viel zu sehen.
-const DAUER = 3400;          // der Regler von einem Ende zum anderen
-const DAUER_WECHSEL = 2480;  // ein Zielwechsel bei stehendem Regler
+// Die Standzeit bleibt, wo sie war — sie ist keine Geschwindigkeit.
+const DAUER = 6800;          // der Regler von einem Ende zum anderen
+const DAUER_WECHSEL = 4960;  // ein Zielwechsel bei stehendem Regler
 const HALT = 900;            // Standzeit auf jedem Zustand im Rundlauf
 
 // Läuft schon eine Bewegung, wird sie beim Start der nächsten stillgelegt —

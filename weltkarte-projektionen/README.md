@@ -70,10 +70,12 @@ gleichzeitig blendet das alte Ziel ins neue. Ein gemeinsamer Zähler liess die
 eine die andere erschlagen, und der Globus erschien nach einem Knopfdruck gar
 nicht mehr — nur noch über den Rundlauf, der die beiden nie zusammen auslöst.
 
-Die Überblendungen dauern 3,4 Sekunden, ein Zielwechsel 2,48, dazu 0,9 Sekunden
-Stand auf jedem Zustand — ein Rundlauf also gut 24 Sekunden. Das ist ein Viertel
-des ursprünglichen Tempos: die Bewegung trägt die eigentliche Aussage, und beim
-Aufwickeln gibt es viel zu sehen.
+Die Überblendungen dauern 6,8 Sekunden, ein Zielwechsel 4,96, dazu 0,9 Sekunden
+Stand auf jedem Zustand — ein Rundlauf besteht aus vier Reglerfahrten, zwei
+Zielwechseln und sechs Standzeiten und braucht damit 42,5 Sekunden. Das ist ein
+Achtel des ursprünglichen Tempos: die Bewegung trägt die eigentliche Aussage,
+und beim Aufwickeln gibt es viel zu sehen. Die Standzeit ist dabei unverändert
+geblieben — sie ist keine Geschwindigkeit.
 
 ## Die Kennzahl
 
