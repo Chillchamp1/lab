@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { rechneAlles } from './kartogramme.mjs';
 import { packe } from './code.mjs';
+import { staatsGrenzen } from './grenzen.mjs';
 
 const BREITE = 10000;
 const CACHE = 'kartogramm-cache.json';
@@ -27,7 +28,7 @@ export function baueNutzlast({ gitter = 2000, durchgaenge = 6, log = () => {} } 
   let r;
   if (existsSync(CACHE)) {
     const c = JSON.parse(readFileSync(CACHE, 'utf8'));
-    if (c.gitter === gitter && c.durchgaenge === durchgaenge && c.fassung === 2) {
+    if (c.gitter === gitter && c.durchgaenge === durchgaenge && c.fassung === 3) {
       log('  Kartogramm aus ' + CACHE);
       r = c.gruppen;
       for (const g of Object.values(r)) {
@@ -41,7 +42,7 @@ export function baueNutzlast({ gitter = 2000, durchgaenge = 6, log = () => {} } 
     const roh = rechneAlles({ gitter, durchgaenge, log });
     r = { conus: roh.conus, alaska: roh.alaska, hawaii: roh.hawaii, bilanz: roh.bilanz };
     writeFileSync(CACHE, JSON.stringify({
-      gitter, durchgaenge, fassung: 2, bilanz: roh.bilanz,
+      gitter, durchgaenge, fassung: 3, bilanz: roh.bilanz,
       gruppen: Object.fromEntries(['conus', 'alaska', 'hawaii'].map(n => [n, {
         gebiete: r[n].gebiete.map(a => a.map(b => Array.from(b))),
         daten: r[n].daten,
@@ -161,9 +162,17 @@ export function baueNutzlast({ gitter = 2000, durchgaenge = 6, log = () => {} } 
     Math.max(kG[0] + kG[2], kK[0] + kK[2]) - links,
     Math.max(kG[1] + kG[3], kK[1] + kK[3]) - oben];
 
+  // Staatsgrenzen als Linienzüge über dem Countynetz. Ohne sie ist das
+  // Kartogramm kaum zu verorten: die Countys verlieren ihre Form, und es gibt
+  // keine Zwischenebene, an der sich das Auge festhalten kann.
+  const { zuege } = staatsGrenzen(gebiete, daten.map(d => d.kuerzel));
+  const grenzLaengen = packe(zuege.map(z => z.length));
+  const grenzIdx = packe(zuege.flatMap(z => { const o = []; let v = 0; for (const i of z) { o.push(i - v); v = i; } return o; }));
+
   const delta = arr => { const o = new Array(arr.length); let v = 0; for (let i = 0; i < arr.length; i++) { o[i] = arr[i] - v; v = arr[i]; } return o; };
   const nutz = {
     breite: BREITE, hoehe, sicht,
+    grenzLaengen, grenzIdx,
     gx: packe(delta(G.qx)), gy: packe(delta(G.qy)),
     kx: packe(delta(K.qx)), ky: packe(delta(K.qy)),
     ringe: packe(gebiete.flatMap(g => g.map(rr => rr.length))),

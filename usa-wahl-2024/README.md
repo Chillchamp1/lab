@@ -1,9 +1,9 @@
-# Die Wahl 2024, nach Menschen gewichtet
+# Die Wahl 2024, nach Stimmen gewichtet
 
 → **https://chillchamp1.github.io/lab/usa-wahl-2024/**
 
 Die US-Präsidentschaftswahl 2024 auf Ebene der Countys. Ein Regler verzieht die
-Karte von der Fläche zur Einwohnerzahl, ein Abspiel-Knopf lässt den Übergang in
+Karte von der Fläche zur Wählerschaft, ein Abspiel-Knopf lässt den Übergang in
 Schleife laufen. Hawaii und Alaska stehen oben, im selben Massstab. Umschaltbar
 zwischen einer Skala für den Vorsprung und der üblichen Sieger-Einfärbung.
 
@@ -101,6 +101,33 @@ Landesergebnis (0,008 gegen 0,016), optisch bleibt ein Rest. Dafür ist der
 Balken unter der Karte da. Der Umschalter *nur Sieger* zeigt zum Vergleich die
 übliche Darstellung, in der ein Gebiet mit 50,1 Prozent aussieht wie eines mit
 90.
+
+## Gewichtet nach Stimmen, nicht nach Einwohnern
+
+Die Fläche folgt den **abgegebenen Stimmen**. Eine Wahlkarte soll zeigen, wo die
+Stimmen herkommen, nicht wo Menschen wohnen — und die Wahlbeteiligung je
+Einwohner schwankt zwischen den Gebieten um den Faktor 1,8 (p5 0,35, Median
+0,49, p95 0,62).
+
+Der Nebeneffekt ist der wichtigere. Weil die Fläche der Wählerschaft folgt und
+die Farbskala an beiden Enden gleich kräftig ist, summiert sich Farbe mal Fläche
+fast genau zum Landesergebnis:
+
+| Gewichtung | Farbdurchschnitt | Abweichung vom Landesergebnis (1,50 Pp.) |
+|---|---|---|
+| Einwohner | 0,71 Pp. | 0,79 |
+| **Stimmen** | **1,38 Pp.** | **0,12** |
+
+Der Rest geht auf die Drittparteien: sie halten 1,7 Prozent der Stimmen und
+kommen in einer Zweifarbenskala nicht vor.
+
+## Staatsgrenzen
+
+Die dunklen Linien sind aus den Countygrenzen abgeleitet — eine Kante wird
+gezeichnet, wenn ihr Gegenstück zu einem anderen Bundesstaat gehört oder fehlt.
+Die Einzelkanten werden zu Linienzügen verkettet, damit die Zeichnung wenige
+lange Linien statt tausender Striche enthält. Ohne diese Ebene ist das
+Kartogramm kaum zu verorten.
 
 ## Verfahren
 

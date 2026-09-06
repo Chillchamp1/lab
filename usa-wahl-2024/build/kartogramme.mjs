@@ -1,7 +1,7 @@
 // Kartogramm für alle drei Gruppen, in einem gemeinsamen Massstab.
 //
-// Der gemeinsame Massstab ist der Punkt: im Kartogramm bekommt jeder Mensch
-// überall gleich viel Fläche, auch in Alaska und Hawaii. Nur so sind die
+// Der gemeinsame Massstab ist der Punkt: im Kartogramm bekommt jede abgegebene
+// Stimme überall gleich viel Fläche, auch in Alaska und Hawaii. Nur so sind die
 // Einsätze mit dem Festland vergleichbar, statt bloss dekorativ danebenzustehen.
 //
 // Alaska ist ein einziges Gebiet, sein Kartogramm ist deshalb eine reine
@@ -32,8 +32,15 @@ function bilanz(gebiete, X, Y, werte) {
   };
 }
 
+// Gewichtet wird nach der Wählerschaft, nicht nach der Bevölkerung: die Karte
+// zeigt, wo die Stimmen herkommen, nicht wo Menschen wohnen. Das ist für eine
+// Wahlkarte die passendere Frage — und es macht den Farbdurchschnitt der Karte
+// fast deckungsgleich mit dem Landesergebnis, weil die Wahlbeteiligung je
+// Einwohner um den Faktor 1,8 schwankt.
+export const gewicht = d => Math.max(1, d.gesamt);
+
 function diffusion(gr, { breite, durchgaenge, rand = 0.35, log = () => {} }) {
-  const werte = gr.daten.map(d => Math.max(1, d.einwohner));
+  const werte = gr.daten.map(gewicht);
   const vz = ringVorzeichen(gr.gebiete, gr.X, gr.Y);
   let bestX = gr.X.slice(), bestY = gr.Y.slice();
   let bester = bilanz(gr.gebiete, gr.X, gr.Y, werte).median;
@@ -58,7 +65,7 @@ function diffusion(gr, { breite, durchgaenge, rand = 0.35, log = () => {} }) {
 function skaliereAufZiel(gr, zielDichte) {
   for (let i = 0; i < gr.gebiete.length; i++) {
     const { flaeche, cx, cy } = flaecheUndZentrum(gr.gebiete[i], gr.X, gr.Y);
-    const ziel = gr.daten[i].einwohner / zielDichte;
+    const ziel = gewicht(gr.daten[i]) / zielDichte;
     const k = Math.sqrt(ziel / flaeche);
     const gesehen = new Set();
     for (const ring of gr.gebiete[i]) for (const n of ring) {
@@ -77,11 +84,11 @@ export function rechneAlles({ gitter = 2000, durchgaenge = 6, log = () => {} } =
   log('  Festland:');
   const bConus = diffusion(conus, { breite: gitter, durchgaenge, log });
 
-  // Massstab des Festland-Kartogramms: Menschen je Flächeneinheit
+  // Massstab des Festland-Kartogramms: Stimmen je Flächeneinheit
   const flConus = flaechen(conus.gebiete, conus.X, conus.Y).reduce((a, b) => a + b, 0);
-  const einwohnerConus = conus.daten.reduce((a, d) => a + d.einwohner, 0);
-  const zielDichte = einwohnerConus / flConus;
-  log(`  Kartogramm-Massstab: ${(zielDichte * 1e6).toFixed(1)} Menschen je km² der Zeichenfläche`);
+  const stimmenConus = conus.daten.reduce((a, d) => a + gewicht(d), 0);
+  const zielDichte = stimmenConus / flConus;
+  log(`  Kartogramm-Massstab: ${(zielDichte * 1e6).toFixed(1)} Stimmen je km² der Zeichenfläche`);
 
   log('  Hawaii:');
   const bHawaii = diffusion(hawaii, { breite: 700, durchgaenge: 5, rand: 0.6, log });
@@ -93,12 +100,12 @@ export function rechneAlles({ gitter = 2000, durchgaenge = 6, log = () => {} } =
     for (let i = 0; i < gr.X.length; i++) { gr.X[i] = cx + (gr.X[i] - cx) * k; gr.Y[i] = cy + (gr.Y[i] - cy) * k; }
   };
   const flHawaii = flaechen(hawaii.gebiete, hawaii.X, hawaii.Y).reduce((a, b) => a + b, 0);
-  const einwohnerHawaii = hawaii.daten.reduce((a, d) => a + d.einwohner, 0);
-  skaliereGruppe(hawaii, Math.sqrt((einwohnerHawaii / zielDichte) / flHawaii));
+  const stimmenHawaii = hawaii.daten.reduce((a, d) => a + gewicht(d), 0);
+  skaliereGruppe(hawaii, Math.sqrt((stimmenHawaii / zielDichte) / flHawaii));
 
   log('  Alaska: reine Skalierung (ein Gebiet)');
   skaliereAufZiel(alaska, zielDichte);
-  const bAlaska = bilanz(alaska.gebiete, alaska.X, alaska.Y, alaska.daten.map(d => d.einwohner));
+  const bAlaska = bilanz(alaska.gebiete, alaska.X, alaska.Y, alaska.daten.map(gewicht));
 
   return { conus, alaska, hawaii, zielDichte, bilanz: { conus: bConus, hawaii: bHawaii, alaska: bAlaska } };
 }

@@ -31,6 +31,9 @@ const G = daten.reduce((a, d) => a + d.gop, 0);
 const DD = daten.reduce((a, d) => a + d.dem, 0);
 const eHarris = harrisC.reduce((a, d) => a + d.einwohner, 0);
 const landesweit = (G - DD) / (G + DD);
+const sHarris = harrisC.reduce((a, d) => a + d.gesamt, 0);
+// Flächengewichteter Farbwert: Fläche folgt den Stimmen, also über Stimmen mitteln
+const farbMittel = daten.reduce((a, d) => a + d.gesamt / S * marge(d), 0);
 const akRot = ak.gop / (ak.gop + ak.dem) * 100;
 
 const groesste = [...daten].sort((a, b) => b.einwohner - a.einwohner).slice(0, 12);
@@ -42,6 +45,7 @@ const D = {
   gx: nutz.gx, gy: nutz.gy, kx: nutz.kx, ky: nutz.ky,
   idx: nutz.idx, ringe: nutz.ringe, ringzahl: nutz.ringzahl,
   lut: LUT, countys: kompakt,
+  grenzLaengen: nutz.grenzLaengen, grenzIdx: nutz.grenzIdx,
 
 };
 
@@ -57,8 +61,8 @@ const band = Array.from({ length: 80 }, (_, k) =>
 process.stdout.write(`<!doctype html>
 <html lang="de"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Die Wahl 2024, nach Menschen gewichtet</title>
-<meta name="description" content="US-Präsidentschaftswahl 2024: alle Countys, verzogen zwischen Fläche und Einwohnerzahl, mit wahrnehmungsgleicher Farbskala.">
+<title>Die Wahl 2024, nach Stimmen gewichtet</title>
+<meta name="description" content="US-Präsidentschaftswahl 2024: alle Countys, verzogen zwischen Fläche und Wählerschaft, mit wahrnehmungsgleicher Farbskala.">
 <style>
 :root{--papier:#f4f4f2;--tinte:#16181d;--leise:#6a6f79;--linie:#d8d8d4;--karte:#e7e7e3}
 *{box-sizing:border-box}
@@ -82,6 +86,8 @@ figure{margin:10px -8px 0}
 svg.map{width:100%;height:auto;display:block;background:var(--karte)}
 svg.map path.k{stroke:var(--karte);stroke-width:1.2;stroke-linejoin:round;cursor:default}
 svg.map path.k.an{stroke:#fff;stroke-width:6}
+svg.map path.grenze{fill:none;stroke:#4a4e55;stroke-width:15;stroke-linejoin:round;
+ stroke-linecap:round;opacity:.55;pointer-events:none}
 #tip{position:fixed;pointer-events:none;opacity:0;transform:translate(-50%,-128%);
  background:#16181d;color:#f4f4f2;border-radius:4px;padding:9px 11px;font-size:12.5px;
  line-height:1.4;max-width:290px;z-index:9;transition:opacity .1s}
@@ -116,13 +122,13 @@ footer p{margin:0 0 11px}
 </style></head><body>
 <div class="wrap">
 
-<h1>Die Wahl 2024,<br>nach Menschen gewichtet</h1>
-<p class="deck">Der Regler verzieht die Karte von der Fläche zur Einwohnerzahl, bis jeder Mensch
-gleich viel Platz einnimmt. Alaska und Hawaii stehen oben, im selben Massstab — Alaska schrumpft
-dabei auf ein Zehntel seiner Kantenlänge. Trump gewann
+<h1>Die Wahl 2024,<br>nach Stimmen gewichtet</h1>
+<p class="deck">Der Regler verzieht die Karte von der Fläche zur <b>Wählerschaft</b>, bis jede
+abgegebene Stimme gleich viel Platz einnimmt. Alaska und Hawaii stehen oben, im selben Massstab —
+Alaska schrumpft dabei auf ein Zehntel seiner Kantenlänge. Trump gewann
 <b>${zahl(trumpC.length)} der ${zahl(daten.length)} Gebiete</b>, Harris <b>${zahl(harrisC.length)}</b>;
-in diesen ${(harrisC.length / daten.length * 100).toFixed(0)} Prozent der Gebiete lebt aber
-<b>${(eHarris / E * 100).toFixed(0)} Prozent</b> der Bevölkerung. Landesweit trennt beide nur
+in diesen ${(harrisC.length / daten.length * 100).toFixed(0)} Prozent der Gebiete liegen aber
+<b>${kom(sHarris / S * 100, 0)} Prozent aller Stimmen</b>. Landesweit trennt beide nur
 <b>${kom(Math.abs(landesweit) * 100)} Punkte</b>.</p>
 
 <div class="ends"><span>Fläche</span><span>Einwohner</span></div>
@@ -149,6 +155,9 @@ in diesen ${(harrisC.length / daten.length * 100).toFixed(0)} Prozent der Gebiet
   <span class="b">Harris</span><span class="band">${band}</span><span class="b">Trump</span>
 </div>
 <div class="skalaZahlen"><span>+100</span><span>+50</span><span>gleichauf</span><span>+50</span><span>+100</span></div>
+<p class="deck" style="margin:-8px 0 18px;font-size:14px">Weil die Fläche der Wählerschaft folgt und
+die Skala an beiden Enden gleich kräftig ist, liegt der <b>Farbdurchschnitt der ganzen Karte</b> nahe
+am Landesergebnis: ${kom(farbMittel * 100, 2)} gegen ${kom(landesweit * 100, 2)} Punkte für Trump.</p>
 
 <div class="waage">
   <div style="background:${ROT};width:${(G / S * 100).toFixed(2)}%">Trump ${kom(G / S * 100)} %</div>
@@ -179,7 +188,7 @@ ${knappste.map(d => `<tr><td>${punkt(d)}${d.name}</td><td>${d.kuerzel}</td>` +
 <footer>
 <p><b>Umfang.</b> Die ${zahl(conus.length)} Countys des Festlands samt Washington DC, dazu Hawaii
 mit vier Countys und Alaska. Alle drei stehen im <b>selben Massstab</b>: auf der Landkarte gilt
-überall dieselbe Fläche je Bildpunkt, im Kartogramm überall dieselbe Zahl Menschen. Alaska ist
+überall dieselbe Fläche je Bildpunkt, im Kartogramm überall dieselbe Zahl Stimmen. Alaska ist
 deshalb auf der Landkarte so gross zu sehen, wie es wirklich ist — und schrumpft im Kartogramm auf
 ein Zehntel seiner Kantenlänge. Übliche Karten verkleinern Alaska stillschweigend; hier wäre das
 gerade der Fehler, den die Darstellung zeigen will.</p>
@@ -192,6 +201,19 @@ Leprakolonie — wählt mit Maui und ist dort eingerechnet. Connecticut erschein
 Planungsregionen, die 2022 an die Stelle der Countys traten; Washington DC ist aus seinen acht
 Wards zusammengefasst.</p>
 
+<p><b>Warum nach Stimmen.</b> Gewichtet wird nach den abgegebenen Stimmen, nicht nach der
+Bevölkerung: eine Wahlkarte soll zeigen, wo die Stimmen herkommen, nicht wo Menschen wohnen. Die
+Wahlbeteiligung je Einwohner schwankt zwischen den Gebieten um den Faktor 1,8, und genau diese
+Schwankung verschob früher das Bild. Der Nebeneffekt ist der wichtigere: Farbmenge mal Fläche
+summiert sich jetzt fast genau zum Landesergebnis. Der Rest von ${kom(Math.abs(landesweit - farbMittel) * 100, 2)}
+Punkten geht auf die Drittparteien, die 1,7 Prozent der Stimmen halten und in der Zweifarbenskala
+nicht vorkommen.</p>
+
+<p><b>Staatsgrenzen.</b> Die dunklen Linien sind Bundesstaatsgrenzen, abgeleitet aus den
+Countygrenzen: wo die Nachbarschaft über eine Staatsgrenze läuft, wird die Kante gezeichnet. Ohne
+sie ist das Kartogramm kaum zu verorten — die Countys verlieren beim Verziehen ihre Form, und es
+fehlt die Zwischenebene, an der sich das Auge festhält.</p>
+
 <p><b>Die Farben.</b> Rot und Blau sind hier nicht die üblichen. Eine naive Wahlkartenpalette aus
 reinem Rot und Blau ist wahrnehmungstechnisch schief: die beiden trennen in OKLab 0,18
 Helligkeitspunkte, Rot wirkt dadurch heller, näher und schwerer. Diese Skala hat an beiden Enden
@@ -201,8 +223,8 @@ Gebiet bei fünfzig zu fünfzig ist grau, nicht kräftig violett.</p>
 
 <p><b>Was die Farbe trotzdem nicht kann.</b> Auch eine ausgewogene Skala verrät nicht zuverlässig,
 wer landesweit führt: grosse zusammenhängende Flächen wirken schwerer als ein feines Netz gleicher
-Gesamtfläche. Rechnerisch liegt der einwohnergewichtete Farbwert nahe am Landesergebnis, optisch
-bleibt ein Rest. Wer die Zahl will, liest den Balken. Der Umschalter <i>nur Sieger</i> zeigt zum
+Gesamtfläche. Rechnerisch stimmt der Farbdurchschnitt jetzt bis auf
+${kom(Math.abs(landesweit - farbMittel) * 100, 2)} Punkte, optisch bleibt ein Rest. Wer die Zahl will, liest den Balken. Der Umschalter <i>nur Sieger</i> zeigt zum
 Vergleich die übliche Darstellung, in der ein Gebiet mit 50,1 Prozent genauso aussieht wie eines
 mit 90.</p>
 
@@ -257,6 +279,12 @@ const countys = D.countys.map((c,i)=>{
            farbeVorsprung: D.lut[st], farbeSieger: trump ? ROT : BLAU };
 });
 
+// Staatsgrenzen als Linienzüge, aus denselben Knoten wie die Countys
+const grenzLaengen=entpacke(D.grenzLaengen), grenzRoh=entpacke(D.grenzIdx);
+const grenzZuege=[]; { let p=0;
+  for(const n of grenzLaengen){ const a=new Int32Array(n); let v=0;
+    for(let k=0;k<n;k++){ v+=grenzRoh[p++]; a[k]=v } grenzZuege.push(a) } }
+
 const pfade = countys.map(c=>{
   const p=document.createElementNS(NS,'path');
   p.setAttribute('class','k'); p.setAttribute('fill',c.farbeVorsprung); p.dataset.i=c.i;
@@ -267,6 +295,10 @@ const pfade = countys.map(c=>{
   map.appendChild(p);
   return p;
 });
+
+const grenzPfad=document.createElementNS(NS,'path');
+grenzPfad.setAttribute('class','grenze');
+map.appendChild(grenzPfad);
 
 let t=0, modus='vorsprung';
 function zeichne(){
@@ -283,6 +315,17 @@ function zeichne(){
     }
     pfade[i].setAttribute('d',teile.join(''));
   }
+  const g=[];
+  for(const zug of grenzZuege){
+    let d='M';
+    for(let k=0;k<zug.length;k++){
+      const n=zug[k];
+      const x=GX[n]+(KX[n]-GX[n])*t, y=GY[n]+(KY[n]-GY[n])*t;
+      d+=(k?'L':'')+Math.round(x)+' '+Math.round(y);
+    }
+    g.push(d);
+  }
+  grenzPfad.setAttribute('d',g.join(''));
 }
 function faerbe(){
   for(let i=0;i<pfade.length;i++)
