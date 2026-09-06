@@ -163,7 +163,9 @@ Gebiete hier stärker voneinander ab, als es die Vorgabe des Bundeswahlgesetzes 
 <p><b>Verwandt.</b> Was sich seit 2021 verschoben hat, auf demselben Zuschnitt:
 <a href="../wandel-2021-2025/">Vier Jahre später, die Hälfte gewechselt</a> ·
 dieselbe Wahl auf Ebene der Kreise und Gemeindeverbände:
-<a href="../wahlkarte-2025/">Stärkste Partei, Bundestagswahl 2025</a>.</p>
+<a href="../wahlkarte-2025/">Stärkste Partei, Bundestagswahl 2025</a> ·
+dasselbe Verfahren für die USA:
+<a href="../usa-wahl-2024/">Die Wahl 2024, nach Menschen gewichtet</a>.</p>
 </footer>
 
 </div>
