@@ -16,10 +16,6 @@ const mercator = (lam, phi) => {
   return [lam, Math.log(Math.tan(Math.PI / 4 + p / 2))];
 };
 
-// Gall-Peters: x = λ·cos45°, y = sinφ/cos45°. Auf Äquatorlänge 2π normiert
-// (mal 1/cos45°) bleibt davon x = λ, y = 2·sinφ.
-const peters = (lam, phi) => [lam, 2 * Math.sin(phi)];
-
 // Equal Earth, Šavrič/Patterson/Jenny 2018.
 const A1 = 1.340264, A2 = -0.081106, A3 = 0.000893, A4 = 0.003796;
 const equalEarthRoh = (lam, phi) => {
@@ -36,31 +32,18 @@ const equalEarth = (lam, phi) => {
   return [x * S_EE, y * S_EE];
 };
 
-// Robinson 1963, Stützstellen alle 5°, linear dazwischen.
-const R_X = [1.0000, 0.9986, 0.9954, 0.9900, 0.9822, 0.9730, 0.9600, 0.9427, 0.9216,
-             0.8962, 0.8679, 0.8350, 0.7986, 0.7597, 0.7186, 0.6732, 0.6213, 0.5722, 0.5322];
-const R_Y = [0.0000, 0.0620, 0.1240, 0.1860, 0.2480, 0.3100, 0.3720, 0.4340, 0.4958,
-             0.5571, 0.6176, 0.6769, 0.7346, 0.7903, 0.8435, 0.8936, 0.9394, 0.9761, 1.0000];
-const S_ROB = 1 / 0.8487;                    // auf Äquatorlänge 2π
-const robinson = (lam, phi) => {
-  const a = Math.abs(phi) / GRAD / 5;
-  const i = Math.min(17, Math.floor(a)), f = a - i;
-  const x = R_X[i] + (R_X[i + 1] - R_X[i]) * f;
-  const y = R_Y[i] + (R_Y[i + 1] - R_Y[i]) * f;
-  return [0.8487 * lam * x * S_ROB, Math.sign(phi) * 1.3523 * y * S_ROB];
-};
-
 // Flächentreue Referenz für die Kennzahlen: Lambert zylindrisch, Normalparallel
 // am Äquator. Gleicher Äquatormassstab wie Mercator, Gesamtfläche 4π wie die
 // Einheitskugel — der Vergleich Mercator/Lambert ist damit direkt der Faktor,
 // um den ein Land zu gross erscheint.
 export const lambert = (lam, phi) => [lam, Math.sin(phi)];
 
+// Nur zwei ebene Netze: das, gegen das sich die Resolution richtet, und das,
+// das sie nennt. Der dritte Zustand ist der Globus, und der entsteht nicht
+// hier, sondern im Browser — er hängt an der Drehung.
 export const NETZE = [
   { id: 'mercator', name: 'Mercator', jahr: 1569, art: 'winkeltreu', punkt: mercator },
-  { id: 'peters', name: 'Gall-Peters', jahr: 1855, art: 'flächentreu', punkt: peters },
   { id: 'equalearth', name: 'Equal Earth', jahr: 2018, art: 'flächentreu', punkt: equalEarth },
-  { id: 'robinson', name: 'Robinson', jahr: 1963, art: 'Kompromiss', punkt: robinson },
 ];
 
 // Fläche eines geschlossenen Rings auf der Kugel, km². Linienintegral über die

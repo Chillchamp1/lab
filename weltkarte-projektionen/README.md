@@ -7,10 +7,11 @@ für die afrikanischen Mitgliedstaaten, die Resolution „Correct the Map"
 angenommen: 164 Stimmen dafür, eine dagegen, sechs Enthaltungen. Diese Seite
 zeigt, was der Beschluss praktisch bedeutet.
 
-Ein Regler blendet die Weltkarte von Mercator auf ein flächentreues Netz um.
-Jedes Land ist danach eingefärbt, wie viel Bildfläche es bekommt, gemessen an
-seinem wirklichen Anteil an der Landfläche der Erde. Beim Umblenden läuft die
-Farbe aus der Karte heraus — das ist die ganze Aussage in einer Bewegung.
+Ein Regler blendet die Weltkarte von Mercator auf Equal Earth um oder wickelt
+sie zum **Globus** auf. Jedes Land ist danach eingefärbt, wie viel Bildfläche es
+bekommt, gemessen an seinem wirklichen Anteil an der Landfläche der Erde. Beim
+Umblenden läuft die Farbe aus der Karte heraus — das ist die ganze Aussage in
+einer Bewegung.
 
 ## Welches Netz die UN meint
 
@@ -24,28 +25,25 @@ Grössenverhältnisse ankommt — namentlich **Equal Earth**, entwickelt 2018 vo
 einziges Land; enthalten haben sich Estland, Georgien, Litauen, Moldau,
 Serbien und die Ukraine.
 
-Equal Earth ist deshalb das voreingestellte Zielnetz. Zwei weitere stehen zum
-Vergleich daneben, und beide haben einen Grund:
+Equal Earth ist deshalb das voreingestellte Zielnetz. Daneben steht als dritter
+Zustand der **Globus** — und der ist der eigentliche Massstab. Auf einer Kugel
+stellt sich die Frage nach der richtigen Projektion gar nicht: Fläche, Form und
+Winkel stimmen alle zugleich, weil nichts in die Ebene gezwungen wird. Bezahlt
+wird das damit, dass immer nur eine Hälfte zu sehen ist. Genau dieser Handel ist
+das Thema, und mit dem Globus als drittem Zustand sieht man ihn in beide
+Richtungen statt nur zwischen zwei Kompromissen zu vergleichen. Ziehen dreht die
+Kugel.
 
-- **Gall-Peters** (1855/1973) ist genauso flächentreu und in Deutschland als
-  „Peters-Karte" von UN-Entwicklungsorganisationen und Hilfswerken bekannt. In
-  der Anteilstabelle steht es deshalb in derselben Spalte wie Equal Earth —
-  und sieht trotzdem völlig anders aus. Das ist der Beweis dafür, dass
-  „flächentreu" die Form noch nicht festlegt, und die beste Begründung dafür,
-  warum die Resolution ein bestimmtes Netz nennt und nicht nur eine
-  Eigenschaft fordert.
-- **Robinson** (1963) ist das Kompromissnetz vieler Atlanten und gehört
-  ausdrücklich *nicht* dazu. Es ist nicht flächentreu und bleibt in den Zahlen
-  auf halbem Weg stehen — Grönland behält dort noch das 1,6-fache seines
-  Anteils statt des 6,7-fachen bei Mercator.
+Eine frühere Fassung hatte zusätzlich Gall-Peters und Robinson. Beide sind
+raus. Gall-Peters war als Beweis dafür gedacht, dass „flächentreu" die Form noch
+nicht festlegt — ein richtiges Argument, aber eines, das man auch im Text machen
+kann, während vier Knöpfe die Seite unentschlossen wirken liessen. Übrig bleiben
+die drei Zustände, um die es wirklich geht: das Netz, gegen das sich die
+Resolution richtet, das Netz, das sie nennt, und die Wahrheit.
 
-Mercator selbst hat einen eigenen Knopf: es ist der Ausgangszustand, und man
-muss zurückkönnen.
-
-Nicht dabei ist die azimutal-äquidistante Polkarte aus dem UN-Emblem. Sie hat
-mit dem Beschluss nichts zu tun und bricht ausserdem die Überblendung: der
-Südpol wird bei ihr zum ganzen Kartenrand, weshalb schon das Emblem bei 60°
-Süd aufhört.
+Die azimutal-äquidistante Polkarte aus dem UN-Emblem ist weiterhin nicht dabei.
+Sie hat mit dem Beschluss nichts zu tun, und der echte Globus leistet ohnehin
+mehr.
 
 ## Die Kennzahl
 
@@ -84,13 +82,37 @@ Nigeria 0,43.
 - **Gradnetz**, weil man sonst sieht, *dass* sich etwas verschiebt, aber nicht
   *warum*.
 
+## Wie der Globus gebaut ist
+
+Nicht als Projektion. Für jeden Punkt liegt einmal der Einheitsvektor auf der
+Kugel bereit — der hängt nicht von der Drehung ab. Eine Drehung ist danach eine
+Handvoll Multiplikationen je Punkt, ganz ohne Winkelfunktionen; deshalb kann die
+Kugel am Zeiger hängen und nicht bloss in Stufen springen.
+
+Gezeichnet wird orthografisch, also so, wie eine Kugel aus grosser Entfernung
+aussieht. Punkte hinter dem Horizont werden nicht weggeworfen und auch nicht
+nach innen zurückgeklappt, sondern längs ihrer Richtung auf den Rand geschoben.
+Das ist der Trick, der die ganze Beschneidung erspart: ein Umriss, der über den
+Horizont läuft, bekommt dadurch von selbst den Randbogen als Abschluss, und ein
+Umriss ganz auf der Rückseite fällt zu einer Linie auf dem Rand zusammen — beim
+fertigen Globus wird er dann weggelassen, vorher nicht, damit nichts springt.
+
+Linien auf der Rückseite werden beim Aufwickeln ausgeblendet. Ohne das
+schlingern sie: ihre Punkte laufen alle auf den Rand zu, und die
+Zwischenzustände dieser Bewegung sehen aus wie Schlaufen.
+
 ## Verfahren
 
-Alle vier Netze sind auf dieselbe **Äquatorlänge** normiert. Sonst mischte sich
-in die Überblendung eine blosse Grössenänderung, und das Ergebnis hinge davon
-ab, wie man die Karten in den Rahmen einpasst. Die Seitenverhältnisse fallen
-dadurch auseinander — Mercator 1,12:1, Gall-Peters 1,57:1, Robinson 1,97:1,
-Equal Earth 2,05:1 —, was der Rahmen mit etwas Luft an beiden Enden auffängt.
+Beide ebenen Netze sind auf dieselbe **Äquatorlänge** normiert. Sonst mischte
+sich in die Überblendung eine blosse Grössenänderung, und das Ergebnis hinge
+davon ab, wie man die Karten in den Rahmen einpasst. Die Seitenverhältnisse
+fallen dadurch auseinander — Mercator 1,12:1, Equal Earth 2,05:1 —, was der
+Rahmen mit etwas Luft an beiden Enden auffängt.
+
+Der **Globus** hat aus demselben Grund den Radius 1: eine Karte der
+Äquatorlänge 2π wickelt sich genau auf eine Kugel dieser Grösse. Die
+Überblendung zeigt damit wirklich das Aufwickeln und nicht nebenbei eine
+Grössenänderung.
 
 Die Umrisse liegen **einmal** in geografischen Graden in der Seite. Der Browser
 rechnet daraus beim Laden alle vier Netze und interpoliert zwischen ihnen. Das
@@ -120,14 +142,16 @@ unter der Strichbreite, mit der die Länder ohnehin gegeneinander abgesetzt sind
 
 ## Proben
 
-- Gall-Peters und Equal Earth sind beide flächentreu und müssen dieselben
-  Anteile liefern: grösste Abweichung **0,03 %**.
+- Equal Earth ist flächentreu, also muss dort jedes der 242 Länder genau den
+  Anteil bekommen, der ihm zusteht. Grösste Abweichung vom Faktor 1:
+  **0,03 %**.
 - Die Flächen sind als Linienintegral auf der Kugel gerechnet, nicht aus einer
   Tabelle übernommen. Gegengerechnet über eine flächentreue Projektion:
   **0,0000 %** Abweichung. Gegen die amtlichen Werte liegt das Ergebnis rund
   1 % daneben, was die Generalisierung der Umrisse ist, nicht das Verfahren.
-- In allen Zwischenzuständen aller drei Ziele bleibt die Karte im Rahmen;
-  geprüft wurde der Abstand zum Rand bei jedem Viertelschritt.
+- In allen Zwischenzuständen beider Ziele bleibt die Karte im Rahmen; geprüft
+  wurde der Abstand zum Rand bei jedem Viertelschritt, für die ebene
+  Überblendung wie für das Aufwickeln.
 
 ## Daten
 
