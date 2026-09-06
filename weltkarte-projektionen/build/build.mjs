@@ -64,7 +64,7 @@ const SEITE = `<!doctype html>
 <meta name="description" content="On 4 September 2026 the UN General Assembly voted, on Togo's motion, for equal-area world maps. A slider shows what the switch from Mercator to Equal Earth actually changes.">
 <style>
 :root{--papier:#f4f4f2;--tinte:#16181d;--leise:#6a6f79;--linie:#d8d8d4;--karte:#edebe6;
- --zuklein:#1d6f78;--mitte:#e6e0d3;--zugross:#a8402b;--akzent:#8a5a2b}
+ --zuklein:#0c5480;--mitte:#c9c3b9;--zugross:#8a3910;--akzent:#8a5a2b}
 *{box-sizing:border-box}
 body{margin:0;background:var(--papier);color:var(--tinte);
  font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55}
@@ -85,7 +85,11 @@ canvas{width:100%;height:auto;display:block;background:var(--karte);border-radiu
 .skala .bar{position:relative;display:block;height:10px;border-radius:2px;
  background:linear-gradient(90deg,var(--zuklein),var(--mitte),var(--zugross))}
 .skala .bar i{position:absolute;top:0;bottom:0;width:1px;background:rgba(244,244,242,.7)}
-.skala .marken{position:relative;display:block;height:15px;margin-top:4px;
+.skala .bar b{position:absolute;left:0;width:100%;top:calc(100% + 3px);height:3px;
+ border-radius:2px;background:var(--tinte);transition:left .12s linear,width .12s linear}
+.skala .jetztwert{display:block;margin-top:5px;color:var(--tinte);font-size:12.5px;
+ font-variant-numeric:tabular-nums;min-height:1.2em}
+.skala .marken{position:relative;display:block;height:15px;margin-top:9px;
  color:var(--leise);font-size:11.5px;font-variant-numeric:tabular-nums}
 .skala .marken span{position:absolute;transform:translateX(-50%);white-space:nowrap}
 .skala .marken span:first-child{transform:none}
@@ -160,12 +164,13 @@ footer p{margin:0 0 11px}
 
 <div class="skala">
   <span class="titel">Image area a country gets, against its true share of the world's land</span>
-  <span class="bar" aria-hidden="true"><i style="left:18.4%"></i><i style="left:50%"></i><i style="left:81.6%"></i></span>
+  <span class="bar" aria-hidden="true"><i style="left:18.4%"></i><i style="left:50%"></i><i style="left:81.6%"></i><b id="spanne"></b></span>
   <span class="marken" aria-hidden="true">
     <span style="left:0%">⅓×</span><span style="left:18.4%">½×</span>
     <span style="left:50%"><b>1×</b></span>
     <span style="left:81.6%">2×</span><span style="left:100%">3×</span>
   </span>
+  <span class="jetztwert" id="spanneText" aria-live="polite"></span>
 </div>
 
 <div class="ctrl">
@@ -175,7 +180,7 @@ footer p{margin:0 0 11px}
 </div>
 <div class="schalter">
   <label><input type="checkbox" id="cGrad" checked> Graticule</label>
-  <label><input type="checkbox" id="cTissot"> Distortion circles</label>
+  <label><input type="checkbox" id="cTissot" checked> Distortion circles</label>
   <label><input type="checkbox" id="cFest"> Hold Mercator's distortion</label>
   <label><input type="checkbox" id="cKurs"> Two flight routes</label>
 </div>
@@ -262,6 +267,17 @@ same size, but sheared into an ellipse — the area is right, the shape is not. 
 nothing more to say about the trade, and you see it in a single movement. On the
 <b>globe</b> the circles are then the same size <i>and</i> round: the control case that
 shows both are possible at once — just not on a sheet of paper.</p>
+<p class="sec">Measured, and worth being exact about. On <b>Equal Earth</b> all thirty
+circles come out to the same area to the last digit — 0.0000 % spread — while their axis
+ratio runs from 1.23 to 3.16. Even on the equator it is 1.36, so Equal Earth is nowhere
+conformal; equal area is bought everywhere, not only at the edges. On <b>Mercator</b> the
+areas grow by 1.00, 1.34, 4.10 from the equator to 60°, against <code>sec²φ</code> of 1.00,
+1.33, 4.00 — and the shapes are not perfect circles either: 1.00 on the equator, 1.08 at
+30°, 1.25 at 60°. That is not a flaw in the drawing. A Tissot indicatrix is an
+<i>infinitesimal</i> circle; these are 800 km wide, and across that span Mercator's own
+scale already changes, so the northern half of each circle is stretched more than the
+southern half. Drawn at a size you can see, the circles show the projection's second-order
+behaviour along with the first.</p>
 <p class="sec">The two flight routes show what that was practically good for. Because
 angles are correct on Mercator, a line of <b>constant compass course</b> is a straight line
 there — you lay down a ruler and read off the bearing. In 1569 that was the entire job. The

@@ -101,11 +101,14 @@ gleichmässigere Verteilung, aber die schlechtere Karte: die Aussage steckt
 darin, dass die Kreise **nach oben** wachsen, und dafür will man eine Spalte
 mit dem Auge hochfahren können.
 
-Leiser sind sie ausserdem: Füllung 0,055 statt 0,10, Umriss 0,26 statt 0,42,
-Strich 0,9 px statt 1,1. Gemessen als mittlere Abdunklung, die die Kreisebene
-aufs fertige Bild legt, sind das **0,32 statt 0,94** — gut ein Drittel. Sie
-müssen nur eine Spur deutlicher sein als das Gradnetz (0,19), auf dem sie
-stehen; sie sagen ihre Sache über Grösse und Form, nicht über Deckkraft.
+Sie laufen inzwischen **von Anfang an mit** statt eingeschaltet zu werden — sie
+sind die eigentliche Antwort auf „was kann Mercator besser", und die sollte
+nicht hinter einem Häkchen liegen. Dafür sind sie noch einmal leiser geworden:
+Füllung 0,04, Umriss 0,22, Strich 0,8 px (von ursprünglich 0,10 / 0,42 /
+1,1 px). Gemessen als mittlere Abdunklung, die die Kreisebene aufs fertige Bild
+legt: **0,25 gegen ursprünglich 0,94** — gut ein Viertel. Sie müssen nur eine
+Spur deutlicher sein als das Gradnetz (0,19), auf dem sie stehen; sie sagen
+ihre Sache über Grösse und Form, nicht über Deckkraft.
 
 ## Der Aufbau der Seite
 
@@ -128,6 +131,107 @@ Stellen: ⅓ bei 0 %, ½ bei 18,4 %, 1 bei 50 %, 2 bei 81,6 %, 3 bei 100 %.
 
 Erst danach kommen Regler, Knöpfe, Schalter — und dann Titel, Text und
 Tabellen.
+
+## Sind die Netze richtig gerechnet?
+
+Nachgeprüft, und zwar nicht gegen den eigenen Code, sondern gegen die
+Definition der jeweiligen Projektion:
+
+| Prüfung | Ergebnis |
+|---|---|
+| Mercator gegen `artanh(sin φ)` und `ln(sec φ + tan φ)` über ±82° | max. Abweichung 1,3 · 10⁻¹⁴ |
+| Mercator winkeltreu: Massstab längs Parallel gegen längs Meridian | 3,1 · 10⁻¹⁰ (nur der Fehler der Differenzenquotienten) |
+| Equal Earth flächentreu: Jacobi-Determinante ÷ cos φ über die ganze Karte | konstant auf 3,7 · 10⁻⁷ % |
+| Equal Earth Seitenverhältnis | 2,0546 — die Arbeit nennt 2,05:1 |
+| Globus: Flächenmassstab gegen `cos c` über die Halbkugel | 9,9 · 10⁻¹¹ |
+
+Dazu die beiden Proben, die schon beim Bauen mitlaufen: jedes der 242 Länder
+bekommt auf Equal Earth seinen Anteil auf **0,0281 %** genau, und das
+Kugelintegral stimmt mit dem Weg über Lambert auf **0,0000 %** überein.
+
+## Sehen die Kreise auf Equal Earth verschieden aus? Ja, und das ist der Punkt
+
+Alle dreissig Kreise haben auf Equal Earth **exakt dieselbe Fläche** —
+Spanne 0,0000 % über die ganze Karte. Verschieden ist nur ihre *Form*, und
+zwar von 1,23:1 bis 3,16:1, symmetrisch zwischen Nord und Süd und zwischen Ost
+und West. Genau das ist der Handel: Fläche stimmt überall, Form nirgends. Auf
+dem Äquator sind es immer noch 1,36:1 — Equal Earth ist an **keiner** Stelle
+winkeltreu, die Flächentreue wird überall bezahlt, nicht nur am Rand.
+
+Auf Mercator ist es umgekehrt, und auch da lohnt die Genauigkeit. Die Flächen
+wachsen vom Äquator bis 60° um 1,00 / 1,34 / 4,10 gegen `sec²φ` von
+1,00 / 1,33 / 4,00. Und die Formen sind **keine** perfekten Kreise: 1,00 am
+Äquator, 1,08 bei 30°, 1,25 bei 60°. Das ist kein Zeichenfehler. Eine
+Tissot-Indikatrix ist ein *unendlich kleiner* Kreis; diese hier sind 800 km
+breit, und über diese Spanne ändert sich Mercators Massstab bereits merklich —
+die Nordhälfte jedes Kreises wird stärker gedehnt als die Südhälfte. In
+sichtbarer Grösse gezeichnet zeigen die Kreise eben auch das Verhalten zweiter
+Ordnung. Der Text auf der Seite sagt das jetzt dazu, statt „bleibt ein Kreis"
+stehen zu lassen.
+
+## Die Farbskala: Blau gegen Orange
+
+Vorher Türkis gegen Rost. Durchgerechnet mit der Farbfehlsichtigkeits-
+Simulation von Machado, Oliveira und Fernandes (2009), Schweregrad 1,0:
+
+| | Türkis/Rost | Blau/Orange |
+|---|---|---|
+| schwächste Stufe gegen das Papier | 1,25:1 | **1,47:1** |
+| kleinster RGB-Abstand zweier Farben acht Stufen auseinander, Protanopie | 20 | **36** |
+| dasselbe, Deuteranopie | 25 | **44** |
+| Abstand der beiden Skalenenden, Protanopie | 104 | **119** |
+| Abstand der beiden Skalenenden, Deuteranopie | 95 | **122** |
+
+Blau gegen Orange ist die farbsicherste divergierende Paarung, und die Zahlen
+sagen dasselbe: bei Rot-Grün-Schwäche verlor Türkis/Rost fast die Hälfte
+seiner Trennschärfe. Der zweite Gewinn ist die Mitte — sie steht jetzt mit
+1,47:1 statt 1,25:1 gegen das Papier, womit die Equal-Earth-Ansicht nicht mehr
+ausgewaschen wirkt, aber leise genug bleibt, dass „stimmt so" nicht wie eine
+Aussage aussieht.
+
+Die Helligkeit fällt in beiden Richtungen von der Mitte streng nach aussen.
+Damit trägt die Skala ihre Aussage auch in Graustufen — nur die Richtung
+(zu klein oder zu gross) hängt an der Farbe.
+
+Die Kurslinien haben dazu eine **Fassung** in Papierfarbe bekommen. Das
+Ockergelb der Loxodrome steht gegen das orange Skalenende nur auf 1,34:1 und
+wäre über Grönland auf Mercator kaum zu sehen gewesen; die Fassung löst das
+unabhängig von der Füllung, so wie die Beschriftung darunter es auch schon tut.
+
+## Was gerade auf dem Schirm steht
+
+Unter dem Farbbalken sitzt eine Klammer, die die Spanne der gerade gezeigten
+Werte markiert, dazu eine Zeile mit den beiden Enden. Das ist die Antwort auf
+den Eindruck, Equal Earth habe „kaum Kontrast":
+
+| Ansicht | Zeile |
+|---|---|
+| Mercator | `Gabon 0,42× … Greenland 6,67×` — Klammer über 90 % des Balkens |
+| Equal Earth | `every country at 1,00× — nothing is distorted here` — Klammer fällt zum Strich zusammen |
+| Globus | `1,00× where you look straight down, down to 0,00× at the rim` — Klammer über die linke Hälfte |
+
+Stimmt also: Equal Earth hat kaum Kontrast, weil es dort nichts zu zeigen
+gibt. Ohne die Klammer sah das aus wie eine blasse Karte, mit ihr ist es eine
+Aussage.
+
+Gezählt wird derselbe Satz wie in den Tabellen — über 150.000 km², ohne die
+Antarktis. Ohne die Schranke hiesse das Minimum auf Mercator „Nauru 0,42×":
+21 km² gross, auf dem Schirm nicht zu finden, und auf zwei Stellen derselbe
+Wert wie Gabun. Auf der Kugel nennt die Zeile Orte statt Namen, weil der Wert
+dort keine Eigenschaft des Landes ist, sondern des Orts im Bild — jedes Land,
+das den Rand berührt, misst dort nahe null.
+
+## Warum der Globus den Äquator in der Mitte hat
+
+Vorher war die Blickmitte um 20° nach Norden geschwenkt, damit Europa und
+Afrika beide gut im Bild stehen. Das war ein Fehler, und zwar ein inhaltlicher:
+der Flächenmassstab der Kugelansicht ist der Kosinus des Abstands zur
+Bildmitte. Ein Schwenk nach Norden rückt also die Nordhalbkugel näher an den
+unverzerrten Punkt und schiebt die Südhalbkugel zum schrumpfenden Rand — auf
+einer Seite über nördliche Überrepräsentation wäre ausgerechnet der Massstab
+wieder nach Norden geneigt gewesen. Jetzt steht die Blickmitte auf 0° Breite,
+15° Ost: in der Länge auf dem Streitgegenstand, in der Breite symmetrisch
+zwischen den Halbkugeln.
 
 ## Warum die Länder je eine Farbe tragen
 
