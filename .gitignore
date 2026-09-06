@@ -1,0 +1,12 @@
+# Zwischenergebnis der Kartogramm-Berechnung, entsteht beim Bauen neu
+kartogramm-cache.json
+# Rohdaten der Bundeswahlleiterin, siehe build/DATEN.md
+*.shp
+*.dbf
+*.shx
+*.prj
+*.sbn
+*.sbx
+*.cpg
+kerg2.csv
+strukturdaten.csv

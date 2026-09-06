@@ -10,5 +10,11 @@
     "titel": "299 Wahlkreise, nach Menschen gewichtet",
     "beschreibung": "Dieselbe Wahl auf Wahlkreisebene. Weil Wahlkreise nach Bevölkerung geschnitten werden, gleicht das Kartogramm die Gebiete fast an.",
     "datum": "2026-09"
+  },
+  {
+    "slug": "wandel-2021-2025",
+    "titel": "Vier Jahre später, die Hälfte gewechselt",
+    "beschreibung": "Bundestagswahl 2021 und 2025 im selben Bild: in 149 von 299 Wahlkreisen führt eine andere Partei.",
+    "datum": "2026-09"
   }
 ]
