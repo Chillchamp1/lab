@@ -380,7 +380,11 @@ function beschrifte() {
 
 document.getElementById('cGrad').addEventListener('change', e => { zeigGrad = e.target.checked; neuZeichnen(); });
 document.getElementById('cTissot').addEventListener('change', e => { zeigTissot = e.target.checked; neuZeichnen(); });
-document.getElementById('cKurs').addEventListener('change', e => { zeigKurs = e.target.checked; neuZeichnen(); });
+document.getElementById('cKurs').addEventListener('change', e => {
+  zeigKurs = e.target.checked;
+  document.getElementById('lgdKurs').hidden = !zeigKurs;
+  neuZeichnen();
+});
 
 // ---------- Tabellen ----------
 const nf = (n, d = 0) => n.toLocaleString('de-DE', { minimumFractionDigits: d, maximumFractionDigits: d });
