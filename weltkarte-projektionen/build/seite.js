@@ -754,12 +754,15 @@ D.netze.forEach((n, i) => {
   ziele.appendChild(b);
 });
 
-// Gedrückt ist der Knopf, dessen Netz gerade zu sehen ist: am einen Reglerende
-// Mercator, am anderen das Zielnetz, dazwischen keiner.
+// Gedrückt ist der Knopf, dessen Netz gerade zu sehen ist — und zwar ganz.
+// Früher stand hier „i === zielB && t > .98"; das leuchtete auch mitten auf der
+// Kante Equal Earth–Globus, weil der Regler dort ja am Ende steht. Aus den
+// Gewichten gelesen stimmt es in jedem Punkt des Dreiecks.
 function knoepfe() {
+  const g = gewichte();
   for (const b of ziele.children) {
     const i = +b.dataset.netz;
-    b.setAttribute('aria-pressed', (i === M ? t < .02 : i === zielB && t > .98) ? 'true' : 'false');
+    b.setAttribute('aria-pressed', g[i] > .98 ? 'true' : 'false');
   }
 }
 
@@ -872,11 +875,17 @@ function beschrifte() {
 const ECKEN = { mercator: [47.2, 234], equalearth: [282.8, 234], globus: [165, 30] };
 const kugelEl = document.getElementById('kugel');
 
-function kugelSetzen() {
+// Die Gewichte der drei Zustände im gerade gezeigten Bild.
+function gewichte() {
   const g = new Float64Array(D.netze.length);
   g[M] += 1 - t;
   g[zielA] += t * (1 - u);
   g[zielB] += t * u;
+  return g;
+}
+
+function kugelSetzen() {
+  const g = gewichte();
   let x = 0, y = 0;
   for (let i = 0; i < g.length; i++) {
     if (!g[i]) continue;
@@ -886,6 +895,95 @@ function kugelSetzen() {
   kugelEl.setAttribute('cx', x.toFixed(2));
   kugelEl.setAttribute('cy', y.toFixed(2));
 }
+
+// Das Dreieck ist nicht nur Anzeige, sondern Bedienung: ein Zug darin setzt die
+// Karte. Umgekehrt zu kugelSetzen — aus dem Punkt werden baryzentrische
+// Gewichte, daraus Regler und Ziel.
+//
+//   wMercator = 1 − t,  wA = t(1−u),  wB = t·u
+//
+// Damit die Knöpfe und die Beschriftung stimmen, werden die Ränder eingerastet:
+// liegt kein Gewicht auf dem Globus, sind beide Ziele Equal Earth, und
+// umgekehrt. Sonst zeigte an der Ecke Equal Earth kein Knopf als gedrückt an,
+// obwohl genau dieses Netz zu sehen ist.
+const triSvg = document.getElementById('tri');
+const triWrap = triSvg.parentElement;
+const iEE = D.netze.findIndex(n => n.id === 'equalearth');
+const iGL = D.netze.findIndex(n => n.id === 'globus');
+
+function gewichteAus(px, py) {
+  const A = ECKEN.mercator, B = ECKEN.equalearth, C = ECKEN.globus;
+  const d = (B[1] - C[1]) * (A[0] - C[0]) + (C[0] - B[0]) * (A[1] - C[1]);
+  let a = ((B[1] - C[1]) * (px - C[0]) + (C[0] - B[0]) * (py - C[1])) / d;
+  let b = ((C[1] - A[1]) * (px - C[0]) + (A[0] - C[0]) * (py - C[1])) / d;
+  let c = 1 - a - b;
+  // Ausserhalb des Dreiecks: auf null kappen und neu normieren. Ein Zug knapp
+  // neben einer Kante rastet damit auf diese Kante ein, statt zu springen.
+  a = Math.max(0, a); b = Math.max(0, b); c = Math.max(0, c);
+  const s = a + b + c;
+  return s > 0 ? [a / s, b / s, c / s] : [1, 0, 0];
+}
+
+function triSetzen(ev) {
+  const r = triSvg.getBoundingClientRect();
+  const px = (ev.clientX - r.left) / r.width * 330;
+  const py = (ev.clientY - r.top) / r.height * 262;
+  const [wM, wE, wG] = gewichteAus(px, py);
+
+  const altesZiel = zielB;
+  if (wG <= 1e-6) { zielA = zielB = iEE; u = 1; }
+  else if (wE <= 1e-6) { zielA = zielB = iGL; u = 1; }
+  else { zielA = iEE; zielB = iGL; u = wG / (wE + wG); }
+  if (zielB !== altesZiel) tabellen();
+  setze(1 - wM);
+}
+
+// Der Play-Knopf sitzt im Schwerpunkt und deckte damit genau die Stelle ab, an
+// der alle drei Zustände gemischt sind — dort liess sich nicht mehr ziehen.
+// Deshalb hängen die Zeiger am Umschlag, nicht am SVG, und ein Zug wird erst ab
+// vier Pixeln einer: ein Tipp auf den Knopf bleibt ein Tipp, ein Zug darüber
+// hinweg wird zum Ziehen, und der Klick des Knopfes wird dann einmal geschluckt.
+let triZieht = false, triStart = null;
+
+triWrap.addEventListener('pointerdown', ev => {
+  triStart = { x: ev.clientX, y: ev.clientY, id: ev.pointerId,
+               aufKnopf: knopfSpiel.contains(ev.target) };
+});
+
+triWrap.addEventListener('pointermove', ev => {
+  if (!triStart || ev.pointerId !== triStart.id) return;
+  if (!triZieht) {
+    if (Math.hypot(ev.clientX - triStart.x, ev.clientY - triStart.y) < 4) return;
+    triZieht = true;
+    rundlaufStopp();
+    triSvg.classList.add('zieht');
+    triWrap.setPointerCapture(ev.pointerId);
+    triWrap.addEventListener('click', schluck, { capture: true, once: true });
+  }
+  triSetzen(ev);
+  ev.preventDefault();
+});
+
+const schluck = ev => { ev.stopPropagation(); ev.preventDefault(); };
+
+const triEnde = ev => {
+  if (triStart && ev.pointerId !== triStart.id) return;
+  // Ein Tipp neben den Knopf setzt die Karte auf diese Stelle. Ohne das täte
+  // ein kurzes Antippen des Dreiecks gar nichts, weil die Vier-Pixel-Schwelle
+  // nie überschritten würde — und genau ein Tipp auf eine Ecke ist die
+  // naheliegendste Geste.
+  if (!triZieht && triStart && !triStart.aufKnopf) { rundlaufStopp(); triSetzen(ev); }
+  triStart = null;
+  if (!triZieht) return;
+  triZieht = false;
+  triSvg.classList.remove('zieht');
+  if (triWrap.hasPointerCapture(ev.pointerId)) triWrap.releasePointerCapture(ev.pointerId);
+  // Falls doch kein Klick mehr kommt, den Fänger wieder abräumen.
+  setTimeout(() => triWrap.removeEventListener('click', schluck, { capture: true }), 0);
+};
+triWrap.addEventListener('pointerup', triEnde);
+triWrap.addEventListener('pointercancel', triEnde);
+
 
 
 document.getElementById('cGrad').addEventListener('change', e => { zeigGrad = e.target.checked; neuZeichnen(); });
@@ -980,7 +1078,12 @@ function zeigeTip(l, ev) {
 let zieht = null;
 
 function zeigerHaltung() {
-  cv.style.cursor = zieht ? 'grabbing' : (globusAnteil() > .3 ? 'grab' : 'default');
+  // Solange der Globus im Bild ist, gehört ein Zug über der Karte der Kugel.
+  // Ohne das eigene touch-action rollt der Browser auf dem Telefon nebenher die
+  // Seite mit, und man dreht die Kugel, während einem das Menü davonläuft.
+  const dreht = globusAnteil() > .3;
+  cv.style.touchAction = dreht ? 'none' : 'pan-y';
+  cv.style.cursor = zieht ? 'grabbing' : (dreht ? 'grab' : 'default');
 }
 
 cv.addEventListener('pointerdown', ev => {
