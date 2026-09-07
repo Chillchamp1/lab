@@ -373,6 +373,28 @@ const cv = document.getElementById('karte'), ctx = cv.getContext('2d');
 const VERHAELTNIS = 1.30;
 let breite = 0, hoehe = 0, dpr = 1, skala = 1, mx = 0, my = 0;
 
+// Zoom und Ausschnitt. Der Rahmen (rahmenX/rahmenY) ist die Mitte dessen, was
+// die gerade gezeigte Mischung an Ausdehnung hat; der Versatz verschiebt den
+// Ausschnitt darin und wird auf das begrenzt, was die Karte hergibt. Waagrecht
+// verschiebt sonst der Mittelmeridian — der läuft um und kennt keinen Rand.
+let zoom = 1, versatzX = 0, versatzY = 0, rahmenX = 0, rahmenY = 0, rahmenW = 1, rahmenH = 1;
+
+// Versatz begrenzen und mx/my daraus setzen. Das muss auch zwischen zwei
+// Bildern gehen: ein Rad hat mehrere Rasten, und jede rechnet auf dem Stand der
+// vorigen weiter. Ohne das blieben mx und my bis zum nächsten Bild stehen und
+// der Punkt unter dem Zeiger wanderte weg.
+function versatzKlemmen() {
+  const gX = Math.max(0, rahmenW / 2 - breite / (2 * skala));
+  const gY = Math.max(0, rahmenH / 2 - hoehe / (2 * skala));
+  versatzX = Math.max(-gX, Math.min(gX, versatzX));
+  versatzY = Math.max(-gY, Math.min(gY, versatzY));
+  mx = rahmenX + versatzX; my = rahmenY + versatzY;
+}
+const ZOOM_MAX = 24;
+// Der Grundmassstab des letzten Bildes — skala ohne Zoom. Die Zeigergesten
+// rechnen damit, statt auf das nächste Bild zu warten.
+let basisMerk = 1;
+
 let t = 0, u = 1, zielA = 1, zielB = 1;              // Ziel 1 = Equal Earth
 let zeigGrad = true, zeigTissot = true, zeigKurs = false;
 
@@ -555,7 +577,7 @@ function mischeEbene(e, auswahl) {
 // dem Zeichnen übersprungen — je Ring einzeln, was an gemeinsamen Grenzen
 // Lücken unter einem halben Bildpunkt hinterlässt und damit unter der Strichbreite,
 // mit der die Länder ohnehin gegeneinander abgesetzt sind.
-let AUSWAHL = null, zRingVon = null;
+let AUSWAHL = null, zRingVon = null, auswahlZoom = 1;
 
 function duenneAus() {
   let sMax = 0;
@@ -563,7 +585,10 @@ function duenneAus() {
     const k = land.kasten[i];
     sMax = Math.max(sMax, Math.min(breite / (k[1] - k[0]), hoehe / (k[3] - k[2])) * .97);
   }
-  const schwelle = .5 / sMax / RAD;              // ein halber Bildpunkt, in Grad
+  // Beim Hineinzoomen wird die Ausdünnung zu grob: was bei ganzer Karte unter
+  // einem halben Bildpunkt lag, ist zehnfach vergrössert eine sichtbare Ecke.
+  const schwelle = .5 / (sMax * zoom) / RAD;     // ein halber Bildpunkt, in Grad
+  auswahlZoom = zoom;
   const idx = [], von = new Int32Array(ringLen.length + 1);
   for (let r = 0; r < ringLen.length; r++) {
     von[r] = idx.length;
@@ -633,8 +658,12 @@ function zeichne() {
   const k = land.kasten;
   const x0 = dreiFach(k[M][0], k[zielA][0], k[zielB][0]), x1 = dreiFach(k[M][1], k[zielA][1], k[zielB][1]);
   const y0 = dreiFach(k[M][2], k[zielA][2], k[zielB][2]), y1 = dreiFach(k[M][3], k[zielA][3], k[zielB][3]);
-  skala = Math.min(breite / (x1 - x0), hoehe / (y1 - y0)) * .97;
-  mx = (x0 + x1) / 2; my = (y0 + y1) / 2;
+  const basisSkala = Math.min(breite / (x1 - x0), hoehe / (y1 - y0)) * .97;
+  basisMerk = basisSkala;
+  skala = basisSkala * zoom;
+  rahmenX = (x0 + x1) / 2; rahmenY = (y0 + y1) / 2;
+  rahmenW = x1 - x0; rahmenH = y1 - y0;
+  versatzKlemmen();
 
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, breite, hoehe);
@@ -1260,52 +1289,155 @@ function zeigerHaltung() {
   // Seite mit, und man dreht die Kugel, während einem das Menü davonläuft.
   // Ziehen tut jetzt in jedem Zustand etwas — auf der Kugel dreht es, auf dem
   // Blatt verschiebt es den Mittelmeridian. Also zeigt der Zeiger das überall an.
-  const dreht = globusAnteil() > .3;
-  cv.style.touchAction = dreht ? 'none' : 'pan-y';
+  // Immer „none": zwei Finger sollen zoomen, und das ginge sonst an den Browser.
+  // Das Scrollen der Seite übernimmt dafür der senkrechte Zug selbst.
+  cv.style.touchAction = 'none';
   cv.style.cursor = zieht ? 'grabbing' : 'grab';
+}
+
+// Zwei Finger zoomen, einer verschiebt. Damit der Browser die Kneifgeste nicht
+// selbst abfängt, steht touch-action auf der Karte auf „none" — dafür übernimmt
+// ein senkrechter Zug bei ganzer Karte das Scrollen der Seite selbst, sonst
+// klebte man auf dem Telefon an der Karte fest.
+const zeiger = new Map();
+let kneift = null, achse = null, letzterTipp = 0, warGeste = false;
+
+// Bildpunkt → Kartenkoordinate, mit dem Rahmen des letzten Bildes.
+const zuKarte = (sx, sy) => {
+  const r = cv.getBoundingClientRect();
+  return [(sx - r.left - breite / 2) / skala + mx, my - (sy - r.top - hoehe / 2) / skala];
+};
+
+// Setzt den Versatz so, dass der Kartenpunkt (ax, ay) wieder unter dem
+// Bildpunkt (sx, sy) liegt.
+function haltePunkt(ax, ay, sx, sy) {
+  const r = cv.getBoundingClientRect();
+  versatzX = ax - (sx - r.left - breite / 2) / skala - rahmenX;
+  versatzY = ay + (sy - r.top - hoehe / 2) / skala - rahmenY;
+  versatzKlemmen();
 }
 
 cv.addEventListener('pointerdown', ev => {
   // Ein Druck auf die Karte ist eine Übernahme, ob danach gedreht wird oder nicht.
   rundlaufStopp();
-  zieht = { x: ev.clientX, y: ev.clientY };
-  cv.setPointerCapture(ev.pointerId);
+  zeiger.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+  // Das Einfangen darf nicht der Rest der Geste kosten. Es scheitert in Fällen,
+  // die uns nicht kümmern (kein aktiver Zeiger mehr), und riss bis eben den
+  // ganzen Handler mit — die Geste kam dann gar nicht erst zustande.
+  try { cv.setPointerCapture(ev.pointerId); } catch { /* dann eben ohne */ }
   tip.style.opacity = '0';
+  if (zeiger.size === 2) {
+    const [a, b] = [...zeiger.values()];
+    const sx = (a.x + b.x) / 2, sy = (a.y + b.y) / 2;
+    const [ax, ay] = zuKarte(sx, sy);
+    kneift = { abstand: Math.hypot(a.x - b.x, a.y - b.y), zoom0: zoom, ax, ay };
+    warGeste = true;
+    zieht = null;
+  } else if (zeiger.size === 1) {
+    zieht = { x: ev.clientX, y: ev.clientY };
+    achse = null;
+  }
   zeigerHaltung();
   ev.preventDefault();
 });
 
 const zugEnde = ev => {
-  if (!zieht) return;
-  zieht = null;
-  if (cv.hasPointerCapture(ev.pointerId)) cv.releasePointerCapture(ev.pointerId);
+  zeiger.delete(ev.pointerId);
+  try { if (cv.hasPointerCapture(ev.pointerId)) cv.releasePointerCapture(ev.pointerId); } catch { /* egal */ }
+  if (zeiger.size < 2) kneift = null;
+  if (zeiger.size === 0) {
+    // Doppeltipp setzt den Ausschnitt zurück — auf dem Telefon der einzige
+    // bequeme Weg heraus aus einem tiefen Zoom.
+    //
+    // Als Tipp zählt nur, was weder gekniffen noch gezogen hat. Ohne diese
+    // Bedingung galt das Abheben nach einer Kneifgeste selbst als Tipp: zwei
+    // Kneifgesten kurz hintereinander setzten den gerade gesetzten Zoom sofort
+    // wieder zurück. Und die Uhr läuft nur für echte Tipps weiter, damit eine
+    // Kneifgeste keinen falschen Doppeltipp scharfstellt.
+    const jetzt = performance.now();
+    const tipp = !warGeste && achse === null;
+    if (tipp && jetzt - letzterTipp < 320) { zoomZurueck(); letzterTipp = 0; }
+    else if (tipp) letzterTipp = jetzt;
+    warGeste = false;
+    zieht = null; achse = null;
+  } else if (zeiger.size === 1) {
+    const [a] = [...zeiger.values()];
+    zieht = { x: a.x, y: a.y };
+    achse = null;
+  }
   zeigerHaltung();
 };
 cv.addEventListener('pointerup', zugEnde);
 cv.addEventListener('pointercancel', zugEnde);
 
+function zoomZurueck() {
+  zoom = 1; versatzX = 0; versatzY = 0;
+  if (Math.abs(Math.log(zoom / auswahlZoom)) > .2) duenneAus();
+  neuZeichnen();
+}
+
 cv.addEventListener('pointermove', ev => {
+  if (zeiger.has(ev.pointerId)) zeiger.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+
+  if (kneift && zeiger.size >= 2) {
+    const [a, b] = [...zeiger.values()];
+    const d = Math.hypot(a.x - b.x, a.y - b.y);
+    const sx = (a.x + b.x) / 2, sy = (a.y + b.y) / 2;
+    zoom = Math.max(1, Math.min(ZOOM_MAX, kneift.zoom0 * d / kneift.abstand));
+    skala = basisMerk * zoom;
+    haltePunkt(kneift.ax, kneift.ay, sx, sy);
+    if (Math.abs(Math.log(zoom / auswahlZoom)) > .2) duenneAus();
+    neuZeichnen();
+    ev.preventDefault();
+    return;
+  }
+
   if (zieht) {
     const dx = ev.clientX - zieht.x, dy = ev.clientY - zieht.y;
     zieht.x = ev.clientX; zieht.y = ev.clientY;
     const gA = globusAnteil();
+
+    // Bei ganzer Karte und ebenem Netz gehört ein senkrechter Zug der Seite.
+    // Die Achse wird einmal je Geste festgelegt, sonst zittert es zwischen
+    // Scrollen und Verschieben.
+    if (achse === null && (Math.abs(dx) > 2 || Math.abs(dy) > 2)) {
+      achse = (zoom === 1 && gA <= .05 && Math.abs(dy) > Math.abs(dx)) ? 'seite' : 'karte';
+      warGeste = true;
+    }
+    if (achse === 'seite') { scrollBy(0, -dy); return; }
+
     // Auf dem Blatt folgt die Karte dem Finger genau: ein Bildpunkt ist
-    // 1/skala Bogenmass. Auf der Kugel bleibt das eingespielte Mass, sonst
-    // liefe sie plötzlich zäh.
-    dreheLam -= dx * ((1 - gA) / skala + gA * .38 * RAD);
-    // Kippen ist Sache der Kugel; auf einer ebenen Karte gibt es kein Oben.
-    if (gA > .05) drehePhi = Math.max(-85 * RAD, Math.min(85 * RAD, drehePhi + dy * .38 * RAD));
+    // 1/skala Bogenmass. Auf der Kugel bleibt das eingespielte Mass, geteilt
+    // durch den Zoom — hineingezoomt deckt ein Bildpunkt weniger Kugel ab.
+    dreheLam -= dx * ((1 - gA) / skala + gA * .38 * RAD / zoom);
+    if (gA > .05) drehePhi = Math.max(-85 * RAD, Math.min(85 * RAD, drehePhi + dy * .38 * RAD / zoom));
+    else if (zoom > 1) { versatzY += dy / skala; versatzKlemmen(); }
     dreheLam = ((dreheLam + Math.PI) % ZWEIPI + ZWEIPI) % ZWEIPI - Math.PI;
     richteAlle();
     dreheAlle();
     neuZeichnen();
     return;
   }
+
   const r = cv.getBoundingClientRect();
   const l = treffer(ev.clientX - r.left, ev.clientY - r.top);
   aktiv = l;
   if (l) zeigeTip(l, ev); else tip.style.opacity = '0';
 });
+
+cv.addEventListener('wheel', ev => {
+  ev.preventDefault();
+  rundlaufStopp();
+  const [ax, ay] = zuKarte(ev.clientX, ev.clientY);
+  zoom = Math.max(1, Math.min(ZOOM_MAX, zoom * Math.exp(-ev.deltaY * .0016)));
+  skala = basisMerk * zoom;
+  haltePunkt(ax, ay, ev.clientX, ev.clientY);
+  if (Math.abs(Math.log(zoom / auswahlZoom)) > .2) duenneAus();
+  neuZeichnen();
+}, { passive: false });
+
+cv.addEventListener('dblclick', ev => { ev.preventDefault(); zoomZurueck(); });
+
 cv.addEventListener('pointerleave', () => { aktiv = null; tip.style.opacity = '0'; });
 
 // ---------- Start ----------
