@@ -132,6 +132,81 @@ Stellen: ⅓ bei 0 %, ½ bei 18,4 %, 1 bei 50 %, 2 bei 81,6 %, 3 bei 100 %.
 Erst danach kommen Regler, Knöpfe, Schalter — und dann Titel, Text und
 Tabellen.
 
+## Den Mittelmeridian verschieben
+
+Der Kommentar dazu war: die Karte steht fest auf Greenwich. Auf einer Seite über
+die Schlagseite von Weltkarten ist das eine eigene Schlagseite — eine Weltkarte
+muss irgendwo aufgeschnitten werden, und wer in der Mitte steht, wird ganz
+gezeigt, während der am Rand entzweigeht.
+
+Ein Zug quer über die Karte verschiebt jetzt die Mitte. Es ist **eine
+Einstellung für alle drei Ansichten**: auf den ebenen Karten der
+Mittelmeridian, auf dem Globus die Länge, die einen anschaut. Sie übersteht
+damit den Wechsel der Projektion und den ganzen Rundlauf — nachgemessen: −75°
+vor dem Start, −75° nach neun Sekunden, −75° nach achtzehn.
+
+### Warum das bezahlbar ist
+
+Beide ebenen Netze haben dieselbe Bauart:
+
+    x = λ · g(φ)        y hängt gar nicht von λ ab
+
+Bei Mercator ist g = 1, bei Equal Earth steckt es im Nenner des Polynoms. Ein
+neuer Mittelmeridian kostet damit je Punkt eine Subtraktion und eine
+Multiplikation — keine Neuprojektion, keine Winkelfunktion. `g` wird einmal
+mitberechnet und liegt neben `x` und `y`.
+
+### Die Naht
+
+Das ist der eigentliche Aufwand. Faltet man je *Punkt* in (−180°, 180°], schiesst
+jedes Land über der Naht als Streifen quer durchs Bild. Deshalb wird je **Ring**
+gefaltet: jeder Ring bekommt die Kopie, deren Mitte am nächsten am
+Mittelmeridian liegt, und bleibt in einem Stück. Was über den Rand ragt, holt
+eine zweite Kopie von der Gegenseite zurück — versetzt um 2π·g je Punkt, denn
+auf Equal Earth ist die Karte oben schmaler als am Äquator.
+
+Drei Fallen lagen darin, alle beim Hinsehen gefunden:
+
+1. **Kopien in einem Pfad löschen sich aus.** Original und Kopie in denselben
+   `beginPath()` gelegt und mit `evenodd` gefüllt, hoben sie sich dort auf, wo
+   sie einander überlappen. Die Antarktis umspannt die ganze Erde und überlappt
+   sich mit *beiden* Kopien grossflächig — sie kam als gestufter Streifen heraus.
+   Jede Kopie bekommt jetzt ihren eigenen Pfad; der Überlapp malt dann bloss
+   zweimal dieselbe Farbe.
+2. **Der Beschnitt schnitt ein Loch.** Der Kartenumriss (λ = Mitte ± 180°) lief
+   beim Aufwickeln zur Kugel nach hinten, schlug sich selbst und ergab als Pfad
+   mit Windungszahl null ein Loch mitten in der Karte — ausgerechnet dort, wo der
+   Mittelmeridian steht. Er mischt jetzt nur noch zwischen den beiden ebenen
+   Netzen. Das genügt: die Kugel hat Radius 1 und liegt vollständig innerhalb der
+   ebenen Aussenkante, wird also nie beschnitten, während die Umlaufkopien beim
+   Aufwickeln nach aussen fallen und dort wegfallen.
+3. **Treffer und Kästen wussten nichts von den Kopien.** Der Tooltip zeigte über
+   einem gewickelten Land nichts an. Beide zählen jetzt die Kopien mit.
+
+### Nachgemessen
+
+Bei korrektem Umlauf ist es immer dieselbe Welt, nur anders geschnitten — die
+gedeckte Fläche darf also nicht vom Mittelmeridian abhängen:
+
+| Netz | 0° | 45° | 90° | 150° | −60° | 179° | Spanne |
+|---|---|---|---|---|---|---|---|
+| Mercator | 247.423 | 247.443 | 247.581 | 247.584 | 247.707 | 247.600 | **0,115 %** |
+| Equal Earth | 126.937 | 126.963 | 127.246 | 127.207 | 127.280 | 127.305 | **0,290 %** |
+
+(gedeckte Bildpunkte bei 1100 px Breite). Der Rest ist Rasterrauschen an anderen
+Pixelkanten. Der auffällige Absatz in der Antarktis bei 150° Ost ist übrigens
+keine Naht, sondern Küste — die Messung sagt das, das blosse Hinsehen sagte es
+nicht.
+
+Die Bezugsflächen für die Farbe ändern sich über 137° Verschiebung um
+1,6 · 10⁻² % — Fliesskommarauschen. Das muss so sein: Equal Earth bleibt
+flächentreu, und ein Ring, der ganz in eine andere Kopie gelegt wird, behält
+seine Form.
+
+Der Tooltip trifft auch die Kopien: bei Mittelmeridian 150° Ost liefert Alaska
+am linken Rand „United States of America", Brasilien „Brazil", Japan „Japan",
+die Antarktis „Antarctica".
+
 ## Die Krim
 
 Natural Earths Standardebene `ne_50m_admin_0_countries` zeichnet die Lage vor
