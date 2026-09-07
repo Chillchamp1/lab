@@ -76,7 +76,7 @@ body{margin:0;background:var(--papier);color:var(--tinte);
 
 /* ---- Der Kopf der Seite: Karte, Zustandszeile, Legende, Bedienung ---- */
 figure{margin:0 -8px}
-canvas{width:100%;height:auto;display:block;background:var(--karte);border-radius:2px;touch-action:pan-y}
+canvas{width:100%;height:auto;display:block;background:var(--karte);border-radius:2px;touch-action:none}
 /* Solange der Globus im Bild ist, gehört der Zug der Kugel, nicht der Seite.
    touch-action wird dafür in zeigerHaltung() umgeschaltet. */
 
@@ -88,7 +88,7 @@ canvas{width:100%;height:auto;display:block;background:var(--karte);border-radiu
 .tri text{fill:var(--leise);font-family:inherit;font-size:12px}
 .tri .kugel{fill:var(--tinte);stroke:var(--papier);stroke-width:2.5;pointer-events:none}
 .tri .feld{fill:transparent}
-.triSpiel{position:absolute;left:50%;top:63.4%;transform:translate(-50%,-50%);
+.triSpiel{position:absolute;left:0;top:0;
  width:52px;height:52px;border-radius:50%;border:1px solid var(--linie);
  background:var(--papier);color:var(--leise);font:inherit;font-size:12px;
  cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
@@ -254,6 +254,10 @@ as arbitrary: the map here starts on Greenwich for no better reason than habit. 
 setting for all three views — on the flat maps it is the central meridian, on the globe it
 is the longitude facing you — so it survives when you switch projection or let the tour
 run.</p>
+<p class="sec"><b>Pinch or scroll to zoom in</b>, on any of the three — the flat maps and the
+globe alike. Dragging then moves the section: sideways it keeps turning the world, so there
+is no left or right edge to run into. A double-tap, or a double-click, puts the whole map
+back in the frame.</p>
 <p class="sec">Even the globe is not entirely off the hook, and the map says so: its
 <i>image</i> on a flat screen is a projection again. There the areal scale is the cosine
 of the distance from the centre of the image — where you look straight down it is exact,

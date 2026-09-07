@@ -207,6 +207,60 @@ Der Tooltip trifft auch die Kopien: bei Mittelmeridian 150° Ost liefert Alaska
 am linken Rand „United States of America", Brasilien „Brazil", Japan „Japan",
 die Antarktis „Antarctica".
 
+## Kneifen und zoomen
+
+Zwei Finger zoomen, Rad und Doppelklick auch — auf allen drei Ansichten, den
+ebenen Netzen wie der Kugel. Gemessen: eine Kneifgeste über den Faktor 4 landet
+auf Zoom 4,000 bei Mercator, Equal Earth und Globus.
+
+Der Punkt unter dem Finger bleibt dabei stehen. Nachgerechnet über sechs
+Radschritte hintereinander (Zoom 1 → 10,014): der Kartenpunkt unter dem Zeiger
+steht vor dem ersten und nach dem letzten Schritt auf **1,5386** — unverändert
+in jeder Zwischenstufe.
+
+Damit das auch *zwischen* zwei Bildern stimmt, setzt `versatzKlemmen()` `mx` und
+`my` sofort mit, statt aufs nächste Bild zu warten. Ein Rad hat mehrere Rasten,
+und jede rechnet auf dem Stand der vorigen weiter.
+
+### Wer was verschiebt
+
+| Geste | ebene Karte | Globus |
+|---|---|---|
+| ein Finger, waagrecht | Mittelmeridian — läuft um, kein Rand | dreht |
+| ein Finger, senkrecht | bei Zoom 1: scrollt die Seite. Sonst: Ausschnitt | kippt |
+| zwei Finger | Zoom, am Punkt zwischen den Fingern | Zoom |
+| Doppeltipp | ganze Karte | ganze Kugel |
+
+Waagrecht bleibt es der Mittelmeridian, auch tief im Zoom: der läuft um und
+kennt keine Kante, an die man stösst. Senkrecht gibt es nichts zu wickeln, dort
+verschiebt der Ausschnitt, begrenzt auf das, was die Karte hergibt.
+
+`touch-action` steht auf der Karte durchgehend auf `none`, sonst fischte der
+Browser die Kneifgeste selbst ab. Das Scrollen der Seite übernimmt dafür der
+senkrechte Zug selbst — die Achse wird einmal je Geste festgelegt, sonst zittert
+es zwischen Scrollen und Verschieben.
+
+Die Ausdünnung folgt dem Zoom: die Schwelle ist ein halber Bildpunkt *bei
+aktuellem Massstab*, sonst wären bei zehnfacher Vergrösserung Ecken zu sehen,
+die bei ganzer Karte unter einem Pixel lagen. Neu gerechnet wird sie erst, wenn
+sich der Zoom um mehr als ein Fünftel geändert hat.
+
+### Zwei Fallen, beide beim Prüfen gefunden
+
+1. **Ein gescheitertes `setPointerCapture` riss die ganze Geste mit.** Es wirft,
+   wenn kein aktiver Zeiger mehr da ist; der Rest des Handlers — und damit die
+   Kneifgeste selbst — kam dann gar nicht erst zustande. Jetzt in `try`.
+2. **Das Abheben nach einer Kneifgeste galt als Tipp.** Zwei Kneifgesten kurz
+   hintereinander setzten den gerade gesetzten Zoom sofort wieder zurück; im Test
+   blieb der Globus deshalb auf 1 stehen, während Mercator und Equal Earth auf 4
+   gingen. Als Tipp zählt jetzt nur, was weder gekniffen noch gezogen hat, und
+   die Uhr läuft nur für echte Tipps weiter.
+
+Der **Play-Knopf** sitzt jetzt links oben neben dem Dreieck statt in seiner
+Mitte — gemessen bei (29 | 29) statt (165 | 166). Damit ist auch die Mitte des
+Dreiecks wieder ziehbar, ohne dass es die Vier-Pixel-Schwelle bräuchte; die
+bleibt trotzdem, weil ein Zug über den Knopf hinweg sonst als Klick zählte.
+
 ## Die Krim
 
 Natural Earths Standardebene `ne_50m_admin_0_countries` zeichnet die Lage vor
