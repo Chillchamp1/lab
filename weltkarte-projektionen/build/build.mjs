@@ -167,7 +167,7 @@ footer p{margin:0 0 11px}
 </style></head><body>
 <div class="wrap">
 
-<figure><canvas id="karte" role="img" aria-label="World map that cross-fades between the Mercator projection, an equal-area projection and a globe. Colour shows how much image area each country gets compared with its true share of the world's land. The numbers are in the tables further down."></canvas></figure>
+<figure><canvas id="karte" role="img" aria-label="World map that cross-fades between the Mercator projection, an equal-area projection and a globe. Colour shows how much image area each country gets compared with its true share of the world's land. Drag sideways to move the centre of the map; on the globe, drag to turn it. The numbers are in the tables further down."></canvas></figure>
 
 <div class="skala">
   <span class="titel">Image area a country gets, against its true share of the world's land</span>
@@ -205,7 +205,7 @@ footer p{margin:0 0 11px}
   <label><input type="checkbox" id="cKurs"> Two flight routes</label>
 </div>
 
-<p class="hinweis" id="hinweisGlobus" hidden><b>Drag to turn the globe.</b> On the sphere itself everything is right at once — area, shape, angles — because nothing is forced into a plane. But its <i>image</i> on a flat screen is a projection again. <b>Where you look straight down, the scale is exact</b>; towards the rim everything shrinks, at 60° to half, at the edge to nothing. The colour measures that too and travels with the rotation. Unlike a flat map there is only one direction here: the globe shows nothing too large, but almost everything too small.</p>
+<p class="hinweis" id="hinweisGlobus" hidden><b>Drag to turn the globe</b> — the same drag that moves the centre of the flat maps. On the sphere itself everything is right at once — area, shape, angles — because nothing is forced into a plane. But its <i>image</i> on a flat screen is a projection again. <b>Where you look straight down, the scale is exact</b>; towards the rim everything shrinks, at 60° to half, at the edge to nothing. The colour measures that too and travels with the rotation. Unlike a flat map there is only one direction here: the globe shows nothing too large, but almost everything too small.</p>
 <p class="hinweis" id="hinweisFarbe" hidden></p>
 <p class="hinweis" id="hinweisTissot" hidden></p>
 <p class="lgd" id="lgdKurs" hidden>
@@ -247,6 +247,13 @@ the right projection does not arise: area, shape and angles are all correct, bec
 nothing is forced into a plane. It costs half the world — you only ever see one side.
 That is exactly the bargain every world map strikes, and the slider shows it in both
 directions. <b>Drag to turn the globe.</b></p>
+<p class="sec"><b>Drag sideways to move the centre of the map.</b> A world map has to be cut
+open somewhere, and whoever sits in the middle is shown whole while whoever sits at the
+edge is cut in two. That choice is a second bias on top of the projection, and it is just
+as arbitrary: the map here starts on Greenwich for no better reason than habit. It is one
+setting for all three views — on the flat maps it is the central meridian, on the globe it
+is the longitude facing you — so it survives when you switch projection or let the tour
+run.</p>
 <p class="sec">Even the globe is not entirely off the hook, and the map says so: its
 <i>image</i> on a flat screen is a projection again. There the areal scale is the cosine
 of the distance from the centre of the image — where you look straight down it is exact,

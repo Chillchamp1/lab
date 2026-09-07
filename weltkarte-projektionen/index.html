@@ -104,7 +104,7 @@ footer p{margin:0 0 11px}
 </style></head><body>
 <div class="wrap">
 
-<figure><canvas id="karte" role="img" aria-label="World map that cross-fades between the Mercator projection, an equal-area projection and a globe. Colour shows how much image area each country gets compared with its true share of the world's land. The numbers are in the tables further down."></canvas></figure>
+<figure><canvas id="karte" role="img" aria-label="World map that cross-fades between the Mercator projection, an equal-area projection and a globe. Colour shows how much image area each country gets compared with its true share of the world's land. Drag sideways to move the centre of the map; on the globe, drag to turn it. The numbers are in the tables further down."></canvas></figure>
 
 <div class="skala">
   <span class="titel">Image area a country gets, against its true share of the world's land</span>
@@ -142,7 +142,7 @@ footer p{margin:0 0 11px}
   <label><input type="checkbox" id="cKurs"> Two flight routes</label>
 </div>
 
-<p class="hinweis" id="hinweisGlobus" hidden><b>Drag to turn the globe.</b> On the sphere itself everything is right at once — area, shape, angles — because nothing is forced into a plane. But its <i>image</i> on a flat screen is a projection again. <b>Where you look straight down, the scale is exact</b>; towards the rim everything shrinks, at 60° to half, at the edge to nothing. The colour measures that too and travels with the rotation. Unlike a flat map there is only one direction here: the globe shows nothing too large, but almost everything too small.</p>
+<p class="hinweis" id="hinweisGlobus" hidden><b>Drag to turn the globe</b> — the same drag that moves the centre of the flat maps. On the sphere itself everything is right at once — area, shape, angles — because nothing is forced into a plane. But its <i>image</i> on a flat screen is a projection again. <b>Where you look straight down, the scale is exact</b>; towards the rim everything shrinks, at 60° to half, at the edge to nothing. The colour measures that too and travels with the rotation. Unlike a flat map there is only one direction here: the globe shows nothing too large, but almost everything too small.</p>
 <p class="hinweis" id="hinweisFarbe" hidden></p>
 <p class="hinweis" id="hinweisTissot" hidden></p>
 <p class="lgd" id="lgdKurs" hidden>
@@ -184,6 +184,13 @@ the right projection does not arise: area, shape and angles are all correct, bec
 nothing is forced into a plane. It costs half the world — you only ever see one side.
 That is exactly the bargain every world map strikes, and the slider shows it in both
 directions. <b>Drag to turn the globe.</b></p>
+<p class="sec"><b>Drag sideways to move the centre of the map.</b> A world map has to be cut
+open somewhere, and whoever sits in the middle is shown whole while whoever sits at the
+edge is cut in two. That choice is a second bias on top of the projection, and it is just
+as arbitrary: the map here starts on Greenwich for no better reason than habit. It is one
+setting for all three views — on the flat maps it is the central meridian, on the globe it
+is the longitude facing you — so it survives when you switch projection or let the tour
+run.</p>
 <p class="sec">Even the globe is not entirely off the hook, and the map says so: its
 <i>image</i> on a flat screen is a projection again. There the areal scale is the cosine
 of the distance from the centre of the image — where you look straight down it is exact,
@@ -325,6 +332,20 @@ const PROJ = {
   mercator(l, p) { const q = Math.max(-KAPP, Math.min(KAPP, p)); return [l, Math.log(Math.tan(Math.PI / 4 + q / 2))]; },
   equalearth(l, p) { const r = eeRoh(l, p); return [r[0] * S_EE, r[1] * S_EE]; },
 };
+
+// Beide ebenen Netze haben dieselbe Bauart: x = λ · g(φ), und y hängt gar nicht
+// von λ ab. Bei Mercator ist g = 1, bei Equal Earth steckt es im Nenner des
+// Polynoms. Das ist der Grund, warum sich die Karte überhaupt bezahlbar
+// verschieben lässt — ein neuer Mittelmeridian kostet je Punkt eine Subtraktion
+// und eine Multiplikation statt einer ganzen Neuprojektion.
+const GFAKTOR = {
+  mercator() { return 1; },
+  equalearth(p) {
+    const th = Math.asin(Math.sqrt(3) / 2 * Math.sin(p));
+    const t2 = th * th, t6 = t2 * t2 * t2, t8 = t6 * t2;
+    return S_EE * 2 * Math.sqrt(3) * Math.cos(th) / (3 * (9 * A4 * t8 + 7 * A3 * t6 + 3 * A2 * t2 + A1));
+  },
+};
 // Nur die ebenen Netze werden hier projiziert. Der Globus steht in D.netze
 // mit dabei, wird aber gedreht statt projiziert und hängt hinten dran.
 const NETZ = D.netze.filter(n => PROJ[n.id]).map(n => n.id);
@@ -348,17 +369,24 @@ const R_GLOBUS = 1;
 const GLOBUS = NETZ.length;          // Steckplatz hinter den ebenen Netzen
 
 function ebene(lo, la) {
-  const n = lo.length, X = [], Y = [], kasten = [];
+  const n = lo.length, X = [], Y = [], G = [], kasten = [];
+  const lam = new Float64Array(n);
+  for (let i = 0; i < n; i++) lam[i] = lo[i] * RAD;
   for (const id of NETZ) {
-    const x = new Float32Array(n), y = new Float32Array(n);
-    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    const x = new Float32Array(n), y = new Float32Array(n), g = new Float32Array(n);
+    let y0 = Infinity, y1 = -Infinity;
     for (let i = 0; i < n; i++) {
-      const r = PROJ[id](lo[i] * RAD, la[i] * RAD);
-      x[i] = r[0]; y[i] = r[1];
-      if (r[0] < x0) x0 = r[0]; if (r[0] > x1) x1 = r[0];
-      if (r[1] < y0) y0 = r[1]; if (r[1] > y1) y1 = r[1];
+      const p = la[i] * RAD;
+      g[i] = GFAKTOR[id](p);
+      x[i] = lam[i] * g[i];
+      y[i] = PROJ[id](lam[i], p)[1];
+      if (y[i] < y0) y0 = y[i]; if (y[i] > y1) y1 = y[i];
     }
-    X.push(x); Y.push(y); kasten.push([x0, x1, y0, y1]);
+    X.push(x); Y.push(y); G.push(g);
+    // Der Rahmen kommt nicht aus den Daten, sondern aus dem Netz: beide Karten
+    // sind genau 2π breit. Aus den Daten gelesen wüchse er beim Verschieben mit
+    // den Ringen, die über die Naht ragen, und die Karte zappelte im Bild.
+    kasten.push([-Math.PI, Math.PI, y0, y1]);
   }
 
   // Für den Globus wird nicht projiziert, sondern gedreht. Die Einheitsvektoren
@@ -373,15 +401,19 @@ function ebene(lo, la) {
   X.push(new Float32Array(n)); Y.push(new Float32Array(n));
   kasten.push([-R_GLOBUS, R_GLOBUS, -R_GLOBUS, R_GLOBUS]);
 
-  return { n, X, Y, kasten, vx, vy, vz, vorn: new Uint8Array(n),
+  return { n, X, Y, G, lam, kasten, vx, vy, vz, vorn: new Uint8Array(n),
            // Zwei Lagen für die Rückseite: durchgefaltet und an den Rand geklemmt.
            fx: new Float32Array(n), fy: new Float32Array(n),
            kx: new Float32Array(n), ky: new Float32Array(n),
-           cx: new Float32Array(n), cy: new Float32Array(n) };
+           cx: new Float32Array(n), cy: new Float32Array(n), cg: new Float32Array(n) };
 }
 
-// Blickmitte des Globus. In der Länge auf Afrika und Europa — das ist der
-// Streit. In der Breite aber auf den Äquator, und das ist keine Kleinigkeit:
+// Die Blickmitte, und zwar für alle drei Ansichten dieselbe: auf dem Globus die
+// Länge, die einen anschaut, auf den ebenen Karten der Mittelmeridian. Ein Wert
+// für beides, damit ein Zug über die Karte in jedem Zustand dasselbe tut und
+// die Einstellung den Rundlauf übersteht.
+//
+// In der Länge auf Afrika und Europa — das ist der Streit. In der Breite aber auf den Äquator, und das ist keine Kleinigkeit:
 // der Flächenmassstab der Kugelansicht ist der Kosinus des Abstands zur
 // Bildmitte, ein Schwenk nach Norden rückte also die Nordhalbkugel näher an
 // den unverzerrten Punkt und schöbe die Südhalbkugel zum schrumpfenden Rand.
@@ -516,7 +548,78 @@ const kurse = (() => {
   const e = zuegeZuEbene(z); e.art = art; return e;
 })();
 
-const EBENEN = [land, gradnetz, tissot, kurse];
+// ---------- Den Mittelmeridian verschieben ----------
+//
+// Der Kommentar dazu war: die Karte steht fest auf Greenwich. Auf einer Seite
+// über die Schlagseite von Weltkarten ist das eine eigene Schlagseite — wer in
+// der Mitte steht, steht ganz, und wer am Rand steht, wird zerschnitten.
+//
+// Verschoben wird nicht neu projiziert, sondern nur x neu gerechnet: bei beiden
+// Netzen ist x = λ · g(φ), y hängt nicht von λ ab. Je Punkt eine Subtraktion und
+// eine Multiplikation.
+//
+// Die Naht ist der eigentliche Aufwand. Ein Ring, der über sie läuft, würde als
+// Streifen quer durchs Bild schiessen, wenn man je Punkt in (−180, 180] faltet.
+// Deshalb wird je *Ring* gefaltet: jeder Ring bekommt die Kopie, deren Mitte am
+// nächsten am Mittelmeridian liegt, und bleibt damit in einem Stück. Was dann
+// über den Rand ragt, holt eine zweite Kopie auf der anderen Seite zurück; der
+// Beschnitt auf den Kartenumriss schneidet beide sauber ab.
+function stueckeSetzen(e, bereiche) {
+  const st = [];
+  for (const [a, b] of bereiche) {
+    let lo = Infinity, hi = -Infinity;
+    for (let i = a; i < b; i++) { const l = e.lam[i]; if (l < lo) lo = l; if (l > hi) hi = l; }
+    st.push({ a, b, mitte: (lo + hi) / 2, halb: (hi - lo) / 2 });
+  }
+  e.stuecke = st;
+}
+
+const ZWEIPI = 2 * Math.PI;
+
+// Legt X für die ebenen Netze neu an. `zusatz` verschiebt einen Ring um ganze
+// Umläufe — damit zeichnet dieselbe Maschinerie auch die zweite Kopie.
+function richteAus(e) {
+  for (const s of e.stuecke) {
+    const k = -Math.round((s.mitte - dreheLam) / ZWEIPI);
+    s.versatz = k * ZWEIPI - dreheLam;
+    // Ragt der Ring über den Rand, holt eine Kopie von der Gegenseite das
+    // fehlende Stück zurück. Die Antarktis umspannt die ganze Erde und braucht
+    // beide Seiten.
+    const m = s.mitte + s.versatz;
+    s.links = m + s.halb > Math.PI + 1e-9;
+    s.rechts = m - s.halb < -Math.PI - 1e-9;
+  }
+  for (let netzNr = 0; netzNr < NETZ.length; netzNr++) {
+    const X = e.X[netzNr], g = e.G[netzNr];
+    for (const s of e.stuecke) {
+      for (let i = s.a; i < s.b; i++) X[i] = (e.lam[i] + s.versatz) * g[i];
+    }
+  }
+}
+
+
+
+// Der Kartenumriss als eigener Zug: die Ränder bei λ = ±180 und die beiden
+// Polkanten. Er wird *nicht* mitverschoben — in Kartenkoordinaten liegt der Rand
+// immer bei ±π·g, ganz gleich, wo der Mittelmeridian steht. Durch dieselbe
+// Mischung geschickt ergibt das bei Mercator ein Rechteck (die Pole sind bei 83°
+// gekappt), bei Equal Earth die gebogene Aussenkante mit ihrer Pollinie.
+const rand = (() => {
+  const q = [];
+  for (let p = 90; p >= -90; p -= 1) q.push([180, p]);
+  for (let l = 180; l >= -180; l -= 2) q.push([l, -90]);
+  for (let p = -90; p <= 90; p += 1) q.push([-180, p]);
+  for (let l = -180; l <= 180; l += 2) q.push([l, 90]);
+  return zuegeZuEbene([q]);
+})();
+
+const I_EE = NETZ.indexOf('equalearth');
+const EBENEN_LAM = [land, gradnetz, tissot, kurse];   // verschieben sich mit
+const EBENEN = [...EBENEN_LAM, rand];                 // drehen sich mit
+stueckeSetzen(land, Array.from({ length: ringLen.length }, (_, r) => [ringOff[r], ringOff[r + 1]]));
+for (const e of EBENEN_LAM.slice(1)) stueckeSetzen(e, e.abschnitt.map(([a, n]) => [a, a + n]));
+function richteAlle() { for (const e of EBENEN_LAM) richteAus(e); }
+richteAlle();
 function dreheAlle() { for (const e of EBENEN) dreheEbene(e); }
 function klemmeAlle(k) { for (const e of EBENEN) klemmeSetzen(e, k); }
 dreheAlle();
@@ -727,19 +830,28 @@ const dreiFach = (m, a, b) => m + ((a + (b - a) * u) - m) * t;
 const globusAnteil = () =>
   dreiFach(0, zielA === GLOBUS ? 1 : 0, zielB === GLOBUS ? 1 : 0);
 
+// Neben x und y wird auch g gemischt. Damit lässt sich eine Kopie des Rings um
+// genau einen Umlauf versetzen — ein Punkt wandert dabei um 2π·g, nicht um einen
+// festen Betrag, denn auf Equal Earth ist die Karte oben schmaler als am
+// Äquator. Der Globus bringt g = 0 ein: beim Aufwickeln fallen die Kopien
+// deshalb von selbst auf das Original zusammen, statt als Geister danebenzustehen.
+const NULLG = null;
 function mischeEbene(e, auswahl) {
   const ax = e.X[zielA], ay = e.Y[zielA], bx = e.X[zielB], by = e.Y[zielB], mxA = e.X[M], myA = e.Y[M];
+  const gm = e.G[M], ga = zielA < NETZ.length ? e.G[zielA] : NULLG, gb = zielB < NETZ.length ? e.G[zielB] : NULLG;
   if (auswahl) {
     for (let k = 0; k < auswahl.length; k++) {
       const i = auswahl[k];
       e.cx[i] = dreiFach(mxA[i], ax[i], bx[i]);
       e.cy[i] = dreiFach(myA[i], ay[i], by[i]);
+      e.cg[i] = dreiFach(gm[i], ga ? ga[i] : 0, gb ? gb[i] : 0);
     }
     return;
   }
   for (let i = 0; i < e.n; i++) {
     e.cx[i] = dreiFach(mxA[i], ax[i], bx[i]);
     e.cy[i] = dreiFach(myA[i], ay[i], by[i]);
+    e.cg[i] = dreiFach(gm[i], ga ? ga[i] : 0, gb ? gb[i] : 0);
   }
 }
 
@@ -791,10 +903,21 @@ let bildNr = 0, kastenNr = -1;
 function kaesten() {
   if (kastenNr === bildNr) return;
   kastenNr = bildNr;
-  const CX = land.cx, CY = land.cy;
+  const CX = land.cx, CY = land.cy, CG = land.cg;
   for (const l of LAND) {
     let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
     const a = zRingVon[landRing[l.i]], b = zRingVon[landRing[l.i + 1]];
+    // Die Kästen müssen die Umlaufkopien mit einschliessen, sonst zeigt der
+    // Tooltip über einem gewickelten Land nichts an.
+    for (let r = landRing[l.i]; r < landRing[l.i + 1]; r++) {
+      const st = land.stuecke[r];
+      if (!st.links && !st.rechts) continue;
+      for (let k = zRingVon[r]; k < zRingVon[r + 1]; k++) {
+        const p = AUSWAHL[k], d = ZWEIPI * CG[p];
+        if (st.links) { const x = CX[p] - d; if (x < x0) x0 = x; if (x > x1) x1 = x; }
+        if (st.rechts) { const x = CX[p] + d; if (x < x0) x0 = x; if (x > x1) x1 = x; }
+      }
+    }
     for (let k = a; k < b; k++) {
       const p = AUSWAHL[k], x = CX[p], y = CY[p];
       if (x < x0) x0 = x; if (x > x1) x1 = x;
@@ -826,6 +949,32 @@ function zeichne() {
 
   const CX = land.cx, CY = land.cy, gA = globusAnteil();
 
+  // Beschnitt auf den Umriss der Karte. Ohne ihn ragen die Kopien über den Rand
+  // hinaus und es sähe aus, als ginge die Welt dort weiter. Der Umriss ist der
+  // Rand λ = Mittelmeridian ± 180° und wird durch dieselbe Mischung geschickt
+  // wie alles andere, ist also bei Mercator ein Rechteck, bei Equal Earth die
+  // gebogene Aussenkante und dazwischen das Zwischending.
+  //
+  // Den Globus lässt er dabei aussen vor. Durch dieselbe Mischung wie alles
+  // andere geschickt liefe diese Kante beim Aufwickeln nach hinten, schlüge sich
+  // selbst und schnitte als Pfad mit Windungszahl null ein Loch mitten in die
+  // Karte — genau dort, wo der Mittelmeridian steht. Er mischt deshalb nur
+  // zwischen den beiden ebenen Netzen. Das genügt: die Kugel hat Radius 1 und
+  // liegt damit vollständig innerhalb der ebenen Aussenkante, wird also nie
+  // beschnitten, während die Umlaufkopien beim Aufwickeln nach aussen fallen und
+  // dort weggeschnitten werden.
+  ctx.save();
+  {
+    const g = gewichte(), su = g[M] + g[I_EE];
+    const f = su > 1e-6 ? g[I_EE] / su : 1;
+    const ax = rand.X[M], ay = rand.Y[M], bx = rand.X[I_EE], by = rand.Y[I_EE];
+    ctx.beginPath();
+    ctx.moveTo(ax[0] + (bx[0] - ax[0]) * f, ay[0] + (by[0] - ay[0]) * f);
+    for (let i = 1; i < rand.n; i++) ctx.lineTo(ax[i] + (bx[i] - ax[i]) * f, ay[i] + (by[i] - ay[i]) * f);
+    ctx.closePath();
+    ctx.clip();
+  }
+
   // Ein Land ganz auf der Rückseite verblasst über dasselbe letzte Fünftel, in
   // dem es in den Rand gezogen wird. Vorher ist es eine echte Fläche, die durch
   // die Vorderseite hindurchwandert und dabei zu sehen sein soll.
@@ -840,35 +989,62 @@ function zeichne() {
   ctx.strokeStyle = hex(PAPIER_RGB);
   ctx.lineWidth = .7 / skala;
 
+  // Ein Ring, ein Zug — und für einen Ring über der Naht zusätzlich die Kopie
+  // von der Gegenseite, versetzt um genau einen Umlauf. Der Versatz je Punkt ist
+  // 2π·g, weil die Karte oben schmaler ist als am Äquator.
+  const CG = land.cg;
+  const zugRing = (a, b, um) => {
+    const p0 = AUSWAHL[a];
+    ctx.moveTo(CX[p0] + um * ZWEIPI * CG[p0], CY[p0]);
+    for (let k = a + 1; k < b; k++) {
+      const p = AUSWAHL[k];
+      ctx.lineTo(CX[p] + um * ZWEIPI * CG[p], CY[p]);
+    }
+    ctx.closePath();
+  };
+
+  // Jede Kopie bekommt ihren eigenen Pfad. In einen gemeinsamen gelegt löschten
+  // sich Original und Kopie bei „evenodd" gegenseitig aus, sobald sie einander
+  // überlappen — und die Antarktis umspannt die ganze Erde, überlappt sich also
+  // mit beiden Kopien grossflächig. Sie kam dadurch als gestufter Streifen
+  // heraus. Getrennt gezeichnet malt der Überlapp bloss zweimal dieselbe Farbe.
   for (const l of LAND) {
     const hinten = verblassen > 0 && !istVorn(l.i);
     if (hinten && verblassen >= 1) continue;
     ctx.globalAlpha = hinten ? 1 - verblassen : 1;
     ctx.fillStyle = SKALA[skalaIndex(farbwert(l))];
-    ctx.beginPath();
-    let gezeichnet = false;
-    for (let r = landRing[l.i]; r < landRing[l.i + 1]; r++) {
-      const a = zRingVon[r], b = zRingVon[r + 1];
-      if (rueckseiteWeg) {
-        let sichtbar = false;
-        for (let k = a; k < b; k++) if (vorn[AUSWAHL[k]]) { sichtbar = true; break; }
-        if (!sichtbar) continue;
+    for (const um of [0, -1, 1]) {
+      ctx.beginPath();
+      let gezeichnet = false;
+      for (let r = landRing[l.i]; r < landRing[l.i + 1]; r++) {
+        const st = land.stuecke[r];
+        if (um === -1 && !st.links) continue;
+        if (um === 1 && !st.rechts) continue;
+        const a = zRingVon[r], b = zRingVon[r + 1];
+        if (rueckseiteWeg) {
+          let sichtbar = false;
+          for (let k = a; k < b; k++) if (vorn[AUSWAHL[k]]) { sichtbar = true; break; }
+          if (!sichtbar) continue;
+        }
+        zugRing(a, b, um);
+        gezeichnet = true;
       }
-      ctx.moveTo(CX[AUSWAHL[a]], CY[AUSWAHL[a]]);
-      for (let k = a + 1; k < b; k++) ctx.lineTo(CX[AUSWAHL[k]], CY[AUSWAHL[k]]);
-      ctx.closePath();
-      gezeichnet = true;
+      if (!gezeichnet) continue;
+      ctx.fill('evenodd');
+      ctx.stroke();
     }
-    if (!gezeichnet) continue;
-    ctx.fill('evenodd');
-    ctx.stroke();
   }
   ctx.globalAlpha = 1;
 
+  const zugEinmal = (e, a, n, um) => {
+    ctx.moveTo(e.cx[a] + um * ZWEIPI * e.cg[a], e.cy[a]);
+    for (let p = a + 1; p < a + n; p++) ctx.lineTo(e.cx[p] + um * ZWEIPI * e.cg[p], e.cy[p]);
+  };
   const zug = (e, i) => {
-    const [a, n] = e.abschnitt[i];
-    ctx.moveTo(e.cx[a], e.cy[a]);
-    for (let p = a + 1; p < a + n; p++) ctx.lineTo(e.cx[p], e.cy[p]);
+    const [a, n] = e.abschnitt[i], st = e.stuecke[i];
+    zugEinmal(e, a, n, 0);
+    if (st.links) zugEinmal(e, a, n, -1);
+    if (st.rechts) zugEinmal(e, a, n, 1);
   };
   // Linien auf der Rückseite werden beim Aufwickeln ausgeblendet, je weiter der
   // Globus im Bild ist. Ohne das schlingern sie: ihre Punkte laufen alle auf den
@@ -954,6 +1130,7 @@ function zeichne() {
     }
   }
 
+  ctx.restore();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   spanneZeigen();
   hinweis();
@@ -1345,10 +1522,17 @@ function treffer(px, py) {
         for (let k = a; k < b; k++) if (vorn[AUSWAHL[k]]) { sichtbar = true; break; }
         if (!sichtbar) continue;
       }
-      for (let k = a, m = b - 1; k < b; m = k++) {
-        const i = AUSWAHL[k], j = AUSWAHL[m], yi = land.cy[i], yj = land.cy[j];
-        if ((yi > y) !== (yj > y) &&
-            x < (land.cx[j] - land.cx[i]) * (y - yi) / (yj - yi) + land.cx[i]) drin = !drin;
+      // Auch die Umlaufkopien treffen. Der Versatz ist je Punkt 2π·g, deshalb
+      // wird er hier Punkt für Punkt aufgeschlagen statt als fester Betrag.
+      const st = land.stuecke[r];
+      for (const um of st.links && st.rechts ? [0, -1, 1] : st.links ? [0, -1] : st.rechts ? [0, 1] : [0]) {
+        for (let k = a, m = b - 1; k < b; m = k++) {
+          const i = AUSWAHL[k], j = AUSWAHL[m];
+          const yi = land.cy[i], yj = land.cy[j];
+          const xi = land.cx[i] + um * ZWEIPI * land.cg[i];
+          const xj = land.cx[j] + um * ZWEIPI * land.cg[j];
+          if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) drin = !drin;
+        }
       }
     }
     if (drin) return l;
@@ -1380,15 +1564,16 @@ function zeigerHaltung() {
   // Solange der Globus im Bild ist, gehört ein Zug über der Karte der Kugel.
   // Ohne das eigene touch-action rollt der Browser auf dem Telefon nebenher die
   // Seite mit, und man dreht die Kugel, während einem das Menü davonläuft.
+  // Ziehen tut jetzt in jedem Zustand etwas — auf der Kugel dreht es, auf dem
+  // Blatt verschiebt es den Mittelmeridian. Also zeigt der Zeiger das überall an.
   const dreht = globusAnteil() > .3;
   cv.style.touchAction = dreht ? 'none' : 'pan-y';
-  cv.style.cursor = zieht ? 'grabbing' : (dreht ? 'grab' : 'default');
+  cv.style.cursor = zieht ? 'grabbing' : 'grab';
 }
 
 cv.addEventListener('pointerdown', ev => {
   // Ein Druck auf die Karte ist eine Übernahme, ob danach gedreht wird oder nicht.
   rundlaufStopp();
-  if (globusAnteil() <= .3) return;
   zieht = { x: ev.clientX, y: ev.clientY };
   cv.setPointerCapture(ev.pointerId);
   tip.style.opacity = '0';
@@ -1409,8 +1594,15 @@ cv.addEventListener('pointermove', ev => {
   if (zieht) {
     const dx = ev.clientX - zieht.x, dy = ev.clientY - zieht.y;
     zieht.x = ev.clientX; zieht.y = ev.clientY;
-    dreheLam -= dx * .38 * RAD;
-    drehePhi = Math.max(-85 * RAD, Math.min(85 * RAD, drehePhi + dy * .38 * RAD));
+    const gA = globusAnteil();
+    // Auf dem Blatt folgt die Karte dem Finger genau: ein Bildpunkt ist
+    // 1/skala Bogenmass. Auf der Kugel bleibt das eingespielte Mass, sonst
+    // liefe sie plötzlich zäh.
+    dreheLam -= dx * ((1 - gA) / skala + gA * .38 * RAD);
+    // Kippen ist Sache der Kugel; auf einer ebenen Karte gibt es kein Oben.
+    if (gA > .05) drehePhi = Math.max(-85 * RAD, Math.min(85 * RAD, drehePhi + dy * .38 * RAD));
+    dreheLam = ((dreheLam + Math.PI) % ZWEIPI + ZWEIPI) % ZWEIPI - Math.PI;
+    richteAlle();
     dreheAlle();
     neuZeichnen();
     return;
