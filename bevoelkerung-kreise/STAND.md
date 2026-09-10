@@ -56,6 +56,12 @@ Zeitpunkt auf denselben Gebietsstand gerechnet, jede Zelle Methode A.
 - Der Bauvorgang kann auch mit Reihen umgehen, die nur einen Teil des Landes
   abdecken — beim Pilotgebiet Berlin und Brandenburg war das nötig. Siehe
   METHODIK.md, Abschnitt 4.
+- `spikes.html`: zweite Ansicht, dieselben Zahlen als Nadelrelief. Die Karte
+  behält ihre Form, die Menschen stellen sich auf — je 6 × 6 km eine Nadel,
+  10 184 belegte Zellen, aus den 11 007 Gemeinden von GPOP auf ein
+  flächentreues Raster gelegt. Neun Bilder; das Bild 2024 fehlt, weil es nur
+  auf Kreisebene vorliegt. Gegenprobe beim Bauen: Gemeindesummen gegen
+  Kreissummen, 0,0000 Prozent.
 
 ## Offen
 

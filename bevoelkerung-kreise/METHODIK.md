@@ -183,6 +183,43 @@ flächentreues Kartogramm, wenn ein eingeschlossenes Gebiet die Mehrheit der
 Menschen hält. Deutschlandweit stellt sich die Frage nicht: dort ist Berlin
 vier Prozent des Landes.
 
+## 4a. Das Nadelrelief
+
+`spikes.html` zeigt dieselben Zahlen anders herum: die Karte behält ihre
+wirkliche Form, und die Bevölkerung stellt sich auf. Verfahren nach den „crisp
+spike maps" von Milos Popovic, die mit rayshader aus einem Bevölkerungsraster
+ein Nadelfeld rendern — hier in der Fläche gerechnet und durch die Zeit
+laufend.
+
+Grundlage sind die **11 007 Gemeinden** aus GPOP, nicht die Kreise. Die Datei
+führt zu jeder Gemeinde Länge, Breite und Fläche; Umrisse braucht ein Nadelbild
+nicht.
+
+Eine Nadel je Gemeinde wäre nicht vergleichbar — die kleinste Gemeinde hat vier
+Hektar, die grösste 891 km². Gerechnet wird deshalb auf ein flächentreues
+Raster von 6 × 6 km: jede Gemeinde verteilt ihre Menschen gleichmässig über
+eine Scheibe ihrer eigenen Fläche (Streupunkte auf einer Fibonacci-Spirale,
+damit sie sich nicht klumpen), und gezählt wird je Zelle. Die Nadelhöhe ist
+danach Menschen je gleich grosser Fläche, also Dichte.
+
+**Die Annahme:** innerhalb einer Gemeinde wohnen die Menschen gleichmässig
+verteilt. Das stimmt nie ganz — es ist aber genau die Annahme, die jede
+Flächenfärbung ohnehin macht, und sie steht auf der Seite.
+
+Neun Bilder statt zehn: der Zeitpunkt 2024 liegt nur auf Kreisebene vor und
+liesse sich nicht auf Gemeinden herunterbrechen, ohne Detail zu erfinden.
+
+Gegengeprüft wird beim Bauen: die Summe der Gemeinden je Bild gegen die Summe
+der Kreise aus `data/bevoelkerung_kreise_long.csv`, und die Summe nach dem
+Rastern gegen die Summe davor. Beides 0,0000 %. Damit ist belegt, dass beide
+Seiten dieselben Spalten zu denselben Bildern bündeln und beim Verteilen nichts
+verloren geht.
+
+Auf den Boden ist der Umriss gezeichnet — Aussen- und Landesgrenzen, dieselbe
+Kantensuche wie bei der Kartogrammseite, auf 3 500 Knoten generalisiert. Ohne
+ihn ist das Nadelfeld eine Wolke: die vorderen Nadeln verdecken das Land
+dahinter, und dass man auf Deutschland schaut, bliebe offen.
+
 ## 5. Was geprüft ist
 
 Drei Gegenproben laufen bei jedem Lauf von `quellen.py` mit:
