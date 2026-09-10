@@ -66,10 +66,8 @@ const { nutz, jeKreis } = baueNutzlast({
 });
 
 // Kennzahlen für den Text unter der Karte
-const guete = reihen.flatMap(r => r.zeitreihe.zustaende.map(z => z.bilanz));
-const medianGuete = guete.map(g => g.median).sort((a, b) => a - b)[Math.floor(guete.length / 2)];
-const maxGuete = Math.max(...guete.map(g => g.max));
-const gefaltet = guete.reduce((a, g) => a + g.gefaltet, 0);
+const medianGuete = nutz.guete.median, maxGuete = nutz.guete.max;
+const gefaltet = reihen.flatMap(r => r.zeitreihe.zustaende).reduce((a, z) => a + z.bilanz.gefaltet, 0);
 const erstes = bilder[0], letztes = bilder[bilder.length - 1];
 // Welche Länder die Daten abdecken — daraus entstehen Titel und Vorspann,
 // damit die Seite mitwächst, sobald weitere Länder dazukommen.
@@ -91,7 +89,7 @@ const daten = {
   vb: [nutz.breite, nutz.hoehe], ank: nutz.ank,
   gx: nutz.gx, gy: nutz.gy,
   ringzahl: nutz.ringzahl, ringe: nutz.ringe, idx: nutz.idx,
-  R: nutz.reihen, B: nutz.bilder,
+  R: nutz.reihen, B: nutz.bilder, gr: nutz.grenzen,
   bev: nutz.bev, mj: nutz.methodenJeWert, ai: nutz.anteilJeWert,
   k: jeKreis.map(k => [k.ags, k.name, k.bez, k.land, k.flaeche]),
   L: laender,
@@ -220,12 +218,13 @@ Colour is what you switch. <b>People</b> repeats the population as a shade, so t
 biggest places stand out twice over. <b>Density</b> divides by the real surface area
 in square kilometres — a city stays dark even when the map has stretched it.
 <b>Index</b> compares each county with itself in ${bilder[0].jahr} (= 100): blue where
-more people live there now, red where fewer. A county with no figure for ${bilder[0].jahr}
-has no index and stays grey.</p>
+more people live there now, red where fewer, grey where it is the same. Almost everything is
+blue: only a handful of counties, all of them in the east, have fewer people today than in
+${bilder[0].jahr}. The scale stops at five times over and one fifth under.</p>
 
 <p>Tap a county for its numbers. Between two censuses the shapes and the figures are
 interpolated; the readout says so. The clock runs at a steady rate through the years,
-not one step per census, so 1946 and 1950 pass in a blink and 1890 to 1910 takes a while.</p>
+not one step per census, so 1946 and 1950 pass in a blink and 1871 to 1900 takes a while.</p>
 
 ${kommtSpaet.length ? `<h2>The button above the map</h2>
 <p>${spaeteNamen.join(' and ')} ${spaeteNamen.length > 1 ? 'have' : 'has'} figures only from
@@ -249,8 +248,11 @@ are left out rather than quietly reused.</p>` : ''}
 as heat and flows apart until it is even everywhere, and the borders drift with the
 current. Computed on an equal-area projection. Each census gets its own cartogram;
 consecutive ones start from the previous result, so the map moves rather than jumps.
-Remaining area error: ${(medianGuete * 100).toFixed(2)} % median, ${(maxGuete * 100).toFixed(1)} % worst
-case, ${gefaltet} folded rings.</p>
+Area error left over, measured on the very numbers this page draws:
+${(medianGuete * 100).toFixed(2)} % median across all ${zahl(nutz.guete.zellen)} county-frames,
+${nutz.guete.ueber1} of them above 1 %, ${(maxGuete * 100).toFixed(1)} % at worst (Munich in the
+early frames — a small city county that has to swell to sixteen times its ground area).
+${gefaltet} folded rings.</p>
 
 <h2>Time points</h2>
 <table><thead><tr><th>Frame</th><th>Census date</th><th>Counties</th><th>People</th></tr></thead><tbody>
@@ -336,6 +338,7 @@ const REIHEN = D.R.map((r, ri) => {
   return { id: r.id, name: r.name, ZX, ZY, BEV, SKALA: r.zustaende.map(z => z.skala) };
 });
 const ANTEIL = entpacke(D.ai);
+const GRENZEN = kum(entpacke(D.gr));      // Knotenpaare an Landes- und Aussengrenzen
 let reihe = REIHEN[0];
 
 /* ---------- Zeichenkoordinaten ---------- */
@@ -374,8 +377,8 @@ const BLAU = ['#cde2fb','#b7d3f6','#9ec5f4','#86b6ef','#6da7ec','#5598e7','#3987
 const ROT  = ['#f8d7d3','#f1c4bf','#edb0aa','#e69c95','#e08881','#d8746d','#d15d57','#c14e49','#ac4440','#993936','#85302d','#732624','#5f1f1d'];
 const dunkel = () => matchMedia('(prefers-color-scheme:dark)').matches;
 const stil = n => getComputedStyle(document.body).getPropertyValue(n).trim();
-let LEER = '#e6e5e0', STRICH = '#fcfcfb';
-function farbenHolen() { LEER = stil('--leer'); STRICH = stil('--surface'); }
+let LEER = '#e6e5e0', STRICH = '#fcfcfb', GRENZE = '#fcfcfb';
+function farbenHolen() { LEER = stil('--leer'); STRICH = stil('--surface'); GRENZE = stil('--surface'); }
 // Auf heller Fläche läuft die Skala hell -> dunkel, auf dunkler dunkel -> hell:
 // der Schritt neben der Fläche heisst immer „wenig".
 const rampe = () => dunkel() ? [...BLAU].reverse() : BLAU;
@@ -403,7 +406,11 @@ function farbe(modus, wert, k) {
   if (modus === 'index') {
     const b = reihe.BEV[basis][k];
     if (!(b > 0)) return LEER;
-    const v = Math.log(wert / b) / Math.log(4);     // Faktor 4 = Skalenende
+    // Skalenende: Faktor 5. Gemessen an 1871 ist fast jeder Kreis gewachsen —
+    // das schwächste Fünftel liegt zwischen 0,8 und 1,3, der Median bei gut 2,
+    // München bei 24. Fünf fasst 93 von 100 Werten und lässt in der Mitte noch
+    // genug Farbabstand; was darüber liegt, sitzt am Anschlag.
+    const v = Math.log(wert / b) / Math.log(5);
     if (Math.abs(v) < 0.04) return MITTE();
     return v > 0 ? stufe(rampe(), Math.min(1, v)) : stufe(rampeRot(), Math.min(1, -v));
   }
@@ -470,9 +477,18 @@ function zeichne() {
     }
     ctx.fillStyle = farbe(modus, w[g], g);
     ctx.fill('evenodd');
-    ctx.strokeStyle = STRICH; ctx.lineWidth = 0.5; ctx.stroke();
+    ctx.strokeStyle = STRICH; ctx.lineWidth = Math.max(0.3, Math.min(0.6, breite / 700)); ctx.stroke();
   }
   ctx.globalAlpha = 1;
+  // Landes- und Aussengrenzen darüber, damit die 400 Kreise eine Gestalt
+  // behalten, in der man sich zurechtfindet.
+  ctx.beginPath();
+  for (let i = 0; i < GRENZEN.length; i += 2) {
+    const p = GRENZEN[i], q = GRENZEN[i + 1];
+    ctx.moveTo(px[p] * mass + verX, py[p] * mass + verY);
+    ctx.lineTo(px[q] * mass + verX, py[q] * mass + verY);
+  }
+  ctx.strokeStyle = GRENZE; ctx.lineWidth = Math.max(0.7, Math.min(1.2, breite / 420)); ctx.stroke();
   schreibe(a, b, u, w, deck);
 }
 
@@ -496,8 +512,9 @@ function legende() {
   const t = document.getElementById('legText');
   if (modus === 'index') {
     r.style.background = 'linear-gradient(90deg,' + rampeRot().slice().reverse().join(',') + ',' + MITTE() + ',' + rampe().join(',') + ')';
-    li.textContent = '¼'; re.textContent = '4×';
-    t.textContent = 'Population relative to ' + D.B[basis].jahr + ' = 100. Red: fewer people than then. Blue: more.';
+    li.textContent = '÷5'; re.textContent = '×5';
+    t.textContent = 'Population against ' + D.B[basis].jahr + ' = 100, logarithmic. Red: fewer people than then — '
+      + 'rare, and worth looking for. Blue: more.';
   } else {
     r.style.background = 'linear-gradient(90deg,' + rampe().join(',') + ')';
     const [lo, hi] = SP[modus];

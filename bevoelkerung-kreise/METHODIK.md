@@ -198,9 +198,17 @@ Umrechnungen auf heutigen Gebietsstand — eine vom Amt für Statistik
 Berlin-Brandenburg, eine von Roesel — kommen auf ein Zehntelprozent zusammen.
 Das ist ein starker Hinweis darauf, dass beide Wege stimmen.
 
-Dazu die Kennzahlen des Kartogramms, die beim Bauen ausgegeben und unter die
-Karte geschrieben werden: Flächenabweichung im Median und im Maximum sowie die
-Zahl gefalteter Ringe.
+Dazu die Kennzahlen des Kartogramms. Gemessen wird an den ganzen Zahlen, die
+in der Seite landen, nicht an den Gleitkommazahlen davor — was dort steht, ist
+also das, was jemand am Bildschirm sieht:
+
+| Grösse | Wert |
+|---|---|
+| Flächenabweichung, Median über alle 4 000 Zellen (400 Kreise × 10 Bilder) | **0,18 %** |
+| Zellen über 1 % | 66 von 4 000 |
+| grösste Einzelabweichung | 9,5 % — München in den frühen Bildern, eine kleine kreisfreie Stadt, die auf das Sechzehnfache ihrer Bodenfläche anschwellen muss |
+| gefaltete Ringe | **0** |
+| Generalisierung: Flächenverlust gegenüber VG2500 | 0,16 % |
 
 ## 6. Die vier Fallen
 

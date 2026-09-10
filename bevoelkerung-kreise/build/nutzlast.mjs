@@ -76,9 +76,33 @@ export function baueNutzlast({ gebiete, attr, X, Y, reihen, bilder, kreisInfo, l
     idx: packe(gebiete.flatMap(g => g.flatMap(r => { const d = []; let v = 0; for (const id of r) { d.push(id - v); v = id; } return d; }))),
   };
 
+  // Wie gut die Flächen am Ende wirklich stimmen — gemessen an den ganzen
+  // Zahlen, die in der Seite landen, nicht an den Gleitkommazahlen davor.
+  // Was hier steht, ist das, was jemand am Bildschirm sieht.
+  const abweichungen = [];
+  const flaecheGanz = (ringe, qx, qy) => {
+    let A = 0;
+    for (const r of ringe) {
+      let a = 0; const n = r.length;
+      for (let i = 0, j = n - 1; i < n; j = i++) a += qx[r[j]] * qy[r[i]] - qx[r[i]] * qy[r[j]];
+      A += a;
+    }
+    return Math.abs(A / 2);
+  };
+
   // Zustände als Kette von Unterschieden, je Reihe
   nutz.reihen = reihen.map(r => {
     const K = r.zeitreihe.zustaende.map(z => gitter(z.X, z.Y));
+    r.zeitreihe.zustaende.forEach((z, i) => {
+      const drin = z.abgedeckt.flatMap((a, g) => a ? [g] : []);
+      const fl = drin.map(g => flaecheGanz(gebiete[g], K[i].qx, K[i].qy));
+      const summeF = fl.reduce((a, b) => a + b, 0);
+      const summeW = drin.reduce((a, g) => a + (r.bilder.find(x => x.jahr === z.jahr).werte.get(attr[g].ags) ?? 0), 0);
+      drin.forEach((g, k) => {
+        const wert = r.bilder.find(x => x.jahr === z.jahr).werte.get(attr[g].ags) ?? 0;
+        if (wert > 0) abweichungen.push(Math.abs(fl[k] / (summeF * wert / summeW) - 1));
+      });
+    });
     let vorX = G.qx, vorY = G.qy;
     return {
       id: r.id, name: r.name,
@@ -100,6 +124,37 @@ export function baueNutzlast({ gebiete, attr, X, Y, reihen, bilder, kreisInfo, l
       methoden: b.methoden, quellen: b.quellen,
     };
   });
+
+  // Kanten, die zwei Länder trennen oder aussen liegen. Bei 400 Kreisen ist
+  // die Karte sonst eine Masse gleichartiger Flecken; die Landesgrenzen geben
+  // ihr wieder eine Gestalt, in der man sich zurechtfindet. Gesucht wird über
+  // die Nachbarschaft: eine Kante gehört dazu, wenn die Gegenkante fehlt (dann
+  // ist es die Aussengrenze) oder zu einem Kreis in einem anderen Land gehört.
+  const gehoert = new Map();
+  gebiete.forEach((ringe, gi) => {
+    for (const r of ringe) for (let i = 0; i < r.length; i++)
+      gehoert.set(r[i] + '>' + r[(i + 1) % r.length], gi);
+  });
+  const grenzkanten = [];
+  gebiete.forEach((ringe, gi) => {
+    for (const r of ringe) for (let i = 0; i < r.length; i++) {
+      const a = r[i], b = r[(i + 1) % r.length];
+      const gegen = gehoert.get(b + '>' + a);
+      if (gegen === undefined) { grenzkanten.push(a, b); continue; }
+      if (gegen > gi && attr[gegen].land !== attr[gi].land) grenzkanten.push(a, b);
+    }
+  });
+  nutz.grenzen = packe(laufend(grenzkanten));
+  log(`  ${grenzkanten.length / 2} Kanten an Landes- und Aussengrenzen`);
+  abweichungen.sort((a, b) => a - b);
+  nutz.guete = {
+    median: abweichungen[Math.floor(abweichungen.length / 2)],
+    max: abweichungen[abweichungen.length - 1],
+    ueber1: abweichungen.filter(a => a > 0.01).length,
+    zellen: abweichungen.length,
+  };
+  log(`  Flächen in der Nutzlast: Median ${(nutz.guete.median * 100).toFixed(2)} %, `
+    + `Max ${(nutz.guete.max * 100).toFixed(1)} %, über 1 %: ${nutz.guete.ueber1} von ${nutz.guete.zellen}`);
 
   // Kreisdaten: Stammdaten einmal, Bevölkerung je Bild als Kette
   const jeKreis = attr.map((a, i) => {
