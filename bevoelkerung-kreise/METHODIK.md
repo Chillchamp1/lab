@@ -185,11 +185,12 @@ vier Prozent des Landes.
 
 ## 4a. Das Nadelrelief
 
-`spikes.html` zeigt dieselben Zahlen anders herum: die Karte behält ihre
-wirkliche Form, und die Bevölkerung stellt sich auf. Verfahren nach den „crisp
-spike maps" von Milos Popovic, die mit rayshader aus einem Bevölkerungsraster
-ein Nadelfeld rendern — hier in der Fläche gerechnet und durch die Zeit
-laufend.
+Die dritte Ansicht — **Standing up** — zeigt dieselben Zahlen anders herum: die
+Karte behält ihre wirkliche Form, und die Bevölkerung stellt sich auf.
+Verfahren nach den „crisp spike maps" von Milos Popovic, die mit rayshader aus
+einem Bevölkerungsraster ein Nadelfeld rendern — hier in der Fläche gerechnet
+und durch die Zeit laufend. Die Uhr ist dieselbe wie im Kartogramm; nur bleibt
+das Feld nach 2019 stehen, weil die Gemeindezahlen dort enden.
 
 Grundlage sind die **11 007 Gemeinden** aus GPOP, nicht die Kreise. Die Datei
 führt zu jeder Gemeinde Länge, Breite und Fläche; Umrisse braucht ein Nadelbild
@@ -197,10 +198,20 @@ nicht.
 
 Eine Nadel je Gemeinde wäre nicht vergleichbar — die kleinste Gemeinde hat vier
 Hektar, die grösste 891 km². Gerechnet wird deshalb auf ein flächentreues
-Raster von 6 × 6 km: jede Gemeinde verteilt ihre Menschen gleichmässig über
-eine Scheibe ihrer eigenen Fläche (Streupunkte auf einer Fibonacci-Spirale,
-damit sie sich nicht klumpen), und gezählt wird je Zelle. Die Nadelhöhe ist
-danach Menschen je gleich grosser Fläche, also Dichte.
+Raster: jede Gemeinde verteilt ihre Menschen gleichmässig über eine Scheibe
+ihrer eigenen Fläche (Streupunkte auf einer Fibonacci-Spirale, damit sie sich
+nicht klumpen), und gezählt wird je Zelle. Die Nadelhöhe ist danach Menschen je
+gleich grosser Fläche, also Dichte.
+
+Die Zellen liegen **versetzt**, jede Reihe um eine halbe Zelle verschoben:
+ein Dreiecksgitter, also dasselbe Muster, das ein Sechseckraster erzeugt —
+derselbe Grund, aus dem die Vorlage auf H3-Sechsecke setzt. Auf dem geraden
+Gitter standen die Nadeln in Spalten wie auf Karopapier, und das Auge sah eher
+das Papier als das Land. Die Zellen bleiben dabei alle gleich gross: Spalten im
+Abstand von 6 km, Reihen im Abstand von 6 km · √3/2, also 31 km² je Zelle und
+11 665 belegte Zellen. Zugeordnet wird nach dem nächsten Zellenmittelpunkt,
+wofür im versetzten Gitter zwei Reihen in Frage kommen und beide gerechnet
+werden.
 
 **Die Annahme:** innerhalb einer Gemeinde wohnen die Menschen gleichmässig
 verteilt. Das stimmt nie ganz — es ist aber genau die Annahme, die jede
@@ -215,12 +226,57 @@ Rastern gegen die Summe davor. Beides 0,0000 %. Damit ist belegt, dass beide
 Seiten dieselben Spalten zu denselben Bildern bündeln und beim Verteilen nichts
 verloren geht.
 
-Auf den Boden ist der Umriss gezeichnet — Aussen- und Landesgrenzen, dieselbe
-Kantensuche wie bei der Kartogrammseite, auf 3 500 Knoten generalisiert. Ohne
-ihn ist das Nadelfeld eine Wolke: die vorderen Nadeln verdecken das Land
-dahinter, und dass man auf Deutschland schaut, bliebe offen.
+### Kamera, Licht und Boden
 
-## 4b. Die beiden Farbskalen
+Der Blick steht **fünfzig Grad über der Ebene**, von Süden nach Norden, Norden
+also oben. Flacher — die erste Fassung schaute aus zwölf Grad und von der
+falschen Seite — sieht man vor lauter Nadeln das Land nicht mehr und erkennt
+die Karte nicht wieder; steiler verliert das Relief seine Tiefe. Gerechnet wird
+mit einer echten Lochkamera, nicht mit einer Parallelprojektion: die vorderen
+Nadeln sind grösser als die hinteren, und erst das macht die Tiefe. Der
+Ausschnitt wird einmal über alles gelegt, was je zu sehen ist — jede Zelle am
+Boden und mit ihrer höchsten Nadel über alle Bilder —, damit das Bild nicht
+wandert, während die Zeit läuft. Die Bildhöhe folgt dem Inhalt statt einem
+festen Format, sonst bliebe entweder Himmel übrig oder die Spitzen fielen
+heraus.
+
+Der Boden ist eine **gefüllte Platte**: die Aussengrenze, zu Ringen verkettet,
+mit den Landesgrenzen als Strichen darauf, auf 3 500 Knoten generalisiert. Ohne
+sie ist das Nadelfeld eine Wolke — aus fünfzig Grad sieht man zwischen den
+Nadeln hindurch, und dass man auf Deutschland schaut, bliebe offen. Der leichte
+Verlauf von hinten nach vorn ist keine Beleuchtung, sondern Luftperspektive.
+
+Jede Nadel ist ein leicht verjüngter Körper: die Südseite trägt die Farbe der
+Höhe, der Deckel dieselbe Farbe heller. Mehr Beleuchtung braucht ein Feld aus
+lauter gleich ausgerichteten Säulen nicht — bei Licht aus Südwesten und 60°
+über dem Horizont ist die waagerechte Fläche oben die hellste, und die
+Südseiten sähen ohnehin alle gleich aus.
+
+Gezeichnet wird nach dem Malerverfahren, von hinten nach vorn. Innerhalb einer
+Reihe stehen alle Nadeln gleich weit weg, verdecken einander also nicht — und
+lassen sich deshalb nach Farbe bündeln. Zellen, deren Nadel kürzer als zwei
+Pixel wäre, sind aus diesem Winkel nichts als Kacheln auf dem Boden; sie werden
+in einem Zug für das ganze Bild gebündelt. Aus zwölftausend einzelnen
+Füllungen werden so etwa sechzehnhundert.
+
+### Die Farbe des Reliefs
+
+Dreizehn Stufen, in OKLab gleichmässig in der Helligkeit gestuft, von einem
+Indigo, das kaum vom Boden absteht, bis zu hellem Gold. Perzeptuell
+gleichmässig heisst: gleiche Schritte in der Zahl sind gleich grosse Schritte
+im Eindruck. Beim Relief trägt die Helligkeit die Höhe, warm und hell oben auf
+dunklem Grund — so treten die Türme hervor, noch bevor die Beleuchtung wirkt.
+Ein Regenbogen täte das nicht.
+
+Die Höhe wird mit einer Wurzelkurve (Exponent 0,55) auf die Stufen abgebildet:
+linear bliebe das Land eine schwarze Fläche mit ein paar hellen Nadeln darin,
+logarithmisch stünde schon jedes Dorf im Gold.
+
+Der dunkle Grund gilt in beiden Erscheinungsbildern der Seite. Auf hellem Grund
+liesse sich eine Helligkeitsleiter nicht von unten aufbauen; die Ansicht bringt
+deshalb ihren eigenen Nachthimmel mit.
+
+## 4b. Die beiden Farbskalen des Kartogramms
 
 **People** färbt nach Einwohnern, logarithmisch von 30 000 bis 1,5 Millionen.
 Die Grenzen sind mit Absicht runde Zahlen und nicht das Kleinste und Grösste

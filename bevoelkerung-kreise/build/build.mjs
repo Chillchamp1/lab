@@ -8,6 +8,7 @@ import { rechneZeitreihe } from './zeitreihe.mjs';
 import { baueNutzlast } from './nutzlast.mjs';
 import { ENTPACKER } from './code.mjs';
 import { kreisStammdaten } from './stammdaten.mjs';
+import { baueNadeln } from './nadeln.mjs';
 
 const log = s => process.stderr.write(s + '\n');
 const KNOTEN = Number(process.env.KNOTEN ?? 9000);
@@ -103,6 +104,30 @@ const ganzesLand = abgedeckt.length >= 16;
 const titel = ganzesLand ? 'Germany, drawn by its people'
   : gebietsname + ', drawn by ' + (abgedeckt.length > 1 ? 'their' : 'its') + ' people';
 const jahrVon = erstes.jahr.match(/\d{4}/)[0], jahrBis = letztes.jahr.match(/\d{4}/)[0];
+
+// Das Nadelrelief zeigt immer das ganze Land — es rechnet aus der
+// Gemeindedatei, nicht aus der Kreistabelle. Im Pilotgebiet bleibt es deshalb
+// weg, sonst stünde neben der Karte zweier Länder ein Relief von Deutschland.
+log('Nadeln …');
+const nadeln = ganzesLand ? baueNadeln({ log: t => log('  ' + t) }) : null;
+// Farbskala des Reliefs: gleichmässige Schritte in OKLab von einem Indigo, das
+// kaum vom Boden absteht, bis zu hellem Gold. Perzeptuell gleichmässig heisst,
+// dass gleiche Schritte in der Zahl gleich grosse Schritte im Eindruck sind —
+// bei einem Relief trägt die Helligkeit die Höhe, und ein Regenbogen täte das
+// nicht. Warm und hell oben auf dunklem Grund: so treten die Türme hervor,
+// noch bevor die Beleuchtung anfängt zu wirken.
+const NADELTON = ['#0c0a1d','#240943','#41075a','#620966','#831369','#a12566','#bc3c60',
+  '#d0585b','#de775d','#e7966a','#ebb483','#efd1a6','#f5ebce'];
+// Der Deckel einer Nadel bekommt dieselbe Farbe, nur heller: das Licht steht
+// hoch (60° über dem Horizont) und aus Südwesten, also ist die waagerechte
+// Fläche oben die hellste am ganzen Körper. Mehr Beleuchtung braucht ein Feld
+// aus lauter gleich ausgerichteten Säulen nicht — die Südseiten sähen ohnehin
+// alle gleich aus.
+const heller = (h, f) => '#' + [1, 3, 5]
+  .map(i => Math.min(255, Math.round(parseInt(h.slice(i, i + 2), 16) * f)).toString(16).padStart(2, '0')).join('');
+const NADELKOPF = NADELTON.map(t => heller(t, 1.45));
+const ZELLFLAECHE = nadeln ? (nadeln.daten.zelle ** 2 * nadeln.daten.reihe / 1e6) : 0;
+const mitRelief = !!nadeln;
 // Beschriftung der Umschalter, jetzt wo die Ländernamen bekannt sind.
 if (nutz.reihen.length > 1) {
   nutz.reihen[0].name = gebietsname + ' only';
@@ -136,6 +161,10 @@ h1{font-size:24px;line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
 .buehne{position:relative;background:var(--surface);border:1px solid var(--ring);border-radius:12px;
   padding:8px;margin-bottom:12px}
 canvas{display:block;width:100%;height:auto;touch-action:manipulation}
+canvas[hidden]{display:none}
+/* Das Relief bringt seinen eigenen Nachthimmel mit: die Höhe wird über die
+   Helligkeit gelesen, und die braucht einen dunklen Grund. */
+.buehne.nacht{background:#080b12;border-color:#1b2334}
 .jahr{display:flex;align-items:baseline;gap:10px;margin:2px 2px 10px}
 .jahr b{font-size:34px;font-weight:650;letter-spacing:-.02em;line-height:1}
 .jahr span{color:var(--ink2);font-size:13px}
@@ -187,11 +216,12 @@ that much smaller than today.${ganzesLand ? '' : `</p>
 <p class="unter">This is the pilot region of a larger project — the same map for all
 ${jeKreis.length} German counties. What is missing, and why, is written up in the repository.`}</p>
 
-<p class="unter">There is a second view: <a href="spikes.html">the same people standing up</a> —
-the map keeps its real shape and the population rises out of it as a field of needles.</p>
+${mitRelief ? `<p class="unter">Three views of the same figures: two of the cartogram, and one where
+the map keeps its real shape and the people stand up out of it instead.</p>` : ''}
 
-<div class="buehne">
-  <canvas id="karte"></canvas>
+<div class="buehne" id="buehne">
+  <canvas id="karte"></canvas>${mitRelief ? `
+  <canvas id="relief" hidden></canvas>` : ''}
   <div class="tip" id="tip"></div>
 </div>
 
@@ -207,16 +237,17 @@ the map keeps its real shape and the population rises out of it as a field of ne
 </div>
 
 <div class="modi" id="reihen" role="group" aria-label="Which counties are drawn" hidden></div>
-<div class="modi" role="group" aria-label="What the colour shows">
+<div class="modi" role="group" aria-label="What the map shows">
   <button data-modus="menschen" aria-pressed="true">People</button>
-  <button data-modus="wandel" aria-pressed="false">Which way</button>
+  <button data-modus="wandel" aria-pressed="false">Which way</button>${mitRelief ? `
+  <button data-modus="relief" aria-pressed="false">Standing up</button>` : ''}
 </div>
 <div class="legende"><span id="legLinks"></span><div class="rampe" id="rampe"></div><span id="legRechts"></span></div>
 <p class="klein" id="legText"></p>
 
 <h2>How to read it</h2>
-<p>Area is always population: a county twice as populous is drawn twice as large. Colour
-is what you switch.</p>
+<p>In the first two views area is always population: a county twice as populous is drawn
+twice as large. Colour is what you switch.</p>
 
 <p><b>People</b> shades each county by how many people live in it, on a fixed scale from
 30 000 to 1.5 million. Fixed means the same shade means the same number in every frame, in
@@ -238,6 +269,14 @@ decades still show something and the one violent stretch, 1939 to 1946, still fi
 <p>Tap a county for its numbers. Between two censuses the shapes and the figures are
 interpolated; the readout says so. The clock runs at a steady rate through the years,
 not one step per census, so 1946 and 1950 pass in a blink and 1871 to 1900 takes a while.</p>
+${mitRelief ? `
+<p><b>Standing up</b> drops the cartogram and gives the country its real shape back. The
+people become height instead: over every cell of ${ZELLFLAECHE.toFixed(0)} km² of ground
+stands a needle as tall as the people living on it. Same ground everywhere, so the height is
+density — which is why the Ruhr, Berlin, Hamburg and Munich rise out of a flat country. The
+tallest needle holds ${zahl(nadeln.daten.hoechste)} people. The clock is the same one; the
+needles hold still after ${nadeln.daten.b[nadeln.daten.b.length - 1].jahr}, because the
+municipality figures end there.</p>` : ''}
 
 ${kommtSpaet.length ? `<h2>The button above the map</h2>
 <p>${spaeteNamen.join(' and ')} ${spaeteNamen.length > 1 ? 'have' : 'has'} figures only from
@@ -445,6 +484,7 @@ let modus = 'menschen', jahr = T0, laeuft = false, letzterTip = -1;
 const cv = document.getElementById('karte'), ctx = cv.getContext('2d');
 let breite = 0, hoehe = 0, mass = 1, verX = 0, verY = 0;
 
+const cv2 = document.getElementById('relief');
 function masse() {
   const b = cv.parentElement.clientWidth - 16;
   breite = b; hoehe = Math.round(b * 1.24);
@@ -456,6 +496,7 @@ function masse() {
   mass = Math.min(breite / R.w, hoehe / R.h) * 0.98;
   verX = (breite - R.w * mass) / 2 - R.x * mass;
   verY = (hoehe - R.h * mass) / 2 - R.y * mass;
+  if (cv2) reliefMasse(dpr);
 }
 
 function bildBei(t) {
@@ -488,6 +529,7 @@ function werteBei(a, b, u) {
 }
 
 function zeichne() {
+  if (modus === 'relief') { zeichneRelief(); return; }
   const [a, b, u] = bildBei(jahr);
   setzePunkte(a, b, u);
   const { w, deck, rate } = werteBei(a, b, u);
@@ -545,7 +587,13 @@ function legende() {
   const r = document.getElementById('rampe');
   const li = document.getElementById('legLinks'), re = document.getElementById('legRechts');
   const t = document.getElementById('legText');
-  if (modus === 'wandel') {
+  if (modus === 'relief') {
+    r.style.background = 'linear-gradient(90deg,' + NADEL.join(',') + ')';
+    li.textContent = '0'; re.textContent = nf.format(D2.hoechste);
+    t.textContent = 'Needle height and colour are both people per cell of '
+      + FLAECHE + ' km² of real ground — the same scale in every frame, so the country '
+      + 'really does grow into a skyline.';
+  } else if (modus === 'wandel') {
     r.style.background = 'linear-gradient(90deg,' + rampeRot().slice(0, 10).reverse().join(',')
       + ',' + MITTE() + ',' + rampe().slice(0, 10).join(',') + ')';
     li.textContent = '−3 %'; re.textContent = '+3 %';
@@ -612,6 +660,234 @@ cv.addEventListener('pointermove', e => {
 });
 cv.addEventListener('pointerleave', () => { tip.style.opacity = 0; });
 
+${mitRelief ? `/* ---------- Nadelrelief ----------
+   Dieselben Menschen, nur stellen sie sich auf: die Karte behält ihre wirkliche
+   Form, und über jeder Rasterzelle steht eine Nadel, so hoch wie die Menschen
+   darin. Die Zellen liegen versetzt — ein Dreiecksgitter, also dasselbe Muster
+   wie ein Sechseckraster; auf dem geraden Gitter standen die Nadeln in Spalten
+   wie auf Karopapier, und das Auge sah eher das Papier als das Land. */
+const D2 = ${JSON.stringify(nadeln.daten)};
+const NADEL = ${JSON.stringify(NADELTON)}, KOPF = ${JSON.stringify(NADELKOPF)};
+const FLAECHE = ${ZELLFLAECHE.toFixed(0)};
+const HIMMEL = '#080b12', BODEN = '#151c2b', UFER = '#2a3550';
+const ctx2 = cv2.getContext('2d');
+
+const kumI = a => { let v = 0; const o = new Int32Array(a.length); for (let i = 0; i < a.length; i++) { v += a[i]; o[i] = v; } return o; };
+const RGX = kumI(entpacke(D2.gx)), RGY = kumI(entpacke(D2.gy));
+const NZ = RGX.length, NF2 = D2.b.length;
+const RH = [];
+{ const d = entpacke(D2.h); let vor = new Float64Array(NZ);
+  for (let f = 0; f < NF2; f++) {
+    const jetzt = new Float64Array(NZ);
+    for (let i = 0; i < NZ; i++) jetzt[i] = vor[i] + d[f * NZ + i];
+    RH.push(jetzt); vor = jetzt;
+  } }
+const JAHRE2 = D2.b.map(b => b.t);
+// Der Boden: die Aussengrenze als Ringe, die Landesgrenzen als Striche darauf.
+// Beides in Zellenbreiten, dieselbe Einheit wie die Nadeln.
+const RPLATTE = [];
+{ const laengen = entpacke(D2.pl), pp = kumI(entpacke(D2.pp)); let o = 0;
+  for (const len of laengen) {
+    const r = new Float64Array(len * 2);
+    for (let i = 0; i < len * 2; i++) r[i] = pp[o + i] / D2.fein;
+    o += len * 2; RPLATTE.push(r);
+  } }
+const RGRENZ = kumI(entpacke(D2.gr));
+
+/* Kamera: im Süden, um fünfzig Grad über der Ebene, Blick nach Norden. Flacher
+   sähe man vor lauter Nadeln das Land nicht mehr, steiler verlöre das Relief
+   seine Tiefe; fünfzig Grad ist die übliche Wahl für Reliefbilder. Norden bleibt
+   oben, damit die Karte auf den ersten Blick als Deutschland zu erkennen ist.
+   Eine echte Lochkamera, kein Parallelbild: die vorderen Nadeln sind grösser
+   als die hinteren, und erst das macht die Tiefe. */
+const RPHI = 50 * Math.PI / 180, rsin = Math.sin(RPHI), rcos = Math.cos(RPHI);
+const rnx = D2.nx, rny = D2.ny * D2.reihe;            // Feldmass in Zellenbreiten
+const rmitte = rnx / 2;
+const rcamY = rny / 2 + 2.4 * rny * rcos, rcamZ = 2.4 * rny * rsin;
+// Höhe der höchsten Nadel, gemessen an der Nord-Süd-Ausdehnung des Landes. Sie
+// gilt für alle Bilder, damit das Feld über die Zeit wirklich wächst.
+const RHOCH = 0.66 * rny / (D2.hoechste / D2.stufe);
+const RB = 0.275, RS = 0.124;      // halbe Fussbreite, halbe Kopfbreite je Nadel
+const rwx = i => RGX[i] + 0.5 * (RGY[i] & 1), rwy = i => RGY[i] * D2.reihe;
+
+function rproj(x, y, z) {
+  const dy = y - rcamY, dz = z - rcamZ;
+  const t = -dy * rcos - dz * rsin;
+  if (t < 0.2) return null;
+  return [(x - rmitte) / t, (dy * rsin - dz * rcos) / t];
+}
+// Der Ausschnitt wird einmal über alles gelegt, was je zu sehen ist: jede Zelle
+// am Boden und mit ihrer höchsten Nadel über alle Bilder, dazu der Umriss. Sonst
+// wanderte das Bild, während die Zeit läuft.
+const RHOECHST = new Float64Array(NZ);
+for (const f of RH) for (let i = 0; i < NZ; i++) if (f[i] > RHOECHST[i]) RHOECHST[i] = f[i];
+let rL = Infinity, rR = -Infinity, rO = Infinity, rU = -Infinity;
+{ const merke = p => { if (!p) return;
+    if (p[0] < rL) rL = p[0]; if (p[0] > rR) rR = p[0];
+    if (p[1] < rO) rO = p[1]; if (p[1] > rU) rU = p[1]; };
+  for (let i = 0; i < NZ; i++) {
+    merke(rproj(rwx(i), rwy(i), 0));
+    merke(rproj(rwx(i), rwy(i), RHOECHST[i] * RHOCH));
+  }
+  for (const r of RPLATTE) for (let i = 0; i < r.length; i += 2) merke(rproj(r[i], r[i + 1], 0)); }
+
+let rhoehe = 0, rskala = 1, rvx = 0, rvy = 0, FLACH = 0;
+let PLATTE_S = [], GRENZ_S = new Float64Array(0);
+function reliefMasse(dpr) {
+  // Die Höhe des Bildes folgt dem Inhalt, statt fest zu sein: das Feld ist so
+  // hoch, wie das Land breit und Berlin hoch ist. Ein festes Format liesse
+  // entweder Himmel übrig oder schnitte die Spitzen ab.
+  rhoehe = Math.round(breite * (rU - rO) / (rR - rL));
+  cv2.width = Math.round(breite * dpr); cv2.height = Math.round(rhoehe * dpr);
+  cv2.style.height = rhoehe + 'px';
+  ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
+  rskala = breite * 0.98 / (rR - rL);
+  rvx = breite / 2 - rskala * (rL + rR) / 2;
+  rvy = rhoehe / 2 - rskala * (rO + rU) / 2;
+  // Der Boden bewegt sich nicht, also wird er einmal ausgerechnet und nicht
+  // fünfzigmal in der Sekunde.
+  bodenTon = null;
+  PLATTE_S = RPLATTE.map(r => {
+    const o = new Float64Array(r.length);
+    for (let i = 0; i < r.length; i += 2) {
+      const p = rproj(r[i], r[i + 1], 0);
+      o[i] = rvx + rskala * p[0]; o[i + 1] = rvy + rskala * p[1];
+    }
+    return o;
+  });
+  // Ab welcher Höhe ist eine Nadel mehr als eine Kachel? Gemessen in der Mitte
+  // des Feldes: was kürzer als zwei Pixel wäre, wird als flache Fläche
+  // gezeichnet — aus fünfzig Grad ist das genau das, was man sähe.
+  const m0 = rproj(rmitte, rny / 2, 0), m1 = rproj(rmitte, rny / 2, 1);
+  FLACH = 2 / (rskala * (m0[1] - m1[1]) * RHOCH);
+  GRENZ_S = new Float64Array(RGRENZ.length);
+  for (let i = 0; i < RGRENZ.length; i += 2) {
+    const p = rproj(RGRENZ[i] / D2.fein, RGRENZ[i + 1] / D2.fein, 0);
+    GRENZ_S[i] = rvx + rskala * p[0]; GRENZ_S[i + 1] = rvy + rskala * p[1];
+  }
+}
+
+function bildBei2(t) {
+  let a = 0;
+  while (a < NF2 - 2 && JAHRE2[a + 1] <= t) a++;
+  const b = Math.min(NF2 - 1, a + 1);
+  const u = JAHRE2[b] > JAHRE2[a] ? Math.max(0, Math.min(1, (t - JAHRE2[a]) / (JAHRE2[b] - JAHRE2[a]))) : 0;
+  return [a, b, u];
+}
+
+// Gezeichnet wird von hinten nach vorn, Zeile für Zeile — so verdecken die
+// vorderen Nadeln die hinteren und nicht umgekehrt. Innerhalb einer Zeile
+// stehen alle Nadeln gleich weit weg, also lassen sie sich nach Farbe bündeln:
+// aus zwölftausend einzelnen Füllungen werden ein paar Dutzend je Zeile, und
+// das ist der Unterschied zwischen dreissig Bildern in der Sekunde und fünf.
+const EIMER = NADEL.map(() => ({ b: [], k: [] }));
+function pfad(a) {
+  ctx2.beginPath();
+  for (let i = 0; i < a.length; i += 8) {
+    ctx2.moveTo(a[i], a[i + 1]); ctx2.lineTo(a[i + 2], a[i + 3]);
+    ctx2.lineTo(a[i + 4], a[i + 5]); ctx2.lineTo(a[i + 6], a[i + 7]);
+  }
+}
+function maleZeile() {
+  for (let s = 0; s < EIMER.length; s++) {
+    const e = EIMER[s];
+    if (e.b.length) { pfad(e.b); ctx2.fillStyle = NADEL[s]; ctx2.fill(); e.b.length = 0; }
+    if (e.k.length) { pfad(e.k); ctx2.fillStyle = KOPF[s]; ctx2.fill(); e.k.length = 0; }
+  }
+}
+
+// Der Boden bekommt einen Verlauf: hinten dunkler, vorn heller. Das ist keine
+// Beleuchtung, sondern Luftperspektive — dasselbe, was die Ferne im Gebirge
+// blasser macht — und es kostet nichts.
+let bodenTon = null;
+function bodenFarbe() {
+  if (!bodenTon) {
+    bodenTon = ctx2.createLinearGradient(0, 0, 0, rhoehe);
+    bodenTon.addColorStop(0, '#101724'); bodenTon.addColorStop(1, '#1b2436');
+  }
+  return bodenTon;
+}
+
+function zeichneRelief() {
+  const [a, b, u] = bildBei2(jahr);
+  ctx2.fillStyle = HIMMEL; ctx2.fillRect(0, 0, breite, rhoehe);
+
+  ctx2.beginPath();
+  for (const r of PLATTE_S) {
+    ctx2.moveTo(r[0], r[1]);
+    for (let i = 2; i < r.length; i += 2) ctx2.lineTo(r[i], r[i + 1]);
+    ctx2.closePath();
+  }
+  ctx2.fillStyle = bodenFarbe(); ctx2.fill('evenodd');
+  ctx2.strokeStyle = UFER; ctx2.lineWidth = 0.8; ctx2.stroke();
+  ctx2.beginPath();
+  for (let i = 0; i < GRENZ_S.length; i += 4) {
+    ctx2.moveTo(GRENZ_S[i], GRENZ_S[i + 1]); ctx2.lineTo(GRENZ_S[i + 2], GRENZ_S[i + 3]);
+  }
+  ctx2.stroke();
+
+  // Farbe nach Höhe, mit einer Wurzelkurve: linear bliebe das Land eine
+  // schwarze Fläche mit ein paar hellen Nadeln darin, logarithmisch stünde
+  // schon jedes Dorf im Gold. Dazwischen liegt das Bild.
+  const hm = D2.hoechste / D2.stufe, NS = NADEL.length - 1;
+  const stufeVon = h => Math.min(NS, Math.round(Math.pow(Math.min(1, h / hm), 0.55) * NS));
+  const deckel = (e, x, y, z) => {
+    const C = rproj(x + RS, y + RS, z), E = rproj(x - RS, y + RS, z);
+    const F = rproj(x + RS, y - RS, z), G = rproj(x - RS, y - RS, z);
+    if (!C || !E || !F || !G) return;
+    e.k.push(rvx + rskala * E[0], rvy + rskala * E[1], rvx + rskala * C[0], rvy + rskala * C[1],
+      rvx + rskala * F[0], rvy + rskala * F[1], rvx + rskala * G[0], rvy + rskala * G[1]);
+  };
+
+  // Erst die flache Fläche. Eine Zelle, deren Nadel kürzer als zwei Pixel wäre,
+  // ist aus diesem Winkel nichts als eine Kachel auf dem Boden — und Kacheln
+  // verdecken einander nicht. Also lassen sie sich alle auf einmal nach Farbe
+  // bündeln, statt Zeile für Zeile: das sind die meisten Zellen, und danach
+  // kosten sie dreizehn Füllungen statt tausend.
+  for (let i = 0; i < NZ; i++) {
+    const h = RH[a][i] + (RH[b][i] - RH[a][i]) * u;
+    if (h < 0.4 || h >= FLACH) continue;          // unter zehn Menschen je Zelle
+    deckel(EIMER[stufeVon(h)], rwx(i), rwy(i), h * RHOCH);
+  }
+  maleZeile();
+
+  // Dann, was wirklich steht: zeilenweise von hinten nach vorn, damit die
+  // vorderen Nadeln die hinteren verdecken und nicht umgekehrt.
+  let zeile = -1;
+  for (let i = 0; i < NZ; i++) {
+    const h = RH[a][i] + (RH[b][i] - RH[a][i]) * u;
+    if (h < FLACH) continue;
+    if (RGY[i] !== zeile) { maleZeile(); zeile = RGY[i]; }
+    const x = rwx(i), y = rwy(i), z = h * RHOCH;
+    const A = rproj(x - RB, y + RB, 0), B = rproj(x + RB, y + RB, 0);
+    const C = rproj(x + RS, y + RS, z), E = rproj(x - RS, y + RS, z);
+    if (!A || !B || !C || !E) continue;
+    const ax = rvx + rskala * A[0], bx = rvx + rskala * B[0];
+    const e = EIMER[stufeVon(h)];
+    e.b.push(ax, rvy + rskala * A[1], bx, rvy + rskala * B[1],
+      rvx + rskala * C[0], rvy + rskala * C[1], rvx + rskala * E[0], rvy + rskala * E[1]);
+    if (bx - ax > 1.2) deckel(e, x, y, z);        // der Deckel, wenn er ein Pixel bedeckt
+  }
+  maleZeile();
+  schreibeRelief(a, b, u);
+}
+
+function schreibeRelief(a, b, u) {
+  const ende = JAHRE2[NF2 - 1];
+  const steht = jahr > ende + 0.01;
+  const zwischen = !steht && u > 0.001 && u < 0.999;
+  const bd = D2.b[steht ? NF2 - 1 : (u < 0.5 ? a : b)];
+  document.getElementById('jahrZahl').textContent = zwischen ? Math.round(jahr) : bd.jahr;
+  const bev = D2.b[a].bev + (D2.b[b].bev - D2.b[a].bev) * u;
+  document.getElementById('jahrBev').textContent = (bev / 1e6).toFixed(1) + ' million people';
+  document.getElementById('kopf').textContent = steht
+    ? 'The municipality figures end in ' + bd.jahr + ' — the needles hold still while the clock runs on.'
+    : zwischen ? 'between ' + D2.b[a].jahr + ' and ' + D2.b[b].jahr + ' — heights interpolated'
+      : bd.stichtage.join(' and ') + ' · ' + bd.begriffe.join(', ') + ' · '
+        + nf.format(NZ) + ' cells of ' + FLAECHE + ' km²';
+  document.getElementById('zeit').value = Math.round((jahr - T0) / (T1 - T0) * 1000);
+}
+` : ''}
 /* ---------- Ablauf ---------- */
 const DAUER = 34000;   // Millisekunden für die ganze Zeitachse
 let zuletzt = 0;
@@ -636,8 +912,17 @@ document.getElementById('zeit').addEventListener('input', e => {
 for (const b of document.querySelectorAll('.modi button')) b.onclick = () => {
   modus = b.dataset.modus;
   for (const o of document.querySelectorAll('.modi button')) o.setAttribute('aria-pressed', String(o === b));
-  legende(); zeichne();
+  ansicht(); legende(); zeichne();
 };
+// Beim Umschalten wechselt die Fläche mit: das Relief bringt seinen eigenen
+// dunklen Grund mit, und die Sprechblase der Karte hat dort nichts zu suchen.
+function ansicht() {
+  const relief = modus === 'relief';
+  document.getElementById('buehne').classList.toggle('nacht', relief);
+  cv.hidden = relief;
+  if (cv2) cv2.hidden = !relief;
+  tip.style.opacity = 0; letzterTip = -1;
+}
 addEventListener('resize', () => { masse(); zeichne(); });
 matchMedia('(prefers-color-scheme:dark)').addEventListener('change', () => { farbenHolen(); legende(); zeichne(); });
 
@@ -666,7 +951,7 @@ if (REIHEN.length > 1) {
   });
 }
 
-farbenHolen(); masse(); marken(); legende(); zeichne();
+farbenHolen(); ansicht(); masse(); marken(); legende(); zeichne();
 requestAnimationFrame(schlag);
 setTimeout(starte, 700);
 </script>

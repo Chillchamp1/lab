@@ -51,18 +51,21 @@ Zeitpunkt auf denselben Gebietsstand gerechnet, jede Zelle Methode A.
   gemeinsamer Massstab, sodass die Karte flächenproportional mit der
   Bevölkerung wächst.
 - `index.html`: eine einzelne Datei, Englisch, Hochformat, Zeitschieberegler
-  mit Marken auf den Zählungen, umschaltbar zwischen Einwohnern und Richtung
-  (Veränderung je Jahr über den gerade durchlaufenen Abschnitt, rot gegen
-  blau); Antippen zeigt Zahlen, Rate, Stichtag und Methode.
+  mit Marken auf den Zählungen, **drei Ansichten** an derselben Uhr —
+  Einwohner, Richtung (Veränderung je Jahr über den gerade durchlaufenen
+  Abschnitt, rot gegen blau) und das Nadelrelief; Antippen zeigt Zahlen, Rate,
+  Stichtag und Methode.
 - Der Bauvorgang kann auch mit Reihen umgehen, die nur einen Teil des Landes
   abdecken — beim Pilotgebiet Berlin und Brandenburg war das nötig. Siehe
   METHODIK.md, Abschnitt 4.
-- `spikes.html`: zweite Ansicht, dieselben Zahlen als Nadelrelief. Die Karte
-  behält ihre Form, die Menschen stellen sich auf — je 6 × 6 km eine Nadel,
-  10 184 belegte Zellen, aus den 11 007 Gemeinden von GPOP auf ein
-  flächentreues Raster gelegt. Neun Bilder; das Bild 2024 fehlt, weil es nur
-  auf Kreisebene vorliegt. Gegenprobe beim Bauen: Gemeindesummen gegen
-  Kreissummen, 0,0000 Prozent.
+- Das **Nadelrelief** ist die dritte Ansicht derselben Seite, kein eigenes
+  Blatt mehr. Die Karte behält ihre Form, die Menschen stellen sich auf — je
+  31 km² eine Nadel, 11 665 belegte Zellen auf einem versetzten Gitter, aus den
+  11 007 Gemeinden von GPOP auf ein flächentreues Raster gelegt. Blick fünfzig
+  Grad über der Ebene, gefüllte Bodenplatte mit Landesgrenzen. Neun Bilder; das
+  Bild 2024 fehlt, weil es nur auf Kreisebene vorliegt, und das Feld steht nach
+  2019 still, während die Uhr weiterläuft. Gegenprobe beim Bauen:
+  Gemeindesummen gegen Kreissummen, 0,0000 Prozent.
 
 ## Offen
 

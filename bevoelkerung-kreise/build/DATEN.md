@@ -32,7 +32,6 @@ Datentabelle; der zweite braucht nur Node und erzeugt die Seite.
 pip install pypdf openpyxl
 python3 quellen.py          # -> ../data/bevoelkerung_kreise_long.csv, stammdaten.json
 node build.mjs  > ../index.html
-node spikes.mjs > ../spikes.html
 ```
 
 Der zweite Schritt rechnet für jeden Zeitpunkt ein eigenes Kartogramm — bei
@@ -46,10 +45,13 @@ weniger als der Hälfte der Bilder Zahlen haben, entsteht zusätzlich eine
 zweite Reihe ohne sie (`zeitreihe-kern.json`), zwischen denen die Seite
 umschalten kann. Flächendeckend fällt das weg.
 
-`spikes.mjs` rechnet in Sekunden und kennt eine eigene Stellschraube: `ZELLE`
-ist die Kantenlänge der Rasterzellen in Metern, voreingestellt 6000. Kleiner
-heisst mehr und feinere Nadeln, aber auch eine grössere Datei — bei 6 km sind
-es 10 184 belegte Zellen und 179 kB.
+Das Nadelrelief steckt in derselben Seite. `nadeln.mjs` rechnet es in Sekunden
+und kennt eine eigene Stellschraube: `ZELLE` ist der Spaltenabstand des
+versetzten Rasters in Metern, voreingestellt 6000; die Zellenfläche ist
+`ZELLE² · √3/2`, also 31 km². Kleiner heisst mehr und feinere Nadeln, aber auch
+eine grössere Datei — bei 6 km sind es 11 665 belegte Zellen und 182 kB. Wer
+nur die Karte will, ruft `nadeln.mjs` direkt auf; dann rechnet es und zeigt die
+Gegenproben, ohne eine Seite zu schreiben.
 
 Zwei Stellschrauben als Umgebungsvariablen:
 
@@ -79,4 +81,4 @@ Blick reichen `KNOTEN=2500 GITTER=420`, das dauert keine zwei Minuten.
 | `code.mjs` | kompakte Kodierung der Koordinaten für die Seite |
 | `nutzlast.mjs` | Geometrie, Zeitreihe und Kreisdaten in die Nutzlast |
 | `build.mjs` | erzeugt die fertige `index.html` |
-| `spikes.mjs` | erzeugt `spikes.html`: dieselben Zahlen als Nadelrelief, aus der Gemeindedatei auf ein flächentreues Raster gelegt |
+| `nadeln.mjs` | die Zahlen des Nadelreliefs: Gemeindedatei auf ein versetztes, flächentreues Raster gelegt, dazu die Bodenplatte |

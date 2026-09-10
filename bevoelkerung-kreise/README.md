@@ -15,7 +15,7 @@ Mensch, also ist 1871 wirklich kleiner als 2024 — flächenproportional, halb s
 viele Menschen, halb so viel Karte. Die Seite ist auf Englisch und fürs
 Hochformat gebaut.
 
-Die Farbe lässt sich umschalten. **People** färbt nach Einwohnern,
+Die Ansicht lässt sich umschalten. **People** färbt nach Einwohnern,
 logarithmisch von 30 000 bis 1,5 Millionen und in jedem Bild gleich — dass die
 Karte über die Zeit nachdunkelt, ist deshalb kein Kniff, sondern das Ergebnis.
 **Which way** ist die eigentliche Karte: sie färbt jeden Kreis danach, wie
@@ -33,20 +33,23 @@ Farbsehen.
 
 ## Und dasselbe stehend
 
-→ **https://chillchamp1.github.io/lab/bevoelkerung-kreise/spikes.html**
-
-Die zweite Ansicht dreht die Idee um: die Karte behält ihre wirkliche Form, und
-die Menschen stellen sich auf. Über jeder Rasterzelle von 6 × 6 Kilometern steht
-eine Nadel, so hoch wie die Menschen darin — die Machart der „crisp spike maps"
-von Milos Popovic, nur läuft sie durch die Zeit. Aus der Ebene von 1871 wächst
-bis 2019 eine Skyline; die höchste Nadel hält 235 733 Menschen.
+**Standing up**, die dritte Ansicht, dreht die Idee um: die Karte behält ihre
+wirkliche Form, und die Menschen stellen sich auf. Über jeder Rasterzelle von
+31 km² steht eine Nadel, so hoch wie die Menschen darin — die Machart der
+„crisp spike maps" von Milos Popovic, nur läuft sie durch die Zeit. Aus der
+Ebene von 1871 wächst bis 2019 eine Skyline; die höchste Nadel hält 212 270
+Menschen. Der Blick steht fünfzig Grad über der Ebene, Norden oben, damit man
+die Karte wiedererkennt und trotzdem Tiefe sieht.
 
 Grundlage sind hier nicht die Kreise, sondern die 11 007 **Gemeinden** aus GPOP.
 Damit die Nadeln vergleichbar sind, verteilt jede Gemeinde ihre Menschen
 gleichmässig über eine Scheibe ihrer eigenen Fläche, und gezählt wird je
-Rasterzelle; die Nadelhöhe ist danach Dichte, nicht Gemeindegrösse. Dass beide
-Seiten dieselben Zahlen zeigen, wird beim Bauen geprüft: die Gemeindesummen je
-Bild gegen die Kreissummen, 0,0000 Prozent.
+Rasterzelle; die Nadelhöhe ist danach Dichte, nicht Gemeindegrösse. Die Zellen
+liegen versetzt — ein Dreiecksgitter, also dasselbe Muster wie ein
+Sechseckraster —, sonst stehen die Nadeln in Spalten wie auf Karopapier und man
+sieht eher das Papier als das Land. Dass beide Ansichten dieselben Zahlen
+zeigen, wird beim Bauen geprüft: die Gemeindesummen je Bild gegen die
+Kreissummen, 0,0000 Prozent.
 
 ## Gebietsstand
 
@@ -135,3 +138,6 @@ pip install pypdf openpyxl
 python3 quellen.py
 node build.mjs > ../index.html
 ```
+
+Alle drei Ansichten stecken in dieser einen Datei; `nadeln.mjs` rechnet das
+Relief und wird von `build.mjs` mitgenommen.
