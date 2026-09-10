@@ -39,9 +39,16 @@ function fuelle(ringe, X, Y, breite, hoehe, nachGitter, treffer) {
 }
 
 // rand: wie viel Meer um die Karte gelegt wird, als Anteil der Kartenbreite.
-export function baueDichte(gebiete, X, Y, werte, { breite = 512, rand = 0.45 } = {}) {
+// nurGebiete: wenn gesetzt, richtet sich der Ausschnitt allein nach diesen
+// Gebieten. Das ist nötig, solange die Reihe nur einen Teil Deutschlands
+// abdeckt — sonst verteilt sich das Gitter über die ganze Republik, und dem
+// Pilotgebiet bleiben so wenige Zellen, dass der Ausgleich daran hängenbleibt.
+export function baueDichte(gebiete, X, Y, werte, { breite = 512, rand = 0.45, nurGebiete = null, meer = 'mittel' } = {}) {
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-  for (let i = 0; i < X.length; i++) {
+  const punkte = nurGebiete
+    ? function* () { for (const gi of nurGebiete) for (const r of gebiete[gi]) for (const n of r) yield n; }()
+    : X.keys();
+  for (const i of punkte) {
     if (X[i] < minX) minX = X[i]; if (X[i] > maxX) maxX = X[i];
     if (Y[i] < minY) minY = Y[i]; if (Y[i] > maxY) maxY = Y[i];
   }
@@ -55,26 +62,45 @@ export function baueDichte(gebiete, X, Y, werte, { breite = 512, rand = 0.45 } =
   const nachGitter = { x: wx => (wx - x0) / zelle, y: wy => (wy - y0) / zelle };
   const nachWelt = { x: gx => x0 + gx * zelle, y: gy => y0 + gy * zelle };
 
-  // Gebietszugehörigkeit je Zelle
+  // Gebietszugehörigkeit je Zelle. Ist der Ausschnitt eingeschränkt, werden
+  // auch nur diese Gebiete gerastert: die übrigen liegen zum Teil weit
+  // ausserhalb des Gitters und würden sich beim Abschneiden über den Rand
+  // schmieren. Alles Ungerasterte ist Meer mittlerer Dichte.
   const gebietVon = new Int32Array(breite * hoehe).fill(-1);
   const zellen = new Int32Array(gebiete.length);
-  gebiete.forEach((ringe, gi) => {
-    fuelle(ringe, X, Y, breite, hoehe, nachGitter, idx => {
+  const zuRastern = nurGebiete ?? gebiete.keys();
+  for (const gi of zuRastern) {
+    fuelle(gebiete[gi], X, Y, breite, hoehe, nachGitter, idx => {
       if (gebietVon[idx] === -1) zellen[gi]++;
       gebietVon[idx] = gi;
     });
-  });
+  }
 
   // Dichte je Zelle. Gebiete ohne getroffene Zelle (winzige Inseln) fallen
   // auf die mittlere Dichte zurück; ihr Beitrag ist verschwindend.
   let summeWert = 0, summeZellen = 0;
-  for (let i = 0; i < gebiete.length; i++) { summeWert += werte[i]; summeZellen += zellen[i]; }
+  for (const i of (nurGebiete ?? gebiete.keys())) { summeWert += werte[i]; summeZellen += zellen[i]; }
   const mittel = summeWert / Math.max(1, summeZellen);
+
+  // Dichte des Meers. „mittel" ist die Gesamtdichte der Karte, wie bei Gastner
+  // und Newman. Wird die Karte von einem einzelnen dichten Gebiet beherrscht —
+  // Berlin hat mehr Einwohner als ganz Brandenburg —, liegt dieser Mittelwert
+  // weit über dem, was am Rand wirklich wohnt, und das Meer drückt die
+  // Randkreise zusammen, während in der Mitte alles auseinandergeht. „rand"
+  // nimmt stattdessen die mittlere Dichte der Gebiete, die selbst am Rand
+  // liegen: dort ändert sich dann nichts, und die Verformung bleibt da, wo sie
+  // hingehört.
+  let meerDichte = mittel;
+  if (meer === 'rand') {
+    const auswahl = [...(nurGebiete ?? gebiete.keys())].filter(i => zellen[i] > 0);
+    const d = auswahl.map(i => werte[i] / zellen[i]).sort((a, b) => a - b);
+    meerDichte = d.length ? d[Math.floor(d.length / 2)] : mittel;
+  }
 
   const dichte = new Float64Array(breite * hoehe);
   for (let i = 0; i < dichte.length; i++) {
     const g = gebietVon[i];
-    dichte[i] = g === -1 ? mittel : (zellen[g] ? werte[g] / zellen[g] : mittel);
+    dichte[i] = g === -1 ? meerDichte : (zellen[g] ? werte[g] / zellen[g] : meerDichte);
   }
 
   return { dichte, breite, hoehe, zelle, x0, y0, nachGitter, nachWelt, gebietVon, zellen, mittel, summeZellen };

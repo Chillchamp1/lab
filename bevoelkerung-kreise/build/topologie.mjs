@@ -24,7 +24,15 @@ import { laea, flaecheUndZentrum } from './geometrie.mjs';
 // Gebietsstand: alte Kreisschlüssel auf den heutigen abbilden.
 // Der Schlüssel links wird zum Schlüssel rechts; die Geometrie verschmilzt.
 export const GEBIETSSTAND = {
+  // Hanau ist zum 1. Januar 2026 kreisfrei geworden und in der Geometrie des
+  // BKG bereits ein eigener Kreis. Keine der Bevölkerungsreihen trennt die
+  // Stadt jedoch vom Main-Kinzig-Kreis — auch die jüngste nicht —, und ein
+  // Kreis, der in 24 von 25 Bildern ein Loch wäre, hilft niemandem. Hanau
+  // bleibt deshalb im Main-Kinzig-Kreis; damit sind es 400 Gebiete, der
+  // Kreisstand des Gemeindeverzeichnisses vom 31.12.2024.
+  '06415': '06435',
   // Eisenach ist am 1. Juli 2021 in den Wartburgkreis eingegliedert worden.
+  // Nur nötig, wenn eine ältere Geometrie als Notbehelf einspringt.
   '16056': '16063',
 };
 
@@ -250,4 +258,24 @@ export function vereinfache(gebiete, X, Y, ziel, log = () => {}) {
     .map(r => Int32Array.from([...r].filter(id => neuId[id] >= 0).map(id => neuId[id])))
     .filter(r => r.length >= 3));
   return { gebiete: neueGebiete, X: Float64Array.from(nX), Y: Float64Array.from(nY) };
+}
+
+// Das Modell auf eine Auswahl von Kreisen einschränken und die Knoten neu
+// durchnummerieren. Solange die Reihe nur einen Teil Deutschlands abdeckt,
+// wäre es Verschwendung, die übrigen Kreise mitzuschleppen: gezeichnet werden
+// sie nie, aber sie bekämen den grössten Teil des Knotenbudgets und den
+// grössten Teil der Nutzlast. Das Meer um das Gebiet herum entsteht ohnehin
+// erst beim Rastern.
+export function beschraenke(gebiete, attr, X, Y, behalten) {
+  const raus = attr.map((a, i) => behalten.has(a.ags) ? i : -1).filter(i => i >= 0);
+  const neuId = new Int32Array(X.length).fill(-1);
+  const nX = [], nY = [];
+  for (const gi of raus) for (const r of gebiete[gi]) for (const id of r) {
+    if (neuId[id] < 0) { neuId[id] = nX.length; nX.push(X[id]); nY.push(Y[id]); }
+  }
+  return {
+    gebiete: raus.map(gi => gebiete[gi].map(r => Int32Array.from([...r].map(id => neuId[id])))),
+    attr: raus.map(gi => attr[gi]),
+    X: Float64Array.from(nX), Y: Float64Array.from(nY),
+  };
 }

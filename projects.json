@@ -34,5 +34,11 @@
     "titel": "312 zu 226, entschieden in 3 Staaten",
     "beschreibung": "Dieselbe Wahl nach Wahlleuten statt nach Stimmen. Drei Staaten mit zusammen 44 Wahlleuten hätten das Ergebnis gekippt.",
     "datum": "2026-09"
+  },
+  {
+    "slug": "bevoelkerung-kreise",
+    "titel": "Berlin und Brandenburg, gezeichnet von ihren Menschen",
+    "beschreibung": "Kartogramm der heutigen Kreise über 150 Jahre, alle Zeitpunkte auf heutigem Gebietsstand — und die Karte wächst flächenproportional mit der Bevölkerung mit. Pilotgebiet eines Vorhabens für ganz Deutschland. In English.",
+    "datum": "2026-09"
   }
 ]

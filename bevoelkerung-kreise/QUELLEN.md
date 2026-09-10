@@ -1,149 +1,112 @@
 # Quellen-Inventur
 
-Stand: 10. September 2026. Jede Zeile ist selbst geprüft, nicht aus dem
-Gedächtnis notiert; wo „Zugang" etwas anderes als „offen" sagt, steht dort das
-Ergebnis eines tatsächlichen Abrufversuchs aus dieser Arbeitsumgebung.
-
-## 0. Erreichbarkeit — der bestimmende Befund
-
-Die Arbeitsumgebung lässt nur einen schmalen Ausschnitt des Netzes zu. Geprüft
-wurde jeder Host einzeln mit einem echten Abruf.
-
-| Host | Ergebnis |
-|---|---|
-| `raw.githubusercontent.com` | **offen** |
-| `registry.npmjs.org`, `pypi.org`, `files.pythonhosted.org` | **offen** |
-| `repo.anaconda.com`, `conda.anaconda.org`, `repo1.maven.org`, `rubygems.org`, `static.crates.io` | **offen** |
-| Websuche (nur Trefferlisten und Kurzfassungen) | **offen** |
-| `daten.gdz.bkg.bund.de`, `gdz.bkg.bund.de`, `sg.geodatenzentrum.de` | gesperrt |
-| `www.destatis.de`, `www-genesis.destatis.de`, `www.regionalstatistik.de` | gesperrt |
-| `www.ifo.de`, `leopard.tu-braunschweig.de`, `doi.org` | gesperrt |
-| `www.statistik-berlin-brandenburg.de` | gesperrt |
-| `de.wikipedia.org`, `www.wikidata.org`, `query.wikidata.org` | gesperrt |
-| `github.com`, `api.github.com`, `codeload.github.com` | gesperrt |
-| `zenodo.org`, `osf.io`, `dataverse.harvard.edu`, `figshare.com` | gesperrt |
-| `cran.r-project.org`, `cloud.r-project.org` | gesperrt |
-| `overpass-api.de`, `nominatim.openstreetmap.org`, `opendata.arcgis.com` | gesperrt |
-
-Damit ist keine der in der Aufgabe genannten Fachquellen direkt abrufbar. Eine
-Suche über GitHub, npm und PyPI nach Spiegelungen historischer deutscher
-Bevölkerungsdaten blieb ergebnislos — dort liegen Geometrien und Corona-Zahlen,
-aber keine Zählungsergebnisse vor 1990.
-
-Freizuschaltende Hosts, nach Nutzen sortiert, stehen in [STAND.md](STAND.md).
+Stand: 10. September 2026. Jede Zeile ist selbst geprüft — abgerufen, geöffnet,
+angesehen —, nicht aus dem Gedächtnis notiert. Wo „gesperrt" steht, ist das das
+Ergebnis eines wirklichen Abrufversuchs aus dieser Arbeitsumgebung.
 
 ## 1. Zeitpunkte
 
-Aus der Aufgabenstellung, mit den Stichtagen, soweit sie feststehen. Die
-Stichtagsspalte wird beim Einlesen je Zelle aus der Quelle gefüllt, nicht von
-hier übernommen.
-
 | Zeitpunkt | Stichtag | Geltungsbereich | Begriff |
 |---|---|---|---|
-| 1816, 1849, 1864 | wechselnd (Dez.) | nur Preussen | ortsanwesend |
-| 1871 | 1.12.1871 | Deutsches Reich | ortsanwesend |
-| 1880, 1890, 1900, 1910 | 1.12. bzw. 1.12.1910 | Deutsches Reich | ortsanwesend |
-| 1925, 1933, 1939 | 16.6.1925, 16.6.1933, 17.5.1939 | Deutsches Reich (1925/33 ohne Saargebiet) | ortsanwesend / Wohnbevölkerung |
+| 1816, 1849, 1864 | wechselnd | nur Preussen | ortsanwesend |
+| 1871, 1880, 1890, 1900, 1910 | 1.12. | Deutsches Reich | ortsanwesend |
+| 1925, 1933 | 16.6. | Reich, ohne Saargebiet | ortsanwesend |
+| 1939 | 17.5.1939 | Reich | Wohnbevölkerung |
 | 1946 | 29.10.1946 | vier Zonen | Wohnbevölkerung |
 | BRD 1950, 1961, 1970, 1987 | 13.9.1950, 6.6.1961, 27.5.1970, 25.5.1987 | Bundesgebiet | Wohnbevölkerung |
 | DDR 1950, 1964, 1971, 1981 | 31.8.1950, 31.12.1964, 1.1.1971, 31.12.1981 | DDR | Wohnbevölkerung |
 | 1995, 2000 | 31.12. | Deutschland | Fortschreibung |
 | 2011, 2022 | 9.5.2011, 15.5.2022 | Deutschland | Zensus |
-| jüngstes Jahr | 31.12. | Deutschland | Fortschreibung |
+| jüngstes Jahr | 31.12.2025 | Deutschland | Fortschreibung |
 
-Abweichende Stichtage zwischen BRD und DDR werden **nicht** angeglichen,
-sondern in der Spalte `stichtag` geführt.
+Zusätzlich führt das brandenburgische Verzeichnis **1875** statt 1871/1880 und
+lässt 1900 aus. Es wird genommen, wie es ist: der Stichtag steht in der Zeile.
 
-## 2. Kandidatenquellen, nach Methode
+## 2. Was benutzt wird
 
-### A — bereits auf heutigen Gebietsstand gerechnet
+### Geometrie
 
-**GPOP — German Local Population Database, Version 1.0.**
-Felix Roesel, TU Braunschweig / ifo Dresden. Gesamtbevölkerung für 1871, 1910,
-1939, 1946, 1961, 1987, 1996, 2011 und 2019 für **alle Gemeinden, Kreise und
-Länder auf einheitlichem Gebietsstand 31.12.2019**, aus über 50 Quellen
-zusammengetragen. Veröffentlicht in: Jahrbücher für Nationalökonomie und
-Statistik 243 (3–4), 2023, 415–430; Datensatz über den Publikationsserver der
-TU Braunschweig (DOI 10.24355/dbbs.084-…).
-→ Deckt neun der geforderten Zeitpunkte flächendeckend nach Methode A ab und
-ist damit das Rückgrat. Zugang: **gesperrt** (`leopard.tu-braunschweig.de`).
-
-**Historische Gemeindeverzeichnisse der Landesämter.** Für den Pilotraum:
-Brandenburg 1875–2005 beim Amt für Statistik Berlin-Brandenburg. Sachsen:
-Digitales Historisches Ortsverzeichnis des ISGV (`hov.isgv.de`). Bayern:
-Historisches Gemeindeverzeichnis des LfStat. Zugang: **gesperrt**.
-
-### B — historische Gemeindedaten, selbst zugeordnet
-
-**Uli Schuberts Gemeindeverzeichnis** (`gemeindeverzeichnis.de`) für 1900 und
-1910, einschliesslich der preussischen Gutsbezirke. Zugang: **gesperrt**.
-
-**Rademacher, Deutsche Verwaltungsgeschichte** (`verwaltungsgeschichte.de`) —
-Zuordnung historischer Gemeinden und Kreise. Zugang: **gesperrt**.
-
-### C — nur Kreisdaten, Flächeninterpolation nötig
-
-**iPEHD — ifo Prussian Economic History Database.** Becker, Cinnirella, Hornung,
-Woessmann. Kreisebene für ganz Preussen, Zählungen 1816–1901, CSV, bis 1901
-574 Kreise, über 1 500 Variablen. Vertrieb über das GESIS-Datenarchiv
-(DOI 10.4232/1.12140), Dokumentation beim ifo. Zugang: **gesperrt**.
-
-**MPIDR Population History GIS Collection** — historische Kreisgrenzen als
-Shapefiles, Voraussetzung für jede Flächeninterpolation nach Methode C.
-Zugang: **gesperrt**.
-
-### Neuere Jahre
-
-**Regionaldatenbank Deutschland / GENESIS** (`regionalstatistik.de`), Tabelle
-12411 (Bevölkerungsstand) ab 1995 auf Kreisebene; **Zensus 2011 und 2022**;
-**BBSR-Umsteigeschlüssel** für Gebietsänderungen ab 1990, mittelbar über das
-R-Paket `ags` von Moritz Marbach. Zugang: **gesperrt** (das R-Paket selbst
-liegt auf GitHub und wäre erreichbar, enthält aber nur die Schlüssel, keine
-Bevölkerungszahlen).
-
-Ein hilfreicher, geprüfter Wegweiser durch die Landesangebote ist Marbachs
-[A Guide to Germany's Regional Data](https://github.com/sumtxt/regionalstatistik)
-(Stand 17.12.2024) — über `raw.githubusercontent.com` erreichbar und
-vollständig gelesen. Daraus stammt die Liste, welche Landesämter überhaupt
-eigene Datenbanken betreiben und welche nur Tabellen veröffentlichen.
-
-## 3. Geometrie
-
-**Soll:** VG2500 des BKG für die Karte, VG250 für Zuordnungen, jeweils zum
-aktuellen Gebietsstand. Zugang: **gesperrt**.
-
-**Ersatzweise in Benutzung:** ein VG250-Auszug der Kreisebene als GeoJSON,
-gespiegelt in `jgehrcke/covid-19-germany-gae` (`geodata/DE-counties.geojson`),
-über `raw.githubusercontent.com` erreichbar. Es sind unveränderte
-BKG-Attribute (ADE, GF, ARS, AGS, GEN, BEZ, NUTS, DEBKG_ID, WSK), 401 Kreise
-mit `GF = 4` plus 30 Wasserflächen mit `GF = 2`; jüngster Wirksamkeitsstichtag
-1.1.2019. Der Gebietsstand ist also der vor der Eingliederung Eisenachs in den
-Wartburgkreis am 1.7.2021; dieser eine Schritt wird im Bauvorgang nachgeholt
-(siehe [METHODIK.md](METHODIK.md)) und ergibt die heutigen 400 Kreise.
+**BKG, Verwaltungsgebiete 1:2 500 000 (VG2500)**, Ebene KRS,
+`vg2500_01-01-2026.utm32s.shape.zip`, Gebietsstand **1. Januar 2026**,
+ETRS89/UTM 32N, 401 Kreise (98 kreisfreie Städte, 42 Kreise, 252 Landkreise,
+9 Stadtkreise). Offen abrufbar über
+`daten.gdz.bkg.bund.de/produkte/vg/vg2500/aktuell/`.
 © GeoBasis-DE / BKG, Datenlizenz Deutschland – Namensnennung 2.0.
 
-Sobald VG2500 erreichbar ist, ersetzt es diesen Auszug ohne Änderung am
-Bauvorgang; die Eingliederungstabelle wird dann leer, weil VG2500 zum
-aktuellen Stand bereits 400 Kreise führt.
+Gegen den vorher benutzten VG250-Auszug (Stand 1.1.2019) unterscheiden sich
+genau zwei Kreise: Eisenach ist weg (1.7.2021 in den Wartburgkreis
+eingegliedert), Hanau ist dazugekommen (1.1.2026 kreisfrei). Zum Umgang mit
+Hanau siehe METHODIK.md.
 
-**Geprüft und verworfen:** `isellsoap/deutschlandGeoJSON` (434 Gebiete, aus
-DIVA-GIS, ohne AGS, Gebietsstand vor den Kreisreformen), `m-ad/geofeatures-ags-germany`
-und `AliceWi/TopoJSON-Germany` (aus GADM, nicht BKG),
-`SBejga/germany-administrative-geojson` (BKG 2018, aber ohne erreichbaren
-Kreis-Auszug unter den vermuteten Pfaden).
+### Gebietsstand und Flächen
 
-## 4. Fallen, die noch offen sind
+**Statistisches Bundesamt, Gemeindeverzeichnis (GV-ISys)**, Tabelle
+„Kreisfreie Städte und Landkreise nach Fläche, Bevölkerung und
+Bevölkerungsdichte", Stand **31.12.2024**, `04-kreise.xlsx`: 400 Kreise,
+83 577 140 Einwohner, 357 677 km². Offen abrufbar.
 
-Alle vier brauchen Quellen, die zurzeit gesperrt sind; sie sind hier
-festgehalten, damit sie beim Weiterarbeiten nicht untergehen.
+Ebenfalls geprüft und vorhanden: das **Archiv der Gemeindeverzeichnisse
+GV100AD** ab 31.12.1993, Gemeindeebene, Festsatzformat, 220 Zeichen je Satz,
+mit Fläche in Hektar und Einwohnerzahl. Satzartenbeschreibung liegt bei. Damit
+liesse sich Methode B für alle Länder ab 1993 aufbauen; gebraucht wird dafür
+zusätzlich ein Umsteigeschlüssel für die Gemeinden, die es heute nicht mehr
+gibt.
 
-- **Oder-Neisse-Grenze.** Nur der westliche Teil geteilter Kreise zählt.
-  Görlitz, Guben und Frankfurt (Oder) sind als Städte geteilt — dort werden
-  Ortsteilzahlen gebraucht, sonst geschätzt und geflaggt.
-- **Gross-Berlin 1920.** Zahlen vor 1920 aus den eingemeindeten Orten
-  zusammensetzen, nicht die Altstadt Berlin fortschreiben.
-- **Saarland.** Fehlt in den Reichszählungen 1925 und 1933 und in der
-  BRD-Zählung 1950. Ersatzzählungen des Saargebiets suchen und flaggen.
-- **Bevölkerungsbegriff.** Im Kaiserreich ortsanwesende Bevölkerung
-  einschliesslich Militär, später Wohnbevölkerung. Je Zählung prüfen und in
-  der Spalte `begriff` führen.
+### Bevölkerung im Pilotgebiet — Methode A
+
+**Amt für Statistik Berlin-Brandenburg, Historisches Gemeindeverzeichnis des
+Landes Brandenburg 1875 bis 2005.** Fünfzehn Teile, in jedem steht Tabelle 1
+mit allen 18 Kreisen. Text-PDF, keine Bildvorlage — die Zahlen werden
+ausgelesen, nicht abgeschrieben. Stichtage: 1875, 1890, 1910, 1925, 1933, 1939,
+1946, 1950, 1964, 1971, 1981, 1985, 1989, 1990 und dann jährlich bis 2005.
+Alles auf Gebietsstand 31.12.2005, und weil Brandenburgs Kreise seit 1993
+unverändert sind, ist das der heutige.
+
+**Dasselbe Amt, Bevölkerungsstand — lange Reihe 1990/91 bis 2025**, xlsx.
+Blatt 1: Berlin, jährlich ab 1991. Blatt 7: die brandenburgischen Kreise und
+Gemeinden, jährlich ab 1990, Gebietsstand 31.12.2025.
+
+## 3. Geprüft, erreichbar, noch nicht ausgewertet
+
+| Quelle | Deckt ab | Format | Methode | Zugang |
+|---|---|---|---|---|
+| Regionaldatenbank Deutschland (`regionalstatistik.de`) | ab 1995, Kreisebene | GENESIS | A/B | offen, Anmeldung für die Schnittstelle nötig |
+| GV100AD-Archiv des Bundesamts | ab 1993, Gemeindeebene | Festsatz | B | offen |
+| iPEHD, ifo Institut | Preussen 1816–1901, historische Kreise | CSV | C | Beschreibung offen, Datensatz über GESIS |
+| Digitales Historisches Ortsverzeichnis Sachsen (`hov.isgv.de`) | Sachsen, Gemeindeebene | Web | B | offen |
+| Statistische Bibliothek (`statistischebibliothek.de`) | Digitalisate der Landesämter | PDF | A/B | offen |
+| BBSR (`bbsr.bund.de`) | Umsteigeschlüssel ab 1990 | xlsx | A | offen |
+
+## 4. Geprüft und nicht zu bekommen
+
+| Quelle | Warum |
+|---|---|
+| **GPOP**, German Local Population Database, TU Braunschweig | Der Datensatz liegt hinter einer Rechenaufgabe gegen Maschinen (Proof of Work). Die Metadaten-Schnittstelle antwortet, der Dateiabruf nicht. Diese Umgebung darf weder einen Browser starten noch die Prüfaufgabe lösen. **Das ist die grösste einzelne Lücke** — GPOP hätte 1871, 1910, 1939, 1946, 1961, 1987, 1996, 2011 und 2019 für alle Gemeinden und Kreise Deutschlands auf einheitlichem Gebietsstand geliefert, also neun Zeitpunkte nach Methode A auf einen Schlag. CC-BY 4.0, DOI 10.24355/dbbs.084-…, Objekt `dbbs_mods_00071017`, Ableitung `dbbs_derivate_00049631`. |
+| `www-genesis.destatis.de` | vom Netz-Filter gesperrt |
+| `www.mpidr.de` — historische Kreisgrenzen | vom Netz-Filter gesperrt; ohne sie ist Methode C nicht durchführbar |
+| `www.verwaltungsgeschichte.de` (Rademacher) | vom Netz-Filter gesperrt |
+| `search.gesis.org` | antwortet mit 403 |
+| `gemeindeverzeichnis.de` | erreichbar, aber inzwischen ein Dienst für den heutigen Gebietsstand; die historischen Verzeichnisse 1900/1910 von Uli Schubert sind dort nicht mehr zu finden |
+
+## 5. Die vier Fallen, Stand der Bearbeitung
+
+- **Oder-Neisse-Grenze.** Im Pilotgebiet gelöst, weil die Quelle selbst auf den
+  heutigen, westlichen Gebietsstand rechnet: die östlichen Teile geteilter
+  Kreise und der östliche Teil Frankfurts sind nicht enthalten. Für Görlitz und
+  Guben, ausserhalb des Pilotgebiets, offen.
+- **Gross-Berlin 1920.** Offen. Keine erreichbare Quelle weist die 1920
+  eingemeindeten Orte für die Zeit davor aus. Berlin steht deshalb erst ab 1995
+  in den Daten; die Zahlen des alten Berlin (66,9 km²) werden **nicht**
+  eingesetzt, weil sie keine Zahlen für das heutige Berlin (891 km²) sind.
+- **Saarland.** Ausserhalb des Pilotgebiets, offen.
+- **Bevölkerungsbegriff.** Behandelt: je Zeile in der Spalte `begriff`, mit dem
+  Bruch bei der Zählung vom 17. Mai 1939.
+
+## 6. Erreichbarkeit der Hosts
+
+Zu Beginn liess die Umgebung nur `raw.githubusercontent.com`, die
+Paketregister und die Websuche durch; alle Fachquellen waren gesperrt. Nach
+Freischaltung sind offen: BKG, Destatis (ohne GENESIS), Regionalstatistik,
+Amt für Statistik Berlin-Brandenburg, ifo, BBSR, Wikipedia, Statistische
+Bibliothek, ISGV. Weiter gesperrt: `www-genesis.destatis.de`,
+`www.mpidr.de`, `www.verwaltungsgeschichte.de`.

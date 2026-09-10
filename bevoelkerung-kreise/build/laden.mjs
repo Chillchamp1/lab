@@ -1,17 +1,17 @@
 // Einlesen der Kreisgeometrie, unabhängig davon, in welcher Form sie vorliegt.
 //
 // Bevorzugt wird das Shapefile VG2500 des BKG (Ebene KRS), weil es bereits auf
-// 1:2 500 000 generalisiert ist. Liegt es nicht daneben, wird auf einen
-// GeoJSON-Auszug derselben BKG-Daten in feinerer Auflösung zurückgegriffen;
-// generalisiert wird dann in `topologie.mjs`.
+// 1:2 500 000 generalisiert ist und den aktuellen Gebietsstand führt. Liegt es
+// nicht daneben, springt ein GeoJSON-Auszug derselben BKG-Daten in feinerer
+// Auflösung und älterem Stand ein; generalisiert wird dann in `topologie.mjs`.
 //
 // Beide Wege liefern dasselbe: je Kreis der fünfstellige AGS, Name, Bezeichnung
-// und die Ringe in geografischen Koordinaten. Wasserflächen (GF = 2) fallen
-// weg, gezählt wird nur das Land (GF = 4).
+// und die Ringe in geografischen Koordinaten.
 
 import { existsSync } from 'node:fs';
 import { readFileSync } from 'node:fs';
 import { leseShp, leseDbf } from './shp.mjs';
+import { utmNachGeo } from './geometrie.mjs';
 
 const SHAPEFILE = 'vg2500_krs.shp';
 const GEOJSON = 'vg250_kreise.geo.json';
@@ -22,16 +22,26 @@ function ausShapefile() {
   const kreise = [];
   shapes.forEach((ringe, i) => {
     const a = attr[i];
-    if (Number(a.GF) !== 4) return;
+    // GF 4 ist die reine Landfläche in VG250, GF 9 die Kreisfläche
+    // einschliesslich Gewässer, wie VG2500 sie führt.
+    if (![4, 9].includes(Number(a.GF))) return;
     kreise.push({
       ags: a.ARS ?? a.AGS ?? a.RS,
       name: a.GEN,
       bez: a.BEZ,
       land: (a.SN_L ?? String(a.ARS ?? '').slice(0, 2)),
-      ringe: ringe.map(r => Array.from(r)),
+      // VG2500 liegt in ETRS89/UTM 32N; gerechnet wird über Länge und Breite.
+      ringe: ringe.map(r => {
+        const g = new Array(r.length);
+        for (let i = 0; i < r.length; i += 2) {
+          const [lon, lat] = utmNachGeo(r[i], r[i + 1]);
+          g[i] = lon; g[i + 1] = lat;
+        }
+        return g;
+      }),
     });
   });
-  return { kreise, quelle: 'VG2500 (Shapefile)' };
+  return { kreise, quelle: 'BKG VG2500, Gebietsstand 01.01.2026' };
 }
 
 function ausGeoJson() {
@@ -51,7 +61,7 @@ function ausGeoJson() {
       ringe,
     });
   }
-  return { kreise, quelle: 'VG250 (GeoJSON-Auszug)' };
+  return { kreise, quelle: 'BKG VG250 (GeoJSON-Auszug), Gebietsstand 01.01.2019' };
 }
 
 export function ladeKreise() {
