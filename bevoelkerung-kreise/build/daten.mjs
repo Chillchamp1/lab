@@ -80,7 +80,7 @@ export function baueBilder(zeilen) {
     b.werte.set(z.ags, (b.werte.get(z.ags) ?? 0) + z.bevoelkerung);
     if (z.methode) b.methodeJeKreis.set(z.ags, z.methode);
     if (z.anteilInterpoliert) b.anteilJeKreis.set(z.ags, z.anteilInterpoliert);
-    b.stichtage.set(z.stichtag, (b.stichtage.get(z.stichtag) ?? 0) + 1);
+    b.stichtage.set(z.stichtag, (b.stichtage.get(z.stichtag) ?? 0) + z.bevoelkerung);
     if (z.begriff) b.begriffe.add(z.begriff);
     if (z.methode) b.methoden.add(z.methode);
     if (z.quelle) b.quellen.add(z.quelle);
@@ -90,6 +90,10 @@ export function baueBilder(zeilen) {
     jahr: b.jahr,
     werte: b.werte,
     stichtage: [...b.stichtage.keys()].sort(),
+    // Wie viele Menschen hinter jedem Stichtag stehen. Trägt ein Bild zwei
+    // Zählungen — West 1961, Ost 1964 —, sitzt es auf der Zeitachse dort, wo
+    // sein Schwerpunkt liegt, nicht in der blossen Mitte der beiden Daten.
+    gewichte: Object.fromEntries(b.stichtage),
     begriffe: [...b.begriffe].sort(),
     methoden: [...b.methoden].sort(),
     quellen: [...b.quellen].sort(),

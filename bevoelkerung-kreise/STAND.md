@@ -4,113 +4,97 @@ Stand: 10. September 2026.
 
 ## Fertig
 
-**Der ganze Weg steht, einmal durchgezogen.** Von der BKG-Geometrie über die
-Datentabelle und ein Kartogramm je Zeitpunkt bis zur fertigen Seite läuft es
-mit zwei Befehlen durch. Was jetzt noch fehlt, sind Zahlen für weitere Länder
-— keine Technik.
+**Deutschlandweit, nicht mehr nur der Pilot.** Alle 400 heutigen Kreise, zehn
+Zeitpunkte von 1871 bis 2024, von 29,3 auf 83,6 Millionen Menschen — jeder
+Zeitpunkt auf denselben Gebietsstand gerechnet, jede Zelle Methode A.
 
 ### Gebietsstand und Geometrie
 
 - BKG VG2500, Ebene KRS, Gebietsstand **1. Januar 2026**, aus UTM 32N auf
   Länge und Breite und weiter auf eine flächentreue Projektion gerechnet.
   401 Kreise gelesen, Hanau in den Main-Kinzig-Kreis aufgelöst → **400**, der
-  Kreisstand des Gemeindeverzeichnisses vom 31.12.2024.
+  Kreisstand des Gemeindeverzeichnisses vom 31.12.2024. Eisenach wird auf der
+  Datenseite zum Wartburgkreis addiert.
 - Flächensumme nach Generalisierung 357 102 km² gegen amtlich 357 677 km²,
   also 0,16 % Abweichung durch den Massstab 1:2 500 000.
 - Knotenmodell mit verschweissten Grenzen; Auflösen alter Gebietsstände über
-  Kantenauslöschung mit Winkelverfolgung, an Eisenach + Wartburgkreis geprüft
-  (104,3 + 1 263,8 = 1 368,0 km² vorher wie nachher).
-- Generalisierung knotenweise nach Visvalingam, am eigenen Kreis gemessen,
-  damit die kleinen Städte ihre Form behalten.
+  Kantenauslöschung mit Winkelverfolgung; Generalisierung knotenweise nach
+  Visvalingam, am eigenen Kreis gemessen, damit die kleinen Städte ihre Form
+  behalten.
 
-### Daten (Pilot Berlin + Brandenburg)
+### Daten
 
-- `data/bevoelkerung_kreise_long.csv`: **293 Zeilen, 19 Kreise, 16 Zeitpunkte**
-  von 1875 bis 2025, alle nach **Methode A**, `anteil_interpoliert` durchweg 0.
-- **Plausibilitätsprüfung bestanden.** Die Summe der 18 brandenburgischen
-  Kreise gegen die veröffentlichte Landeszeile, über alle 29 Stichtage der
-  Quelle: grösste Abweichung **0,0000 %**. Die geforderte Schwelle von 1 % ist
-  nicht annähernd berührt. Die Prüfung läuft bei jedem Lauf von `quellen.py`
-  mit.
+- `data/bevoelkerung_kreise_long.csv`: **4 000 Zeilen, 400 Kreise, 10
+  Zeitpunkte**, alle nach **Methode A**, `anteil_interpoliert` durchweg 0.
+- Rückgrat ist **GPOP**, die German Local Population Database von Felix Roesel
+  (TU Braunschweig, CC BY 4.0): alle Gemeinden, Kreise und Länder auf
+  einheitlichem Gebietsstand 31.12.2019, aus über 50 Quellen. Der jüngste
+  Zeitpunkt kommt aus dem Gemeindeverzeichnis.
+- **Drei Gegenproben bestanden**, sie laufen bei jedem Bauen mit:
+  Kreissummen gegen Ländersummen **0,0000 %**; GPOP gegen das Historische
+  Gemeindeverzeichnis Brandenburgs an fünf gemeinsamen Stichtagen im Mittel
+  **0,07 bis 0,12 %** (grösste Einzelabweichung 1,24 %, Barnim 1910);
+  Fortschreibung 2019 gegen GV-ISys 2024 ohne Auffälligkeiten.
+  Die zweite ist die wichtigste: zwei voneinander unabhängige Umrechnungen auf
+  heutigen Gebietsstand kommen auf ein Zehntelprozent zusammen.
 - Bevölkerungsbegriff je Zeile geführt, Bruch bei der Zählung vom 17.5.1939.
-  Stichtage nicht angeglichen.
+  Stichtage nicht angeglichen: vier Bilder tragen zwei Daten nebeneinander,
+  West und Ost, und sitzen auf der Zeitachse an ihrem
+  Bevölkerungsschwerpunkt.
+- Gross-Berlin 1920 und die an der Oder-Neisse geteilten Städte sind von der
+  Quelle behandelt; die vier geteilten Städte sind die einzigen geschätzten
+  Werte und tragen den Vermerk.
 
 ### Karte
 
 - Ein Diffusionskartogramm je Zeitpunkt, warm vom vorigen gestartet;
   gemeinsamer Massstab, sodass die Karte flächenproportional mit der
   Bevölkerung wächst.
-- Flächenabweichung im Median **unter einem Promille**, Maximum um ein
-  Promille, **keine gefalteten Ringe**.
 - `index.html`: eine einzelne Datei, Englisch, Hochformat, Zeitschieberegler
   mit Marken auf den Zählungen, umschaltbar zwischen Einwohnern, Dichte und
-  Index; Antippen zeigt Zahlen, Stichtag und Methode.
-- Zwei Reihen über derselben Geometrie, umschaltbar: ohne und mit Berlin. Die
-  Stadt hält 59 % der Menschen des Pilotgebiets und liegt mitten darin — im
-  Kartogramm presst sie Brandenburg zu einem Ring zusammen. Das ist der
-  richtige Umgang eines flächentreuen Kartogramms mit dieser Lage, aber als
-  einzige Ansicht wäre es unlesbar; als Knopf ist es die Aussage selbst. In der
-  Karte für ganz Deutschland stellt sich die Frage nicht: dort ist Berlin vier
-  Prozent des Landes.
+  Index (1871 = 100); Antippen zeigt Zahlen, Stichtag und Methode.
+- Der Bauvorgang kann auch mit Reihen umgehen, die nur einen Teil des Landes
+  abdecken — beim Pilotgebiet Berlin und Brandenburg war das nötig. Siehe
+  METHODIK.md, Abschnitt 4.
 
 ## Offen
 
-### Die eine grosse Lücke: GPOP
+Von den Zeitpunkten der Aufgabenstellung fehlen noch:
 
-Die **German Local Population Database** (Felix Roesel, TU Braunschweig,
-CC-BY 4.0) hätte 1871, 1910, 1939, 1946, 1961, 1987, 1996, 2011 und 2019 für
-**alle** deutschen Gemeinden und Kreise auf einheitlichem Gebietsstand
-geliefert — neun Zeitpunkte flächendeckend nach Methode A, in einem Zug.
+| Fehlt | Warum | Weg dorthin |
+|---|---|---|
+| 1880, 1890 | GPOP führt sie nicht | Preussen aus iPEHD (Kreisebene, CSV); ausserhalb Preussens nur Bildvorlagen |
+| 1925, 1933 | dito | *Statistik des Deutschen Reichs*, Bildvorlagen; Saarland fehlt in beiden Zählungen und braucht Ersatz |
+| BRD 1970, DDR 1971 und 1981 | dito | Landesämter und *Statistisches Jahrbuch der DDR*; die Kreisreformen 1968–1978 machen daraus Methode B oder C |
+| DDR 1950 | GPOP führt 1950 nur für RP, BW und BY | Landesämter der neuen Länder |
+| 1995, 2000, 2022 | GPOP endet 2019, GV-ISys beginnt hier 2024 | Regionaldatenbank und GV100AD-Archiv, beide maschinenlesbar |
+| Preussen 1816, 1849, 1864 | Zusatz, nicht flächendeckend | iPEHD **und** historische Kreisgrenzen |
 
-Sie liegt hinter einer Rechenaufgabe gegen Maschinen. Die Metadaten-Schnittstelle
-antwortet (Objekt `dbbs_mods_00071017`, Ableitung `dbbs_derivate_00049631`),
-der Dateiabruf nicht; einen Browser zu starten oder die Prüfaufgabe zu lösen
-ist dieser Umgebung untersagt, und daran wurde nicht vorbeigearbeitet.
+### Was wirklich blockiert
 
-**Was hilft:** die Dateien einmal von Hand herunterladen —
-<https://leopard.tu-braunschweig.de/receive/dbbs_mods_00071017> — und nach
-`bevoelkerung-kreise/build/` legen. Das ist ein Klick und spart nach der
-Schätzung unten rund achtzig Stunden.
+Genau eines: **Methode C ist nicht durchführbar**, solange `www.mpidr.de`
+gesperrt ist. Ohne historische Kreisgrenzen lässt sich keine
+Flächeninterpolation rechnen, und damit fallen die preussischen
+Zusatzzeitpunkte 1816, 1849 und 1864 aus — iPEHD allein liefert Zahlen zu
+Kreisen, die es heute nicht mehr gibt, und die einem heutigen Kreis
+gleichzusetzen wäre genau das, was nicht passieren soll.
 
-### Berlin vor 1920
+Ebenfalls gesperrt, aber ohne Folgen für den jetzigen Stand:
+`www-genesis.destatis.de` und `www.verwaltungsgeschichte.de`.
 
-Berlin steht erst ab 1995 in den Daten. Für die Zeit vor der Bildung
-Gross-Berlins 1920 müssten die Zahlen aus den eingemeindeten Orten
-zusammengesetzt werden; keine erreichbare Quelle weist sie aus. Die Zahlen des
-alten Berlin von 66,9 km² sind keine Zahlen für das heutige von 891 km² und
-werden deshalb nicht eingesetzt.
+## Aufwandsschätzung für die fehlenden Zeitpunkte
 
-### Weitere Zeitpunkte im Pilotgebiet
-
-Das brandenburgische Verzeichnis führt 1875 statt 1871 und 1880 und lässt 1900
-aus. Diese drei Zeitpunkte bräuchten iPEHD (Preussen, historische Kreise,
-Methode C) — und dafür historische Kreisgrenzen, die beim MPIDR liegen. Der
-Host ist weiterhin gesperrt.
-
-### Nicht erreichbar
-
-`www-genesis.destatis.de`, `www.mpidr.de`, `www.verwaltungsgeschichte.de`.
-`search.gesis.org` antwortet mit 403.
-
-## Aufwandsschätzung für die übrigen Länder
-
-Stunden, grob, für die Zeitpunkte der Aufgabenstellung. Getrennt danach, ob es
-die Quelle maschinenlesbar gibt oder nur als Bildvorlage.
+Stunden, grob. Getrennt danach, ob es die Quelle maschinenlesbar gibt oder nur
+als Bildvorlage.
 
 ### Maschinenlesbar vorhanden
 
-| Vorhaben | Deckt ab | Stunden |
+| Vorhaben | Bringt | Stunden |
 |---|---|---|
-| **GPOP einlesen und prüfen** (sobald die Dateien da sind) | 9 Zeitpunkte, alle 400 Kreise | **2–3** |
-| GV100AD 1993–2025 mit BBSR-Umsteigeschlüssel, Methode B | 1995, 2000, 2011, 2022, 2025, alle Länder | 8–12 |
-| Regionaldatenbank als Gegenprobe dazu | dieselben | 3–4 |
-| Historische Gemeindeverzeichnisse der Landesämter, je Land: Format prüfen, Parser anpassen, Landessumme gegenprüfen | je Land die dort geführten Zählungen | 3–6 je Land |
-| — davon voraussichtlich als Text-PDF vorhanden: Bayern, Sachsen, Sachsen-Anhalt, Thüringen, Mecklenburg-Vorpommern, Niedersachsen | | 20–35 zusammen |
-| — Existenz und Format erst zu prüfen: Nordrhein-Westfalen, Hessen, Baden-Württemberg, Rheinland-Pfalz, Schleswig-Holstein | | 5–8 nur fürs Prüfen |
-| Stadtstaaten Hamburg und Bremen sowie das Saarland, je eigene Reihe | alle Zeitpunkte | 2–4 je Land |
-| iPEHD einlesen (Preussen, Kreisebene, CSV) | 1816–1901, preussischer Teil | 4–6 |
-| **Summe, wenn GPOP vorliegt** | | **etwa 45–70** |
-| **Summe ohne GPOP** | | **etwa 90–140** |
+| Regionaldatenbank und GV100AD-Archiv mit BBSR-Umsteigeschlüssel | 1995, 2000, 2022 flächendeckend | 8–12 |
+| iPEHD einlesen (Preussen, Kreisebene, CSV) | Grundlage für 1880, 1890 im preussischen Teil | 4–6 |
+| GPOP-Gemeindedatei (11 007 Gemeinden) als eigene Zuordnungsbasis nutzen | erlaubt Methode B für weitere Jahre ohne fremde Schlüssel | 4–6 |
+| **Summe** | | **16–24** |
 
 ### Nur als Bildvorlage
 
@@ -118,22 +102,23 @@ Hier wird nichts abgeschrieben, bevor du es freigibst.
 
 | Vorhaben | Stunden |
 |---|---|
-| 1880, 1900, 1925, 1933 ausserhalb Preussens, aus der *Statistik des Deutschen Reichs* | 25–40 |
-| Ersatzzählungen des Saargebiets für 1925, 1933 und 1950 | 4–8 |
-| Ortsteilzahlen für die geteilten Städte Görlitz, Guben, Frankfurt (Oder) | 3–6 |
-| Gross-Berlin: die 1920 eingemeindeten Orte für 1871–1910 | 6–10 |
+| 1880 und 1890 ausserhalb Preussens | 15–25 |
+| 1925 und 1933, einschliesslich Ersatzzählungen fürs Saargebiet | 25–40 |
+| BRD 1970 auf Kreisebene, über die Kreisreformen hinweg | 15–25 |
+| DDR 1950, 1971 und 1981 auf Kreisebene | 15–25 |
 
-### Was nicht in Stunden zu messen ist
+### Nicht abschätzbar
 
 Methode C — Flächeninterpolation über historische Kreisgrenzen — hängt an den
-Grenzen des MPIDR. Solange der Host gesperrt ist, ist der Aufwand nicht
-abschätzbar, weil das Verfahren nicht durchführbar ist. Betroffen sind die
-preussischen Zusatzzeitpunkte 1816, 1849, 1864 und überall dort, wo nur
-Kreisdaten und keine Gemeindedaten existieren.
+Grenzen des MPIDR. Solange der Host gesperrt ist, ist der Aufwand nicht zu
+beziffern, weil das Verfahren nicht durchführbar ist.
 
-## Nächster Schritt
+## Was als Nächstes am meisten brächte
 
-Nach der Aufgabenstellung ist hier der vereinbarte Halt: Pilot fertig,
-Plausibilitätsprüfung bestanden, keine Abschrift von Bildvorlagen ohne
-Freigabe. Das Sinnvollste zuerst wäre, GPOP von Hand zu holen — danach ist die
-Karte in wenigen Stunden für ganz Deutschland gefüllt, statt in Wochen.
+1. **1995, 2000 und 2022** aus der Regionaldatenbank — maschinenlesbar, füllt
+   die Lücke zwischen 1996 und 2024 und bringt den Zensus 2022 als eigenen
+   Zeitpunkt statt nur als Basis der Fortschreibung. Ein Tag Arbeit.
+2. **iPEHD** einlesen — auch ohne historische Grenzen lohnt es sich, die Daten
+   dazuhaben; sie sind die Voraussetzung für alles Preussische.
+3. `www.mpidr.de` freischalten. Danach wird aus Punkt 2 die
+   Flächeninterpolation, und 1816, 1849 und 1864 werden möglich.

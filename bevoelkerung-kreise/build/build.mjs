@@ -257,15 +257,37 @@ case, ${gefaltet} folded rings.</p>
 ${bilder.map(b => `<tr><td>${b.jahr}</td><td>${b.stichtage.join(', ')}</td><td>${b.werte.size}</td><td>${mio(b.summe)} m</td></tr>`).join('\n')}
 </tbody></table>
 
+<h2>Three things the map does not smooth over</h2>
+<p><b>Two states, two census days.</b> Between 1949 and 1990 the two Germanys counted at
+different times, and the counts were never synchronised. So four of these frames carry two
+dates rather than one: the West counted in June 1961, the East in December 1964; the West
+in May 1987, the East's figure is the end of 1985. Nothing is shifted to make them line up
+— each county's own date is in the readout, and the frame sits on the timeline where its
+people are, not halfway between the dates.</p>
+
+<p><b>Greater Berlin.</b> Berlin swallowed dozens of surrounding towns in 1920 and grew
+from 67 to 891 km². The 1871 figure here is 931,984, not the 826,000 the city of the day
+had: the source rebuilds today's Berlin out of the places that were later absorbed. The
+same reconstruction is what makes every other county comparable across 150 years.</p>
+
+<p><b>The eastern border.</b> Görlitz, Frankfurt (Oder), Guben and Forst were cut in two in
+1945; their eastern halves are in Poland. For the years before, the source estimates how
+many people lived on what is German ground today. Those four counties are the only figures
+here that are estimates rather than counts, and each carries that note.</p>
+
 <h2>Sources</h2>
-<p class="klein">Geometry: ${roh.quelle}, © GeoBasis-DE / BKG, Datenlizenz Deutschland – Namensnennung 2.0.
-Population: see the method notes in the repository
-(<a href="https://github.com/Chillchamp1/lab/tree/main/bevoelkerung-kreise">QUELLEN.md, METHODIK.md</a>).
-Counts are shown as they were taken, never silently mixed: through 1933 the censuses
-counted the people present on the day, soldiers included; from 17 May 1939 they counted
-residents; from 1995 these are population updates rather than censuses. Each figure
-carries its own census date — the East German counts of 1964, 1971 and 1981 fell on
-31 December and 1 January, and nothing here is shifted to make them line up.</p>
+<p class="klein">Population: Roesel, Felix (2022), <i>The German Local Population Database
+(GPOP), 1871 to 2019</i>, Jahrbücher für Nationalökonomie und Statistik,
+DOI 10.1515/jbnst-2022-0046 — all figures recomputed to boundaries as of 31 December 2019,
+assembled from more than 50 sources, CC BY 4.0. The ${letztes.jahr} frame is from the
+Federal Statistical Office's municipality directory (GV-ISys), 31 December 2024, as are the
+county names and the surface areas used for density. Geometry: ${roh.quelle},
+© GeoBasis-DE / BKG, Datenlizenz Deutschland – Namensnennung 2.0. Method notes and the
+tidy data table are in the
+<a href="https://github.com/Chillchamp1/lab/tree/main/bevoelkerung-kreise">repository</a>.
+Counts are shown as they were taken: through 1910 the censuses counted the people present
+on the day, soldiers included; from 17 May 1939 they counted residents; 1985, 1996, 2019 and
+2024 are population updates rather than censuses.</p>
 </div>
 
 <script>

@@ -6,12 +6,16 @@ liegen, im selben Ordner wie `build.mjs`:
 | Datei | Quelle |
 |---|---|
 | `vg2500_krs.shp` + `.dbf` + `.shx` + `.cpg` | [BKG, Verwaltungsgebiete 1:2 500 000 (VG2500)](https://daten.gdz.bkg.bund.de/produkte/vg/vg2500/aktuell/) — `vg2500_01-01-2026.utm32s.shape.zip`, daraus `vg2500/VG2500_KRS.*`, umbenannt |
-| `hgv_brandenburg_1875-2005.pdf` | Amt für Statistik Berlin-Brandenburg, *Historisches Gemeindeverzeichnis des Landes Brandenburg 1875 bis 2005* — irgendeiner der 15 Teile; Tabelle 1 mit allen Kreisen steht in jedem ([Teil 15, Uckermark](https://download.statistik-berlin-brandenburg.de/faedc7c46a0039e4/adf73748ddd2/SB_A01-99-15_2006u00_BB.pdf)) |
-| `bevoelkerungsstand-lange-reihe.xlsx` | dasselbe Amt, [Bevölkerungsstand — lange Reihe](https://www.statistik-berlin-brandenburg.de/bevoelkerung/demografie/bevoelkerungsstand/) |
+| `gpop_county.csv` + `gpop_state.csv` | [German Local Population Database (GPOP), Version 1.0](https://leopard.tu-braunschweig.de/receive/dbbs_mods_00071017) — aus `gpop_v1.zip` die Dateien `data/county.csv` und `data/state.csv`, umbenannt. CC BY 4.0 |
 | `gvisys-04-kreise.xlsx` | Statistisches Bundesamt, [Gemeindeverzeichnis, Kreisfreie Städte und Landkreise](https://www.destatis.de/DE/Themen/Laender-Regionen/Regionales/Gemeindeverzeichnis/Administrativ/04-kreise.html) (`04-kreise.xlsx`) |
+| `hgv_brandenburg_1875-2005.pdf` | **Nur für die Gegenprobe, ohne sie läuft es auch.** Amt für Statistik Berlin-Brandenburg, *Historisches Gemeindeverzeichnis des Landes Brandenburg 1875 bis 2005* — irgendeiner der 15 Teile; Tabelle 1 mit allen Kreisen steht in jedem ([Teil 15, Uckermark](https://download.statistik-berlin-brandenburg.de/faedc7c46a0039e4/adf73748ddd2/SB_A01-99-15_2006u00_BB.pdf)) |
+
+Der GPOP-Download ist durch eine Rechenaufgabe gegen Maschinen geschützt; das
+Zip lässt sich nur von Hand holen, nicht per Skript.
 
 Lizenzen: BKG-Geometrie unter Datenlizenz Deutschland – Namensnennung 2.0,
-© GeoBasis-DE / BKG. Die statistischen Tabellen mit Quellenangabe frei
+© GeoBasis-DE / BKG. GPOP unter CC BY 4.0, zu zitieren als Roesel (2022),
+DOI 10.1515/jbnst-2022-0046. Die amtlichen Tabellen mit Quellenangabe frei
 verwendbar.
 
 Fällt das Shapefile weg, springt ersatzweise ein `vg250_kreise.geo.json` ein —
@@ -30,12 +34,16 @@ python3 quellen.py          # -> ../data/bevoelkerung_kreise_long.csv, stammdate
 node build.mjs > ../index.html
 ```
 
-Der zweite Schritt rechnet für jeden Zeitpunkt ein eigenes Kartogramm, und das
-zweimal: einmal ohne die Kreise, die nur in wenigen Bildern Zahlen haben, und
-einmal mit. Bei voller Auflösung sind das etwa 35 Minuten. Die
-Zwischenergebnisse landen in `zeitreihe-kern.json` und `zeitreihe-alle.json`;
-löschen erzwingt eine Neuberechnung, alles danach — Nutzlast, Text, Seite —
-läuft in Sekunden. Die Kennzahlen laufen auf die Fehlerausgabe.
+Der zweite Schritt rechnet für jeden Zeitpunkt ein eigenes Kartogramm — bei
+voller Auflösung etwa 25 Minuten für die zehn Bilder. Das Zwischenergebnis
+landet in `zeitreihe-alle.json`; löschen erzwingt eine Neuberechnung, alles
+danach — Nutzlast, Text, Seite — läuft in Sekunden. Die Kennzahlen laufen auf
+die Fehlerausgabe.
+
+Deckt eine Reihe nur einen Teil des Landes ab und gibt es Kreise, die in
+weniger als der Hälfte der Bilder Zahlen haben, entsteht zusätzlich eine
+zweite Reihe ohne sie (`zeitreihe-kern.json`), zwischen denen die Seite
+umschalten kann. Flächendeckend fällt das weg.
 
 Zwei Stellschrauben als Umgebungsvariablen:
 
@@ -45,15 +53,13 @@ KNOTEN=9000 GITTER=1600 node build.mjs > ../index.html
 
 `KNOTEN` ist das Knotenbudget nach der Generalisierung, `GITTER` die Breite des
 Diffusionsgitters. Kleiner heisst schneller und ungenauer; für einen schnellen
-Blick reichen `KNOTEN=2500 GITTER=500`, das dauert keine zwei Minuten. Im
-Pilotgebiet greift `KNOTEN` gar nicht: VG2500 hat für die 19 Kreise nur 2 597
-Stützpunkte, also weniger als das Budget, und es wird nichts weggelassen.
+Blick reichen `KNOTEN=2500 GITTER=420`, das dauert keine zwei Minuten.
 
 ## Was wo liegt
 
 | Datei | Aufgabe |
 |---|---|
-| `quellen.py` | liest PDF und Tabellen, schreibt die lange CSV und `stammdaten.json` |
+| `quellen.py` | liest GPOP und die amtlichen Tabellen, prüft dreifach gegen, schreibt die lange CSV und `stammdaten.json` |
 | `shp.mjs` | Shapefile- und DBF-Leser, ohne Fremdbibliothek |
 | `laden.mjs` | Kreisgeometrie einlesen, egal ob Shapefile oder GeoJSON |
 | `geometrie.mjs` | flächentreue Projektion, Umkehrung der UTM-Abbildung, Ringflächen, Faltungsprüfung |

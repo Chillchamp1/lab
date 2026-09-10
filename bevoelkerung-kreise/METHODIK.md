@@ -1,29 +1,32 @@
 # Methodik
 
-Was hier steht, gilt für den jetzigen Stand: das Pilotgebiet Berlin und
-Brandenburg über 16 Zeitpunkte von 1875 bis 2025. Was noch fehlt und warum,
-steht in [STAND.md](STAND.md); welche Quellen geprüft wurden, in
-[QUELLEN.md](QUELLEN.md).
+Gilt für den jetzigen Stand: alle 400 heutigen Kreise, zehn Zeitpunkte von 1871
+bis 2024. Was noch fehlt und warum, steht in [STAND.md](STAND.md); welche
+Quellen geprüft wurden, in [QUELLEN.md](QUELLEN.md).
 
 ## 1. Gebietsstand
 
 **Einheit ist der heutige Kreis, Schlüssel der fünfstellige AGS.**
 
 Geometrie: BKG VG2500, Ebene KRS, Gebietsstand 1. Januar 2026, ETRS89/UTM 32N,
-401 Kreise. Für Zuordnungen und die amtlichen Flächen: das
+401 Kreise. Für Zuordnungen, Namen und die amtlichen Flächen: das
 Gemeindeverzeichnis-Informationssystem GV-ISys des Statistischen Bundesamts,
 Stand 31. Dezember 2024, 400 Kreise.
 
-Die beiden unterscheiden sich in genau einem Punkt, und der ist entschieden
-worden:
+Zwei Kreisschlüssel müssen zusammengeführt werden, beide Male exakt und ohne
+Schätzung, weil der heutige Kreis genau die Vereinigung der alten ist:
 
 > **Hanau** ist zum 1. Januar 2026 kreisfrei geworden (AGS 06415) und steht in
 > VG2500 bereits als eigener Kreis. Keine Bevölkerungsreihe trennt die Stadt
 > vom Main-Kinzig-Kreis — auch die jüngste nicht. Ein Kreis, der in allen
 > Zeitpunkten ein Loch wäre, hilft niemandem, also wird Hanau in der Geometrie
-> wieder in den Main-Kinzig-Kreis aufgelöst. Damit sind es **400 Gebiete**, der
-> Kreisstand des Gemeindeverzeichnisses vom 31.12.2024. Sobald eine Reihe Hanau
-> gesondert ausweist, fällt der Eintrag in `GEBIETSSTAND` weg und es sind 401.
+> wieder aufgelöst. Damit sind es **400 Gebiete**, der Kreisstand des
+> Gemeindeverzeichnisses vom 31.12.2024.
+>
+> **Eisenach** (AGS 16056) ist am 1. Juli 2021 in den Wartburgkreis
+> eingegliedert worden. Die Bevölkerungsquelle steht auf dem Gebietsstand
+> 31.12.2019 und führt die Stadt noch getrennt; ihre Zahlen werden zum
+> Wartburgkreis addiert.
 
 Zur Kontrolle: die Flächensumme der 400 Kreise beträgt nach der
 Generalisierung 357 102 km², amtlich sind es 357 677 km² — 0,16 % weniger, was
@@ -41,10 +44,9 @@ Drei Schritte, alle in `build/topologie.mjs`:
 2. **Auflösen.** Je Kreis werden dessen Ringe zu einem Umriss vereinigt:
    Kanten, die in zwei Ringen desselben Kreises gegenläufig vorkommen, sind
    innere Grenzen und heben sich auf; der Rest wird über eine Winkelverfolgung
-   zu neuen Ringen verkettet. Nur so verschmelzen zwei Gebiete wirklich,
-   statt nebeneinander liegen zu bleiben. Gegenprobe an Eisenach und dem
-   Wartburgkreis in der Ersatzgeometrie: 104,3 + 1 263,8 km² vorher,
-   1 368,0 km² nachher.
+   zu neuen Ringen verkettet. Nur so verschmelzen zwei Gebiete wirklich, statt
+   nebeneinander liegen zu bleiben. Das ist der Weg, auf dem Hanau in den
+   Main-Kinzig-Kreis zurückgeht.
 
 3. **Generalisieren.** Knotenweise nach Visvalingam, aber am eigenen Kreis
    gemessen statt absolut — sonst verlieren die kreisfreien Städte zuerst ihre
@@ -58,16 +60,12 @@ azimutal, 52° N 10° O). VG2500 liegt in UTM; die Umkehrung der UTM-Abbildung
 steht in `build/geometrie.mjs` und ist im Zentimeter genau, also viel feiner
 als die Daten.
 
-Kreise ohne Zahlen werden vor dem Rechnen aussortiert. Solange die Reihe nur
-einen Teil Deutschlands abdeckt, bekämen sie sonst den grössten Teil des
-Knotenbudgets und der Nutzlast, obwohl sie nie gezeichnet werden.
-
 ## 3. Die Zahlen
 
 ### Rangfolge der Methoden
 
-- **A** — eine Reihe, die ein Statistisches Landesamt schon auf einen
-  einheitlichen Gebietsstand gerechnet hat. Direkt übernommen.
+- **A** — eine Reihe, die schon auf einen einheitlichen Gebietsstand gerechnet
+  ist. Direkt übernommen.
 - **B** — historische Gemeindedaten, Gemeinde für Gemeinde einem heutigen Kreis
   zugeordnet und aufsummiert.
 - **C** — nur wo ausschliesslich Kreisdaten existieren: Flächeninterpolation
@@ -75,27 +73,37 @@ Knotenbudgets und der Nutzlast, obwohl sie nie gezeichnet werden.
 
 Historische Kreise werden **nie** pauschal einem heutigen gleichgesetzt.
 
-Im jetzigen Stand ist **jede Zelle Methode A**; Spalte `anteil_interpoliert`
-ist überall 0.
+Im jetzigen Stand ist **jede Zelle Methode A**; die Spalte
+`anteil_interpoliert` ist überall 0. Das liegt an der Quelle: Roesel hat die
+Zuordnung auf Gemeindeebene gemacht — also Methode B, sauber ausgeführt und
+veröffentlicht — und daraus die Kreissummen gebildet. Für diese Karte ist
+nichts mehr umzurechnen.
 
 ### Woher die Zellen stammen
 
-| Zeitpunkte | Gebiet | Quelle | Methode |
-|---|---|---|---|
-| 1875, 1890, 1910, 1925, 1933, 1939, 1946, 1950, 1964, 1971, 1981 | Brandenburg, 18 Kreise | Amt für Statistik Berlin-Brandenburg, *Historisches Gemeindeverzeichnis des Landes Brandenburg 1875 bis 2005*, Tabelle 1 | A |
-| 1995, 2000, 2011, 2022, 2025 | Berlin und Brandenburg, 19 Kreise | dasselbe Amt, *Bevölkerungsstand — lange Reihe 1990/91 bis 2025*, Blatt 1 und Blatt 7 | A |
+| Bild | Stichtage | Quelle |
+|---|---|---|
+| 1871 | 1.12.1871 | GPOP |
+| 1900–1910 | 1.12.1900 (Bayern), 1.12.1905 (SH, NI, NW, RP, SL), 1.12.1910 (übrige) | GPOP |
+| 1939 | 17.5.1939 | GPOP |
+| 1946–1950 | 29.10.1946, 13.9.1950 (RP, BW, BY) | GPOP |
+| 1961–1964 | 6.6.1961 (West), 31.12.1964 (Ost) | GPOP |
+| 1985–1987 | 31.12.1985 (Ost), 25.5.1987 (West) | GPOP |
+| 1996 | 31.12.1996 | GPOP |
+| 2011 | 9.5.2011 (Zensus) | GPOP |
+| 2019 | 31.12.2019 | GPOP |
+| 2024 | 31.12.2024 | GV-ISys |
 
-Das Historische Gemeindeverzeichnis sagt über sich selbst: „Für den gesamten
-Zeitraum ab 1875 wurde der Bevölkerungsbestand zum einheitlichen Gebietsstand,
-dem 31.12.2005, umgesetzt. Jede Gemeinde wird betrachtet, als ob diese
-veränderte Struktur bereits am 01.12.1875 bestand." Brandenburgs Kreise sind
-seit 1993 unverändert, der Stand von 2005 ist also der heutige. Weiter: „Für
-die Bevölkerungsangaben bis 1981 wurden die amtlichen Ergebnisse der
-Volkszählungen, für spätere Jahre die Stichtagsangaben jeweils zum 31.12. aus
-der amtlichen Bevölkerungsfortschreibung verwendet."
+**GPOP** ist die *German Local Population Database*, Version 1.0, von Felix
+Roesel (TU Braunschweig): Bevölkerung aller 11 007 Gemeinden, 401 Kreise und
+16 Länder auf einheitlichem Gebietsstand 31.12.2019, aus über 50 Quellen
+zusammengetragen, CC BY 4.0.
 
-Die Vorlage ist ein Text-PDF, keine Bildvorlage; die Zahlen werden ausgelesen,
-nicht abgeschrieben. Das Skript dafür ist `build/quellen.py`.
+Wo Ost und West zu verschiedenen Tagen gezählt haben, führt GPOP zwei Spalten,
+die einander ergänzen. Sie werden zu einem Bild zusammengefasst, aber **nicht
+angeglichen**: jede Zeile behält ihren eigenen Stichtag, das Bild trägt beide,
+und auf der Zeitachse sitzt es dort, wo sein Bevölkerungsschwerpunkt liegt —
+das Bild 1961–1964 also näher an 1961, weil im Westen mehr Menschen wohnten.
 
 ### Bevölkerungsbegriff
 
@@ -104,22 +112,14 @@ geführt:
 
 | Zeitpunkte | Begriff |
 |---|---|
-| 1875 bis 1933 | ortsanwesende Bevölkerung — wer in der Zählnacht da war, Militär eingeschlossen |
-| 1939 bis 1981 | Wohnbevölkerung |
-| ab 1995 | Fortschreibung, Bevölkerung am Ort der Hauptwohnung |
+| 1871 bis 1910 | ortsanwesende Bevölkerung — wer in der Zählnacht da war, Militär eingeschlossen |
+| 1939 bis 1964, 1987, 2011 | Wohnbevölkerung |
+| 1985, 1996, 2019, 2024 | Fortschreibung, Bevölkerung am Ort der Hauptwohnung |
 
 Der Bruch liegt bei der Zählung vom 17. Mai 1939, die erstmals die
 Wohnbevölkerung ausweist. Er ist keine Erfindung der Karte, sondern eine
-Eigenschaft der Zählungen; die Quellen selbst schreiben den Begriff nicht
-mit, er folgt der jeweils gültigen Zählungsdefinition.
-
-### Stichtage
-
-Werden **nicht** angeglichen. Jede Zeile trägt ihren eigenen Stichtag, und die
-Karte zeigt ihn an. Das ist wichtig, sobald West und Ost dazukommen: die
-Bundesrepublik zählte am 13.9.1950, 6.6.1961, 27.5.1970 und 25.5.1987, die DDR
-am 31.8.1950, 31.12.1964, 1.1.1971 und 31.12.1981. Ein gemeinsames Bild trägt
-dann beide Stichtage nebeneinander, nicht einen gemittelten.
+Eigenschaft der Zählungen; die Quelle schreibt den Begriff nicht mit, er folgt
+der jeweils gültigen Zählungsdefinition.
 
 ## 4. Das Kartogramm
 
@@ -135,7 +135,7 @@ analytische Lösung: das Feld zur Zeit *t* ist das Ausgangsfeld, gefaltet mit
 einer Gaussglocke der Breite σ = √(2t), angenähert durch Kastenfilter in
 linearer Zeit.
 
-Fünf Dinge kommen gegenüber der Wahlkreiskarte dazu:
+Vier Dinge kommen gegenüber der Wahlkreiskarte dazu:
 
 **Mehrere Durchgänge.** Ein einzelner bleibt an der Gitterauflösung hängen.
 Nach jedem Durchgang wird die verformte Geometrie neu gerastert und der
@@ -144,83 +144,93 @@ Restfehler erneut ausgeglichen.
 **Warmer Start.** Zwei aufeinanderfolgende Zählungen unterscheiden sich wenig.
 Das Kartogramm des nächsten Zeitpunkts fängt deshalb beim vorigen Ergebnis an,
 nicht wieder bei der Landkarte. Das spart Rechenzeit und hält die Bilder
-beieinander, sodass der Übergang eine Bewegung ist und kein Sprung. Bilder mit
-Lücken starten kalt von der Landkarte: sie an eine Reihe anzuhängen, die mehr
-abdeckt, würde ihre Form von Gebieten prägen lassen, für die es keine Zahlen
-gibt.
+beieinander, sodass der Übergang eine Bewegung ist und kein Sprung.
 
-**Ausschnitt nach den Daten.** Das Gitter richtet sich nach den Kreisen mit
-Zahlen, nicht nach ganz Deutschland. Andernfalls blieben dem Pilotgebiet zu
-wenige Zellen, und der Ausgleich käme nicht über wenige Prozent hinaus.
-
-**Zwei Reihen.** Kreise, die nur in weniger als der Hälfte der Bilder Zahlen
-haben, bekommen eine eigene Reihe: einmal ohne sie, einmal mit. Im Pilotgebiet
-ist das Berlin. Die Stadt hat Zahlen erst ab 1995 und dann 59 % der Menschen
-der Region; weil sie eingeschlossen und auf dem Boden winzig ist, presst sie im
-Kartogramm alles andere zu einem Ring. Beide Reihen liegen über derselben
-Geometrie und teilen denselben Massstab, sodass Umschalten wirklich heisst
-„dasselbe Bild, ein Kreis mehr". Sobald ein Gebiet in der Mehrzahl der Bilder
-Zahlen hat, entfällt die zweite Reihe von selbst.
+**Ausschnitt nach den Daten.** Das Gitter richtet sich nach den Kreisen, für
+die es Zahlen gibt. Solange das alle sind, ist das ganz Deutschland; sobald
+eine Reihe nur einen Teil abdeckt, bleibt die Auflösung dort, wo sie gebraucht
+wird.
 
 **Gemeinsamer Massstab.** Das Kartogramm selbst verteilt nur um; seine
 Gesamtfläche bleibt die der Ausgangskarte, gleich wie viele Menschen darin
-wohnen. Damit die Karte *mit* der Bevölkerung wächst, wird für alle Zeitpunkte
-dieselbe Fläche je Mensch festgelegt — so viel, dass das bevölkerungsreichste
-Bild gerade die Fläche der geografischen Karte einnimmt. Jeder gespeicherte
-Zustand ist auf diese Fläche normiert und um den festen Schwerpunkt der
-Gesamtkarte zentriert; die Grösse steckt allein im Faktor
-√(Bevölkerung / grösste Bevölkerung), der beim Zeichnen wieder daraufkommt.
-Halb so viele Menschen heisst dann wirklich halb so viel Karte.
+wohnen. Damit die Karte *mit* der Bevölkerung wächst, gilt für alle Zeitpunkte
+dieselbe Fläche je Mensch — so viel, dass das bevölkerungsreichste Bild gerade
+die Fläche der geografischen Karte einnimmt. Jeder gespeicherte Zustand ist auf
+diese Fläche normiert und um den festen Schwerpunkt der Gesamtkarte zentriert;
+die Grösse steckt allein im Faktor √(Bevölkerung / grösste Bevölkerung), der
+beim Zeichnen wieder daraufkommt. Halb so viele Menschen heisst dann wirklich
+halb so viel Karte.
 
-Zwischen zwei Zeitpunkten läuft die Karte linear in der Zeit, nicht in
-gleichen Schritten je Zählung: 1946 und 1950 liegen dicht beieinander, 1890 und
-1910 weit auseinander, und so sieht man es auch. Was zwischen zwei Stichtagen
-gezeigt wird, ist interpoliert, und die Karte sagt das an.
+Zwischen zwei Zeitpunkten läuft die Karte linear in der Zeit, nicht in gleichen
+Schritten je Zählung. Was zwischen zwei Stichtagen gezeigt wird, ist
+interpoliert, und die Karte sagt das an.
 
-## 5. Bekannte Fehlergrössen
+### Wenn eine Reihe nur einen Teil abdeckt
 
-| Grösse | Wert |
+Der Bauvorgang kann damit umgehen, auch wenn es im jetzigen Stand nicht
+gebraucht wird. Kreise ohne Zahl werden im Dichtefeld wie Meer behandelt — sie
+bekommen die mittlere Dichte der abgedeckten Kreise, treiben also in der
+Strömung mit, ohne sie zu verzerren — und nicht gezeichnet. Kreise, die in
+weniger als der Hälfte der Bilder Zahlen haben, bekommen zusätzlich eine
+eigene Reihe ohne sie, zwischen denen die Seite umschalten kann.
+
+Das war beim Pilotgebiet Berlin und Brandenburg nötig und ist dort auch
+gemessen worden: Berlin hielt 59 % der Menschen der Region, lag mitten darin
+und ist auf dem Boden winzig — im Kartogramm presste es Brandenburg zu einem
+Ring zusammen. Rechnerisch war das einwandfrei (keine gefalteten Ringe, keine
+Selbstüberschneidungen), als einzige Ansicht aber unlesbar. So verhält sich ein
+flächentreues Kartogramm, wenn ein eingeschlossenes Gebiet die Mehrheit der
+Menschen hält. Deutschlandweit stellt sich die Frage nicht: dort ist Berlin
+vier Prozent des Landes.
+
+## 5. Was geprüft ist
+
+Drei Gegenproben laufen bei jedem Lauf von `quellen.py` mit:
+
+| Prüfung | Ergebnis |
 |---|---|
-| Flächenabweichung im Kartogramm, Median über alle Bilder | siehe `bau.log` beziehungsweise die Angabe unter der Karte |
-| Flächenabweichung, Maximum | dito |
-| Gefaltete Ringe | 0 |
-| Generalisierung: Flächenänderung gegenüber VG2500 | 0,16 % über alle Kreise |
-| Zahlen selbst | amtliche Ergebnisse, unverändert übernommen; Rundungen der Quelle bleiben |
+| Summe der Kreise gegen die Ländersummen derselben Quelle, alle 14 Spalten | **0,0000 %** |
+| GPOP gegen das Historische Gemeindeverzeichnis Brandenburgs, 1910, 1939, 1946, 1964, 1985, je 18 Kreise | Mittel **0,07 bis 0,12 %**, grösste Einzelabweichung 1,24 % (Barnim 1910) |
+| Fortschreibung 2019 gegen GV-ISys 2024 | grösste Änderung 7,5 %, plausibel als Zensuskorrektur |
 
-Die Gegenprobe der Zahlen läuft bei jedem Lauf von `quellen.py` mit: die Summe
-der 18 brandenburgischen Kreise wird gegen die veröffentlichte Landeszeile
-gehalten. Grösste Abweichung über alle 29 Stichtage der Quelle: **0,0000 %**.
-Die vom Auftrag gesetzte Schwelle von 1 % ist damit nicht annähernd berührt.
+Die zweite ist die aussagekräftigste: zwei **voneinander unabhängige**
+Umrechnungen auf heutigen Gebietsstand — eine vom Amt für Statistik
+Berlin-Brandenburg, eine von Roesel — kommen auf ein Zehntelprozent zusammen.
+Das ist ein starker Hinweis darauf, dass beide Wege stimmen.
+
+Dazu die Kennzahlen des Kartogramms, die beim Bauen ausgegeben und unter die
+Karte geschrieben werden: Flächenabweichung im Median und im Maximum sowie die
+Zahl gefalteter Ringe.
 
 ## 6. Die vier Fallen
 
-- **Oder-Neisse-Grenze.** Betrifft im Pilotgebiet Frankfurt (Oder) und die
-  Kreise Märkisch-Oderland, Oder-Spree, Spree-Neisse und Uckermark. Die Quelle
-  löst das selbst: sie rechnet auf den Gebietsstand 31.12.2005, also auf das
-  heutige, westliche Gebiet. Die östlichen Teile geteilter Kreise und der
-  östliche Teil Frankfurts sind nicht enthalten. Für Görlitz und Guben, die
-  ausserhalb des Pilotgebiets liegen, ist die Frage noch offen.
-- **Gross-Berlin 1920.** Ungelöst. Berlin steht erst ab 1995 in den Daten, weil
-  keine erreichbare Quelle die 1920 eingemeindeten Orte für die Zeit davor
-  ausweist. Die Zahlen für das alte Berlin (66,9 km²) wären keine Zahlen für
-  das heutige Berlin (891 km²) und werden deshalb nicht eingesetzt. Siehe
-  STAND.md.
-- **Saarland.** Ausserhalb des Pilotgebiets, noch offen.
+- **Oder-Neisse-Grenze.** Von der Quelle behandelt: für Görlitz, Frankfurt
+  (Oder), Guben und Forst schätzt Roesel aus historischen Berichten, wie viele
+  Menschen auf dem heute deutschen Teil lebten. Das sind die einzigen
+  geschätzten Werte in der Tabelle; sie tragen den Vermerk in der Spalte
+  `bemerkung`.
+- **Gross-Berlin 1920.** Von der Quelle behandelt: die 1920 eingemeindeten
+  Orte sind zurückgerechnet, Berlin hat 1871 deshalb 931 984 Einwohner statt
+  der 826 000 der damaligen Stadt.
+- **Saarland.** GPOP führt für das Saarland dieselben Zeitpunkte wie für alle
+  anderen Länder; die Lücke der Reichszählungen 1925 und 1933 wird erst zum
+  Problem, wenn diese beiden Zeitpunkte dazukommen.
 - **Bevölkerungsbegriff.** Behandelt, siehe oben.
 
 ## 7. Die Datei
 
-`data/bevoelkerung_kreise_long.csv`, eine Zeile je Kreis und Zeitpunkt:
+`data/bevoelkerung_kreise_long.csv`, eine Zeile je Kreis und Zeitpunkt,
+4 000 Zeilen:
 
 | Spalte | Inhalt |
 |---|---|
 | `kreis_ags` | fünfstelliger AGS des heutigen Kreises |
 | `kreis_name` | Name nach GV-ISys |
-| `jahr` | Name des Bildes; kann mehrere Stichtage bündeln (etwa „1950" für 13.9. West und 31.8. Ost) |
+| `jahr` | Name des Bildes; bündelt bei geteilten Zählungen zwei Stichtage, etwa „1961–1964" |
 | `stichtag` | der wirkliche Tag der Zählung, ISO |
 | `bevoelkerung` | Personen |
 | `begriff` | ortsanwesende Bevölkerung, Wohnbevölkerung oder Fortschreibung |
 | `methode` | A, B oder C |
 | `anteil_interpoliert` | Anteil des Werts aus Flächeninterpolation, 0 bis 1 |
 | `quelle` | Werk, Tabelle, Gebietsstand |
-| `bemerkung` | Freitext, etwa die Zensusbasis einer Fortschreibung |
+| `bemerkung` | welche Zählung, und bei den geteilten Städten der Hinweis auf die Schätzung |

@@ -1,61 +1,45 @@
-# Brandenburg, gezeichnet von seinen Menschen
+# Deutschland, gezeichnet von seinen Menschen
 
 → **https://chillchamp1.github.io/lab/bevoelkerung-kreise/**
 
 Die Bevölkerungsentwicklung auf einer regionalen Ebene, die sich nicht ändert:
-den heutigen Kreisen und kreisfreien Städten. Jeder Kreis wird so gross
+den 400 heutigen Kreisen und kreisfreien Städten. Jeder Kreis wird so gross
 gezeichnet, wie er Menschen hat, und die Karte läuft durch die Zeit — von der
-Volkszählung 1875 bis zum 31. Dezember 2025.
+ersten Reichszählung 1871 bis zum 31. Dezember 2024, von 29,3 auf 83,6
+Millionen.
 
 Das Besondere gegenüber den anderen Kartogrammen hier: **die Karte wächst
 mit**. Ein Kartogramm für sich verteilt nur um, seine Gesamtfläche bleibt
-gleich, ob 1875 oder heute. Hier gilt für alle Zeitpunkte dieselbe Fläche je
-Mensch, also ist 1875 wirklich kleiner als 2025 — flächenproportional, halb so
+gleich, ob 1871 oder heute. Hier gilt für alle Zeitpunkte dieselbe Fläche je
+Mensch, also ist 1871 wirklich kleiner als 2024 — flächenproportional, halb so
 viele Menschen, halb so viel Karte. Die Seite ist auf Englisch und fürs
 Hochformat gebaut.
 
 Die Farbe lässt sich umschalten: Einwohner, Dichte je Quadratkilometer
-wirklicher Fläche, oder Index mit dem ersten Bild als 100.
-
-## Pilotgebiet, und der Knopf über der Karte
-
-Die Daten decken 19 Kreise ab: Berlin und die 18 brandenburgischen. Das ist das
-Pilotgebiet eines grösseren Vorhabens — dieselbe Karte für alle 400 deutschen
-Kreise, mit allen Volkszählungen seit dem 19. Jahrhundert. Was davon steht und
-was fehlt, sagt [STAND.md](STAND.md); was geprüft wurde und was erreichbar war,
-[QUELLEN.md](QUELLEN.md).
-
-Zu sehen sind zunächst nur die 18 brandenburgischen. Der Grund steckt in der
-Sache: Berlin hat Zahlen erst ab 1995 und dann mehr Einwohner als ganz
-Brandenburg — 59 Prozent der Fläche des Bildes. Weil die Stadt mitten in
-Brandenburg liegt und auf dem Boden winzig ist, presst sie im Kartogramm alles
-andere zu einem Ring zusammen. Das ist kein Fehler, sondern was ein
-flächentreues Kartogramm tut, wenn ein eingeschlossenes Gebiet die Mehrheit der
-Menschen hält. Der Knopf über der Karte schaltet Berlin dazu, und man sieht es
-sofort.
-
-Gerade deshalb ist das Pilotgebiet ein harter Fall — und die Karte für ganz
-Deutschland wird nicht so aussehen: unter 400 Kreisen ist Berlin vier Prozent
-des Landes, nicht 59 Prozent der Region.
-
-Warum Berlin erst 1995 anfängt: Gross-Berlin entstand 1920 aus Dutzenden
-Umlandorten, und keine erreichbare Quelle weist sie für die Zeit davor
-gesondert aus. Die Zahlen für das alte Berlin von 66,9 km² sind keine Zahlen
-für das heutige von 891 km². Zwischen zwei Zählungen sind Form und Zahl
-interpoliert; die Karte schreibt das dazu.
+wirklicher Fläche, oder Index mit 1871 als 100.
 
 ## Gebietsstand
 
-Der heutige Kreis ist die Einheit, der fünfstellige AGS der Schlüssel. Alle
-Zeitpunkte sind auf denselben Gebietsstand gerechnet — nicht von dieser Karte,
-sondern vom Landesamt selbst: das Historische Gemeindeverzeichnis Brandenburgs
-setzt jede Gemeinde so an, „als ob diese veränderte Struktur bereits am
-01.12.1875 bestand".
+Der heutige Kreis ist die Einheit, der fünfstellige AGS der Schlüssel. Jeder
+Zeitpunkt ist auf denselben Gebietsstand gerechnet — und zwar nicht von dieser
+Karte, sondern von der Quelle: die German Local Population Database setzt jede
+historische Gemeinde dorthin, wo ihr Gebiet heute liegt, und summiert von
+unten auf.
 
-Die Zahlen werden nicht stillschweigend gemischt. Bis 1933 zählte man die
-ortsanwesende Bevölkerung samt Militär, ab 1939 die Wohnbevölkerung, ab 1995
-ist es Fortschreibung; jede Zeile führt ihren Begriff und ihren wirklichen
-Stichtag mit. Ausführlich in [METHODIK.md](METHODIK.md).
+Damit lösen sich zwei der klassischen Fallen von selbst. **Gross-Berlin**:
+Berlin hat 1871 nicht die 826 000 Einwohner der damaligen Stadt, sondern
+931 984 — die 1920 eingemeindeten Orte sind zurückgerechnet. **Oder-Neisse**:
+für Görlitz, Frankfurt (Oder), Guben und Forst schätzt die Quelle, wie viele
+Menschen auf dem heute deutschen Teil lebten; das sind die einzigen
+geschätzten Werte in der Tabelle, und jeder trägt den Vermerk.
+
+Die Zahlen werden nicht stillschweigend gemischt. Bis 1910 zählte man die
+ortsanwesende Bevölkerung samt Militär, ab 1939 die Wohnbevölkerung; 1985,
+1996, 2019 und 2024 sind Fortschreibungen. Und zwischen 1949 und 1990 zählten
+die beiden deutschen Staaten zu verschiedenen Tagen — vier Bilder tragen
+deshalb zwei Stichtage nebeneinander, angeglichen wird nichts. Jede Zeile führt
+ihren Begriff und ihren wirklichen Stichtag mit. Ausführlich in
+[METHODIK.md](METHODIK.md).
 
 ## Verfahren
 
@@ -63,31 +47,52 @@ Diffusionskartogramm nach Gastner und Newman (2004), wie bei den
 [Wahlkreisen](../wahlkreise-2025/): die Dichte wird als Wärme aufgefasst und
 fliesst auseinander, bis sie überall gleich ist, und die Grenzen schwimmen mit.
 Für jeden Zeitpunkt ein eigenes Kartogramm, jedes vom vorigen aus gestartet —
-so ist der Übergang eine Bewegung und kein Sprung. Zwei Reihen über derselben
-Geometrie, mit und ohne Berlin, im selben Massstab.
+so ist der Übergang eine Bewegung und kein Sprung.
 
-Verbleibende Flächenabweichung im Median unter einem Promille, keine gefalteten
-Ringe. Die Gegenprobe der Zahlen läuft beim Bauen mit: die Summe der 18
-brandenburgischen Kreise gegen die veröffentlichte Landeszeile, über alle 29
-Stichtage der Quelle **0,0000 %** Abweichung.
+Zwischen zwei Zeitpunkten läuft die Karte linear in der Zeit, nicht in gleichen
+Schritten je Zählung: 1946 und 1950 liegen dicht beieinander, 1871 und 1900
+weit auseinander, und so sieht man es auch.
+
+## Was geprüft ist
+
+Drei Gegenproben laufen bei jedem Bauen mit:
+
+- Die Summe der Kreise gegen die Ländersummen derselben Quelle: **0,0000 %**
+  Abweichung.
+- Die Quelle gegen das Historische Gemeindeverzeichnis des Landes Brandenburg,
+  für die fünf Stichtage, die beide führen. Das sind **zwei voneinander
+  unabhängige Umrechnungen** auf heutigen Gebietsstand — eine vom Landesamt,
+  eine von Roesel. Sie weichen im Mittel um 0,07 bis 0,12 Prozent voneinander
+  ab, im schlimmsten Fall um 1,2 Prozent (Barnim 1910).
+- Die Fortschreibung 2019 gegen das Gemeindeverzeichnis 2024, als Fangnetz für
+  vertauschte Schlüssel.
+
+Dazu die Geometrie: Flächensumme der 400 Kreise nach der Generalisierung
+357 102 km² gegen amtlich 357 677 km², also 0,16 Prozent Verlust durch den
+Massstab 1:2 500 000. Verbleibende Flächenabweichung im Kartogramm im Median
+unter einem Promille, keine gefalteten Ringe.
 
 ## Daten
 
-- **Bevölkerung 1875–1981** — Amt für Statistik Berlin-Brandenburg,
-  Historisches Gemeindeverzeichnis des Landes Brandenburg 1875 bis 2005,
-  Tabelle 1, Gebietsstand 31.12.2005
-- **Bevölkerung 1995–2025** — dasselbe Amt, Bevölkerungsstand lange Reihe,
-  Gebietsstand 31.12.2025
+- **Bevölkerung 1871–2019** — Roesel, Felix (2022): *The German Local
+  Population Database (GPOP), 1871 to 2019*, Jahrbücher für Nationalökonomie
+  und Statistik, DOI 10.1515/jbnst-2022-0046. CC BY 4.0.
+- **Bevölkerung 2024, Flächen und Namen** — Gemeindeverzeichnis des
+  Statistischen Bundesamts, Stand 31.12.2024
 - **Geometrie** — BKG, Verwaltungsgebiete 1:2 500 000, Gebietsstand
   1. Januar 2026, © GeoBasis-DE / BKG, Datenlizenz Deutschland –
   Namensnennung 2.0
-- **Flächen und Namen** — Gemeindeverzeichnis des Statistischen Bundesamts,
-  Stand 31.12.2024
+- **Gegenprobe** — Amt für Statistik Berlin-Brandenburg, Historisches
+  Gemeindeverzeichnis des Landes Brandenburg 1875 bis 2005
 
 Die aufbereitete Tabelle liegt als
 [`data/bevoelkerung_kreise_long.csv`](data/bevoelkerung_kreise_long.csv)
 daneben, eine Zeile je Kreis und Zeitpunkt, mit Stichtag, Begriff, Methode und
 Quelle.
+
+Was noch fehlt — die preussischen Zusatzzeitpunkte 1816 bis 1864, die Zählungen
+1880, 1890, 1925 und 1933, der Zensus 2022 — steht in [STAND.md](STAND.md);
+was geprüft und was erreichbar war, in [QUELLEN.md](QUELLEN.md).
 
 ## Neu bauen
 

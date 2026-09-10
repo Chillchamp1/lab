@@ -11,14 +11,17 @@ import { packe } from './code.mjs';
 // Wo auf der Zeitachse ein Bild sitzt. Trägt es mehrere Stichtage — 1950 etwa
 // den 13. September für die Bundesrepublik und den 31. August für die DDR —,
 // liegt es in deren Mitte; genannt werden in der Karte trotzdem beide.
-function dezimaljahr(stichtage) {
-  const jahre = stichtage.map(s => {
+function dezimaljahr(stichtage, gewichte = null) {
+  let summe = 0, gesamt = 0;
+  for (const s of stichtage) {
     const d = new Date(s + 'T00:00:00Z');
-    if (Number.isNaN(d.getTime())) return Number(String(s).slice(0, 4));
-    const start = Date.UTC(d.getUTCFullYear(), 0, 1);
-    return d.getUTCFullYear() + (d.getTime() - start) / (365.25 * 864e5);
-  }).filter(Number.isFinite);
-  return Number((jahre.reduce((a, b) => a + b, 0) / jahre.length).toFixed(3));
+    const j = Number.isNaN(d.getTime()) ? Number(String(s).slice(0, 4))
+      : d.getUTCFullYear() + (d.getTime() - Date.UTC(d.getUTCFullYear(), 0, 1)) / (365.25 * 864e5);
+    if (!Number.isFinite(j)) continue;
+    const g = gewichte?.[s] ?? 1;
+    summe += j * g; gesamt += g;
+  }
+  return Number((summe / gesamt).toFixed(3));
 }
 
 const BREITE = 8000;
@@ -92,7 +95,7 @@ export function baueNutzlast({ gebiete, attr, X, Y, reihen, bilder, kreisInfo, l
   nutz.bilder = zustaende.map(z => {
     const b = bilder.find(x => x.jahr === z.jahr);
     return {
-      jahr: z.jahr, t: dezimaljahr(b.stichtage),
+      jahr: z.jahr, t: dezimaljahr(b.stichtage, b.gewichte),
       stichtage: b.stichtage, begriffe: b.begriffe,
       methoden: b.methoden, quellen: b.quellen,
     };

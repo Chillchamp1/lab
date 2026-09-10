@@ -10,22 +10,26 @@ Ordner `build`:
 
 Welche Dateien danebenliegen müssen, steht in DATEN.md.
 
-Was hier passiert, in einem Satz je Quelle:
+Die Quellen und was sie beitragen:
 
-* `hgv_brandenburg_1875-2005.pdf` — das Historische Gemeindeverzeichnis des
-  Landes Brandenburg. Seine Tabelle 1 führt alle 18 brandenburgischen Kreise
-  von 1875 bis 2005 auf einem einheitlichen Gebietsstand (31.12.2005). Das ist
-  Methode A: das Landesamt hat die Umrechnung selbst gemacht, jede Gemeinde
-  wird betrachtet, „als ob diese veränderte Struktur bereits am 01.12.1875
-  bestand". Brandenburgs Kreise sind seit 1993 unverändert, der Stand von 2005
-  ist also der heutige.
+* `gpop_county.csv` — die German Local Population Database von Felix Roesel
+  (TU Braunschweig, CC BY 4.0). Bevölkerung aller 401 Kreise zu neun
+  Zeitpunkten zwischen 1871 und 2019, **auf einheitlichem Gebietsstand**
+  (31.12.2019), aus über 50 Quellen zusammengetragen. Das ist Methode A und
+  das Rückgrat dieser Karte. Roesel löst dabei auch zwei der vier Fallen:
+  Gross-Berlin von 1920 — die 1920 eingemeindeten Orte sind zurückgerechnet,
+  Berlin hat 1871 deshalb 931 984 Einwohner und nicht die 826 000 der
+  damaligen Stadt — und die an der Oder-Neisse geteilten Städte, für die er
+  den Bestand auf heutigem deutschem Gebiet schätzt.
 
-* `bevoelkerungsstand-lange-reihe.xlsx` — dieselbe Behörde, Fortschreibung
-  1990/91 bis 2025, Blatt 1 für Berlin, Blatt 7 für die brandenburgischen
-  Kreise, Gebietsstand 31.12.2025. Ebenfalls Methode A.
+* `gvisys-04-kreise.xlsx` — Gemeindeverzeichnis des Statistischen
+  Bundesamts, Stand 31.12.2024. Liefert den jüngsten Zeitpunkt sowie Namen
+  und amtliche Flächen aller Kreise.
 
-* `gvisys-04-kreise.xlsx` — das Gemeindeverzeichnis des Statistischen
-  Bundesamts. Liefert Fläche und Namen aller Kreise und dient als Gegenprobe.
+* `gpop_state.csv` und `hgv_brandenburg_1875-2005.pdf` — zwei voneinander
+  unabhängige Gegenproben, siehe `pruefungen()`. Die zweite ist das
+  Historische Gemeindeverzeichnis des Landes Brandenburg: für fünf Stichtage
+  lässt sich GPOP damit gegen die eigene Umrechnung des Landesamtes halten.
 
 Der Bevölkerungsbegriff steht nicht in den Quellen, sondern folgt der jeweils
 gültigen Zählungsdefinition; siehe METHODIK.md.
@@ -46,131 +50,60 @@ except ImportError:
 HIER = Path(__file__).resolve().parent
 ZIEL = HIER.parent / 'data' / 'bevoelkerung_kreise_long.csv'
 
-HGV = HIER / 'hgv_brandenburg_1875-2005.pdf'
-REIHE = HIER / 'bevoelkerungsstand-lange-reihe.xlsx'
+GPOP_KREISE = HIER / 'gpop_county.csv'
+GPOP_LAENDER = HIER / 'gpop_state.csv'
 GVISYS = HIER / 'gvisys-04-kreise.xlsx'
+HGV = HIER / 'hgv_brandenburg_1875-2005.pdf'          # nur Gegenprobe
 
-# Welcher Bevölkerungsbegriff zu welchem Stichtag gehört. Im Kaiserreich und
-# in der Weimarer Republik wurde die ortsanwesende Bevölkerung gezählt, also
-# wer in der Zählnacht da war, Militär eingeschlossen. Die Zählung vom
-# 17. Mai 1939 weist erstmals die Wohnbevölkerung aus, und dabei blieb es.
-# Ab 1991 sind es keine Zählungen mehr, sondern die Fortschreibung.
-BEGRIFF = {
-    '1875-12-01': 'ortsanwesende Bevölkerung',
-    '1890-12-01': 'ortsanwesende Bevölkerung',
-    '1910-12-01': 'ortsanwesende Bevölkerung',
-    '1925-06-16': 'ortsanwesende Bevölkerung',
-    '1933-06-16': 'ortsanwesende Bevölkerung',
-    '1939-05-17': 'Wohnbevölkerung',
-    '1946-10-29': 'Wohnbevölkerung',
-    '1950-08-31': 'Wohnbevölkerung',
-    '1964-12-31': 'Wohnbevölkerung',
-    '1971-01-01': 'Wohnbevölkerung',
-    '1981-12-31': 'Wohnbevölkerung',
+# Gebietsstand. GPOP steht auf dem 31.12.2019 und führt Eisenach noch als
+# eigenen Kreis; die Stadt ist am 1.7.2021 in den Wartburgkreis eingegliedert
+# worden. Beide Zahlen zu addieren ist exakt und kein Schätzen — der heutige
+# Kreis ist genau die Vereinigung der beiden alten.
+UMSCHLUESSELUNG = {'16056': '16063'}
+
+ANWESEND = 'ortsanwesende Bevölkerung'
+WOHN = 'Wohnbevölkerung'
+FORT = 'Fortschreibung (Bevölkerung am Ort der Hauptwohnung)'
+
+# Die Spalten von GPOP, jeweils mit Stichtag und Bevölkerungsbegriff. Wo Ost
+# und West zu verschiedenen Tagen gezählt haben, führt GPOP zwei Spalten; sie
+# ergänzen einander und bilden zusammen ein Bild. Angeglichen wird nichts:
+# jede Zeile behält ihren eigenen Stichtag, und die Karte nennt beide.
+GPOP_SPALTEN = {
+    'pop_1871': ('1871', '1871-12-01', ANWESEND, 'Volkszählung im Deutschen Reich'),
+    'pop_1900': ('1900–1910', '1900-12-01', ANWESEND, 'Volkszählung, Bayern'),
+    'pop_1905': ('1900–1910', '1905-12-01', ANWESEND, 'Volkszählung'),
+    'pop_1910': ('1900–1910', '1910-12-01', ANWESEND, 'Volkszählung'),
+    'pop_1939': ('1939', '1939-05-17', WOHN, 'Volkszählung im Deutschen Reich'),
+    'pop_1946': ('1946–1950', '1946-10-29', WOHN, 'Volkszählung in den Besatzungszonen'),
+    'pop_1950': ('1946–1950', '1950-09-13', WOHN, 'Volkszählung in der Bundesrepublik'),
+    'pop_1961': ('1961–1964', '1961-06-06', WOHN, 'Volkszählung in der Bundesrepublik'),
+    'pop_1964': ('1961–1964', '1964-12-31', WOHN, 'Volkszählung in der DDR'),
+    'pop_1985': ('1985–1987', '1985-12-31', FORT, 'Fortschreibung in der DDR'),
+    'pop_1987': ('1985–1987', '1987-05-25', WOHN, 'Volkszählung in der Bundesrepublik'),
+    'pop_1996': ('1996', '1996-12-31', FORT, ''),
+    'pop_2011': ('2011', '2011-05-09', WOHN, 'Zensus 2011'),
+    'pop_2019': ('2019', '2019-12-31', FORT, ''),
 }
-FORTSCHREIBUNG = 'Fortschreibung (Bevölkerung am Ort der Hauptwohnung)'
+QUELLE_GPOP = ('Roesel, Felix (2022): The German Local Population Database (GPOP), '
+               '1871 to 2019, Jahrbücher für Nationalökonomie und Statistik, '
+               'DOI 10.1515/jbnst-2022-0046; Datei county.csv, Gebietsstand 31.12.2019')
+QUELLE_GVISYS = ('Statistisches Bundesamt, Gemeindeverzeichnis (GV-ISys), Kreisfreie '
+                 'Städte und Landkreise, Stand 31.12.2024')
 
-# Welche Stichtage in die Karte kommen, und wie das Bild heisst.
-# Die Zählungen bis 1981 stammen aus dem Historischen Gemeindeverzeichnis,
-# die späteren aus der Fortschreibung.
-BILDER_HGV = {
-    '1875-12-01': '1875', '1890-12-01': '1890', '1910-12-01': '1910',
-    '1925-06-16': '1925', '1933-06-16': '1933', '1939-05-17': '1939',
-    '1946-10-29': '1946', '1950-08-31': '1950', '1964-12-31': '1964',
-    '1971-01-01': '1971', '1981-12-31': '1981',
+# Kreise, in denen eine 1945 geteilte Stadt liegt. Für die Zeit davor schätzt
+# GPOP den Bestand auf heutigem deutschem Gebiet; das wird in der Bemerkung
+# festgehalten, damit es niemand für eine gezählte Zahl hält.
+GETEILTE_STAEDTE = {
+    '14626': 'Görlitz',
+    '12053': 'Frankfurt (Oder)',
+    '12071': 'Guben und Forst (Lausitz)',
 }
-BILDER_REIHE = {1995: '1995', 2000: '2000', 2011: '2011', 2022: '2022', 2025: '2025'}
-
-QUELLE_HGV = ('Amt für Statistik Berlin-Brandenburg, Historisches Gemeindeverzeichnis '
-              'des Landes Brandenburg 1875 bis 2005, Tabelle 1 (Gebietsstand 31.12.2005)')
-QUELLE_REIHE = ('Amt für Statistik Berlin-Brandenburg, Bevölkerungsstand — lange Reihe '
-                '1990/91 bis 2025 (Gebietsstand 31.12.2025)')
 
 
-def hgv_tabelle1():
-    """Tabelle 1 des Historischen Gemeindeverzeichnisses: Kreis x Stichtag."""
-    leser = PdfReader(HGV)
-    ags = re.compile(r'(\d{2}) (\d) (\d{2}) (\d{3})')
-    datum = re.compile(r'\b(\d{2})\.(\d{2})\.(\d{4})\b')
-    werte, namen = {}, {}
-    for seite in (5, 6, 7, 8):                      # Blätter 6 bis 9 des Hefts
-        text = leser.pages[seite].extract_text() or ''
-        zeilen = text.split('\n')
-        kopf = [f'{j}-{m}-{t}' for t, m, j in max((datum.findall(z) for z in zeilen), key=len)]
-        gefunden = []
-        for z in zeilen:
-            treffer = ags.search(z)
-            if not treffer:
-                continue
-            schluessel = treffer.group(1) + treffer.group(2) + treffer.group(3)
-            rest = z[:treffer.start()] + ' ' + z[treffer.end():]
-            zahlen = [int(x.replace(' ', '').replace(' ', ''))
-                      for x in re.findall(r'(?<![\d,.])((?:\d{1,3})(?:[  ]\d{3})+|\d{4,})', rest)]
-            gefunden.append((schluessel, re.sub(r'[\d)(]', '', rest).strip(), zahlen))
-        breite = max(len(z[2]) for z in gefunden)
-        if breite == len(kopf) + 1:
-            # Auf der letzten Seite fehlt der Kopf der letzten Spalte im Text.
-            kopf.append('2005-12-31')
-        if breite != len(kopf):
-            raise SystemExit(f'Seite {seite + 1}: {breite} Zahlen, aber {len(kopf)} Stichtage')
-        for schluessel, name, zahlen in gefunden:
-            namen.setdefault(schluessel, name)
-            for stichtag, wert in zip(kopf, zahlen):
-                werte.setdefault(stichtag, {})[schluessel] = wert
-    return werte, namen
-
-
-def pruefe_landsumme(werte):
-    """Summe der Kreise gegen die veröffentlichte Landessumme."""
-    print('  Gegenprobe Brandenburg: Summe der Kreise gegen die Landeszeile', file=sys.stderr)
-    schlimmste = 0.0
-    for stichtag in sorted(werte):
-        zeile = werte[stichtag]
-        land = zeile.get('12000')
-        if land is None:
-            continue
-        summe = sum(v for k, v in zeile.items() if k != '12000')
-        abw = abs(summe / land - 1)
-        schlimmste = max(schlimmste, abw)
-        if abw > 0.0001:
-            print(f'    {stichtag}: {summe} gegen {land} — {abw * 100:.3f} %', file=sys.stderr)
-    print(f'    grösste Abweichung {schlimmste * 100:.4f} %', file=sys.stderr)
-    return schlimmste
-
-
-def lange_reihe():
-    """Berlin (Blatt 1) und die brandenburgischen Kreise (Blatt 7)."""
-    wb = openpyxl.load_workbook(REIHE, data_only=True)
-
-    def jahr(v):
-        m = re.match(r'(\d{4})', str(v or ''))
-        return int(m.group(1)) if m else None
-
-    werte = {}
-
-    bl = wb['1']
-    jahre = [jahr(bl.cell(3, c).value) for c in range(3, bl.max_column + 1)]
-    for spalte, j in enumerate(jahre, start=3):
-        if j in BILDER_REIHE:
-            v = bl.cell(6, spalte).value          # Zeile 6: Bevölkerung insgesamt
-            if isinstance(v, (int, float)):
-                werte.setdefault(f'{j}-12-31', {})['11000'] = int(v)
-
-    bb = wb['7 ']
-    jahre = [jahr(bb.cell(6, c).value) for c in range(5, bb.max_column + 1)]
-    for zeile in range(8, bb.max_row + 1):
-        s = bb.cell(zeile, 2).value
-        if not isinstance(s, int) or s % 1000 or s == 12000000:
-            continue                              # nur Kreise, nicht Gemeinden
-        ags = f'{s // 1000:05d}'
-        for spalte, j in enumerate(jahre, start=5):
-            if j in BILDER_REIHE:
-                v = bb.cell(zeile, spalte).value
-                if isinstance(v, (int, float)):
-                    # 2011 steht zweimal: vor und nach dem Zensus. Die zweite
-                    # Spalte ist die neue Basis, sie überschreibt die erste.
-                    werte.setdefault(f'{j}-12-31', {})[ags] = int(v)
-    return werte
+def lies_csv(pfad):
+    with pfad.open(encoding='utf-8-sig') as f:
+        return list(csv.DictReader(f))
 
 
 def gvisys():
@@ -188,43 +121,156 @@ def gvisys():
     return stamm
 
 
+def hgv_tabelle1():
+    """Tabelle 1 des Historischen Gemeindeverzeichnisses Brandenburg.
+
+    Alle 18 Kreise des Landes von 1875 bis 2005, gerechnet auf den
+    Gebietsstand 31.12.2005 — und weil Brandenburgs Kreise seit 1993
+    unverändert sind, ist das der heutige. Wird hier nur zur Gegenprobe
+    gebraucht. Die Vorlage ist ein Text-PDF, keine Bildvorlage; die Zahlen
+    werden ausgelesen, nicht abgeschrieben.
+    """
+    if not HGV.exists():
+        return None
+    leser = PdfReader(HGV)
+    ags = re.compile(r'(\d{2}) (\d) (\d{2}) (\d{3})')
+    datum = re.compile(r'\b(\d{2})\.(\d{2})\.(\d{4})\b')
+    werte = {}
+    for seite in (5, 6, 7, 8):
+        text = leser.pages[seite].extract_text() or ''
+        zeilen = text.split('\n')
+        kopf = [f'{j}-{m}-{t}' for t, m, j in max((datum.findall(z) for z in zeilen), key=len)]
+        gefunden = []
+        for z in zeilen:
+            treffer = ags.search(z)
+            if not treffer:
+                continue
+            schluessel = treffer.group(1) + treffer.group(2) + treffer.group(3)
+            rest = z[:treffer.start()] + ' ' + z[treffer.end():]
+            zahlen = [int(x.replace(' ', '').replace(' ', ''))
+                      for x in re.findall(r'(?<![\d,.])((?:\d{1,3})(?:[  ]\d{3})+|\d{4,})', rest)]
+            gefunden.append((schluessel, zahlen))
+        breite = max(len(z[1]) for z in gefunden)
+        if breite == len(kopf) + 1:
+            kopf.append('2005-12-31')     # auf der letzten Seite fehlt der letzte Spaltenkopf
+        if breite != len(kopf):
+            raise SystemExit(f'HGV Seite {seite + 1}: {breite} Zahlen, {len(kopf)} Stichtage')
+        for schluessel, zahlen in gefunden:
+            for stichtag, wert in zip(kopf, zahlen):
+                werte.setdefault(stichtag, {})[schluessel] = wert
+    return werte
+
+
+def pruefungen(kreise, laender, hgv, stamm):
+    """Drei Gegenproben, sie laufen bei jedem Bauen mit."""
+    print('  Gegenproben', file=sys.stderr)
+
+    # 1. Innerhalb von GPOP: die Kreise müssen die Länder ergeben.
+    schlimmste = 0.0
+    for spalte in GPOP_SPALTEN:
+        je_land = {}
+        for k in kreise:
+            if k[spalte].strip():
+                je_land[k['state_id']] = je_land.get(k['state_id'], 0) + int(k[spalte])
+        for l in laender:
+            if not l[spalte].strip():
+                continue
+            soll, ist = int(l[spalte]), je_land.get(l['id'], 0)
+            abw = abs(ist / soll - 1)
+            schlimmste = max(schlimmste, abw)
+            if abw > 0.0001:
+                print(f'    GPOP {spalte} {l["name"]}: {ist} gegen {soll} — {abw*100:.3f} %',
+                      file=sys.stderr)
+    print(f'    Kreise gegen Länder in GPOP: grösste Abweichung {schlimmste*100:.4f} %',
+          file=sys.stderr)
+
+    # 2. GPOP gegen das Historische Gemeindeverzeichnis Brandenburgs, für die
+    #    Stichtage, die beide führen. Zwei voneinander unabhängige
+    #    Umrechnungen auf heutigen Gebietsstand: eine vom Landesamt, eine von
+    #    Roesel. Wo sie zusammenpassen, stimmt sehr wahrscheinlich beides.
+    if hgv:
+        paare = {'1910-12-01': 'pop_1910', '1939-05-17': 'pop_1939',
+                 '1946-10-29': 'pop_1946', '1964-12-31': 'pop_1964',
+                 '1985-12-31': 'pop_1985'}
+        nach_ags = {k['id'].zfill(5): k for k in kreise}
+        for stichtag, spalte in sorted(paare.items()):
+            if stichtag not in hgv:
+                continue
+            liste = []
+            for a, wert in hgv[stichtag].items():
+                if a == '12000' or a not in nach_ags:
+                    continue
+                g = nach_ags[a][spalte].strip()
+                if g:
+                    liste.append((abs(int(g) / wert - 1), a, int(g), wert))
+            if not liste:
+                continue
+            liste.sort()
+            schnitt = sum(x[0] for x in liste) / len(liste)
+            gross = liste[-1]
+            print(f'    GPOP gegen Brandenburg {stichtag}: {len(liste)} Kreise, '
+                  f'Mittel {schnitt*100:.2f} %, grösste {gross[0]*100:.2f} % bei '
+                  f'{gross[1]} ({gross[2]} gegen {gross[3]})', file=sys.stderr)
+
+    # 3. GPOP 2019 gegen das Gemeindeverzeichnis 2024 — kein Gleichstand zu
+    #    erwarten, aber ein Sprung von mehr als zehn Prozent in fünf Jahren
+    #    wäre ein Hinweis auf einen Schlüsselfehler.
+    nach_ags = {}
+    for k in kreise:
+        a = k['id'].zfill(5)
+        a = UMSCHLUESSELUNG.get(a, a)
+        if k['pop_2019'].strip():
+            nach_ags[a] = nach_ags.get(a, 0) + int(k['pop_2019'])
+    auffaellig = [(abs(stamm[a]['bev2024'] / v - 1), a, v, stamm[a]['bev2024'])
+                  for a, v in nach_ags.items() if a in stamm and stamm[a]['bev2024']]
+    auffaellig.sort(reverse=True)
+    print(f'    GPOP 2019 gegen GV-ISys 2024: {len(auffaellig)} Kreise, grösste Änderung '
+          f'{auffaellig[0][0]*100:.1f} % bei {auffaellig[0][1]}', file=sys.stderr)
+    return schlimmste
+
+
 def main():
-    for pfad in (HGV, REIHE, GVISYS):
+    for pfad in (GPOP_KREISE, GPOP_LAENDER, GVISYS):
         if not pfad.exists():
             sys.exit(f'{pfad.name} fehlt — siehe DATEN.md')
 
-    hgv, hgv_namen = hgv_tabelle1()
-    pruefe_landsumme(hgv)
-    reihe = lange_reihe()
+    kreise = lies_csv(GPOP_KREISE)
+    laender = lies_csv(GPOP_LAENDER)
     stamm = gvisys()
+    hgv = hgv_tabelle1()
+    pruefungen(kreise, laender, hgv, stamm)
 
     zeilen = []
+    name_von = lambda ags: stamm.get(ags, {}).get('name') or ags
 
-    def name_von(ags):
-        return (stamm.get(ags, {}).get('name')
-                or hgv_namen.get(ags, '').strip()
-                or ags)
-
-    for stichtag, bild in BILDER_HGV.items():
-        for ags, wert in sorted(hgv.get(stichtag, {}).items()):
-            if ags == '12000':
+    for spalte, (bild, stichtag, begriff, bem) in GPOP_SPALTEN.items():
+        gesammelt = {}
+        for k in kreise:
+            roh = k[spalte].strip()
+            if not roh:
                 continue
+            ags = k['id'].zfill(5)
+            ags = UMSCHLUESSELUNG.get(ags, ags)
+            gesammelt[ags] = gesammelt.get(ags, 0) + int(roh)
+        for ags, wert in sorted(gesammelt.items()):
+            bemerkung = bem
+            if ags in GETEILTE_STAEDTE and stichtag < '1945':
+                bemerkung = ((bem + '; ') if bem else '') + GETEILTE_STAEDTE[ags] \
+                    + ' 1945 geteilt, Bestand auf heutigem deutschem Gebiet von der Quelle geschätzt'
             zeilen.append(dict(
                 kreis_ags=ags, kreis_name=name_von(ags), jahr=bild, stichtag=stichtag,
-                bevoelkerung=wert, begriff=BEGRIFF[stichtag], methode='A',
-                anteil_interpoliert=0, quelle=QUELLE_HGV, bemerkung=''))
+                bevoelkerung=wert, begriff=begriff, methode='A',
+                anteil_interpoliert=0, quelle=QUELLE_GPOP, bemerkung=bemerkung))
 
-    for stichtag, zeile in sorted(reihe.items()):
-        bild = BILDER_REIHE[int(stichtag[:4])]
-        for ags, wert in sorted(zeile.items()):
-            zeilen.append(dict(
-                kreis_ags=ags, kreis_name=name_von(ags), jahr=bild, stichtag=stichtag,
-                bevoelkerung=wert, begriff=FORTSCHREIBUNG, methode='A',
-                anteil_interpoliert=0, quelle=QUELLE_REIHE,
-                bemerkung=('Basis Zensus 2011' if bild == '2011'
-                           else 'Basis Zensus 2022' if bild in ('2022', '2025') else '')))
+    for ags, v in sorted(stamm.items()):
+        if not v['bev2024']:
+            continue
+        zeilen.append(dict(
+            kreis_ags=ags, kreis_name=v['name'], jahr='2024', stichtag='2024-12-31',
+            bevoelkerung=int(v['bev2024']), begriff=FORT, methode='A',
+            anteil_interpoliert=0, quelle=QUELLE_GVISYS, bemerkung='Basis Zensus 2022'))
 
-    zeilen.sort(key=lambda z: (int(re.match(r'(\d{4})', z['jahr']).group(1)), z['kreis_ags']))
+    zeilen.sort(key=lambda z: (int(z['jahr'][:4]), z['stichtag'], z['kreis_ags']))
 
     ZIEL.parent.mkdir(exist_ok=True)
     with ZIEL.open('w', newline='', encoding='utf-8') as f:
@@ -234,19 +280,17 @@ def main():
         w.writeheader()
         w.writerows(zeilen)
 
-    # Stammdaten für den Kartenbau: Name, Bezeichnung und amtliche Fläche.
-    # Node liest kein xlsx, deshalb liegt das hier als JSON daneben.
     (HIER / 'stammdaten.json').write_text(json.dumps(
         {a: {'name': v['name'], 'bez': v['bez'], 'flaeche': v['flaeche']}
          for a, v in sorted(stamm.items())}, ensure_ascii=False), encoding='utf-8')
 
-    bilder = sorted({(z['jahr'], z['stichtag']) for z in zeilen})
     print(f'  {len(zeilen)} Zeilen, {len({z["kreis_ags"] for z in zeilen})} Kreise, '
           f'{len({z["jahr"] for z in zeilen})} Bilder -> {ZIEL}', file=sys.stderr)
-    for jahr in sorted({z['jahr'] for z in zeilen}, key=int):
+    for jahr in sorted({z['jahr'] for z in zeilen}, key=lambda j: int(j[:4])):
         teil = [z for z in zeilen if z['jahr'] == jahr]
-        print(f'    {jahr}: {len(teil):3d} Kreise, {sum(z["bevoelkerung"] for z in teil):>10,} '
-              f'Menschen, {sorted({z["stichtag"] for z in teil})}'.replace(',', '.'), file=sys.stderr)
+        tage = sorted({z['stichtag'] for z in teil})
+        print(f'    {jahr:10} {len(teil):3d} Kreise, {sum(z["bevoelkerung"] for z in teil):>11,} '
+              f'Menschen, {", ".join(tage)}'.replace(',', '.'), file=sys.stderr)
 
 
 if __name__ == '__main__':
