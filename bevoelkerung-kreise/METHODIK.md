@@ -220,6 +220,45 @@ Kantensuche wie bei der Kartogrammseite, auf 3 500 Knoten generalisiert. Ohne
 ihn ist das Nadelfeld eine Wolke: die vorderen Nadeln verdecken das Land
 dahinter, und dass man auf Deutschland schaut, bliebe offen.
 
+## 4b. Die beiden Farbskalen
+
+**People** färbt nach Einwohnern, logarithmisch von 30 000 bis 1,5 Millionen.
+Die Grenzen sind mit Absicht runde Zahlen und nicht das Kleinste und Grösste
+der Reihe: Berlin hatte 1939 über vier Millionen, und liesse man die Skala bis
+dorthin laufen, sässe der halbe Rest im selben Blau. Die Skala ist für alle
+Bilder dieselbe — dass die Karte über die Zeit nachdunkelt, ist deshalb kein
+Kniff, sondern das Ergebnis.
+
+**Which way** färbt nach der Veränderung je Jahr über den Abschnitt, zwischen
+dessen beiden Zählungen die Karte gerade steht. Je Jahr, weil die Abstände sehr
+verschieden sind: achteinhalb Jahre zwischen 1939 und 1946, sechsunddreissig
+zwischen 1871 und 1900. Die Rate gehört dem Abschnitt, nicht einem Augenblick
+darin — sie bleibt stehen, solange die Karte von einem Bild zum nächsten läuft,
+und springt an der Zählung um.
+
+Der Massstab endet bei ±3 % im Jahr und ist dazwischen nach asinh gestaucht.
+Neun von zehn Werten liegen zwischen −1 und +2, aber der Sprung von 1939 auf
+1946 reicht von −6 bis +9 — Flucht, Vertreibung, zerbombte Städte. Linear
+gerechnet wäre alles andere grau; hart abgeschnitten wäre dieser eine Übergang
+eine Fläche ohne Zeichnung. asinh gibt dem dichten Mittelfeld Auflösung und
+lässt die Ränder atmen.
+
+**Rot gegen Blau, nicht Rot gegen Grün.** Rot und Grün sind das eine Paar, das
+etwa acht Prozent der Männer nicht trennen können; auf einer Karte mit 400
+kleinen Flecken ist das nicht unschön, sondern unlesbar. Rot gegen Blau trägt
+dieselbe Bedeutung — Rot verliert Menschen, Blau gewinnt welche, Grau hält sich
+— und funktioniert bei jeder Form von Farbsehen. Beide Arme hören vor den
+dunkelsten Stufen auf: ganz unten laufen Blau und Rot beide gegen Schwarz, und
+dann ist die Richtung nicht mehr zu sehen.
+
+Was die Karte **nicht** mehr zeigt: die Dichte je Quadratkilometer und den
+Index gegen 1871. Beides stand einmal hier. Die Dichte, weil ein
+Bevölkerungskartogramm sie ohnehin schon in der Verzerrung trägt — ein dichter
+Kreis wird gross gezogen, das ist dieselbe Aussage zweimal. Der Index gegen
+1871, weil er nur eine Antwort hatte: fast jeder Kreis ist gewachsen, die Karte
+war blau, und das Interessante — wann und wo es gekippt ist — ging darin unter.
+Genau das zeigt **Which way**.
+
 ## 5. Was geprüft ist
 
 Drei Gegenproben laufen bei jedem Lauf von `quellen.py` mit:
