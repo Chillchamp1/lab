@@ -1,7 +1,7 @@
 # Zwischenergebnis der Kartogramm-Berechnung, entsteht beim Bauen neu
 kartogramm-cache.json
-zeitreihe-cache.json
-bau.log
+zeitreihe-*.json
+bau*.log
 # Rohdaten der Quellen, siehe das jeweilige build/DATEN.md
 *.shp
 *.dbf
