@@ -15,8 +15,21 @@ Mensch, also ist 1871 wirklich kleiner als 2024 — flächenproportional, halb s
 viele Menschen, halb so viel Karte. Die Seite ist auf Englisch und fürs
 Hochformat gebaut.
 
-Die Farbe lässt sich umschalten: Einwohner, Dichte je Quadratkilometer
-wirklicher Fläche, oder Index mit 1871 als 100.
+Die Farbe lässt sich umschalten. **People** färbt nach Einwohnern,
+logarithmisch von 30 000 bis 1,5 Millionen und in jedem Bild gleich — dass die
+Karte über die Zeit nachdunkelt, ist deshalb kein Kniff, sondern das Ergebnis.
+**Which way** ist die eigentliche Karte: sie färbt jeden Kreis danach, wie
+schnell er gerade wächst oder schrumpft, also nach der Veränderung je Jahr über
+den Abschnitt, den die Zeit gerade durchläuft. Blau wächst, Rot schrumpft, Grau
+hält sich. Die Lesart springt bei jeder Zählung um — man sieht das Ruhrgebiet
+innerhalb eines Menschenlebens vom dunkelsten Blau der Karte ins Rot kippen und
+den Osten nach 1990 rot werden.
+
+Rot gegen Blau statt Rot gegen Grün: Rot und Grün sind genau das Paar, das
+etwa acht Prozent der Männer nicht auseinanderhalten können, und auf einer
+Karte mit 400 kleinen Flecken wäre das nicht nur unschön, sondern unlesbar.
+Rot gegen Blau trägt dieselbe Bedeutung und funktioniert bei jeder Form von
+Farbsehen.
 
 ## Und dasselbe stehend
 

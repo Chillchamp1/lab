@@ -51,8 +51,9 @@ Zeitpunkt auf denselben Gebietsstand gerechnet, jede Zelle Methode A.
   gemeinsamer Massstab, sodass die Karte flächenproportional mit der
   Bevölkerung wächst.
 - `index.html`: eine einzelne Datei, Englisch, Hochformat, Zeitschieberegler
-  mit Marken auf den Zählungen, umschaltbar zwischen Einwohnern, Dichte und
-  Index (1871 = 100); Antippen zeigt Zahlen, Stichtag und Methode.
+  mit Marken auf den Zählungen, umschaltbar zwischen Einwohnern und Richtung
+  (Veränderung je Jahr über den gerade durchlaufenen Abschnitt, rot gegen
+  blau); Antippen zeigt Zahlen, Rate, Stichtag und Methode.
 - Der Bauvorgang kann auch mit Reihen umgehen, die nur einen Teil des Landes
   abdecken — beim Pilotgebiet Berlin und Brandenburg war das nötig. Siehe
   METHODIK.md, Abschnitt 4.
