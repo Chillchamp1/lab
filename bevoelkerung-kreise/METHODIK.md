@@ -289,8 +289,16 @@ Kniff, sondern das Ergebnis.
 dessen beiden Zählungen die Karte gerade steht. Je Jahr, weil die Abstände sehr
 verschieden sind: achteinhalb Jahre zwischen 1939 und 1946, sechsunddreissig
 zwischen 1871 und 1900. Die Rate gehört dem Abschnitt, nicht einem Augenblick
-darin — sie bleibt stehen, solange die Karte von einem Bild zum nächsten läuft,
-und springt an der Zählung um.
+darin: sie bleibt stehen, solange die Karte von einem Bild zum nächsten läuft.
+
+An der Zählung sprang sie um — und ein Sprung mitten in einer laufenden
+Bewegung sieht aus wie ein Fehler, nicht wie ein Befund. Sie blendet deshalb
+über: im letzten Sechstel eines Abschnitts wandert sie hinüber zur Rate des
+nächsten, im ersten Sechstel kommt sie von der des vorigen her, jeweils mit
+einer weichen Kurve. Genau auf der Zählung stehen beide zur Hälfte — von links
+und von rechts derselbe Wert, die Farbe läuft also durch. Die mittleren zwei
+Drittel jedes Abschnitts zeigen seine Rate unverfälscht, und die Zahl in der
+Sprechblase nennt immer die des Abschnitts, nie die überblendete.
 
 Der Massstab endet bei ±3 % im Jahr und ist dazwischen nach asinh gestaucht.
 Neun von zehn Werten liegen zwischen −1 und +2, aber der Sprung von 1939 auf

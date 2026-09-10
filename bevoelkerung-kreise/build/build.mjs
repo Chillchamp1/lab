@@ -259,8 +259,13 @@ flat blue.</p>
 <p><b>Which way</b> is the one the map is really for. It colours each county by how fast it
 is gaining or losing people <i>at that moment</i>: the change per year over the stretch of
 time the animation is currently crossing. Blue is growing, red is shrinking, grey is holding
-steady, and the reading changes every time the clock passes a census. Watch the Ruhr go from
-the deepest blue on the map to red within a lifetime, and the east turn red after 1990.</p>
+steady. Watch the Ruhr go from the deepest blue on the map to red within a lifetime, and the
+east turn red after 1990.</p>
+
+<p>The reading belongs to the stretch between two censuses, so it holds while the map crosses
+one. Near a census it eases into the next reading rather than snapping over — the middle two
+thirds of every stretch show that stretch's own rate, and the number in the readout always
+names it exactly.</p>
 
 <p>Per year, because the gaps are wildly uneven — eight years from 1939 to 1946, thirty-six
 from 1871 to 1900. The scale ends at ±3 % a year and is squeezed in between, so the quiet
@@ -510,17 +515,44 @@ function bildBei(t) {
 // Werte zwischen zwei Bildern. Fehlt ein Kreis in einem der beiden — Berlin
 // hat vor 1995 keine Zahl —, wird nicht dazwischengerechnet, sondern
 // ein- oder ausgeblendet: der vorhandene Wert gilt, die Deckkraft wandert.
+// Die Veränderung je Jahr im Abschnitt j, also zwischen den Bildern j und j+1.
+function rateIm(j, k) {
+  if (j < 0 || j + 1 >= NF) return null;
+  const va = reihe.BEV[j][k], vb = reihe.BEV[j + 1][k], dt = JAHRE[j + 1] - JAHRE[j];
+  if (!(va > 0) || !(vb > 0) || !(dt > 0)) return null;
+  return (Math.pow(vb / va, 1 / dt) - 1) * 100;
+}
+// Die Richtung gehört dem Abschnitt zwischen zwei Zählungen, nicht einem
+// einzelnen Augenblick darin. Sie bleibt deshalb stehen, solange die Karte von
+// einem Bild zum nächsten läuft — nur an der Zählung selbst sprang sie um, und
+// ein Sprung mitten in einer laufenden Bewegung sieht aus wie ein Fehler.
+//
+// Also blendet sie über: im letzten Sechstel eines Abschnitts wandert sie
+// hinüber zur Rate des nächsten, im ersten Sechstel kommt sie von der des
+// vorigen her. Genau auf der Zählung stehen beide zur Hälfte — von links und
+// von rechts derselbe Wert, die Farbe läuft also durch. Die mittleren zwei
+// Drittel eines Abschnitts zeigen seine Rate unverfälscht, und die Zahl in der
+// Sprechblase nennt ohnehin immer die des Abschnitts.
+const UEBER = 1 / 6;
+const glatt = x => x * x * (3 - 2 * x);
 function werteBei(a, b, u) {
   const w = new Float64Array(NK), deck = new Float64Array(NK), rate = new Array(NK).fill(null);
-  const dt = JAHRE[b] - JAHRE[a];
   for (let k = 0; k < NK; k++) {
     const va = reihe.BEV[a][k], vb = reihe.BEV[b][k];
     if (va > 0 && vb > 0) {
       w[k] = va + (vb - va) * u; deck[k] = 1;
-      // Die Richtung gehört dem Abschnitt zwischen zwei Zählungen, nicht einem
-      // einzelnen Augenblick darin: sie bleibt stehen, solange die Karte von
-      // einem Bild zum nächsten läuft, und springt an der Zählung um.
-      if (dt > 0) rate[k] = (Math.pow(vb / va, 1 / dt) - 1) * 100;
+      const hier = rateIm(a, k);
+      if (hier !== null) {
+        let r = hier;
+        if (u < UEBER) {
+          const vor = rateIm(a - 1, k);
+          if (vor !== null) r = vor + (hier - vor) * (0.5 + 0.5 * glatt(u / UEBER));
+        } else if (u > 1 - UEBER) {
+          const nach = rateIm(b, k);
+          if (nach !== null) r = nach + (hier - nach) * (0.5 + 0.5 * glatt((1 - u) / UEBER));
+        }
+        rate[k] = r;
+      }
     }
     else if (va > 0) { w[k] = va; deck[k] = 1 - u; }
     else if (vb > 0) { w[k] = vb; deck[k] = u; }
@@ -629,6 +661,7 @@ function zeigeTip(x, y) {
   if (treffer < 0) { tip.style.opacity = 0; letzterTip = -1; return; }
   letzterTip = treffer;
   const k = D.k[treffer], v = w[treffer];
+  const abschnitt = rateIm(a, treffer);
   const f = D.B[u < 0.5 ? a : b];
   const anteil = ANTEIL[(u < 0.5 ? a : b) * NK + treffer];
   const methode = D.mj[(u < 0.5 ? a : b) * NK + treffer];
@@ -637,9 +670,9 @@ function zeigeTip(x, y) {
     + '<dt>' + (D.L[k[3]] || '') + '</dt><dd>' + k[2] + '</dd>'
     + '<dt>People</dt><dd>' + nf.format(Math.round(v)) + '</dd>'
     + (k[4] ? '<dt>Per km²</dt><dd>' + nf.format(Math.round(v / k[4])) + '</dd>' : '')
-    + (rate[treffer] === null ? ''
+    + (abschnitt === null ? ''
       : '<dt>' + D.B[a].jahr + '→' + D.B[b].jahr + '</dt><dd>'
-        + (rate[treffer] >= 0 ? '+' : '−') + Math.abs(rate[treffer]).toFixed(2) + ' %/yr</dd>')
+        + (abschnitt >= 0 ? '+' : '−') + Math.abs(abschnitt).toFixed(2) + ' %/yr</dd>')
     + '</dl>'
     + (zwischen ? '<span class="warn">Interpolated between ' + D.B[a].jahr + ' and ' + D.B[b].jahr + '.</span>'
       : '<span class="warn">' + f.stichtage.join(', ') + ' · method ' + (methode === '-' ? '–' : methode)

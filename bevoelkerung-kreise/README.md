@@ -21,9 +21,10 @@ Karte über die Zeit nachdunkelt, ist deshalb kein Kniff, sondern das Ergebnis.
 **Which way** ist die eigentliche Karte: sie färbt jeden Kreis danach, wie
 schnell er gerade wächst oder schrumpft, also nach der Veränderung je Jahr über
 den Abschnitt, den die Zeit gerade durchläuft. Blau wächst, Rot schrumpft, Grau
-hält sich. Die Lesart springt bei jeder Zählung um — man sieht das Ruhrgebiet
-innerhalb eines Menschenlebens vom dunkelsten Blau der Karte ins Rot kippen und
-den Osten nach 1990 rot werden.
+hält sich. Man sieht das Ruhrgebiet innerhalb eines Menschenlebens vom dunkelsten
+Blau der Karte ins Rot kippen und den Osten nach 1990 rot werden. An den
+Zählungen blendet die Lesart über, statt umzuspringen; die mittleren zwei Drittel
+jedes Abschnitts zeigen seine Rate unverfälscht.
 
 Rot gegen Blau statt Rot gegen Grün: Rot und Grün sind genau das Paar, das
 etwa acht Prozent der Männer nicht auseinanderhalten können, und auf einer
