@@ -1,5 +1,7 @@
 # Zwischenergebnis der Kartogramm-Berechnung, entsteht beim Bauen neu
 kartogramm-cache.json
+zeitreihe-*.json
+bau*.log
 # Rohdaten der Quellen, siehe das jeweilige build/DATEN.md
 *.shp
 *.dbf
@@ -16,3 +18,9 @@ counties.zip
 *.shp.xml
 *.shp.*.xml
 ne_*.geojson
+vg250_kreise.geo.json
+vg2500_krs.*
+hgv_brandenburg_1875-2005.pdf
+bevoelkerungsstand-lange-reihe.xlsx
+gvisys-04-kreise.xlsx
+gpop*
