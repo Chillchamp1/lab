@@ -16,3 +16,7 @@ counties.zip
 *.shp.xml
 *.shp.*.xml
 ne_*.geojson
+vg250_kreise.geo.json
+vg2500_krs.*
+gpop*.csv
+gpop*.xlsx
