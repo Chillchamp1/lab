@@ -187,6 +187,9 @@ that much smaller than today.${ganzesLand ? '' : `</p>
 <p class="unter">This is the pilot region of a larger project — the same map for all
 ${jeKreis.length} German counties. What is missing, and why, is written up in the repository.`}</p>
 
+<p class="unter">There is a second view: <a href="spikes.html">the same people standing up</a> —
+the map keeps its real shape and the population rises out of it as a field of needles.</p>
+
 <div class="buehne">
   <canvas id="karte"></canvas>
   <div class="tip" id="tip"></div>

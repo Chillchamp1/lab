@@ -18,6 +18,23 @@ Hochformat gebaut.
 Die Farbe lässt sich umschalten: Einwohner, Dichte je Quadratkilometer
 wirklicher Fläche, oder Index mit 1871 als 100.
 
+## Und dasselbe stehend
+
+→ **https://chillchamp1.github.io/lab/bevoelkerung-kreise/spikes.html**
+
+Die zweite Ansicht dreht die Idee um: die Karte behält ihre wirkliche Form, und
+die Menschen stellen sich auf. Über jeder Rasterzelle von 6 × 6 Kilometern steht
+eine Nadel, so hoch wie die Menschen darin — die Machart der „crisp spike maps"
+von Milos Popovic, nur läuft sie durch die Zeit. Aus der Ebene von 1871 wächst
+bis 2019 eine Skyline; die höchste Nadel hält 235 733 Menschen.
+
+Grundlage sind hier nicht die Kreise, sondern die 11 007 **Gemeinden** aus GPOP.
+Damit die Nadeln vergleichbar sind, verteilt jede Gemeinde ihre Menschen
+gleichmässig über eine Scheibe ihrer eigenen Fläche, und gezählt wird je
+Rasterzelle; die Nadelhöhe ist danach Dichte, nicht Gemeindegrösse. Dass beide
+Seiten dieselben Zahlen zeigen, wird beim Bauen geprüft: die Gemeindesummen je
+Bild gegen die Kreissummen, 0,0000 Prozent.
+
 ## Gebietsstand
 
 Der heutige Kreis ist die Einheit, der fünfstellige AGS der Schlüssel. Jeder
