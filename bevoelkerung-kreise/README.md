@@ -127,9 +127,10 @@ Gebirge wäre, macht aus Rot und Blau Grau. Linien nehmen fast keine Fläche weg
 Dazu Schlagschatten aus einer flacheren Sonne — ein Strahl, der steiler abfällt
 als der Hang selbst, trifft nie auf Schatten. Vierzig Linien über die volle
 Höhe, und sie werden verfolgt statt gemalt: Marching Squares über das Höhenfeld
-liefert sie als Strecken, gezeichnet werden sie als Pfade auf der Leinwand
-selbst. Im Raster gemalt und hochgerechnet blieben sie ein Schmier, bei jeder
-Auflösung.
+liefert die Strecken, die Strecken werden zu durchgehenden Linien verkettet, und
+gezeichnet wird als weiche Kurve auf der Leinwand selbst. Im Raster gemalt und
+hochgerechnet blieben sie ein Schmier, bei jeder Auflösung; Strecke für Strecke
+gezeichnet sahen sie gepunktet aus.
 
 Gezeichnet wird die Höhe gestaucht (Wurzel, mit Sockel): zwischen dem leersten
 Landkreis und Berlin liegt auf der Landkarte der Faktor 134, und ein Relief mit

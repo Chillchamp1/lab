@@ -526,7 +526,7 @@ function farbenHolen() {
   // und wird auf dunklem Grund hart, weil dort alles ohnehin nahe an Schwarz
   // liegt; soft-light bleibt milder.
   MISCHUNG = dunkel() ? 'soft-light' : 'overlay';
-  STAERKE = dunkel() ? 1.9 : 1.4;
+  STAERKE = dunkel() ? 2.2 : 1.7;
   HELLMAX = dunkel() ? 0.55 : 0.38;
   DUNKELMAX = dunkel() ? 0.55 : 0.45;
   LINIE = dunkel() ? 0.9 : 1.1;
@@ -763,7 +763,7 @@ function hoehen(w, deck) {
   return gross;
 }
 
-const RAUF = 0.45;                // Auflösung des Höhenfelds, Anteil der Bildpunkte
+const RAUF = 0.55;                // Auflösung des Höhenfelds, Anteil der Bildpunkte
 const hkA = document.createElement('canvas'), hcA = hkA.getContext('2d');
 const hkB = document.createElement('canvas'), hcB = hkB.getContext('2d', { willReadFrequently: true });
 const hkC = document.createElement('canvas'), hcC = hkC.getContext('2d', { willReadFrequently: true });
@@ -786,19 +786,20 @@ function reliefFeld() {
 // braucht ein Licht, das flach genug steht, damit überhaupt einer entsteht —
 // ein Strahl, der steiler abfällt als der Hang selbst, trifft nie auf Schatten.
 // Kartenzeichner machen das seit jeher so.
-let STAERKE = 1.4, MISCHUNG = 'overlay';
+let STAERKE = 1.7, MISCHUNG = 'overlay';
 let SONNE = 40;                 // Grad über der Fläche, Licht von oben links
 let WURFSONNE = 16;             // dasselbe Licht, flach, nur für den Schlagschatten
 let UEBERHOEHT = 30;            // volle Höhe in Bildpunkten des Höhenfelds
-let MULDE = 0.70;               // wie stark Mulden verschatten
+let MULDE = 0.85;               // wie stark Mulden verschatten
 let WURF = 0.50;                // wie dunkel ein Schlagschatten ist
-let LINIE = 0.9, NIVEAUS = 40, FLACHHANG = 0.006, DUNKELLINIE = 0.55;  // Höhenlinien: Stärke und Anzahl
+let LINIE = 0.8, NIVEAUS = 40, FLACHHANG = 0.0012, DUNKELLINIE = 0.55;  // Höhenlinien: Stärke und Anzahl
 const LINIENSCHRITT = 2;          // Gitterschritt der Linienverfolgung, in Feldpunkten
 // So fein wird die Höhe abgestuft, ehe sie weichgezeichnet wird. Gezeichnet
-// wird in Bündeln — vierundsechzig Füllungen statt vierhundert —, und die Zahl
-// ist nicht beliebig: die Stufen stecken hinterher im Feld, und wo sie zu grob
-// sind, laufen die Höhenlinien an ihnen entlang statt an der Landschaft.
-const STUFEN = 64;
+// wird in Bündeln, und die Zahl ist nicht beliebig: die Stufen stecken
+// hinterher im Feld. Zu grob, und die Höhenlinien laufen an ihnen entlang statt
+// an der Landschaft — und schlimmer, im Lauf der Zeit springt ein Kreis von
+// einer Stufe zur nächsten, und die Linien in seiner Umgebung zucken mit.
+const STUFEN = 200;
 const EIMER_H = Array.from({ length: STUFEN }, () => []);
 function reliefUeber(sil, deck, gross) {
   if (!(breite > 60 && hoehe > 60)) return;
@@ -998,69 +999,78 @@ function reliefUeber(sil, deck, gross) {
    sechzehn Pfade statt Tausender einzelner Striche. */
 const NSTUFE = 12;
 const LINIENEIMER = Array.from({ length: 2 * NSTUFE }, () => []);
-function hoehenLinien(s) {
-  for (const e of LINIENEIMER) e.length = 0;
-  const S = LINIENSCHRITT;
-  const je = 1 / s;                       // Feldpunkt -> Bildpunkt
-  const nx = Math.floor((rW - 1) / S), ny = Math.floor((rH - 1) / S);
-  const F = grobH, M = maskeH;
-  for (let cy = 0; cy < ny; cy++) {
-    const y0 = cy * S, y1 = y0 + S;
-    const r0 = y0 * rW, r1 = y1 * rW;
-    for (let cx = 0; cx < nx; cx++) {
-      const x0 = cx * S, x1 = x0 + S;
-      // Nur dort, wo die Zelle ganz auf der Karte liegt. Das erspart das
-      // Beschneiden an einem Pfad aus vierhundert Vielecken und lässt der
-      // Küste einen schmalen, linienfreien Saum — der sieht ohnehin besser aus.
-      if (M[r0 + x0] < 0.85 || M[r0 + x1] < 0.85 || M[r1 + x1] < 0.85 || M[r1 + x0] < 0.85) continue;
-      const a = F[r0 + x0], b = F[r0 + x1], c = F[r1 + x1], d = F[r1 + x0];
-      let lo = a, hi = a;
-      if (b < lo) lo = b; if (b > hi) hi = b;
-      if (c < lo) lo = c; if (c > hi) hi = c;
-      if (d < lo) lo = d; if (d > hi) hi = d;
-      const n0 = Math.ceil(lo * NIVEAUS), n1 = Math.floor(hi * NIVEAUS);
-      if (n1 < n0) continue;
+const LSCHRITT = 2;               // Gitterschritt der Verfolgung, in Feldpunkten
 
-      // Gefälle der Zelle, je Feldpunkt. Daraus kommt alles Weitere.
-      const gx = ((b + c) - (a + d)) / (2 * S), gy = ((d + c) - (a + b)) / (2 * S);
-      const ql = Math.sqrt(gx * gx + gy * gy);
-      if (!(ql > 1e-7)) continue;
-      // Der Sonne zugewandt: +1, von ihr weg: −1.
-      const f = (gx + gy) / (ql * Math.SQRT2);
-      const hang = Math.min(1, ql / FLACHHANG);
-      // Wie weit zwei Niveaus auf der Leinwand auseinanderliegen. Rücken sie
-      // unter zwei Bildpunkte zusammen, verschmelzen die Linien zu einer
-      // Fläche — dann blenden sie aus.
-      const abstand = je / (ql * NIVEAUS);
-      const eng = abstand > 4 ? 1 : Math.max(0, (abstand - 1.6) / 2.4);
-      const st = Math.abs(f) * hang * eng;
-      if (st < 0.025) continue;
-      let k = (st * NSTUFE) | 0; if (k > NSTUFE - 1) k = NSTUFE - 1;
-      const eimer = LINIENEIMER[f > 0 ? k : NSTUFE + k];
+/* Die Buchhaltung der Verfolgung. Jede Kante des Verfolgungsgitters kann von
+   einer Höhenlinie geschnitten werden, und jede Kante gehört zu genau zwei
+   Zellen — daraus ergibt sich die Kette von selbst: notiere je Kante den
+   Schnittpunkt und die ein bis zwei Kanten, mit denen sie in ihren Zellen
+   verbunden ist, und laufe hinterher durch.
 
-      const px0 = x0 * je, py0 = y0 * je, SS = S * je;
-      for (let n = n0; n <= n1; n++) {
-        const t = n / NIVEAUS;
-        const ka = (a > t ? 1 : 0) | (b > t ? 2 : 0) | (c > t ? 4 : 0) | (d > t ? 8 : 0);
-        if (ka === 0 || ka === 15) continue;
-        // Schnittpunkte auf den vier Kanten, geradlinig eingerechnet.
-        const e0x = px0 + SS * (t - a) / (b - a), e0y = py0;
-        const e1x = px0 + SS,                     e1y = py0 + SS * (t - b) / (c - b);
-        const e2x = px0 + SS * (t - d) / (c - d), e2y = py0 + SS;
-        const e3x = px0,                          e3y = py0 + SS * (t - a) / (d - a);
-        switch (ka) {
-          case 1: case 14: eimer.push(e3x, e3y, e0x, e0y); break;
-          case 2: case 13: eimer.push(e0x, e0y, e1x, e1y); break;
-          case 3: case 12: eimer.push(e3x, e3y, e1x, e1y); break;
-          case 4: case 11: eimer.push(e1x, e1y, e2x, e2y); break;
-          case 6: case 9:  eimer.push(e0x, e0y, e2x, e2y); break;
-          case 7: case 8:  eimer.push(e2x, e2y, e3x, e3y); break;
-          default:         // 5 und 10: der Sattel, beide Strecken
-            eimer.push(e3x, e3y, e0x, e0y, e1x, e1y, e2x, e2y);
-        }
-      }
+   Die Felder werden einmal angelegt und über alle Niveaus wiederbenutzt; ein
+   Stempel je Niveau erspart das Leeren. */
+let lnx = 0, lny = 0;
+let kX = null, kY = null, kA = null, kB = null, kStempel = null, kBesucht = null;
+let kListe = null, bahnX = null, bahnY = null, bahnF = null, bahnG = null;
+let zellenJe = null;
+// Der Stempel muss über Bilder hinweg fortlaufen, nicht bloss über die Niveaus
+// eines Bildes: sonst trägt die Buchhaltung im zweiten Bild noch die Marken des
+// ersten, hält jede Kante für schon gesetzt und findet keine einzige Linie.
+let stempelZaehler = 0;
+function linienFeld() {
+  const nx = Math.floor((rW - 1) / LSCHRITT), ny = Math.floor((rH - 1) / LSCHRITT);
+  if (nx === lnx && ny === lny && zellenJe && zellenJe.length === NIVEAUS) return;
+  lnx = nx; lny = ny;
+  const n = 2 * (nx + 1) * (ny + 1);
+  kX = new Float32Array(n); kY = new Float32Array(n);
+  kA = new Int32Array(n); kB = new Int32Array(n);
+  kStempel = new Int32Array(n); kBesucht = new Int32Array(n);
+  kListe = new Int32Array(n);
+  const lang = Math.max(256, ((nx * ny) >> 2) + 64);
+  bahnX = new Float32Array(lang); bahnY = new Float32Array(lang);
+  bahnF = new Float32Array(lang); bahnG = new Float32Array(lang);
+  zellenJe = Array.from({ length: NIVEAUS }, () => []);
+}
+
+/* Eine Linie in Läufe gleicher Beleuchtung zerlegen und in die Eimer legen.
+   Gezeichnet wird erst am Ende, alle Läufe eines Eimers in einem Zug: sonst
+   stünden bei hundert Linien und vierundzwanzig Stärken zweitausend einzelne
+   Striche an, und jeder kostet für sich.
+
+   Die Läufe überlappen sich um eine Stützstelle, damit zwischen zwei Stärken
+   keine Lücke steht. Abgelegt wird je Lauf die Zahl der Punkte und dann die
+   Punkte selbst. */
+function bahnAblegen(m, geschlossen) {
+  // Beleuchtung längs der Linie glätten: stützstellenweise gerechnet springt
+  // sie um ein paar Prozent hin und her, und das ist genau das Zappeln.
+  for (let d = 0; d < 2; d++) {
+    let vor = bahnF[geschlossen ? m - 2 : 0];
+    for (let i = 0; i < m; i++) {
+      const nach = bahnF[i + 1 < m ? i + 1 : (geschlossen ? 1 : i)];
+      const jetzt = bahnF[i];
+      bahnF[i] = (vor + 2 * jetzt + nach) * 0.25;
+      vor = jetzt;
     }
   }
+  const lege = (e, von, bis) => {
+    if (e < 0 || bis - von < 1) return;
+    const p = LINIENEIMER[e];
+    p.push(bis - von + 1);
+    for (let i = von; i <= bis; i++) p.push(bahnX[i], bahnY[i]);
+  };
+  let lauf = -1, von = 0;
+  for (let i = 0; i < m; i++) {
+    const st = Math.min(1, Math.abs(bahnF[i]) * bahnG[i]);
+    let k = (st * NSTUFE) | 0; if (k > NSTUFE - 1) k = NSTUFE - 1;
+    const e = st < 0.03 ? -1 : (bahnF[i] > 0 ? k : NSTUFE + k);
+    if (e !== lauf) { lege(lauf, von, i); lauf = e; von = i > 0 ? i - 1 : 0; }
+  }
+  lege(lauf, von, m - 1);
+}
+
+// Und am Ende: je Eimer ein Pfad, als weiche Kurve durch die Mittelpunkte der
+// Stützstellen. Vierundzwanzig Züge für die ganze Karte.
+function linienMalen(strichBreite) {
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   for (let e = 0; e < LINIENEIMER.length; e++) {
     const p = LINIENEIMER[e];
@@ -1068,13 +1078,135 @@ function hoehenLinien(s) {
     const hell = e < NSTUFE, k = e - (hell ? 0 : NSTUFE);
     const st = (k + 0.5) / NSTUFE;
     ctx.beginPath();
-    for (let i = 0; i < p.length; i += 4) { ctx.moveTo(p[i], p[i + 1]); ctx.lineTo(p[i + 2], p[i + 3]); }
-    ctx.lineWidth = (0.40 + 1.15 * st) * Math.max(0.7, breite / 760);
+    for (let q = 0; q < p.length;) {
+      const anz = p[q]; q++;
+      const erst = q;
+      ctx.moveTo(p[erst], p[erst + 1]);
+      for (let i = 1; i < anz - 1; i++) {
+        const a = erst + 2 * i;
+        ctx.quadraticCurveTo(p[a], p[a + 1], (p[a] + p[a + 2]) / 2, (p[a + 1] + p[a + 3]) / 2);
+      }
+      const letzt = erst + 2 * (anz - 1);
+      ctx.lineTo(p[letzt], p[letzt + 1]);
+      q += 2 * anz;
+    }
+    p.length = 0;
+    ctx.lineWidth = (0.40 + 0.95 * st) * strichBreite;
     ctx.strokeStyle = hell ? '#fff' : '#000';
     ctx.globalAlpha = Math.min(1, LINIE * st * (hell ? 1 : DUNKELLINIE));
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
+}
+
+function hoehenLinien(s) {
+  linienFeld();
+  const S = LSCHRITT, je = 1 / s, nx = lnx, ny = lny;
+  const F = grobH, M = maskeH;
+  const strichBreite = Math.max(0.7, breite / 760);
+  const lang = bahnX.length;
+  for (const z of zellenJe) z.length = 0;
+
+  // Erster Durchgang: welche Zelle schneidet welche Niveaus? Nur die Niveaus
+  // zwischen kleinstem und grösstem Eckwert kommen in Frage, meist null bis
+  // zwei von vierzig.
+  for (let cy = 0; cy < ny; cy++) {
+    const r0 = cy * S * rW, r1 = (cy * S + S) * rW;
+    for (let cx = 0; cx < nx; cx++) {
+      const x0 = cx * S, x1 = x0 + S;
+      if (M[r0 + x0] < 0.85 || M[r0 + x1] < 0.85 || M[r1 + x1] < 0.85 || M[r1 + x0] < 0.85) continue;
+      const a = F[r0 + x0], b = F[r0 + x1], c = F[r1 + x1], d = F[r1 + x0];
+      let lo = a, hi = a;
+      if (b < lo) lo = b; if (b > hi) hi = b;
+      if (c < lo) lo = c; if (c > hi) hi = c;
+      if (d < lo) lo = d; if (d > hi) hi = d;
+      let n0 = Math.ceil(lo * NIVEAUS), n1 = Math.floor(hi * NIVEAUS);
+      if (n0 < 1) n0 = 1; if (n1 > NIVEAUS - 1) n1 = NIVEAUS - 1;
+      const zelle = cy * nx + cx;
+      for (let n = n0; n <= n1; n++) zellenJe[n].push(zelle);
+    }
+  }
+
+  const stamm = 2 * (nx + 1);
+  for (let n = 1; n < NIVEAUS; n++) {
+    const zellen = zellenJe[n];
+    if (zellen.length < 2) continue;
+    const t = n / NIVEAUS;
+    const stempel = ++stempelZaehler;
+    let nk = 0;
+
+    // Zweiter Durchgang: Schnittpunkte eintragen und benachbarte Kanten
+    // verbinden. Zwei Kanten sind benachbart, wenn dieselbe Zelle zwischen
+    // ihnen liegt.
+    const setze = (k, x, y) => {
+      if (kStempel[k] !== stempel) { kStempel[k] = stempel; kX[k] = x; kY[k] = y; kA[k] = -1; kB[k] = -1; kBesucht[k] = 0; kListe[nk++] = k; }
+    };
+    const binde = (p, q) => { if (kA[p] < 0) kA[p] = q; else if (kB[p] < 0) kB[p] = q; };
+    for (let z = 0; z < zellen.length; z++) {
+      const zelle = zellen[z], cy = (zelle / nx) | 0, cx = zelle - cy * nx;
+      const x0 = cx * S, x1 = x0 + S, r0 = cy * S * rW, r1 = (cy * S + S) * rW;
+      const a = F[r0 + x0], b = F[r0 + x1], c = F[r1 + x1], d = F[r1 + x0];
+      const A = a > t, B = b > t, C = c > t, D = d > t;
+      const ka = (A ? 1 : 0) | (B ? 2 : 0) | (C ? 4 : 0) | (D ? 8 : 0);
+      if (ka === 0 || ka === 15) continue;
+      const px0 = x0 * je, py0 = cy * S * je, SS = S * je;
+      const h0 = cy * stamm + 2 * cx, h2 = (cy + 1) * stamm + 2 * cx;
+      const v3 = h0 + 1, v1 = cy * stamm + 2 * (cx + 1) + 1;
+      if (A !== B) setze(h0, px0 + SS * (t - a) / (b - a), py0);
+      if (B !== C) setze(v1, px0 + SS, py0 + SS * (t - b) / (c - b));
+      if (D !== C) setze(h2, px0 + SS * (t - d) / (c - d), py0 + SS);
+      if (A !== D) setze(v3, px0, py0 + SS * (t - a) / (d - a));
+      switch (ka) {
+        case 1: case 14: binde(v3, h0); binde(h0, v3); break;
+        case 2: case 13: binde(h0, v1); binde(v1, h0); break;
+        case 3: case 12: binde(v3, v1); binde(v1, v3); break;
+        case 4: case 11: binde(v1, h2); binde(h2, v1); break;
+        case 6: case 9:  binde(h0, h2); binde(h2, h0); break;
+        case 7: case 8:  binde(h2, v3); binde(v3, h2); break;
+        default:         binde(v3, h0); binde(h0, v3); binde(v1, h2); binde(h2, v1);
+      }
+    }
+
+    // Dritter Durchgang: die Ketten ablaufen. Erst die offenen — eine Kante
+    // mit nur einem Nachbarn ist ein Anfang —, dann die geschlossenen Ringe.
+    for (let runde = 0; runde < 2; runde++) {
+      for (let q = 0; q < nk; q++) {
+        const start = kListe[q];
+        if (kBesucht[start] === stempel) continue;
+        if (runde === 0 && kB[start] >= 0) continue;
+        let cur = start, vor = -1, m = 0;
+        while (cur >= 0 && m < lang) {
+          kBesucht[cur] = stempel;
+          // Beleuchtung und die beiden Bremsen an dieser Stützstelle, aus dem
+          // Gefälle des Feldes dort.
+          let ix = (kX[cur] * s) | 0, iy = (kY[cur] * s) | 0;
+          if (ix < 1) ix = 1; if (ix > rW - 2) ix = rW - 2;
+          if (iy < 1) iy = 1; if (iy > rH - 2) iy = rH - 2;
+          const gx = (F[iy * rW + ix + 1] - F[iy * rW + ix - 1]) * 0.5;
+          const gy = (F[(iy + 1) * rW + ix] - F[(iy - 1) * rW + ix]) * 0.5;
+          const ql = Math.sqrt(gx * gx + gy * gy);
+          bahnX[m] = kX[cur]; bahnY[m] = kY[cur];
+          bahnF[m] = ql > 1e-7 ? (gx + gy) / (ql * Math.SQRT2) : 0;
+          // Über fast ebenem Land blenden die Linien ein, und wo zwei Niveaus
+          // auf der Leinwand zusammenrücken, wieder aus.
+          const abstand = ql > 1e-7 ? je / (ql * NIVEAUS) : 1e9;
+          bahnG[m] = Math.min(1, ql / FLACHHANG)
+            * (abstand > 4 ? 1 : Math.max(0, (abstand - 1.4) / 2.6));
+          m++;
+          const na = kA[cur], nb = kB[cur];
+          const weiter = (na >= 0 && na !== vor && kBesucht[na] !== stempel) ? na
+                       : (nb >= 0 && nb !== vor && kBesucht[nb] !== stempel) ? nb : -1;
+          vor = cur; cur = weiter;
+        }
+        // Ein Ring schliesst sich: die letzte Stützstelle ist mit der ersten
+        // verbunden, also noch einmal dorthin.
+        const zu = m > 2 && m < lang && (kA[vor] === start || kB[vor] === start);
+        if (zu) { bahnX[m] = bahnX[0]; bahnY[m] = bahnY[0]; bahnF[m] = bahnF[0]; bahnG[m] = bahnG[0]; m++; }
+        if (m >= 2) bahnAblegen(m, zu);
+      }
+    }
+  }
+  linienMalen(strichBreite);
 }
 
 function zeichne() {

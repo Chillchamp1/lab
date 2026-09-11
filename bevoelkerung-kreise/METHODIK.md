@@ -543,24 +543,59 @@ ungleichmässigem Rand. Das war das Zappeln, und es war nicht wegzustellen.
 Jetzt werden die Linien **verfolgt**: Marching Squares über das weite Feld
 liefert sie als Strecken, und gezeichnet werden sie als Pfade auf der Leinwand
 selbst — mit deren voller Auflösung und deren Kantenglättung. Das Höhenfeld
-darf dafür wieder grob sein (45 Prozent): es ist über fünfzehn Punkte
+darf dafür grob bleiben (55 Prozent): es ist über fünfzehn Punkte
 weichgezeichnet, und die Stützstellen einer Linie dürfen weiter auseinander
 liegen als ein Bildpunkt, solange die Linie selbst scharf ist. Verfolgt wird
-auf einem Gitter von zwei Feldpunkten, also gut vier Bildpunkten je Stützstelle.
+auf einem Gitter von zwei Feldpunkten, also gut drei Bildpunkten je
+Stützstelle.
 
-Je Zelle wird einmal gerechnet, was für alle Niveaus darin gilt — Gefälle,
-Beleuchtungsrichtung, Strichstärke —, und nur die Niveaus zwischen dem
-kleinsten und grössten Eckwert werden überhaupt betrachtet; das sind meist
-null bis zwei. Gebündelt wird nach Beleuchtungsstärke: zwölf Stufen, hell und
-dunkel, also **vierundzwanzig Pfade statt Tausender einzelner Striche**.
+### Die Strecken werden zu Linien verkettet
+
+Die erste verfolgte Fassung zeichnete jede Strecke für sich, mit einer Stärke
+aus ihrer eigenen Zelle. Das ergab keine Höhenlinie, sondern eine Reihe von
+Strichen: die Beleuchtung springt von Zelle zu Zelle um ein paar Prozent, und
+bei zwölf Stufen fällt eine Strecke schon bei kleinsten Unterschieden in eine
+andere Stärke als ihre Nachbarin. Es sah gepunktet aus, und die Frage „sind das
+überhaupt Höhenlinien?" war berechtigt.
+
+Also verkettet. Jede Kante des Verfolgungsgitters kann von einer Linie
+geschnitten werden, und jede Kante gehört zu genau zwei Zellen — daraus ergibt
+sich die Kette von selbst: notiere je Kante den Schnittpunkt und die ein bis
+zwei Kanten, mit denen sie in ihren Zellen verbunden ist, und laufe hinterher
+durch. Erst die offenen Ketten (eine Kante mit nur einem Nachbarn ist ein
+Anfang), dann die geschlossenen Ringe.
+
+Auf der fertigen Kette wird die Beleuchtung **längs geglättet** — zwei
+Durchgänge eines Dreipunktmittels —, und die Linie in Läufe gleicher Stärke
+zerlegt, die sich um eine Stützstelle überlappen. Gezeichnet wird als weiche
+Kurve durch die Mittelpunkte der Stützstellen. Damit ist eine Höhenlinie eine
+Linie: durchgehend, mit einem Verlauf von Weiss über Nichts nach Schwarz, wie
+sie um eine Kuppe herumläuft.
+
+Die Buchhaltung wird einmal angelegt und über alle Niveaus und alle Bilder
+wiederbenutzt; ein fortlaufender Stempel erspart das Leeren. Fortlaufend über
+die **Bilder**, nicht nur über die Niveaus eines Bildes — sonst trüge die
+Buchhaltung im zweiten Bild noch die Marken des ersten, hielte jede Kante für
+schon gesetzt und fände keine einzige Linie. (Genau so ist es beim ersten
+Versuch gewesen: das erste Bild hatte Linien, alle weiteren nicht.)
+
+Je Zelle wird einmal gerechnet, was für alle Niveaus darin gilt, und nur die
+Niveaus zwischen dem kleinsten und grössten Eckwert werden überhaupt
+betrachtet; das sind meist null bis zwei von vierzig. Gebündelt wird nach
+Beleuchtungsstärke: zwölf Stufen, hell und dunkel, also **vierundzwanzig Züge
+für die ganze Karte** statt zweitausend einzelner Striche.
 
 Gerechnet aus dem **weiten** Feld, nicht aus dem gemischten: das enge hat an
 jeder Kreisgrenze eine Stufe, und auf einer Stufe lägen alle Niveaus
 übereinander — das gäbe einen Strich an jeder Grenze statt einer Höhenlinie.
 
-Vierzig Niveaus über die volle Höhe. Drei Dinge halten die Linien sauber:
+Vierzig Niveaus über die volle Höhe, und sie decken die Karte **flächendeckend**
+— das war eine Fassung lang anders. Wer die Linien über flachem Land wegblendet,
+lässt über den Hängen einzelne lange Striche stehen, und die lesen sich als
+Tintenstrich statt als Gelände; erst im Verbund einer Schar wird eine Linie zur
+Höhenlinie. Drei Dinge halten sie trotzdem sauber:
 
-- Über fast ebenem Land blenden sie mit dem Gefälle ein — sonst sind sie
+- Über wirklich ebenem Land blenden sie mit dem Gefälle ein — sonst sind sie
   Kratzer.
 - Wo zwei Niveaus auf der Leinwand unter vier Bildpunkte zusammenrücken,
   blenden sie aus — sonst verschmelzen sie zur Fläche.
@@ -589,11 +624,12 @@ unten und weich als Schatten, knapp darunter als Kante. Weil die Kreise die
 Fläche lückenlos teilen, ist die Vereinigung ihrer Umrisse zugleich die
 Silhouette der Karte; beides braucht denselben Pfad, und der entsteht ohnehin.
 
-Gerechnet wird das Höhenfeld auf **45 Prozent** der Bildpunkte — es trägt nur
+Gerechnet wird das Höhenfeld auf **55 Prozent** der Bildpunkte — es trägt nur
 noch den Verlauf, und ein Verlauf verträgt das Hochrechnen. Die Höhen der
-Kreise werden in **64 Stufen** abgelegt statt in 24; die Stufen stecken
-hinterher im Feld, und wo sie zu grob sind, laufen die Höhenlinien an ihnen
-entlang statt an der Landschaft.
+Kreise werden in **200 Stufen** abgelegt statt in 24. Die Stufen stecken
+hinterher im Feld: zu grob, und die Höhenlinien laufen an ihnen entlang statt
+an der Landschaft — und schlimmer, im Lauf der Zeit springt ein Kreis von einer
+Stufe zur nächsten, und die Linien in seiner Umgebung zucken mit.
 
 Beschnitten wird die Schattierung nicht mit `clip` an einem Pfad aus
 vierhundert Vielecken, sondern mit derselben Vorlage als Schablone
