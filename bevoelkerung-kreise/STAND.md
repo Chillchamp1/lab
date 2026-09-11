@@ -45,6 +45,28 @@ Zeitpunkt auf denselben Gebietsstand gerechnet, jede Zelle Methode A.
   Quelle behandelt; die vier geteilten Städte sind die einzigen geschätzten
   Werte und tragen den Vermerk.
 
+### Offen: Schlesien
+
+Gewünscht ist eine vierte Ansicht — Deutschland **mit Schlesien**, bis es
+verloren geht, mit dem Einbruch durch Flucht und Vertreibung und dem
+anschliessenden Verschwinden. Der Bauvorgang kann das (er kennt mehrere Reihen
+über derselben Zeitachse, siehe METHODIK 4); es fehlen die Daten:
+
+- **Geometrie** historischer Kreise östlich der Oder-Neisse. Die Sammlung des
+  MPIDR wäre die Quelle; `www.mpidr.de` antwortet aus dieser Umgebung nicht.
+  Heutige polnische Woiwodschaften als Ersatz zu nehmen wäre genau das
+  Gleichsetzen verschiedener Gebietsstände, das dieses Projekt nicht macht.
+- **Bevölkerung** schlesischer Kreise. iPEHD (ifo) hätte 1871, 1890 und 1900
+  auf Kreisebene, liegt aber hinter einer Bot-Sperre („Client Challenge"), die
+  ich nicht umgehe. 1910, 1925, 1933 und 1939 stehen nur in der *Statistik des
+  Deutschen Reichs*, also in Bildvorlagen — dafür gilt der Stopp.
+- **Nach 1945** polnische Zählungen für dasselbe Gebiet (GUS).
+
+Was hülfe: iPEHD und die MPIDR-Grenzen heruntergeladen und hier abgelegt, wie
+seinerzeit GPOP. Dann sind 1871, 1890 und 1900 machbar; für 1939 und den
+Einbruch danach braucht es entweder eine maschinenlesbare Quelle oder die
+Freigabe, aus Bildvorlagen abzuschreiben.
+
 ### Karte
 
 - Ein Diffusionskartogramm je Zeitpunkt, warm vom vorigen gestartet;
@@ -60,15 +82,16 @@ Zeitpunkt auf denselben Gebietsstand gerechnet, jede Zelle Methode A.
   bewegt. Zusammenhang, keine Daten — Kreiszahlen darin stammen aus der eigenen
   Tabelle, der Rest ist Schulwissen; vollständig noch einmal als Liste unter
   der Karte.
-- Die Uhr läuft rund fünfzig Sekunden für 153 Jahre. Die Spielzeit je Abschnitt
-  mischt Dauer und Umschichtung (geometrisches Mittel), also bekommt 1939→1946
-  fünf Sekunden statt drei. Zwischen den Zählungen wird mit einer monotonen
+- Die Uhr läuft 56 Sekunden für 153 Jahre. Die Spielzeit je Abschnitt mischt
+  Dauer und Umschichtung (geometrisches Mittel) und liegt nie unter
+  viereinhalb Sekunden, also bekommt 1939→1946 fünf Sekunden statt drei und
+  2019→2024 viereinhalb statt eineinhalb. Zwischen den Zählungen wird mit einer monotonen
   kubischen Kurve gerechnet, nicht geradlinig: kein Knick, kein Überschiessen.
   Grösster Geschwindigkeitssprung von 125 auf 21 Prozent.
 - Dreizehn Städte tragen ihren Namen, von Anfang an: die grössten, um
   sechzig Kilometer voneinander ausgedünnt. Die Schrift wächst mit der
-  gezeichneten Fläche, fällt aber nie unter 9,5 Pixel; wo zwei Namen einander
-  berühren, weichen sie aus.
+  gezeichneten Fläche, fällt aber nie unter sieben Pixel; wo zwei Namen
+  einander berühren, weichen sie aus.
 - Das Relief nimmt den Hintergrund der Seite an, hell wie dunkel, mit je einer
   eigenen Farbleiter.
 - Der Bauvorgang kann auch mit Reihen umgehen, die nur einen Teil des Landes

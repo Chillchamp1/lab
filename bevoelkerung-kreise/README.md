@@ -107,9 +107,11 @@ Vorher sprang die Geschwindigkeit an jeder Zählung um bis zu 74 Prozent, jetzt
 um höchstens 12,8.
 
 Die Uhr läuft nicht gleichmässig durch die Jahre. Jeder Abschnitt bekommt einen
-Anteil an den fünfzig Sekunden, der Dauer und Umschichtung mischt — der Bruch
-von 1939 auf 1946 also fünf Sekunden statt drei, während die langen ruhigen
-Strecken trotzdem den grössten Teil behalten, weil sie am längsten sind.
+Anteil an den 56 Sekunden, der Dauer und Umschichtung mischt — der Bruch von
+1939 auf 1946 also fünf Sekunden statt drei, während die langen ruhigen Strecken
+trotzdem den grössten Teil behalten, weil sie am längsten sind. Keiner bekommt
+weniger als viereinhalb Sekunden; sonst wäre er vorbei, ehe die Notiz gelesen
+ist.
 
 Dreizehn Städte tragen ihren Namen, von Anfang an und durchgehend. Die Schrift
 wächst mit dem Fleck, fällt aber nie unter das, was auf einem Telefon noch zu
