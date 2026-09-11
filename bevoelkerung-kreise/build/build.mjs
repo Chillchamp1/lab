@@ -90,7 +90,7 @@ const daten = {
   vb: [nutz.breite, nutz.hoehe], ank: nutz.ank,
   gx: nutz.gx, gy: nutz.gy,
   ringzahl: nutz.ringzahl, ringe: nutz.ringe, idx: nutz.idx,
-  R: nutz.reihen, B: nutz.bilder, gr: nutz.grenzen,
+  R: nutz.reihen, B: nutz.bilder, gr: nutz.grenzen, takt: null,
   bev: nutz.bev, mj: nutz.methodenJeWert, ai: nutz.anteilJeWert,
   k: jeKreis.map(k => [k.ags, k.name, k.bez, k.land, k.flaeche]),
   L: laender,
@@ -110,43 +110,43 @@ const daten = {
 // genommen; der Rest ist Schulwissen und als solches gekennzeichnet.
 const NOTIZEN = [
   { von: 1871, bis: 1899, kopf: '1871–1900 · Coal and steel',
-    kurz: 'The Ruhr fills up, the farming east empties — the Ostflucht.',
+    kurz: 'The Ruhr fills, the farming east empties.',
     mehr: 'Gelsenkirchen grows from 23,794 people in 1871 to 219,501 by 1910, on today’s boundaries.' },
   { von: 1899, bis: 1913, kopf: '1900–1910 · The metropolis',
-    kurz: 'Berlin passes three and a half million people.',
+    kurz: 'Berlin passes three and a half million.',
     mehr: '931,984 in 1871, 3,734,258 by 1910. Almost all of the country’s growth is now urban.' },
   { von: 1913, bis: 1927, kopf: '1914–1918 · The First World War',
-    kurz: 'Two million soldiers dead, and no census until 1939.',
+    kurz: 'Two million soldiers dead, no census until 1939.',
     mehr: 'The map glides over the war years because nothing was counted in them. The loss is real; the dip is not drawn.' },
   { von: 1927, bis: 1937, kopf: '1933–1939 · Rearmament',
-    kurz: 'Whole towns rise for the arms industry: Wolfsburg, Salzgitter.',
+    kurz: 'Whole towns rise for the arms industry.',
     mehr: 'Wolfsburg for the Volkswagen works, Salzgitter for ore and steel — open country until then, 94,026 and 111,510 people by 1961.' },
   { von: 1937, bis: 1945, kopf: '1939–1945 · The Second World War',
-    kurz: 'Bombing empties the cities: Berlin loses 1.2 million people.',
+    kurz: 'Bombing empties the cities; Berlin loses 1.2 million.',
     mehr: 'Hamburg is down 308,577. The count of October 1946 is taken in a country whose cities are rubble.' },
   { von: 1945, bis: 1952, kopf: '1945–1950 · Flight and expulsion',
-    kurz: 'Twelve million Germans are expelled from the east.',
+    kurz: 'Twelve million Germans expelled from the east.',
     mehr: 'The rural north takes the worst of it: Ostholstein doubles from 103,951 to 213,916 people, with nowhere to house them.' },
   { von: 1952, bis: 1962, kopf: '1950–1961 · Wirtschaftswunder',
-    kurz: 'The west rebuilds; 2.7 million leave the GDR before the Wall.',
+    kurz: 'The west rebuilds, 2.7 million leave the GDR.',
     mehr: 'Essen holds 750,501 people in 1961 and never as many again. The Wall goes up in August of that year.' },
   { von: 1962, bis: 1973, kopf: '1961–1973 · Guest workers',
-    kurz: 'The factories recruit in Italy, Greece, Turkey, Yugoslavia.',
+    kurz: 'The factories recruit in Italy, Turkey, Yugoslavia.',
     mehr: 'From 1972 onward more people die in West Germany than are born there — every year since, growth has depended on who arrives.' },
   { von: 1973, bis: 1988, kopf: '1973–1987 · The pits close',
-    kurz: 'Coal and steel shut down; the Ruhr turns from blue to red.',
+    kurz: 'Coal and steel close; the Ruhr turns red.',
     mehr: 'It has stayed red ever since. The growth moves south and out to the districts around the cities.' },
   { von: 1988, bis: 1996, kopf: '1989–1996 · Reunification',
-    kurz: 'The east goes west, and its birth rate halves in two years.',
+    kurz: 'The east goes west; its birth rate halves.',
     mehr: 'One of the sharpest peacetime falls ever recorded. Berlin is the exception and grows again.' },
   { von: 1996, bis: 2011, kopf: '1996–2011 · Shrinking, and recounting',
-    kurz: 'The 2011 census finds 1.5 million people who were not there.',
+    kurz: 'The 2011 census finds 1.5 million fewer.',
     mehr: 'The registers carried 81.8 million, the census counted 80.2. That correction sits on this stretch, on top of the real losses in the east.' },
   { von: 2011, bis: 2019, kopf: '2011–2019 · The cities fill again',
-    kurz: 'Free movement in the EU and the refugees of 2015 outweigh the deaths.',
+    kurz: 'Free movement and 2015 outweigh the deaths.',
     mehr: 'Leipzig, down a third between 1939 and 2011, climbs back above 600,000 people.' },
   { von: 2019, bis: 2025, kopf: '2020–2024 · Covid, then Ukraine',
-    kurz: 'Migration stops, then a million arrive from Ukraine.',
+    kurz: 'A million arrive from Ukraine in 2022.',
     mehr: 'Germany reaches 83.6 million, and nearly all of the gain sits in the cities and the districts around them.' },
 ];
 
@@ -161,12 +161,53 @@ const kurzerName = n => n === 'Region Hannover' ? 'Hannover'
 const hoechsteBev = new Map();
 for (const b of bilder) for (const [ags, v] of b.werte) hoechsteBev.set(ags, Math.max(hoechsteBev.get(ags) ?? 0, v));
 const STADTKREISE = new Set(['Kreisfreie Stadt', 'Stadtkreis']);
-const staedte = jeKreis
+// Alle Namen sollen von Anfang an dastehen, auch 1871, wo die Flecken winzig
+// sind. Dann dürfen sie nicht dicht beieinanderliegen: aus jedem Bündel eng
+// benachbarter Städte bleibt die grösste. Gemessen wird auf dem Boden, nicht im
+// Kartogramm — im Kartogramm wandern sie ohnehin auseinander, während sie
+// wachsen. Sechzig Kilometer Abstand lassen aus Rhein und Ruhr einen Namen
+// übrig statt sieben.
+const ABSTAND_KM = 60;
+const mitte = new Map();
+geo.gebiete.forEach((ringe, g) => {
+  let sx = 0, sy = 0, n = 0;
+  for (const r of ringe) for (const id of r) { sx += geo.X[id]; sy += geo.Y[id]; n++; }
+  if (n) mitte.set(modell.attr[g].ags, [sx / n, sy / n]);
+});
+const staedte = [];
+for (const k of jeKreis
   .map((k, i) => ({ i, ags: k.ags, kurz: kurzerName(k.name), bev: hoechsteBev.get(k.ags) ?? 0,
     stadt: STADTKREISE.has(k.bez) || k.ags === '03241' }))
   .filter(k => k.stadt && k.bev >= 400000)
-  .sort((a, b) => b.bev - a.bev);
+  .sort((a, b) => b.bev - a.bev)) {
+  const m = mitte.get(k.ags);
+  if (!m) continue;
+  const nah = staedte.some(s => Math.hypot(s.m[0] - m[0], s.m[1] - m[1]) < ABSTAND_KM * 1000);
+  if (nah) continue;
+  staedte.push({ ...k, m });
+}
 log(`Beschriftet: ${staedte.length} Städte — ${staedte.map(k => k.kurz).join(', ')}`);
+
+// Wie lange dauert welcher Abschnitt? Nicht nach Jahren allein — dann rauscht
+// die Umwälzung zwischen 1939 und 1946 in drei Sekunden vorbei, während die
+// ruhigen Jahrzehnte vor 1900 elf bekommen. Und nicht nach Umschichtung allein,
+// denn dann wäre die Zeitachse keine mehr. Genommen wird das geometrische
+// Mittel aus beidem: dem Anteil an den Jahren und dem Anteil an der Summe aller
+// Veränderungen je Kreis. Die Kriegs- und Nachkriegsjahre bekommen damit rund
+// fünf statt drei Sekunden, ohne dass die langen ruhigen Strecken einbrechen.
+const abschnitte = bilder.slice(0, -1).map((b, i) => {
+  const a = bilder[i], c = bilder[i + 1];
+  let um = 0;
+  for (const [ags, v] of a.werte) { const w = c.werte.get(ags); if (w > 0) um += Math.abs(w - v); }
+  return { jahre: Math.max(0.1, nutz.bilder[i + 1].t - nutz.bilder[i].t), um: Math.max(1, um) };
+});
+{
+  const sj = abschnitte.reduce((x, a) => x + a.jahre, 0), su = abschnitte.reduce((x, a) => x + a.um, 0);
+  const roh = abschnitte.map(a => Math.sqrt((a.jahre / sj) * (a.um / su)));
+  const sr = roh.reduce((x, v) => x + v, 0);
+  abschnitte.forEach((a, i) => { a.anteil = Number((roh[i] / sr).toFixed(5)); });
+}
+log('Takt: ' + abschnitte.map((a, i) => `${bilder[i].jahr}→${bilder[i + 1].jahr} ${(a.anteil * 48.5).toFixed(1)}s`).join(', '));
 
 const mio = n => (n / 1e6).toFixed(1);
 const zahl = n => n.toLocaleString('en-GB');
@@ -204,6 +245,7 @@ const NADELTON_HELL = ['#fbf5df','#f6dfb6','#f7c68f','#f7aa71','#f48c60','#ea715
 // ob die Leiter gerade auf hellem oder dunklem Grund steht.
 const ZELLFLAECHE = nadeln ? (nadeln.daten.zelle ** 2 * nadeln.daten.reihe / 1e6) : 0;
 const mitRelief = !!nadeln;
+daten.takt = abschnitte.map(a => a.anteil);
 // Beschriftung der Umschalter, jetzt wo die Ländernamen bekannt sind.
 if (nutz.reihen.length > 1) {
   nutz.reihen[0].name = gebietsname + ' only';
@@ -324,8 +366,8 @@ the map keeps its real shape and the people stand up out of it instead.</p>` : '
 
 <div class="modi" id="reihen" role="group" aria-label="Which counties are drawn" hidden></div>
 <div class="modi" role="group" aria-label="What the map shows">
-  <button data-modus="menschen" aria-pressed="true">People</button>
-  <button data-modus="wandel" aria-pressed="false">Which way</button>${mitRelief ? `
+  <button data-modus="wandel" aria-pressed="true">Growth</button>
+  <button data-modus="menschen" aria-pressed="false">People</button>${mitRelief ? `
   <button data-modus="relief" aria-pressed="false">Standing up</button>` : ''}
 </div>
 <div class="legende"><span id="legLinks"></span><div class="rampe" id="rampe"></div><span id="legRechts"></span></div>
@@ -335,18 +377,18 @@ the map keeps its real shape and the people stand up out of it instead.</p>` : '
 <p>In the first two views area is always population: a county twice as populous is drawn
 twice as large. Colour is what you switch.</p>
 
+<p><b>Growth</b> is what the map is really for, and what it opens on. It colours each county
+by how fast it is gaining or losing people <i>at that moment</i>: the change per year over
+the stretch of time the animation is currently crossing. Blue is growing, red is shrinking,
+grey is holding steady. Watch the Ruhr go from the deepest blue on the map to red within a
+lifetime, and the east turn red after 1990.</p>
+
 <p><b>People</b> shades each county by how many people live in it, on a fixed scale from
 30 000 to 1.5 million. Fixed means the same shade means the same number in every frame, in
 1871 as in 2024 — so the map darkening as the clock runs forward is not a trick of the
 colouring, it is the result. The scale is logarithmic because the counties are: on a
 straight scale nine in ten of them would sit in the bottom tenth of it and come out as one
 flat blue.</p>
-
-<p><b>Which way</b> is the one the map is really for. It colours each county by how fast it
-is gaining or losing people <i>at that moment</i>: the change per year over the stretch of
-time the animation is currently crossing. Blue is growing, red is shrinking, grey is holding
-steady. Watch the Ruhr go from the deepest blue on the map to red within a lifetime, and the
-east turn red after 1990.</p>
 
 <p>The reading belongs to the stretch between two censuses, so it holds while the map crosses
 one. Near a census it eases into the next reading rather than snapping over — the middle two
@@ -363,15 +405,18 @@ straight line: it passes through every counted value exactly, has no kink at a c
 never leaves the range of the two it lies between. A county can never hold more people
 mid-stretch than it does at either end of it.</p>
 
-<p>The clock runs at a steady rate through the years, about fifty seconds for the
-${jahrBis - jahrVon}: a year always takes as long as a year, so 1871 to 1900 runs five times
-as long as 1939 to 1946. The marks under the slider sit where the censuses actually fall,
-unevenly, because that is how they were taken.</p>
+<p>The clock does not run evenly through the years. Each stretch between two censuses gets a
+share of the fifty seconds that mixes how long it lasted with how much moved in it — so the
+years of war, flight and rebuilding, when the country was reshuffled fastest, slow down to
+about five seconds instead of three, while the long quiet stretches still get the most
+because they are the longest. The marks under the slider show where the censuses fall in
+that running time.</p>
 
-<p>The largest cities carry their names, and the type grows with the patch — it is sized
-from the drawn area, so a name appears only once its city is big enough to hold it. In
-${jahrVon} that is Berlin alone; by ${jahrBis} it is ten of them. Where a name will not fit
-or would land on top of another, it is left out.</p>
+<p>The ${staedte.length} largest cities carry their names from the first frame onwards, and
+the type grows with the patch: sized from the drawn area, but never below what a phone can
+still read. Where two names would land on each other they step aside, and a hairline points
+back to the patch a name has left. A city within ${ABSTAND_KM} km of a bigger one is not
+labelled — otherwise the Rhine and the Ruhr would carry seven names on one thumbnail.</p>
 ${mitRelief ? `
 <p><b>Standing up</b> drops the cartogram and gives the country its real shape back. It
 keeps the page's own background — dark needles glowing to gold at night, pale ground and ink
@@ -524,8 +569,8 @@ let reihe = REIHEN[0];
    Ecke der Karte wandert nie über den Ort hinaus, den sie in beiden Bildern
    hat. Dass die Zählungen selbst unverändert bleiben, ist damit garantiert.
 
-   Gerechnet wird auf der Jahresachse, denn auf ihr läuft die Uhr: die
-   Zählungen liegen ungleich weit auseinander, und eine Steigung, die das nicht
+   Gerechnet wird auf der Spielzeitachse, denn auf ihr läuft die Bewegung: die
+   Abschnitte bekommen verschieden viel Zeit, und eine Steigung, die das nicht
    berücksichtigt, ergäbe genau den Knick, den sie vermeiden soll. Die Abstände
    kommen deshalb als h dazu.
 
@@ -571,7 +616,7 @@ function tangenten(a) {
   tangenteFuer = a; tangenteReihe = reihe;
   const von = Math.max(0, a - 1), bis = Math.min(NF - 1, a + 2);
   const n = bis - von + 1, hh = [];
-  for (let f = von; f < bis; f++) hh.push(JAHRE[f + 1] - JAHRE[f]);
+  for (let f = von; f < bis; f++) hh.push(TAKT[f]);
   const y = new Float64Array(4);
   for (let i = 0; i < N; i++) {
     for (let f = von; f <= bis; f++) y[f - von] = ortX(f, i);
@@ -672,12 +717,22 @@ function farbe(modus, wert, k, rate) {
 }
 
 /* ---------- Zustand ---------- */
-// Die Uhr läuft gleichmässig in Jahren: ein Jahr ist ein Jahr, also dauert
-// 1871 bis 1900 fünfmal so lang wie 1939 bis 1946. Das macht die Zeitachse zu
-// dem, was sie ist — eine Zeitachse — und nicht zu einer Reihe gleich breiter
-// Kapitel.
-let modus = 'menschen', jahr = T0, laeuft = false, letzterTip = -1;
-function setzeZeit(j) { jahr = Math.max(T0, Math.min(T1, j)); }
+// Die Uhr läuft über die Spielzeit, nicht über die Jahre. Wie viel Spielzeit
+// ein Abschnitt bekommt, steht in D.takt und ist beim Bauen gerechnet: das
+// geometrische Mittel aus seinem Anteil an den Jahren und seinem Anteil an
+// allem, was sich umschichtet. Wo viel in Bewegung ist, läuft die Uhr also
+// langsamer — 1939 bis 1946 bekommt fünf Sekunden statt drei —, ohne dass die
+// Zeitachse ganz aufhört, eine zu sein.
+const TAKT = D.takt, TAKTKUM = [0];
+for (let i = 0; i < TAKT.length; i++) TAKTKUM.push(TAKTKUM[i] + TAKT[i]);
+let modus = 'wandel', spiel = 0, jahr = T0, laeuft = false, letzterTip = -1;
+function setzeZeit(p) {
+  spiel = Math.max(0, Math.min(1, p));
+  let a = 0;
+  while (a < NF - 2 && TAKTKUM[a + 1] <= spiel) a++;
+  const u = Math.max(0, Math.min(1, (spiel - TAKTKUM[a]) / TAKT[a]));
+  jahr = JAHRE[a] + (JAHRE[a + 1] - JAHRE[a]) * u;
+}
 const cv = document.getElementById('karte'), ctx = cv.getContext('2d');
 let breite = 0, hoehe = 0, mass = 1, verX = 0, verY = 0;
 
@@ -731,7 +786,7 @@ function werteBei(a, b, u) {
   const w = new Float64Array(NK), deck = new Float64Array(NK), rate = new Array(NK).fill(null);
   const vonF = Math.max(0, a - 1), bisF = Math.min(NF - 1, b + 1), nF = bisF - vonF + 1;
   const hh = [];
-  for (let f = vonF; f < bisF; f++) hh.push(JAHRE[f + 1] - JAHRE[f]);
+  for (let f = vonF; f < bisF; f++) hh.push(TAKT[f]);
   for (let k = 0; k < NK; k++) {
     const va = reihe.BEV[a][k], vb = reihe.BEV[b][k];
     if (va > 0 && vb > 0) {
@@ -810,7 +865,7 @@ function schreibe(a, b, u, w, deck) {
   document.getElementById('kopf').textContent = zwischen
     ? 'between ' + D.B[a].jahr + ' and ' + D.B[b].jahr + ' — shapes and figures interpolated'
     : z.stichtage.join(' and ') + ' · ' + z.begriffe.join(', ') + ' · method ' + z.methoden.join('/');
-  document.getElementById('zeit').value = Math.round((jahr - T0) / (T1 - T0) * 1000);
+  document.getElementById('zeit').value = Math.round(spiel * 1000);
 }
 
 /* ---------- Städtenamen ----------
@@ -825,6 +880,7 @@ function schreibe(a, b, u, w, deck) {
    mit einem schon gesetzten Namen überschneidet, fällt auch weg — die
    grösseren zuerst, damit im Ruhrgebiet nicht die kleinste Stadt gewinnt. */
 const STADT = ${JSON.stringify(staedte.map(k => [k.i, k.kurz]))};
+const MINSCHRIFT = 9.5;     // kleinste Schrift, die auf einem Telefon noch zu lesen ist
 function beschrifte(deck) {
   const liste = [];
   for (const [g, name] of STADT) {
@@ -847,33 +903,53 @@ function beschrifte(deck) {
     if (bestA > 0) liste.push({ name, A: bestA, mx, my, bb, bh });
   }
   liste.sort((a, b) => b.A - a.A);
-
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
-  const gesetzt = [];
+
+  // Grösse: aus der Fläche, aber nie unter MINSCHRIFT und nie grösser, als der
+  // Fleck trägt. Alle Namen stehen von Anfang an da — 1871 sind die Flecken
+  // winzig, und ein Name, der erst später erscheint, ist ein Sprung im Bild.
   for (const s of liste) {
-    // Aus der Fläche kommt die gewünschte Grösse, aus dem Fleck die erlaubte:
-    // ein langer Name auf einem runden Fleck muss kleiner ausfallen als ein
-    // kurzer. Unter acht Pixeln wird nichts gesetzt — dann ist die Stadt eben
-    // noch zu klein für ihren Namen.
     ctx.font = '600 10px system-ui,-apple-system,sans-serif';
-    const je10 = ctx.measureText(s.name).width / 10;
-    const hoch = Math.min(Math.sqrt(s.A) * 0.40, 30, s.bb * 1.15 / je10, s.bh * 0.8);
-    // Nicht hart aufpoppen: zwischen acht und elf Pixeln blendet der Name ein.
-    // Sonst erscheint und verschwindet er im Lauf der Zeit schlagartig, und das
-    // ist die auffälligste plötzliche Bewegung, die die Karte sonst hat.
-    const sicht = (hoch - 8) / 3;
-    if (sicht <= 0) continue;
-    ctx.font = '600 ' + hoch.toFixed(1) + 'px system-ui,-apple-system,sans-serif';
-    const br = je10 * hoch;
-    const kasten = [s.mx - br / 2, s.my - hoch / 2, s.mx + br / 2, s.my + hoch / 2];
-    if (gesetzt.some(k => kasten[0] < k[2] && kasten[2] > k[0] && kasten[1] < k[3] && kasten[3] > k[1])) continue;
-    gesetzt.push(kasten);
-    ctx.globalAlpha = Math.min(1, sicht);
-    ctx.lineWidth = Math.max(2, hoch * 0.2); ctx.strokeStyle = STRICH;
-    ctx.strokeText(s.name, s.mx, s.my);
-    ctx.fillStyle = INK; ctx.fillText(s.name, s.mx, s.my);
+    s.je10 = ctx.measureText(s.name).width / 10;
+    s.hoch = Math.max(MINSCHRIFT, Math.min(Math.sqrt(s.A) * 0.40, 30, s.bb * 1.3 / s.je10, s.bh * 0.9));
+    s.br = s.je10 * s.hoch;
+    s.x = s.mx; s.y = s.my;
   }
-  ctx.globalAlpha = 1;
+  // Auseinanderschieben statt weglassen: wo zwei Namen übereinanderlägen,
+  // weichen beide entlang der kleineren Überlappung aus, und eine schwache
+  // Feder zieht jeden zu seinem Fleck zurück. Nach ein paar Runden steht ein
+  // Kompromiss, der sich von Bild zu Bild ruhig verändert — kein Flackern.
+  for (let runde = 0; runde < 40; runde++) {
+    for (let i = 0; i < liste.length; i++) for (let j = i + 1; j < liste.length; j++) {
+      const a = liste[i], b = liste[j];
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const ux = (a.br + b.br) / 2 + 4 - Math.abs(dx);
+      const uy = (a.hoch + b.hoch) / 2 + 3 - Math.abs(dy);
+      if (ux <= 0 || uy <= 0) continue;
+      if (uy / (a.hoch + b.hoch) < ux / (a.br + b.br)) {
+        const v = (dy >= 0 ? 1 : -1) * uy * 0.3; a.y -= v; b.y += v;
+      } else {
+        const v = (dx >= 0 ? 1 : -1) * ux * 0.3; a.x -= v; b.x += v;
+      }
+    }
+    for (const s of liste) { s.x += (s.mx - s.x) * 0.08; s.y += (s.my - s.y) * 0.08; }
+  }
+
+  for (const s of liste) {
+    ctx.font = '600 ' + s.hoch.toFixed(1) + 'px system-ui,-apple-system,sans-serif';
+    // Weit ausgewichen? Dann ein Strich zurück zum Fleck, sonst weiss niemand,
+    // wem der Name gehört.
+    if (Math.hypot(s.x - s.mx, s.y - s.my) > s.hoch * 0.9) {
+      ctx.beginPath(); ctx.moveTo(s.mx, s.my); ctx.lineTo(s.x, s.y);
+      ctx.strokeStyle = STRICH; ctx.lineWidth = 2.5; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(s.mx, s.my); ctx.lineTo(s.x, s.y);
+      ctx.strokeStyle = INK; ctx.lineWidth = 0.7; ctx.globalAlpha = 0.45; ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    ctx.lineWidth = Math.max(2, s.hoch * 0.2); ctx.strokeStyle = STRICH;
+    ctx.strokeText(s.name, s.x, s.y);
+    ctx.fillStyle = INK; ctx.fillText(s.name, s.x, s.y);
+  }
 }
 
 /* ---------- Untertitel ----------
@@ -1165,7 +1241,7 @@ function reliefHoehen(a, b, u) {
     const y = new Float64Array(4);
     const von = Math.max(0, a - 1), bis = Math.min(NF2 - 1, a + 2);
     const n = bis - von + 1, hh = [];
-    for (let f = von; f < bis; f++) hh.push(JAHRE2[f + 1] - JAHRE2[f]);
+    for (let f = von; f < bis; f++) hh.push(TAKT[f]);   // Relief: dieselben Bilder ohne das letzte
     for (let i = 0; i < NZ; i++) {
       for (let f = von; f <= bis; f++) y[f - von] = RH[f][i];
       const m = steigungen(y, hh, a - von, n);
@@ -1254,7 +1330,7 @@ function schreibeRelief(a, b, u) {
     : zwischen ? 'between ' + D2.b[a].jahr + ' and ' + D2.b[b].jahr + ' — heights interpolated'
       : bd.stichtage.join(' and ') + ' · ' + bd.begriffe.join(', ') + ' · '
         + nf.format(NZ) + ' cells of ' + FLAECHE + ' km²';
-  document.getElementById('zeit').value = Math.round((jahr - T0) / (T1 - T0) * 1000);
+  document.getElementById('zeit').value = Math.round(spiel * 1000);
 }
 ` : ''}
 /* ---------- Ablauf ---------- */
@@ -1264,21 +1340,21 @@ const DAUER = 48500;
 let zuletzt = 0;
 function schlag(t) {
   if (laeuft) {
-    if (zuletzt) setzeZeit(jahr + (t - zuletzt) / DAUER * (T1 - T0));
+    if (zuletzt) setzeZeit(spiel + (t - zuletzt) / DAUER);
     zuletzt = t;
-    if (jahr >= T1) halte();
+    if (spiel >= 1) halte();
     zeichne();
   }
   requestAnimationFrame(schlag);
 }
 function starte() {
-  if (jahr >= T1 - 1e-9) setzeZeit(T0);
+  if (spiel >= 1 - 1e-9) setzeZeit(0);
   laeuft = true; zuletzt = 0; document.getElementById('spiel').textContent = '❚❚';
 }
 function halte() { laeuft = false; document.getElementById('spiel').textContent = '▶'; }
 document.getElementById('spiel').onclick = () => laeuft ? halte() : starte();
 document.getElementById('zeit').addEventListener('input', e => {
-  halte(); setzeZeit(T0 + (T1 - T0) * e.target.value / 1000); zeichne();
+  halte(); setzeZeit(e.target.value / 1000); zeichne();
 });
 for (const b of document.querySelectorAll('.modi button')) b.onclick = () => {
   modus = b.dataset.modus;
@@ -1299,11 +1375,11 @@ matchMedia('(prefers-color-scheme:dark)').addEventListener('change', () => { far
 // Markierungen für die Zählungen auf der Zeitachse
 function marken() {
   const VOLL = Math.max(...reihe.BEV.map(b => b.filter(v => v > 0).length));
-  // Die Marken sitzen dort, wo die Zählungen wirklich liegen: ungleichmässig,
-  // weil sie ungleichmässig gezählt wurden.
+  // Die Marken sitzen dort, wo die Zählungen im Ablauf liegen — der Regler
+  // misst Spielzeit, nicht Jahre.
   document.getElementById('marken').innerHTML = D.B.map((b, i) =>
     '<i class="' + (reihe.BEV[i].filter(v => v > 0).length >= VOLL ? 'voll' : '') + '" style="left:' +
-    ((b.t - T0) / (T1 - T0) * 100).toFixed(2) + '%" title="' + b.jahr + '"></i>').join('');
+    (TAKTKUM[i] * 100).toFixed(2) + '%" title="' + b.jahr + '"></i>').join('');
 }
 
 // Umschalter zwischen den Reihen
