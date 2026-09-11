@@ -115,7 +115,7 @@ const daten = {
   vb: [nutz.breite, nutz.hoehe], ank: nutz.ank,
   gx: nutz.gx, gy: nutz.gy,
   ringzahl: nutz.ringzahl, ringe: nutz.ringe, idx: nutz.idx,
-  R: nutz.reihen, B: nutz.bilder, gr: nutz.grenzen, takt: null,
+  R: nutz.reihen, B: nutz.bilder, takt: null,
   bev: nutz.bev, mj: nutz.methodenJeWert, ai: nutz.anteilJeWert,
   k: jeKreis.map(k => [k.ags, k.name, k.bez, k.land, k.flaeche]),
   L: laender,
@@ -293,41 +293,50 @@ body{background:var(--plane);color:var(--ink);
   background:var(--surface);border:1px solid var(--ring);border-radius:14px;padding:10px 12px 8px}
 
 /* Kopfzeile: Jahr und Einwohnerzahl. */
-.text{position:relative;flex:0 0 auto}
-.schild{display:flex;align-items:baseline;gap:10px}
+/* ---------- Drei Ebenen ----------
+   Der Text stand einmal über der Karte im Fluss und schob sie nach unten: eine
+   lange Notiz kostete der Karte vier Zeilen Höhe, eine kurze gab sie zurück,
+   und die Karte sprang. Jetzt liegt der Text **über der Bühne**, nicht in ihr,
+   und nimmt keinen Platz mehr weg — die Karte bekommt in jedem Fall die ganze
+   Fläche.
+
+   Damit stellt sich die Frage, was oben liegt. Die Leinwand ist draussen
+   durchsichtig, also:
+
+     Ebene 2  Jahr und Einwohnerzahl — über der Karte, mit Schein dahinter;
+              das ist die eine Zeile, die immer lesbar sein muss.
+     Ebene 1  die Karte.
+     Ebene 0  die Notiz und der Faden — **hinter** der Karte. Wo Platz ist,
+              stehen sie da; wo die Karte hinreicht, verschwinden sie dahinter.
+
+   Der Text weicht der Karte also aus, statt sie zu verdrängen. */
+.schild{position:absolute;left:12px;right:12px;top:10px;z-index:2;pointer-events:none;
+  display:flex;align-items:baseline;gap:10px;
+  text-shadow:0 0 6px var(--surface),0 0 6px var(--surface),0 0 14px var(--surface)}
 .schild>b{font-size:30px;font-weight:650;letter-spacing:-.02em;line-height:1}
 .schild>span{color:var(--ink2);font-size:13px}
 
-/* Die laufende Notiz, ausgeschrieben: Überschrift und Sätze. Sie hat jetzt
-   Platz, also bekommt sie ihn. Feste Höhe, damit die Karte nicht springt, wenn
-   eine Notiz länger ist als die vorige. */
-.jetzt{margin:8px 0 2px;min-height:4.4em;
+.text{position:absolute;left:12px;right:12px;top:48px;z-index:0;pointer-events:none}
+
+/* Die laufende Notiz, ausgeschrieben: Überschrift und Sätze. */
+.jetzt{margin:0;max-width:min(94%,540px);
   font-size:13.5px;line-height:1.45;color:var(--ink2);opacity:0;transition:opacity .4s}
 .jetzt b{display:block;color:var(--ink);font-weight:650;font-size:14.5px;margin-bottom:1px}
 
-/* Die vorigen Überschriften hängen unter der laufenden Notiz und rücken mit
-   jeder neuen eine Zeile nach unten, blasser mit jedem Schritt. Sie hängen
-   frei, nicht im Fluss: sonst wüchse der Textblock mit jeder Notiz, und die
-   Karte darunter müsste neunmal im Lauf schrumpfen und sich neu setzen. So
-   legen sie sich über den leeren oberen Rand der Karte; der Schein hinter der
-   Schrift hält sie lesbar, falls die Karte doch bis dorthin reicht. */
-.faden{position:absolute;left:0;top:100%;width:min(52%,210px);pointer-events:none;
-  padding-top:3px;display:flex;flex-direction:column;gap:3px;will-change:transform}
+/* Darunter die vorigen Überschriften, mit jeder Zeile blasser. */
+.faden{width:min(52%,210px);padding-top:5px;
+  display:flex;flex-direction:column;gap:3px;will-change:transform}
 .faden b{font-size:10.5px;line-height:1.25;font-weight:600;color:var(--ink);
-  text-shadow:0 0 3px var(--surface),0 0 3px var(--surface),0 0 7px var(--surface),
-    0 0 7px var(--surface);transition:opacity .5s}
+  transition:opacity .5s}
 @media(max-width:540px){.faden b{font-size:9.5px}}
-/* Auf einem kurzen Schirm ist der Platz knapp; dann fällt der Faden weg,
-   statt sich über die Karte zu legen oder die Bedienung zu verdecken. Die
-   laufende Notiz bleibt — sie ist die, die man liest. */
-@media(max-height:680px){.faden{display:none}}
 
-/* Die Karte füllt, was übrig bleibt. */
-.feld{position:relative;flex:1 1 auto;min-height:0}
+/* Die Karte füllt die Bühne. */
+.feld{position:relative;z-index:1;flex:1 1 auto;min-height:0}
 canvas{position:absolute;left:0;top:0;width:100%;height:100%;touch-action:manipulation}
 
 .fuss{flex:0 0 auto;padding:6px 0 0}
-.fuss .klein{margin:4px 0 0;font-size:11.5px;line-height:1.4;color:var(--ink2);min-height:2.8em}
+.fuss .klein{margin:4px 0 0;font-size:11.5px;line-height:1.35;color:var(--ink2);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .legende{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink2);
   font-variant-numeric:tabular-nums}
 .rampe{flex:1;height:9px;border-radius:5px;border:1px solid var(--ring)}
@@ -347,29 +356,6 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
 .formen button{flex:1;min-width:64px;padding:4px 3px;font-size:11.5px;color:var(--muted)}
 .formen button[aria-pressed=true]{color:var(--ink);border-color:var(--ink2);font-weight:600}
 
-/* Zwei Spalten, sobald die Bühne breiter als hoch ist. Sonst stünde die Karte
-   als Briefmarke in einem breiten schwarzen Feld: sie hat ein festes
-   Seitenverhältnis, und im Querformat begrenzt die Höhe sie. Links der Text,
-   rechts die Karte über die ganze Höhe — und die Spalte ist so bemessen, dass
-   die Karte den Rest gerade ausfüllt. */
-@media(min-width:760px) and (min-aspect-ratio:1/1){
-  .wrap{max-width:1100px}
-  .buehne{display:grid;gap:0 16px;
-    grid-template-columns:clamp(250px,31%,340px) 1fr;
-    grid-template-rows:1fr auto auto auto;
-    grid-template-areas:"text feld" "fuss feld" "regler feld" "formen feld"}
-  .text{grid-area:text;min-height:0;overflow:hidden}
-  .feld{grid-area:feld}
-  .fuss{grid-area:fuss}
-  .regler{grid-area:regler}
-  .formen{grid-area:formen}
-  .jetzt{font-size:14px;min-height:0}
-  .jetzt b{font-size:15px}
-  /* Hier ist Platz: der Faden darf im Fluss stehen, unter der Notiz. */
-  .faden{position:static;width:auto}
-  .faden b{text-shadow:none}
-}
-
 .tip{position:absolute;pointer-events:none;background:#141412;border:1px solid var(--axis);
   border-radius:9px;padding:7px 9px;font-size:12.5px;box-shadow:0 6px 20px rgba(0,0,0,.5);
   max-width:210px;opacity:0;transition:opacity .12s}
@@ -382,11 +368,6 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
 </head><body>
 <div class="wrap">
 <div class="buehne" id="buehne">
-  <div class="text">
-    <div class="schild"><b id="jahrZahl">–</b><span id="jahrBev"></span></div>
-    <p class="jetzt" id="jetzt"></p>
-    <div class="faden" id="faden" aria-live="polite"></div>
-  </div>
   <div class="feld">
     <canvas id="karte"></canvas>
     <div class="tip" id="tip"></div>
@@ -406,6 +387,11 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
     <button data-form="0">Real map</button>
     <button data-form="0.5" aria-pressed="true">Half and half</button>
     <button data-form="1">Cartogram</button>
+  </div>
+  <div class="schild"><b id="jahrZahl">–</b><span id="jahrBev"></span></div>
+  <div class="text">
+    <p class="jetzt" id="jetzt"></p>
+    <div class="faden" id="faden" aria-live="polite"></div>
   </div>
 </div>
 </div>
@@ -456,7 +442,6 @@ const REIHEN = D.R.map((r, ri) => {
   return { id: r.id, name: r.name, ZX, ZY, BEV, SKALA: r.zustaende.map(z => z.skala) };
 });
 const ANTEIL = entpacke(D.ai);
-const GRENZEN = kum(entpacke(D.gr));      // Knotenpaare an Landes- und Aussengrenzen
 let reihe = REIHEN[0];
 
 /* ---------- Weiche Interpolation ----------
@@ -607,7 +592,6 @@ const stil = n => getComputedStyle(document.body).getPropertyValue(n).trim();
 let LEER = '#1a1a18', INK = '#fff', STRICH = '#0c0c0c';
 const SCHATTEN = 'rgba(0,0,0,.6)', KANTE3D = '#060605';
 const HELLMAX = 0.55, DUNKELMAX = 0.55;
-const GELAENDE_STRICH = 'rgba(255,255,255,.13)', GELAENDE_GRENZE = 'rgba(0,0,0,.45)';
 function farbenHolen() {
   LEER = stil('--leer'); INK = stil('--ink'); STRICH = stil('--surface');
 }
@@ -702,11 +686,14 @@ function reliefAnteil(von, bis) {
   return Math.max(0, Math.min(1, (bis - von) / SPANNE_MIN));
 }
 
-function farbe(wert, k) {
-  if (!(wert > 0)) return LEER;
+// Nicht die Farbe, sondern ihre Stufe: gezeichnet wird in Bündeln, und dafür
+// muss gleiche Farbe gleiche Zahl sein. −1 heisst „ohne Zahl".
+function farbStufe(wert, k) {
+  if (!(wert > 0)) return -1;
   const h = HOCH[k];
-  if (!(h > 0)) return LEER;
-  return stufe(HYPSO, Math.max(0, Math.min(1, (Math.log(h) - skalaVon) / (skalaBis - skalaVon))));
+  if (!(h > 0)) return -1;
+  const u = Math.max(0, Math.min(1, (Math.log(h) - skalaVon) / (skalaBis - skalaVon)));
+  return Math.round(u * (HYPSO.length - 1));
 }
 let skalaVon = -1, skalaBis = 1, RELIEF_ANTEIL = 1;
 
@@ -850,6 +837,8 @@ function werteBei(a, b, u) {
    sich beleuchten. Die Reihenfolge bleibt dabei richtig, der Abstand nicht —
    die Zahl selbst steht beim Antippen. */
 const GEZEICHNET = new Float64Array(NK), HOCH = new Float64Array(NK);
+// Je Farbstufe ein Eimer, dazu einer für die Kreise ohne Zahl.
+const EIMER_F = Array.from({ length: HYPSO.length }, () => []), EIMER_LEER = [];
 // Die Stauchung und der Sockel, auf dem das Relief steht. Ohne Sockel läge auf
 // der Landkarte das halbe Land im Dunkeln, weil eine einzige Stadt die Skala
 // setzt; mit Sockel ist die Ebene eine Ebene und die Städte steigen daraus auf.
@@ -947,7 +936,6 @@ function reliefUeber(sil, deck, gross) {
   if (!(breite > 60 && hoehe > 60)) return;
   reliefFeld();
   const s = rW / breite;
-  const fuge = Math.max(1.0, breite / 420);     // Breite der Fuge zwischen zwei Kreisen
   const fein = Math.max(2.2, breite / 95);      // enges Weichzeichnen: der einzelne Kreis
   const grob = Math.max(7, breite / 22);        // weites: die Landschaft darüber
 
@@ -979,10 +967,21 @@ function reliefUeber(sil, deck, gross) {
       hcA.closePath();
     }
     const t = Math.round(255 * st / (STUFEN - 1));
-    hcA.fillStyle = 'rgb(' + t + ',' + t + ',' + t + ')';
+    const grau = 'rgb(' + t + ',' + t + ',' + t + ')';
+    hcA.fillStyle = grau;
     hcA.fill('evenodd');
+    // Dieselbe Naht wie auf der Leinwand, und hier wiegt sie schwerer: ein
+    // durchsichtiger Spalt im Höhenfeld wird nach dem Weichzeichnen zu einer
+    // Kerbe, also wieder zu einer sichtbaren Grenze — diesmal als Relief.
+    hcA.strokeStyle = grau; hcA.lineWidth = 1 / s; hcA.stroke();
   }
-  hcA.lineJoin = 'round'; hcA.lineWidth = fuge; hcA.strokeStyle = '#000'; hcA.stroke(sil);
+  // Hier stand eine Fuge: ein schwarzer Strich auf jeder Kreisgrenze, der nach
+  // dem Weichzeichnen einen Graben hinterliess und jeden Kreis als eigene
+  // Platte ausformte. Das war eine Grenze wie jede andere, nur als Relief
+  // gezeichnet statt als Linie — und sie blieb sichtbar, als die Linien
+  // längst weg waren. Jetzt stossen die Plateaus unmittelbar aneinander; das
+  // enge Weichzeichnen macht daraus einen Hang, und es bleibt ein
+  // durchgehendes Gelände statt eines Mosaiks.
 
   // Das weite Feld. Es entstand eine Fassung lang auf einer dreimal gröberen
   // Leinwand — Weichzeichnen kostet nach Fläche, und für die grosse Form
@@ -1407,32 +1406,50 @@ function zeichne() {
   ctx.fillStyle = KANTE3D; ctx.fill(sil);
   ctx.restore();
 
+  /* Gezeichnet wird in **Farbbündeln**, nicht Kreis für Kreis: die Leiter hat
+     sechzehn Stufen, also braucht die ganze Karte sechzehn Füllungen statt
+     vierhundert. Kreise, die gerade ein- oder ausblenden, haben eine eigene
+     Deckkraft und kommen einzeln dran — flächendeckend gibt es die nicht.
+
+     Zu jeder Füllung ein Strich **in derselben Farbe**. Das ist keine Grenze,
+     sondern ihr Gegenteil: zwei Nachbarn werden getrennt gefüllt, und die
+     Kantenglättung lässt an der gemeinsamen Kante einen halb durchsichtigen
+     Spalt stehen. Auf schwarzem Grund liest der sich als feine dunkle Linie —
+     eine Grenze, die niemand gezeichnet hat. Der Strich dehnt jede Fläche um
+     einen halben Bildpunkt, die Nachbarn überlappen sich, und die Naht ist
+     zu. */
+  for (const e of EIMER_F) e.length = 0;
+  const blass = [];
   for (let g = 0; g < NK; g++) {
     if (!(deck[g] > 0.001)) continue;             // ohne Zahl wird nicht gezeichnet
-    ctx.globalAlpha = deck[g];
-    const ringe = GEBIETE[g];
+    const st = farbStufe(w[g], g);
+    if (deck[g] < 0.999) { blass.push([g, st]); continue; }
+    if (st < 0) EIMER_LEER.push(g); else EIMER_F[st].push(g);
+  }
+  const malBuendel = (liste, farbe) => {
+    if (!liste.length) return;
     ctx.beginPath();
-    for (const r of ringe) {
+    for (const g of liste) for (const r of GEBIETE[g]) {
       ctx.moveTo(px[r[0]] * mass + verX, py[r[0]] * mass + verY);
       for (let i = 1; i < r.length; i++) ctx.lineTo(px[r[i]] * mass + verX, py[r[i]] * mass + verY);
       ctx.closePath();
     }
-    ctx.fillStyle = farbe(w[g], g);
-    ctx.fill('evenodd');
-    ctx.strokeStyle = GELAENDE_STRICH;
-    ctx.lineWidth = Math.max(0.3, Math.min(0.6, breite / 700)); ctx.stroke();
+    ctx.fillStyle = farbe; ctx.fill('evenodd');
+    ctx.strokeStyle = farbe; ctx.stroke();
+  };
+  ctx.lineWidth = 1; ctx.lineJoin = 'round';
+  malBuendel(EIMER_LEER, LEER); EIMER_LEER.length = 0;
+  for (let st = 0; st < EIMER_F.length; st++) malBuendel(EIMER_F[st], HYPSO[st]);
+  for (const [g, st] of blass) {
+    ctx.globalAlpha = deck[g];
+    malBuendel([g], st < 0 ? LEER : HYPSO[st]);
   }
   ctx.globalAlpha = 1;
-  // Landes- und Aussengrenzen darüber, damit die 400 Kreise eine Gestalt
-  // behalten, in der man sich zurechtfindet.
-  ctx.beginPath();
-  for (let i = 0; i < GRENZEN.length; i += 2) {
-    const p = GRENZEN[i], q = GRENZEN[i + 1];
-    ctx.moveTo(px[p] * mass + verX, py[p] * mass + verY);
-    ctx.lineTo(px[q] * mass + verX, py[q] * mass + verY);
-  }
-  ctx.strokeStyle = GELAENDE_GRENZE;
-  ctx.lineWidth = Math.max(0.6, Math.min(1.1, breite / 480)); ctx.stroke();
+  /* Keine Grenzen mehr, weder um die Kreise noch um die Länder. Eine
+     Geländekarte hat keine; sie hat Farbe, Hang und Höhenlinie, und die
+     zeigen dieselbe Grenze dort, wo sie etwas bedeutet — wo sich die Dichte
+     ändert. Wo zwei Nachbarn gleich dicht wohnen, war der Strich ohnehin nur
+     Verwaltung. */
 
   reliefUeber(sil, deck, gross);
 
@@ -1483,7 +1500,21 @@ function beschrifte(deck) {
       const A = Math.abs(A2 / 2);
       if (A > bestA) { bestA = A; mx = sx / (3 * A2); my = sy / (3 * A2); bb = rechts - links; bh = unten - oben; }
     }
-    if (bestA > 0) liste.push({ name, A: bestA, mx, my, bb, bh });
+    /* Nicht auf den Gipfel. Der Berg eines Kreises sitzt in seiner Mitte —
+       das weite Weichzeichnen macht aus der Fläche eine Kuppe, und ihr höchster
+       Punkt ist der Schwerpunkt. Genau dort stand bisher der Name, und bei
+       Berlin und Hamburg deckte er zu, was man sehen soll.
+
+       Also rückt der Name nach unten, um die Hälfte des Radius, den ein Kreis
+       dieser Fläche hätte. Bei einem grossen Fleck sind das viele Pixel und
+       der Gipfel wird frei; bei einem kleinen sind es wenige, und der Name
+       bleibt, wo er hingehört. Nach unten, weil das Licht von oben links
+       kommt: der Südhang liegt im Schatten, dort stört die Schrift am
+       wenigsten. */
+    if (bestA > 0) {
+      const versatz = Math.sqrt(bestA / Math.PI) * 0.5;
+      liste.push({ name, A: bestA, mx, my: my + versatz, bb, bh });
+    }
   }
   liste.sort((a, b) => b.A - a.A);
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
@@ -1606,11 +1637,11 @@ function notizen() {
 /* ---------- Legende ---------- */
 // Ein Satz zur eingestellten Form: das Volumen ist immer die Bevölkerung, und
 // wie es sich auf Fläche und Höhe verteilt, steht am Umschalter.
-function formSatz() {
-  // formZiel ist der Index in FORMEN: 0 Landkarte, 1 halb, 2 volles Kartogramm.
-  if (formZiel === 0) return 'True shape; the population is all in the height.';
-  if (formZiel === 2) return 'Area is population; nothing is left over for the height.';
-  return 'Half the distortion; the rest of the population is in the height.';
+// Ein Wort zur eingestellten Form, nicht mehr. Was sie bedeutet, steht am
+// Knopf darunter; die Leiter muss es nicht noch einmal erklären.
+// formZiel ist der Index in FORMEN: 0 Landkarte, 1 halb, 2 volles Kartogramm.
+function formWort() {
+  return formZiel === 0 ? 'true shape' : formZiel === 2 ? 'full cartogram' : 'half distortion';
 }
 function legende() {
   document.getElementById('rampe').style.background =
@@ -1629,14 +1660,12 @@ function legText() {
   const zeig = x => (x >= 10 ? x.toFixed(0) : x >= 1 ? x.toFixed(1) : x.toFixed(2));
   document.getElementById('legLinks').textContent = '×' + zeig(Math.exp(von));
   document.getElementById('legRechts').textContent = '×' + zeig(Math.exp(bis));
-  // Wo keine Höhe mehr übrig ist, hat die Leiter auch nichts mehr zu erklären.
+  // Eine Zeile: was die Zahlen an der Leiter sind, welche Form eingestellt ist,
+  // und welcher Stichtag gilt. Der Rest steht in der Methodik, nicht hier.
   document.getElementById('legText').textContent =
-    (RELIEF_ANTEIL < 0.08
-      ? 'Every county is drawn at the same density now, so the land lies flat. '
-      : 'Height in multiples of the average density: green is empty ground, rock is crowded. ')
-    + formSatz()
-    + (zwischen ? ' Interpolated between ' + D.B[a].jahr + ' and ' + D.B[b].jahr + '.'
-                : ' ' + D.B[u < 0.5 ? a : b].stichtage.join(' and ') + '.');
+    '× the average density · ' + formWort() + ' · '
+    + (zwischen ? D.B[a].jahr + ' → ' + D.B[b].jahr
+                : D.B[u < 0.5 ? a : b].stichtage.join(', '));
 }
 
 /* ---------- Tippen ---------- */

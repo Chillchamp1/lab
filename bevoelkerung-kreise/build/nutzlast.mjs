@@ -125,27 +125,6 @@ export function baueNutzlast({ gebiete, attr, X, Y, reihen, bilder, kreisInfo, l
     };
   });
 
-  // Kanten, die zwei Länder trennen oder aussen liegen. Bei 400 Kreisen ist
-  // die Karte sonst eine Masse gleichartiger Flecken; die Landesgrenzen geben
-  // ihr wieder eine Gestalt, in der man sich zurechtfindet. Gesucht wird über
-  // die Nachbarschaft: eine Kante gehört dazu, wenn die Gegenkante fehlt (dann
-  // ist es die Aussengrenze) oder zu einem Kreis in einem anderen Land gehört.
-  const gehoert = new Map();
-  gebiete.forEach((ringe, gi) => {
-    for (const r of ringe) for (let i = 0; i < r.length; i++)
-      gehoert.set(r[i] + '>' + r[(i + 1) % r.length], gi);
-  });
-  const grenzkanten = [];
-  gebiete.forEach((ringe, gi) => {
-    for (const r of ringe) for (let i = 0; i < r.length; i++) {
-      const a = r[i], b = r[(i + 1) % r.length];
-      const gegen = gehoert.get(b + '>' + a);
-      if (gegen === undefined) { grenzkanten.push(a, b); continue; }
-      if (gegen > gi && attr[gegen].land !== attr[gi].land) grenzkanten.push(a, b);
-    }
-  });
-  nutz.grenzen = packe(laufend(grenzkanten));
-  log(`  ${grenzkanten.length / 2} Kanten an Landes- und Aussengrenzen`);
   abweichungen.sort((a, b) => a - b);
   nutz.guete = {
     median: abweichungen[Math.floor(abweichungen.length / 2)],

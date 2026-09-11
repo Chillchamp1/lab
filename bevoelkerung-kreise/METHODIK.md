@@ -207,15 +207,31 @@ Notiz hängt ein Faden aus den letzten sechs, die jüngste obenauf, darunter die
 älteren, mit jeder Zeile blasser. Kommt eine dazu, rutschen die anderen eine
 Zeile nach unten.
 
-Der Faden hängt **frei**, nicht im Fluss: stünde er im Textblock, wüchse dieser
-mit jeder Notiz, und die Karte darunter müsste neunmal im Lauf schrumpfen und
-sich neu setzen. So legt er sich über den leeren oberen Rand der Karte — die
-ist an ihrem Seitenverhältnis festgemacht und lässt dort in aller Regel Platz.
-Lesbar bleibt die Schrift auch über einem Farbfleck, durch einen Halo in der
-Flächenfarbe. Auf einem Telefon bricht jede Überschrift auf zwei Zeilen um;
-dort hält der Faden drei statt sechs, und auf einem kurzen Schirm fällt er ganz
-weg. Ist die Bühne breit genug für zwei Spalten, steht er ohnehin im Text und
-braucht weder Halo noch freies Hängen.
+Notiz und Faden liegen zusammen **über der Bühne, nicht in ihr** (siehe unten),
+kosten der Karte also keine Höhe. Auf einem Telefon bricht jede Überschrift auf
+zwei Zeilen um; dort hält der Faden drei statt sechs.
+
+### Drei Ebenen
+
+Der Text stand einmal über der Karte im Fluss und schob sie nach unten: eine
+lange Notiz kostete der Karte vier Zeilen Höhe, eine kurze gab sie zurück, und
+die Karte sprang bei jedem Notizwechsel. Jetzt liegt er darüber und nimmt
+keinen Platz mehr weg — die Karte bekommt in jedem Format die ganze Fläche.
+
+Damit stellt sich die Frage, was oben liegt. Die Leinwand ist draussen
+durchsichtig, also:
+
+| Ebene | |
+|---|---|
+| 2 | Jahr und Einwohnerzahl, mit Schein dahinter — die eine Zeile, die immer lesbar sein muss |
+| 1 | die Karte |
+| 0 | Notiz und Faden — **hinter** der Karte |
+
+Wo Platz ist, stehen Notiz und Faden da; wo die Karte hinreicht, verschwinden
+sie dahinter. Der Text weicht der Karte also aus, statt sie zu verdrängen. Auf
+einem Telefon im Hochformat ist die Karte breitenbegrenzt und lässt oben Rand,
+dort steht die Notiz fast vollständig frei; auf einem breiten Schirm füllt die
+Karte die Bühne und nimmt sich den Platz.
 
 Geschoben wird nicht Zeile für Zeile: der ganze Faden springt ohne Übergang um
 eine Zeilenhöhe nach oben und läuft dann nach unten zurück. Weil die neue
@@ -382,9 +398,11 @@ Farbe sind die Daten.
 ### Das Höhenfeld
 
 1. Eine Vorlage: jeder Kreis in seinem Grauwert (das ist seine Höhe, siehe 4f),
-   die Fugen zwischen ihnen schwarz und überall gleich breit (`breite/420`).
-   Draussen bleibt sie durchsichtig. Gezeichnet in vierundzwanzig Bündeln statt
-   in vierhundert Füllungen.
+   die Kreise unmittelbar aneinanderstossend. Draussen bleibt sie durchsichtig.
+   Gezeichnet in Bündeln gleicher Höhenstufe statt in vierhundert Füllungen —
+   und jedes Bündel wird in seinem eigenen Grau noch einmal umrandet, weil die
+   Kantenglättung sonst zwischen zwei Bündeln einen halb durchsichtigen Spalt
+   stehen lässt, aus dem nach dem Weichzeichnen eine Kerbe wird.
 2. Zweimal weichgezeichnet — einmal knapp (`breite/95`), einmal weit
    (`breite/22`). Das knappe Feld trägt den einzelnen Kreis, das weite die
    Landschaft darüber; gemischt 40 zu 60. Das weite entstand eine Fassung lang
@@ -515,17 +533,18 @@ Höhenlinie. Drei Dinge halten sie trotzdem sauber:
 Zwei Lagen also, weil sie verschieden gehören: die Schattierung als Grau im
 Modus `overlay` über die Fläche, die Linien als Pfade darüber.
 
-Die Fugen sind dabei überall gleich breit. Wie hoch ein Kreis steht, sagt 4f:
-im vollen Kartogramm für alle dasselbe, sonst Bevölkerung durch gezeichnete
-Fläche.
+Wie hoch ein Kreis steht, sagt 4f: im vollen Kartogramm für alle dasselbe, sonst
+Bevölkerung durch gezeichnete Fläche.
 
 > Volumen = Fläche × Höhe ∝ Bevölkerung — in jeder Stellung des Reglers.
 
-Dass im vollen Kartogramm trotzdem die grossen Städte aufgehen, ist deshalb kein
-zweiter Datensatz und keine zweite Farbskala, sondern folgt aus der ersten: ein
-Kreis mit vielen Menschen ist breit gezeichnet, kommt weit von seinen Fugen weg
-und erreicht die volle Höhe; ein kleiner erreicht sie nie und bleibt ein flaches
-Kissen.
+**Eine Fassung lang lag auf jeder Kreisgrenze eine schwarze Fuge** (`breite/420`),
+damit jeder Kreis als eigene Platte modelliert wurde. Sie ist weg. Eine Fuge ist
+eine Grenze, nur als Relief gezeichnet statt als Linie — und sie blieb sichtbar,
+als die Linien längst weg waren: ein Netz feiner Gräben über dem ganzen Land, an
+Stellen, wo sich nichts ändert ausser der Zuständigkeit. Jetzt stossen die
+Plateaus unmittelbar aneinander, das enge Weichzeichnen macht aus der Stufe
+einen Hang, und es bleibt ein durchgehendes Gelände statt eines Mosaiks.
 
 Darunter liegt die ganze Platte: derselbe Pfad zweimal versetzt gefüllt, weit
 unten und weich als Schatten, knapp darunter als Kante. Weil die Kreise die
@@ -553,6 +572,15 @@ sehen sind je nach Bild weniger.
 **Alle Namen stehen von Anfang an da**, auch 1871, wo die Flecken winzig sind.
 Ein Name, der im Lauf der Zeit erscheint oder verschwindet, ist ein Sprung im
 Bild, und davon hat die Karte genug.
+
+**Und keiner steht auf seinem Gipfel.** Der Berg eines Kreises sitzt in seiner
+Mitte — das weite Weichzeichnen macht aus der Fläche eine Kuppe, und deren
+höchster Punkt ist der Schwerpunkt. Genau dort stand der Name, und bei Berlin
+und Hamburg deckte er zu, was man sehen soll. Der Name rückt deshalb um die
+Hälfte des Radius nach unten, den ein Kreis dieser Fläche hätte: bei einem
+grossen Fleck sind das viele Bildpunkte und der Gipfel wird frei, bei einem
+kleinen wenige. Nach unten, weil das Licht von oben links kommt — der Südhang
+liegt ohnehin im Schatten.
 
 Damit das geht, sind zwei Dinge nötig. Erstens eine **Untergrenze**: die
 Schrifthöhe folgt der Wurzel aus der gezeichneten Fläche — wächst also mit dem
@@ -625,9 +653,27 @@ des Bildes. Daraus folgt das Schöne daran: die Höhenlinien laufen genau auf de
 Farbgrenzen, wie in einer physischen Karte, weil beide dieselbe Zahl zeigen.
 Grün heisst wenige Menschen auf viel Boden, Braun und Fels viele auf wenig.
 
-Die Kreisgrenzen treten dabei zurück (weiss auf dreizehn Prozent Deckkraft) und
-die Landesgrenzen werden zur dünnen dunklen Linie: eine Landschaft hat keine
-weissen Fugen, und so viel Orientierung ist auf einer physischen Karte üblich.
+### Keine Grenzen
+
+Eine Fassung lang standen die Kreisgrenzen noch als dünner heller Strich da und
+die Landesgrenzen als dunkler. Beide sind weg, und zwar alle drei Sorten, in
+denen eine Grenze auf dieser Karte auftreten kann:
+
+1. die **gezeichnete Linie** um jeden Kreis und um jedes Land,
+2. die **Fuge im Höhenfeld** (siehe 4g), die als Graben dasselbe zeigte,
+3. die **Naht**: zwei Nachbarn werden einzeln gefüllt, und die Kantenglättung
+   lässt an der gemeinsamen Kante einen halb durchsichtigen Spalt stehen. Auf
+   schwarzem Grund liest der sich als feine dunkle Linie — eine Grenze, die
+   niemand gezeichnet hat. Dagegen hilft, jede Fläche mit ihrem eigenen Ton
+   noch einmal zu umranden: sie dehnt sich um einen halben Bildpunkt, die
+   Nachbarn überlappen sich, und die Naht ist zu.
+
+Was bleibt, ist Farbe, Hang und Höhenlinie — und die zeigen die Grenze dort, wo
+sie etwas bedeutet: wo sich die Dichte ändert. Wo zwei Nachbarn gleich dicht
+wohnen, war der Strich ohnehin nur Verwaltung. Eine Geländekarte hat keine
+Grenzen; sie hat Gelände.
+
+Damit entfielen auch die 3 334 Knotenpaare der Landesgrenzen aus der Nutzlast.
 
 ### Die Leiter wird gemessen, nicht gesetzt
 
@@ -659,13 +705,8 @@ Kartogramm steckt die ganze Bevölkerung in der Fläche; jeder Kreis hat dann
 dieselbe Dichte, und was bleibt, ist die Genauigkeit des Diffusionsverfahrens.
 
 Eine Leiter, die über dieses eine Prozent gespannt wird, macht daraus ein
-Gebirge: sie stünde auf ×0,99 bis ×1,01 und zeigte doch alle sechzehn Farben.
-Das Höhenfeld tat dasselbe aus einem zweiten Grund — die Fugen zwischen den
-Kreisen sind gleich breit, also nagen sie an einem klein gezeichneten Kreis
-anteilig mehr als an einem grossen; nach dem Weichzeichnen behielt Berlin eine
-hohe Mitte und sah wieder aus wie ein Berg, obwohl es dort nur **gross**
-gezeichnet ist. Beides zusammen ergab eine reich gegliederte Landschaft ohne
-jeden Inhalt.
+Gebirge: sie stünde auf ×0,99 bis ×1,01 und zeigte doch alle sechzehn Farben —
+eine reich gegliederte Landschaft ohne jeden Inhalt.
 
 Zwei Bremsen, beide aus derselben gemessenen Spanne:
 
