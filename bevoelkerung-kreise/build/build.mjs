@@ -96,6 +96,60 @@ const daten = {
   L: laender,
 };
 
+// ---------------------------------------------------------------------------
+// Was jeweils geschah. Die Karte zeigt, dass sich etwas ändert, und wo — warum,
+// steht in keiner Zahl. Diese Notizen laufen als Untertitel mit.
+//
+// `von` und `bis` sind Anzeigefenster auf der Zeitachse, nicht die Jahreszahlen
+// des Ereignisses; die stehen in der Überschrift. Die Fenster stossen
+// aneinander, damit immer eine Notiz zu sehen ist, und sind dort etwas gedehnt,
+// wo die Karte schnell durchläuft. `kurz` steht unter der Karte und muss in drei
+// Zeilen passen, `mehr` kommt nur in der Liste weiter unten dazu.
+//
+// Was sich aus der Tabelle dieser Seite selbst belegen lässt, ist von dort
+// genommen; der Rest ist Schulwissen und als solches gekennzeichnet.
+const NOTIZEN = [
+  { von: 1872, bis: 1899, kopf: '1871–1900 · Coal and steel',
+    kurz: 'The Ruhr fills up while the farming east empties out — contemporaries called it the Ostflucht.',
+    mehr: 'Gelsenkirchen grows from 23,794 people in 1871 to 219,501 by 1910, on today’s boundaries.' },
+  { von: 1899, bis: 1913, kopf: '1900–1910 · The metropolis',
+    kurz: 'Berlin passes three and a half million people, counted on today’s city boundaries.',
+    mehr: '931,984 in 1871, 3,734,258 by 1910. Almost all of the country’s growth is now urban.' },
+  { von: 1913, bis: 1927, kopf: '1914–1918 · The First World War',
+    kurz: 'Two million soldiers killed, births halved — and no census between 1910 and 1939.',
+    mehr: 'The map glides over the war years because nothing was counted in them. The loss is real; the dip is not drawn.' },
+  { von: 1927, bis: 1937, kopf: '1933–1939 · Rearmament',
+    kurz: 'Whole towns are built for the arms industry: Wolfsburg in 1938, Salzgitter in 1942.',
+    mehr: 'Wolfsburg for the Volkswagen works, Salzgitter for ore and steel — open country until then, 94,026 and 111,510 people by 1961.' },
+  { von: 1937, bis: 1945, kopf: '1939–1945 · The Second World War',
+    kurz: 'Bombing empties the cities: Berlin loses 1.2 million people by 1946, Essen a fifth of its own.',
+    mehr: 'Hamburg is down 308,577. The count of October 1946 is taken in a country whose cities are rubble.' },
+  { von: 1945, bis: 1952, kopf: '1945–1950 · Flight and expulsion',
+    kurz: 'Around twelve million Germans are driven out of the east and arrive in a smaller country.',
+    mehr: 'The rural north takes the worst of it: Ostholstein doubles from 103,951 to 213,916 people, with nowhere to house them.' },
+  { von: 1952, bis: 1962, kopf: '1950–1961 · Wirtschaftswunder',
+    kurz: 'The west rebuilds, the Ruhr peaks, and 2.7 million people leave the GDR before the Wall.',
+    mehr: 'Essen holds 750,501 people in 1961 and never as many again. The Wall goes up in August of that year.' },
+  { von: 1962, bis: 1973, kopf: '1961–1973 · Guest workers',
+    kurz: 'The factories recruit in Italy, Greece, Turkey and Yugoslavia.',
+    mehr: 'From 1972 onward more people die in West Germany than are born there — every year since, growth has depended on who arrives.' },
+  { von: 1973, bis: 1988, kopf: '1973–1987 · The pits close',
+    kurz: 'Coal and steel shut down, and the Ruhr turns from the deepest blue on this map to red.',
+    mehr: 'It has stayed red ever since. The growth moves south and out to the districts around the cities.' },
+  { von: 1988, bis: 1996, kopf: '1989–1996 · Reunification',
+    kurz: 'The east empties westward, and its birth rate halves within two years.',
+    mehr: 'One of the sharpest peacetime falls ever recorded. Berlin is the exception and grows again.' },
+  { von: 1996, bis: 2011, kopf: '1996–2011 · Shrinking, and recounting',
+    kurz: 'Part of this fall is arithmetic: the 2011 census found 1.5 million people who were not there.',
+    mehr: 'The registers carried 81.8 million, the census counted 80.2. That correction sits on this stretch, on top of the real losses in the east.' },
+  { von: 2011, bis: 2019, kopf: '2011–2019 · The cities fill again',
+    kurz: 'Free movement inside the EU and the refugee year of 2015 outweigh the deaths.',
+    mehr: 'Leipzig, down a third between 1939 and 2011, climbs back above 600,000 people.' },
+  { von: 2019, bis: 2025, kopf: '2020–2024 · Covid, then Ukraine',
+    kurz: 'Migration stops for a year; then over a million people arrive from Ukraine in 2022.',
+    mehr: 'Germany reaches 83.6 million, and nearly all of the gain sits in the cities and the districts around them.' },
+];
+
 const mio = n => (n / 1e6).toFixed(1);
 const zahl = n => n.toLocaleString('en-GB');
 const undListe = a => a.length < 2 ? (a[0] ?? '') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
@@ -194,6 +248,13 @@ input[type=range]{width:100%;margin:0;accent-color:#2a78d6}
 .tip dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
 .tip .warn{display:block;margin-top:4px;color:var(--ink2);font-size:12px}
 h2{font-size:17px;margin:26px 0 6px}
+h3{font-size:14px;margin:18px 0 4px}
+.notiz{margin:0 2px 12px;min-height:4.5em;font-size:13.5px;line-height:1.5;
+  color:var(--ink2);opacity:0;transition:opacity .3s}
+.notiz b{color:var(--ink)}
+.wann{margin:0}
+.wann dt{font-weight:600;margin-top:12px}
+.wann dd{margin:0;color:var(--ink2)}
 p{margin:0 0 10px}
 .klein{font-size:13px;color:var(--ink2)}
 table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
@@ -227,6 +288,7 @@ the map keeps its real shape and the people stand up out of it instead.</p>` : '
 
 <div class="jahr"><b id="jahrZahl">–</b><span id="jahrBev"></span></div>
 <div class="kopf" id="kopf"></div>
+<p class="notiz" id="notiz"></p>
 
 <div class="regler">
   <button id="spiel" aria-label="Play or pause">▶</button>
@@ -272,8 +334,9 @@ from 1871 to 1900. The scale ends at ±3 % a year and is squeezed in between, so
 decades still show something and the one violent stretch, 1939 to 1946, still fits.</p>
 
 <p>Tap a county for its numbers. Between two censuses the shapes and the figures are
-interpolated; the readout says so. The clock runs at a steady rate through the years,
-not one step per census, so 1946 and 1950 pass in a blink and 1871 to 1900 takes a while.</p>
+interpolated; the readout says so. The clock runs at a steady rate through the years —
+about fifty seconds for the ${jahrBis - jahrVon}, not one step per census — so 1946 and 1950
+pass in a blink and 1871 to 1900 takes a while.</p>
 ${mitRelief ? `
 <p><b>Standing up</b> drops the cartogram and gives the country its real shape back. The
 people become height instead: over every cell of ${ZELLFLAECHE.toFixed(0)} km² of ground
@@ -299,6 +362,16 @@ ${bilder.find(b => b.werte.has(kommtSpaet[0])).jahr}: Greater Berlin was formed 
 dozens of surrounding towns, and no reachable source gives those towns separately for the years
 before. The figures for the old Berlin of 66.9 km² are not figures for today's 891 km², so they
 are left out rather than quietly reused.</p>` : ''}
+
+<h2>What happened</h2>
+<p>A note runs under the year while the clock passes each stretch. They are context, not
+data: the map shows that something changed and where, but never why. Figures inside them
+that name a county come from the table on this page; the rest is ordinary history.</p>
+
+<dl class="wann">
+${NOTIZEN.map(n => `  <dt>${n.kopf}</dt>
+  <dd>${n.kurz} ${n.mehr}</dd>`).join('\n')}
+</dl>
 
 <h2>Method, in short</h2>
 <p>Diffusion cartogram after Gastner and Newman (2004): population density is treated
@@ -592,6 +665,7 @@ function zeichne() {
   }
   ctx.strokeStyle = GRENZE; ctx.lineWidth = Math.max(0.7, Math.min(1.2, breite / 420)); ctx.stroke();
   schreibe(a, b, u, w, deck);
+  notizen();
   if (modus === 'wandel') legendeText(a, b);
 }
 
@@ -606,6 +680,28 @@ function schreibe(a, b, u, w, deck) {
     ? 'between ' + D.B[a].jahr + ' and ' + D.B[b].jahr + ' — shapes and figures interpolated'
     : z.stichtage.join(' and ') + ' · ' + z.begriffe.join(', ') + ' · method ' + z.methoden.join('/');
   document.getElementById('zeit').value = Math.round((jahr - T0) / (T1 - T0) * 1000);
+}
+
+/* ---------- Untertitel ----------
+   Welche Notiz gerade gilt, hängt nur an der Uhr, also gilt sie in allen drei
+   Ansichten. Gewechselt wird nicht hart: erst ausblenden, dann den Text
+   tauschen, dann einblenden. Die Marke fängt das Zurückziehen am Regler ab —
+   sonst käme ein alter Zeitgeber und schriebe die falsche Notiz hin. */
+const NOTIZ = ${JSON.stringify(NOTIZEN.map(n => [n.von, n.bis, n.kopf, n.kurz]))};
+let notizJetzt = -2, notizMarke = 0;
+function notizen() {
+  let i = -1;
+  for (let n = 0; n < NOTIZ.length; n++) if (jahr >= NOTIZ[n][0] && jahr < NOTIZ[n][1]) { i = n; break; }
+  if (i === notizJetzt) return;
+  notizJetzt = i;
+  const el = document.getElementById('notiz'), marke = ++notizMarke;
+  el.style.opacity = 0;
+  setTimeout(() => {
+    if (marke !== notizMarke) return;
+    if (i < 0) { el.textContent = ''; return; }
+    el.innerHTML = '<b>' + NOTIZ[i][2] + '</b> ' + NOTIZ[i][3];
+    el.style.opacity = 1;
+  }, 280);
 }
 
 /* ---------- Legende ---------- */
@@ -903,6 +999,7 @@ function zeichneRelief() {
   }
   maleZeile();
   schreibeRelief(a, b, u);
+  notizen();
 }
 
 function schreibeRelief(a, b, u) {
@@ -922,7 +1019,9 @@ function schreibeRelief(a, b, u) {
 }
 ` : ''}
 /* ---------- Ablauf ---------- */
-const DAUER = 34000;   // Millisekunden für die ganze Zeitachse
+// Millisekunden für die ganze Zeitachse. Um dreissig Prozent langsamer als
+// zuvor (34 s), damit die Notizen zu lesen sind und man den Bildern folgen kann.
+const DAUER = 48500;
 let zuletzt = 0;
 function schlag(t) {
   if (laeuft) {

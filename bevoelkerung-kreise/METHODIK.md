@@ -276,6 +276,29 @@ Der dunkle Grund gilt in beiden Erscheinungsbildern der Seite. Auf hellem Grund
 liesse sich eine Helligkeitsleiter nicht von unten aufbauen; die Ansicht bringt
 deshalb ihren eigenen Nachthimmel mit.
 
+## 4c. Die Untertitel
+
+Dreizehn Notizen laufen unter der Jahreszahl mit, eine je Zeitabschnitt, in
+allen drei Ansichten dieselben, weil sie nur an der Uhr hängen.
+
+Sie sind **Zusammenhang, keine Daten**, und das steht auch auf der Seite. Was
+darin eine Kreiszahl nennt — Gelsenkirchen 23 794 auf 219 501, Berlin minus 1,2
+Millionen, Ostholstein von 103 951 auf 213 916, Essen 750 501 im Jahr 1961 —
+stammt aus `data/bevoelkerung_kreise_long.csv` und lässt sich auf der Seite
+selbst nachprüfen. Der Rest (zwölf Millionen Vertriebene, 2,7 Millionen
+Republikflüchtlinge bis 1961, die Zensuskorrektur von 1,5 Millionen im Jahr
+2011) ist Schulwissen.
+
+Die Anzeigefenster sind nicht die Jahreszahlen des Ereignisses — die stehen in
+der Überschrift der Notiz. Die Fenster stossen aneinander, damit immer eine
+Notiz zu sehen ist, und sind dort gedehnt, wo die Uhr schnell durchläuft: die
+Zeitachse ist linear in Jahren, und zwischen 1939 und 1950 passiert mehr als
+in den dreissig Jahren davor. Gewechselt wird über Aus- und Einblenden, nicht
+hart.
+
+Die Uhr braucht rund fünfzig Sekunden für die 153 Jahre — dreissig Prozent
+langsamer als zuvor, damit die Notizen zu lesen sind.
+
 ## 4b. Die beiden Farbskalen des Kartogramms
 
 **People** färbt nach Einwohnern, logarithmisch von 30 000 bis 1,5 Millionen.
