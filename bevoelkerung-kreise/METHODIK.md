@@ -457,22 +457,84 @@ findet sie in der dritten Ansicht, dem Nadelrelief.
 
 ## 4g. Das Relief der Karte
 
-Die Karte liegt nicht flach, sondern wölbt sich. Die erste Fassung zog dafür an
-jeder Kreisgrenze einen hellen Strich oben links und einen dunklen unten rechts.
-Das war rechnerisch richtig — gleich breite Ränder heissen gleiche Dicke —, sah
-aber aus wie eine Kontur und nicht wie ein Körper. Die zweite Fassung rechnet
-statt Kanten ein **Höhenfeld** und beleuchtet es:
+Die Karte liegt nicht flach, sondern wölbt sich. Drei Fassungen hat das
+gebraucht, und die beiden verworfenen sagen am meisten darüber, worauf es
+ankommt.
+
+**Erste Fassung: Kanten.** An jeder Kreisgrenze ein heller Strich oben links,
+ein dunkler unten rechts. Rechnerisch richtig — gleich breite Ränder heissen
+gleiche Dicke —, aber es sah aus wie eine Kontur und nicht wie ein Körper.
+
+**Zweite Fassung: ein Höhenfeld mit Lambert-Beleuchtung.** Richtiger, aber zu
+schwach: eine Schattierung, die über eine farbige Fläche gelegt wird, muss
+sehr kräftig werden, ehe sie als Form gelesen wird — und dann ist von Rot und
+Blau nichts mehr übrig. Das ist kein Einstellungsfehler, sondern der Kern des
+Problems: **die Fläche ist schon vergeben.** Sie trägt die Farbe, und die Farbe
+sind die Daten.
+
+**Dritte Fassung: Linien statt Fläche.** Linien nehmen fast keine Fläche weg.
+
+### Das Höhenfeld
 
 1. Eine Vorlage: jeder Kreis in seinem Grauwert (das ist seine Höhe, siehe 4f),
    die Fugen zwischen ihnen schwarz und überall gleich breit (`breite/420`).
    Draussen bleibt sie durchsichtig. Gezeichnet in vierundzwanzig Bündeln statt
    in vierhundert Füllungen.
-2. Zweimal weichgezeichnet und gemischt — einmal knapp (`breite/130`), einmal
-   weit (`breite/22`, im Verhältnis 58 zu 42). Das knappe Feld rundet jeden
-   Kreis für sich ab, das weite mittelt darüber, wie dicht die Fugen liegen.
-3. Aus dem Gefälle des Feldes die Normale, daraus Lambert-Beleuchtung von oben
-   links, 50 Grad über der Fläche. Licht und Schatten kommen als weisse und
-   schwarze Deckkraft über die Karte, auf die Silhouette beschnitten.
+2. Zweimal weichgezeichnet — einmal knapp (`breite/95`), einmal weit
+   (`breite/22`, auf einer dreimal gröberen Leinwand). Das knappe Feld trägt
+   den einzelnen Kreis, das weite die Landschaft darüber; gemischt 40 zu 60.
+3. **Gelesen in zwei Kanälen**, und das ist der Kniff. Weichzeichnen mischt am
+   Rand Farbe mit Nichts; nähme man das Ergebnis einfach als Höhe, fiele die
+   Karte schon dreissig Pixel vor der Küste ab, und der grösste Berg im Feld
+   wäre Deutschland selbst. `getImageData` gibt die Farbe aber
+   **unmultipliziert** zurück: Rot ist bereits blur(Höhe·Deckung) /
+   blur(Deckung), also der örtliche Mittelwert der Höhe **ohne** den Rand — die
+   normalisierte Faltung, geschenkt. Die Deckung steht daneben im Alphakanal
+   und gibt den Rand als eigene, schmale Rundung. Damit gehört die ganze
+   Höhenspanne dem Inneren.
+
+### Was daraus gezeichnet wird
+
+**Schattierung**, aus dem Gefälle des Feldes die Normale, Lambert von oben
+links, 40 Grad über der Fläche. Aufgetragen als *Grau* im Mischmodus `overlay`
+(auf dunklem Grund `soft-light`), nicht als schwarze und weisse Deckkraft:
+Deckkraft zieht jede Farbe gegen Schwarz oder Weiss, `overlay` rechnet den Ton
+gegen die Farbe, die schon da liegt — dunkler wird dunkler, heller heller, der
+Farbton bleibt.
+
+**Mulden.** Was tiefer liegt als seine weite Umgebung, bekommt weniger Himmel
+ab; dasselbe, was in einem Tal weniger Licht ankommen lässt.
+
+**Schlagschatten**, in einem einzigen Durchgang. Das Licht kommt aus genau 45
+Grad von oben links, also laufen die Strahlen auf der Leinwand diagonal, und je
+Diagonale genügt ein mitgeführter Horizont:
+
+    s = max(s − Abfall, Höhe),   und im Schatten liegt, was unter s bleibt.
+
+Dabei steht die Sonne **flacher als bei der Schattierung** (16 statt 40 Grad),
+und das ist kein Versehen: ein Strahl, der steiler abfällt als der Hang selbst,
+trifft nie auf Schatten — bei 40 Grad gäbe es über diesen sanften Kuppen
+überhaupt keinen. Kartenzeichner trennen die beiden Lichter seit jeher.
+
+**Beleuchtete Höhenlinien, nach Tanaka Kitiro (1950).** Das ist das Stück, das
+die Form wirklich trägt. Eine gewöhnliche Höhenlinie ist überall gleich dunkel
+und sagt nur, wo gleiche Höhe liegt. Tanakas Linien werden **weiss, wo der Hang
+der Sonne zugewandt ist, und schwarz, wo er von ihr wegfällt**, und dick, wo
+der Hang voll im Licht oder voll im Schatten steht. Sie tragen damit dieselbe
+Auskunft wie eine Schattierung — aber als Kante, und eine Kante sieht das Auge
+sehr viel deutlicher als einen Verlauf. Vor allem: sie kosten fast keine
+Fläche, die Farbe der Kreise bleibt.
+
+Gerechnet aus dem **weiten** Feld, nicht aus dem gemischten: das enge hat an
+jeder Kreisgrenze eine Stufe, und auf einer Stufe lägen alle Niveaus
+übereinander — das gäbe einen Strich an jeder Grenze statt einer Höhenlinie.
+Dreissig Niveaus über die volle Höhe. Zwei Bremsen halten sie sauber: über fast
+ebenem Land blenden sie mit dem Gefälle ein (sonst sind sie Kratzer), und wo
+das Feld so steil abfällt, dass die Niveaus auf weniger als zwei Bildpunkte
+zusammenrücken, blenden sie wieder aus (sonst flimmern sie).
+
+Zwei Lagen also, weil sie verschieden gemischt gehören: die Schattierung als
+Grau im Modus `overlay`, die Linien schlicht darüber.
 
 Die Fugen sind dabei überall gleich breit. Wie hoch ein Kreis steht, sagt 4f:
 im vollen Kartogramm für alle dasselbe, sonst Bevölkerung durch gezeichnete
@@ -491,16 +553,12 @@ unten und weich als Schatten, knapp darunter als Kante. Weil die Kreise die
 Fläche lückenlos teilen, ist die Vereinigung ihrer Umrisse zugleich die
 Silhouette der Karte; beides braucht denselben Pfad, und der entsteht ohnehin.
 
-Gerechnet wird das Höhenfeld auf **42 Prozent** der Bildpunkte, das weite Feld
+Gerechnet wird das Höhenfeld auf **40 Prozent** der Bildpunkte, das weite Feld
 noch einmal dreimal gröber — Weichzeichnen kostet nach Fläche, und ein Feld, das
-nur die grosse Form trägt, braucht die Auflösung nicht. Beschnitten wird am Ende
-nicht mit `clip` an einem Pfad aus vierhundert Vielecken, sondern mit derselben
-Vorlage als Schablone (`destination-in`); das ist der teuerste Teil des Bildes,
-und so fällt er weg.
-
-Gemessen ist der Tausch ein Gewinn: die alte Fassung zog denselben Pfad zweimal
-als Kontur nach und lief damit auf 4,1 Bilder je Sekunde im Prüfbrowser, die
-neue kommt mitsamt Gitternetz und Höhen je Kreis auf 5,7.
+nur die grosse Form trägt, braucht die Auflösung nicht. Beschnitten wird nicht
+mit `clip` an einem Pfad aus vierhundert Vielecken, sondern mit derselben
+Vorlage als Schablone (`destination-in`); die Linienlage braucht nicht einmal
+das, weil das weite Feld ausserhalb der Karte null und damit eben ist.
 
 ## 4h. Die Städtenamen
 
@@ -527,39 +585,6 @@ Abstossen entlang der kleineren Überlappung, dazu eine schwache Feder, die
 jeden zu seinem Fleck zurückzieht. Das Ergebnis ändert sich von Bild zu Bild
 ruhig, flackert also nicht. Wer dabei weit von seinem Fleck weggerutscht ist,
 bekommt einen Haarstrich dorthin zurück.
-
-## 4i. Das Gitternetz
-
-Ein Kartogramm sagt, wie viele Menschen wo wohnen, und verschweigt dabei, wie
-stark es dafür ziehen musste. Genau das ist aber die interessante Zahl: die
-Dichte auf dem Boden. Also wird sie gezeichnet.
-
-Im Knotenmodell schwimmt ein regelmässiges Gitter mit: Quadrate von **30 mal 30
-Kilometern echter Fläche**, verankert an den Vielfachen von 30 km um den
-Ursprung der Projektion, nicht am Rand der Karte — ein Netz, das sich dem
-Ausschnitt anpasst, hätte Maschen verschiedener Grösse, und dann hiesse eine
-grosse Masche nichts mehr. Für Deutschland sind das 23 × 31 Knoten.
-
-Diese Knoten gehören zu keinem Kreis. Sie stehen in denselben Feldern wie die
-Kreisknoten, laufen durch dieselbe Diffusion, bekommen dieselbe Skalierung und
-dieselbe weiche Interpolation zwischen zwei Zählungen — sie zählen nur bei
-keiner Fläche mit, bei keiner Faltungsprüfung und bei keinem Rahmen. Damit das
-so bleibt, nimmt `raster.mjs` den Ausschnitt seines Dichtegitters jetzt immer
-ausdrücklich von den Kreisen (`nurGebiete`), und `nutzlast.mjs` misst den
-gemeinsamen Rahmen nur über die ersten *n* Knoten.
-
-Zu lesen ist das Netz wie folgt: **jede Masche hält gleich viel Land**, also ist
-ihre Grösse auf der Karte die Zahl der Menschen darauf. Wo das Netz weit
-gezogen ist — Berlin, Hamburg, Ruhrgebiet, München —, wohnen viele Menschen auf
-wenig Boden; wo es zu einem Knoten zusammengezogen ist, wenige auf viel. Das ist
-die Dichte, die das Kartogramm ausgegeben hat, um Fläche zu Bevölkerung zu
-machen; sonst fällt sie weg, hier steht sie da.
-
-Die Linien laufen **gerade von Knoten zu Knoten**. Eine geglättete Kurve sähe
-ruhiger aus, behauptete aber einen Verlauf, den niemand gerechnet hat.
-
-Gekostet hat das Netz 713 Knoten mehr in der Nutzlast — bei 12 000 Kreisknoten
-knapp sechs Prozent.
 
 ## 4b. Die beiden Farbskalen des Kartogramms
 
@@ -607,14 +632,45 @@ lässt die Ränder atmen.
 etwa acht Prozent der Männer nicht trennen können; auf einer Karte mit 400
 kleinen Flecken ist das nicht unschön, sondern unlesbar. Rot gegen Blau trägt
 dieselbe Bedeutung — Rot verliert Menschen, Blau gewinnt welche, Grau hält sich
-— und funktioniert bei jeder Form von Farbsehen. Beide Arme hören vor den
-dunkelsten Stufen auf: ganz unten laufen Blau und Rot beide gegen Schwarz, und
-dann ist die Richtung nicht mehr zu sehen.
+— und funktioniert bei jeder Form von Farbsehen.
 
-Was die Karte **nicht** mehr zeigt: die Dichte je Quadratkilometer und den
-Index gegen 1871. Beides stand einmal hier. Die Dichte, weil ein
+### Zwei Leitern je Farbe, nicht eine umgedrehte
+
+Die erste Fassung hatte je Farbe **eine** Leiter und drehte sie auf dunklem
+Grund um. Der Gedanke dahinter: der Schritt neben der Fläche soll immer „wenig"
+heissen, also hell auf hellem Grund, dunkel auf dunklem. Das Ergebnis war
+falsch herum: umgedreht wird „viel" nachts fast weiss, und ein **blassblauer
+Höchstwert neben einem tiefblauen Nichts** liest sich gegen jede Erwartung.
+Dasselbe am roten Arm: der stärkste Rückgang kam als hellrosa heraus.
+
+Beide Leitern laufen jetzt in dieselbe Richtung — **mehr ist satter**. Auf
+hellem Grund wird dabei auch dunkler (blass nach tiefblau), auf dunklem steigt
+vor allem die Buntheit: von einem fast grauen Blaugrau, das gerade über der
+Fläche liegt (OKLab L 0,37, C 0,02), bis zu einem kräftigen Azur (L 0,64,
+C 0,21). Der rote Arm spiegelt das bei gleicher Helligkeit, damit in der
+Richtungsskala keine Seite die andere überstrahlt. Gerechnet in OKLab, damit
+die dreizehn Stufen gleich weit auseinanderliegen.
+
+Auf hellem Grund hören beide Arme weiter vor den dunkelsten Stufen auf: dort
+laufen Blau und Rot beide gegen Schwarz, und dann ist die Richtung nicht mehr
+zu sehen. Auf dunklem Grund ist das nicht nötig — die Arme enden dort in
+kräftigem Azur und kräftigem Zinnober und bleiben bis zuletzt zu trennen.
+
+Was die Karte **nicht** mehr zeigt: das Gitternetz, die Dichte je
+Quadratkilometer und den Index gegen 1871.
+
+Das **Gitternetz** — Quadrate zu 30 × 30 km echter Fläche, die im Kartogramm
+mitschwammen — war eine Fassung lang da und ist wieder weg. Es zeigte die
+Verzerrung, die das Kartogramm aufgewendet hat, und war als Idee richtig; nur
+brachte es neben Relief und Formregler zu wenig für den Platz, den es auf der
+Fläche nahm. Den Regler zwischen Landkarte und Kartogramm (4f) beantwortet
+dieselbe Frage besser: man sieht die Verzerrung entstehen, statt sie
+abzulesen. Die 713 Knoten sind wieder aus dem Modell heraus.
+
+Dichte und Index standen ebenfalls einmal hier. Die Dichte, weil ein
 Bevölkerungskartogramm sie ohnehin schon in der Verzerrung trägt — ein dichter
-Kreis wird gross gezogen, das ist dieselbe Aussage zweimal. Der Index gegen
+Kreis wird gross gezogen, das ist dieselbe Aussage zweimal, und im
+Zwischenschritt des Formreglers steht sie ausserdem als Höhe da. Der Index gegen
 1871, weil er nur eine Antwort hatte: fast jeder Kreis ist gewachsen, die Karte
 war blau, und das Interessante — wann und wo es gekippt ist — ging darin unter.
 Genau das zeigt **Which way**.
