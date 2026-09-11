@@ -121,10 +121,17 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Auflösung und mit deren Kantenglättung. Vorher lagen sie im Höhenfeld und
   wurden mit ihm hochgerechnet; das liess sich durch mehr Auflösung nicht
   beheben, weil eine Linie von ein bis zwei Rasterpunkten gestreckt immer ein
-  Schmier bleibt. Vierzig Niveaus, Gitterschritt zwei Feldpunkte, gebündelt in
-  24 Pfade nach Beleuchtungsstärke.
-- Das Höhenfeld selbst darf dafür wieder grob sein (45 % der Bildpunkte): es
-  trägt nur noch den Verlauf. Die Höhen der Kreise stehen in 64 Stufen statt 24.
+  Schmier bleibt.
+- Und sie werden **verkettet**: je Gitterkante der Schnittpunkt und die ein bis
+  zwei benachbarten Kanten, dann durchlaufen — offene Ketten zuerst, dann die
+  Ringe. Auf der Kette wird die Beleuchtung längs geglättet und die Linie in
+  Läufe gleicher Stärke zerlegt, gezeichnet als weiche Kurve durch die
+  Mittelpunkte. Strecke für Strecke gezeichnet sah es gepunktet aus, nicht wie
+  eine Höhenlinie. Vierzig Niveaus, flächendeckend, 24 Züge für die ganze Karte.
+- Das Höhenfeld selbst darf grob bleiben (55 % der Bildpunkte): es trägt nur
+  noch den Verlauf. Die Höhen der Kreise stehen in 200 Stufen statt 24 — bei 64
+  sprang im Lauf der Zeit ein Kreis von einer Stufe zur nächsten, und die Linien
+  in seiner Umgebung zuckten mit.
 - Die **Städtenamen** haben eine Obergrenze an der Kartenbreite (`breite/38`)
   statt fester dreissig Pixel: Berlin und Hamburg standen sonst als Überschrift
   über der Karte statt als Beschriftung darin.
