@@ -99,6 +99,18 @@ ihren Begriff und ihren wirklichen Stichtag mit. Ausführlich in
 
 ## Verfahren
 
+Wie stark verzerrt wird, ist ein Knopf. **Cartogram** steckt die ganze
+Bevölkerung in die Fläche — Berlin nimmt 4,4 Prozent der Karte, und Deutschland
+sieht nicht mehr wie Deutschland aus. **Real map** steckt sie ganz in die Höhe:
+die Form stimmt, Berlin behält seine 0,25 Prozent Boden und steht dafür
+siebzehnmal so hoch wie der Durchschnitt. **Half and half** ist der Tausch
+dazwischen: die Form bleibt erkennbar, Berlin fällt auf 1,8 Prozent der Fläche,
+und die fehlenden 2,5 stecken in der Höhe. Fläche mal Höhe ist in jeder Stellung
+die Bevölkerung — die Höhe wird dafür an der wirklich gezeichneten Fläche
+gemessen, nicht geschätzt. Die Zwischenform kostet kein Byte: die Landkarte
+steht ohnehin in der Datei, jeder Knoten liegt einfach zwischen seinen beiden
+Orten.
+
 Über der Karte liegt ein **Gitternetz**: Quadrate von 30 mal 30 Kilometern
 echter Fläche, die in derselben Strömung mitschwimmen wie die Kreise. Jede
 Masche hält gleich viel Land, also ist ihre Grösse auf der Karte die Zahl der
@@ -107,13 +119,13 @@ einem Knoten zusammengezogen auf dem Land. Das ist die Dichte, die das
 Kartogramm ausgegeben hat, um Fläche zu Bevölkerung zu machen; sonst fällt sie
 weg, hier steht sie da.
 
-Und die Karte liegt nicht flach. Aus den Kreisflächen und den gleich breiten
-Fugen dazwischen entsteht ein Höhenfeld, das von oben links beleuchtet wird —
-die grossen Städte gehen als Kuppen auf, die kleinen Kreise bleiben flache
-Kissen. Das ist keine zweite Zahl, sondern folgt aus der ersten: alle Kreise
-sind gleich dick, und weil die Fläche schon die Bevölkerung ist, ist es das
-Volumen dann auch. Ein Buckel, der bei grossen Kreisen auch höher wäre, zeigte
-Fläche mal Fläche und damit nichts.
+Und die Karte liegt nicht flach. Aus den Kreisflächen, ihren Höhen und den
+gleich breiten Fugen dazwischen entsteht ein Höhenfeld, das von oben links
+beleuchtet wird — die grossen Städte gehen als Kuppen auf, die kleinen Kreise
+bleiben flache Kissen. Gezeichnet wird die Höhe gestaucht (Wurzel, mit Sockel):
+zwischen dem leersten Landkreis und Berlin liegt auf der Landkarte der Faktor
+134, und ein Relief mit Faktor 134 ist eine Wand neben einer Ebene. Die
+Reihenfolge bleibt richtig, der Abstand nicht; die Zahl steht beim Antippen.
 
 Diffusionskartogramm nach Gastner und Newman (2004), wie bei den
 [Wahlkreisen](../wahlkreise-2025/): die Dichte wird als Wärme aufgefasst und

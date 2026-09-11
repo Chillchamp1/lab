@@ -90,6 +90,20 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   2019→2024 viereinhalb statt eineinhalb. Zwischen den Zählungen wird mit einer monotonen
   kubischen Kurve gerechnet, nicht geradlinig: kein Knick, kein Überschiessen.
   Grösster Geschwindigkeitssprung von 125 auf 19 Prozent.
+- **Drei Kartogramm-Typen zum Umschalten**, an einem Regler zwischen Landkarte
+  und Kartogramm: Real map (a = 0), Half and half (a = 0,5), Cartogram (a = 1).
+  Jeder Knoten liegt bei `Landkarte + a · (Kartogramm − Landkarte)`; die
+  Landkarte steht ohnehin als Anfang der Differenzkette in der Nutzlast, also
+  kostet das kein Byte und keine zweite Zeitreihe. Berlin: 4,41 % der Fläche
+  bei a = 1, 1,75 % bei a = 0,5, 0,25 % bei a = 0.
+- **Volumen bleibt Bevölkerung, in jeder Stellung.** Was der Fläche fehlt, holt
+  die Höhe: Höhe = Bevölkerung / *gezeichnete* Fläche, an den Umrissen gemessen
+  statt aus einer Formel. Berlin steht dadurch 1,0 / 2,5 / 17,8 mal so hoch wie
+  der Durchschnitt — 1,75 × 2,5 = 4,4 = 0,25 × 17,8. Gezeichnet gestaucht
+  (`0,34 + 0,66 · (h/hmax)^0,45`), weil die Spanne auf der Landkarte 134 : 1
+  beträgt; die Zahl steht beim Antippen.
+- Nachgezählt, dass die Zwischenformen nichts umstülpen: **0 gefaltete Ringe von
+  4650** bei a = 0,25, 0,5 und 0,75 über alle zehn Bilder.
 - Über der Karte liegt ein **Gitternetz** aus Quadraten zu 30 × 30 km echter
   Fläche, das in derselben Diffusion mitschwimmt wie die Kreise, aber bei keiner
   Fläche mitzählt. Jede Masche hält gleich viel Land, also ist ihre Grösse die
@@ -103,8 +117,8 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Bevölkerung. Gerechnet auf 42 Prozent der Bildpunkte, das weite Feld noch
   dreimal gröber, beschnitten mit derselben Vorlage statt mit `clip` an
   vierhundert Vielecken — zusammen mit dem Netz läuft die Seite damit trotzdem
-  schneller als der Kantenstrich vorher (6,2 gegen 4,1 Bilder je Sekunde im
-  Prüfbrowser).
+  schneller als der Kantenstrich vorher (5,7 gegen 4,1 Bilder je Sekunde im
+  Prüfbrowser, Gitternetz und Höhen je Kreis eingerechnet).
 - Über dem Kartenrahmen steht kein Text mehr; Jahr und Einwohnerzahl stehen im
   Rahmen, die Legende unten darin. Der Rahmen
   passt als Ganzes ins Querformat (406 von 430 Pixeln Fensterhöhe), die Karte

@@ -383,7 +383,79 @@ gerechnet. Das ist der Punkt: sichtbar ist Bewegung je Sekunde, nicht je Jahr,
 und ohne diesen Bezug entstünde an jeder Zählung genau der Knick zurück, den
 4d beseitigt.
 
-## 4f. Das Relief der Karte
+## 4f. Der Regler zwischen Landkarte und Kartogramm
+
+Ein Kartogramm steckt die ganze Bevölkerung in die Fläche. Bei Berlin heisst
+das: 0,25 Prozent des Bodens werden zu 4,4 Prozent der Karte, ein Faktor 17,6,
+und Deutschland sieht nicht mehr wie Deutschland aus. Eine Landkarte mit Höhen
+steckt sie ganz in die Höhe: die Form stimmt, aber die Städte sind Nadeln auf
+einer Fläche, die man nicht mehr trifft.
+
+Die Seite lässt beides nebeneinander stehen und dazwischen einen Zwischenschritt
+— drei Knöpfe unter dem Regler:
+
+| | Berlins Anteil an der Karte | Berlins Höhe | Höhenspanne im Bild |
+|---|---|---|---|
+| **Real map** | 0,25 % | 17,8 × Mittel | 134 : 1 |
+| **Half and half** | 1,75 % | 2,5 × Mittel | 9 : 1 |
+| **Cartogram** | 4,41 % | 1,0 × Mittel | 1 : 1 |
+
+Der Tausch ist exakt: 1,75 × 2,5 = 4,4 = 0,25 × 17,8. **Volumen bleibt
+Bevölkerung**, in jeder Stellung.
+
+### Wie die Zwischenform entsteht
+
+Nicht als eigenes Kartogramm. Die Landkarte steht schon in der Nutzlast — sie
+ist der Anfang der Differenzkette, aus der jeder Zustand entsteht —, also liegt
+jeder Knoten für einen Wert *a* zwischen 0 und 1 einfach bei
+
+    Ort(a) = Landkarte + a · (Kartogramm − Landkarte)
+
+Das kostet **kein einziges Zeichen mehr** in der Datei, und die Bewegung beim
+Umschalten ist dieselbe weiche Verschiebung, die auch zwischen zwei Zählungen
+läuft. Der Preis: die Flächen der Zwischenform folgen keiner geschlossenen
+Formel. Ein eigens gerechnetes Teilkartogramm mit der Masse
+*Bevölkerung^a · Fläche^(1−a)* träfe genau *Fläche ∝ P^a · G^(1−a)* — kostete
+aber je Zwischenschritt eine eigene Zeitreihe (rund vierzig Minuten Rechnen und
+etwa 250 kB mehr in der Seite).
+
+Gebraucht wird die Formel gar nicht, weil die Höhe **gemessen** statt gerechnet
+wird:
+
+    Höhe = Bevölkerung / gezeichnete Fläche,  bezogen auf die mittlere Dichte des Bildes
+
+Die gezeichnete Fläche steht ohnehin zur Verfügung — sie wird je Bild aus den
+Umrissen gerechnet, dieselbe Schleife, die auch die Städtenamen setzt. Damit
+stimmt Fläche × Höhe = Bevölkerung bei *jedem* Zwischenwert von selbst, ohne
+dass die Zwischenform ein eigenes Kartogramm bräuchte. Im vollen Kartogramm
+kommt für jeden Kreis die Höhe 1 heraus (gemessen 0,99 bis 1,00), und die Karte
+sieht aus wie vorher.
+
+### Dass sich dabei nichts umstülpt
+
+Eine lineare Mischung zweier knickfreier Formen muss selbst nicht knickfrei
+sein. Also wird beim Bauen nachgezählt, für *a* = 0,25, 0,5 und 0,75 über alle
+zehn Bilder: **0 gefaltete Ringe von 4650**.
+
+### Und dass die Höhe gestaucht gezeichnet wird
+
+Zwischen dem leersten Landkreis und Berlin liegt auf der Landkarte der Faktor
+134. Ein Relief mit Faktor 134 ist eine senkrechte Wand neben einer Ebene, in
+der nichts mehr zu unterscheiden ist. Gezeichnet wird deshalb
+
+    Grauwert = 0,34 + 0,66 · (Höhe / höchste Höhe)^0,45
+
+— ein Sockel, damit die Ebene eine Ebene bleibt und nicht im Dunkeln liegt, und
+eine Wurzel, die sich beleuchten lässt. Die **Reihenfolge bleibt richtig, der
+Abstand nicht**; die Zahl selbst steht beim Antippen („Stands 2,5 × average").
+Im vollen Kartogramm sind alle Höhen gleich, dann ist beides wirkungslos.
+
+Was hier nicht gemacht wird: die Karte kippen und die Kreise wirklich
+extrudieren. Perspektive verzerrt Flächen, und dann liesse sich die eine Aussage
+dieser Karte nicht mehr ablesen. Wer wirkliche Höhe von der Seite sehen will,
+findet sie in der dritten Ansicht, dem Nadelrelief.
+
+## 4g. Das Relief der Karte
 
 Die Karte liegt nicht flach, sondern wölbt sich. Die erste Fassung zog dafür an
 jeder Kreisgrenze einen hellen Strich oben links und einen dunklen unten rechts.
@@ -391,8 +463,10 @@ Das war rechnerisch richtig — gleich breite Ränder heissen gleiche Dicke —,
 aber aus wie eine Kontur und nicht wie ein Körper. Die zweite Fassung rechnet
 statt Kanten ein **Höhenfeld** und beleuchtet es:
 
-1. Eine Vorlage: die Kreise weiss, die Fugen zwischen ihnen schwarz und überall
-   gleich breit (`breite/420`). Draussen bleibt sie durchsichtig.
+1. Eine Vorlage: jeder Kreis in seinem Grauwert (das ist seine Höhe, siehe 4f),
+   die Fugen zwischen ihnen schwarz und überall gleich breit (`breite/420`).
+   Draussen bleibt sie durchsichtig. Gezeichnet in vierundzwanzig Bündeln statt
+   in vierhundert Füllungen.
 2. Zweimal weichgezeichnet und gemischt — einmal knapp (`breite/130`), einmal
    weit (`breite/22`, im Verhältnis 58 zu 42). Das knappe Feld rundet jeden
    Kreis für sich ab, das weite mittelt darüber, wie dicht die Fugen liegen.
@@ -400,27 +474,22 @@ statt Kanten ein **Höhenfeld** und beleuchtet es:
    links, 50 Grad über der Fläche. Licht und Schatten kommen als weisse und
    schwarze Deckkraft über die Karte, auf die Silhouette beschnitten.
 
-Die Aussage bleibt dieselbe wie vorher: **die Dicke ist für alle Kreise gleich**,
-die Fugen sind es auch.
+Die Fugen sind dabei überall gleich breit. Wie hoch ein Kreis steht, sagt 4f:
+im vollen Kartogramm für alle dasselbe, sonst Bevölkerung durch gezeichnete
+Fläche.
 
-> Fläche = Bevölkerung, Höhe = konstant ⇒ Volumen = Fläche × Höhe ∝ Bevölkerung.
+> Volumen = Fläche × Höhe ∝ Bevölkerung — in jeder Stellung des Reglers.
 
-Dass dabei die grossen Städte aufgehen und Berlin, Hamburg, München, Köln und
-das Ruhrgebiet als Kuppen aus dem Land steigen, ist deshalb kein zweiter
-Datensatz und keine zweite Farbskala, sondern folgt aus der ersten: ein Kreis
-mit vielen Menschen ist breit gezeichnet, kommt weit von seinen Fugen weg und
-erreicht die volle Höhe; ein kleiner erreicht sie nie und bleibt ein flaches
-Kissen. Ein Buckel, der bei einem grossen Kreis auch höher stünde, hätte ein
-Volumen nach Fläche mal Fläche — und wäre gerade keine Bevölkerung mehr.
+Dass im vollen Kartogramm trotzdem die grossen Städte aufgehen, ist deshalb kein
+zweiter Datensatz und keine zweite Farbskala, sondern folgt aus der ersten: ein
+Kreis mit vielen Menschen ist breit gezeichnet, kommt weit von seinen Fugen weg
+und erreicht die volle Höhe; ein kleiner erreicht sie nie und bleibt ein flaches
+Kissen.
 
 Darunter liegt die ganze Platte: derselbe Pfad zweimal versetzt gefüllt, weit
 unten und weich als Schatten, knapp darunter als Kante. Weil die Kreise die
 Fläche lückenlos teilen, ist die Vereinigung ihrer Umrisse zugleich die
 Silhouette der Karte; beides braucht denselben Pfad, und der entsteht ohnehin.
-
-Gekippt wird nichts: Perspektive verzerrt Flächen, und dann liesse sich die eine
-Aussage dieser Karte nicht mehr ablesen. Wer wirkliche Höhe sehen will, findet
-sie in der dritten Ansicht, dem Nadelrelief.
 
 Gerechnet wird das Höhenfeld auf **42 Prozent** der Bildpunkte, das weite Feld
 noch einmal dreimal gröber — Weichzeichnen kostet nach Fläche, und ein Feld, das
@@ -431,9 +500,9 @@ und so fällt er weg.
 
 Gemessen ist der Tausch ein Gewinn: die alte Fassung zog denselben Pfad zweimal
 als Kontur nach und lief damit auf 4,1 Bilder je Sekunde im Prüfbrowser, die
-neue kommt mitsamt Gitternetz auf 6,2.
+neue kommt mitsamt Gitternetz und Höhen je Kreis auf 5,7.
 
-## 4g. Die Städtenamen
+## 4h. Die Städtenamen
 
 Die grössten Städte tragen ihren Namen: die kreisfreien Städte und Stadtkreise,
 die in irgendeinem Bild über 400 000 Menschen haben, dazu die Region Hannover,
@@ -459,7 +528,7 @@ jeden zu seinem Fleck zurückzieht. Das Ergebnis ändert sich von Bild zu Bild
 ruhig, flackert also nicht. Wer dabei weit von seinem Fleck weggerutscht ist,
 bekommt einen Haarstrich dorthin zurück.
 
-## 4h. Das Gitternetz
+## 4i. Das Gitternetz
 
 Ein Kartogramm sagt, wie viele Menschen wo wohnen, und verschweigt dabei, wie
 stark es dafür ziehen musste. Genau das ist aber die interessante Zahl: die

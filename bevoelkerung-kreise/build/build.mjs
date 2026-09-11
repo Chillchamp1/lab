@@ -9,6 +9,7 @@ import { baueNutzlast } from './nutzlast.mjs';
 import { ENTPACKER } from './code.mjs';
 import { kreisStammdaten } from './stammdaten.mjs';
 import { baueNadeln } from './nadeln.mjs';
+import { ringVorzeichen, gefalteteRinge } from './geometrie.mjs';
 
 const log = s => process.stderr.write(s + '\n');
 const KNOTEN = Number(process.env.KNOTEN ?? 9000);
@@ -96,6 +97,28 @@ log('  mit allen Kreisen');
 reihen.push({ id: 'alle', name: kommtSpaet.length ? 'with ' + spaeteNamen.join(' and ') : 'all counties',
   bilder, zeitreihe: rechneZeitreihe({ gebiete: geo.gebiete, X: NETZX, Y: NETZY, attr: modell.attr,
     bilder, groesste, gitter: GITTER, cache: 'zeitreihe-alle' + CACHE + '.json', log }) });
+
+// Die Zwischenformen. Die Seite kann von der Landkarte zum Kartogramm
+// überblenden, indem sie jeden Knoten zwischen seinen beiden Orten setzt. Das
+// ist billig — die Landkarte steht schon in der Nutzlast —, aber eine lineare
+// Mischung zweier knickfreier Formen muss selbst nicht knickfrei sein. Also
+// nachgezählt: kein Ring darf sich dabei umstülpen.
+{
+  const vorz = ringVorzeichen(geo.gebiete, geo.X, geo.Y);
+  for (const a of [0.25, 0.5, 0.75]) {
+    let kaputt = 0, gesamt = 0;
+    for (const z of reihen[reihen.length - 1].zeitreihe.zustaende) {
+      const BX = new Float64Array(z.X.length), BY = new Float64Array(z.Y.length);
+      for (let i = 0; i < z.X.length; i++) {
+        BX[i] = NETZX[i] + a * (z.X[i] - NETZX[i]);
+        BY[i] = NETZY[i] + a * (z.Y[i] - NETZY[i]);
+      }
+      const f = gefalteteRinge(geo.gebiete, BX, BY, vorz);
+      kaputt += f.kaputt; gesamt += f.gesamt;
+    }
+    log(`  Zwischenform ${a}: ${kaputt} gefaltete Ringe von ${gesamt}`);
+  }
+}
 
 log('Nutzlast …');
 const stamm = kreisStammdaten();
@@ -355,6 +378,13 @@ input[type=range]{width:100%;margin:0;accent-color:#2a78d6}
 .modi{display:flex;gap:6px;margin:14px 0 10px;flex-wrap:wrap}
 .modi button{flex:1;min-width:96px;padding:8px 6px;font-size:14px}
 .modi button[aria-pressed=true]{background:var(--ink);color:var(--plane);border-color:var(--ink)}
+/* Die Formleiste ist der zweite Regler und nicht die Hauptsache: kleiner,
+   enger, und die gewählte Form nur angestrichen statt ausgefüllt. */
+.formen{margin:10px 0 0;gap:5px}
+.formen button{flex:1;min-width:72px;padding:5px 4px;font-size:12.5px;color:var(--ink2)}
+.formen button[aria-pressed=true]{background:var(--surface);color:var(--ink);
+  border-color:var(--ink);font-weight:600}
+.formen[hidden]{display:none}
 .fuss{padding:8px 4px 2px}
 .fuss .klein{margin:4px 0 0;font-size:12px;line-height:1.45;min-height:2.9em}
 .legende{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink2);
@@ -429,6 +459,11 @@ a{color:inherit}
 </div>
 
 <div class="modi" id="reihen" role="group" aria-label="Which counties are drawn" hidden></div>
+<div class="modi formen" id="formen" role="group" aria-label="How much of the population goes into area">
+  <button data-form="0">Real map</button>
+  <button data-form="0.5">Half and half</button>
+  <button data-form="1" aria-pressed="true">Cartogram</button>
+</div>
 <div class="modi" role="group" aria-label="What the map shows">
   <button data-modus="wandel" aria-pressed="true">Growth</button>
   <button data-modus="menschen" aria-pressed="false">People</button>${mitRelief ? `
@@ -445,22 +480,40 @@ that much smaller than today.${ganzesLand ? '' : `</p>
 ${jeKreis.length} German counties. What is missing, and why, is written up in the repository.`}</p>
 
 <h2>How to read it</h2>
-<p>In the first two views area is always population: a county twice as populous is drawn
-twice as large. Colour is what you switch.</p>
+<p>One sentence holds the whole map together: <b>volume is population.</b> How that volume is
+split between area and height is the row of buttons under the slider.</p>
 
-<p>The mesh over the map is a grid of squares ${NETZ_KM} km by ${NETZ_KM} km of real ground,
+<p><b>Cartogram</b> is the classic: all of it goes into area, a county twice as populous is
+drawn twice as large, and every county is the same height. Berlin then takes 4.4 % of the map
+and Germany stops looking like Germany. <b>Real map</b> is the other end: the true outline,
+every county at its true size, and the whole population in the height instead — Berlin keeps
+its 0.25 % of the ground and stands almost eighteen times the average. <b>Half and half</b> is
+what the two are for: the shape stays recognisable, Berlin comes down to 1.8 % of the area,
+and the 2.5 it is missing is in the height. Area times height is its population in all three.</p>
+
+<p>The height is measured, not assumed — the page takes the area each county actually ends up
+with and divides the population by it, so the sum comes out right at every step of the morph,
+not just at the ends. It is drawn compressed, because on the real map the range from the
+emptiest district to Berlin is 134 to one and a relief like that is a wall next to a plain. The
+order stays true; tap a county for the number.</p>
+
+<p>Colour is a separate switch and means the same thing in all three shapes.</p>
+
+<p>The mesh is a grid of squares ${NETZ_KM} km by ${NETZ_KM} km of real ground,
 anchored to the projection and dragged along by the same current that makes the cartogram. Every
 cell holds the same amount of land, so the size of a cell is the people on that land: where the
 mesh is stretched wide, many people live on little ground; where it is squeezed to a knot, few
 live on much. It is the density the cartogram spent to make area mean population — normally
-thrown away, here drawn.</p>
+thrown away, here drawn. On <b>Real map</b> it is a plain regular grid, which is the point:
+the mesh is exactly the distortion, so you can watch it appear.</p>
 
-<p>The light comes from the upper left over a surface built out of the same thing. Every county
-is a pad of the same thickness, its area its population, so the volume of the pad is its
-population as well; the grooves between the pads are all the same width. A county drawn wide
-reaches full height and reads as a plateau, a county drawn small never gets there and stays a
-low cushion — which is why the big cities and the Ruhr swell up out of the country, and why
-the relief is not a second colour scale but the shape the first two views already have.</p>
+<p>The light comes from the upper left over a surface built out of the same thing: each county
+is a pad as high as the figure above says, and the grooves between the pads are all the same
+width. In the full cartogram every pad is the same height, so what you see is only the
+rounding at the edges — a county drawn wide reaches full height and reads as a plateau, one
+drawn small never gets there and stays a low cushion. Pull the distortion back and the pads
+start to differ, and the cities rise into real hills. The relief is never a second colour
+scale; it is the half of the population the area is no longer carrying.</p>
 
 <p>Headlines of what was happening stand in the top corner of the map. Each new one arrives at
 the top and pushes the ones before it down; the full notes are further down this page.</p>
@@ -692,8 +745,20 @@ function hermite(y1, y2, m1, m2, t) {
 /* ---------- Zeichenkoordinaten ---------- */
 const px = new Float64Array(N), py = new Float64Array(N);
 // Ein Knoten im Bild f, schon auf den gemeinsamen Massstab gebracht.
-const ortX = (f, i) => (reihe.ZX[f][i] - AX) * reihe.SKALA[f] + AX;
-const ortY = (f, i) => (reihe.ZY[f][i] - AY) * reihe.SKALA[f] + AY;
+/* ---------- Wie stark verzerrt wird ----------
+   FORM ist der Regler zwischen der Landkarte (0) und dem vollen Kartogramm
+   (1). Die Landkarte steckt schon in der Nutzlast — sie ist der Anfang der
+   Differenzkette —, also kostet der Zwischenschritt kein einziges Zeichen
+   mehr: jeder Knoten liegt einfach zwischen seinem Ort auf dem Boden und
+   seinem Ort im Kartogramm.
+
+   Was dabei an Fläche fehlt, holt die Höhe zurück; das rechnet hoehen()
+   weiter unten. Die Grösse der ganzen Karte bleibt in jedem Fall die
+   Bevölkerung, dafür sorgt SKALA. */
+const FORMEN = [0, 0.5, 1];
+let FORM = 1, formZiel = 2;      // formZiel ist der Index in FORMEN
+const ortX = (f, i) => ((GX[i] + FORM * (reihe.ZX[f][i] - GX[i])) - AX) * reihe.SKALA[f] + AX;
+const ortY = (f, i) => ((GY[i] + FORM * (reihe.ZY[f][i] - GY[i])) - AY) * reihe.SKALA[f] + AY;
 
 // Die Steigungen hängen nur am Abschnitt, nicht an der Stelle darin — sie
 // werden einmal je Abschnitt gerechnet und dann für alle Bilder benutzt.
@@ -728,11 +793,14 @@ function setzePunkte(a, b, u) {
     py[i] = PY1[i] * c1 + AY1[i] * c2 + PY2[i] * c3 + AY2[i] * c4;
   }
 }
-// Grösster Rahmen je Reihe, gemessen nur an den Kreisen, die im jeweiligen
-// Bild auch gezeichnet werden. So füllt jede Ansicht die Fläche, statt sich
-// nach Gebieten zu richten, die gar nicht zu sehen sind.
-for (const r of REIHEN) {
-  const merk = reihe; reihe = r;
+// Grösster Rahmen je Reihe und je Form, gemessen nur an den Kreisen, die im
+// jeweiligen Bild auch gezeichnet werden. So füllt jede Ansicht die Fläche,
+// statt sich nach Gebieten zu richten, die gar nicht zu sehen sind. Je Form
+// ein eigener Rahmen, weil die Landkarte hochkant steht und das Kartogramm
+// breiter läuft; dazwischen wird zwischen den Rahmen überblendet.
+function rahmenFuer(r, form) {
+  const merkR = reihe, merkF = FORM;
+  reihe = r; FORM = form;
   let a = Infinity, b = -Infinity, c = Infinity, d = -Infinity;
   for (let f = 0; f < NF; f++) {
     setzePunkte(f, f, 0);
@@ -744,8 +812,19 @@ for (const r of REIHEN) {
       }
     }
   }
-  r.rahmen = { x: a, y: c, w: b - a, h: d - c };
-  reihe = merk;
+  reihe = merkR; FORM = merkF; tangenteFuer = -1;
+  return { x: a, y: c, w: b - a, h: d - c };
+}
+for (const r of REIHEN) r.rahmenJe = FORMEN.map(f => rahmenFuer(r, f));
+// Der Rahmen zur gerade eingestellten Form, zwischen den beiden nächsten
+// gemessenen überblendet.
+function rahmenJetzt() {
+  const R = reihe.rahmenJe;
+  let k = 0; while (k < FORMEN.length - 2 && FORMEN[k + 1] < FORM) k++;
+  const t = Math.max(0, Math.min(1, (FORM - FORMEN[k]) / (FORMEN[k + 1] - FORMEN[k])));
+  const A = R[k], B = R[k + 1];
+  return { x: A.x + (B.x - A.x) * t, y: A.y + (B.y - A.y) * t,
+           w: A.w + (B.w - A.w) * t, h: A.h + (B.h - A.h) * t };
 }
 
 /* ---------- Farbskalen ---------- */
@@ -851,16 +930,22 @@ function platzImRahmen() {
   return Math.max(150, Math.round(innerHeight * 0.96 - drum));
 }
 function masse() {
-  const b = cv.parentElement.clientWidth;
-  breite = b;
+  breite = cv.parentElement.clientWidth;
   // Das Seitenverhältnis kommt aus der Karte selbst: ein Kasten, der genauso
-  // geformt ist wie das, was hineinsoll, verschenkt keinen Platz.
-  const V = reihe.rahmen;
-  hoehe = Math.round(Math.min(breite * (V.h / V.w), platzImRahmen()));
+  // geformt ist wie das, was hineinsoll, verschenkt keinen Platz. Beim
+  // Überblenden von einer Form zur anderen richtet sich der Kasten schon nach
+  // dem Ziel und die Karte wandert darin — sonst müsste die Leinwand
+  // vierzigmal in der Sekunde neu angelegt werden, und das ruckelt.
+  const Z = reihe.rahmenJe[formZiel];
+  const h = Math.round(Math.min(breite * (Z.h / Z.w), platzImRahmen()));
   const dpr = Math.min(2.5, devicePixelRatio || 1);
-  cv.width = Math.round(breite * dpr); cv.height = Math.round(hoehe * dpr);
-  cv.style.height = hoehe + 'px';
+  const bw = Math.round(breite * dpr), bh = Math.round(h * dpr);
+  if (cv.width !== bw || cv.height !== bh) {
+    cv.width = bw; cv.height = bh; cv.style.height = h + 'px';
+  }
+  hoehe = h;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const V = rahmenJetzt();
   mass = Math.min(breite / V.w, hoehe / V.h) * 0.99;
   verX = (breite - V.w * mass) / 2 - V.x * mass;
   verY = (hoehe - V.h * mass) / 2 - V.y * mass;
@@ -972,13 +1057,60 @@ function zeichneNetz() {
    von seinen Fugen weg und erreicht die volle Höhe; ein kleiner erreicht sie
    nie und bleibt ein flaches Kissen. Die Dicke ist für alle dieselbe — Fläche
    mal Höhe, also Volumen, bleibt damit die Bevölkerung. */
+/* ---------- Wie hoch ein Kreis steht ----------
+   Die eine Aussage dieser Karte ist: **Volumen ist Bevölkerung.** Im vollen
+   Kartogramm trägt das allein die Fläche, und die Höhe ist überall dieselbe.
+   Nimmt man die Verzerrung zurück, fehlt der Fläche etwas — und genau das
+   bekommt die Höhe:
+
+       Höhe = Bevölkerung / gezeichnete Fläche
+
+   Gemessen wird die gezeichnete Fläche, nicht gerechnet, was sie sein
+   sollte. Damit stimmt die Rechnung bei jedem Zwischenschritt von selbst,
+   ohne dass die Zwischenform ein eigenes Kartogramm bräuchte. Bezug ist die
+   mittlere Dichte des Bildes: im vollen Kartogramm kommt für jeden Kreis 1
+   heraus, auf der Landkarte seine wirkliche Dichte im Verhältnis zur
+   mittleren.
+
+   Gezeichnet wird die Höhe gestaucht. Zwischen dem leersten Landkreis und
+   Berlin liegt auf der Landkarte der Faktor 140, und ein Relief mit Faktor
+   140 ist eine senkrechte Wand neben einer Ebene. Die Wurzel daraus lässt
+   sich beleuchten. Die Reihenfolge bleibt dabei richtig, der Abstand nicht —
+   die Zahl selbst steht beim Antippen. */
+const GEZEICHNET = new Float64Array(NK), HOCH = new Float64Array(NK);
+// Die Stauchung und der Sockel, auf dem das Relief steht. Ohne Sockel läge auf
+// der Landkarte das halbe Land im Dunkeln, weil eine einzige Stadt die Skala
+// setzt; mit Sockel ist die Ebene eine Ebene und die Städte steigen daraus auf.
+// Im vollen Kartogramm sind alle Höhen gleich, dann ist der Sockel wirkungslos
+// und es bleibt genau beim flachen Deckel von vorher.
+const STAUCH = 0.45, BODEN_H = 0.34;
+function hoehen(w, deck) {
+  let sP = 0, sA = 0;
+  for (let g = 0; g < NK; g++) {
+    let A2 = 0;
+    if (deck[g] > 0.5) for (const r of GEBIETE[g]) {
+      const n = r.length;
+      for (let i = 0, j = n - 1; i < n; j = i++) A2 += px[r[j]] * py[r[i]] - px[r[i]] * py[r[j]];
+    }
+    GEZEICHNET[g] = Math.abs(A2 / 2) * mass * mass;
+    if (deck[g] > 0.5 && w[g] > 0 && GEZEICHNET[g] > 0) { sP += w[g]; sA += GEZEICHNET[g]; }
+  }
+  const mittel = sA > 0 ? sP / sA : 1;
+  let gross = 1;
+  for (let g = 0; g < NK; g++) {
+    HOCH[g] = (deck[g] > 0.5 && GEZEICHNET[g] > 0 && w[g] > 0) ? (w[g] / GEZEICHNET[g]) / mittel : 0;
+    if (HOCH[g] > gross) gross = HOCH[g];
+  }
+  return gross;
+}
+
 const RAUF = 0.42;                // Auflösung des Höhenfelds, Anteil der Bildpunkte
 const WEIT = 3;                   // das weite Feld noch einmal so viel gröber
 const hkA = document.createElement('canvas'), hcA = hkA.getContext('2d');
 const hkB = document.createElement('canvas'), hcB = hkB.getContext('2d', { willReadFrequently: true });
 const hkC = document.createElement('canvas'), hcC = hkC.getContext('2d');
 const hkL = document.createElement('canvas'), hcL = hkL.getContext('2d');
-let rW = 0, rH = 0, rBild = null, hoehen = null;
+let rW = 0, rH = 0, rBild = null, feldH = null;
 function reliefFeld() {
   const w = Math.max(8, Math.round(breite * RAUF)), h = Math.max(8, Math.round(hoehe * RAUF));
   if (w === rW && h === rH) return;
@@ -986,9 +1118,11 @@ function reliefFeld() {
   for (const k of [hkA, hkB, hkL]) { k.width = w; k.height = h; }
   hkC.width = Math.max(4, Math.round(w / WEIT)); hkC.height = Math.max(4, Math.round(h / WEIT));
   rBild = hcL.createImageData(w, h);
-  hoehen = new Float32Array(w * h);
+  feldH = new Float32Array(w * h);
 }
-function reliefUeber(sil) {
+const STUFEN = 24;                // so viele Höhenstufen, in Bündeln gezeichnet
+const EIMER_H = Array.from({ length: STUFEN }, () => []);
+function reliefUeber(sil, deck, gross) {
   if (!(breite > 60 && hoehe > 60)) return;
   reliefFeld();
   const s = rW / breite;
@@ -1003,7 +1137,30 @@ function reliefUeber(sil) {
   hcA.setTransform(1, 0, 0, 1, 0, 0);
   hcA.clearRect(0, 0, rW, rH);
   hcA.setTransform(s, 0, 0, s, 0, 0);
-  hcA.fillStyle = '#fff'; hcA.fill(sil, 'evenodd');
+  // Jeder Kreis bekommt sein eigenes Grau: das ist seine Höhe. Gezeichnet
+  // wird in vierundzwanzig Bündeln statt in vierhundert Füllungen — dieselbe
+  // Ersparnis wie im Nadelrelief.
+  for (const e of EIMER_H) e.length = 0;
+  for (let g = 0; g < NK; g++) {
+    if (!(deck[g] > 0.5) || !(HOCH[g] > 0)) continue;
+    const v = BODEN_H + (1 - BODEN_H) * Math.pow(HOCH[g] / gross, STAUCH);
+    let st = Math.round(v * (STUFEN - 1));
+    if (st < 1) st = 1; if (st > STUFEN - 1) st = STUFEN - 1;
+    EIMER_H[st].push(g);
+  }
+  for (let st = 1; st < STUFEN; st++) {
+    const e = EIMER_H[st];
+    if (!e.length) continue;
+    hcA.beginPath();
+    for (const g of e) for (const r of GEBIETE[g]) {
+      hcA.moveTo(px[r[0]] * mass + verX, py[r[0]] * mass + verY);
+      for (let i = 1; i < r.length; i++) hcA.lineTo(px[r[i]] * mass + verX, py[r[i]] * mass + verY);
+      hcA.closePath();
+    }
+    const t = Math.round(255 * st / (STUFEN - 1));
+    hcA.fillStyle = 'rgb(' + t + ',' + t + ',' + t + ')';
+    hcA.fill('evenodd');
+  }
   hcA.lineJoin = 'round'; hcA.lineWidth = fuge; hcA.strokeStyle = '#000'; hcA.stroke(sil);
 
   // Das weite Feld entsteht auf einer dreimal gröberen Leinwand. Weichzeichnen
@@ -1028,7 +1185,7 @@ function reliefUeber(sil) {
   // Gelesen wird die Höhe als Rot mal Deckkraft: was halb durchsichtig ist,
   // liegt halb so hoch. Ohne das wäre der Rand der Karte eine Klippe.
   const d = hcB.getImageData(0, 0, rW, rH).data, o = rBild.data;
-  for (let i = 0, n = rW * rH; i < n; i++) hoehen[i] = d[i << 2] * d[(i << 2) + 3];
+  for (let i = 0, n = rW * rH; i < n; i++) feldH[i] = d[i << 2] * d[(i << 2) + 3];
 
   // Licht von oben links, 50 Grad über der Fläche. Auf dem Bildschirm zeigt y
   // nach unten, oben links ist also die negative Richtung in beiden Achsen.
@@ -1039,8 +1196,8 @@ function reliefUeber(sil) {
     const zc = y * rW, zo = (y > 0 ? y - 1 : y) * rW, zu = (y < rH - 1 ? y + 1 : y) * rW;
     for (let x = 0; x < rW; x++) {
       const xm = x > 0 ? x - 1 : x, xp = x < rW - 1 ? x + 1 : x;
-      const gx = (hoehen[zc + xp] - hoehen[zc + xm]) * k;
-      const gy = (hoehen[zu + x] - hoehen[zo + x]) * k;
+      const gx = (feldH[zc + xp] - feldH[zc + xm]) * k;
+      const gy = (feldH[zu + x] - feldH[zo + x]) * k;
       const I = (-gx * lx - gy * ly + lz) / Math.sqrt(gx * gx + gy * gy + 1) - lz;
       const i4 = (zc + x) << 2;
       let a = I * 2.0;
@@ -1073,6 +1230,7 @@ function zeichne() {
      und Relief hängen alle daran. */
   const TIEFE = Math.max(2.5, breite / 130);
   const sil = new Path2D();
+  const gross = hoehen(w, deck);
   for (let g = 0; g < NK; g++) {
     if (!(deck[g] > 0.5)) continue;
     for (const r of GEBIETE[g]) {
@@ -1119,7 +1277,7 @@ function zeichne() {
   ctx.clip(sil);
   zeichneNetz();
   ctx.restore();
-  reliefUeber(sil);
+  reliefUeber(sil, deck, gross);
 
   beschrifte(deck);
   schreibe(a, b, u, w, deck);
@@ -1312,13 +1470,21 @@ function legende() {
     li.textContent = '−3 %'; re.textContent = '+3 %';
     const [a, b] = bildBei(jahr);
     t.textContent = 'Change per year, ' + D.B[a].jahr + ' to ' + D.B[b].jahr
-      + '. Red: losing people. Blue: gaining. Grey: holding steady.';
+      + '. Red: losing people. Blue: gaining. Grey: holding steady. ' + formSatz();
   } else {
     r.style.background = 'linear-gradient(90deg,' + rampe().join(',') + ')';
     li.textContent = nf.format(MENSCHEN_VON); re.textContent = (MENSCHEN_BIS / 1e6) + ' m';
     t.textContent = 'People per county, logarithmic, same scale in every frame — which is why the '
-      + 'whole map darkens as the country fills up.';
+      + 'whole map darkens as the country fills up. ' + formSatz();
   }
+}
+// Ein Satz zur eingestellten Form. Er sagt jedes Mal dasselbe in anderen
+// Anteilen: das Volumen ist die Bevölkerung, und wie es sich auf Fläche und
+// Höhe verteilt, steht am Umschalter.
+function formSatz() {
+  if (formZiel === 2) return 'Area is population; every county is the same height.';
+  if (formZiel === 0) return 'True shape; the population is all in the height.';
+  return 'Half the distortion; the rest of the population is in the height.';
 }
 
 /* ---------- Tippen ---------- */
@@ -1351,6 +1517,8 @@ function zeigeTip(x, y) {
     + '<dt>' + (D.L[k[3]] || '') + '</dt><dd>' + k[2] + '</dd>'
     + '<dt>People</dt><dd>' + nf.format(Math.round(v)) + '</dd>'
     + (k[4] ? '<dt>Per km²</dt><dd>' + nf.format(Math.round(v / k[4])) + '</dd>' : '')
+    + (formZiel < 2 && HOCH[treffer] > 0
+      ? '<dt>Stands</dt><dd>' + HOCH[treffer].toFixed(1) + '× average</dd>' : '')
     + (abschnitt === null ? ''
       : '<dt>' + D.B[a].jahr + '→' + D.B[b].jahr + '</dt><dd>'
         + (abschnitt >= 0 ? '+' : '−') + Math.abs(abschnitt).toFixed(2) + ' %/yr</dd>')
@@ -1673,10 +1841,41 @@ document.getElementById('spiel').onclick = () => laeuft ? halte() : starte();
 document.getElementById('zeit').addEventListener('input', e => {
   halte(); setzeZeit(e.target.value / 1000); zeichne();
 });
-for (const b of document.querySelectorAll('.modi button')) b.onclick = () => {
+const MODUSKNOPF = [...document.querySelectorAll('.modi button[data-modus]')];
+for (const b of MODUSKNOPF) b.onclick = () => {
   modus = b.dataset.modus;
-  for (const o of document.querySelectorAll('.modi button')) o.setAttribute('aria-pressed', String(o === b));
+  for (const o of MODUSKNOPF) o.setAttribute('aria-pressed', String(o === b));
   ansicht(); legende(); zeichne();
+};
+
+/* ---------- Umschalter zwischen den Formen ----------
+   Nicht hart umschalten: die Karte läuft in einer halben Sekunde von der
+   einen Form in die andere. Wer sieht, wie Berlin schrumpft und dafür
+   aufsteigt, versteht den Tausch ohne Beschriftung. Der Kasten richtet sich
+   dabei schon nach dem Ziel — sonst würde die Leinwand während der Bewegung
+   vierzigmal neu angelegt. */
+const FORMKNOPF = [...document.querySelectorAll('#formen button')];
+const MORPH = 600;
+let morphVon = 1, morphAuf = 1, morphEnde = 0;
+function morphSchritt(t) {
+  const rest = morphEnde - t;
+  const u = rest <= 0 ? 1 : 1 - rest / MORPH;
+  FORM = morphVon + (morphAuf - morphVon) * glatt(Math.max(0, Math.min(1, u)));
+  tangenteFuer = -1;
+  masse();
+  if (!laeuft) zeichne();
+  if (rest > 0) requestAnimationFrame(morphSchritt);
+  else { FORM = morphAuf; tangenteFuer = -1; masse(); zeichne(); }
+}
+for (const b of FORMKNOPF) b.onclick = () => {
+  const z = FORMEN.indexOf(Number(b.dataset.form));
+  if (z < 0 || z === formZiel) return;
+  formZiel = z;
+  for (const o of FORMKNOPF) o.setAttribute('aria-pressed', String(o === b));
+  morphVon = FORM; morphAuf = FORMEN[z]; morphEnde = performance.now() + MORPH;
+  tip.style.opacity = 0; letzterTip = -1;
+  legende();
+  requestAnimationFrame(morphSchritt);
 };
 // Beim Umschalten wechselt nur die Leinwand — der Grund bleibt der der Seite.
 // Die Sprechblase der Karte hat im Relief nichts zu suchen.
@@ -1684,6 +1883,8 @@ function ansicht() {
   const relief = modus === 'relief';
   cv.hidden = relief;
   if (cv2) cv2.hidden = !relief;
+  // Das Nadelrelief hat seine eigene Geometrie; die Formleiste gilt dort nicht.
+  document.getElementById('formen').hidden = relief;
   tip.style.opacity = 0; letzterTip = -1;
 }
 addEventListener('resize', () => { masse(); zeichne(); });
