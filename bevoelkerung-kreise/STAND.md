@@ -104,21 +104,21 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   beträgt; die Zahl steht beim Antippen.
 - Nachgezählt, dass die Zwischenformen nichts umstülpen: **0 gefaltete Ringe von
   4650** bei a = 0,25, 0,5 und 0,75 über alle zehn Bilder.
-- Über der Karte liegt ein **Gitternetz** aus Quadraten zu 30 × 30 km echter
-  Fläche, das in derselben Diffusion mitschwimmt wie die Kreise, aber bei keiner
-  Fläche mitzählt. Jede Masche hält gleich viel Land, also ist ihre Grösse die
-  Zahl der Menschen darauf: weit über Berlin, Hamburg, Ruhrgebiet und München,
-  zusammengezogen auf dem Land. Kostet 713 Knoten (23 × 31).
-- Das **Relief** ist kein Kantenstrich mehr, sondern ein Höhenfeld: Kreise weiss,
-  gleich breite Fugen dazwischen schwarz, zweimal weichgezeichnet (eng und weit),
-  daraus die Normale und Lambert-Licht von oben links. Die grossen Städte gehen
-  als Kuppen auf, die kleinen Kreise bleiben flache Kissen — keine zweite Zahl,
-  sondern die Folge der ersten: gleiche Dicke heisst Volumen ∝ Fläche ∝
-  Bevölkerung. Gerechnet auf 42 Prozent der Bildpunkte, das weite Feld noch
-  dreimal gröber, beschnitten mit derselben Vorlage statt mit `clip` an
-  vierhundert Vielecken — zusammen mit dem Netz läuft die Seite damit trotzdem
-  schneller als der Kantenstrich vorher (5,7 gegen 4,1 Bilder je Sekunde im
-  Prüfbrowser, Gitternetz und Höhen je Kreis eingerechnet).
+- Das **Relief** ist ein Höhenfeld, und die Form tragen **beleuchtete
+  Höhenlinien nach Tanaka (1950)**: weiss, wo der Hang der Sonne zugewandt ist,
+  schwarz, wo er wegfällt, dick, wo er voll im Licht oder Schatten steht. Grund:
+  die Fläche ist schon mit Daten belegt — eine Schattierung, die stark genug für
+  ein Gebirge wäre, macht aus Rot und Blau Grau; Linien nehmen fast keine Fläche
+  weg. Dazu Lambert-Schattierung als Grau im Modus `overlay` (dunkel:
+  `soft-light`), Muldenverschattung und Schlagschatten aus einer **flacheren
+  Sonne** (16 statt 40 Grad — ein Strahl, der steiler abfällt als der Hang, trifft
+  nie auf Schatten).
+- Das Höhenfeld wird **in zwei Kanälen** gelesen: unmultipliziertes Rot ist die
+  normalisierte Faltung, also der Höhenmittelwert ohne Randabfall, Alpha ist der
+  Rand der Karte. Sonst wäre der grösste Berg im Feld Deutschland selbst.
+- Das **Gitternetz** (30 × 30 km, eine Fassung lang) ist wieder draussen: neben
+  Relief und Formregler brachte es zu wenig für den Platz. 713 Knoten aus dem
+  Modell heraus.
 - Über dem Kartenrahmen steht kein Text mehr; Jahr und Einwohnerzahl stehen im
   Rahmen, die Legende unten darin. Der Rahmen
   passt als Ganzes ins Querformat (406 von 430 Pixeln Fensterhöhe), die Karte
@@ -126,6 +126,12 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   folgt dem der Karte.
 - Alle Notizen stehen vollständig als Liste unter der Karte: erreichtes
   normal, laufendes angestrichen, kommendes blass.
+- **Farbskalen: je Farbe zwei Leitern, keine umgedrehte.** Vorher wurde die
+  helle Leiter auf dunklem Grund umgedreht — dann ist der Höchstwert fast weiss
+  und der leerste Kreis tiefblau, was sich gegen jede Erwartung liest. Jetzt
+  läuft beides in dieselbe Richtung: mehr ist satter. Die dunkle Leiter steigt
+  in OKLab von L 0,37 / C 0,02 (fast graues Blaugrau) auf L 0,64 / C 0,21
+  (kräftiges Azur), der rote Arm spiegelt sie bei gleicher Helligkeit.
 - Die Richtungsfarbe blendet nur noch nach hinten über. Vorher zeigte sie den
   Einbruch von 1939 schon 1934 — ein Sechstel eines neunundzwanzigjährigen
   Abschnitts sind fünf Jahre.

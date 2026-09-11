@@ -14,7 +14,6 @@ import { ringVorzeichen, gefalteteRinge } from './geometrie.mjs';
 const log = s => process.stderr.write(s + '\n');
 const KNOTEN = Number(process.env.KNOTEN ?? 9000);
 const GITTER = Number(process.env.GITTER ?? 1600);
-const NETZ_KM = Number(process.env.NETZ_KM ?? 30);
 // Wohin die gerechnete Zeitreihe zwischengelegt wird. Mit einem eigenen Namen
 // lässt sich ein schneller Probebau fahren, ohne den guten Stand zu überschreiben.
 const CACHE = process.env.CACHE ? '-' + process.env.CACHE : '';
@@ -51,51 +50,17 @@ const bilderOhne = bilder.map(b => ({ ...b, werte: ohne(b.werte),
 const spaeteNamen = kommtSpaet.map(ags => modell.attr.find(a => a.ags === ags).name);
 const groesste = Math.max(...bilder.map(b => b.summe));
 
-// ---------------------------------------------------------------------------
-// Das Gitternetz.
-//
-// Ein Kartogramm sagt, wie viele Menschen wo wohnen, und verschweigt dabei,
-// wie stark es dafür ziehen musste. Genau das ist aber die interessante Zahl:
-// die Dichte auf dem Boden. Deshalb schwimmt ein regelmässiges Gitter in der
-// Strömung mit — Quadrate von vierzig mal vierzig Kilometern echter Fläche,
-// verankert am Ursprung der Projektion. Sie gehören zu keinem Kreis, zählen
-// bei keiner Fläche mit und sind bei der Verzerrung nur Treibgut; gezeichnet
-// ergeben sie das Netz über der Karte. Wo seine Maschen gross sind, wohnen
-// viele Menschen auf wenig Land, wo sie klein sind, wenige auf viel.
-//
-// Verankert heisst: die Linien liegen auf Vielfachen von vierzig Kilometern,
-// nicht auf dem Rand der Karte. Ein Netz, das sich dem Ausschnitt anpasst,
-// hätte Maschen verschiedener Grösse, und dann hiesse eine grosse Masche
-// nichts mehr.
-function baueNetz(gebiete, X, Y, weite) {
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-  for (const g of gebiete) for (const r of g) for (const n of r) {
-    if (X[n] < minX) minX = X[n]; if (X[n] > maxX) maxX = X[n];
-    if (Y[n] < minY) minY = Y[n]; if (Y[n] > maxY) maxY = Y[n];
-  }
-  const i0 = Math.floor(minX / weite), i1 = Math.ceil(maxX / weite);
-  const j0 = Math.floor(minY / weite), j1 = Math.ceil(maxY / weite);
-  const nx = [], ny = [];
-  for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) { nx.push(i * weite); ny.push(j * weite); }
-  return { sp: i1 - i0 + 1, ze: j1 - j0 + 1, X: nx, Y: ny };
-}
-const netz = baueNetz(geo.gebiete, geo.X, geo.Y, NETZ_KM * 1000);
-const netzInfo = { n0: geo.X.length, sp: netz.sp, ze: netz.ze, km: NETZ_KM };
-const NETZX = Float64Array.from([...geo.X, ...netz.X]);
-const NETZY = Float64Array.from([...geo.Y, ...netz.Y]);
-log(`  Gitternetz ${netz.sp} × ${netz.ze} Maschen zu ${NETZ_KM} km, ${netz.X.length} Knoten mehr`);
-
 log('Zeitreihe …');
 const reihen = [];
 if (kommtSpaet.length) {
   log(`  ohne ${spaeteNamen.join(', ')}`);
   reihen.push({ id: 'kern', name: 'without ' + spaeteNamen.join(' and '), bilder: bilderOhne,
-    zeitreihe: rechneZeitreihe({ gebiete: geo.gebiete, X: NETZX, Y: NETZY, attr: modell.attr,
+    zeitreihe: rechneZeitreihe({ gebiete: geo.gebiete, X: geo.X, Y: geo.Y, attr: modell.attr,
       bilder: bilderOhne, groesste, gitter: GITTER, cache: 'zeitreihe-kern' + CACHE + '.json', log }) });
 }
 log('  mit allen Kreisen');
 reihen.push({ id: 'alle', name: kommtSpaet.length ? 'with ' + spaeteNamen.join(' and ') : 'all counties',
-  bilder, zeitreihe: rechneZeitreihe({ gebiete: geo.gebiete, X: NETZX, Y: NETZY, attr: modell.attr,
+  bilder, zeitreihe: rechneZeitreihe({ gebiete: geo.gebiete, X: geo.X, Y: geo.Y, attr: modell.attr,
     bilder, groesste, gitter: GITTER, cache: 'zeitreihe-alle' + CACHE + '.json', log }) });
 
 // Die Zwischenformen. Die Seite kann von der Landkarte zum Kartogramm
@@ -110,8 +75,8 @@ reihen.push({ id: 'alle', name: kommtSpaet.length ? 'with ' + spaeteNamen.join('
     for (const z of reihen[reihen.length - 1].zeitreihe.zustaende) {
       const BX = new Float64Array(z.X.length), BY = new Float64Array(z.Y.length);
       for (let i = 0; i < z.X.length; i++) {
-        BX[i] = NETZX[i] + a * (z.X[i] - NETZX[i]);
-        BY[i] = NETZY[i] + a * (z.Y[i] - NETZY[i]);
+        BX[i] = geo.X[i] + a * (z.X[i] - geo.X[i]);
+        BY[i] = geo.Y[i] + a * (z.Y[i] - geo.Y[i]);
       }
       const f = gefalteteRinge(geo.gebiete, BX, BY, vorz);
       kaputt += f.kaputt; gesamt += f.gesamt;
@@ -123,8 +88,8 @@ reihen.push({ id: 'alle', name: kommtSpaet.length ? 'with ' + spaeteNamen.join('
 log('Nutzlast …');
 const stamm = kreisStammdaten();
 const { nutz, jeKreis } = baueNutzlast({
-  gebiete: geo.gebiete, attr: modell.attr, X: NETZX, Y: NETZY,
-  reihen, bilder, kreisInfo: stamm, netz: netzInfo, log,
+  gebiete: geo.gebiete, attr: modell.attr, X: geo.X, Y: geo.Y,
+  reihen, bilder, kreisInfo: stamm, log,
 });
 
 // Kennzahlen für den Text unter der Karte
@@ -151,7 +116,7 @@ const daten = {
   vb: [nutz.breite, nutz.hoehe], ank: nutz.ank,
   gx: nutz.gx, gy: nutz.gy,
   ringzahl: nutz.ringzahl, ringe: nutz.ringe, idx: nutz.idx,
-  R: nutz.reihen, B: nutz.bilder, gr: nutz.grenzen, takt: null, netz: nutz.netz,
+  R: nutz.reihen, B: nutz.bilder, gr: nutz.grenzen, takt: null,
   bev: nutz.bev, mj: nutz.methodenJeWert, ai: nutz.anteilJeWert,
   k: jeKreis.map(k => [k.ags, k.name, k.bez, k.land, k.flaeche]),
   L: laender,
@@ -499,21 +464,19 @@ order stays true; tap a county for the number.</p>
 
 <p>Colour is a separate switch and means the same thing in all three shapes.</p>
 
-<p>The mesh is a grid of squares ${NETZ_KM} km by ${NETZ_KM} km of real ground,
-anchored to the projection and dragged along by the same current that makes the cartogram. Every
-cell holds the same amount of land, so the size of a cell is the people on that land: where the
-mesh is stretched wide, many people live on little ground; where it is squeezed to a knot, few
-live on much. It is the density the cartogram spent to make area mean population — normally
-thrown away, here drawn. On <b>Real map</b> it is a plain regular grid, which is the point:
-the mesh is exactly the distortion, so you can watch it appear.</p>
+<p>Height is drawn the way a topographic map draws it: with <b>lit contour lines</b>. Every
+line runs along one height, and it turns white where its slope faces the light and black where
+it falls away from it, thick where the slope is fully lit or fully in shadow — the method
+Tanaka Kitiro published in 1950. Under them sits an ordinary hillshade, with the light from
+the upper left, and a cast shadow from a much lower sun, because a ray falling more steeply
+than the slope itself never lands in shadow.</p>
 
-<p>The light comes from the upper left over a surface built out of the same thing: each county
-is a pad as high as the figure above says, and the grooves between the pads are all the same
-width. In the full cartogram every pad is the same height, so what you see is only the
-rounding at the edges — a county drawn wide reaches full height and reads as a plateau, one
-drawn small never gets there and stays a low cushion. Pull the distortion back and the pads
-start to differ, and the cities rise into real hills. The relief is never a second colour
-scale; it is the half of the population the area is no longer carrying.</p>
+<p>The reason for lines rather than shading is that the surface is already spoken for: it is
+carrying the colour, and colour is the data. Shading strong enough to read as a mountain turns
+red and blue into grey. Lines take almost no surface away. In the full cartogram every pad is
+the same height, so what remains is the rounding at the edges — a county drawn wide reaches
+full height and reads as a plateau, one drawn small never gets there and stays a low cushion.
+Pull the distortion back and the pads start to differ, and the cities rise into hills.</p>
 
 <p>Headlines of what was happening stand in the top corner of the map. Each new one arrives at
 the top and pushes the ones before it down; the full notes are further down this page.</p>
@@ -691,10 +654,6 @@ const REIHEN = D.R.map((r, ri) => {
 });
 const ANTEIL = entpacke(D.ai);
 const GRENZEN = kum(entpacke(D.gr));      // Knotenpaare an Landes- und Aussengrenzen
-// Das Gitternetz: n0 ist der erste seiner Knoten, sp und ze sind Spalten und
-// Reihen, km die Weite einer Masche auf dem Boden. Seine Knoten stecken in
-// denselben Feldern wie die der Kreise und werden deshalb genauso interpoliert.
-const NETZ = D.netz;
 let reihe = REIHEN[0];
 
 /* ---------- Weiche Interpolation ----------
@@ -827,14 +786,26 @@ function rahmenJetzt() {
            w: A.w + (B.w - A.w) * t, h: A.h + (B.h - A.h) * t };
 }
 
-/* ---------- Farbskalen ---------- */
+/* ---------- Farbskalen ----------
+   Zwei Leitern je Farbe, eine für den hellen und eine für den dunklen Grund.
+   Die erste Fassung hatte nur eine und drehte sie nachts um. Das war falsch
+   herum gedacht: gedreht heisst „viel" auf dunklem Grund fast weiss, und ein
+   blassblauer Höchstwert neben einem tiefblauen Nichts liest sich verkehrt.
+
+   Beide Leitern laufen jetzt in dieselbe Richtung — **mehr ist satter**. Auf
+   hellem Grund wird dabei auch dunkler (blass nach tiefblau), auf dunklem
+   steigt vor allem die Buntheit: von einem fast grauen Blaugrau, das gerade
+   über der Fläche liegt, bis zu einem kräftigen Azur. Gerechnet in OKLab,
+   damit die Stufen gleich weit auseinanderliegen. */
 const BLAU = ['#cde2fb','#b7d3f6','#9ec5f4','#86b6ef','#6da7ec','#5598e7','#3987e5','#2a78d6','#256abf','#1c5cab','#184f95','#104281','#0d366b'];
 const ROT  = ['#f8d7d3','#f1c4bf','#edb0aa','#e69c95','#e08881','#d8746d','#d15d57','#c14e49','#ac4440','#993936','#85302d','#732624','#5f1f1d'];
+const BLAU_N = ['#3a404c','#39465e','#394c6e','#38527d','#37588c','#355e9b','#3164aa','#2d6bb9','#2571c8','#1a78d7','#047fe4','#0287ec','#018ff4'];
+const ROT_N  = ['#4b3b3a','#5a3b3a','#663c3a','#723d3a','#7e3d3a','#8a3e39','#953e39','#a13e38','#ac3e36','#b73e34','#c33d32','#ce3d2f','#d93c2b'];
 const dunkel = () => matchMedia('(prefers-color-scheme:dark)').matches;
 const stil = n => getComputedStyle(document.body).getPropertyValue(n).trim();
 let LEER = '#e6e5e0', STRICH = '#fcfcfb', GRENZE = '#fcfcfb';
 let INK = '#0b0b0b', SCHATTEN = 'rgba(0,0,0,.18)', KANTE3D = '#b9b8b0';
-let NETZTON = 'rgba(11,11,11,.20)', HELLMAX = 0.50, DUNKELMAX = 0.40;
+let HELLMAX = 0.50, DUNKELMAX = 0.40, SCHATTENTON = 0.35;
 function farbenHolen() {
   LEER = stil('--leer'); STRICH = stil('--surface'); GRENZE = stil('--surface'); INK = stil('--ink');
   // Der Stapel unter der Karte: auf hellem Grund ein Grau, auf dunklem fast
@@ -842,20 +813,28 @@ function farbenHolen() {
   // deshalb halten sie sich zurück.
   SCHATTEN = dunkel() ? 'rgba(0,0,0,.55)' : 'rgba(11,11,11,.16)';
   KANTE3D = dunkel() ? '#0a0a0a' : '#b4b3ab';
-  // Das Netz nimmt sich zurück: es soll zu lesen sein, ohne die Farbe der
-  // Fläche zu verfälschen. Licht und Schatten des Reliefs sind auf dunklem
-  // Grund anders verteilt als auf hellem — dort trägt der Schatten, hier das
-  // Licht.
-  NETZTON = dunkel() ? 'rgba(255,255,255,.22)' : 'rgba(11,11,11,.26)';
-  HELLMAX = dunkel() ? 0.32 : 0.36;
-  DUNKELMAX = dunkel() ? 0.44 : 0.36;
+  // Licht und Schatten des Reliefs sind auf dunklem Grund anders verteilt als
+  // auf hellem — dort trägt das Licht, hier der Schatten. Und gemischt wird
+  // verschieden: overlay rechnet den Ton gegen die Farbe, die schon da liegt,
+  // und wird auf dunklem Grund hart, weil dort alles ohnehin nahe an Schwarz
+  // liegt; soft-light bleibt milder.
+  MISCHUNG = dunkel() ? 'soft-light' : 'overlay';
+  STAERKE = dunkel() ? 1.9 : 1.4;
+  HELLMAX = dunkel() ? 0.55 : 0.38;
+  DUNKELMAX = dunkel() ? 0.55 : 0.45;
+  LINIE = dunkel() ? 0.9 : 1.1;
+  DUNKELLINIE = dunkel() ? 0.85 : 0.55;
   if (typeof reliefFarben === 'function') reliefFarben();
 }
-// Auf heller Fläche läuft die Skala hell -> dunkel, auf dunkler dunkel -> hell:
-// der Schritt neben der Fläche heisst immer „wenig".
-const rampe = () => dunkel() ? [...BLAU].reverse() : BLAU;
-const rampeRot = () => dunkel() ? [...ROT].reverse() : ROT;
-const MITTE = () => dunkel() ? '#383835' : '#f0efec';
+const rampe = () => dunkel() ? BLAU_N : BLAU;
+const rampeRot = () => dunkel() ? ROT_N : ROT;
+const MITTE = () => dunkel() ? '#44433f' : '#f0efec';
+// Die beiden Arme der Richtungsskala. Auf hellem Grund hören sie vor den
+// dunkelsten Stufen auf: dort laufen Blau und Rot beide gegen Schwarz, und
+// dann ist auf einer Karte mit 400 kleinen Flecken nicht mehr zu sehen, welche
+// Richtung gemeint ist. Auf dunklem Grund enden sie in kräftigem Azur und
+// kräftigem Zinnober und bleiben bis zuletzt auseinanderzuhalten.
+const arm = r => dunkel() ? r : r.slice(0, 10);
 const stufe = (r, u) => r[Math.max(0, Math.min(r.length - 1, Math.round(u * (r.length - 1))))];
 
 // Die Skala für die Bevölkerung: logarithmisch von 30 000 bis 1,5 Millionen,
@@ -890,11 +869,8 @@ function farbe(modus, wert, k, rate) {
     if (rate === null) return LEER;
     const v = wandelSkala(rate);
     if (Math.abs(v) < 0.05) return MITTE();
-    // Die beiden Arme hören vor den dunkelsten Stufen auf. Ganz unten laufen
-    // Blau und Rot beide gegen Schwarz, und dann ist auf einer Karte mit 400
-    // kleinen Flecken nicht mehr zu sehen, welche Richtung gemeint ist.
-    return v > 0 ? stufe(rampe().slice(0, 10), Math.min(1, v))
-                 : stufe(rampeRot().slice(0, 10), Math.min(1, -v));
+    return v > 0 ? stufe(arm(rampe()), Math.min(1, v))
+                 : stufe(arm(rampeRot()), Math.min(1, -v));
   }
   return stufe(rampe(), Math.max(0, Math.min(1, (Math.log(wert) - lnVon) / lnSpanne)));
 }
@@ -1016,30 +992,6 @@ function werteBei(a, b, u) {
   return { w, deck, rate };
 }
 
-/* ---------- Gitternetz ----------
-   Die Knoten des Netzes liegen in denselben Feldern wie die der Kreise und
-   sind durch dieselbe Strömung gelaufen. Gezeichnet wird es innerhalb der
-   Silhouette: was draussen liegt, gehört zu keinem Kreis und hiesse nichts.
-   Die Linien sind gerade von Knoten zu Knoten — eine geglättete Kurve sähe
-   ruhiger aus, behauptete aber einen Verlauf, den niemand gerechnet hat. */
-function zeichneNetz() {
-  if (!NETZ) return;
-  const n0 = NETZ.n0, sp = NETZ.sp, ze = NETZ.ze;
-  ctx.beginPath();
-  for (let j = 0; j < ze; j++) for (let i = 0; i < sp; i++) {
-    const n = n0 + j * sp + i, x = px[n] * mass + verX, y = py[n] * mass + verY;
-    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-  }
-  for (let i = 0; i < sp; i++) for (let j = 0; j < ze; j++) {
-    const n = n0 + j * sp + i, x = px[n] * mass + verX, y = py[n] * mass + verY;
-    if (j === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-  }
-  ctx.lineJoin = 'round';
-  ctx.strokeStyle = NETZTON;
-  ctx.lineWidth = Math.max(0.45, breite / 850);
-  ctx.stroke();
-}
-
 /* ---------- Relief ----------
    Die Karte soll nicht flach liegen, sondern sich wölben. Gerechnet wird das
    über ein Höhenfeld, nicht über gezeichnete Kanten:
@@ -1083,7 +1035,7 @@ const GEZEICHNET = new Float64Array(NK), HOCH = new Float64Array(NK);
 // setzt; mit Sockel ist die Ebene eine Ebene und die Städte steigen daraus auf.
 // Im vollen Kartogramm sind alle Höhen gleich, dann ist der Sockel wirkungslos
 // und es bleibt genau beim flachen Deckel von vorher.
-const STAUCH = 0.45, BODEN_H = 0.34;
+let STAUCH = 0.45, BODEN_H = 0.12;
 function hoehen(w, deck) {
   let sP = 0, sA = 0;
   for (let g = 0; g < NK; g++) {
@@ -1104,22 +1056,40 @@ function hoehen(w, deck) {
   return gross;
 }
 
-const RAUF = 0.42;                // Auflösung des Höhenfelds, Anteil der Bildpunkte
+const RAUF = 0.40;                // Auflösung des Höhenfelds, Anteil der Bildpunkte
 const WEIT = 3;                   // das weite Feld noch einmal so viel gröber
 const hkA = document.createElement('canvas'), hcA = hkA.getContext('2d');
 const hkB = document.createElement('canvas'), hcB = hkB.getContext('2d', { willReadFrequently: true });
-const hkC = document.createElement('canvas'), hcC = hkC.getContext('2d');
+const hkC = document.createElement('canvas'), hcC = hkC.getContext('2d', { willReadFrequently: true });
 const hkL = document.createElement('canvas'), hcL = hkL.getContext('2d');
-let rW = 0, rH = 0, rBild = null, feldH = null;
+const hkT = document.createElement('canvas'), hcT = hkT.getContext('2d');
+let rW = 0, rH = 0, kW = 0, kH = 0, rBild = null, tBild = null;
+let feinH = null, grobH = null, grobAuf = null, feldH = null, maskeH = null, schatten = null;
 function reliefFeld() {
   const w = Math.max(8, Math.round(breite * RAUF)), h = Math.max(8, Math.round(hoehe * RAUF));
   if (w === rW && h === rH) return;
   rW = w; rH = h;
-  for (const k of [hkA, hkB, hkL]) { k.width = w; k.height = h; }
-  hkC.width = Math.max(4, Math.round(w / WEIT)); hkC.height = Math.max(4, Math.round(h / WEIT));
-  rBild = hcL.createImageData(w, h);
-  feldH = new Float32Array(w * h);
+  for (const k of [hkA, hkB, hkL, hkT]) { k.width = w; k.height = h; }
+  kW = Math.max(4, Math.round(w / WEIT)); kH = Math.max(4, Math.round(h / WEIT));
+  hkC.width = kW; hkC.height = kH;
+  rBild = hcL.createImageData(w, h); tBild = hcT.createImageData(w, h);
+  feinH = new Float32Array(w * h); feldH = new Float32Array(w * h);
+  grobAuf = new Float32Array(w * h); maskeH = new Float32Array(w * h);
+  schatten = new Float32Array(w * h); grobH = new Float32Array(kW * kH);
 }
+// Die Stellschrauben des Reliefs.
+// Zwei Sonnen, und das ist Absicht. Die Modellierung braucht ein Licht, das
+// hoch genug steht, damit die Hänge noch Zeichnung haben; der Schlagschatten
+// braucht ein Licht, das flach genug steht, damit überhaupt einer entsteht —
+// ein Strahl, der steiler abfällt als der Hang selbst, trifft nie auf Schatten.
+// Kartenzeichner machen das seit jeher so.
+let STAERKE = 1.4, MISCHUNG = 'overlay';
+let SONNE = 40;                 // Grad über der Fläche, Licht von oben links
+let WURFSONNE = 16;             // dasselbe Licht, flach, nur für den Schlagschatten
+let UEBERHOEHT = 30;            // volle Höhe in Bildpunkten des Höhenfelds
+let MULDE = 0.70;               // wie stark Mulden verschatten
+let WURF = 0.50;                // wie dunkel ein Schlagschatten ist
+let LINIE = 1.1, NIVEAUS = 30, FLACHHANG = 0.008, DUNKELLINIE = 0.55;  // Höhenlinien: Stärke und Anzahl
 const STUFEN = 24;                // so viele Höhenstufen, in Bündeln gezeichnet
 const EIMER_H = Array.from({ length: STUFEN }, () => []);
 function reliefUeber(sil, deck, gross) {
@@ -1127,7 +1097,7 @@ function reliefUeber(sil, deck, gross) {
   reliefFeld();
   const s = rW / breite;
   const fuge = Math.max(1.0, breite / 420);     // Breite der Fuge zwischen zwei Kreisen
-  const fein = Math.max(1.8, breite / 130);     // enges Weichzeichnen: der einzelne Kreis
+  const fein = Math.max(2.2, breite / 95);      // enges Weichzeichnen: der einzelne Kreis
   const grob = Math.max(7, breite / 22);        // weites: die Landschaft darüber
 
   // Die Vorlage. Draussen bleibt sie durchsichtig, nicht schwarz: dieselbe
@@ -1165,11 +1135,13 @@ function reliefUeber(sil, deck, gross) {
 
   // Das weite Feld entsteht auf einer dreimal gröberen Leinwand. Weichzeichnen
   // kostet nach Fläche, und ein Feld, das ohnehin nur die grosse Form trägt,
-  // braucht die Auflösung nicht.
+  // braucht die Auflösung nicht. Es wird getrennt gelesen, weil es zweimal
+  // gebraucht wird: als Anteil an der Oberfläche und als Bezug für die
+  // Verschattung in den Mulden.
   hcC.setTransform(1, 0, 0, 1, 0, 0);
-  hcC.clearRect(0, 0, hkC.width, hkC.height);
+  hcC.clearRect(0, 0, kW, kH);
   hcC.filter = 'blur(' + (grob * s / WEIT).toFixed(2) + 'px)';
-  hcC.drawImage(hkA, 0, 0, hkC.width, hkC.height);
+  hcC.drawImage(hkA, 0, 0, kW, kH);
   hcC.filter = 'none';
 
   hcB.setTransform(1, 0, 0, 1, 0, 0);
@@ -1178,42 +1150,181 @@ function reliefUeber(sil, deck, gross) {
   hcB.filter = 'blur(' + (fein * s).toFixed(2) + 'px)';
   hcB.drawImage(hkA, 0, 0);
   hcB.filter = 'none';
-  hcB.globalAlpha = 0.42;
-  hcB.drawImage(hkC, 0, 0, rW, rH);
-  hcB.globalAlpha = 1;
 
-  // Gelesen wird die Höhe als Rot mal Deckkraft: was halb durchsichtig ist,
-  // liegt halb so hoch. Ohne das wäre der Rand der Karte eine Klippe.
-  const d = hcB.getImageData(0, 0, rW, rH).data, o = rBild.data;
-  for (let i = 0, n = rW * rH; i < n; i++) feldH[i] = d[i << 2] * d[(i << 2) + 3];
+  /* Gelesen wird in zwei Kanälen, und das ist der Kniff.
 
-  // Licht von oben links, 50 Grad über der Fläche. Auf dem Bildschirm zeigt y
-  // nach unten, oben links ist also die negative Richtung in beiden Achsen.
-  const hoch = Math.cos(Math.PI * 50 / 180) * Math.SQRT1_2;
-  const lx = -hoch, ly = -hoch, lz = Math.sin(Math.PI * 50 / 180);
-  const k = 3.2 / 65025;
+     Die Vorlage ist draussen durchsichtig. Weichzeichnen mischt deshalb am
+     Rand Farbe mit Nichts — nähme man das Ergebnis einfach als Höhe, fiele
+     die Karte schon dreissig Pixel vor der Küste ab, und der grösste Berg im
+     Feld wäre Deutschland selbst. Für die Berge im Inneren bliebe kaum
+     Spielraum.
+
+     getImageData gibt die Farbe aber **unmultipliziert** zurück: Rot ist
+     bereits blur(Höhe·Deckung) / blur(Deckung), also der örtliche Mittelwert
+     der Höhe ohne den Rand — genau die normalisierte Faltung, die man sonst
+     von Hand bauen müsste. Die Deckung steht daneben im Alphakanal und gibt
+     den Rand der Karte, jetzt als eigene, schmale Rundung.
+
+     Höhe und Rand sind damit getrennt: die ganze Spanne gehört dem Inneren,
+     und die Küste bekommt trotzdem eine Kante, die nicht senkrecht abbricht. */
+  const df = hcB.getImageData(0, 0, rW, rH).data;
+  for (let i = 0, n = rW * rH; i < n; i++) {
+    feinH[i] = df[i << 2] / 255;
+    const a = df[(i << 2) + 3] / 255;
+    maskeH[i] = a * a * (3 - 2 * a);
+  }
+  const dg = hcC.getImageData(0, 0, kW, kH).data;
+  for (let i = 0, n = kW * kH; i < n; i++) grobH[i] = dg[i << 2] / 255;
+
+  // Beide Felder zusammen ergeben die Oberfläche: das enge trägt den einzelnen
+  // Kreis, das weite die Landschaft. Das weite wird dabei zweifach linear
+  // hochgerechnet — die Stufen der groben Leinwand würden sonst als Kacheln
+  // durchschlagen.
+  const fx = (kW - 1) / Math.max(1, rW - 1), fy = (kH - 1) / Math.max(1, rH - 1);
+  for (let y = 0; y < rH; y++) {
+    const gy = y * fy, j0 = Math.min(kH - 1, gy | 0), j1 = Math.min(kH - 1, j0 + 1), tj = gy - j0;
+    for (let x = 0; x < rW; x++) {
+      const gx = x * fx, i0 = Math.min(kW - 1, gx | 0), i1 = Math.min(kW - 1, i0 + 1), ti = gx - i0;
+      const a0 = grobH[j0 * kW + i0] + (grobH[j0 * kW + i1] - grobH[j0 * kW + i0]) * ti;
+      const a1 = grobH[j1 * kW + i0] + (grobH[j1 * kW + i1] - grobH[j1 * kW + i0]) * ti;
+      const gh = a0 + (a1 - a0) * tj;
+      const i = y * rW + x;
+      grobAuf[i] = gh * maskeH[i];
+      feldH[i] = (0.40 * feinH[i] + 0.60 * gh) * maskeH[i];
+    }
+  }
+
+  /* Schlagschatten. Das ist der Unterschied zwischen einer gewölbten Fläche
+     und einem Gebirge: ein Berg wirft einen Schatten über das, was hinter ihm
+     liegt. Gerechnet in einem einzigen Durchgang — das Licht kommt aus genau
+     45 Grad von oben links, also laufen die Strahlen auf der Leinwand
+     diagonal, und je Diagonale genügt ein mitgeführter Horizont:
+
+         s = max(s − Abfall, Höhe)      und im Schatten liegt, was unter s ist.
+
+     Der Abfall ist, wie viel Höhe der Strahl je Schritt verliert. Aus ihm
+     folgt die Länge der Schatten, und damit, wie hoch das Gebirge wirkt. */
+  const ABFALL = Math.SQRT2 * Math.tan(Math.PI * WURFSONNE / 180) / UEBERHOEHT;
+  for (let k = 0; k < rW + rH - 1; k++) {
+    let x = k < rW ? k : 0, y = k < rW ? 0 : k - rW + 1, s2 = -1;
+    while (x < rW && y < rH) {
+      const i = y * rW + x;
+      s2 -= ABFALL;
+      if (feldH[i] >= s2) { s2 = feldH[i]; schatten[i] = 0; }
+      else schatten[i] = s2 - feldH[i];
+      x++; y++;
+    }
+  }
+
+  // Licht von oben links. Auf dem Bildschirm zeigt y nach unten, oben links
+  // ist also die negative Richtung in beiden Achsen.
+  const o = rBild.data, t = tBild.data;
+  const hochL = Math.cos(Math.PI * SONNE / 180) * Math.SQRT1_2;
+  const lx = -hochL, ly = -hochL, lz = Math.sin(Math.PI * SONNE / 180);
   for (let y = 0; y < rH; y++) {
     const zc = y * rW, zo = (y > 0 ? y - 1 : y) * rW, zu = (y < rH - 1 ? y + 1 : y) * rW;
     for (let x = 0; x < rW; x++) {
       const xm = x > 0 ? x - 1 : x, xp = x < rW - 1 ? x + 1 : x;
-      const gx = (feldH[zc + xp] - feldH[zc + xm]) * k;
-      const gy = (feldH[zu + x] - feldH[zo + x]) * k;
-      const I = (-gx * lx - gy * ly + lz) / Math.sqrt(gx * gx + gy * gy + 1) - lz;
-      const i4 = (zc + x) << 2;
-      let a = I * 2.0;
-      if (a > 0) { if (a > HELLMAX) a = HELLMAX; o[i4] = 255; o[i4 + 1] = 255; o[i4 + 2] = 255; }
-      else { a = -a; if (a > DUNKELMAX) a = DUNKELMAX; o[i4] = 0; o[i4 + 1] = 0; o[i4 + 2] = 0; }
-      o[i4 + 3] = a * 255;
+      const i = zc + x;
+      const rx = (feldH[zc + xp] - feldH[zc + xm]) * 0.5;
+      const ry = (feldH[zu + x] - feldH[zo + x]) * 0.5;
+      const gx = rx * UEBERHOEHT, gy = ry * UEBERHOEHT;
+      let I = (-gx * lx - gy * ly + lz) / Math.sqrt(gx * gx + gy * gy + 1) - lz;
+
+      // Die Mulde. Was tiefer liegt als seine weite Umgebung, bekommt weniger
+      // Himmel ab — dasselbe, was in einem Tal weniger Licht ankommen lässt.
+      const mulde = grobAuf[i] - feldH[i];
+      if (mulde > 0) I -= mulde * MULDE;
+      // Und der Schlagschatten.
+      if (schatten[i] > 0) I -= (schatten[i] < 0.05 ? schatten[i] / 0.05 : 1) * WURF;
+
+      /* Beleuchtete Höhenlinien, nach Tanaka Kitiro (1950). Eine gewöhnliche
+         Höhenlinie ist überall gleich dunkel und sagt über die Form nur, wo
+         gleiche Höhe liegt. Tanakas Linien werden **weiss, wo der Hang der
+         Sonne zugewandt ist, und schwarz, wo er von ihr wegfällt**, und dick,
+         wo der Hang voll im Licht oder voll im Schatten steht — sie tragen
+         damit dieselbe Information wie eine Schattierung, aber als Kante, und
+         eine Kante sieht das Auge sehr viel deutlicher als einen Verlauf.
+
+         Genau darum geht es hier: die Fläche ist schon mit Farbe belegt, und
+         eine Schattierung, die stark genug für ein Gebirge wäre, macht aus
+         Rot und Blau Grau. Linien nehmen fast keine Fläche weg.
+
+         Gerechnet aus dem weiten Feld, nicht aus dem gemischten: das enge hat
+         an jeder Kreisgrenze eine Stufe, und auf einer Stufe lägen alle
+         Niveaus übereinander — das gäbe einen Strich an jeder Grenze statt
+         einer Höhenlinie. */
+      let lFarbe = 0, lDeck = 0;
+      if (LINIE > 0) {
+        const qx = (grobAuf[zc + xp] - grobAuf[zc + xm]) * 0.5;
+        const qy = (grobAuf[zu + x] - grobAuf[zo + x]) * 0.5;
+        const ql = Math.sqrt(qx * qx + qy * qy);
+        const steig = ql * NIVEAUS;
+        if (steig > 0.003) {
+          const st = grobAuf[i] * NIVEAUS;
+          const ab = Math.abs(st - Math.round(st));
+          // Der Sonne zugewandt: +1, von ihr weg: −1. Das Licht kommt von oben
+          // links, der Hang fällt in Richtung des negativen Gefälles.
+          const f = (qx + qy) / (ql * Math.SQRT2);
+          const br = 0.22 + 0.85 * Math.abs(f);
+          const weg = ab / steig;
+          if (weg < br) {
+            // Über fast ebenem Land soll keine Linie liegen: dort sagt sie
+            // nichts und sieht aus wie ein Kratzer. Sie blendet deshalb mit
+            // dem Gefälle ein.
+            const hang = Math.min(1, ql / FLACHHANG);
+            // Und keine, wo sie zu eng lägen. Wo das Feld steil abfällt,
+            // rücken die Niveaus auf weniger als zwei Bildpunkte zusammen und
+            // ergeben ein Flimmern statt einer Zeichnung — wie ein zu feines
+            // Muster auf einem zu groben Raster.
+            const eng = steig > 0.33 ? Math.max(0, 1 - (steig - 0.33) / 0.37) : 1;
+            // Schwarz trägt auf hellem Grund weiter als Weiss, also weniger
+            // davon — sonst liest sich das Gebirge als Tintenstrich.
+            lDeck = (1 - weg / br) * Math.abs(f) * hang * eng * LINIE * (f > 0 ? 1 : DUNKELLINIE);
+            lFarbe = f;
+          }
+        }
+      }
+
+      /* Aufgetragen wird das Licht als Grau über der Farbe, gemischt im Modus
+         overlay, nicht als schwarze und weisse Deckkraft. Der Unterschied ist
+         der zwischen einem Relief und einem Schleier: Deckkraft zieht jede
+         Farbe gegen Schwarz oder Weiss, und bei der Stärke, die ein Gebirge
+         braucht, bleibt von Rot und Blau nichts übrig. Overlay rechnet den Ton
+         gegen die Farbe, die schon da liegt — dunkler wird dunkler, heller
+         heller, der Farbton bleibt. */
+      const i4 = i << 2;
+      let a = I * STAERKE;
+      if (a > 0) { if (a > HELLMAX) a = HELLMAX; }
+      else { if (a < -DUNKELMAX) a = -DUNKELMAX; }
+      const g = 128 + a * 127;
+      o[i4] = g; o[i4 + 1] = g; o[i4 + 2] = g; o[i4 + 3] = 255;
+      const j4 = i << 2;
+      if (lDeck > 0.004) {
+        const w = lFarbe > 0 ? 255 : 0;
+        t[j4] = w; t[j4 + 1] = w; t[j4 + 2] = w;
+        t[j4 + 3] = Math.min(255, lDeck * 255);
+      } else t[j4 + 3] = 0;
     }
   }
+  // Zwei Lagen, weil sie verschieden gemischt gehören: die Schattierung als
+  // Grau im Modus overlay, damit die Farbe der Fläche bleibt — die Linien
+  // schlicht darüber, damit sie Kanten bleiben und nicht in der Farbe
+  // versinken.
   hcL.putImageData(rBild, 0, 0);
-  // Schablone: nur, was auf der Karte liegt.
-  hcL.globalCompositeOperation = 'destination-in';
+  hcL.globalCompositeOperation = 'destination-in';   // nur, was auf der Karte liegt
   hcL.drawImage(hkA, 0, 0);
   hcL.globalCompositeOperation = 'source-over';
+  // Die Linien brauchen keine Schablone: sie kommen aus dem weiten Feld, und
+  // das ist ausserhalb der Karte null und damit eben — dort entsteht ohnehin
+  // keine Linie.
+  hcT.putImageData(tBild, 0, 0);
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
+  ctx.globalCompositeOperation = MISCHUNG;
   ctx.drawImage(hkL, 0, 0, breite, hoehe);
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.drawImage(hkT, 0, 0, breite, hoehe);
 }
 
 function zeichne() {
@@ -1273,10 +1384,6 @@ function zeichne() {
   }
   ctx.strokeStyle = GRENZE; ctx.lineWidth = Math.max(0.7, Math.min(1.2, breite / 420)); ctx.stroke();
 
-  ctx.save();
-  ctx.clip(sil);
-  zeichneNetz();
-  ctx.restore();
   reliefUeber(sil, deck, gross);
 
   beschrifte(deck);
@@ -1465,8 +1572,8 @@ function legende() {
       + FLAECHE + ' km² of real ground — the same scale in every frame, so the country '
       + 'really does grow into a skyline.';
   } else if (modus === 'wandel') {
-    r.style.background = 'linear-gradient(90deg,' + rampeRot().slice(0, 10).reverse().join(',')
-      + ',' + MITTE() + ',' + rampe().slice(0, 10).join(',') + ')';
+    r.style.background = 'linear-gradient(90deg,' + [...arm(rampeRot())].reverse().join(',')
+      + ',' + MITTE() + ',' + arm(rampe()).join(',') + ')';
     li.textContent = '−3 %'; re.textContent = '+3 %';
     const [a, b] = bildBei(jahr);
     t.textContent = 'Change per year, ' + D.B[a].jahr + ' to ' + D.B[b].jahr

@@ -33,6 +33,11 @@ Karte mit 400 kleinen Flecken wäre das nicht nur unschön, sondern unlesbar.
 Rot gegen Blau trägt dieselbe Bedeutung und funktioniert bei jeder Form von
 Farbsehen.
 
+Je Farbe zwei Leitern, eine für hellen und eine für dunklen Grund — nicht eine
+umgedrehte. Umgedreht wird „viel" nachts fast weiss, und ein blassblauer
+Höchstwert neben einem tiefblauen Nichts liest sich gegen jede Erwartung. Beide
+Leitern laufen jetzt in dieselbe Richtung: **mehr ist satter.**
+
 ## Was jeweils geschah
 
 Oben links **in** der Karte steht ein Faden aus Überschriften: Ostflucht,
@@ -111,21 +116,21 @@ gemessen, nicht geschätzt. Die Zwischenform kostet kein Byte: die Landkarte
 steht ohnehin in der Datei, jeder Knoten liegt einfach zwischen seinen beiden
 Orten.
 
-Über der Karte liegt ein **Gitternetz**: Quadrate von 30 mal 30 Kilometern
-echter Fläche, die in derselben Strömung mitschwimmen wie die Kreise. Jede
-Masche hält gleich viel Land, also ist ihre Grösse auf der Karte die Zahl der
-Menschen darauf — weit gezogen über Berlin, Hamburg, Ruhrgebiet und München, zu
-einem Knoten zusammengezogen auf dem Land. Das ist die Dichte, die das
-Kartogramm ausgegeben hat, um Fläche zu Bevölkerung zu machen; sonst fällt sie
-weg, hier steht sie da.
-
 Und die Karte liegt nicht flach. Aus den Kreisflächen, ihren Höhen und den
-gleich breiten Fugen dazwischen entsteht ein Höhenfeld, das von oben links
-beleuchtet wird — die grossen Städte gehen als Kuppen auf, die kleinen Kreise
-bleiben flache Kissen. Gezeichnet wird die Höhe gestaucht (Wurzel, mit Sockel):
-zwischen dem leersten Landkreis und Berlin liegt auf der Landkarte der Faktor
-134, und ein Relief mit Faktor 134 ist eine Wand neben einer Ebene. Die
-Reihenfolge bleibt richtig, der Abstand nicht; die Zahl steht beim Antippen.
+gleich breiten Fugen dazwischen entsteht ein Höhenfeld. Beleuchtet wird es von
+oben links — aber die Form tragen nicht Licht und Schatten, sondern
+**beleuchtete Höhenlinien nach Tanaka**: weiss, wo der Hang der Sonne zugewandt
+ist, schwarz, wo er von ihr wegfällt, dick, wo er voll im Licht oder voll im
+Schatten steht. Der Grund dafür ist schlicht: die Fläche ist schon vergeben,
+sie trägt die Farbe der Daten. Eine Schattierung, die stark genug für ein
+Gebirge wäre, macht aus Rot und Blau Grau. Linien nehmen fast keine Fläche weg.
+Dazu Schlagschatten aus einer flacheren Sonne — ein Strahl, der steiler abfällt
+als der Hang selbst, trifft nie auf Schatten.
+
+Gezeichnet wird die Höhe gestaucht (Wurzel, mit Sockel): zwischen dem leersten
+Landkreis und Berlin liegt auf der Landkarte der Faktor 134, und ein Relief mit
+Faktor 134 ist eine Wand neben einer Ebene. Die Reihenfolge bleibt richtig, der
+Abstand nicht; die Zahl steht beim Antippen.
 
 Diffusionskartogramm nach Gastner und Newman (2004), wie bei den
 [Wahlkreisen](../wahlkreise-2025/): die Dichte wird als Wärme aufgefasst und

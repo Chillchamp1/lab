@@ -26,13 +26,9 @@ function dezimaljahr(stichtage, gewichte = null) {
 
 const BREITE = 8000;
 
-// Bis `bis` gemessen, nicht über alles: die letzten Knoten gehören zum
-// Gitternetz und liegen zum Teil ausserhalb der Karte. Der gemeinsame Rahmen
-// soll von den Kreisen kommen, damit die Rundung der Koordinaten so fein
-// bleibt, wie sie war.
-function rahmen(px, py, bis = px.length) {
+function rahmen(px, py) {
   let a = Infinity, b = -Infinity, c = Infinity, d = -Infinity;
-  for (let i = 0; i < bis; i++) {
+  for (let i = 0; i < px.length; i++) {
     if (px[i] < a) a = px[i]; if (px[i] > b) b = px[i];
     if (py[i] < c) c = py[i]; if (py[i] > d) d = py[i];
   }
@@ -44,15 +40,13 @@ function rahmen(px, py, bis = px.length) {
 // ist das Berlin, und ohne die Stadt sind Brandenburgs Kreise überhaupt erst
 // zu erkennen. Beide teilen Knoten, Ringe und Massstab; unterschiedlich sind
 // nur die Koordinaten je Bild.
-export function baueNutzlast({ gebiete, attr, X, Y, reihen, bilder, kreisInfo, netz = null, log = () => {} }) {
+export function baueNutzlast({ gebiete, attr, X, Y, reihen, bilder, kreisInfo, log = () => {} }) {
   const anker = reihen[0].zeitreihe.anker;
   const zustaende = reihen[0].zeitreihe.zustaende;
-  const nurKreise = netz ? netz.n0 : X.length;
 
   // Gemeinsames Gitter: alle Zustände und die Landkarte in einen Rahmen,
   // gleicher Massstab, gleicher Mittelpunkt.
-  const alle = [rahmen(X, Y, nurKreise),
-    ...reihen.flatMap(r => r.zeitreihe.zustaende.map(z => rahmen(z.X, z.Y, nurKreise)))];
+  const alle = [rahmen(X, Y), ...reihen.flatMap(r => r.zeitreihe.zustaende.map(z => rahmen(z.X, z.Y)))];
   const minX = Math.min(...alle.map(r => r.minX)), maxX = Math.max(...alle.map(r => r.maxX));
   const minY = Math.min(...alle.map(r => r.minY)), maxY = Math.max(...alle.map(r => r.maxY));
   const skala = BREITE / (maxX - minX);
@@ -80,9 +74,6 @@ export function baueNutzlast({ gebiete, attr, X, Y, reihen, bilder, kreisInfo, n
     ringzahl: packe(gebiete.map(g => g.length)),
     ringe: packe(gebiete.flatMap(g => g.map(r => r.length))),
     idx: packe(gebiete.flatMap(g => g.flatMap(r => { const d = []; let v = 0; for (const id of r) { d.push(id - v); v = id; } return d; }))),
-    // Das Gitternetz: ab welchem Knoten es liegt, wie viele Spalten und Reihen
-    // es hat und wie gross seine Masche auf dem Boden ist.
-    netz,
   };
 
   // Wie gut die Flächen am Ende wirklich stimmen — gemessen an den ganzen
