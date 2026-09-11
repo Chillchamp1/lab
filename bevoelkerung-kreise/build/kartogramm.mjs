@@ -58,7 +58,11 @@ export function rechneKartogramm({
   gitter = 1100, rand = 0.30, durchgaenge = 5, wachstum = 1.05, meer = 'mittel', log = () => {},
 }) {
   const X = Float64Array.from(X0), Y = Float64Array.from(Y0);
-  const nurGebiete = abgedeckt.every(Boolean) ? null : abgedeckt.flatMap((a, i) => a ? [i] : []);
+  // Immer eine ausdrückliche Liste, auch wenn sie alle Kreise enthält: der
+  // Ausschnitt des Dichtegitters soll allein an den Kreisen hängen. In X und Y
+  // schwimmen ausserdem die Knoten des Gitternetzes mit, die zu keinem Kreis
+  // gehören — sie sollen den Ausschnitt nicht verschieben.
+  const nurGebiete = abgedeckt.flatMap((a, i) => a ? [i] : []);
   const vorzeichen = ringVorzeichen(gebiete, X, Y);
   const geoFl = flaechen(gebiete, X0, Y0);
 

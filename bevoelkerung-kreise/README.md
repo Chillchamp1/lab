@@ -35,17 +35,22 @@ Farbsehen.
 
 ## Was jeweils geschah
 
-Im Rahmen über der Karte stehen Jahr, Einwohnerzahl und ein Untertitel:
-Ostflucht, Weltkrieg, Vertreibung,
-Wirtschaftswunder, Gastarbeiter, Zechensterben, Wende, Zensuskorrektur 2011,
-Ukraine. Die Karte zeigt, *dass* sich etwas ändert und *wo* — das Warum steht in
-keiner Zahl, also steht es daneben. Dreizehn Notizen, jede mit ihrem Zeitfenster;
-vollständig noch einmal in einer Liste unter der Karte. Was darin eine
+Oben links **in** der Karte steht ein Faden aus Überschriften: Ostflucht,
+Weltkrieg, Vertreibung, Wirtschaftswunder, Gastarbeiter, Zechensterben, Wende,
+Zensuskorrektur 2011, Ukraine. Die Karte zeigt, *dass* sich etwas ändert und
+*wo* — das Warum steht in keiner Zahl, also steht es daneben. Kommt eine neue
+Überschrift, setzt sie sich obenauf und schiebt die vorigen eine Zeile nach
+unten, blasser mit jedem Schritt; sechs bleiben stehen, auf dem Telefon vier.
+Weil der Faden über der Zeichnung liegt und nicht über dem Rahmen, kostet er
+keine Höhe.
+
+Dreizehn Notizen sind es insgesamt, jede mit ihrem Zeitfenster; vollständig mit
+allen Sätzen noch einmal in einer Liste unter der Karte. Was darin eine
 Kreiszahl nennt, ist aus der Tabelle dieser Seite genommen, der Rest ist
 Schulwissen und als solches gekennzeichnet.
 
-Die Uhr läuft rund fünfzig Sekunden für 153 Jahre — langsam genug, um die
-Notizen zu lesen.
+Die Uhr läuft siebzig Sekunden für 153 Jahre — langsam genug, um die
+Überschriften zu lesen.
 
 ## Und dasselbe stehend
 
@@ -94,10 +99,20 @@ ihren Begriff und ihren wirklichen Stichtag mit. Ausführlich in
 
 ## Verfahren
 
-Jeder Kreis liegt als Buckel auf der Karte, hell oben links, dunkel unten
-rechts, und alle gleich dick. Gleich dick ist dabei die Aussage: die Fläche ist
-schon die Bevölkerung, also ist es das Volumen dann auch — Fläche mal
-konstanter Höhe. Ein Buckel, der bei grossen Kreisen auch höher wäre, zeigte
+Über der Karte liegt ein **Gitternetz**: Quadrate von 30 mal 30 Kilometern
+echter Fläche, die in derselben Strömung mitschwimmen wie die Kreise. Jede
+Masche hält gleich viel Land, also ist ihre Grösse auf der Karte die Zahl der
+Menschen darauf — weit gezogen über Berlin, Hamburg, Ruhrgebiet und München, zu
+einem Knoten zusammengezogen auf dem Land. Das ist die Dichte, die das
+Kartogramm ausgegeben hat, um Fläche zu Bevölkerung zu machen; sonst fällt sie
+weg, hier steht sie da.
+
+Und die Karte liegt nicht flach. Aus den Kreisflächen und den gleich breiten
+Fugen dazwischen entsteht ein Höhenfeld, das von oben links beleuchtet wird —
+die grossen Städte gehen als Kuppen auf, die kleinen Kreise bleiben flache
+Kissen. Das ist keine zweite Zahl, sondern folgt aus der ersten: alle Kreise
+sind gleich dick, und weil die Fläche schon die Bevölkerung ist, ist es das
+Volumen dann auch. Ein Buckel, der bei grossen Kreisen auch höher wäre, zeigte
 Fläche mal Fläche und damit nichts.
 
 Diffusionskartogramm nach Gastner und Newman (2004), wie bei den

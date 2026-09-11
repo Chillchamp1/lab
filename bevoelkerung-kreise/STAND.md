@@ -77,27 +77,40 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   (Veränderung je Jahr über den gerade durchlaufenen Abschnitt, rot gegen blau;
   steht vorn), Einwohner und das Nadelrelief; Antippen zeigt Zahlen, Rate,
   Stichtag und Methode.
-- Im Rahmen über der Karte stehen Jahr, Einwohnerzahl und ein Untertitel:
-  dreizehn Notizen zu je einem Zeitabschnitt, warum sich die Karte gerade so
-  bewegt. Zusammenhang, keine Daten — Kreiszahlen darin stammen aus der eigenen
-  Tabelle, der Rest ist Schulwissen; vollständig noch einmal als Liste unter
-  der Karte.
+- Im Rahmen über der Karte stehen Jahr und Einwohnerzahl, oben links **in** der
+  Karte ein Faden aus den Überschriften: dreizehn Notizen zu je einem
+  Zeitabschnitt, warum sich die Karte gerade so bewegt. Die neueste obenauf,
+  jede weitere schiebt die vorigen eine Zeile nach unten und blasser; sechs
+  bleiben stehen, auf dem Telefon vier. Zusammenhang, keine Daten — Kreiszahlen
+  darin stammen aus der eigenen Tabelle, der Rest ist Schulwissen; vollständig
+  mit allen Sätzen als Liste unter der Karte.
 - Die Uhr läuft 70 Sekunden für 153 Jahre. Die Spielzeit je Abschnitt mischt
   Dauer und Umschichtung (geometrisches Mittel) und liegt nie unter
   viereinhalb Sekunden, also bekommt 1939→1946 fünf Sekunden statt drei und
   2019→2024 viereinhalb statt eineinhalb. Zwischen den Zählungen wird mit einer monotonen
   kubischen Kurve gerechnet, nicht geradlinig: kein Knick, kein Überschiessen.
-  Grösster Geschwindigkeitssprung von 125 auf 21 Prozent.
-- Das Kartogramm hat Buckel: jeder Kreis ein Deckel gleicher Dicke, hell oben
-  links, dunkel unten rechts, darunter Kante und Schatten der ganzen Platte.
-  Gleiche Dicke heisst Volumen ∝ Fläche ∝ Bevölkerung. Kostet nichts (11,2
-  gegen 11,6 Bilder je Sekunde).
-- Über dem Kartenrahmen steht kein Text mehr; Jahr, Einwohnerzahl und laufende
-  Notiz stehen nebeneinander im Rahmen, die Legende unten darin. Der Rahmen
-  passt als Ganzes ins Querformat (411 von 430 Pixeln Fensterhöhe), die Karte
+  Grösster Geschwindigkeitssprung von 125 auf 19 Prozent.
+- Über der Karte liegt ein **Gitternetz** aus Quadraten zu 30 × 30 km echter
+  Fläche, das in derselben Diffusion mitschwimmt wie die Kreise, aber bei keiner
+  Fläche mitzählt. Jede Masche hält gleich viel Land, also ist ihre Grösse die
+  Zahl der Menschen darauf: weit über Berlin, Hamburg, Ruhrgebiet und München,
+  zusammengezogen auf dem Land. Kostet 713 Knoten (23 × 31).
+- Das **Relief** ist kein Kantenstrich mehr, sondern ein Höhenfeld: Kreise weiss,
+  gleich breite Fugen dazwischen schwarz, zweimal weichgezeichnet (eng und weit),
+  daraus die Normale und Lambert-Licht von oben links. Die grossen Städte gehen
+  als Kuppen auf, die kleinen Kreise bleiben flache Kissen — keine zweite Zahl,
+  sondern die Folge der ersten: gleiche Dicke heisst Volumen ∝ Fläche ∝
+  Bevölkerung. Gerechnet auf 42 Prozent der Bildpunkte, das weite Feld noch
+  dreimal gröber, beschnitten mit derselben Vorlage statt mit `clip` an
+  vierhundert Vielecken — zusammen mit dem Netz läuft die Seite damit trotzdem
+  schneller als der Kantenstrich vorher (6,2 gegen 4,1 Bilder je Sekunde im
+  Prüfbrowser).
+- Über dem Kartenrahmen steht kein Text mehr; Jahr und Einwohnerzahl stehen im
+  Rahmen, die Legende unten darin. Der Rahmen
+  passt als Ganzes ins Querformat (406 von 430 Pixeln Fensterhöhe), die Karte
   bekommt sonst so viel Platz wie möglich — das Seitenverhältnis der Leinwand
   folgt dem der Karte.
-- Alle Notizen stehen als Liste unter den Umschaltern, klein: erreichtes
+- Alle Notizen stehen vollständig als Liste unter der Karte: erreichtes
   normal, laufendes angestrichen, kommendes blass.
 - Die Richtungsfarbe blendet nur noch nach hinten über. Vorher zeigte sie den
   Einbruch von 1939 schon 1934 — ein Sechstel eines neunundzwanzigjährigen

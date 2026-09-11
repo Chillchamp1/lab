@@ -299,15 +299,26 @@ Die Anzeigefenster sind nicht die Jahreszahlen des Ereignisses — die stehen in
 der Überschrift der Notiz. Die Fenster stossen aneinander, damit immer eine
 Notiz zu sehen ist. Gewechselt wird über Aus- und Einblenden, nicht hart.
 
-Notiz, Jahreszahl und Einwohnerzahl stehen **nebeneinander** im Rahmen über der
-Karte; die Zeile hat eine feste Höhe, damit nichts springt, wenn eine Notiz
-wechselt. Die Sätze sind kurz gehalten.
+Zu sehen ist davon in der Karte nur die **Überschrift**, und zwar in der Karte
+selbst: oben links liegt ein Faden aus den letzten sechs, die neueste obenauf,
+darunter die vorigen, mit jeder Zeile blasser. Kommt eine dazu, rutschen die
+anderen eine Zeile nach unten.
 
-Verschwinden tut dabei nichts: unter den Umschaltern steht die vollständige
-Liste in kleiner Schrift. Was vorbei ist, bleibt lesbar, die laufende Notiz ist
-angestrichen, das Kommende ist blass. Beim Weiterlaufen wandert die Marke nach
-unten — das ist dieselbe Liste, die vorher zweimal dastand, einmal lebendig und
-einmal starr.
+Er liegt **über** der Zeichnung, nicht über dem Rahmen, und kostet deshalb keine
+Höhe — die Karte soll so gross sein wie möglich, und über ihrer oberen linken
+Ecke liegt in jedem Bild Nordsee. Lesbar bleibt die Schrift über einem
+Farbfleck durch einen Halo in der Flächenfarbe. Auf einem Telefon bricht jede
+Überschrift auf zwei Zeilen um; dort hält der Faden vier statt sechs.
+
+Geschoben wird nicht Zeile für Zeile: der ganze Faden springt ohne Übergang um
+eine Zeilenhöhe nach oben und läuft dann nach unten zurück. Weil die neue
+Überschrift oben schon steht, sieht das aus, als drücke sie die anderen weg —
+und kostet eine Bewegung statt sechs. Läuft die Uhr am Regler rückwärts, wird
+der Faden neu aufgebaut statt fortgeschrieben.
+
+Verschwinden tut dabei nichts: unter der Karte steht die vollständige Liste mit
+allen Sätzen. Was vorbei ist, ist dort deutlich, die laufende Notiz ist
+angestrichen, das Kommende ist blass.
 
 ## 4d. Was zwischen den Zählungen steht
 
@@ -372,29 +383,55 @@ gerechnet. Das ist der Punkt: sichtbar ist Bewegung je Sekunde, nicht je Jahr,
 und ohne diesen Bezug entstünde an jeder Zählung genau der Knick zurück, den
 4d beseitigt.
 
-## 4f. Die Buckel
+## 4f. Das Relief der Karte
 
-Jeder Kreis liegt als Deckel auf der Karte, mit einem hellen Rand oben links und
-einem dunklen unten rechts — Licht von links oben, wie gewohnt. Beide Ränder
-sind **gleich breit**, und das ist der Punkt: gleich breit heisst gleich dick,
-und weil die Fläche schon die Bevölkerung ist, ist es das Volumen dann auch.
+Die Karte liegt nicht flach, sondern wölbt sich. Die erste Fassung zog dafür an
+jeder Kreisgrenze einen hellen Strich oben links und einen dunklen unten rechts.
+Das war rechnerisch richtig — gleich breite Ränder heissen gleiche Dicke —, sah
+aber aus wie eine Kontur und nicht wie ein Körper. Die zweite Fassung rechnet
+statt Kanten ein **Höhenfeld** und beleuchtet es:
+
+1. Eine Vorlage: die Kreise weiss, die Fugen zwischen ihnen schwarz und überall
+   gleich breit (`breite/420`). Draussen bleibt sie durchsichtig.
+2. Zweimal weichgezeichnet und gemischt — einmal knapp (`breite/130`), einmal
+   weit (`breite/22`, im Verhältnis 58 zu 42). Das knappe Feld rundet jeden
+   Kreis für sich ab, das weite mittelt darüber, wie dicht die Fugen liegen.
+3. Aus dem Gefälle des Feldes die Normale, daraus Lambert-Beleuchtung von oben
+   links, 50 Grad über der Fläche. Licht und Schatten kommen als weisse und
+   schwarze Deckkraft über die Karte, auf die Silhouette beschnitten.
+
+Die Aussage bleibt dieselbe wie vorher: **die Dicke ist für alle Kreise gleich**,
+die Fugen sind es auch.
 
 > Fläche = Bevölkerung, Höhe = konstant ⇒ Volumen = Fläche × Höhe ∝ Bevölkerung.
 
-Ein Buckel, der bei einem grossen Kreis auch höher wäre, hätte ein Volumen nach
-Fläche mal Fläche — und wäre damit gerade keine Bevölkerung mehr. Die
-Versuchung, die Höhe „interessanter" zu machen, führt also direkt an der Aussage
-vorbei.
+Dass dabei die grossen Städte aufgehen und Berlin, Hamburg, München, Köln und
+das Ruhrgebiet als Kuppen aus dem Land steigen, ist deshalb kein zweiter
+Datensatz und keine zweite Farbskala, sondern folgt aus der ersten: ein Kreis
+mit vielen Menschen ist breit gezeichnet, kommt weit von seinen Fugen weg und
+erreicht die volle Höhe; ein kleiner erreicht sie nie und bleibt ein flaches
+Kissen. Ein Buckel, der bei einem grossen Kreis auch höher stünde, hätte ein
+Volumen nach Fläche mal Fläche — und wäre gerade keine Bevölkerung mehr.
 
 Darunter liegt die ganze Platte: derselbe Pfad zweimal versetzt gefüllt, weit
 unten und weich als Schatten, knapp darunter als Kante. Weil die Kreise die
 Fläche lückenlos teilen, ist die Vereinigung ihrer Umrisse zugleich die
 Silhouette der Karte; beides braucht denselben Pfad, und der entsteht ohnehin.
 
-Nicht gekippt wird dabei nichts: Perspektive verzerrt Flächen, und dann liesse
-sich die eine Aussage dieser Karte nicht mehr ablesen. Wer wirkliche Höhe sehen
-will, findet sie in der dritten Ansicht, dem Nadelrelief. Gemessen kostet der
-ganze Aufwand nichts — 11,2 gegen 11,6 Bilder je Sekunde.
+Gekippt wird nichts: Perspektive verzerrt Flächen, und dann liesse sich die eine
+Aussage dieser Karte nicht mehr ablesen. Wer wirkliche Höhe sehen will, findet
+sie in der dritten Ansicht, dem Nadelrelief.
+
+Gerechnet wird das Höhenfeld auf **42 Prozent** der Bildpunkte, das weite Feld
+noch einmal dreimal gröber — Weichzeichnen kostet nach Fläche, und ein Feld, das
+nur die grosse Form trägt, braucht die Auflösung nicht. Beschnitten wird am Ende
+nicht mit `clip` an einem Pfad aus vierhundert Vielecken, sondern mit derselben
+Vorlage als Schablone (`destination-in`); das ist der teuerste Teil des Bildes,
+und so fällt er weg.
+
+Gemessen ist der Tausch ein Gewinn: die alte Fassung zog denselben Pfad zweimal
+als Kontur nach und lief damit auf 4,1 Bilder je Sekunde im Prüfbrowser, die
+neue kommt mitsamt Gitternetz auf 6,2.
 
 ## 4g. Die Städtenamen
 
@@ -421,6 +458,39 @@ Abstossen entlang der kleineren Überlappung, dazu eine schwache Feder, die
 jeden zu seinem Fleck zurückzieht. Das Ergebnis ändert sich von Bild zu Bild
 ruhig, flackert also nicht. Wer dabei weit von seinem Fleck weggerutscht ist,
 bekommt einen Haarstrich dorthin zurück.
+
+## 4h. Das Gitternetz
+
+Ein Kartogramm sagt, wie viele Menschen wo wohnen, und verschweigt dabei, wie
+stark es dafür ziehen musste. Genau das ist aber die interessante Zahl: die
+Dichte auf dem Boden. Also wird sie gezeichnet.
+
+Im Knotenmodell schwimmt ein regelmässiges Gitter mit: Quadrate von **30 mal 30
+Kilometern echter Fläche**, verankert an den Vielfachen von 30 km um den
+Ursprung der Projektion, nicht am Rand der Karte — ein Netz, das sich dem
+Ausschnitt anpasst, hätte Maschen verschiedener Grösse, und dann hiesse eine
+grosse Masche nichts mehr. Für Deutschland sind das 23 × 31 Knoten.
+
+Diese Knoten gehören zu keinem Kreis. Sie stehen in denselben Feldern wie die
+Kreisknoten, laufen durch dieselbe Diffusion, bekommen dieselbe Skalierung und
+dieselbe weiche Interpolation zwischen zwei Zählungen — sie zählen nur bei
+keiner Fläche mit, bei keiner Faltungsprüfung und bei keinem Rahmen. Damit das
+so bleibt, nimmt `raster.mjs` den Ausschnitt seines Dichtegitters jetzt immer
+ausdrücklich von den Kreisen (`nurGebiete`), und `nutzlast.mjs` misst den
+gemeinsamen Rahmen nur über die ersten *n* Knoten.
+
+Zu lesen ist das Netz wie folgt: **jede Masche hält gleich viel Land**, also ist
+ihre Grösse auf der Karte die Zahl der Menschen darauf. Wo das Netz weit
+gezogen ist — Berlin, Hamburg, Ruhrgebiet, München —, wohnen viele Menschen auf
+wenig Boden; wo es zu einem Knoten zusammengezogen ist, wenige auf viel. Das ist
+die Dichte, die das Kartogramm ausgegeben hat, um Fläche zu Bevölkerung zu
+machen; sonst fällt sie weg, hier steht sie da.
+
+Die Linien laufen **gerade von Knoten zu Knoten**. Eine geglättete Kurve sähe
+ruhiger aus, behauptete aber einen Verlauf, den niemand gerechnet hat.
+
+Gekostet hat das Netz 713 Knoten mehr in der Nutzlast — bei 12 000 Kreisknoten
+knapp sechs Prozent.
 
 ## 4b. Die beiden Farbskalen des Kartogramms
 
