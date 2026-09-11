@@ -32,6 +32,19 @@ Karte mit 400 kleinen Flecken wäre das nicht nur unschön, sondern unlesbar.
 Rot gegen Blau trägt dieselbe Bedeutung und funktioniert bei jeder Form von
 Farbsehen.
 
+## Was jeweils geschah
+
+Unter der Jahreszahl läuft ein Untertitel mit: Ostflucht, Weltkrieg, Vertreibung,
+Wirtschaftswunder, Gastarbeiter, Zechensterben, Wende, Zensuskorrektur 2011,
+Ukraine. Die Karte zeigt, *dass* sich etwas ändert und *wo* — das Warum steht in
+keiner Zahl, also steht es daneben. Dreizehn Notizen, jede mit ihrem Zeitfenster;
+vollständig noch einmal in einer Liste unter der Karte. Was darin eine
+Kreiszahl nennt, ist aus der Tabelle dieser Seite genommen, der Rest ist
+Schulwissen und als solches gekennzeichnet.
+
+Die Uhr läuft rund fünfzig Sekunden für 153 Jahre — langsam genug, um die
+Notizen zu lesen.
+
 ## Und dasselbe stehend
 
 **Standing up**, die dritte Ansicht, dreht die Idee um: die Karte behält ihre

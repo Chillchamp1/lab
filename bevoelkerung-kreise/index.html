@@ -58,6 +58,13 @@ input[type=range]{width:100%;margin:0;accent-color:#2a78d6}
 .tip dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
 .tip .warn{display:block;margin-top:4px;color:var(--ink2);font-size:12px}
 h2{font-size:17px;margin:26px 0 6px}
+h3{font-size:14px;margin:18px 0 4px}
+.notiz{margin:0 2px 12px;min-height:4.5em;font-size:13.5px;line-height:1.5;
+  color:var(--ink2);opacity:0;transition:opacity .3s}
+.notiz b{color:var(--ink)}
+.wann{margin:0}
+.wann dt{font-weight:600;margin-top:12px}
+.wann dd{margin:0;color:var(--ink2)}
 p{margin:0 0 10px}
 .klein{font-size:13px;color:var(--ink2)}
 table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
@@ -89,6 +96,7 @@ the map keeps its real shape and the people stand up out of it instead.</p>
 
 <div class="jahr"><b id="jahrZahl">–</b><span id="jahrBev"></span></div>
 <div class="kopf" id="kopf"></div>
+<p class="notiz" id="notiz"></p>
 
 <div class="regler">
   <button id="spiel" aria-label="Play or pause">▶</button>
@@ -134,8 +142,9 @@ from 1871 to 1900. The scale ends at ±3 % a year and is squeezed in between, so
 decades still show something and the one violent stretch, 1939 to 1946, still fits.</p>
 
 <p>Tap a county for its numbers. Between two censuses the shapes and the figures are
-interpolated; the readout says so. The clock runs at a steady rate through the years,
-not one step per census, so 1946 and 1950 pass in a blink and 1871 to 1900 takes a while.</p>
+interpolated; the readout says so. The clock runs at a steady rate through the years —
+about fifty seconds for the 153, not one step per census — so 1946 and 1950
+pass in a blink and 1871 to 1900 takes a while.</p>
 
 <p><b>Standing up</b> drops the cartogram and gives the country its real shape back. The
 people become height instead: over every cell of 31 km² of ground
@@ -146,6 +155,40 @@ needles hold still after 2019, because the
 municipality figures end there.</p>
 
 
+
+<h2>What happened</h2>
+<p>A note runs under the year while the clock passes each stretch. They are context, not
+data: the map shows that something changed and where, but never why. Figures inside them
+that name a county come from the table on this page; the rest is ordinary history.</p>
+
+<dl class="wann">
+  <dt>1871–1900 · Coal and steel</dt>
+  <dd>The Ruhr fills up while the farming east empties out — contemporaries called it the Ostflucht. Gelsenkirchen grows from 23,794 people in 1871 to 219,501 by 1910, on today’s boundaries.</dd>
+  <dt>1900–1910 · The metropolis</dt>
+  <dd>Berlin passes three and a half million people, counted on today’s city boundaries. 931,984 in 1871, 3,734,258 by 1910. Almost all of the country’s growth is now urban.</dd>
+  <dt>1914–1918 · The First World War</dt>
+  <dd>Two million soldiers killed, births halved — and no census between 1910 and 1939. The map glides over the war years because nothing was counted in them. The loss is real; the dip is not drawn.</dd>
+  <dt>1933–1939 · Rearmament</dt>
+  <dd>Whole towns are built for the arms industry: Wolfsburg in 1938, Salzgitter in 1942. Wolfsburg for the Volkswagen works, Salzgitter for ore and steel — open country until then, 94,026 and 111,510 people by 1961.</dd>
+  <dt>1939–1945 · The Second World War</dt>
+  <dd>Bombing empties the cities: Berlin loses 1.2 million people by 1946, Essen a fifth of its own. Hamburg is down 308,577. The count of October 1946 is taken in a country whose cities are rubble.</dd>
+  <dt>1945–1950 · Flight and expulsion</dt>
+  <dd>Around twelve million Germans are driven out of the east and arrive in a smaller country. The rural north takes the worst of it: Ostholstein doubles from 103,951 to 213,916 people, with nowhere to house them.</dd>
+  <dt>1950–1961 · Wirtschaftswunder</dt>
+  <dd>The west rebuilds, the Ruhr peaks, and 2.7 million people leave the GDR before the Wall. Essen holds 750,501 people in 1961 and never as many again. The Wall goes up in August of that year.</dd>
+  <dt>1961–1973 · Guest workers</dt>
+  <dd>The factories recruit in Italy, Greece, Turkey and Yugoslavia. From 1972 onward more people die in West Germany than are born there — every year since, growth has depended on who arrives.</dd>
+  <dt>1973–1987 · The pits close</dt>
+  <dd>Coal and steel shut down, and the Ruhr turns from the deepest blue on this map to red. It has stayed red ever since. The growth moves south and out to the districts around the cities.</dd>
+  <dt>1989–1996 · Reunification</dt>
+  <dd>The east empties westward, and its birth rate halves within two years. One of the sharpest peacetime falls ever recorded. Berlin is the exception and grows again.</dd>
+  <dt>1996–2011 · Shrinking, and recounting</dt>
+  <dd>Part of this fall is arithmetic: the 2011 census found 1.5 million people who were not there. The registers carried 81.8 million, the census counted 80.2. That correction sits on this stretch, on top of the real losses in the east.</dd>
+  <dt>2011–2019 · The cities fill again</dt>
+  <dd>Free movement inside the EU and the refugee year of 2015 outweigh the deaths. Leipzig, down a third between 1939 and 2011, climbs back above 600,000 people.</dd>
+  <dt>2020–2024 · Covid, then Ukraine</dt>
+  <dd>Migration stops for a year; then over a million people arrive from Ukraine in 2022. Germany reaches 83.6 million, and nearly all of the gain sits in the cities and the districts around them.</dd>
+</dl>
 
 <h2>Method, in short</h2>
 <p>Diffusion cartogram after Gastner and Newman (2004): population density is treated
@@ -450,6 +493,7 @@ function zeichne() {
   }
   ctx.strokeStyle = GRENZE; ctx.lineWidth = Math.max(0.7, Math.min(1.2, breite / 420)); ctx.stroke();
   schreibe(a, b, u, w, deck);
+  notizen();
   if (modus === 'wandel') legendeText(a, b);
 }
 
@@ -464,6 +508,28 @@ function schreibe(a, b, u, w, deck) {
     ? 'between ' + D.B[a].jahr + ' and ' + D.B[b].jahr + ' — shapes and figures interpolated'
     : z.stichtage.join(' and ') + ' · ' + z.begriffe.join(', ') + ' · method ' + z.methoden.join('/');
   document.getElementById('zeit').value = Math.round((jahr - T0) / (T1 - T0) * 1000);
+}
+
+/* ---------- Untertitel ----------
+   Welche Notiz gerade gilt, hängt nur an der Uhr, also gilt sie in allen drei
+   Ansichten. Gewechselt wird nicht hart: erst ausblenden, dann den Text
+   tauschen, dann einblenden. Die Marke fängt das Zurückziehen am Regler ab —
+   sonst käme ein alter Zeitgeber und schriebe die falsche Notiz hin. */
+const NOTIZ = [[1872,1899,"1871–1900 · Coal and steel","The Ruhr fills up while the farming east empties out — contemporaries called it the Ostflucht."],[1899,1913,"1900–1910 · The metropolis","Berlin passes three and a half million people, counted on today’s city boundaries."],[1913,1927,"1914–1918 · The First World War","Two million soldiers killed, births halved — and no census between 1910 and 1939."],[1927,1937,"1933–1939 · Rearmament","Whole towns are built for the arms industry: Wolfsburg in 1938, Salzgitter in 1942."],[1937,1945,"1939–1945 · The Second World War","Bombing empties the cities: Berlin loses 1.2 million people by 1946, Essen a fifth of its own."],[1945,1952,"1945–1950 · Flight and expulsion","Around twelve million Germans are driven out of the east and arrive in a smaller country."],[1952,1962,"1950–1961 · Wirtschaftswunder","The west rebuilds, the Ruhr peaks, and 2.7 million people leave the GDR before the Wall."],[1962,1973,"1961–1973 · Guest workers","The factories recruit in Italy, Greece, Turkey and Yugoslavia."],[1973,1988,"1973–1987 · The pits close","Coal and steel shut down, and the Ruhr turns from the deepest blue on this map to red."],[1988,1996,"1989–1996 · Reunification","The east empties westward, and its birth rate halves within two years."],[1996,2011,"1996–2011 · Shrinking, and recounting","Part of this fall is arithmetic: the 2011 census found 1.5 million people who were not there."],[2011,2019,"2011–2019 · The cities fill again","Free movement inside the EU and the refugee year of 2015 outweigh the deaths."],[2019,2025,"2020–2024 · Covid, then Ukraine","Migration stops for a year; then over a million people arrive from Ukraine in 2022."]];
+let notizJetzt = -2, notizMarke = 0;
+function notizen() {
+  let i = -1;
+  for (let n = 0; n < NOTIZ.length; n++) if (jahr >= NOTIZ[n][0] && jahr < NOTIZ[n][1]) { i = n; break; }
+  if (i === notizJetzt) return;
+  notizJetzt = i;
+  const el = document.getElementById('notiz'), marke = ++notizMarke;
+  el.style.opacity = 0;
+  setTimeout(() => {
+    if (marke !== notizMarke) return;
+    if (i < 0) { el.textContent = ''; return; }
+    el.innerHTML = '<b>' + NOTIZ[i][2] + '</b> ' + NOTIZ[i][3];
+    el.style.opacity = 1;
+  }, 280);
 }
 
 /* ---------- Legende ---------- */
@@ -761,6 +827,7 @@ function zeichneRelief() {
   }
   maleZeile();
   schreibeRelief(a, b, u);
+  notizen();
 }
 
 function schreibeRelief(a, b, u) {
@@ -780,7 +847,9 @@ function schreibeRelief(a, b, u) {
 }
 
 /* ---------- Ablauf ---------- */
-const DAUER = 34000;   // Millisekunden für die ganze Zeitachse
+// Millisekunden für die ganze Zeitachse. Um dreissig Prozent langsamer als
+// zuvor (34 s), damit die Notizen zu lesen sind und man den Bildern folgen kann.
+const DAUER = 48500;
 let zuletzt = 0;
 function schlag(t) {
   if (laeuft) {
