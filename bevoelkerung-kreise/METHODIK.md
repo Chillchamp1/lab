@@ -272,9 +272,15 @@ Die Höhe wird mit einer Wurzelkurve (Exponent 0,55) auf die Stufen abgebildet:
 linear bliebe das Land eine schwarze Fläche mit ein paar hellen Nadeln darin,
 logarithmisch stünde schon jedes Dorf im Gold.
 
-Der dunkle Grund gilt in beiden Erscheinungsbildern der Seite. Auf hellem Grund
-liesse sich eine Helligkeitsleiter nicht von unten aufbauen; die Ansicht bringt
-deshalb ihren eigenen Nachthimmel mit.
+Der Grund ist immer der der Seite — eine Seite, ein Hintergrund. Auf hellem
+Papier lässt sich eine Helligkeitsleiter nicht von unten aufbauen, also dreht
+sie sich um: eine zweite Leiter, ebenfalls in OKLab, von einem Creme, das kaum
+vom Boden absteht, über Gold, Orange und Rot ins tiefe Violett. Nicht die
+umgedrehte Nachtleiter — die hätte in der Mitte ein lautes Orange, und damit
+stünde auf hellem Grund das halbe Land in Flammen. Aus demselben Grund ist die
+Kurve dort flacher (Exponent 0,72 statt 0,55): das flache Land bleibt länger im
+Blassen. In beiden Fällen trägt die Helligkeit die Höhe, nur die Richtung
+dreht sich.
 
 ## 4c. Die Untertitel
 
@@ -291,13 +297,45 @@ Republikflüchtlinge bis 1961, die Zensuskorrektur von 1,5 Millionen im Jahr
 
 Die Anzeigefenster sind nicht die Jahreszahlen des Ereignisses — die stehen in
 der Überschrift der Notiz. Die Fenster stossen aneinander, damit immer eine
-Notiz zu sehen ist, und sind dort gedehnt, wo die Uhr schnell durchläuft: die
-Zeitachse ist linear in Jahren, und zwischen 1939 und 1950 passiert mehr als
-in den dreissig Jahren davor. Gewechselt wird über Aus- und Einblenden, nicht
-hart.
+Notiz zu sehen ist. Gewechselt wird über Aus- und Einblenden, nicht hart.
 
-Die Uhr braucht rund fünfzig Sekunden für die 153 Jahre — dreissig Prozent
-langsamer als zuvor, damit die Notizen zu lesen sind.
+Notiz, Jahreszahl und Einwohnerzahl stehen zusammen im Rahmen über der Karte;
+die Zeile hat eine feste Höhe, damit nichts springt, wenn eine Notiz wechselt.
+Die Sätze sind kurz gehalten — die ausführliche Fassung steht in der Liste
+unter der Karte.
+
+## 4d. Die Uhr
+
+Die Uhr braucht rund fünfzig Sekunden für die 153 Jahre, und **jeder Abschnitt
+zwischen zwei Zählungen bekommt gleich viel davon**, also etwa fünf Sekunden.
+
+Vorher war die Zeitachse linear in Jahren. Das ist als Aussage über Zeit
+richtig, als Bild aber unbrauchbar: die Abstände der Zählungen reichen von
+siebeneinhalb bis siebenunddreissig Jahren, und so stand die Karte eine
+gefühlte Ewigkeit im Kaiserreich, während Krieg, Vertreibung und
+Wirtschaftswunder in wenigen Sekunden vorbeizogen — genau dort, wo am meisten
+geschieht. Gleiche Zeit je Abschnitt dreht das um.
+
+Der Regler misst deshalb ebenfalls Abschnitte, nicht Jahre, und die Marken der
+Zählungen sitzen gleichmässig darauf. Die Jahreszahl im Rahmen zeigt weiter das
+wirkliche Jahr, und zwischen zwei Zählungen wird linear in der Zeit
+dazwischengerechnet — die Uhr verteilt nur die Aufmerksamkeit um, sie verbiegt
+keine Zahl.
+
+## 4e. Die Städtenamen
+
+Die grössten Städte tragen ihren Namen: die kreisfreien Städte und Stadtkreise,
+die in irgendeinem Bild über 400 000 Menschen haben, dazu die Region Hannover,
+in der die Stadt 2001 aufgegangen ist. Achtzehn Namen sind es insgesamt; zu
+sehen sind je nach Bild weniger.
+
+Die Schrifthöhe folgt der Wurzel aus der **gezeichneten** Fläche, wächst also
+mit dem Fleck und nicht mit der Einwohnerzahl — im Kartogramm ist das fast
+dasselbe, aber es ist die Fläche, die den Platz hergibt. Gesetzt wird nur, was
+hineinpasst: unter acht Pixeln gar nicht, breiter als der Fleck (mit etwas
+Überhang) gar nicht, und wo zwei Namen übereinanderlägen, gewinnt der grössere.
+Deshalb trägt 1871 nur Berlin einen Namen, und die anderen kommen dazu, wenn
+ihre Flecken gewachsen sind.
 
 ## 4b. Die beiden Farbskalen des Kartogramms
 

@@ -55,11 +55,18 @@ Zeitpunkt auf denselben Gebietsstand gerechnet, jede Zelle Methode A.
   Einwohner, Richtung (Veränderung je Jahr über den gerade durchlaufenen
   Abschnitt, rot gegen blau) und das Nadelrelief; Antippen zeigt Zahlen, Rate,
   Stichtag und Methode.
-- Unter der Jahreszahl läuft ein Untertitel mit, dreizehn Notizen zu je einem
-  Zeitabschnitt: warum sich die Karte gerade so bewegt. Zusammenhang, keine
-  Daten — Kreiszahlen darin stammen aus der eigenen Tabelle, der Rest ist
-  Schulwissen; vollständig noch einmal als Liste unter der Karte. Die Uhr läuft
-  rund fünfzig Sekunden für 153 Jahre.
+- Im Rahmen über der Karte stehen Jahr, Einwohnerzahl und ein Untertitel:
+  dreizehn Notizen zu je einem Zeitabschnitt, warum sich die Karte gerade so
+  bewegt. Zusammenhang, keine Daten — Kreiszahlen darin stammen aus der eigenen
+  Tabelle, der Rest ist Schulwissen; vollständig noch einmal als Liste unter
+  der Karte.
+- Die Uhr läuft rund fünfzig Sekunden für 153 Jahre, und jeder Abschnitt
+  zwischen zwei Zählungen bekommt gleich viel davon. Der Regler misst deshalb
+  Abschnitte, nicht Jahre.
+- Die achtzehn grössten Städte tragen ihren Namen; die Schrift wächst mit der
+  gezeichneten Fläche, 1871 ist nur Berlin gross genug dafür.
+- Das Relief nimmt den Hintergrund der Seite an, hell wie dunkel, mit je einer
+  eigenen Farbleiter.
 - Der Bauvorgang kann auch mit Reihen umgehen, die nur einen Teil des Landes
   abdecken — beim Pilotgebiet Berlin und Brandenburg war das nötig. Siehe
   METHODIK.md, Abschnitt 4.
