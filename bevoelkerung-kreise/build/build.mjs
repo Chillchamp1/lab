@@ -13,6 +13,10 @@ import { baueNadeln } from './nadeln.mjs';
 const log = s => process.stderr.write(s + '\n');
 const KNOTEN = Number(process.env.KNOTEN ?? 9000);
 const GITTER = Number(process.env.GITTER ?? 1600);
+const NETZ_KM = Number(process.env.NETZ_KM ?? 30);
+// Wohin die gerechnete Zeitreihe zwischengelegt wird. Mit einem eigenen Namen
+// lässt sich ein schneller Probebau fahren, ohne den guten Stand zu überschreiben.
+const CACHE = process.env.CACHE ? '-' + process.env.CACHE : '';
 
 log('Daten …');
 const zeilen = leseLang();
@@ -46,24 +50,58 @@ const bilderOhne = bilder.map(b => ({ ...b, werte: ohne(b.werte),
 const spaeteNamen = kommtSpaet.map(ags => modell.attr.find(a => a.ags === ags).name);
 const groesste = Math.max(...bilder.map(b => b.summe));
 
+// ---------------------------------------------------------------------------
+// Das Gitternetz.
+//
+// Ein Kartogramm sagt, wie viele Menschen wo wohnen, und verschweigt dabei,
+// wie stark es dafür ziehen musste. Genau das ist aber die interessante Zahl:
+// die Dichte auf dem Boden. Deshalb schwimmt ein regelmässiges Gitter in der
+// Strömung mit — Quadrate von vierzig mal vierzig Kilometern echter Fläche,
+// verankert am Ursprung der Projektion. Sie gehören zu keinem Kreis, zählen
+// bei keiner Fläche mit und sind bei der Verzerrung nur Treibgut; gezeichnet
+// ergeben sie das Netz über der Karte. Wo seine Maschen gross sind, wohnen
+// viele Menschen auf wenig Land, wo sie klein sind, wenige auf viel.
+//
+// Verankert heisst: die Linien liegen auf Vielfachen von vierzig Kilometern,
+// nicht auf dem Rand der Karte. Ein Netz, das sich dem Ausschnitt anpasst,
+// hätte Maschen verschiedener Grösse, und dann hiesse eine grosse Masche
+// nichts mehr.
+function baueNetz(gebiete, X, Y, weite) {
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (const g of gebiete) for (const r of g) for (const n of r) {
+    if (X[n] < minX) minX = X[n]; if (X[n] > maxX) maxX = X[n];
+    if (Y[n] < minY) minY = Y[n]; if (Y[n] > maxY) maxY = Y[n];
+  }
+  const i0 = Math.floor(minX / weite), i1 = Math.ceil(maxX / weite);
+  const j0 = Math.floor(minY / weite), j1 = Math.ceil(maxY / weite);
+  const nx = [], ny = [];
+  for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) { nx.push(i * weite); ny.push(j * weite); }
+  return { sp: i1 - i0 + 1, ze: j1 - j0 + 1, X: nx, Y: ny };
+}
+const netz = baueNetz(geo.gebiete, geo.X, geo.Y, NETZ_KM * 1000);
+const netzInfo = { n0: geo.X.length, sp: netz.sp, ze: netz.ze, km: NETZ_KM };
+const NETZX = Float64Array.from([...geo.X, ...netz.X]);
+const NETZY = Float64Array.from([...geo.Y, ...netz.Y]);
+log(`  Gitternetz ${netz.sp} × ${netz.ze} Maschen zu ${NETZ_KM} km, ${netz.X.length} Knoten mehr`);
+
 log('Zeitreihe …');
 const reihen = [];
 if (kommtSpaet.length) {
   log(`  ohne ${spaeteNamen.join(', ')}`);
   reihen.push({ id: 'kern', name: 'without ' + spaeteNamen.join(' and '), bilder: bilderOhne,
-    zeitreihe: rechneZeitreihe({ gebiete: geo.gebiete, X: geo.X, Y: geo.Y, attr: modell.attr,
-      bilder: bilderOhne, groesste, gitter: GITTER, cache: 'zeitreihe-kern.json', log }) });
+    zeitreihe: rechneZeitreihe({ gebiete: geo.gebiete, X: NETZX, Y: NETZY, attr: modell.attr,
+      bilder: bilderOhne, groesste, gitter: GITTER, cache: 'zeitreihe-kern' + CACHE + '.json', log }) });
 }
 log('  mit allen Kreisen');
 reihen.push({ id: 'alle', name: kommtSpaet.length ? 'with ' + spaeteNamen.join(' and ') : 'all counties',
-  bilder, zeitreihe: rechneZeitreihe({ gebiete: geo.gebiete, X: geo.X, Y: geo.Y, attr: modell.attr,
-    bilder, groesste, gitter: GITTER, cache: 'zeitreihe-alle.json', log }) });
+  bilder, zeitreihe: rechneZeitreihe({ gebiete: geo.gebiete, X: NETZX, Y: NETZY, attr: modell.attr,
+    bilder, groesste, gitter: GITTER, cache: 'zeitreihe-alle' + CACHE + '.json', log }) });
 
 log('Nutzlast …');
 const stamm = kreisStammdaten();
 const { nutz, jeKreis } = baueNutzlast({
-  gebiete: geo.gebiete, attr: modell.attr, X: geo.X, Y: geo.Y,
-  reihen, bilder, kreisInfo: stamm, log,
+  gebiete: geo.gebiete, attr: modell.attr, X: NETZX, Y: NETZY,
+  reihen, bilder, kreisInfo: stamm, netz: netzInfo, log,
 });
 
 // Kennzahlen für den Text unter der Karte
@@ -90,7 +128,7 @@ const daten = {
   vb: [nutz.breite, nutz.hoehe], ank: nutz.ank,
   gx: nutz.gx, gy: nutz.gy,
   ringzahl: nutz.ringzahl, ringe: nutz.ringe, idx: nutz.idx,
-  R: nutz.reihen, B: nutz.bilder, gr: nutz.grenzen, takt: null,
+  R: nutz.reihen, B: nutz.bilder, gr: nutz.grenzen, takt: null, netz: nutz.netz,
   bev: nutz.bev, mj: nutz.methodenJeWert, ai: nutz.anteilJeWert,
   k: jeKreis.map(k => [k.ags, k.name, k.bez, k.land, k.flaeche]),
   L: laender,
@@ -108,6 +146,11 @@ const daten = {
 //
 // Was sich aus der Tabelle dieser Seite selbst belegen lässt, ist von dort
 // genommen; der Rest ist Schulwissen und als solches gekennzeichnet.
+// Wie viele Überschriften der Faden in der Karte hält und wie blass sie mit
+// jeder Zeile werden. Sechs sind so viele, wie oben links Platz haben, ohne
+// über die Karte zu wachsen.
+const FADEN_TIEFE = 6;
+const FADEN_DECK = [1, 0.52, 0.38, 0.27, 0.19, 0.13];
 const NOTIZEN = [
   { von: 1871, bis: 1899, kopf: '1871–1900 · Coal and steel',
     kurz: 'The Ruhr fills, the farming east empties.',
@@ -327,14 +370,20 @@ input[type=range]{width:100%;margin:0;accent-color:#2a78d6}
 .tip .warn{display:block;margin-top:4px;color:var(--ink2);font-size:12px}
 h2{font-size:17px;margin:26px 0 6px}
 h3{font-size:14px;margin:18px 0 4px}
-/* Die laufende Notiz steht neben Jahr und Einwohnerzahl, nicht darunter: der
-   Platz im Rahmen gehört der Karte. */
-.notiz{flex:1 1 12em;min-height:3.1em;font-size:11.5px;line-height:1.45;
-  color:var(--ink2);opacity:0;transition:opacity .3s}
-.notiz b{color:var(--ink)}
-/* Und sie bleibt stehen: alle Notizen als Liste, die noch nicht erreichten
-   blass, die laufende angestrichen. Beim Weiterlaufen wandert die Marke nach
-   unten — nichts verschwindet. */
+/* Der Faden: nur die Überschriften, und zwar in der Karte selbst. Er liegt
+   über der Zeichnung statt über dem Rahmen, kostet also keine Höhe — der Platz
+   im Rahmen gehört der Karte. Die neueste steht oben; kommt eine dazu, rutscht
+   alles andere eine Zeile nach unten und wird blasser. Der Halo aus der
+   Flächenfarbe hält die Schrift auch über einem dunklen Fleck lesbar. */
+.feld{position:relative}
+.faden{position:absolute;left:6px;top:4px;width:min(48%,215px);pointer-events:none;
+  display:flex;flex-direction:column;gap:3px;will-change:transform}
+.faden b{font-size:11px;line-height:1.25;font-weight:650;color:var(--ink);
+  text-shadow:0 0 3px var(--surface),0 0 3px var(--surface),0 0 4px var(--surface),
+    0 0 8px var(--surface),0 0 8px var(--surface);transition:opacity .5s}
+@media(max-width:540px){.faden{width:min(52%,184px);gap:2px}.faden b{font-size:10px}}
+/* Vollständig stehen die Notizen unten im Text: die erreichten deutlich, die
+   laufende angestrichen, die übrigen blass, bis die Uhr sie einholt. */
 .wann{list-style:none;margin:14px 0 0;padding:0;font-size:11.5px;line-height:1.45}
 .wann li{margin:0 0 5px;padding-left:9px;border-left:2px solid transparent;
   color:var(--muted);opacity:.42;transition:opacity .35s,color .35s}
@@ -356,15 +405,18 @@ a{color:inherit}
 <div class="wrap">
 <div class="buehne" id="buehne">
   <div class="schild">
-    <b id="jahrZahl">–</b><span id="jahrBev"></span><span class="notiz" id="notiz"></span>
+    <b id="jahrZahl">–</b><span id="jahrBev"></span>
   </div>
-  <canvas id="karte"></canvas>${mitRelief ? `
-  <canvas id="relief" hidden></canvas>` : ''}
+  <div class="feld">
+    <canvas id="karte"></canvas>${mitRelief ? `
+    <canvas id="relief" hidden></canvas>` : ''}
+    <div class="faden" id="faden" aria-live="polite"></div>
+    <div class="tip" id="tip"></div>
+  </div>
   <div class="fuss">
     <div class="legende"><span id="legLinks"></span><div class="rampe" id="rampe"></div><span id="legRechts"></span></div>
     <p class="klein" id="legText"></p>
   </div>
-  <div class="tip" id="tip"></div>
 </div>
 <div class="kopf" id="kopf"></div>
 
@@ -383,10 +435,6 @@ a{color:inherit}
   <button data-modus="relief" aria-pressed="false">Standing up</button>` : ''}
 </div>
 
-<ol class="wann" id="wann">
-${NOTIZEN.map((n, i) => `  <li data-n="${i}"><b>${n.kopf}</b> ${n.kurz} ${n.mehr}</li>`).join('\n')}
-</ol>
-
 <h1>${titel}</h1>
 <p class="unter">${anzahlKreise} counties and county-level cities, each sized by the people living
 in it, ${jahrVon} to ${jahrBis}. Every figure is recomputed onto today's boundaries, so the
@@ -398,12 +446,24 @@ ${jeKreis.length} German counties. What is missing, and why, is written up in th
 
 <h2>How to read it</h2>
 <p>In the first two views area is always population: a county twice as populous is drawn
-twice as large. Colour is what you switch. Each county sits on the map as a pad of the same
-thickness, so what its bulge holds — area times height — is its population too.</p>
+twice as large. Colour is what you switch.</p>
 
-<p>The note beside the year says what was happening; the list under the buttons keeps every
-note that has passed, marks the one running now, and leaves the rest pale until the clock
-reaches them.</p>
+<p>The mesh over the map is a grid of squares ${NETZ_KM} km by ${NETZ_KM} km of real ground,
+anchored to the projection and dragged along by the same current that makes the cartogram. Every
+cell holds the same amount of land, so the size of a cell is the people on that land: where the
+mesh is stretched wide, many people live on little ground; where it is squeezed to a knot, few
+live on much. It is the density the cartogram spent to make area mean population — normally
+thrown away, here drawn.</p>
+
+<p>The light comes from the upper left over a surface built out of the same thing. Every county
+is a pad of the same thickness, its area its population, so the volume of the pad is its
+population as well; the grooves between the pads are all the same width. A county drawn wide
+reaches full height and reads as a plateau, a county drawn small never gets there and stays a
+low cushion — which is why the big cities and the Ruhr swell up out of the country, and why
+the relief is not a second colour scale but the shape the first two views already have.</p>
+
+<p>Headlines of what was happening stand in the top corner of the map. Each new one arrives at
+the top and pushes the ones before it down; the full notes are further down this page.</p>
 
 <p><b>Growth</b> is what the map is really for, and what it opens on. It colours each county
 by how fast it is gaining or losing people <i>at that moment</i>: the change per year over
@@ -436,7 +496,7 @@ never leaves the range of the two it lies between. A county can never hold more 
 mid-stretch than it does at either end of it.</p>
 
 <p>The clock does not run evenly through the years. Each stretch between two censuses gets a
-share of the fifty seconds that mixes how long it lasted with how much moved in it — so the
+share of the seventy seconds that mixes how long it lasted with how much moved in it — so the
 years of war, flight and rebuilding, when the country was reshuffled fastest, slow down to
 about five seconds instead of three, while the long quiet stretches still get the most
 because they are the longest. The marks under the slider show where the censuses fall in
@@ -457,6 +517,13 @@ density — which is why the Ruhr, Berlin, Hamburg and Munich rise out of a flat
 tallest needle holds ${zahl(nadeln.daten.hoechste)} people. The clock is the same one; the
 needles hold still after ${nadeln.daten.b[nadeln.daten.b.length - 1].jahr}, because the
 municipality figures end there.</p>` : ''}
+
+<h2>What happened when</h2>
+<p class="klein">The headlines running over the map, with what belongs to them. Figures marked
+here are from the table this page draws; the rest is common history.</p>
+<ol class="wann" id="wann">
+${NOTIZEN.map((n, i) => `  <li data-n="${i}"><b>${n.kopf}</b> ${n.kurz} ${n.mehr}</li>`).join('\n')}
+</ol>
 
 ${kommtSpaet.length ? `<h2>The button above the map</h2>
 <p>${spaeteNamen.join(' and ')} ${spaeteNamen.length > 1 ? 'have' : 'has'} figures only from
@@ -571,6 +638,10 @@ const REIHEN = D.R.map((r, ri) => {
 });
 const ANTEIL = entpacke(D.ai);
 const GRENZEN = kum(entpacke(D.gr));      // Knotenpaare an Landes- und Aussengrenzen
+// Das Gitternetz: n0 ist der erste seiner Knoten, sp und ze sind Spalten und
+// Reihen, km die Weite einer Masche auf dem Boden. Seine Knoten stecken in
+// denselben Feldern wie die der Kreise und werden deshalb genauso interpoliert.
+const NETZ = D.netz;
 let reihe = REIHEN[0];
 
 /* ---------- Weiche Interpolation ----------
@@ -684,7 +755,7 @@ const dunkel = () => matchMedia('(prefers-color-scheme:dark)').matches;
 const stil = n => getComputedStyle(document.body).getPropertyValue(n).trim();
 let LEER = '#e6e5e0', STRICH = '#fcfcfb', GRENZE = '#fcfcfb';
 let INK = '#0b0b0b', SCHATTEN = 'rgba(0,0,0,.18)', KANTE3D = '#b9b8b0';
-let LICHT = 'rgba(255,255,255,.55)', TIEF = 'rgba(11,11,11,.20)';
+let NETZTON = 'rgba(11,11,11,.20)', HELLMAX = 0.50, DUNKELMAX = 0.40;
 function farbenHolen() {
   LEER = stil('--leer'); STRICH = stil('--surface'); GRENZE = stil('--surface'); INK = stil('--ink');
   // Der Stapel unter der Karte: auf hellem Grund ein Grau, auf dunklem fast
@@ -692,8 +763,13 @@ function farbenHolen() {
   // deshalb halten sie sich zurück.
   SCHATTEN = dunkel() ? 'rgba(0,0,0,.55)' : 'rgba(11,11,11,.16)';
   KANTE3D = dunkel() ? '#0a0a0a' : '#b4b3ab';
-  LICHT = dunkel() ? 'rgba(255,255,255,.14)' : 'rgba(255,255,255,.32)';
-  TIEF = dunkel() ? 'rgba(0,0,0,.38)' : 'rgba(11,11,11,.19)';
+  // Das Netz nimmt sich zurück: es soll zu lesen sein, ohne die Farbe der
+  // Fläche zu verfälschen. Licht und Schatten des Reliefs sind auf dunklem
+  // Grund anders verteilt als auf hellem — dort trägt der Schatten, hier das
+  // Licht.
+  NETZTON = dunkel() ? 'rgba(255,255,255,.22)' : 'rgba(11,11,11,.26)';
+  HELLMAX = dunkel() ? 0.32 : 0.36;
+  DUNKELMAX = dunkel() ? 0.44 : 0.36;
   if (typeof reliefFarben === 'function') reliefFarben();
 }
 // Auf heller Fläche läuft die Skala hell -> dunkel, auf dunkler dunkel -> hell:
@@ -775,7 +851,7 @@ function platzImRahmen() {
   return Math.max(150, Math.round(innerHeight * 0.96 - drum));
 }
 function masse() {
-  const b = cv.parentElement.clientWidth - 12;
+  const b = cv.parentElement.clientWidth;
   breite = b;
   // Das Seitenverhältnis kommt aus der Karte selbst: ein Kasten, der genauso
   // geformt ist wie das, was hineinsoll, verschenkt keinen Platz.
@@ -855,6 +931,134 @@ function werteBei(a, b, u) {
   return { w, deck, rate };
 }
 
+/* ---------- Gitternetz ----------
+   Die Knoten des Netzes liegen in denselben Feldern wie die der Kreise und
+   sind durch dieselbe Strömung gelaufen. Gezeichnet wird es innerhalb der
+   Silhouette: was draussen liegt, gehört zu keinem Kreis und hiesse nichts.
+   Die Linien sind gerade von Knoten zu Knoten — eine geglättete Kurve sähe
+   ruhiger aus, behauptete aber einen Verlauf, den niemand gerechnet hat. */
+function zeichneNetz() {
+  if (!NETZ) return;
+  const n0 = NETZ.n0, sp = NETZ.sp, ze = NETZ.ze;
+  ctx.beginPath();
+  for (let j = 0; j < ze; j++) for (let i = 0; i < sp; i++) {
+    const n = n0 + j * sp + i, x = px[n] * mass + verX, y = py[n] * mass + verY;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  for (let i = 0; i < sp; i++) for (let j = 0; j < ze; j++) {
+    const n = n0 + j * sp + i, x = px[n] * mass + verX, y = py[n] * mass + verY;
+    if (j === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = NETZTON;
+  ctx.lineWidth = Math.max(0.45, breite / 850);
+  ctx.stroke();
+}
+
+/* ---------- Relief ----------
+   Die Karte soll nicht flach liegen, sondern sich wölben. Gerechnet wird das
+   über ein Höhenfeld, nicht über gezeichnete Kanten:
+
+   1. Die Kreise weiss, die Fugen zwischen ihnen schwarz und überall gleich
+      breit. Das ist die Vorlage.
+   2. Zweimal weichgezeichnet und gemischt: einmal knapp, einmal weit. Das
+      knappe Feld rundet jeden Kreis für sich ab, das weite mittelt darüber,
+      wie dicht die Fugen liegen.
+   3. Aus dem Gefälle des Feldes die Normale, daraus Lambert-Beleuchtung von
+      oben links.
+
+   Dass dabei die grossen Städte aufgehen, ist kein Effekt, sondern folgt aus
+   der Fläche: ein Kreis mit vielen Menschen ist breit gezeichnet, kommt weit
+   von seinen Fugen weg und erreicht die volle Höhe; ein kleiner erreicht sie
+   nie und bleibt ein flaches Kissen. Die Dicke ist für alle dieselbe — Fläche
+   mal Höhe, also Volumen, bleibt damit die Bevölkerung. */
+const RAUF = 0.42;                // Auflösung des Höhenfelds, Anteil der Bildpunkte
+const WEIT = 3;                   // das weite Feld noch einmal so viel gröber
+const hkA = document.createElement('canvas'), hcA = hkA.getContext('2d');
+const hkB = document.createElement('canvas'), hcB = hkB.getContext('2d', { willReadFrequently: true });
+const hkC = document.createElement('canvas'), hcC = hkC.getContext('2d');
+const hkL = document.createElement('canvas'), hcL = hkL.getContext('2d');
+let rW = 0, rH = 0, rBild = null, hoehen = null;
+function reliefFeld() {
+  const w = Math.max(8, Math.round(breite * RAUF)), h = Math.max(8, Math.round(hoehe * RAUF));
+  if (w === rW && h === rH) return;
+  rW = w; rH = h;
+  for (const k of [hkA, hkB, hkL]) { k.width = w; k.height = h; }
+  hkC.width = Math.max(4, Math.round(w / WEIT)); hkC.height = Math.max(4, Math.round(h / WEIT));
+  rBild = hcL.createImageData(w, h);
+  hoehen = new Float32Array(w * h);
+}
+function reliefUeber(sil) {
+  if (!(breite > 60 && hoehe > 60)) return;
+  reliefFeld();
+  const s = rW / breite;
+  const fuge = Math.max(1.0, breite / 420);     // Breite der Fuge zwischen zwei Kreisen
+  const fein = Math.max(1.8, breite / 130);     // enges Weichzeichnen: der einzelne Kreis
+  const grob = Math.max(7, breite / 22);        // weites: die Landschaft darüber
+
+  // Die Vorlage. Draussen bleibt sie durchsichtig, nicht schwarz: dieselbe
+  // Fläche dient hinterher als Schablone, mit der das Licht auf die Karte
+  // beschnitten wird — das erspart ein zweites Beschneiden an einem Pfad aus
+  // vierhundert Vielecken, und das ist der teuerste Teil des Bildes.
+  hcA.setTransform(1, 0, 0, 1, 0, 0);
+  hcA.clearRect(0, 0, rW, rH);
+  hcA.setTransform(s, 0, 0, s, 0, 0);
+  hcA.fillStyle = '#fff'; hcA.fill(sil, 'evenodd');
+  hcA.lineJoin = 'round'; hcA.lineWidth = fuge; hcA.strokeStyle = '#000'; hcA.stroke(sil);
+
+  // Das weite Feld entsteht auf einer dreimal gröberen Leinwand. Weichzeichnen
+  // kostet nach Fläche, und ein Feld, das ohnehin nur die grosse Form trägt,
+  // braucht die Auflösung nicht.
+  hcC.setTransform(1, 0, 0, 1, 0, 0);
+  hcC.clearRect(0, 0, hkC.width, hkC.height);
+  hcC.filter = 'blur(' + (grob * s / WEIT).toFixed(2) + 'px)';
+  hcC.drawImage(hkA, 0, 0, hkC.width, hkC.height);
+  hcC.filter = 'none';
+
+  hcB.setTransform(1, 0, 0, 1, 0, 0);
+  hcB.globalAlpha = 1;
+  hcB.clearRect(0, 0, rW, rH);
+  hcB.filter = 'blur(' + (fein * s).toFixed(2) + 'px)';
+  hcB.drawImage(hkA, 0, 0);
+  hcB.filter = 'none';
+  hcB.globalAlpha = 0.42;
+  hcB.drawImage(hkC, 0, 0, rW, rH);
+  hcB.globalAlpha = 1;
+
+  // Gelesen wird die Höhe als Rot mal Deckkraft: was halb durchsichtig ist,
+  // liegt halb so hoch. Ohne das wäre der Rand der Karte eine Klippe.
+  const d = hcB.getImageData(0, 0, rW, rH).data, o = rBild.data;
+  for (let i = 0, n = rW * rH; i < n; i++) hoehen[i] = d[i << 2] * d[(i << 2) + 3];
+
+  // Licht von oben links, 50 Grad über der Fläche. Auf dem Bildschirm zeigt y
+  // nach unten, oben links ist also die negative Richtung in beiden Achsen.
+  const hoch = Math.cos(Math.PI * 50 / 180) * Math.SQRT1_2;
+  const lx = -hoch, ly = -hoch, lz = Math.sin(Math.PI * 50 / 180);
+  const k = 3.2 / 65025;
+  for (let y = 0; y < rH; y++) {
+    const zc = y * rW, zo = (y > 0 ? y - 1 : y) * rW, zu = (y < rH - 1 ? y + 1 : y) * rW;
+    for (let x = 0; x < rW; x++) {
+      const xm = x > 0 ? x - 1 : x, xp = x < rW - 1 ? x + 1 : x;
+      const gx = (hoehen[zc + xp] - hoehen[zc + xm]) * k;
+      const gy = (hoehen[zu + x] - hoehen[zo + x]) * k;
+      const I = (-gx * lx - gy * ly + lz) / Math.sqrt(gx * gx + gy * gy + 1) - lz;
+      const i4 = (zc + x) << 2;
+      let a = I * 2.0;
+      if (a > 0) { if (a > HELLMAX) a = HELLMAX; o[i4] = 255; o[i4 + 1] = 255; o[i4 + 2] = 255; }
+      else { a = -a; if (a > DUNKELMAX) a = DUNKELMAX; o[i4] = 0; o[i4 + 1] = 0; o[i4 + 2] = 0; }
+      o[i4 + 3] = a * 255;
+    }
+  }
+  hcL.putImageData(rBild, 0, 0);
+  // Schablone: nur, was auf der Karte liegt.
+  hcL.globalCompositeOperation = 'destination-in';
+  hcL.drawImage(hkA, 0, 0);
+  hcL.globalCompositeOperation = 'source-over';
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(hkL, 0, 0, breite, hoehe);
+}
+
 function zeichne() {
   if (modus === 'relief') { zeichneRelief(); return; }
   const [a, b, u] = bildBei(jahr);
@@ -863,20 +1067,11 @@ function zeichne() {
   ctx.clearRect(0, 0, breite, hoehe);
   ctx.lineJoin = 'round';
 
-  /* Buckel. Jeder Kreis liegt als Deckel auf der Karte, und zwar mit immer
-     derselben Dicke — daraus folgt das, worum es geht: die Fläche ist die
-     Bevölkerung, mal einer festen Höhe ergibt das ein Volumen, das ebenfalls
-     der Bevölkerung entspricht. Ein Buckel, der bei einem grossen Kreis auch
-     höher wäre, hätte ein Volumen nach Fläche mal Fläche und wäre damit
-     gerade keine Bevölkerung mehr.
-
-     Gezeichnet wird das in einem Pfad aus allen Umrissen: erst der Schatten
-     und die Kante der ganzen Platte darunter, dann die Karte, dann innen an
-     jeder Grenze ein heller Rand oben links und ein dunkler unten rechts.
-     Weil die Kreise die Fläche lückenlos teilen, ist die Vereinigung ihrer
-     Umrisse zugleich die Silhouette der Karte; beides braucht denselben
-     Pfad. */
-  const TIEFE = Math.max(3, breite / 95), BUCKEL = Math.max(0.9, breite / 380);
+  /* Ein Pfad aus allen Umrissen. Weil die Kreise die Fläche lückenlos teilen,
+     ist die Vereinigung ihrer Umrisse zugleich die Silhouette der Karte, und
+     seine Teilpfade sind zugleich alle Kreisgrenzen. Schatten, Kante, Netz
+     und Relief hängen alle daran. */
+  const TIEFE = Math.max(2.5, breite / 130);
   const sil = new Path2D();
   for (let g = 0; g < NK; g++) {
     if (!(deck[g] > 0.5)) continue;
@@ -920,19 +1115,11 @@ function zeichne() {
   }
   ctx.strokeStyle = GRENZE; ctx.lineWidth = Math.max(0.7, Math.min(1.2, breite / 420)); ctx.stroke();
 
-  // Der Buckel selbst: heller Rand oben links, dunkler unten rechts, beides
-  // nur innerhalb der Karte und beides gleich breit — gleiche Dicke für jeden
-  // Kreis, ob Berlin oder Zweibrücken.
   ctx.save();
   ctx.clip(sil);
-  ctx.lineJoin = 'round'; ctx.lineWidth = BUCKEL * 1.4;
-  ctx.save();
-  ctx.translate(-BUCKEL * 0.7, -BUCKEL * 0.7);
-  ctx.strokeStyle = LICHT; ctx.stroke(sil);
+  zeichneNetz();
   ctx.restore();
-  ctx.translate(BUCKEL * 0.7, BUCKEL * 0.7);
-  ctx.strokeStyle = TIEF; ctx.stroke(sil);
-  ctx.restore();
+  reliefUeber(sil);
 
   beschrifte(deck);
   schreibe(a, b, u, w, deck);
@@ -1042,32 +1229,64 @@ function beschrifte(deck) {
   }
 }
 
-/* ---------- Untertitel ----------
-   Welche Notiz gerade gilt, hängt nur an der Uhr, also gilt sie in allen drei
-   Ansichten. Gewechselt wird nicht hart: erst ausblenden, dann den Text
-   tauschen, dann einblenden. Die Marke fängt das Zurückziehen am Regler ab —
-   sonst käme ein alter Zeitgeber und schriebe die falsche Notiz hin. */
+/* ---------- Der Faden ----------
+   Was jeweils geschah, steht als Überschrift in der Karte selbst, oben links.
+   Kommt eine neue dazu, setzt sie sich obenauf und schiebt die vorigen eine
+   Zeile nach unten, blasser mit jedem Schritt. Der Faden hält die letzten
+   ${FADEN_TIEFE}; alles Weitere steht ausgeschrieben unter der Karte.
+
+   Geschoben wird nicht Zeile für Zeile, sondern in einem Stück: der ganze
+   Faden springt ohne Übergang um eine Zeilenhöhe nach oben und läuft dann
+   nach unten zurück. Weil die neue Überschrift oben schon steht, sieht das
+   aus, als drücke sie die anderen weg — und kostet eine einzige Bewegung
+   statt ${FADEN_TIEFE}.
+
+   Welche Notiz gilt, hängt nur an der Uhr, also gilt sie in allen drei
+   Ansichten. Am Regler kann die Zeit auch zurücklaufen; dann wird der Faden
+   neu aufgebaut statt fortgeschrieben. */
 const NOTIZ = ${JSON.stringify(NOTIZEN.map(n => [n.von, n.bis, n.kopf, n.kurz]))};
 const WANN = [...document.querySelectorAll('#wann li')];
-let notizJetzt = -2, notizMarke = 0;
+const FADEN = document.getElementById('faden');
+const TIEFE_FADEN = ${FADEN_TIEFE};
+const FADEN_DECK = ${JSON.stringify(FADEN_DECK)};
+let notizJetzt = -2;
+function fadenBaue(i, geschoben) {
+  // Auf einem Telefon bricht jede Überschrift auf zwei Zeilen um; dort hält
+  // der Faden weniger, sonst wüchse er über die halbe Karte.
+  const tief = innerWidth < 540 ? 4 : TIEFE_FADEN;
+  const gab = FADEN.firstElementChild !== null;
+  FADEN.textContent = '';
+  for (let n = i; n >= 0 && i - n < tief; n--) {
+    const el = document.createElement('b');
+    el.textContent = NOTIZ[n][2];
+    el.style.opacity = FADEN_DECK[i - n];
+    FADEN.appendChild(el);
+  }
+  // Um wie viel die vorigen nach unten rücken: um die Höhe der neuen Zeile
+  // samt Lücke. Gemessen wird sie, nachdem sie steht — eine Überschrift kann
+  // eine Zeile brauchen oder zwei.
+  const neu = FADEN.firstElementChild;
+  const zeile = neu ? neu.offsetHeight + 3 : 0;
+  if (!geschoben || !gab || !zeile) { FADEN.style.transition = 'none'; FADEN.style.transform = 'none'; return; }
+  FADEN.style.transition = 'none';
+  FADEN.style.transform = 'translateY(-' + zeile + 'px)';
+  requestAnimationFrame(() => {
+    FADEN.style.transition = 'transform .45s cubic-bezier(.22,.61,.36,1)';
+    FADEN.style.transform = 'translateY(0)';
+  });
+}
 function notizen() {
   let i = -1;
   for (let n = 0; n < NOTIZ.length; n++) if (jahr >= NOTIZ[n][0] && jahr < NOTIZ[n][1]) { i = n; break; }
   if (i === notizJetzt) return;
+  const geschoben = i === notizJetzt + 1;
   notizJetzt = i;
   // Die Liste unten führt mit: erreicht, laufend, noch nicht.
   WANN.forEach((li, n) => {
     li.classList.toggle('da', i >= 0 && n <= i);
     li.classList.toggle('jetzt', n === i);
   });
-  const el = document.getElementById('notiz'), marke = ++notizMarke;
-  el.style.opacity = 0;
-  setTimeout(() => {
-    if (marke !== notizMarke) return;
-    if (i < 0) { el.textContent = ''; return; }
-    el.innerHTML = '<b>' + NOTIZ[i][2] + '</b> ' + NOTIZ[i][3];
-    el.style.opacity = 1;
-  }, 280);
+  fadenBaue(i, geschoben);
 }
 
 /* ---------- Legende ---------- */
@@ -1140,9 +1359,11 @@ function zeigeTip(x, y) {
       : '<span class="warn">' + f.stichtage.join(', ') + ' · method ' + (methode === '-' ? '–' : methode)
         + (anteil ? ', ' + anteil + ' % interpolated' : '') + '</span>');
   tip.style.opacity = 1;
-  const bx = Math.max(4, Math.min(breite - 216, x - 100));
-  tip.style.left = (bx + 8) + 'px';
-  tip.style.top = Math.max(4, y - tip.offsetHeight - 14 + 8) + 'px';
+  // Der Zettel liegt jetzt im selben Kasten wie die Leinwand, also sind seine
+  // Koordinaten dieselben wie die des Zeigers — der alte Versatz um den Rahmen
+  // fällt weg.
+  tip.style.left = Math.max(0, Math.min(breite - 224, x - 100)) + 'px';
+  tip.style.top = Math.max(2, y - tip.offsetHeight - 14) + 'px';
 }
 cv.addEventListener('pointerdown', e => {
   const r = cv.getBoundingClientRect();
