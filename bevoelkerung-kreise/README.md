@@ -94,10 +94,11 @@ ihren Begriff und ihren wirklichen Stichtag mit. Ausführlich in
 
 ## Verfahren
 
-Die Karte liegt als Stapel über dem Papier: die Silhouette aller Kreise
-zweimal versetzt gefüllt, einmal weich als Schatten, einmal als Kante, und
-darüber die Karte. Der Effekt sitzt unter der Fläche, nicht in ihr — die Fläche
-bleibt genau die, die die Bevölkerung vorgibt.
+Jeder Kreis liegt als Buckel auf der Karte, hell oben links, dunkel unten
+rechts, und alle gleich dick. Gleich dick ist dabei die Aussage: die Fläche ist
+schon die Bevölkerung, also ist es das Volumen dann auch — Fläche mal
+konstanter Höhe. Ein Buckel, der bei grossen Kreisen auch höher wäre, zeigte
+Fläche mal Fläche und damit nichts.
 
 Diffusionskartogramm nach Gastner und Newman (2004), wie bei den
 [Wahlkreisen](../wahlkreise-2025/): die Dichte wird als Wärme aufgefasst und
@@ -112,7 +113,7 @@ Vorher sprang die Geschwindigkeit an jeder Zählung um bis zu 74 Prozent, jetzt
 um höchstens 12,8.
 
 Die Uhr läuft nicht gleichmässig durch die Jahre. Jeder Abschnitt bekommt einen
-Anteil an den 56 Sekunden, der Dauer und Umschichtung mischt — der Bruch von
+Anteil an den 70 Sekunden, der Dauer und Umschichtung mischt — der Bruch von
 1939 auf 1946 also fünf Sekunden statt drei, während die langen ruhigen Strecken
 trotzdem den grössten Teil behalten, weil sie am längsten sind. Keiner bekommt
 weniger als viereinhalb Sekunden; sonst wäre er vorbei, ehe die Notiz gelesen

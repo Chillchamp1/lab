@@ -299,10 +299,15 @@ Die Anzeigefenster sind nicht die Jahreszahlen des Ereignisses — die stehen in
 der Überschrift der Notiz. Die Fenster stossen aneinander, damit immer eine
 Notiz zu sehen ist. Gewechselt wird über Aus- und Einblenden, nicht hart.
 
-Notiz, Jahreszahl und Einwohnerzahl stehen zusammen im Rahmen über der Karte;
-die Zeile hat eine feste Höhe, damit nichts springt, wenn eine Notiz wechselt.
-Die Sätze sind kurz gehalten — die ausführliche Fassung steht in der Liste
-unter der Karte.
+Notiz, Jahreszahl und Einwohnerzahl stehen **nebeneinander** im Rahmen über der
+Karte; die Zeile hat eine feste Höhe, damit nichts springt, wenn eine Notiz
+wechselt. Die Sätze sind kurz gehalten.
+
+Verschwinden tut dabei nichts: unter den Umschaltern steht die vollständige
+Liste in kleiner Schrift. Was vorbei ist, bleibt lesbar, die laufende Notiz ist
+angestrichen, das Kommende ist blass. Beim Weiterlaufen wandert die Marke nach
+unten — das ist dieselbe Liste, die vorher zweimal dastand, einmal lebendig und
+einmal starr.
 
 ## 4d. Was zwischen den Zählungen steht
 
@@ -330,13 +335,13 @@ um, es entstehen also keine Faltungen.
 
 ## 4e. Die Uhr
 
-Die Uhr braucht 56 Sekunden für die 153 Jahre. Wie viel davon ein Abschnitt
+Die Uhr braucht 70 Sekunden für die 153 Jahre. Wie viel davon ein Abschnitt
 bekommt, hängt an zwei Dingen zugleich: **wie lang er dauerte und wie viel sich
 in ihm umschichtete**. Genommen wird das geometrische Mittel aus beiden
 Anteilen — dem an der Summe der Jahre und dem an der Summe aller Veränderungen
 je Kreis (Σ|Bevölkerung(b) − Bevölkerung(a)|).
 
-Dazu eine **Untergrenze von viereinhalb Sekunden**: darunter ist ein Abschnitt
+Dazu eine **Untergrenze von viereinhalb Sekunden** (Anteil 4,5/70): darunter ist ein Abschnitt
 vorbei, ehe seine Notiz gelesen ist. Das betrifft das Ende der Reihe, wo die
 Zählungen dicht liegen — 2011 bis 2019 und 2019 bis 2024 bekämen sonst zwei
 Sekunden und weniger. Wer über der Grenze liegt, gibt anteilig ab.
@@ -367,23 +372,29 @@ gerechnet. Das ist der Punkt: sichtbar ist Bewegung je Sekunde, nicht je Jahr,
 und ohne diesen Bezug entstünde an jeder Zählung genau der Knick zurück, den
 4d beseitigt.
 
-## 4f. Die Dicke
+## 4f. Die Buckel
 
-Das Kartogramm liegt nicht flach auf dem Papier, sondern als Stapel darüber:
-alle Flächen werden einmal in einen Pfad gesammelt, dieser Pfad zweimal versetzt
-gefüllt — weit unten und weich als Schatten, knapp darunter als Kante — und
-darüber liegt die Karte selbst. Weil die Kreise die Fläche lückenlos teilen, ist
-die Vereinigung ihrer Umrisse die Silhouette; sie muss nicht eigens gerechnet
-werden.
+Jeder Kreis liegt als Deckel auf der Karte, mit einem hellen Rand oben links und
+einem dunklen unten rechts — Licht von links oben, wie gewohnt. Beide Ränder
+sind **gleich breit**, und das ist der Punkt: gleich breit heisst gleich dick,
+und weil die Fläche schon die Bevölkerung ist, ist es das Volumen dann auch.
 
-Wichtig dabei: der Effekt sitzt **unter** der Karte, nicht in ihr. Die Fläche
-bleibt genau die Fläche, die die Bevölkerung vorgibt — eine gekippte oder
-perspektivische Ansicht täte das nicht, weil Perspektive Flächen verzerrt, und
-dann liesse sich die eine Aussage dieser Karte nicht mehr ablesen. Wer Höhe als
-Grösse sehen will, findet sie in der dritten Ansicht, dem Nadelrelief.
+> Fläche = Bevölkerung, Höhe = konstant ⇒ Volumen = Fläche × Höhe ∝ Bevölkerung.
 
-Gemessen kostet der Stapel nichts: 11,2 gegen 11,6 Bilder je Sekunde in der
-Software-Rasterung, also im Rauschen.
+Ein Buckel, der bei einem grossen Kreis auch höher wäre, hätte ein Volumen nach
+Fläche mal Fläche — und wäre damit gerade keine Bevölkerung mehr. Die
+Versuchung, die Höhe „interessanter" zu machen, führt also direkt an der Aussage
+vorbei.
+
+Darunter liegt die ganze Platte: derselbe Pfad zweimal versetzt gefüllt, weit
+unten und weich als Schatten, knapp darunter als Kante. Weil die Kreise die
+Fläche lückenlos teilen, ist die Vereinigung ihrer Umrisse zugleich die
+Silhouette der Karte; beides braucht denselben Pfad, und der entsteht ohnehin.
+
+Nicht gekippt wird dabei nichts: Perspektive verzerrt Flächen, und dann liesse
+sich die eine Aussage dieser Karte nicht mehr ablesen. Wer wirkliche Höhe sehen
+will, findet sie in der dritten Ansicht, dem Nadelrelief. Gemessen kostet der
+ganze Aufwand nichts — 11,2 gegen 11,6 Bilder je Sekunde.
 
 ## 4g. Die Städtenamen
 

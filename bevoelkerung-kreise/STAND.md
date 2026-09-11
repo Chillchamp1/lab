@@ -82,15 +82,23 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   bewegt. Zusammenhang, keine Daten — Kreiszahlen darin stammen aus der eigenen
   Tabelle, der Rest ist Schulwissen; vollständig noch einmal als Liste unter
   der Karte.
-- Die Uhr läuft 56 Sekunden für 153 Jahre. Die Spielzeit je Abschnitt mischt
+- Die Uhr läuft 70 Sekunden für 153 Jahre. Die Spielzeit je Abschnitt mischt
   Dauer und Umschichtung (geometrisches Mittel) und liegt nie unter
   viereinhalb Sekunden, also bekommt 1939→1946 fünf Sekunden statt drei und
   2019→2024 viereinhalb statt eineinhalb. Zwischen den Zählungen wird mit einer monotonen
   kubischen Kurve gerechnet, nicht geradlinig: kein Knick, kein Überschiessen.
   Grösster Geschwindigkeitssprung von 125 auf 21 Prozent.
-- Das Kartogramm hat Dicke: Silhouette versetzt gefüllt, Schatten darunter.
-  Ohne Kosten (11,2 gegen 11,6 Bilder je Sekunde) und ohne die Fläche
-  anzutasten.
+- Das Kartogramm hat Buckel: jeder Kreis ein Deckel gleicher Dicke, hell oben
+  links, dunkel unten rechts, darunter Kante und Schatten der ganzen Platte.
+  Gleiche Dicke heisst Volumen ∝ Fläche ∝ Bevölkerung. Kostet nichts (11,2
+  gegen 11,6 Bilder je Sekunde).
+- Über dem Kartenrahmen steht kein Text mehr; Jahr, Einwohnerzahl und laufende
+  Notiz stehen nebeneinander im Rahmen, die Legende unten darin. Der Rahmen
+  passt als Ganzes ins Querformat (411 von 430 Pixeln Fensterhöhe), die Karte
+  bekommt sonst so viel Platz wie möglich — das Seitenverhältnis der Leinwand
+  folgt dem der Karte.
+- Alle Notizen stehen als Liste unter den Umschaltern, klein: erreichtes
+  normal, laufendes angestrichen, kommendes blass.
 - Die Richtungsfarbe blendet nur noch nach hinten über. Vorher zeigte sie den
   Einbruch von 1939 schon 1934 — ein Sechstel eines neunundzwanzigjährigen
   Abschnitts sind fünf Jahre.

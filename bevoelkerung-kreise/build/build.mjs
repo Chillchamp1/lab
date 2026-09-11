@@ -206,7 +206,7 @@ const abschnitte = bilder.slice(0, -1).map((b, i) => {
 // 2019 bis 2024 — bekämen nach Jahren und Umschichtung sonst zwei Sekunden und
 // weniger. Wer über der Grenze liegt, gibt dafür anteilig ab; das wird ein paar
 // Mal wiederholt, bis es steht.
-const SPIELZEIT = 56;             // Sekunden für die ganze Achse
+const SPIELZEIT = 70;             // Sekunden für die ganze Achse
 const MINDEST = 4.5 / SPIELZEIT;  // kleinster Anteil je Abschnitt
 {
   const sj = abschnitte.reduce((x, a) => x + a.jahre, 0), su = abschnitte.reduce((x, a) => x + a.um, 0);
@@ -287,18 +287,18 @@ html,body{margin:0}
 body{background:var(--plane);color:var(--ink);
   font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.5;
   -webkit-text-size-adjust:100%}
-.wrap{max-width:560px;margin:0 auto;padding:20px 16px 40px}
+.wrap{max-width:560px;margin:0 auto;padding:10px 12px 40px}
 h1{font-size:24px;line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
 .unter{color:var(--ink2);margin:0 0 18px;font-size:15px}
 .buehne{position:relative;background:var(--surface);border:1px solid var(--ring);border-radius:12px;
-  padding:8px;margin-bottom:12px}
+  padding:6px;margin:0 0 10px}
+h1{margin-top:28px}
 canvas{display:block;width:100%;height:auto;touch-action:manipulation}
 canvas[hidden]{display:none}
-.schild{padding:2px 4px 8px}
-.jahr{display:flex;align-items:baseline;gap:10px;margin:0 0 3px}
-.jahr b{font-size:32px;font-weight:650;letter-spacing:-.02em;line-height:1}
-.jahr span{color:var(--ink2);font-size:13px}
-.kopf{color:var(--muted);font-size:12px;margin:8px 2px 12px;min-height:1.4em}
+.schild{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;padding:2px 4px 6px}
+.schild>b{font-size:28px;font-weight:650;letter-spacing:-.02em;line-height:1.05}
+.schild>span{color:var(--ink2);font-size:12.5px}
+.kopf{color:var(--muted);font-size:11.5px;margin:6px 2px 10px;min-height:1.35em}
 .regler{display:flex;align-items:center;gap:10px;margin-bottom:6px}
 button{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--axis);
   border-radius:8px;padding:7px 12px;cursor:pointer}
@@ -327,15 +327,20 @@ input[type=range]{width:100%;margin:0;accent-color:#2a78d6}
 .tip .warn{display:block;margin-top:4px;color:var(--ink2);font-size:12px}
 h2{font-size:17px;margin:26px 0 6px}
 h3{font-size:14px;margin:18px 0 4px}
-.notiz{margin:0;min-height:3em;font-size:13px;line-height:1.5;
+/* Die laufende Notiz steht neben Jahr und Einwohnerzahl, nicht darunter: der
+   Platz im Rahmen gehört der Karte. */
+.notiz{flex:1 1 12em;min-height:3.1em;font-size:11.5px;line-height:1.45;
   color:var(--ink2);opacity:0;transition:opacity .3s}
-/* Auf schmalen Geräten brauchen die längeren Notizen eine dritte Zeile. Der
-   Platz wird immer freigehalten, sonst rutscht die Karte bei jedem Wechsel. */
-@media(max-width:420px){.notiz{min-height:4.6em}}
 .notiz b{color:var(--ink)}
-.wann{margin:0}
-.wann dt{font-weight:600;margin-top:12px}
-.wann dd{margin:0;color:var(--ink2)}
+/* Und sie bleibt stehen: alle Notizen als Liste, die noch nicht erreichten
+   blass, die laufende angestrichen. Beim Weiterlaufen wandert die Marke nach
+   unten — nichts verschwindet. */
+.wann{list-style:none;margin:14px 0 0;padding:0;font-size:11.5px;line-height:1.45}
+.wann li{margin:0 0 5px;padding-left:9px;border-left:2px solid transparent;
+  color:var(--muted);opacity:.42;transition:opacity .35s,color .35s}
+.wann li.da{opacity:1;color:var(--ink2)}
+.wann li.jetzt{border-left-color:var(--ink);color:var(--ink)}
+.wann li b{font-weight:600}
 p{margin:0 0 10px}
 .klein{font-size:13px;color:var(--ink2)}
 table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
@@ -349,22 +354,9 @@ a{color:inherit}
 </style>
 </head><body>
 <div class="wrap">
-<h1>${titel}</h1>
-<p class="unter">${anzahlKreise} counties and county-level cities, each sized by the people living
-in it, ${jahrVon} to ${jahrBis}. Every figure is recomputed onto today's boundaries, so the
-same places are compared across ${jahrBis - jahrVon} years. And the map itself grows: the
-same number of people per square millimetre, start to finish, so ${jahrVon} really is
-that much smaller than today.${ganzesLand ? '' : `</p>
-<p class="unter">This is the pilot region of a larger project — the same map for all
-${jeKreis.length} German counties. What is missing, and why, is written up in the repository.`}</p>
-
-${mitRelief ? `<p class="unter">Three views of the same figures: two of the cartogram, and one where
-the map keeps its real shape and the people stand up out of it instead.</p>` : ''}
-
 <div class="buehne" id="buehne">
   <div class="schild">
-    <div class="jahr"><b id="jahrZahl">–</b><span id="jahrBev"></span></div>
-    <p class="notiz" id="notiz"></p>
+    <b id="jahrZahl">–</b><span id="jahrBev"></span><span class="notiz" id="notiz"></span>
   </div>
   <canvas id="karte"></canvas>${mitRelief ? `
   <canvas id="relief" hidden></canvas>` : ''}
@@ -390,9 +382,28 @@ the map keeps its real shape and the people stand up out of it instead.</p>` : '
   <button data-modus="menschen" aria-pressed="false">People</button>${mitRelief ? `
   <button data-modus="relief" aria-pressed="false">Standing up</button>` : ''}
 </div>
+
+<ol class="wann" id="wann">
+${NOTIZEN.map((n, i) => `  <li data-n="${i}"><b>${n.kopf}</b> ${n.kurz} ${n.mehr}</li>`).join('\n')}
+</ol>
+
+<h1>${titel}</h1>
+<p class="unter">${anzahlKreise} counties and county-level cities, each sized by the people living
+in it, ${jahrVon} to ${jahrBis}. Every figure is recomputed onto today's boundaries, so the
+same places are compared across ${jahrBis - jahrVon} years. And the map itself grows: the
+same number of people per square millimetre, start to finish, so ${jahrVon} really is
+that much smaller than today.${ganzesLand ? '' : `</p>
+<p class="unter">This is the pilot region of a larger project — the same map for all
+${jeKreis.length} German counties. What is missing, and why, is written up in the repository.`}</p>
+
 <h2>How to read it</h2>
 <p>In the first two views area is always population: a county twice as populous is drawn
-twice as large. Colour is what you switch.</p>
+twice as large. Colour is what you switch. Each county sits on the map as a pad of the same
+thickness, so what its bulge holds — area times height — is its population too.</p>
+
+<p>The note beside the year says what was happening; the list under the buttons keeps every
+note that has passed, marks the one running now, and leaves the rest pale until the clock
+reaches them.</p>
 
 <p><b>Growth</b> is what the map is really for, and what it opens on. It colours each county
 by how fast it is gaining or losing people <i>at that moment</i>: the change per year over
@@ -417,9 +428,9 @@ from 1871 to 1900. The scale ends at ±3 % a year and is squeezed in between, so
 decades still show something and the one violent stretch, 1939 to 1946, still fits.</p>
 
 <p>Tap a county for its numbers. Between two censuses the shapes and the figures are
-interpolated, and the readout says how wide the gap is — twenty-nine years between 1910 and
-1939, which is why the First World War leaves so little mark here: nothing was counted at
-county level while it happened. The interpolation runs along a smooth curve rather than a
+interpolated, and the readout says how wide the gap is — thirty-one years between the census
+of 1910 and the one of 1939, which is why the First World War leaves so little mark here:
+nothing was counted at county level while it happened. The interpolation runs along a smooth curve rather than a
 straight line: it passes through every counted value exactly, has no kink at a census, and
 never leaves the range of the two it lies between. A county can never hold more people
 mid-stretch than it does at either end of it.</p>
@@ -463,16 +474,6 @@ ${bilder.find(b => b.werte.has(kommtSpaet[0])).jahr}: Greater Berlin was formed 
 dozens of surrounding towns, and no reachable source gives those towns separately for the years
 before. The figures for the old Berlin of 66.9 km² are not figures for today's 891 km², so they
 are left out rather than quietly reused.</p>` : ''}
-
-<h2>What happened</h2>
-<p>A note runs under the year while the clock passes each stretch. They are context, not
-data: the map shows that something changed and where, but never why. Figures inside them
-that name a county come from the table on this page; the rest is ordinary history.</p>
-
-<dl class="wann">
-${NOTIZEN.map(n => `  <dt>${n.kopf}</dt>
-  <dd>${n.kurz} ${n.mehr}</dd>`).join('\n')}
-</dl>
 
 <h2>Method, in short</h2>
 <p>Diffusion cartogram after Gastner and Newman (2004): population density is treated
@@ -683,6 +684,7 @@ const dunkel = () => matchMedia('(prefers-color-scheme:dark)').matches;
 const stil = n => getComputedStyle(document.body).getPropertyValue(n).trim();
 let LEER = '#e6e5e0', STRICH = '#fcfcfb', GRENZE = '#fcfcfb';
 let INK = '#0b0b0b', SCHATTEN = 'rgba(0,0,0,.18)', KANTE3D = '#b9b8b0';
+let LICHT = 'rgba(255,255,255,.55)', TIEF = 'rgba(11,11,11,.20)';
 function farbenHolen() {
   LEER = stil('--leer'); STRICH = stil('--surface'); GRENZE = stil('--surface'); INK = stil('--ink');
   // Der Stapel unter der Karte: auf hellem Grund ein Grau, auf dunklem fast
@@ -690,6 +692,8 @@ function farbenHolen() {
   // deshalb halten sie sich zurück.
   SCHATTEN = dunkel() ? 'rgba(0,0,0,.55)' : 'rgba(11,11,11,.16)';
   KANTE3D = dunkel() ? '#0a0a0a' : '#b4b3ab';
+  LICHT = dunkel() ? 'rgba(255,255,255,.14)' : 'rgba(255,255,255,.32)';
+  TIEF = dunkel() ? 'rgba(0,0,0,.38)' : 'rgba(11,11,11,.19)';
   if (typeof reliefFarben === 'function') reliefFarben();
 }
 // Auf heller Fläche läuft die Skala hell -> dunkel, auf dunkler dunkel -> hell:
@@ -761,17 +765,29 @@ const cv = document.getElementById('karte'), ctx = cv.getContext('2d');
 let breite = 0, hoehe = 0, mass = 1, verX = 0, verY = 0;
 
 const cv2 = document.getElementById('relief');
+// Wie hoch darf der Rahmen sein? So hoch, dass er mit Kopfzeile und Legende
+// ins Fenster passt — quer gehalten bleibt davon wenig, und genau das ist der
+// Sinn: der Rahmen als Ganzes soll auch im Querformat vollständig zu sehen
+// sein. Sonst bekommt die Karte so viel wie möglich.
+function platzImRahmen() {
+  const schild = document.querySelector('.schild'), fuss = document.querySelector('.fuss');
+  const drum = (schild ? schild.offsetHeight : 0) + (fuss ? fuss.offsetHeight : 0) + 30;
+  return Math.max(150, Math.round(innerHeight * 0.96 - drum));
+}
 function masse() {
-  const b = cv.parentElement.clientWidth - 16;
-  breite = b; hoehe = Math.round(b * 1.24);
+  const b = cv.parentElement.clientWidth - 12;
+  breite = b;
+  // Das Seitenverhältnis kommt aus der Karte selbst: ein Kasten, der genauso
+  // geformt ist wie das, was hineinsoll, verschenkt keinen Platz.
+  const V = reihe.rahmen;
+  hoehe = Math.round(Math.min(breite * (V.h / V.w), platzImRahmen()));
   const dpr = Math.min(2.5, devicePixelRatio || 1);
   cv.width = Math.round(breite * dpr); cv.height = Math.round(hoehe * dpr);
   cv.style.height = hoehe + 'px';
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const R = reihe.rahmen;
-  mass = Math.min(breite / R.w, hoehe / R.h) * 0.98;
-  verX = (breite - R.w * mass) / 2 - R.x * mass;
-  verY = (hoehe - R.h * mass) / 2 - R.y * mass;
+  mass = Math.min(breite / V.w, hoehe / V.h) * 0.99;
+  verX = (breite - V.w * mass) / 2 - V.x * mass;
+  verY = (hoehe - V.h * mass) / 2 - V.y * mass;
   if (cv2) reliefMasse(dpr);
 }
 
@@ -847,34 +863,37 @@ function zeichne() {
   ctx.clearRect(0, 0, breite, hoehe);
   ctx.lineJoin = 'round';
 
-  /* Dicke. Alle Flächen einmal in einen Pfad, denselben Pfad zweimal versetzt
-     gefüllt: einmal weit unten und weich als Schatten, einmal knapp darunter
-     als Kante. Weil die Kreise die Fläche lückenlos teilen, ist die Vereinigung
-     ihrer Umrisse die Silhouette der Karte — sie muss nicht eigens gerechnet
-     werden. Darüber liegt dann die Karte selbst, und was bleibt, ist ein
-     Stapel, der ein paar Pixel dick ist. Die Fläche bleibt dabei die Fläche:
-     der Effekt sitzt unter der Karte, nicht in ihr. */
-  const TIEFE = Math.max(3, breite / 95);
-  {
-    const sil = new Path2D();
-    for (let g = 0; g < NK; g++) {
-      if (!(deck[g] > 0.5)) continue;
-      for (const r of GEBIETE[g]) {
-        sil.moveTo(px[r[0]] * mass + verX, py[r[0]] * mass + verY);
-        for (let i = 1; i < r.length; i++) sil.lineTo(px[r[i]] * mass + verX, py[r[i]] * mass + verY);
-        sil.closePath();
-      }
+  /* Buckel. Jeder Kreis liegt als Deckel auf der Karte, und zwar mit immer
+     derselben Dicke — daraus folgt das, worum es geht: die Fläche ist die
+     Bevölkerung, mal einer festen Höhe ergibt das ein Volumen, das ebenfalls
+     der Bevölkerung entspricht. Ein Buckel, der bei einem grossen Kreis auch
+     höher wäre, hätte ein Volumen nach Fläche mal Fläche und wäre damit
+     gerade keine Bevölkerung mehr.
+
+     Gezeichnet wird das in einem Pfad aus allen Umrissen: erst der Schatten
+     und die Kante der ganzen Platte darunter, dann die Karte, dann innen an
+     jeder Grenze ein heller Rand oben links und ein dunkler unten rechts.
+     Weil die Kreise die Fläche lückenlos teilen, ist die Vereinigung ihrer
+     Umrisse zugleich die Silhouette der Karte; beides braucht denselben
+     Pfad. */
+  const TIEFE = Math.max(3, breite / 95), BUCKEL = Math.max(0.9, breite / 380);
+  const sil = new Path2D();
+  for (let g = 0; g < NK; g++) {
+    if (!(deck[g] > 0.5)) continue;
+    for (const r of GEBIETE[g]) {
+      sil.moveTo(px[r[0]] * mass + verX, py[r[0]] * mass + verY);
+      for (let i = 1; i < r.length; i++) sil.lineTo(px[r[i]] * mass + verX, py[r[i]] * mass + verY);
+      sil.closePath();
     }
-    ctx.save();
-    ctx.translate(0, TIEFE * 1.9); ctx.filter = 'blur(' + (TIEFE * 1.2).toFixed(1) + 'px)';
-    ctx.fillStyle = SCHATTEN; ctx.fill(sil);
-    ctx.filter = 'none'; ctx.setTransform(ctx.getTransform());
-    ctx.restore();
-    ctx.save();
-    ctx.translate(0, TIEFE);
-    ctx.fillStyle = KANTE3D; ctx.fill(sil);
-    ctx.restore();
   }
+  ctx.save();
+  ctx.translate(0, TIEFE * 1.9); ctx.filter = 'blur(' + (TIEFE * 1.2).toFixed(1) + 'px)';
+  ctx.fillStyle = SCHATTEN; ctx.fill(sil);
+  ctx.restore();
+  ctx.save();
+  ctx.translate(0, TIEFE);
+  ctx.fillStyle = KANTE3D; ctx.fill(sil);
+  ctx.restore();
 
   for (let g = 0; g < NK; g++) {
     if (!(deck[g] > 0.001)) continue;             // ohne Zahl wird nicht gezeichnet
@@ -900,6 +919,21 @@ function zeichne() {
     ctx.lineTo(px[q] * mass + verX, py[q] * mass + verY);
   }
   ctx.strokeStyle = GRENZE; ctx.lineWidth = Math.max(0.7, Math.min(1.2, breite / 420)); ctx.stroke();
+
+  // Der Buckel selbst: heller Rand oben links, dunkler unten rechts, beides
+  // nur innerhalb der Karte und beides gleich breit — gleiche Dicke für jeden
+  // Kreis, ob Berlin oder Zweibrücken.
+  ctx.save();
+  ctx.clip(sil);
+  ctx.lineJoin = 'round'; ctx.lineWidth = BUCKEL * 1.4;
+  ctx.save();
+  ctx.translate(-BUCKEL * 0.7, -BUCKEL * 0.7);
+  ctx.strokeStyle = LICHT; ctx.stroke(sil);
+  ctx.restore();
+  ctx.translate(BUCKEL * 0.7, BUCKEL * 0.7);
+  ctx.strokeStyle = TIEF; ctx.stroke(sil);
+  ctx.restore();
+
   beschrifte(deck);
   schreibe(a, b, u, w, deck);
   notizen();
@@ -1014,12 +1048,18 @@ function beschrifte(deck) {
    tauschen, dann einblenden. Die Marke fängt das Zurückziehen am Regler ab —
    sonst käme ein alter Zeitgeber und schriebe die falsche Notiz hin. */
 const NOTIZ = ${JSON.stringify(NOTIZEN.map(n => [n.von, n.bis, n.kopf, n.kurz]))};
+const WANN = [...document.querySelectorAll('#wann li')];
 let notizJetzt = -2, notizMarke = 0;
 function notizen() {
   let i = -1;
   for (let n = 0; n < NOTIZ.length; n++) if (jahr >= NOTIZ[n][0] && jahr < NOTIZ[n][1]) { i = n; break; }
   if (i === notizJetzt) return;
   notizJetzt = i;
+  // Die Liste unten führt mit: erreicht, laufend, noch nicht.
+  WANN.forEach((li, n) => {
+    li.classList.toggle('da', i >= 0 && n <= i);
+    li.classList.toggle('jetzt', n === i);
+  });
   const el = document.getElementById('notiz'), marke = ++notizMarke;
   el.style.opacity = 0;
   setTimeout(() => {
@@ -1216,7 +1256,7 @@ function reliefMasse(dpr) {
   // Die Höhe des Bildes folgt dem Inhalt, statt fest zu sein: das Feld ist so
   // hoch, wie das Land breit und Berlin hoch ist. Ein festes Format liesse
   // entweder Himmel übrig oder schnitte die Spitzen ab.
-  rhoehe = Math.round(breite * (rU - rO) / (rR - rL));
+  rhoehe = Math.round(Math.min(breite * (rU - rO) / (rR - rL), platzImRahmen()));
   cv2.width = Math.round(breite * dpr); cv2.height = Math.round(rhoehe * dpr);
   cv2.style.height = rhoehe + 'px';
   ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
