@@ -109,13 +109,21 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   schwarz, wo er wegfällt, dick, wo er voll im Licht oder Schatten steht. Grund:
   die Fläche ist schon mit Daten belegt — eine Schattierung, die stark genug für
   ein Gebirge wäre, macht aus Rot und Blau Grau; Linien nehmen fast keine Fläche
-  weg. Dazu Lambert-Schattierung als Grau im Modus `overlay` (dunkel:
+  weg. 4,9 bis 5,1 Bilder je Sekunde im Prüfbrowser gegen 4,1 vor dem Umbau. Dazu Lambert-Schattierung als Grau im Modus `overlay` (dunkel:
   `soft-light`), Muldenverschattung und Schlagschatten aus einer **flacheren
   Sonne** (16 statt 40 Grad — ein Strahl, der steiler abfällt als der Hang, trifft
   nie auf Schatten).
 - Das Höhenfeld wird **in zwei Kanälen** gelesen: unmultipliziertes Rot ist die
   normalisierte Faltung, also der Höhenmittelwert ohne Randabfall, Alpha ist der
   Rand der Karte. Sonst wäre der grösste Berg im Feld Deutschland selbst.
+- Aufgelöst wird es auf **62 Prozent** der Bildpunkte (vorher 40), das weite
+  Feld in voller Auflösung statt dreifach hochgerechnet, und die Höhen in **64
+  Stufen** statt 24. Zweiunddreissig Höhenlinien, jede mindestens einen guten
+  Bildpunkt breit. Das war der Unterschied zwischen gezackten Schlieren und
+  Linien; die drei Bremsen (flach, zu eng, zu schmal) halten sie sauber.
+- Die **Städtenamen** haben eine Obergrenze an der Kartenbreite (`breite/38`)
+  statt fester dreissig Pixel: Berlin und Hamburg standen sonst als Überschrift
+  über der Karte statt als Beschriftung darin.
 - Das **Gitternetz** (30 × 30 km, eine Fassung lang) ist wieder draussen: neben
   Relief und Formregler brachte es zu wenig für den Platz. 713 Knoten aus dem
   Modell heraus.
