@@ -44,7 +44,7 @@ Kreiszahl nennt, ist aus der Tabelle dieser Seite genommen, der Rest ist
 Schulwissen und als solches gekennzeichnet.
 
 Die Uhr läuft rund fünfzig Sekunden für 153 Jahre — langsam genug, um die
-Notizen zu lesen, und jeder Abschnitt bekommt gleich viel davon.
+Notizen zu lesen.
 
 ## Und dasselbe stehend
 
@@ -99,12 +99,15 @@ fliesst auseinander, bis sie überall gleich ist, und die Grenzen schwimmen mit.
 Für jeden Zeitpunkt ein eigenes Kartogramm, jedes vom vorigen aus gestartet —
 so ist der Übergang eine Bewegung und kein Sprung.
 
-Jeder Abschnitt zwischen zwei Zählungen bekommt dieselbe Zeit, rund fünf
-Sekunden. Die Abschnitte sind verschieden lang — sieben Jahre von 1939 bis
-1946, sechsunddreissig von 1871 bis 1900 —, also steht die Karte nicht mehr
-ewig im Kaiserreich und rauscht durch die Nachkriegszeit. Die Marken unter dem
-Regler sitzen dort, wo die Zählungen liegen: gleichmässig, weil der Regler
-Zählungen zählt und keine Jahre.
+Dazwischen wird nicht geradlinig gerechnet, sondern mit einer monotonen
+kubischen Kurve: sie geht durch jeden gezählten Wert, knickt an den Zählungen
+nicht und bleibt trotzdem immer zwischen den beiden Werten, die sie verbindet.
+Vorher sprang die Geschwindigkeit an jeder Zählung um bis zu 74 Prozent, jetzt
+um höchstens 12,8.
+
+Die Uhr läuft linear in Jahren: ein Jahr dauert so lang wie ein Jahr, 1871 bis
+1900 also fünfmal so lang wie 1939 bis 1946, und die Marken unter dem Regler
+sitzen dort, wo die Zählungen wirklich liegen.
 
 Die grössten Städte tragen ihren Namen, und die Schrift wächst mit dem Fleck:
 sie wird aus der gezeichneten Fläche berechnet, ein Name erscheint also erst,

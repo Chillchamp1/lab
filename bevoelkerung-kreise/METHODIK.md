@@ -304,25 +304,45 @@ die Zeile hat eine feste Höhe, damit nichts springt, wenn eine Notiz wechselt.
 Die Sätze sind kurz gehalten — die ausführliche Fassung steht in der Liste
 unter der Karte.
 
-## 4d. Die Uhr
+## 4d. Was zwischen den Zählungen steht
 
-Die Uhr braucht rund fünfzig Sekunden für die 153 Jahre, und **jeder Abschnitt
-zwischen zwei Zählungen bekommt gleich viel davon**, also etwa fünf Sekunden.
+Zwischen zwei Zählungen wurde geradlinig gerechnet. Das trifft die Zählungen
+genau, aber die Bewegung knickt an jeder von ihnen: die Geschwindigkeit
+springt. Ein Kreis, der zwischen 1946 und 1950 doppelt so schnell wächst wie
+danach, wechselt das Tempo genau im Bild der Zählung — und das sieht aus wie
+ein Ruck, oft genug, um zu stören.
 
-Vorher war die Zeitachse linear in Jahren. Das ist als Aussage über Zeit
-richtig, als Bild aber unbrauchbar: die Abstände der Zählungen reichen von
-siebeneinhalb bis siebenunddreissig Jahren, und so stand die Karte eine
-gefühlte Ewigkeit im Kaiserreich, während Krieg, Vertreibung und
-Wirtschaftswunder in wenigen Sekunden vorbeizogen — genau dort, wo am meisten
-geschieht. Gleiche Zeit je Abschnitt dreht das um.
+Gerechnet wird deshalb mit einer **monotonen kubischen Kurve** (Fritsch–Carlson,
+wie PCHIP), für die Werte, für die Knoten des Kartogramms und für die
+Nadelhöhen. Sie geht durch jeden gezählten Wert und hat an den Zählungen keinen
+Knick mehr. Der Unterschied zu einem gewöhnlichen Spline ist die Monotonie: wo
+eine Reihe steigt und dann fällt, wird die Steigung an der Spitze auf null
+gesetzt, statt eine Beule zu erfinden. Damit gilt: **zwischen zwei Zählungen
+liegt kein Wert ausserhalb dieser beiden.** Ein Kreis hat unterwegs nie mehr
+Menschen als in einem der beiden Bilder, und eine Ecke der Karte wandert nie
+über den Ort hinaus, den sie in beiden hat.
 
-Der Regler misst deshalb ebenfalls Abschnitte, nicht Jahre, und die Marken der
-Zählungen sitzen gleichmässig darauf. Die Jahreszahl im Rahmen zeigt weiter das
-wirkliche Jahr, und zwischen zwei Zählungen wird linear in der Zeit
-dazwischengerechnet — die Uhr verteilt nur die Aufmerksamkeit um, sie verbiegt
-keine Zahl.
+Nachgemessen an 900 Stellen der Zeitachse: das Überschiessen über die
+Zählwerte ist **0,0000 %**, der grösste Sprung der Bewegungsgeschwindigkeit
+fällt von **74 % auf 12,8 %** (er bleibt, wo eine Reihe kippt — dort ist die
+Steigung mit Absicht null), und kein Ring dreht unterwegs seine Orientierung
+um, es entstehen also keine Faltungen.
 
-## 4e. Die Städtenamen
+## 4e. Die Uhr
+
+Die Uhr braucht rund fünfzig Sekunden für die 153 Jahre und läuft **linear in
+Jahren**: ein Jahr dauert so lang wie ein Jahr, also 1871 bis 1900 fünfmal so
+lang wie 1939 bis 1946. Die Marken auf dem Regler sitzen dort, wo die Zählungen
+wirklich liegen — ungleichmässig, weil sie ungleichmässig gezählt wurden.
+
+Der Vorschlag, jedem Abschnitt gleich viel Zeit zu geben, war einmal gebaut und
+ist wieder zurückgenommen: er macht aus der Zeitachse eine Reihe gleich breiter
+Kapitel, und dann stimmt die eine Aussage nicht mehr, die eine Zeitachse
+überhaupt macht. Der Eindruck, der dazu geführt hatte — die Bewegung wirke oft
+ruckartig —, kam ohnehin nicht von der Uhr, sondern von der geradlinigen
+Interpolation dazwischen; siehe 4d.
+
+## 4f. Die Städtenamen
 
 Die grössten Städte tragen ihren Namen: die kreisfreien Städte und Stadtkreise,
 die in irgendeinem Bild über 400 000 Menschen haben, dazu die Region Hannover,
