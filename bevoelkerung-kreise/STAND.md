@@ -73,7 +73,7 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   gemeinsamer Massstab, sodass die Karte flächenproportional mit der
   Bevölkerung wächst.
 - `index.html`: eine einzelne Datei, Englisch, Hochformat, Zeitschieberegler
-  mit Marken auf den Zählungen, **drei Ansichten** an derselben Uhr — Growth
+  mit Marken auf den Zählungen, **vier Ansichten** an derselben Uhr — Growth
   (Veränderung je Jahr über den gerade durchlaufenen Abschnitt, rot gegen blau;
   steht vorn), Einwohner und das Nadelrelief; Antippen zeigt Zahlen, Rate,
   Stichtag und Methode.
@@ -132,6 +132,23 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   noch den Verlauf. Die Höhen der Kreise stehen in 200 Stufen statt 24 — bei 64
   sprang im Lauf der Zeit ein Kreis von einer Stufe zur nächsten, und die Linien
   in seiner Umgebung zuckten mit.
+- **Tiefpass erster Ordnung über die Bilder.** Das Raster des Höhenfeldes springt
+  von Bild zu Bild um Bruchteile eines Punktes, und die Höhenlinien zappeln mit —
+  reine Abtastung, in den Daten steht davon nichts. Das gezeigte Feld folgt dem
+  gerechneten jetzt mit zwei Zeitkonstanten: 1,2 s für das weite Feld (die
+  Linien, ≈ 2,6 Jahre Kartenzeit), 0,30 s für das enge Feld und den Rand (die
+  Schattierung hängt an den Umrissen und darf nicht nachlaufen). Gerechnet mit
+  der wirklich vergangenen Zeit, also unabhängig von der Bildrate; bei 60 Bildern
+  geht ein einzelner Rastersprung zu 1,4 % ein. Wo die Zeit springt — Regler,
+  Umschalten, Fenstergrösse —, wird der Filter geleert statt nachgezogen.
+  Gemessen im Prüfbrowser (6 Bilder/s, wo der Filter am wenigsten kann):
+  Änderung je Bild auf **48 %**.
+- **Vierte Ansicht: Terrain.** Die Farben einer physischen Karte — Tiefland grün,
+  dann gelb, braun, oben Fels und Grau —, und gefärbt wird die Höhe, also
+  dieselbe Zahl, die das Relief trägt. Die Höhenlinien laufen damit genau auf den
+  Farbgrenzen, wie in einem Atlas. Kreisgrenzen treten zurück, Landesgrenzen
+  werden zur dünnen dunklen Linie. Im vollen Kartogramm stehen alle Kreise gleich
+  hoch, also rückt die Form beim Einschalten auf Half and half.
 - Die **Städtenamen** haben eine Obergrenze an der Kartenbreite (`breite/38`)
   statt fester dreissig Pixel: Berlin und Hamburg standen sonst als Überschrift
   über der Karte statt als Beschriftung darin.

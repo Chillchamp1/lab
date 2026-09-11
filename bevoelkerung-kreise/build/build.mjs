@@ -431,7 +431,8 @@ a{color:inherit}
 </div>
 <div class="modi" role="group" aria-label="What the map shows">
   <button data-modus="wandel" aria-pressed="true">Growth</button>
-  <button data-modus="menschen" aria-pressed="false">People</button>${mitRelief ? `
+  <button data-modus="menschen" aria-pressed="false">People</button>
+  <button data-modus="gelaende" aria-pressed="false">Terrain</button>${mitRelief ? `
   <button data-modus="relief" aria-pressed="false">Standing up</button>` : ''}
 </div>
 
@@ -493,6 +494,14 @@ lifetime, and the east turn red after 1990.</p>
 colouring, it is the result. The scale is logarithmic because the counties are: on a
 straight scale nine in ten of them would sit in the bottom tenth of it and come out as one
 flat blue.</p>
+
+<p><b>Terrain</b> drops the data colouring and paints the map the way an atlas paints a
+mountain range: green in the lowlands, then yellow, brown, and bare grey at the summits. What
+it is colouring is the height — the same figure the relief already shows — so the contour
+lines run exactly along the colour boundaries, as they do on a physical map. Green is empty
+ground, brown and grey are crowded. In the full cartogram every county stands equally high by
+construction, so there would be nothing to colour; picking Terrain therefore steps the shape
+back to half.</p>
 
 <p>The reading belongs to the stretch between two censuses, so it holds while the map crosses
 one. It never runs ahead: at a census the old rate still stands, and the new one fades in
@@ -800,12 +809,23 @@ function rahmenJetzt() {
 const BLAU = ['#cde2fb','#b7d3f6','#9ec5f4','#86b6ef','#6da7ec','#5598e7','#3987e5','#2a78d6','#256abf','#1c5cab','#184f95','#104281','#0d366b'];
 const ROT  = ['#f8d7d3','#f1c4bf','#edb0aa','#e69c95','#e08881','#d8746d','#d15d57','#c14e49','#ac4440','#993936','#85302d','#732624','#5f1f1d'];
 const BLAU_N = ['#3a404c','#39465e','#394c6e','#38527d','#37588c','#355e9b','#3164aa','#2d6bb9','#2571c8','#1a78d7','#047fe4','#0287ec','#018ff4'];
+/* Die hypsometrische Leiter der Geländekarte: dieselbe Reihenfolge, die jeder
+   Schulatlas benutzt — Tiefland grün, dann gelb, dann braun, oben Fels und
+   Schnee. Sie ist keine Datenskala im üblichen Sinn: sie ist eine Konvention,
+   und sie funktioniert, weil man sie schon kann. Gefärbt wird damit die Höhe,
+   also dasselbe, was auch das Relief zeigt — die Höhenlinien liegen damit
+   genau auf den Farbgrenzen, wie in einer Geländekarte. */
+const HYPSO   = ['#1e5c32','#2f7a3c','#4e9346','#77ab52','#a4c165','#cdd47c','#e8dd93','#e5c97a',
+                 '#d9ab63','#c78e52','#b07145','#97593c','#7d4738','#8a6f68','#b4a9a4','#e6e2df'];
+const HYPSO_N = ['#2a6b3d','#3a8548','#569b51','#7fb05e','#a8c46f','#ccd383','#e4da97','#e2c881',
+                 '#d6ab6c','#c4905c','#ae774f','#965f44','#7f4d3e','#8c726c','#b3a8a4','#ddd8d5'];
 const ROT_N  = ['#4b3b3a','#5a3b3a','#663c3a','#723d3a','#7e3d3a','#8a3e39','#953e39','#a13e38','#ac3e36','#b73e34','#c33d32','#ce3d2f','#d93c2b'];
 const dunkel = () => matchMedia('(prefers-color-scheme:dark)').matches;
 const stil = n => getComputedStyle(document.body).getPropertyValue(n).trim();
 let LEER = '#e6e5e0', STRICH = '#fcfcfb', GRENZE = '#fcfcfb';
 let INK = '#0b0b0b', SCHATTEN = 'rgba(0,0,0,.18)', KANTE3D = '#b9b8b0';
-let HELLMAX = 0.50, DUNKELMAX = 0.40, SCHATTENTON = 0.35;
+let HELLMAX = 0.50, DUNKELMAX = 0.40;
+let GELAENDE_STRICH = 'rgba(255,255,255,.18)', GELAENDE_GRENZE = 'rgba(60,52,44,.40)';
 function farbenHolen() {
   LEER = stil('--leer'); STRICH = stil('--surface'); GRENZE = stil('--surface'); INK = stil('--ink');
   // Der Stapel unter der Karte: auf hellem Grund ein Grau, auf dunklem fast
@@ -818,6 +838,11 @@ function farbenHolen() {
   // verschieden: overlay rechnet den Ton gegen die Farbe, die schon da liegt,
   // und wird auf dunklem Grund hart, weil dort alles ohnehin nahe an Schwarz
   // liegt; soft-light bleibt milder.
+  // In der Geländekarte treten die Kreisgrenzen zurück: eine Landschaft hat
+  // keine weissen Fugen. Die Landesgrenzen bleiben als dünne dunkle Linie —
+  // so viel Orientierung wie auf einer physischen Karte üblich.
+  GELAENDE_STRICH = dunkel() ? 'rgba(255,255,255,.13)' : 'rgba(255,255,255,.20)';
+  GELAENDE_GRENZE = dunkel() ? 'rgba(0,0,0,.45)' : 'rgba(54,46,38,.42)';
   MISCHUNG = dunkel() ? 'soft-light' : 'overlay';
   STAERKE = dunkel() ? 2.2 : 1.7;
   HELLMAX = dunkel() ? 0.55 : 0.38;
@@ -835,6 +860,12 @@ const MITTE = () => dunkel() ? '#44433f' : '#f0efec';
 // Richtung gemeint ist. Auf dunklem Grund enden sie in kräftigem Azur und
 // kräftigem Zinnober und bleiben bis zuletzt auseinanderzuhalten.
 const arm = r => dunkel() ? r : r.slice(0, 10);
+const hypso = () => dunkel() ? HYPSO_N : HYPSO;
+// Wie hoch ein Kreis steht, bezogen auf die mittlere Dichte des Bildes: von
+// einem Sechstel bis zum Zwölffachen, logarithmisch. Fest für alle Bilder, also
+// heisst dieselbe Farbe immer dasselbe.
+const HOEHE_VON = 1 / 6, HOEHE_BIS = 12;
+const lnHVon = Math.log(HOEHE_VON), lnHSpanne = Math.log(HOEHE_BIS) - lnHVon;
 const stufe = (r, u) => r[Math.max(0, Math.min(r.length - 1, Math.round(u * (r.length - 1))))];
 
 // Die Skala für die Bevölkerung: logarithmisch von 30 000 bis 1,5 Millionen,
@@ -865,6 +896,11 @@ const wandelSkala = r => Math.asinh(r / WANDEL_KNICK) / Math.asinh(WANDEL_ENDE /
 
 function farbe(modus, wert, k, rate) {
   if (!(wert > 0)) return LEER;
+  if (modus === 'gelaende') {
+    const h = HOCH[k];
+    if (!(h > 0)) return LEER;
+    return stufe(hypso(), Math.max(0, Math.min(1, (Math.log(h) - lnHVon) / lnHSpanne)));
+  }
   if (modus === 'wandel') {
     if (rate === null) return LEER;
     const v = wandelSkala(rate);
@@ -885,6 +921,7 @@ function farbe(modus, wert, k, rate) {
 const TAKT = D.takt, TAKTKUM = [0];
 for (let i = 0; i < TAKT.length; i++) TAKTKUM.push(TAKTKUM[i] + TAKT[i]);
 let modus = 'wandel', spiel = 0, jahr = T0, laeuft = false, letzterTip = -1;
+let dtSek = 1 / 60;   // wie lange das letzte Bild gedauert hat, für den Tiefpass
 function setzeZeit(p) {
   spiel = Math.max(0, Math.min(1, p));
   let a = 0;
@@ -1063,6 +1100,31 @@ const hkC = document.createElement('canvas'), hcC = hkC.getContext('2d', { willR
 const hkL = document.createElement('canvas'), hcL = hkL.getContext('2d');
 let rW = 0, rH = 0, rBild = null;
 let feinH = null, grobH = null, grobAuf = null, feldH = null, maskeH = null, schatten = null;
+/* ---------- Tiefpass ----------
+   Das Höhenfeld wird jedes Bild neu gerastert, und dabei rutschen die Kreise um
+   Bruchteile eines Feldpunktes. Das Feld selbst ist glatt, aber sein Raster
+   springt — und die Höhenlinien, die daraus verfolgt werden, zappeln mit, um
+   ein, zwei Bildpunkte, sechzigmal in der Sekunde. Zu sehen ist das als Zittern,
+   obwohl sich in den Daten nichts dergleichen tut.
+
+   Also ein Tiefpass erster Ordnung über die Bilder: das gezeigte Feld folgt dem
+   gerechneten mit einer Zeitkonstanten von einer halben Sekunde. Bei siebzig
+   Sekunden für hundertdreiundfünfzig Jahre ist das gut ein Jahr — das Zittern
+   des Rasters fällt weg, die Bewegung über die Jahre bleibt.
+
+   Gerechnet mit der wirklich vergangenen Zeit, nicht je Bild: sonst hinge die
+   Zeitkonstante daran, wie schnell das Gerät gerade ist. Und wo die Zeit
+   springt — am Regler, beim Umschalten, beim Ändern der Grösse —, wird der
+   Filter geleert statt nachgezogen; sonst zeigte das Bild danach eine halbe
+   Sekunde lang das Gelände von vorher. */
+// Zwei Zeitkonstanten, in Sekunden. Das weite Feld trägt die Höhenlinien und
+// darf träge sein: es ist ohnehin über fünfzehn Punkte verschmiert, ein paar
+// Jahre Nachlauf sieht dort niemand. Das enge Feld und der Rand hängen an den
+// Umrissen der Kreise — liefen sie zu weit nach, sässe die Schattierung neben
+// ihrer Fläche.
+const TIEFPASS_GROB = 1.2, TIEFPASS_FEIN = 0.30;
+let glattFein = null, glattGrob = null, glattMaske = null, glattDa = false;
+function reliefFrisch() { glattDa = false; }
 function reliefFeld() {
   const w = Math.max(8, Math.round(breite * RAUF)), h = Math.max(8, Math.round(hoehe * RAUF));
   if (w === rW && h === rH) return;
@@ -1177,6 +1239,7 @@ function reliefUeber(sil, deck, gross) {
     const a = df[(i << 2) + 3] / 255;
     maskeH[i] = a * a * (3 - 2 * a);
   }
+  
   // Das weite Feld bekommt seinen eigenen Rand, den aus seinem eigenen
   // Alphakanal: der ist über dieselbe weite Strecke verlaufen und damit glatt.
   // Nähme es den schmalen Rand des engen Feldes, knickten die Höhenlinien
@@ -1188,10 +1251,31 @@ function reliefUeber(sil, deck, gross) {
     grobAuf[i] = grobH[i] * a * a * (3 - 2 * a);
   }
 
+  // Und hier der Tiefpass. Drei Felder, ein Gewicht, aus der wirklich
+  // vergangenen Zeit gerechnet.
+  const n3 = rW * rH;
+  if (!glattFein || glattFein.length !== n3) {
+    glattFein = new Float32Array(n3); glattGrob = new Float32Array(n3); glattMaske = new Float32Array(n3);
+    glattDa = false;
+  }
+  if (!glattDa) {
+    glattFein.set(feinH); glattGrob.set(grobAuf); glattMaske.set(maskeH);
+    glattDa = true;
+  } else {
+    const dt = Math.max(0.001, Math.min(0.25, dtSek));
+    const gG = 1 - Math.exp(-dt / TIEFPASS_GROB), gF = 1 - Math.exp(-dt / TIEFPASS_FEIN);
+    for (let i = 0; i < n3; i++) {
+      glattFein[i] += (feinH[i] - glattFein[i]) * gF;
+      glattGrob[i] += (grobAuf[i] - glattGrob[i]) * gG;
+      glattMaske[i] += (maskeH[i] - glattMaske[i]) * gF;
+    }
+  }
+  feinH.set(glattFein); grobAuf.set(glattGrob); maskeH.set(glattMaske);
+
   // Beide Felder zusammen ergeben die Oberfläche: das enge trägt den einzelnen
-  // Kreis, das weite die Landschaft.
+  // Kreis, das weite die Landschaft. Beide sind durch den Tiefpass gelaufen.
   for (let i = 0, n = rW * rH; i < n; i++)
-    feldH[i] = (0.40 * feinH[i] + 0.60 * grobH[i]) * maskeH[i];
+    feldH[i] = 0.40 * feinH[i] * maskeH[i] + 0.60 * grobAuf[i];
 
   /* Schlagschatten. Das ist der Unterschied zwischen einer gewölbten Fläche
      und einem Gebirge: ein Berg wirft einen Schatten über das, was hinter ihm
@@ -1395,7 +1479,7 @@ function linienMalen(strichBreite) {
 function hoehenLinien(s) {
   linienFeld();
   const S = LSCHRITT, je = 1 / s, nx = lnx, ny = lny;
-  const F = grobH, M = maskeH;
+  const F = grobAuf, M = maskeH;
   const strichBreite = Math.max(0.7, breite / 760);
   const lang = bahnX.length;
   for (const z of zellenJe) z.length = 0;
@@ -1517,6 +1601,7 @@ function zeichne() {
   const TIEFE = Math.max(2.5, breite / 130);
   const sil = new Path2D();
   const gross = hoehen(w, deck);
+  const gelaende = modus === 'gelaende';
   for (let g = 0; g < NK; g++) {
     if (!(deck[g] > 0.5)) continue;
     for (const r of GEBIETE[g]) {
@@ -1546,7 +1631,8 @@ function zeichne() {
     }
     ctx.fillStyle = farbe(modus, w[g], g, rate[g]);
     ctx.fill('evenodd');
-    ctx.strokeStyle = STRICH; ctx.lineWidth = Math.max(0.3, Math.min(0.6, breite / 700)); ctx.stroke();
+    ctx.strokeStyle = gelaende ? GELAENDE_STRICH : STRICH;
+    ctx.lineWidth = Math.max(0.3, Math.min(0.6, breite / 700)); ctx.stroke();
   }
   ctx.globalAlpha = 1;
   // Landes- und Aussengrenzen darüber, damit die 400 Kreise eine Gestalt
@@ -1557,7 +1643,8 @@ function zeichne() {
     ctx.moveTo(px[p] * mass + verX, py[p] * mass + verY);
     ctx.lineTo(px[q] * mass + verX, py[q] * mass + verY);
   }
-  ctx.strokeStyle = GRENZE; ctx.lineWidth = Math.max(0.7, Math.min(1.2, breite / 420)); ctx.stroke();
+  ctx.strokeStyle = gelaende ? GELAENDE_GRENZE : GRENZE;
+  ctx.lineWidth = Math.max(0.6, Math.min(1.1, breite / 480)); ctx.stroke();
 
   reliefUeber(sil, deck, gross);
 
@@ -1750,6 +1837,11 @@ function legende() {
     t.textContent = 'Needle height and colour are both people per cell of '
       + FLAECHE + ' km² of real ground — the same scale in every frame, so the country '
       + 'really does grow into a skyline.';
+  } else if (modus === 'gelaende') {
+    r.style.background = 'linear-gradient(90deg,' + hypso().join(',') + ')';
+    li.textContent = 'flat'; re.textContent = 'peak';
+    t.textContent = 'Physical-map colours for the height: green is empty ground, brown and grey are '
+      + 'crowded. The contour lines follow the same figure. ' + formSatz();
   } else if (modus === 'wandel') {
     r.style.background = 'linear-gradient(90deg,' + [...arm(rampeRot())].reverse().join(',')
       + ',' + MITTE() + ',' + arm(rampe()).join(',') + ')';
@@ -2111,7 +2203,7 @@ const DAUER = ${SPIELZEIT * 1000};
 let zuletzt = 0;
 function schlag(t) {
   if (laeuft) {
-    if (zuletzt) setzeZeit(spiel + (t - zuletzt) / DAUER);
+    if (zuletzt) { dtSek = Math.max(0.001, (t - zuletzt) / 1000); setzeZeit(spiel + (t - zuletzt) / DAUER); }
     zuletzt = t;
     if (spiel >= 1) halte();
     zeichne();
@@ -2125,13 +2217,17 @@ function starte() {
 function halte() { laeuft = false; document.getElementById('spiel').textContent = '▶'; }
 document.getElementById('spiel').onclick = () => laeuft ? halte() : starte();
 document.getElementById('zeit').addEventListener('input', e => {
-  halte(); setzeZeit(e.target.value / 1000); zeichne();
+  halte(); setzeZeit(e.target.value / 1000); reliefFrisch(); zeichne();
 });
 const MODUSKNOPF = [...document.querySelectorAll('.modi button[data-modus]')];
 for (const b of MODUSKNOPF) b.onclick = () => {
   modus = b.dataset.modus;
   for (const o of MODUSKNOPF) o.setAttribute('aria-pressed', String(o === b));
-  ansicht(); legende(); zeichne();
+  // Im vollen Kartogramm steht jeder Kreis gleich hoch — dort hätte eine
+  // Geländekarte genau eine Farbe. Wer sie einschaltet, will Höhen sehen, also
+  // rückt die Form um eine Stufe zurück.
+  if (modus === 'gelaende' && formZiel === FORMEN.length - 1) FORMKNOPF[1].click();
+  ansicht(); legende(); reliefFrisch(); zeichne();
 };
 
 /* ---------- Umschalter zwischen den Formen ----------
@@ -2148,10 +2244,10 @@ function morphSchritt(t) {
   const u = rest <= 0 ? 1 : 1 - rest / MORPH;
   FORM = morphVon + (morphAuf - morphVon) * glatt(Math.max(0, Math.min(1, u)));
   tangenteFuer = -1;
-  masse();
+  masse(); reliefFrisch();
   if (!laeuft) zeichne();
   if (rest > 0) requestAnimationFrame(morphSchritt);
-  else { FORM = morphAuf; tangenteFuer = -1; masse(); zeichne(); }
+  else { FORM = morphAuf; tangenteFuer = -1; masse(); reliefFrisch(); zeichne(); }
 }
 for (const b of FORMKNOPF) b.onclick = () => {
   const z = FORMEN.indexOf(Number(b.dataset.form));
@@ -2173,8 +2269,8 @@ function ansicht() {
   document.getElementById('formen').hidden = relief;
   tip.style.opacity = 0; letzterTip = -1;
 }
-addEventListener('resize', () => { masse(); zeichne(); });
-matchMedia('(prefers-color-scheme:dark)').addEventListener('change', () => { farbenHolen(); legende(); zeichne(); });
+addEventListener('resize', () => { masse(); reliefFrisch(); zeichne(); });
+matchMedia('(prefers-color-scheme:dark)').addEventListener('change', () => { farbenHolen(); legende(); reliefFrisch(); zeichne(); });
 
 // Markierungen für die Zählungen auf der Zeitachse
 function marken() {
@@ -2197,7 +2293,7 @@ if (REIHEN.length > 1) {
     b.onclick = () => {
       reihe = r;
       for (const o of leiste.children) o.setAttribute('aria-pressed', String(o === b));
-      masse(); marken(); legende(); zeichne();
+      masse(); marken(); legende(); reliefFrisch(); zeichne();
     };
     leiste.appendChild(b);
   });
