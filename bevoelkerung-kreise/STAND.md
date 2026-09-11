@@ -88,6 +88,12 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   2019→2024 viereinhalb statt eineinhalb. Zwischen den Zählungen wird mit einer monotonen
   kubischen Kurve gerechnet, nicht geradlinig: kein Knick, kein Überschiessen.
   Grösster Geschwindigkeitssprung von 125 auf 21 Prozent.
+- Das Kartogramm hat Dicke: Silhouette versetzt gefüllt, Schatten darunter.
+  Ohne Kosten (11,2 gegen 11,6 Bilder je Sekunde) und ohne die Fläche
+  anzutasten.
+- Die Richtungsfarbe blendet nur noch nach hinten über. Vorher zeigte sie den
+  Einbruch von 1939 schon 1934 — ein Sechstel eines neunundzwanzigjährigen
+  Abschnitts sind fünf Jahre.
 - Dreizehn Städte tragen ihren Namen, von Anfang an: die grössten, um
   sechzig Kilometer voneinander ausgedünnt. Die Schrift wächst mit der
   gezeichneten Fläche, fällt aber nie unter sieben Pixel; wo zwei Namen

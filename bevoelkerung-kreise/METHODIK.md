@@ -367,7 +367,25 @@ gerechnet. Das ist der Punkt: sichtbar ist Bewegung je Sekunde, nicht je Jahr,
 und ohne diesen Bezug entstünde an jeder Zählung genau der Knick zurück, den
 4d beseitigt.
 
-## 4f. Die Städtenamen
+## 4f. Die Dicke
+
+Das Kartogramm liegt nicht flach auf dem Papier, sondern als Stapel darüber:
+alle Flächen werden einmal in einen Pfad gesammelt, dieser Pfad zweimal versetzt
+gefüllt — weit unten und weich als Schatten, knapp darunter als Kante — und
+darüber liegt die Karte selbst. Weil die Kreise die Fläche lückenlos teilen, ist
+die Vereinigung ihrer Umrisse die Silhouette; sie muss nicht eigens gerechnet
+werden.
+
+Wichtig dabei: der Effekt sitzt **unter** der Karte, nicht in ihr. Die Fläche
+bleibt genau die Fläche, die die Bevölkerung vorgibt — eine gekippte oder
+perspektivische Ansicht täte das nicht, weil Perspektive Flächen verzerrt, und
+dann liesse sich die eine Aussage dieser Karte nicht mehr ablesen. Wer Höhe als
+Grösse sehen will, findet sie in der dritten Ansicht, dem Nadelrelief.
+
+Gemessen kostet der Stapel nichts: 11,2 gegen 11,6 Bilder je Sekunde in der
+Software-Rasterung, also im Rauschen.
+
+## 4g. Die Städtenamen
 
 Die grössten Städte tragen ihren Namen: die kreisfreien Städte und Stadtkreise,
 die in irgendeinem Bild über 400 000 Menschen haben, dazu die Region Hannover,
@@ -410,12 +428,23 @@ darin: sie bleibt stehen, solange die Karte von einem Bild zum nächsten läuft.
 
 An der Zählung sprang sie um — und ein Sprung mitten in einer laufenden
 Bewegung sieht aus wie ein Fehler, nicht wie ein Befund. Sie blendet deshalb
-über: im letzten Sechstel eines Abschnitts wandert sie hinüber zur Rate des
-nächsten, im ersten Sechstel kommt sie von der des vorigen her, jeweils mit
-einer weichen Kurve. Genau auf der Zählung stehen beide zur Hälfte — von links
-und von rechts derselbe Wert, die Farbe läuft also durch. Die mittleren zwei
-Drittel jedes Abschnitts zeigen seine Rate unverfälscht, und die Zahl in der
-Sprechblase nennt immer die des Abschnitts, nie die überblendete.
+über — aber **nur nach hinten**: an der Zählung gilt noch die alte Rate, und
+erst im ersten Sechstel des neuen Abschnitts wandert die Farbe mit einer
+weichen Kurve zur neuen hinüber. Die Farbe läuft damit durch, ohne zu springen,
+und die Zahl in der Sprechblase nennt weiter die Rate des Abschnitts.
+
+Die erste Fassung blendete in beide Richtungen, und das war falsch: bei einem
+Abschnitt von neunundzwanzig Jahren reicht ein Sechstel fünf Jahre weit, also
+färbten sich die Städte schon **1934** rot — sie zeigten den Einbruch von 1939
+bis 1946, den es noch gar nicht gab. Nichts auf dieser Karte nimmt mehr etwas
+vorweg: was zu sehen ist, ist gezählt oder schon vorbei. Nachgemessen: von 1910
+bis 1939 zeigen Berlin, Hamburg, Essen und Dortmund durchgehend ihre gemessenen
++0,5 bis +1,2 % im Jahr, und erst nach 1939 kippt es auf −2,3 bis −3,6.
+
+Zu unterscheiden davon ist die Glättung der **Werte** (4d): die schiesst nie
+über eine Zählung hinaus und lässt einen wachsenden Kreis auch nie unterwegs
+schrumpfen — nachgemessen über den Abschnitt 1910 bis 1939, kein einziger
+Rückgang bei keinem der 400 Kreise.
 
 Der Massstab endet bei ±3 % im Jahr und ist dazwischen nach asinh gestaucht.
 Neun von zehn Werten liegen zwischen −1 und +2, aber der Sprung von 1939 auf

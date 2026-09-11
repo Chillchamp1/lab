@@ -94,6 +94,11 @@ ihren Begriff und ihren wirklichen Stichtag mit. Ausführlich in
 
 ## Verfahren
 
+Die Karte liegt als Stapel über dem Papier: die Silhouette aller Kreise
+zweimal versetzt gefüllt, einmal weich als Schatten, einmal als Kante, und
+darüber die Karte. Der Effekt sitzt unter der Fläche, nicht in ihr — die Fläche
+bleibt genau die, die die Bevölkerung vorgibt.
+
 Diffusionskartogramm nach Gastner und Newman (2004), wie bei den
 [Wahlkreisen](../wahlkreise-2025/): die Dichte wird als Wärme aufgefasst und
 fliesst auseinander, bis sie überall gleich ist, und die Grenzen schwimmen mit.

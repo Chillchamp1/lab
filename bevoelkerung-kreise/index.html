@@ -138,16 +138,18 @@ straight scale nine in ten of them would sit in the bottom tenth of it and come 
 flat blue.</p>
 
 <p>The reading belongs to the stretch between two censuses, so it holds while the map crosses
-one. Near a census it eases into the next reading rather than snapping over — the middle two
-thirds of every stretch show that stretch's own rate, and the number in the readout always
-names it exactly.</p>
+one. It never runs ahead: at a census the old rate still stands, and the new one fades in
+over the first sixth of the stretch that follows. Nothing on this map shows a change before
+it was counted — the collapse of 1939 to 1946 appears after 1939, not before it.</p>
 
 <p>Per year, because the gaps are wildly uneven — eight years from 1939 to 1946, thirty-six
 from 1871 to 1900. The scale ends at ±3 % a year and is squeezed in between, so the quiet
 decades still show something and the one violent stretch, 1939 to 1946, still fits.</p>
 
 <p>Tap a county for its numbers. Between two censuses the shapes and the figures are
-interpolated; the readout says so. The interpolation runs along a smooth curve rather than a
+interpolated, and the readout says how wide the gap is — twenty-nine years between 1910 and
+1939, which is why the First World War leaves so little mark here: nothing was counted at
+county level while it happened. The interpolation runs along a smooth curve rather than a
 straight line: it passes through every counted value exactly, has no kink at a census, and
 never leaves the range of the two it lies between. A county can never hold more people
 mid-stretch than it does at either end of it.</p>
@@ -430,9 +432,14 @@ const ROT  = ['#f8d7d3','#f1c4bf','#edb0aa','#e69c95','#e08881','#d8746d','#d15d
 const dunkel = () => matchMedia('(prefers-color-scheme:dark)').matches;
 const stil = n => getComputedStyle(document.body).getPropertyValue(n).trim();
 let LEER = '#e6e5e0', STRICH = '#fcfcfb', GRENZE = '#fcfcfb';
-let INK = '#0b0b0b';
+let INK = '#0b0b0b', SCHATTEN = 'rgba(0,0,0,.18)', KANTE3D = '#b9b8b0';
 function farbenHolen() {
   LEER = stil('--leer'); STRICH = stil('--surface'); GRENZE = stil('--surface'); INK = stil('--ink');
+  // Der Stapel unter der Karte: auf hellem Grund ein Grau, auf dunklem fast
+  // schwarz, dazu ein weicher Schatten. Beides sind Dekoration, keine Daten —
+  // deshalb halten sie sich zurück.
+  SCHATTEN = dunkel() ? 'rgba(0,0,0,.55)' : 'rgba(11,11,11,.16)';
+  KANTE3D = dunkel() ? '#0a0a0a' : '#b4b3ab';
   if (typeof reliefFarben === 'function') reliefFarben();
 }
 // Auf heller Fläche läuft die Skala hell -> dunkel, auf dunkler dunkel -> hell:
@@ -541,12 +548,12 @@ function rateIm(j, k) {
 // einem Bild zum nächsten läuft — nur an der Zählung selbst sprang sie um, und
 // ein Sprung mitten in einer laufenden Bewegung sieht aus wie ein Fehler.
 //
-// Also blendet sie über: im letzten Sechstel eines Abschnitts wandert sie
-// hinüber zur Rate des nächsten, im ersten Sechstel kommt sie von der des
-// vorigen her. Genau auf der Zählung stehen beide zur Hälfte — von links und
-// von rechts derselbe Wert, die Farbe läuft also durch. Die mittleren zwei
-// Drittel eines Abschnitts zeigen seine Rate unverfälscht, und die Zahl in der
-// Sprechblase nennt ohnehin immer die des Abschnitts.
+// Sie blendet deshalb über, aber **nur nach hinten**: an der Zählung gilt noch
+// die alte Rate, und im ersten Sechstel des neuen Abschnitts wandert die Farbe
+// zur neuen hinüber. Die erste Fassung blendete auch nach vorn, und das war
+// falsch: der Einbruch von 1939 war dann schon 1934 zu sehen, weil die Karte
+// eine Rate zeigte, die es noch gar nicht gab. Keine Farbe nimmt jetzt etwas
+// vorweg — was zu sehen ist, ist gezählt oder schon vorbei.
 const UEBER = 1 / 6;
 const glatt = x => x * x * (3 - 2 * x);
 function werteBei(a, b, u) {
@@ -571,10 +578,7 @@ function werteBei(a, b, u) {
         let r = hier;
         if (u < UEBER) {
           const vor = rateIm(a - 1, k);
-          if (vor !== null) r = vor + (hier - vor) * (0.5 + 0.5 * glatt(u / UEBER));
-        } else if (u > 1 - UEBER) {
-          const nach = rateIm(b, k);
-          if (nach !== null) r = nach + (hier - nach) * (0.5 + 0.5 * glatt((1 - u) / UEBER));
+          if (vor !== null) r = vor + (hier - vor) * glatt(u / UEBER);
         }
         rate[k] = r;
       }
@@ -592,6 +596,36 @@ function zeichne() {
   const { w, deck, rate } = werteBei(a, b, u);
   ctx.clearRect(0, 0, breite, hoehe);
   ctx.lineJoin = 'round';
+
+  /* Dicke. Alle Flächen einmal in einen Pfad, denselben Pfad zweimal versetzt
+     gefüllt: einmal weit unten und weich als Schatten, einmal knapp darunter
+     als Kante. Weil die Kreise die Fläche lückenlos teilen, ist die Vereinigung
+     ihrer Umrisse die Silhouette der Karte — sie muss nicht eigens gerechnet
+     werden. Darüber liegt dann die Karte selbst, und was bleibt, ist ein
+     Stapel, der ein paar Pixel dick ist. Die Fläche bleibt dabei die Fläche:
+     der Effekt sitzt unter der Karte, nicht in ihr. */
+  const TIEFE = Math.max(3, breite / 95);
+  {
+    const sil = new Path2D();
+    for (let g = 0; g < NK; g++) {
+      if (!(deck[g] > 0.5)) continue;
+      for (const r of GEBIETE[g]) {
+        sil.moveTo(px[r[0]] * mass + verX, py[r[0]] * mass + verY);
+        for (let i = 1; i < r.length; i++) sil.lineTo(px[r[i]] * mass + verX, py[r[i]] * mass + verY);
+        sil.closePath();
+      }
+    }
+    ctx.save();
+    ctx.translate(0, TIEFE * 1.9); ctx.filter = 'blur(' + (TIEFE * 1.2).toFixed(1) + 'px)';
+    ctx.fillStyle = SCHATTEN; ctx.fill(sil);
+    ctx.filter = 'none'; ctx.setTransform(ctx.getTransform());
+    ctx.restore();
+    ctx.save();
+    ctx.translate(0, TIEFE);
+    ctx.fillStyle = KANTE3D; ctx.fill(sil);
+    ctx.restore();
+  }
+
   for (let g = 0; g < NK; g++) {
     if (!(deck[g] > 0.001)) continue;             // ohne Zahl wird nicht gezeichnet
     ctx.globalAlpha = deck[g];
@@ -629,8 +663,13 @@ function schreibe(a, b, u, w, deck) {
   document.getElementById('jahrZahl').textContent = zwischen ? Math.round(jahr) : D.B[u < 0.5 ? a : b].jahr;
   document.getElementById('jahrBev').textContent = (summe / 1e6).toFixed(1) + ' million people';
   const z = D.B[u < 0.5 ? a : b];
+  // Zwischen zwei Zählungen steht dabei, wie gross die Lücke ist. Wer sich
+  // fragt, warum vom Ersten Weltkrieg nichts zu sehen ist, liest hier die
+  // Antwort: zwischen 1910 und 1939 wurde auf Kreisebene nichts gezählt.
+  const luecke = Math.round(JAHRE[b] - JAHRE[a]);
   document.getElementById('kopf').textContent = zwischen
-    ? 'between ' + D.B[a].jahr + ' and ' + D.B[b].jahr + ' — shapes and figures interpolated'
+    ? 'between ' + D.B[a].jahr + ' and ' + D.B[b].jahr + ' — interpolated across '
+      + luecke + ' years with no census'
     : z.stichtage.join(' and ') + ' · ' + z.begriffe.join(', ') + ' · method ' + z.methoden.join('/');
   document.getElementById('zeit').value = Math.round(spiel * 1000);
 }
