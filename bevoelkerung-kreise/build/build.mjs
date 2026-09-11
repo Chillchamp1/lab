@@ -201,13 +201,27 @@ const abschnitte = bilder.slice(0, -1).map((b, i) => {
   for (const [ags, v] of a.werte) { const w = c.werte.get(ags); if (w > 0) um += Math.abs(w - v); }
   return { jahre: Math.max(0.1, nutz.bilder[i + 1].t - nutz.bilder[i].t), um: Math.max(1, um) };
 });
+// Dazu eine Untergrenze: unter viereinhalb Sekunden ist ein Abschnitt vorbei,
+// ehe die Notiz gelesen ist. Die kurzen Abschnitte am Ende — 2011 bis 2019,
+// 2019 bis 2024 — bekämen nach Jahren und Umschichtung sonst zwei Sekunden und
+// weniger. Wer über der Grenze liegt, gibt dafür anteilig ab; das wird ein paar
+// Mal wiederholt, bis es steht.
+const SPIELZEIT = 56;             // Sekunden für die ganze Achse
+const MINDEST = 4.5 / SPIELZEIT;  // kleinster Anteil je Abschnitt
 {
   const sj = abschnitte.reduce((x, a) => x + a.jahre, 0), su = abschnitte.reduce((x, a) => x + a.um, 0);
   const roh = abschnitte.map(a => Math.sqrt((a.jahre / sj) * (a.um / su)));
-  const sr = roh.reduce((x, v) => x + v, 0);
-  abschnitte.forEach((a, i) => { a.anteil = Number((roh[i] / sr).toFixed(5)); });
+  let anteil = roh.map(v => v / roh.reduce((x, y) => x + y, 0));
+  for (let runde = 0; runde < 20; runde++) {
+    const klein = anteil.map(v => v < MINDEST);
+    if (!klein.some(Boolean)) break;
+    const fest = klein.reduce((x, k, i) => x + (k ? MINDEST : 0), 0);
+    const rest = anteil.reduce((x, v, i) => x + (klein[i] ? 0 : v), 0);
+    anteil = anteil.map((v, i) => klein[i] ? MINDEST : v * (1 - fest) / rest);
+  }
+  abschnitte.forEach((a, i) => { a.anteil = Number(anteil[i].toFixed(5)); });
 }
-log('Takt: ' + abschnitte.map((a, i) => `${bilder[i].jahr}→${bilder[i + 1].jahr} ${(a.anteil * 48.5).toFixed(1)}s`).join(', '));
+log('Takt: ' + abschnitte.map((a, i) => `${bilder[i].jahr}→${bilder[i + 1].jahr} ${(a.anteil * SPIELZEIT).toFixed(1)}s`).join(', '));
 
 const mio = n => (n / 1e6).toFixed(1);
 const zahl = n => n.toLocaleString('en-GB');
@@ -298,6 +312,8 @@ input[type=range]{width:100%;margin:0;accent-color:#2a78d6}
 .modi{display:flex;gap:6px;margin:14px 0 10px;flex-wrap:wrap}
 .modi button{flex:1;min-width:96px;padding:8px 6px;font-size:14px}
 .modi button[aria-pressed=true]{background:var(--ink);color:var(--plane);border-color:var(--ink)}
+.fuss{padding:8px 4px 2px}
+.fuss .klein{margin:4px 0 0;font-size:12px;line-height:1.45;min-height:2.9em}
 .legende{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink2);
   font-variant-numeric:tabular-nums}
 .rampe{flex:1;height:10px;border-radius:5px;border:1px solid var(--ring)}
@@ -352,6 +368,10 @@ the map keeps its real shape and the people stand up out of it instead.</p>` : '
   </div>
   <canvas id="karte"></canvas>${mitRelief ? `
   <canvas id="relief" hidden></canvas>` : ''}
+  <div class="fuss">
+    <div class="legende"><span id="legLinks"></span><div class="rampe" id="rampe"></div><span id="legRechts"></span></div>
+    <p class="klein" id="legText"></p>
+  </div>
   <div class="tip" id="tip"></div>
 </div>
 <div class="kopf" id="kopf"></div>
@@ -370,9 +390,6 @@ the map keeps its real shape and the people stand up out of it instead.</p>` : '
   <button data-modus="menschen" aria-pressed="false">People</button>${mitRelief ? `
   <button data-modus="relief" aria-pressed="false">Standing up</button>` : ''}
 </div>
-<div class="legende"><span id="legLinks"></span><div class="rampe" id="rampe"></div><span id="legRechts"></span></div>
-<p class="klein" id="legText"></p>
-
 <h2>How to read it</h2>
 <p>In the first two views area is always population: a county twice as populous is drawn
 twice as large. Colour is what you switch.</p>
@@ -880,7 +897,7 @@ function schreibe(a, b, u, w, deck) {
    mit einem schon gesetzten Namen überschneidet, fällt auch weg — die
    grösseren zuerst, damit im Ruhrgebiet nicht die kleinste Stadt gewinnt. */
 const STADT = ${JSON.stringify(staedte.map(k => [k.i, k.kurz]))};
-const MINSCHRIFT = 9.5;     // kleinste Schrift, die auf einem Telefon noch zu lesen ist
+const MINSCHRIFT = 7;       // kleinste Schrift; auf einem Telefon knapp, aber lesbar
 function beschrifte(deck) {
   const liste = [];
   for (const [g, name] of STADT) {
@@ -1334,9 +1351,9 @@ function schreibeRelief(a, b, u) {
 }
 ` : ''}
 /* ---------- Ablauf ---------- */
-// Millisekunden für die ganze Zeitachse. Um dreissig Prozent langsamer als
-// zuvor (34 s), damit die Notizen zu lesen sind und man den Bildern folgen kann.
-const DAUER = 48500;
+// Millisekunden für die ganze Zeitachse. Langsam genug, dass jede Notiz zu
+// lesen ist — zusammen mit der Untergrenze je Abschnitt (siehe D.takt).
+const DAUER = ${SPIELZEIT * 1000};
 let zuletzt = 0;
 function schlag(t) {
   if (laeuft) {

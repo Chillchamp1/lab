@@ -330,23 +330,28 @@ um, es entstehen also keine Faltungen.
 
 ## 4e. Die Uhr
 
-Die Uhr braucht rund fünfzig Sekunden für die 153 Jahre. Wie viel davon ein
-Abschnitt bekommt, hängt an zwei Dingen zugleich: **wie lang er dauerte und wie
-viel sich in ihm umschichtete**. Genommen wird das geometrische Mittel aus
-beiden Anteilen — dem an der Summe der Jahre und dem an der Summe aller
-Veränderungen je Kreis (Σ|Bevölkerung(b) − Bevölkerung(a)|).
+Die Uhr braucht 56 Sekunden für die 153 Jahre. Wie viel davon ein Abschnitt
+bekommt, hängt an zwei Dingen zugleich: **wie lang er dauerte und wie viel sich
+in ihm umschichtete**. Genommen wird das geometrische Mittel aus beiden
+Anteilen — dem an der Summe der Jahre und dem an der Summe aller Veränderungen
+je Kreis (Σ|Bevölkerung(b) − Bevölkerung(a)|).
+
+Dazu eine **Untergrenze von viereinhalb Sekunden**: darunter ist ein Abschnitt
+vorbei, ehe seine Notiz gelesen ist. Das betrifft das Ende der Reihe, wo die
+Zählungen dicht liegen — 2011 bis 2019 und 2019 bis 2024 bekämen sonst zwei
+Sekunden und weniger. Wer über der Grenze liegt, gibt anteilig ab.
 
 | Abschnitt | Jahre | Umschichtung | Spielzeit |
 |---|---|---|---|
-| 1871 → 1900–1910 | 34,0 | 18,6 Mio | 11,3 s |
-| 1900–1910 → 1939 | 33,5 | 11,9 Mio | 8,5 s |
+| 1871 → 1900–1910 | 34,0 | 18,6 Mio | 11,5 s |
+| 1900–1910 → 1939 | 33,5 | 11,9 Mio | 8,6 s |
 | 1939 → 1946–1950 | 9,4 | 14,5 Mio | 4,9 s |
 | 1946–1950 → 1961–1964 | 14,5 | 12,0 Mio | 5,8 s |
-| 1961–1964 → 1985–1987 | 23,5 | 10,4 Mio | 7,0 s |
-| 1985–1987 → 1996 | 10,3 | 7,1 Mio | 3,7 s |
-| 1996 → 2011 | 14,4 | 4,7 Mio | 3,6 s |
-| 2011 → 2019 | 8,6 | 4,0 Mio | 2,6 s |
-| 2019 → 2024 | 5,0 | 1,6 Mio | 1,2 s |
+| 1961–1964 → 1985–1987 | 23,5 | 10,4 Mio | 7,1 s |
+| 1985–1987 → 1996 | 10,3 | 7,1 Mio | 4,5 s |
+| 1996 → 2011 | 14,4 | 4,7 Mio | 4,5 s |
+| 2011 → 2019 | 8,6 | 4,0 Mio | 4,5 s |
+| 2019 → 2024 | 5,0 | 1,6 Mio | 4,5 s |
 
 Rein nach Jahren bekäme der Bruch von 1939 auf 1946 drei Sekunden — die
 gewaltigste Umwälzung der ganzen Reihe, vorbei, ehe man hinsieht. Rein nach
@@ -375,8 +380,9 @@ Bild, und davon hat die Karte genug.
 
 Damit das geht, sind zwei Dinge nötig. Erstens eine **Untergrenze**: die
 Schrifthöhe folgt der Wurzel aus der gezeichneten Fläche — wächst also mit dem
-Fleck, nicht mit der Einwohnerzahl —, fällt aber nie unter 9,5 Pixel, was auf
-einem Telefon gerade noch zu lesen ist. Zweitens **Abstand**: aus jedem Bündel
+Fleck, nicht mit der Einwohnerzahl —, fällt aber nie unter sieben Pixel. Das ist
+knapp, auf einem Telefon mit dreifacher Pixeldichte aber gut zu lesen, und es
+hält die Namen 1871 so klein, dass sie die Karte nicht zudecken. Zweitens **Abstand**: aus jedem Bündel
 eng benachbarter Städte bleibt die grösste, gemessen mit sechzig Kilometern auf
 dem Boden. Sonst trügen Rhein und Ruhr auf einem daumengrossen Bild sieben
 Namen. Übrig bleiben dreizehn.
