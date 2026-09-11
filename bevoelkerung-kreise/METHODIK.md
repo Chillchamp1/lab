@@ -665,6 +665,46 @@ jeden zu seinem Fleck zurückzieht. Das Ergebnis ändert sich von Bild zu Bild
 ruhig, flackert also nicht. Wer dabei weit von seinem Fleck weggerutscht ist,
 bekommt einen Haarstrich dorthin zurück.
 
+## 4j. Der Tiefpass über die Bilder
+
+Das Höhenfeld wird jedes Bild neu gerastert, und dabei rutschen die Kreise um
+Bruchteile eines Feldpunktes. Das Feld selbst ist glatt, aber sein **Raster**
+springt — und die Höhenlinien, die daraus verfolgt werden, zappeln mit, um ein,
+zwei Bildpunkte, sechzigmal in der Sekunde. Zu sehen ist ein Zittern, obwohl
+sich in den Daten nichts dergleichen tut: es ist reine Abtastung.
+
+Also ein **Tiefpass erster Ordnung über die Bilder**. Das gezeigte Feld folgt
+dem gerechneten:
+
+    gezeigt += (gerechnet − gezeigt) · (1 − e^(−Δt/τ))
+
+Zwei Zeitkonstanten, weil zwei Dinge daran hängen:
+
+| | τ | entspricht bei 70 s für 153 Jahre |
+|---|---|---|
+| **weites Feld** (Höhenlinien, grosse Form) | 1,2 s | rund 2,6 Jahre |
+| **enges Feld und Rand** (Schattierung am Kreis) | 0,30 s | rund 0,7 Jahre |
+
+Das weite Feld darf träge sein: es ist ohnehin über fünfzehn Punkte verschmiert,
+und ein paar Jahre Nachlauf sieht dort niemand. Das enge Feld und der Rand
+hängen an den Umrissen der Kreise — liefen sie zu weit nach, sässe die
+Schattierung neben ihrer Fläche.
+
+Gerechnet wird mit der **wirklich vergangenen Zeit**, nicht je Bild: sonst hinge
+die Zeitkonstante daran, wie schnell das Gerät gerade ist. Bei sechzig Bildern
+in der Sekunde geht ein einzelner Rastersprung damit zu 1,4 Prozent ins Bild
+ein, die Bewegung über ein Jahrzehnt praktisch ungedämpft.
+
+Und wo die Zeit **springt** — am Regler, beim Umschalten der Ansicht oder der
+Form, beim Ändern der Fenstergrösse —, wird der Filter geleert statt
+nachgezogen. Sonst zeigte das Bild danach eine Sekunde lang das Gelände von
+vorher.
+
+Gemessen im Prüfbrowser (der nur sechs Bilder je Sekunde schafft, wo der Filter
+am wenigsten ausrichten kann): die Änderung des Feldes je Bild fällt auf
+**48 Prozent**. Auf einem Gerät mit sechzig Bildern ist der Unterschied um ein
+Vielfaches grösser.
+
 ## 4b. Die beiden Farbskalen des Kartogramms
 
 **People** färbt nach Einwohnern, logarithmisch von 30 000 bis 1,5 Millionen.
@@ -735,8 +775,30 @@ laufen Blau und Rot beide gegen Schwarz, und dann ist die Richtung nicht mehr
 zu sehen. Auf dunklem Grund ist das nicht nötig — die Arme enden dort in
 kräftigem Azur und kräftigem Zinnober und bleiben bis zuletzt zu trennen.
 
+### Die dritte Skala: die Geländekarte
+
+**Terrain** lässt die Daten*farbe* weg und malt die Karte so, wie ein Atlas ein
+Gebirge malt: Tiefland grün, dann gelb, braun, oben Fels und Schnee. Sechzehn
+Stufen, in OKLab von Hand gesetzt; auf dunklem Grund eine Fassung mit
+angehobenem Fuss, damit das Tiefgrün nicht in der Fläche verschwindet.
+
+Gefärbt wird die **Höhe** — dieselbe Zahl, die auch das Relief trägt, auf einer
+festen logarithmischen Skala vom Sechstel bis zum Zwölffachen der mittleren
+Dichte des Bildes. Daraus folgt das Schöne daran: die Höhenlinien laufen genau
+auf den Farbgrenzen, wie in einer physischen Karte, weil beide dieselbe Zahl
+zeigen. Grün heisst wenige Menschen auf viel Boden, Braun und Grau viele auf
+wenig.
+
+Die Kreisgrenzen treten dort zurück (weiss auf zwanzig Prozent Deckkraft) und
+die Landesgrenzen werden zur dünnen dunklen Linie: eine Landschaft hat keine
+weissen Fugen, und so viel Orientierung ist auf einer physischen Karte üblich.
+
+Im vollen Kartogramm steht jeder Kreis gleich hoch — dort hätte die
+Geländekarte genau eine Farbe. Wer sie einschaltet, will Höhen sehen, also rückt
+die Form um eine Stufe zurück auf **Half and half**.
+
 Was die Karte **nicht** mehr zeigt: das Gitternetz, die Dichte je
-Quadratkilometer und den Index gegen 1871.
+Quadratkilometer als eigene Ansicht und den Index gegen 1871.
 
 Das **Gitternetz** — Quadrate zu 30 × 30 km echter Fläche, die im Kartogramm
 mitschwammen — war eine Fassung lang da und ist wieder weg. Es zeigte die

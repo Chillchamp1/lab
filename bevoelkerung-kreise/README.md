@@ -27,6 +27,12 @@ Blau der Karte ins Rot kippen und den Osten nach 1990 rot werden. An den
 Zählungen blendet die Lesart über, statt umzuspringen; die mittleren zwei Drittel
 jedes Abschnitts zeigen seine Rate unverfälscht.
 
+**Terrain** lässt die Datenfarbe weg und malt die Karte so, wie ein Atlas ein
+Gebirge malt: Tiefland grün, dann gelb, braun, oben Fels und Grau. Gefärbt wird
+die Höhe — dieselbe Zahl, die auch das Relief trägt —, also laufen die
+Höhenlinien genau auf den Farbgrenzen, wie in einer physischen Karte. Grün heisst
+wenige Menschen auf viel Boden, Braun und Grau viele auf wenig.
+
 Rot gegen Blau statt Rot gegen Grün: Rot und Grün sind genau das Paar, das
 etwa acht Prozent der Männer nicht auseinanderhalten können, und auf einer
 Karte mit 400 kleinen Flecken wäre das nicht nur unschön, sondern unlesbar.
@@ -125,7 +131,11 @@ Schatten steht. Der Grund dafür ist schlicht: die Fläche ist schon vergeben,
 sie trägt die Farbe der Daten. Eine Schattierung, die stark genug für ein
 Gebirge wäre, macht aus Rot und Blau Grau. Linien nehmen fast keine Fläche weg.
 Dazu Schlagschatten aus einer flacheren Sonne — ein Strahl, der steiler abfällt
-als der Hang selbst, trifft nie auf Schatten. Vierzig Linien über die volle
+als der Hang selbst, trifft nie auf Schatten. Und ein Tiefpass über die Bilder:
+das Raster des Höhenfeldes springt von Bild zu Bild um Bruchteile eines Punktes,
+und die Linien zappelten mit; jetzt folgt das gezeigte Feld dem gerechneten mit
+gut einer Sekunde, also knapp drei Jahren Kartenzeit — das Zittern fällt weg,
+die Bewegung über die Jahre bleibt. Vierzig Linien über die volle
 Höhe, und sie werden verfolgt statt gemalt: Marching Squares über das Höhenfeld
 liefert die Strecken, die Strecken werden zu durchgehenden Linien verkettet, und
 gezeichnet wird als weiche Kurve auf der Leinwand selbst. Im Raster gemalt und
