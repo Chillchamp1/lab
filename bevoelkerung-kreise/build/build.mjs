@@ -858,16 +858,22 @@ function beschrifte(deck) {
     ctx.font = '600 10px system-ui,-apple-system,sans-serif';
     const je10 = ctx.measureText(s.name).width / 10;
     const hoch = Math.min(Math.sqrt(s.A) * 0.40, 30, s.bb * 1.15 / je10, s.bh * 0.8);
-    if (hoch < 8) continue;
+    // Nicht hart aufpoppen: zwischen acht und elf Pixeln blendet der Name ein.
+    // Sonst erscheint und verschwindet er im Lauf der Zeit schlagartig, und das
+    // ist die auffälligste plötzliche Bewegung, die die Karte sonst hat.
+    const sicht = (hoch - 8) / 3;
+    if (sicht <= 0) continue;
     ctx.font = '600 ' + hoch.toFixed(1) + 'px system-ui,-apple-system,sans-serif';
     const br = je10 * hoch;
     const kasten = [s.mx - br / 2, s.my - hoch / 2, s.mx + br / 2, s.my + hoch / 2];
     if (gesetzt.some(k => kasten[0] < k[2] && kasten[2] > k[0] && kasten[1] < k[3] && kasten[3] > k[1])) continue;
     gesetzt.push(kasten);
+    ctx.globalAlpha = Math.min(1, sicht);
     ctx.lineWidth = Math.max(2, hoch * 0.2); ctx.strokeStyle = STRICH;
     ctx.strokeText(s.name, s.mx, s.my);
     ctx.fillStyle = INK; ctx.fillText(s.name, s.mx, s.my);
   }
+  ctx.globalAlpha = 1;
 }
 
 /* ---------- Untertitel ----------

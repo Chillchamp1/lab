@@ -355,7 +355,9 @@ dasselbe, aber es ist die Fläche, die den Platz hergibt. Gesetzt wird nur, was
 hineinpasst: unter acht Pixeln gar nicht, breiter als der Fleck (mit etwas
 Überhang) gar nicht, und wo zwei Namen übereinanderlägen, gewinnt der grössere.
 Deshalb trägt 1871 nur Berlin einen Namen, und die anderen kommen dazu, wenn
-ihre Flecken gewachsen sind.
+ihre Flecken gewachsen sind. Zwischen acht und elf Pixeln blendet ein Name ein,
+statt aufzupoppen — sonst wäre das Erscheinen die auffälligste plötzliche
+Bewegung der ganzen Karte.
 
 ## 4b. Die beiden Farbskalen des Kartogramms
 
