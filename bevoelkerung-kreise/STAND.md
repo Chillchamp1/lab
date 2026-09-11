@@ -1,6 +1,6 @@
 # Stand
 
-Stand: 10. September 2026.
+Stand: 11. September 2026.
 
 ## Fertig
 
@@ -72,18 +72,23 @@ Freigabe, aus Bildvorlagen abzuschreiben.
 - Ein Diffusionskartogramm je Zeitpunkt, warm vom vorigen gestartet;
   gemeinsamer Massstab, sodass die Karte flächenproportional mit der
   Bevölkerung wächst.
-- `index.html`: eine einzelne Datei, Englisch, Hochformat, Zeitschieberegler
-  mit Marken auf den Zählungen, **vier Ansichten** an derselben Uhr — Growth
-  (Veränderung je Jahr über den gerade durchlaufenen Abschnitt, rot gegen blau;
-  steht vorn), Einwohner und das Nadelrelief; Antippen zeigt Zahlen, Rate,
-  Stichtag und Methode.
-- Im Rahmen über der Karte stehen Jahr und Einwohnerzahl, oben links **in** der
-  Karte ein Faden aus den Überschriften: dreizehn Notizen zu je einem
-  Zeitabschnitt, warum sich die Karte gerade so bewegt. Die neueste obenauf,
-  jede weitere schiebt die vorigen eine Zeile nach unten und blasser; sechs
-  bleiben stehen, auf dem Telefon vier. Zusammenhang, keine Daten — Kreiszahlen
-  darin stammen aus der eigenen Tabelle, der Rest ist Schulwissen; vollständig
-  mit allen Sätzen als Liste unter der Karte.
+- `index.html`: eine einzelne Datei, Englisch, **eine einzige Ansicht** — die
+  Geländekarte auf schwarzem Grund. Zeitschieberegler mit Marken auf den
+  Zählungen, drei Formknöpfe, sonst nichts; Antippen zeigt Zahlen, Rate,
+  Stichtag und Methode. Die früheren Ansichten (Wachstum, Einwohner, Nadelrelief)
+  und die Notizenliste unter der Karte sind entfallen, ebenso der Umschalter
+  zwischen hellem und dunklem Grund: 818 kB → 612 kB.
+- Über der Karte stehen Jahr und Einwohnerzahl und die **laufende Notiz
+  ausgeschrieben**, mit Überschrift und Sätzen: dreizehn Notizen zu je einem
+  Zeitabschnitt, warum sich die Karte gerade so bewegt. Darunter der Faden der
+  vorigen Überschriften, jede neue schiebt die vorigen eine Zeile nach unten und
+  blasser; sechs bleiben stehen, auf dem Telefon drei, auf einem kurzen Schirm
+  keine. Zusammenhang, keine Daten — Kreiszahlen darin stammen aus der eigenen
+  Tabelle, der Rest ist Schulwissen.
+- **Zwei Anordnungen.** Im Hochformat füllt die Karte, was der Text übrig lässt.
+  Ist die Bühne breiter als hoch, rückt der Text in eine Spalte daneben und die
+  Karte bekommt die volle Höhe — sonst stünde sie als Briefmarke in einem
+  breiten schwarzen Feld, denn ihr Seitenverhältnis ist fest.
 - Die Uhr läuft 70 Sekunden für 153 Jahre. Die Spielzeit je Abschnitt mischt
   Dauer und Umschichtung (geometrisches Mittel) und liegt nie unter
   viereinhalb Sekunden, also bekommt 1939→1946 fünf Sekunden statt drei und
@@ -107,12 +112,15 @@ Freigabe, aus Bildvorlagen abzuschreiben.
 - Das **Relief** ist ein Höhenfeld, und die Form tragen **beleuchtete
   Höhenlinien nach Tanaka (1950)**: weiss, wo der Hang der Sonne zugewandt ist,
   schwarz, wo er wegfällt, dick, wo er voll im Licht oder Schatten steht. Grund:
-  die Fläche ist schon mit Daten belegt — eine Schattierung, die stark genug für
-  ein Gebirge wäre, macht aus Rot und Blau Grau; Linien nehmen fast keine Fläche
-  weg. 5,9 bis 6,0 Bilder je Sekunde im Prüfbrowser gegen 4,1 vor dem Umbau. Dazu Lambert-Schattierung als Grau im Modus `overlay` (dunkel:
-  `soft-light`), Muldenverschattung und Schlagschatten aus einer **flacheren
-  Sonne** (16 statt 40 Grad — ein Strahl, der steiler abfällt als der Hang, trifft
-  nie auf Schatten).
+  die Fläche ist schon mit der Höhenfarbe belegt — eine Schattierung, die stark
+  genug für ein Gebirge wäre, wüsche sie aus; Linien nehmen fast keine Fläche
+  weg. Dazu Lambert-Schattierung als Grau im Modus `soft-light` (auf schwarzem
+  Grund rechnet `overlay` um das mittlere Grau herum und lässt dunkle Farben fast
+  unberührt), Muldenverschattung und Schlagschatten aus einer **flacheren Sonne**
+  (16 statt 40 Grad — ein Strahl, der steiler abfällt als der Hang, trifft nie
+  auf Schatten). 4,8 bis 5,8 Bilder je Sekunde im softwaregerenderten
+  Prüfbrowser; das ist der Boden, nicht das, was ein Gerät mit Grafikkarte
+  zeigt.
 - Das Höhenfeld wird **in zwei Kanälen** gelesen: unmultipliziertes Rot ist die
   normalisierte Faltung, also der Höhenmittelwert ohne Randabfall, Alpha ist der
   Rand der Karte. Sonst wäre der grösste Berg im Feld Deutschland selbst.
@@ -143,51 +151,41 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Umschalten, Fenstergrösse —, wird der Filter geleert statt nachgezogen.
   Gemessen im Prüfbrowser (6 Bilder/s, wo der Filter am wenigsten kann):
   Änderung je Bild auf **48 %**.
-- **Vierte Ansicht: Terrain.** Die Farben einer physischen Karte — Tiefland grün,
-  dann gelb, braun, oben Fels und Grau —, und gefärbt wird die Höhe, also
-  dieselbe Zahl, die das Relief trägt. Die Höhenlinien laufen damit genau auf den
-  Farbgrenzen, wie in einem Atlas. Kreisgrenzen treten zurück, Landesgrenzen
-  werden zur dünnen dunklen Linie. Im vollen Kartogramm stehen alle Kreise gleich
-  hoch, also rückt die Form beim Einschalten auf Half and half.
+- **Die Farbe ist die Höhe.** Die Leiter einer physischen Karte — Tiefland grün,
+  dann gelb, braun, oben Fels —, und gefärbt wird die Höhe, also dieselbe Zahl,
+  die das Relief trägt. Die Höhenlinien laufen damit genau auf den Farbgrenzen,
+  wie in einem Atlas. Kreisgrenzen treten zurück, Landesgrenzen werden zur
+  dünnen dunklen Linie. Die Seite steht auf Half and half.
+- **Die Leiter wird je Form aus den Daten gemessen**, einmal, über alle Kreise in
+  allen Zählungen: q0,005 bis q0,995. Landkarte ×0,19 … ×17, Half and half
+  ×0,33 … ×2,5, volles Kartogramm ×0,99 … ×1,01. Zwischen zwei Formen wird
+  logarithmisch übergeblendet, und die Zahlen an den Enden der Leiter wandern je
+  Bild mit.
+- **Im vollen Kartogramm ist keine Höhe mehr übrig**, und das soll man sehen.
+  Eine Leiter über die verbliebenen anderthalb Prozent machte aus Rundungsresten
+  ein Gebirge — und das weichgezeichnete Feld tat dasselbe, weil ein gross
+  gezeichneter Kreis von den Fugen weniger abbekommt als ein kleiner; Berlin sah
+  wieder aus wie ein Berg, obwohl es nur gross gezeichnet ist. Also zwei Bremsen
+  aus derselben gemessenen Spanne: die Leiter bekommt eine Mindestbreite (Faktor
+  2,6), und das Relief wird im selben Verhältnis ausgeblendet. Der Weg von der
+  Landkarte zum Kartogramm zeigt damit genau das, worum es geht — die Berge
+  sinken in die Fläche.
 - Die **Städtenamen** haben eine Obergrenze an der Kartenbreite (`breite/38`)
   statt fester dreissig Pixel: Berlin und Hamburg standen sonst als Überschrift
   über der Karte statt als Beschriftung darin.
 - Das **Gitternetz** (30 × 30 km, eine Fassung lang) ist wieder draussen: neben
   Relief und Formregler brachte es zu wenig für den Platz. 713 Knoten aus dem
   Modell heraus.
-- Über dem Kartenrahmen steht kein Text mehr; Jahr und Einwohnerzahl stehen im
-  Rahmen, die Legende unten darin. Der Rahmen
-  passt als Ganzes ins Querformat (406 von 430 Pixeln Fensterhöhe), die Karte
-  bekommt sonst so viel Platz wie möglich — das Seitenverhältnis der Leinwand
-  folgt dem der Karte.
-- Alle Notizen stehen vollständig als Liste unter der Karte: erreichtes
-  normal, laufendes angestrichen, kommendes blass.
-- **Farbskalen: je Farbe zwei Leitern, keine umgedrehte.** Vorher wurde die
-  helle Leiter auf dunklem Grund umgedreht — dann ist der Höchstwert fast weiss
-  und der leerste Kreis tiefblau, was sich gegen jede Erwartung liest. Jetzt
-  läuft beides in dieselbe Richtung: mehr ist satter. Die dunkle Leiter steigt
-  in OKLab von L 0,37 / C 0,02 (fast graues Blaugrau) auf L 0,64 / C 0,21
-  (kräftiges Azur), der rote Arm spiegelt sie bei gleicher Helligkeit.
-- Die Richtungsfarbe blendet nur noch nach hinten über. Vorher zeigte sie den
-  Einbruch von 1939 schon 1934 — ein Sechstel eines neunundzwanzigjährigen
-  Abschnitts sind fünf Jahre.
+- Der Rahmen füllt den Schirm; Jahr, Einwohnerzahl und Notiz stehen darin oben,
+  die Legende unten. Die Leinwand bekommt allen Platz, der nach dem Text und der
+  Bedienung übrig bleibt.
 - Dreizehn Städte tragen ihren Namen, von Anfang an: die grössten, um
   sechzig Kilometer voneinander ausgedünnt. Die Schrift wächst mit der
   gezeichneten Fläche, fällt aber nie unter sieben Pixel; wo zwei Namen
   einander berühren, weichen sie aus.
-- Das Relief nimmt den Hintergrund der Seite an, hell wie dunkel, mit je einer
-  eigenen Farbleiter.
 - Der Bauvorgang kann auch mit Reihen umgehen, die nur einen Teil des Landes
   abdecken — beim Pilotgebiet Berlin und Brandenburg war das nötig. Siehe
   METHODIK.md, Abschnitt 4.
-- Das **Nadelrelief** ist die dritte Ansicht derselben Seite, kein eigenes
-  Blatt mehr. Die Karte behält ihre Form, die Menschen stellen sich auf — je
-  31 km² eine Nadel, 11 665 belegte Zellen auf einem versetzten Gitter, aus den
-  11 007 Gemeinden von GPOP auf ein flächentreues Raster gelegt. Blick fünfzig
-  Grad über der Ebene, gefüllte Bodenplatte mit Landesgrenzen. Neun Bilder; das
-  Bild 2024 fehlt, weil es nur auf Kreisebene vorliegt, und das Feld steht nach
-  2019 still, während die Uhr weiterläuft. Gegenprobe beim Bauen:
-  Gemeindesummen gegen Kreissummen, 0,0000 Prozent.
 
 ## Offen
 

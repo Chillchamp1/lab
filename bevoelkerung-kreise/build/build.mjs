@@ -8,7 +8,6 @@ import { rechneZeitreihe } from './zeitreihe.mjs';
 import { baueNutzlast } from './nutzlast.mjs';
 import { ENTPACKER } from './code.mjs';
 import { kreisStammdaten } from './stammdaten.mjs';
-import { baueNadeln } from './nadeln.mjs';
 import { ringVorzeichen, gefalteteRinge } from './geometrie.mjs';
 
 const log = s => process.stderr.write(s + '\n');
@@ -263,33 +262,6 @@ const titel = ganzesLand ? 'Germany, drawn by its people'
   : gebietsname + ', drawn by ' + (abgedeckt.length > 1 ? 'their' : 'its') + ' people';
 const jahrVon = erstes.jahr.match(/\d{4}/)[0], jahrBis = letztes.jahr.match(/\d{4}/)[0];
 
-// Das Nadelrelief zeigt immer das ganze Land — es rechnet aus der
-// Gemeindedatei, nicht aus der Kreistabelle. Im Pilotgebiet bleibt es deshalb
-// weg, sonst stünde neben der Karte zweier Länder ein Relief von Deutschland.
-log('Nadeln …');
-const nadeln = ganzesLand ? baueNadeln({ log: t => log('  ' + t) }) : null;
-// Farbskala des Reliefs: gleichmässige Schritte in OKLab von einem Indigo, das
-// kaum vom Boden absteht, bis zu hellem Gold. Perzeptuell gleichmässig heisst,
-// dass gleiche Schritte in der Zahl gleich grosse Schritte im Eindruck sind —
-// bei einem Relief trägt die Helligkeit die Höhe, und ein Regenbogen täte das
-// nicht. Warm und hell oben auf dunklem Grund: so treten die Türme hervor,
-// noch bevor die Beleuchtung anfängt zu wirken.
-const NADELTON = ['#0c0a1d','#240943','#41075a','#620966','#831369','#a12566','#bc3c60',
-  '#d0585b','#de775d','#e7966a','#ebb483','#efd1a6','#f5ebce'];
-// Und dieselbe Leiter für helles Papier: von einem Creme, das kaum vom Boden
-// absteht, über Gold, Orange und Rot ins tiefe Violett. Nicht die umgedrehte
-// Nachtleiter — die hätte in der Mitte ein lautes Orange, und auf hellem Grund
-// stünde damit das halbe Land in Flammen. Diese hier bleibt unten blass.
-const NADELTON_HELL = ['#fbf5df','#f6dfb6','#f7c68f','#f7aa71','#f48c60','#ea715e','#d85965',
-  '#c0486d','#a33d71','#83376f','#633465','#452f52','#2d2838'];
-// Der Deckel einer Nadel bekommt dieselbe Farbe, nur heller: das Licht steht
-// hoch (60° über dem Horizont) und aus Südwesten, also ist die waagerechte
-// Fläche oben die hellste am ganzen Körper. Mehr Beleuchtung braucht ein Feld
-// aus lauter gleich ausgerichteten Säulen nicht — die Südseiten sähen ohnehin
-// alle gleich aus. Gerechnet wird das auf der Seite, weil es davon abhängt,
-// ob die Leiter gerade auf hellem oder dunklem Grund steht.
-const ZELLFLAECHE = nadeln ? (nadeln.daten.zelle ** 2 * nadeln.daten.reihe / 1e6) : 0;
-const mitRelief = !!nadeln;
 daten.takt = abschnitte.map(a => a.anteil);
 // Beschriftung der Umschalter, jetzt wo die Ländernamen bekannt sind.
 if (nutz.reihen.length > 1) {
@@ -303,317 +275,139 @@ process.stdout.write(`<!doctype html>
 <title>${titel}</title>
 <meta name="description" content="Every one of today's ${anzahlKreise} counties in ${gebietsname} sized by the people living in it, from ${jahrVon} to ${jahrBis}. The map grows as the population does.">
 <style>
+/* Eine Seite, ein Bild. Schwarz aussen, die Karte füllt den Schirm; alles, was
+   nicht zur Karte gehört, ist weg. Nur ein Farbklima, kein Umschalten zwischen
+   hell und dunkel: die Geländefarben sind auf diesen Grund gesetzt. */
 :root{
-  --plane:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
-  --line:#e1e0d9; --axis:#c3c2b7; --ring:rgba(11,11,11,.10);
-  --leer:#e6e5e0;
+  --plane:#000; --surface:#0c0c0c; --ink:#fff; --ink2:#bfbeb6; --muted:#7f7d77;
+  --line:#232321; --axis:#33332f; --ring:rgba(255,255,255,.09);
+  --leer:#1a1a18;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --plane:#0d0d0d; --surface:#1a1a19; --ink:#fff; --ink2:#c3c2b7; --muted:#898781;
-  --line:#2c2c2a; --axis:#383835; --ring:rgba(255,255,255,.10);
-  --leer:#262624;
-}}
 *{box-sizing:border-box}
-html,body{margin:0}
+html,body{margin:0;height:100%}
 body{background:var(--plane);color:var(--ink);
   font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.5;
-  -webkit-text-size-adjust:100%}
-.wrap{max-width:560px;margin:0 auto;padding:10px 12px 40px}
-h1{font-size:24px;line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
-.unter{color:var(--ink2);margin:0 0 18px;font-size:15px}
-.buehne{position:relative;background:var(--surface);border:1px solid var(--ring);border-radius:12px;
-  padding:6px;margin:0 0 10px}
-h1{margin-top:28px}
-canvas{display:block;width:100%;height:auto;touch-action:manipulation}
-canvas[hidden]{display:none}
-.schild{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;padding:2px 4px 6px}
-.schild>b{font-size:28px;font-weight:650;letter-spacing:-.02em;line-height:1.05}
-.schild>span{color:var(--ink2);font-size:12.5px}
-.kopf{color:var(--muted);font-size:11.5px;margin:6px 2px 10px;min-height:1.35em}
-.regler{display:flex;align-items:center;gap:10px;margin-bottom:6px}
-button{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--axis);
-  border-radius:8px;padding:7px 12px;cursor:pointer}
-button:hover{border-color:var(--muted)}
-#spiel{width:44px;flex:0 0 44px;font-variant-numeric:tabular-nums}
-.bahn{position:relative;flex:1}
-input[type=range]{width:100%;margin:0;accent-color:#2a78d6}
-.marken{position:relative;height:12px;margin-top:2px}
-.marken i{position:absolute;top:0;width:1px;height:5px;background:var(--axis)}
-.marken i.voll{height:8px;background:var(--muted)}
-.modi{display:flex;gap:6px;margin:14px 0 10px;flex-wrap:wrap}
-.modi button{flex:1;min-width:96px;padding:8px 6px;font-size:14px}
-.modi button[aria-pressed=true]{background:var(--ink);color:var(--plane);border-color:var(--ink)}
-/* Die Formleiste ist der zweite Regler und nicht die Hauptsache: kleiner,
-   enger, und die gewählte Form nur angestrichen statt ausgefüllt. */
-.formen{margin:10px 0 0;gap:5px}
-.formen button{flex:1;min-width:72px;padding:5px 4px;font-size:12.5px;color:var(--ink2)}
-.formen button[aria-pressed=true]{background:var(--surface);color:var(--ink);
-  border-color:var(--ink);font-weight:600}
-.formen[hidden]{display:none}
-.fuss{padding:8px 4px 2px}
-.fuss .klein{margin:4px 0 0;font-size:12px;line-height:1.45;min-height:2.9em}
-.legende{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink2);
+  -webkit-text-size-adjust:100%;overflow:hidden}
+.wrap{max-width:860px;margin:0 auto;height:100dvh;padding:6px;display:flex}
+.buehne{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;
+  background:var(--surface);border:1px solid var(--ring);border-radius:14px;padding:10px 12px 8px}
+
+/* Kopfzeile: Jahr und Einwohnerzahl. */
+.text{position:relative;flex:0 0 auto}
+.schild{display:flex;align-items:baseline;gap:10px}
+.schild>b{font-size:30px;font-weight:650;letter-spacing:-.02em;line-height:1}
+.schild>span{color:var(--ink2);font-size:13px}
+
+/* Die laufende Notiz, ausgeschrieben: Überschrift und Sätze. Sie hat jetzt
+   Platz, also bekommt sie ihn. Feste Höhe, damit die Karte nicht springt, wenn
+   eine Notiz länger ist als die vorige. */
+.jetzt{margin:8px 0 2px;min-height:4.4em;
+  font-size:13.5px;line-height:1.45;color:var(--ink2);opacity:0;transition:opacity .4s}
+.jetzt b{display:block;color:var(--ink);font-weight:650;font-size:14.5px;margin-bottom:1px}
+
+/* Die vorigen Überschriften hängen unter der laufenden Notiz und rücken mit
+   jeder neuen eine Zeile nach unten, blasser mit jedem Schritt. Sie hängen
+   frei, nicht im Fluss: sonst wüchse der Textblock mit jeder Notiz, und die
+   Karte darunter müsste neunmal im Lauf schrumpfen und sich neu setzen. So
+   legen sie sich über den leeren oberen Rand der Karte; der Schein hinter der
+   Schrift hält sie lesbar, falls die Karte doch bis dorthin reicht. */
+.faden{position:absolute;left:0;top:100%;width:min(52%,210px);pointer-events:none;
+  padding-top:3px;display:flex;flex-direction:column;gap:3px;will-change:transform}
+.faden b{font-size:10.5px;line-height:1.25;font-weight:600;color:var(--ink);
+  text-shadow:0 0 3px var(--surface),0 0 3px var(--surface),0 0 7px var(--surface),
+    0 0 7px var(--surface);transition:opacity .5s}
+@media(max-width:540px){.faden b{font-size:9.5px}}
+/* Auf einem kurzen Schirm ist der Platz knapp; dann fällt der Faden weg,
+   statt sich über die Karte zu legen oder die Bedienung zu verdecken. Die
+   laufende Notiz bleibt — sie ist die, die man liest. */
+@media(max-height:680px){.faden{display:none}}
+
+/* Die Karte füllt, was übrig bleibt. */
+.feld{position:relative;flex:1 1 auto;min-height:0}
+canvas{position:absolute;left:0;top:0;width:100%;height:100%;touch-action:manipulation}
+
+.fuss{flex:0 0 auto;padding:6px 0 0}
+.fuss .klein{margin:4px 0 0;font-size:11.5px;line-height:1.4;color:var(--ink2);min-height:2.8em}
+.legende{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink2);
   font-variant-numeric:tabular-nums}
-.rampe{flex:1;height:10px;border-radius:5px;border:1px solid var(--ring)}
-.tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--axis);
-  border-radius:9px;padding:8px 10px;font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,.14);
-  max-width:220px;opacity:0;transition:opacity .12s}
-.tip b{display:block;font-size:14px;margin-bottom:2px}
+.rampe{flex:1;height:9px;border-radius:5px;border:1px solid var(--ring)}
+
+/* Die Bedienung, so wenig wie möglich: ein Knopf, ein Regler, drei Formen. */
+.regler{display:flex;align-items:center;gap:9px;flex:0 0 auto;margin-top:6px}
+button{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--axis);
+  border-radius:8px;padding:5px 10px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+#spiel{width:38px;flex:0 0 38px;padding:5px 0;font-variant-numeric:tabular-nums}
+.bahn{position:relative;flex:1}
+input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
+.marken{position:relative;height:9px;margin-top:1px}
+.marken i{position:absolute;top:0;width:1px;height:4px;background:var(--axis)}
+.marken i.voll{height:7px;background:var(--muted)}
+.formen{display:flex;gap:5px;flex:0 0 auto;margin-top:5px}
+.formen button{flex:1;min-width:64px;padding:4px 3px;font-size:11.5px;color:var(--muted)}
+.formen button[aria-pressed=true]{color:var(--ink);border-color:var(--ink2);font-weight:600}
+
+/* Zwei Spalten, sobald die Bühne breiter als hoch ist. Sonst stünde die Karte
+   als Briefmarke in einem breiten schwarzen Feld: sie hat ein festes
+   Seitenverhältnis, und im Querformat begrenzt die Höhe sie. Links der Text,
+   rechts die Karte über die ganze Höhe — und die Spalte ist so bemessen, dass
+   die Karte den Rest gerade ausfüllt. */
+@media(min-width:760px) and (min-aspect-ratio:1/1){
+  .wrap{max-width:1100px}
+  .buehne{display:grid;gap:0 16px;
+    grid-template-columns:clamp(250px,31%,340px) 1fr;
+    grid-template-rows:1fr auto auto auto;
+    grid-template-areas:"text feld" "fuss feld" "regler feld" "formen feld"}
+  .text{grid-area:text;min-height:0;overflow:hidden}
+  .feld{grid-area:feld}
+  .fuss{grid-area:fuss}
+  .regler{grid-area:regler}
+  .formen{grid-area:formen}
+  .jetzt{font-size:14px;min-height:0}
+  .jetzt b{font-size:15px}
+  /* Hier ist Platz: der Faden darf im Fluss stehen, unter der Notiz. */
+  .faden{position:static;width:auto}
+  .faden b{text-shadow:none}
+}
+
+.tip{position:absolute;pointer-events:none;background:#141412;border:1px solid var(--axis);
+  border-radius:9px;padding:7px 9px;font-size:12.5px;box-shadow:0 6px 20px rgba(0,0,0,.5);
+  max-width:210px;opacity:0;transition:opacity .12s}
+.tip b{display:block;font-size:13px;margin-bottom:2px}
 .tip dl{margin:0;display:grid;grid-template-columns:auto auto;gap:1px 10px}
 .tip dt{color:var(--ink2)}
 .tip dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
-.tip .warn{display:block;margin-top:4px;color:var(--ink2);font-size:12px}
-h2{font-size:17px;margin:26px 0 6px}
-h3{font-size:14px;margin:18px 0 4px}
-/* Der Faden: nur die Überschriften, und zwar in der Karte selbst. Er liegt
-   über der Zeichnung statt über dem Rahmen, kostet also keine Höhe — der Platz
-   im Rahmen gehört der Karte. Die neueste steht oben; kommt eine dazu, rutscht
-   alles andere eine Zeile nach unten und wird blasser. Der Halo aus der
-   Flächenfarbe hält die Schrift auch über einem dunklen Fleck lesbar. */
-.feld{position:relative}
-.faden{position:absolute;left:6px;top:4px;width:min(48%,215px);pointer-events:none;
-  display:flex;flex-direction:column;gap:3px;will-change:transform}
-.faden b{font-size:11px;line-height:1.25;font-weight:650;color:var(--ink);
-  text-shadow:0 0 3px var(--surface),0 0 3px var(--surface),0 0 4px var(--surface),
-    0 0 8px var(--surface),0 0 8px var(--surface);transition:opacity .5s}
-@media(max-width:540px){.faden{width:min(52%,184px);gap:2px}.faden b{font-size:10px}}
-/* Vollständig stehen die Notizen unten im Text: die erreichten deutlich, die
-   laufende angestrichen, die übrigen blass, bis die Uhr sie einholt. */
-.wann{list-style:none;margin:14px 0 0;padding:0;font-size:11.5px;line-height:1.45}
-.wann li{margin:0 0 5px;padding-left:9px;border-left:2px solid transparent;
-  color:var(--muted);opacity:.42;transition:opacity .35s,color .35s}
-.wann li.da{opacity:1;color:var(--ink2)}
-.wann li.jetzt{border-left-color:var(--ink);color:var(--ink)}
-.wann li b{font-weight:600}
-p{margin:0 0 10px}
-.klein{font-size:13px;color:var(--ink2)}
-table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
-th,td{text-align:right;padding:3px 4px;border-bottom:1px solid var(--line)}
-th:first-child,td:first-child{text-align:left}
-th{color:var(--ink2);font-weight:600}
-details{margin:10px 0}
-summary{cursor:pointer;color:var(--ink2)}
-a{color:inherit}
-@media(min-width:620px){.wrap{max-width:600px}}
+.tip .warn{display:block;margin-top:3px;color:var(--muted);font-size:11.5px}
 </style>
 </head><body>
 <div class="wrap">
 <div class="buehne" id="buehne">
-  <div class="schild">
-    <b id="jahrZahl">–</b><span id="jahrBev"></span>
+  <div class="text">
+    <div class="schild"><b id="jahrZahl">–</b><span id="jahrBev"></span></div>
+    <p class="jetzt" id="jetzt"></p>
+    <div class="faden" id="faden" aria-live="polite"></div>
   </div>
   <div class="feld">
-    <canvas id="karte"></canvas>${mitRelief ? `
-    <canvas id="relief" hidden></canvas>` : ''}
-    <div class="faden" id="faden" aria-live="polite"></div>
+    <canvas id="karte"></canvas>
     <div class="tip" id="tip"></div>
   </div>
   <div class="fuss">
     <div class="legende"><span id="legLinks"></span><div class="rampe" id="rampe"></div><span id="legRechts"></span></div>
     <p class="klein" id="legText"></p>
   </div>
-</div>
-<div class="kopf" id="kopf"></div>
-
-<div class="regler">
-  <button id="spiel" aria-label="Play or pause">▶</button>
-  <div class="bahn">
-    <input type="range" id="zeit" min="0" max="1000" value="0" step="1" aria-label="Year">
-    <div class="marken" id="marken"></div>
+  <div class="regler">
+    <button id="spiel" aria-label="Play or pause">▶</button>
+    <div class="bahn">
+      <input type="range" id="zeit" min="0" max="1000" value="0" step="1" aria-label="Year">
+      <div class="marken" id="marken"></div>
+    </div>
+  </div>
+  <div class="formen" id="formen" role="group" aria-label="How much of the population goes into area">
+    <button data-form="0">Real map</button>
+    <button data-form="0.5" aria-pressed="true">Half and half</button>
+    <button data-form="1">Cartogram</button>
   </div>
 </div>
-
-<div class="modi" id="reihen" role="group" aria-label="Which counties are drawn" hidden></div>
-<div class="modi formen" id="formen" role="group" aria-label="How much of the population goes into area">
-  <button data-form="0">Real map</button>
-  <button data-form="0.5">Half and half</button>
-  <button data-form="1" aria-pressed="true">Cartogram</button>
-</div>
-<div class="modi" role="group" aria-label="What the map shows">
-  <button data-modus="wandel" aria-pressed="true">Growth</button>
-  <button data-modus="menschen" aria-pressed="false">People</button>
-  <button data-modus="gelaende" aria-pressed="false">Terrain</button>${mitRelief ? `
-  <button data-modus="relief" aria-pressed="false">Standing up</button>` : ''}
-</div>
-
-<h1>${titel}</h1>
-<p class="unter">${anzahlKreise} counties and county-level cities, each sized by the people living
-in it, ${jahrVon} to ${jahrBis}. Every figure is recomputed onto today's boundaries, so the
-same places are compared across ${jahrBis - jahrVon} years. And the map itself grows: the
-same number of people per square millimetre, start to finish, so ${jahrVon} really is
-that much smaller than today.${ganzesLand ? '' : `</p>
-<p class="unter">This is the pilot region of a larger project — the same map for all
-${jeKreis.length} German counties. What is missing, and why, is written up in the repository.`}</p>
-
-<h2>How to read it</h2>
-<p>One sentence holds the whole map together: <b>volume is population.</b> How that volume is
-split between area and height is the row of buttons under the slider.</p>
-
-<p><b>Cartogram</b> is the classic: all of it goes into area, a county twice as populous is
-drawn twice as large, and every county is the same height. Berlin then takes 4.4 % of the map
-and Germany stops looking like Germany. <b>Real map</b> is the other end: the true outline,
-every county at its true size, and the whole population in the height instead — Berlin keeps
-its 0.25 % of the ground and stands almost eighteen times the average. <b>Half and half</b> is
-what the two are for: the shape stays recognisable, Berlin comes down to 1.8 % of the area,
-and the 2.5 it is missing is in the height. Area times height is its population in all three.</p>
-
-<p>The height is measured, not assumed — the page takes the area each county actually ends up
-with and divides the population by it, so the sum comes out right at every step of the morph,
-not just at the ends. It is drawn compressed, because on the real map the range from the
-emptiest district to Berlin is 134 to one and a relief like that is a wall next to a plain. The
-order stays true; tap a county for the number.</p>
-
-<p>Colour is a separate switch and means the same thing in all three shapes.</p>
-
-<p>Height is drawn the way a topographic map draws it: with <b>lit contour lines</b>. Every
-line runs along one height, and it turns white where its slope faces the light and black where
-it falls away from it, thick where the slope is fully lit or fully in shadow — the method
-Tanaka Kitiro published in 1950. Under them sits an ordinary hillshade, with the light from
-the upper left, and a cast shadow from a much lower sun, because a ray falling more steeply
-than the slope itself never lands in shadow.</p>
-
-<p>The reason for lines rather than shading is that the surface is already spoken for: it is
-carrying the colour, and colour is the data. Shading strong enough to read as a mountain turns
-red and blue into grey. Lines take almost no surface away. In the full cartogram every pad is
-the same height, so what remains is the rounding at the edges — a county drawn wide reaches
-full height and reads as a plateau, one drawn small never gets there and stays a low cushion.
-Pull the distortion back and the pads start to differ, and the cities rise into hills.</p>
-
-<p>Headlines of what was happening stand in the top corner of the map. Each new one arrives at
-the top and pushes the ones before it down; the full notes are further down this page.</p>
-
-<p><b>Growth</b> is what the map is really for, and what it opens on. It colours each county
-by how fast it is gaining or losing people <i>at that moment</i>: the change per year over
-the stretch of time the animation is currently crossing. Blue is growing, red is shrinking,
-grey is holding steady. Watch the Ruhr go from the deepest blue on the map to red within a
-lifetime, and the east turn red after 1990.</p>
-
-<p><b>People</b> shades each county by how many people live in it, on a fixed scale from
-30 000 to 1.5 million. Fixed means the same shade means the same number in every frame, in
-1871 as in 2024 — so the map darkening as the clock runs forward is not a trick of the
-colouring, it is the result. The scale is logarithmic because the counties are: on a
-straight scale nine in ten of them would sit in the bottom tenth of it and come out as one
-flat blue.</p>
-
-<p><b>Terrain</b> drops the data colouring and paints the map the way an atlas paints a
-mountain range: green in the lowlands, then yellow, brown, and bare grey at the summits. What
-it is colouring is the height — the same figure the relief already shows — so the contour
-lines run exactly along the colour boundaries, as they do on a physical map. Green is empty
-ground, brown and grey are crowded. In the full cartogram every county stands equally high by
-construction, so there would be nothing to colour; picking Terrain therefore steps the shape
-back to half.</p>
-
-<p>The reading belongs to the stretch between two censuses, so it holds while the map crosses
-one. It never runs ahead: at a census the old rate still stands, and the new one fades in
-over the first sixth of the stretch that follows. Nothing on this map shows a change before
-it was counted — the collapse of 1939 to 1946 appears after 1939, not before it.</p>
-
-<p>Per year, because the gaps are wildly uneven — eight years from 1939 to 1946, thirty-six
-from 1871 to 1900. The scale ends at ±3 % a year and is squeezed in between, so the quiet
-decades still show something and the one violent stretch, 1939 to 1946, still fits.</p>
-
-<p>Tap a county for its numbers. Between two censuses the shapes and the figures are
-interpolated, and the readout says how wide the gap is — thirty-one years between the census
-of 1910 and the one of 1939, which is why the First World War leaves so little mark here:
-nothing was counted at county level while it happened. The interpolation runs along a smooth curve rather than a
-straight line: it passes through every counted value exactly, has no kink at a census, and
-never leaves the range of the two it lies between. A county can never hold more people
-mid-stretch than it does at either end of it.</p>
-
-<p>The clock does not run evenly through the years. Each stretch between two censuses gets a
-share of the seventy seconds that mixes how long it lasted with how much moved in it — so the
-years of war, flight and rebuilding, when the country was reshuffled fastest, slow down to
-about five seconds instead of three, while the long quiet stretches still get the most
-because they are the longest. The marks under the slider show where the censuses fall in
-that running time.</p>
-
-<p>The ${staedte.length} largest cities carry their names from the first frame onwards, and
-the type grows with the patch: sized from the drawn area, but never below what a phone can
-still read. Where two names would land on each other they step aside, and a hairline points
-back to the patch a name has left. A city within ${ABSTAND_KM} km of a bigger one is not
-labelled — otherwise the Rhine and the Ruhr would carry seven names on one thumbnail.</p>
-${mitRelief ? `
-<p><b>Standing up</b> drops the cartogram and gives the country its real shape back. It
-keeps the page's own background — dark needles glowing to gold at night, pale ground and ink
-by day — because one page should not change its ground when you switch a view. The
-people become height instead: over every cell of ${ZELLFLAECHE.toFixed(0)} km² of ground
-stands a needle as tall as the people living on it. Same ground everywhere, so the height is
-density — which is why the Ruhr, Berlin, Hamburg and Munich rise out of a flat country. The
-tallest needle holds ${zahl(nadeln.daten.hoechste)} people. The clock is the same one; the
-needles hold still after ${nadeln.daten.b[nadeln.daten.b.length - 1].jahr}, because the
-municipality figures end there.</p>` : ''}
-
-<h2>What happened when</h2>
-<p class="klein">The headlines running over the map, with what belongs to them. Figures marked
-here are from the table this page draws; the rest is common history.</p>
-<ol class="wann" id="wann">
-${NOTIZEN.map((n, i) => `  <li data-n="${i}"><b>${n.kopf}</b> ${n.kurz} ${n.mehr}</li>`).join('\n')}
-</ol>
-
-${kommtSpaet.length ? `<h2>The button above the map</h2>
-<p>${spaeteNamen.join(' and ')} ${spaeteNamen.length > 1 ? 'have' : 'has'} figures only from
-${bilder.find(b => b.werte.has(kommtSpaet[0])).jahr} onwards — and more people than all of
-${gebietsname} put together. Switch ${spaeteNamen.length > 1 ? 'them' : 'it'} on and watch what
-happens: the city takes ${(100 * bilder[bilder.length - 1].werte.get(kommtSpaet[0]) / bilder[bilder.length - 1].summe).toFixed(0)} %
-of the area, and because it sits in the middle and is tiny on the ground, everything around it
-is squeezed into a ring. That is not a fault in the map — it is what an area cartogram does when
-one enclosed unit holds most of the people. It is also why the pilot region is a hard case and
-the full German map will not look like this: among 400 counties, Berlin is 4 % of the country,
-not 59 % of the region.</p>
-
-<p>Why ${spaeteNamen.join(' and ')} ${spaeteNamen.length > 1 ? 'start' : 'starts'} in
-${bilder.find(b => b.werte.has(kommtSpaet[0])).jahr}: Greater Berlin was formed in 1920 out of
-dozens of surrounding towns, and no reachable source gives those towns separately for the years
-before. The figures for the old Berlin of 66.9 km² are not figures for today's 891 km², so they
-are left out rather than quietly reused.</p>` : ''}
-
-<h2>Method, in short</h2>
-<p>Diffusion cartogram after Gastner and Newman (2004): population density is treated
-as heat and flows apart until it is even everywhere, and the borders drift with the
-current. Computed on an equal-area projection. Each census gets its own cartogram;
-consecutive ones start from the previous result, so the map moves rather than jumps.
-Area error left over, measured on the very numbers this page draws:
-${(medianGuete * 100).toFixed(2)} % median across all ${zahl(nutz.guete.zellen)} county-frames,
-${nutz.guete.ueber1} of them above 1 %, ${(maxGuete * 100).toFixed(1)} % at worst (Munich in the
-early frames — a small city county that has to swell to sixteen times its ground area).
-${gefaltet} folded rings.</p>
-
-<h2>Time points</h2>
-<table><thead><tr><th>Frame</th><th>Census date</th><th>Counties</th><th>People</th></tr></thead><tbody>
-${bilder.map(b => `<tr><td>${b.jahr}</td><td>${b.stichtage.join(', ')}</td><td>${b.werte.size}</td><td>${mio(b.summe)} m</td></tr>`).join('\n')}
-</tbody></table>
-
-<h2>Three things the map does not smooth over</h2>
-<p><b>Two states, two census days.</b> Between 1949 and 1990 the two Germanys counted at
-different times, and the counts were never synchronised. So four of these frames carry two
-dates rather than one: the West counted in June 1961, the East in December 1964; the West
-in May 1987, the East's figure is the end of 1985. Nothing is shifted to make them line up
-— each county's own date is in the readout, and the frame sits on the timeline where its
-people are, not halfway between the dates.</p>
-
-<p><b>Greater Berlin.</b> Berlin swallowed dozens of surrounding towns in 1920 and grew
-from 67 to 891 km². The 1871 figure here is 931,984, not the 826,000 the city of the day
-had: the source rebuilds today's Berlin out of the places that were later absorbed. The
-same reconstruction is what makes every other county comparable across 150 years.</p>
-
-<p><b>The eastern border.</b> Görlitz, Frankfurt (Oder), Guben and Forst were cut in two in
-1945; their eastern halves are in Poland. For the years before, the source estimates how
-many people lived on what is German ground today. Those four counties are the only figures
-here that are estimates rather than counts, and each carries that note.</p>
-
-<h2>Sources</h2>
-<p class="klein">Population: Roesel, Felix (2022), <i>The German Local Population Database
-(GPOP), 1871 to 2019</i>, Jahrbücher für Nationalökonomie und Statistik,
-DOI 10.1515/jbnst-2022-0046 — all figures recomputed to boundaries as of 31 December 2019,
-assembled from more than 50 sources, CC BY 4.0. The ${letztes.jahr} frame is from the
-Federal Statistical Office's municipality directory (GV-ISys), 31 December 2024, as are the
-county names and the surface areas used for density. Geometry: ${roh.quelle},
-© GeoBasis-DE / BKG, Datenlizenz Deutschland – Namensnennung 2.0. Method notes and the
-tidy data table are in the
-<a href="https://github.com/Chillchamp1/lab/tree/main/bevoelkerung-kreise">repository</a>.
-Counts are shown as they were taken: through 1910 the censuses counted the people present
-on the day, soldiers included; from 17 May 1939 they counted residents; 1985, 1996, 2019 and
-2024 are population updates rather than censuses.</p>
 </div>
 
 <script>
@@ -724,7 +518,7 @@ const px = new Float64Array(N), py = new Float64Array(N);
    weiter unten. Die Grösse der ganzen Karte bleibt in jedem Fall die
    Bevölkerung, dafür sorgt SKALA. */
 const FORMEN = [0, 0.5, 1];
-let FORM = 1, formZiel = 2;      // formZiel ist der Index in FORMEN
+let FORM = 0.5, formZiel = 1;    // formZiel ist der Index in FORMEN
 const ortX = (f, i) => ((GX[i] + FORM * (reihe.ZX[f][i] - GX[i])) - AX) * reihe.SKALA[f] + AX;
 const ortY = (f, i) => ((GY[i] + FORM * (reihe.ZY[f][i] - GY[i])) - AY) * reihe.SKALA[f] + AY;
 
@@ -795,121 +589,126 @@ function rahmenJetzt() {
            w: A.w + (B.w - A.w) * t, h: A.h + (B.h - A.h) * t };
 }
 
-/* ---------- Farbskalen ----------
-   Zwei Leitern je Farbe, eine für den hellen und eine für den dunklen Grund.
-   Die erste Fassung hatte nur eine und drehte sie nachts um. Das war falsch
-   herum gedacht: gedreht heisst „viel" auf dunklem Grund fast weiss, und ein
-   blassblauer Höchstwert neben einem tiefblauen Nichts liest sich verkehrt.
+/* ---------- Die Farbleiter ----------
+   Eine einzige, und es ist die eines Schulatlas: Tiefland grün, dann gelb,
+   dann braun, oben Fels und Schnee. Sie ist keine Datenskala im üblichen Sinn,
+   sondern eine Konvention — und sie funktioniert, weil man sie schon kann.
 
-   Beide Leitern laufen jetzt in dieselbe Richtung — **mehr ist satter**. Auf
-   hellem Grund wird dabei auch dunkler (blass nach tiefblau), auf dunklem
-   steigt vor allem die Buntheit: von einem fast grauen Blaugrau, das gerade
-   über der Fläche liegt, bis zu einem kräftigen Azur. Gerechnet in OKLab,
-   damit die Stufen gleich weit auseinanderliegen. */
-const BLAU = ['#cde2fb','#b7d3f6','#9ec5f4','#86b6ef','#6da7ec','#5598e7','#3987e5','#2a78d6','#256abf','#1c5cab','#184f95','#104281','#0d366b'];
-const ROT  = ['#f8d7d3','#f1c4bf','#edb0aa','#e69c95','#e08881','#d8746d','#d15d57','#c14e49','#ac4440','#993936','#85302d','#732624','#5f1f1d'];
-const BLAU_N = ['#3a404c','#39465e','#394c6e','#38527d','#37588c','#355e9b','#3164aa','#2d6bb9','#2571c8','#1a78d7','#047fe4','#0287ec','#018ff4'];
-/* Die hypsometrische Leiter der Geländekarte: dieselbe Reihenfolge, die jeder
-   Schulatlas benutzt — Tiefland grün, dann gelb, dann braun, oben Fels und
-   Schnee. Sie ist keine Datenskala im üblichen Sinn: sie ist eine Konvention,
-   und sie funktioniert, weil man sie schon kann. Gefärbt wird damit die Höhe,
-   also dasselbe, was auch das Relief zeigt — die Höhenlinien liegen damit
-   genau auf den Farbgrenzen, wie in einer Geländekarte. */
-const HYPSO   = ['#1e5c32','#2f7a3c','#4e9346','#77ab52','#a4c165','#cdd47c','#e8dd93','#e5c97a',
-                 '#d9ab63','#c78e52','#b07145','#97593c','#7d4738','#8a6f68','#b4a9a4','#e6e2df'];
-const HYPSO_N = ['#2a6b3d','#3a8548','#569b51','#7fb05e','#a8c46f','#ccd383','#e4da97','#e2c881',
-                 '#d6ab6c','#c4905c','#ae774f','#965f44','#7f4d3e','#8c726c','#b3a8a4','#ddd8d5'];
-const ROT_N  = ['#4b3b3a','#5a3b3a','#663c3a','#723d3a','#7e3d3a','#8a3e39','#953e39','#a13e38','#ac3e36','#b73e34','#c33d32','#ce3d2f','#d93c2b'];
-const dunkel = () => matchMedia('(prefers-color-scheme:dark)').matches;
+   Gefärbt wird damit die **Höhe**, also dasselbe, was auch das Relief zeigt.
+   Daraus folgt das Beste daran: die Höhenlinien liegen genau auf den
+   Farbgrenzen, wie in einer Geländekarte, weil beide dieselbe Zahl sind.
+
+   Gesetzt ist sie auf schwarzen Grund; die Seite kennt kein zweites Klima
+   mehr. Das spart nicht nur Code, es ist auch der Grund, warum das Tiefgrün
+   so tief sein darf. */
+const HYPSO = ['#1f5c33','#2b7239','#3c883f','#559b48','#72ac55','#92bb63','#b0c672','#c9cb80',
+               '#d5c077','#d3ac66','#c89658','#b9804d','#a76b45','#94583e','#9d7c69','#c2a797'];
 const stil = n => getComputedStyle(document.body).getPropertyValue(n).trim();
-let LEER = '#e6e5e0', STRICH = '#fcfcfb', GRENZE = '#fcfcfb';
-let INK = '#0b0b0b', SCHATTEN = 'rgba(0,0,0,.18)', KANTE3D = '#b9b8b0';
-let HELLMAX = 0.50, DUNKELMAX = 0.40;
-let GELAENDE_STRICH = 'rgba(255,255,255,.18)', GELAENDE_GRENZE = 'rgba(60,52,44,.40)';
+let LEER = '#1a1a18', INK = '#fff', STRICH = '#0c0c0c';
+const SCHATTEN = 'rgba(0,0,0,.6)', KANTE3D = '#060605';
+const HELLMAX = 0.55, DUNKELMAX = 0.55;
+const GELAENDE_STRICH = 'rgba(255,255,255,.13)', GELAENDE_GRENZE = 'rgba(0,0,0,.45)';
 function farbenHolen() {
-  LEER = stil('--leer'); STRICH = stil('--surface'); GRENZE = stil('--surface'); INK = stil('--ink');
-  // Der Stapel unter der Karte: auf hellem Grund ein Grau, auf dunklem fast
-  // schwarz, dazu ein weicher Schatten. Beides sind Dekoration, keine Daten —
-  // deshalb halten sie sich zurück.
-  SCHATTEN = dunkel() ? 'rgba(0,0,0,.55)' : 'rgba(11,11,11,.16)';
-  KANTE3D = dunkel() ? '#0a0a0a' : '#b4b3ab';
-  // Licht und Schatten des Reliefs sind auf dunklem Grund anders verteilt als
-  // auf hellem — dort trägt das Licht, hier der Schatten. Und gemischt wird
-  // verschieden: overlay rechnet den Ton gegen die Farbe, die schon da liegt,
-  // und wird auf dunklem Grund hart, weil dort alles ohnehin nahe an Schwarz
-  // liegt; soft-light bleibt milder.
-  // In der Geländekarte treten die Kreisgrenzen zurück: eine Landschaft hat
-  // keine weissen Fugen. Die Landesgrenzen bleiben als dünne dunkle Linie —
-  // so viel Orientierung wie auf einer physischen Karte üblich.
-  GELAENDE_STRICH = dunkel() ? 'rgba(255,255,255,.13)' : 'rgba(255,255,255,.20)';
-  GELAENDE_GRENZE = dunkel() ? 'rgba(0,0,0,.45)' : 'rgba(54,46,38,.42)';
-  MISCHUNG = dunkel() ? 'soft-light' : 'overlay';
-  STAERKE = dunkel() ? 2.2 : 1.7;
-  HELLMAX = dunkel() ? 0.55 : 0.38;
-  DUNKELMAX = dunkel() ? 0.55 : 0.45;
-  LINIE = dunkel() ? 0.9 : 1.1;
-  DUNKELLINIE = dunkel() ? 0.85 : 0.55;
-  if (typeof reliefFarben === 'function') reliefFarben();
+  LEER = stil('--leer'); INK = stil('--ink'); STRICH = stil('--surface');
 }
-const rampe = () => dunkel() ? BLAU_N : BLAU;
-const rampeRot = () => dunkel() ? ROT_N : ROT;
-const MITTE = () => dunkel() ? '#44433f' : '#f0efec';
-// Die beiden Arme der Richtungsskala. Auf hellem Grund hören sie vor den
-// dunkelsten Stufen auf: dort laufen Blau und Rot beide gegen Schwarz, und
-// dann ist auf einer Karte mit 400 kleinen Flecken nicht mehr zu sehen, welche
-// Richtung gemeint ist. Auf dunklem Grund enden sie in kräftigem Azur und
-// kräftigem Zinnober und bleiben bis zuletzt auseinanderzuhalten.
-const arm = r => dunkel() ? r : r.slice(0, 10);
-const hypso = () => dunkel() ? HYPSO_N : HYPSO;
-// Wie hoch ein Kreis steht, bezogen auf die mittlere Dichte des Bildes: von
-// einem Sechstel bis zum Zwölffachen, logarithmisch. Fest für alle Bilder, also
-// heisst dieselbe Farbe immer dasselbe.
-const HOEHE_VON = 1 / 6, HOEHE_BIS = 12;
-const lnHVon = Math.log(HOEHE_VON), lnHSpanne = Math.log(HOEHE_BIS) - lnHVon;
 const stufe = (r, u) => r[Math.max(0, Math.min(r.length - 1, Math.round(u * (r.length - 1))))];
 
-// Die Skala für die Bevölkerung: logarithmisch von 30 000 bis 1,5 Millionen,
-// fest für alle Bilder. Die Grenzen sind mit Absicht runde Zahlen und nicht
-// das Kleinste und Grösste der Reihe — Berlin hatte 1939 mehr als vier
-// Millionen, und liesse man die Skala bis dorthin laufen, sässe der halbe
-// Rest im selben Blau. So bekommt das dichte Mittelfeld die halbe Leiter, ein
-// paar Grossstädte sitzen am dunklen Anschlag, und die kleinsten Kreise am
-// hellen. Fest heisst: dieselbe Farbe bedeutet 1871 dasselbe wie 2024, und
-// dass die Karte über die Zeit nachdunkelt, ist keine Einstellung, sondern
-// das Ergebnis.
-const MENSCHEN_VON = 30000, MENSCHEN_BIS = 1500000;
-const lnVon = Math.log(MENSCHEN_VON), lnSpanne = Math.log(MENSCHEN_BIS) - lnVon;
+/* ---------- Die Höhenskala ----------
+   Die Höhe eines Kreises ist seine Bevölkerung geteilt durch seine gezeichnete
+   Fläche, bezogen auf die mittlere Dichte des Bildes — im vollen Kartogramm
+   also für jeden 1, auf der Landkarte seine wirkliche Dichte im Verhältnis zur
+   mittleren.
 
-// Die Skala für die Richtung: Veränderung je Jahr zwischen den beiden Bildern,
-// zwischen denen die Karte gerade steht. Je Jahr, weil die Abstände sehr
-// verschieden sind — zwischen 1939 und 1946 liegen achteinhalb Jahre, zwischen
-// 1871 und 1900 sechsunddreissig.
-//
-// Der Massstab endet bei ±3 % im Jahr und ist dazwischen nach asinh gestaucht.
-// Neun von zehn Werten liegen zwischen −1 und +2, aber der Sprung von 1939 auf
-// 1946 reicht von −6 bis +9: Flucht, Vertreibung, zerbombte Städte. Linear
-// gerechnet wäre alles andere grau, hart abgeschnitten wäre dieser eine
-// Übergang eine Fläche ohne Zeichnung. asinh gibt dem dichten Mittelfeld
-// Auflösung und lässt die Ränder trotzdem noch atmen.
-const WANDEL_ENDE = 3, WANDEL_KNICK = 0.4;
-const wandelSkala = r => Math.asinh(r / WANDEL_KNICK) / Math.asinh(WANDEL_ENDE / WANDEL_KNICK);
+   Wie weit die Werte streuen, hängt damit ganz an der Form: auf der Landkarte
+   vom Fünftel bis zum Fünfzehnfachen, bei halber Verzerrung nur noch von 0,36
+   bis 2,5, im vollen Kartogramm gar nicht. Eine feste Skala für alle drei wäre
+   in zweien davon fast leer — die halbe Leiter bliebe ungenutzt, und die Karte
+   läge in einem einzigen Gelb.
 
-function farbe(modus, wert, k, rate) {
-  if (!(wert > 0)) return LEER;
-  if (modus === 'gelaende') {
-    const h = HOCH[k];
-    if (!(h > 0)) return LEER;
-    return stufe(hypso(), Math.max(0, Math.min(1, (Math.log(h) - lnHVon) / lnHSpanne)));
+   Also wird die Spanne **je Form einmal aus den Daten gemessen**: alle Kreise
+   in allen Zählungen, ein halbes und neunundneunzigeinhalb Prozent. Das geht ohne
+   zu zeichnen, weil die Höhe ein Verhältnis ist und sich beim Skalieren der
+   ganzen Karte nicht ändert. Gemessen wird einmal je Form und dann behalten:
+   dieselbe Farbe heisst damit über die ganzen hundertfünfzig Jahre dasselbe.
+   Zwischen zwei Formen wird logarithmisch übergeblendet. */
+const SPANNEJE = [];
+function hoehenSpanne(fi) {
+  if (SPANNEJE[fi]) return SPANNEJE[fi];
+  const merkR = reihe, merkF = FORM;
+  FORM = FORMEN[fi];
+  const alle = [];
+  const fl = new Float64Array(NK);
+  for (let f = 0; f < NF; f++) {
+    setzePunkte(f, f, 0);
+    let sP = 0, sA = 0;
+    for (let g = 0; g < NK; g++) {
+      const w = reihe.BEV[f][g];
+      let A2 = 0;
+      if (w > 0) for (const r of GEBIETE[g]) {
+        const n = r.length;
+        for (let i = 0, j = n - 1; i < n; j = i++) A2 += px[r[j]] * py[r[i]] - px[r[i]] * py[r[j]];
+      }
+      fl[g] = Math.abs(A2 / 2);
+      if (w > 0 && fl[g] > 0) { sP += w; sA += fl[g]; }
+    }
+    const mittel = sA > 0 ? sP / sA : 1;
+    for (let g = 0; g < NK; g++) {
+      const w = reihe.BEV[f][g];
+      if (w > 0 && fl[g] > 0) alle.push((w / fl[g]) / mittel);
+    }
   }
-  if (modus === 'wandel') {
-    if (rate === null) return LEER;
-    const v = wandelSkala(rate);
-    if (Math.abs(v) < 0.05) return MITTE();
-    return v > 0 ? stufe(arm(rampe()), Math.min(1, v))
-                 : stufe(arm(rampeRot()), Math.min(1, -v));
-  }
-  return stufe(rampe(), Math.max(0, Math.min(1, (Math.log(wert) - lnVon) / lnSpanne)));
+  alle.sort((a, b) => a - b);
+  const q = t => alle[Math.max(0, Math.min(alle.length - 1, Math.round(t * (alle.length - 1))))];
+  // Im vollen Kartogramm liegen alle Werte auf 1; eine Spanne gibt es dort
+  // nicht, und die Karte ist zu Recht einfarbig.
+  const lo = Math.max(1e-3, q(0.005)), hi = Math.max(lo * 1.02, q(0.995));
+  FORM = merkF; reihe = merkR; tangenteFuer = -1;
+  return (SPANNEJE[fi] = [Math.log(lo), Math.log(hi)]);
 }
+function hoehenSkala() {
+  let k = 0; while (k < FORMEN.length - 2 && FORMEN[k + 1] < FORM) k++;
+  const t = Math.max(0, Math.min(1, (FORM - FORMEN[k]) / (FORMEN[k + 1] - FORMEN[k])));
+  const a = hoehenSpanne(k), b = hoehenSpanne(k + 1);
+  const von = a[0] + (b[0] - a[0]) * t, bis = a[1] + (b[1] - a[1]) * t;
+  return [von, Math.max(von + 1e-4, bis)];
+}
+/* ---------- Wenn keine Höhe mehr übrig ist ----------
+   Im vollen Kartogramm steckt die ganze Bevölkerung in der Fläche; jeder Kreis
+   hat dann dieselbe Dichte, und die gemessene Spanne schnurrt auf ein Prozent
+   zusammen. Eine Leiter, die über dieses eine Prozent gespannt wird, macht aus
+   Rundungsresten ein Gebirge: sie stünde auf ×0,99 bis ×1,01 und zeigte doch
+   alle sechzehn Farben. Das Feld selbst tut dasselbe — was dort im Kartogramm
+   noch an Bergen steht, sind die Fugen zwischen den Kreisen, weichgezeichnet;
+   ein grosser Kreis behält davon mehr Mitte als ein kleiner, und schon sieht
+   Berlin wieder aus wie ein Berg, obwohl es nur gross gezeichnet ist.
+
+   Also zwei Bremsen, beide aus derselben gemessenen Spanne:
+
+   1. Die Leiter bekommt eine **Mindestbreite**. Ist die Spanne enger, wird sie
+      um ihre Mitte auf dieses Mass aufgezogen; alle Werte landen dann in der
+      Mitte der Leiter, und die Karte liegt einfarbig da — wie es einem
+      Kartogramm zusteht.
+   2. Das **Relief wird ausgeblendet**, im selben Verhältnis. Bei voller Spanne
+      steht es ganz, bei keiner gar nicht, dazwischen anteilig. Der Weg vom
+      Relief zum Kartogramm zeigt damit genau das, worum es geht: die Berge
+      sinken in die Fläche, weil die Menschen von der Höhe in die Breite
+      wandern. */
+const SPANNE_MIN = Math.log(2.6);
+function skalaBreit(von, bis) {
+  const fehlt = SPANNE_MIN - (bis - von);
+  return fehlt > 0 ? [von - fehlt / 2, bis + fehlt / 2] : [von, bis];
+}
+function reliefAnteil(von, bis) {
+  return Math.max(0, Math.min(1, (bis - von) / SPANNE_MIN));
+}
+
+function farbe(wert, k) {
+  if (!(wert > 0)) return LEER;
+  const h = HOCH[k];
+  if (!(h > 0)) return LEER;
+  return stufe(HYPSO, Math.max(0, Math.min(1, (Math.log(h) - skalaVon) / (skalaBis - skalaVon))));
+}
+let skalaVon = -1, skalaBis = 1, RELIEF_ANTEIL = 1;
 
 /* ---------- Zustand ---------- */
 // Die Uhr läuft über die Spielzeit, nicht über die Jahre. Wie viel Spielzeit
@@ -920,7 +719,7 @@ function farbe(modus, wert, k, rate) {
 // Zeitachse ganz aufhört, eine zu sein.
 const TAKT = D.takt, TAKTKUM = [0];
 for (let i = 0; i < TAKT.length; i++) TAKTKUM.push(TAKTKUM[i] + TAKT[i]);
-let modus = 'wandel', spiel = 0, jahr = T0, laeuft = false, letzterTip = -1;
+let spiel = 0, jahr = T0, laeuft = false, letzterTip = -1;
 let dtSek = 1 / 60;   // wie lange das letzte Bild gedauert hat, für den Tiefpass
 function setzeZeit(p) {
   spiel = Math.max(0, Math.min(1, p));
@@ -932,37 +731,21 @@ function setzeZeit(p) {
 const cv = document.getElementById('karte'), ctx = cv.getContext('2d');
 let breite = 0, hoehe = 0, mass = 1, verX = 0, verY = 0;
 
-const cv2 = document.getElementById('relief');
-// Wie hoch darf der Rahmen sein? So hoch, dass er mit Kopfzeile und Legende
-// ins Fenster passt — quer gehalten bleibt davon wenig, und genau das ist der
-// Sinn: der Rahmen als Ganzes soll auch im Querformat vollständig zu sehen
-// sein. Sonst bekommt die Karte so viel wie möglich.
-function platzImRahmen() {
-  const schild = document.querySelector('.schild'), fuss = document.querySelector('.fuss');
-  const drum = (schild ? schild.offsetHeight : 0) + (fuss ? fuss.offsetHeight : 0) + 30;
-  return Math.max(150, Math.round(innerHeight * 0.96 - drum));
-}
 function masse() {
-  breite = cv.parentElement.clientWidth;
-  // Das Seitenverhältnis kommt aus der Karte selbst: ein Kasten, der genauso
-  // geformt ist wie das, was hineinsoll, verschenkt keinen Platz. Beim
-  // Überblenden von einer Form zur anderen richtet sich der Kasten schon nach
-  // dem Ziel und die Karte wandert darin — sonst müsste die Leinwand
-  // vierzigmal in der Sekunde neu angelegt werden, und das ruckelt.
-  const Z = reihe.rahmenJe[formZiel];
-  const h = Math.round(Math.min(breite * (Z.h / Z.w), platzImRahmen()));
+  // Die Leinwand füllt, was der Rahmen ihr lässt — Kopfzeile, laufende Notiz,
+  // Legende und Bedienung stehen fest, der Rest gehört der Karte. Gemessen
+  // wird das Feld selbst; das Auslegen macht der Umbruch, nicht die Rechnung.
+  const feld = cv.parentElement;
+  breite = feld.clientWidth;
+  hoehe = Math.max(120, feld.clientHeight);
   const dpr = Math.min(2.5, devicePixelRatio || 1);
-  const bw = Math.round(breite * dpr), bh = Math.round(h * dpr);
-  if (cv.width !== bw || cv.height !== bh) {
-    cv.width = bw; cv.height = bh; cv.style.height = h + 'px';
-  }
-  hoehe = h;
+  const bw = Math.round(breite * dpr), bh = Math.round(hoehe * dpr);
+  if (cv.width !== bw || cv.height !== bh) { cv.width = bw; cv.height = bh; }
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const V = rahmenJetzt();
   mass = Math.min(breite / V.w, hoehe / V.h) * 0.99;
   verX = (breite - V.w * mass) / 2 - V.x * mass;
   verY = (hoehe - V.h * mass) / 2 - V.y * mass;
-  if (cv2) reliefMasse(dpr);
 }
 
 function bildBei(t) {
@@ -1141,13 +924,17 @@ function reliefFeld() {
 // braucht ein Licht, das flach genug steht, damit überhaupt einer entsteht —
 // ein Strahl, der steiler abfällt als der Hang selbst, trifft nie auf Schatten.
 // Kartenzeichner machen das seit jeher so.
-let STAERKE = 1.7, MISCHUNG = 'overlay';
+// Auf schwarzem Grund. Weiches Licht statt Ueberlagern: Ueberlagern rechnet um
+// das mittlere Grau herum und laesst dunkle Farben fast unberuehrt, und auf
+// dieser Karte ist fast alles dunkel. Weiches Licht hebt auch tiefe Toene noch,
+// darum darf die Staerke hoeher liegen.
+const STAERKE = 2.2, MISCHUNG = 'soft-light';
 let SONNE = 40;                 // Grad über der Fläche, Licht von oben links
 let WURFSONNE = 16;             // dasselbe Licht, flach, nur für den Schlagschatten
 let UEBERHOEHT = 30;            // volle Höhe in Bildpunkten des Höhenfelds
 let MULDE = 0.85;               // wie stark Mulden verschatten
 let WURF = 0.50;                // wie dunkel ein Schlagschatten ist
-let LINIE = 0.8, NIVEAUS = 40, FLACHHANG = 0.0012, DUNKELLINIE = 0.55;  // Höhenlinien: Stärke und Anzahl
+let LINIE = 0.72, NIVEAUS = 40, FLACHHANG = 0.0012, DUNKELLINIE = 0.85;  // Höhenlinien: Stärke und Anzahl
 const LINIENSCHRITT = 2;          // Gitterschritt der Linienverfolgung, in Feldpunkten
 // So fein wird die Höhe abgestuft, ehe sie weichgezeichnet wird. Gezeichnet
 // wird in Bündeln, und die Zahl ist nicht beliebig: die Stufen stecken
@@ -1322,7 +1109,7 @@ function reliefUeber(sil, deck, gross) {
       if (schatten[i] > 0) I -= (schatten[i] < 0.05 ? schatten[i] / 0.05 : 1) * WURF;
 
       const i4 = i << 2;
-      let a = I * STAERKE;
+      let a = I * STAERKE * RELIEF_ANTEIL;
       if (a > 0) { if (a > HELLMAX) a = HELLMAX; }
       else { if (a < -DUNKELMAX) a = -DUNKELMAX; }
       const g = 128 + a * 127;
@@ -1341,7 +1128,7 @@ function reliefUeber(sil, deck, gross) {
   ctx.globalCompositeOperation = MISCHUNG;
   ctx.drawImage(hkL, 0, 0, breite, hoehe);
   ctx.globalCompositeOperation = 'source-over';
-  if (LINIE > 0) hoehenLinien(s);
+  if (LINIE * RELIEF_ANTEIL > 0.02) hoehenLinien(s);
 }
 
 /* ---------- Beleuchtete Höhenlinien, nach Tanaka Kitiro (1950) ----------
@@ -1470,7 +1257,7 @@ function linienMalen(strichBreite) {
     p.length = 0;
     ctx.lineWidth = (0.40 + 0.95 * st) * strichBreite;
     ctx.strokeStyle = hell ? '#fff' : '#000';
-    ctx.globalAlpha = Math.min(1, LINIE * st * (hell ? 1 : DUNKELLINIE));
+    ctx.globalAlpha = Math.min(1, LINIE * RELIEF_ANTEIL * st * (hell ? 1 : DUNKELLINIE));
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1587,7 +1374,6 @@ function hoehenLinien(s) {
 }
 
 function zeichne() {
-  if (modus === 'relief') { zeichneRelief(); return; }
   const [a, b, u] = bildBei(jahr);
   setzePunkte(a, b, u);
   const { w, deck, rate } = werteBei(a, b, u);
@@ -1601,7 +1387,9 @@ function zeichne() {
   const TIEFE = Math.max(2.5, breite / 130);
   const sil = new Path2D();
   const gross = hoehen(w, deck);
-  const gelaende = modus === 'gelaende';
+  const roh = hoehenSkala();
+  RELIEF_ANTEIL = reliefAnteil(roh[0], roh[1]);
+  [skalaVon, skalaBis] = skalaBreit(roh[0], roh[1]);
   for (let g = 0; g < NK; g++) {
     if (!(deck[g] > 0.5)) continue;
     for (const r of GEBIETE[g]) {
@@ -1629,9 +1417,9 @@ function zeichne() {
       for (let i = 1; i < r.length; i++) ctx.lineTo(px[r[i]] * mass + verX, py[r[i]] * mass + verY);
       ctx.closePath();
     }
-    ctx.fillStyle = farbe(modus, w[g], g, rate[g]);
+    ctx.fillStyle = farbe(w[g], g);
     ctx.fill('evenodd');
-    ctx.strokeStyle = gelaende ? GELAENDE_STRICH : STRICH;
+    ctx.strokeStyle = GELAENDE_STRICH;
     ctx.lineWidth = Math.max(0.3, Math.min(0.6, breite / 700)); ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1643,7 +1431,7 @@ function zeichne() {
     ctx.moveTo(px[p] * mass + verX, py[p] * mass + verY);
     ctx.lineTo(px[q] * mass + verX, py[q] * mass + verY);
   }
-  ctx.strokeStyle = gelaende ? GELAENDE_GRENZE : GRENZE;
+  ctx.strokeStyle = GELAENDE_GRENZE;
   ctx.lineWidth = Math.max(0.6, Math.min(1.1, breite / 480)); ctx.stroke();
 
   reliefUeber(sil, deck, gross);
@@ -1651,7 +1439,6 @@ function zeichne() {
   beschrifte(deck);
   schreibe(a, b, u, w, deck);
   notizen();
-  if (modus === 'wandel') legendeText(a, b);
 }
 
 const nf = new Intl.NumberFormat('en-GB');
@@ -1660,15 +1447,7 @@ function schreibe(a, b, u, w, deck) {
   let summe = 0; for (let k = 0; k < NK; k++) summe += w[k] * deck[k];
   document.getElementById('jahrZahl').textContent = zwischen ? Math.round(jahr) : D.B[u < 0.5 ? a : b].jahr;
   document.getElementById('jahrBev').textContent = (summe / 1e6).toFixed(1) + ' million people';
-  const z = D.B[u < 0.5 ? a : b];
-  // Zwischen zwei Zählungen steht dabei, wie gross die Lücke ist. Wer sich
-  // fragt, warum vom Ersten Weltkrieg nichts zu sehen ist, liest hier die
-  // Antwort: zwischen 1910 und 1939 wurde auf Kreisebene nichts gezählt.
-  const luecke = Math.round(JAHRE[b] - JAHRE[a]);
-  document.getElementById('kopf').textContent = zwischen
-    ? 'between ' + D.B[a].jahr + ' and ' + D.B[b].jahr + ' — interpolated across '
-      + luecke + ' years with no census'
-    : z.stichtage.join(' and ') + ' · ' + z.begriffe.join(', ') + ' · method ' + z.methoden.join('/');
+  legText();
   document.getElementById('zeit').value = Math.round(spiel * 1000);
 }
 
@@ -1761,10 +1540,10 @@ function beschrifte(deck) {
 }
 
 /* ---------- Der Faden ----------
-   Was jeweils geschah, steht als Überschrift in der Karte selbst, oben links.
-   Kommt eine neue dazu, setzt sie sich obenauf und schiebt die vorigen eine
-   Zeile nach unten, blasser mit jedem Schritt. Der Faden hält die letzten
-   ${FADEN_TIEFE}; alles Weitere steht ausgeschrieben unter der Karte.
+   Was gerade geschieht, steht ausgeschrieben über der Karte. Was davor geschah,
+   steht darunter als blosse Überschrift: kommt eine neue Notiz, setzt sie sich
+   obenauf und schiebt die vorigen eine Zeile nach unten, blasser mit jedem
+   Schritt. Der Faden hält die letzten ${FADEN_TIEFE}.
 
    Geschoben wird nicht Zeile für Zeile, sondern in einem Stück: der ganze
    Faden springt ohne Übergang um eine Zeilenhöhe nach oben und läuft dann
@@ -1772,25 +1551,24 @@ function beschrifte(deck) {
    aus, als drücke sie die anderen weg — und kostet eine einzige Bewegung
    statt ${FADEN_TIEFE}.
 
-   Welche Notiz gilt, hängt nur an der Uhr, also gilt sie in allen drei
-   Ansichten. Am Regler kann die Zeit auch zurücklaufen; dann wird der Faden
-   neu aufgebaut statt fortgeschrieben. */
-const NOTIZ = ${JSON.stringify(NOTIZEN.map(n => [n.von, n.bis, n.kopf, n.kurz]))};
-const WANN = [...document.querySelectorAll('#wann li')];
+   Welche Notiz gilt, hängt nur an der Uhr, also gilt sie in jeder Form. Am
+   Regler kann die Zeit auch zurücklaufen; dann wird der Faden neu aufgebaut
+   statt fortgeschrieben. */
+const NOTIZ = ${JSON.stringify(NOTIZEN.map(n => [n.von, n.bis, n.kopf, n.kurz, n.mehr]))};
 const FADEN = document.getElementById('faden');
 const TIEFE_FADEN = ${FADEN_TIEFE};
 const FADEN_DECK = ${JSON.stringify(FADEN_DECK)};
-let notizJetzt = -2;
+let notizJetzt = -2, notizMarke = 0;
 function fadenBaue(i, geschoben) {
   // Auf einem Telefon bricht jede Überschrift auf zwei Zeilen um; dort hält
   // der Faden weniger, sonst wüchse er über die halbe Karte.
-  const tief = innerWidth < 540 ? 4 : TIEFE_FADEN;
+  const tief = innerWidth < 540 ? 3 : TIEFE_FADEN;
   const gab = FADEN.firstElementChild !== null;
   FADEN.textContent = '';
-  for (let n = i; n >= 0 && i - n < tief; n--) {
+  for (let n = i - 1; n >= 0 && i - n <= tief; n--) {
     const el = document.createElement('b');
     el.textContent = NOTIZ[n][2];
-    el.style.opacity = FADEN_DECK[i - n];
+    el.style.opacity = FADEN_DECK[i - n - 1];
     FADEN.appendChild(el);
   }
   // Um wie viel die vorigen nach unten rücken: um die Höhe der neuen Zeile
@@ -1812,57 +1590,53 @@ function notizen() {
   if (i === notizJetzt) return;
   const geschoben = i === notizJetzt + 1;
   notizJetzt = i;
-  // Die Liste unten führt mit: erreicht, laufend, noch nicht.
-  WANN.forEach((li, n) => {
-    li.classList.toggle('da', i >= 0 && n <= i);
-    li.classList.toggle('jetzt', n === i);
-  });
+  // Die laufende Notiz steht ausgeschrieben; die vorigen stehen als blosse
+  // Überschriften darunter und rücken mit jeder neuen nach unten.
+  const el = document.getElementById('jetzt'), marke = ++notizMarke;
+  el.style.opacity = 0;
+  setTimeout(() => {
+    if (marke !== notizMarke) return;
+    if (i < 0) { el.textContent = ''; return; }
+    el.innerHTML = '<b>' + NOTIZ[i][2] + '</b>' + NOTIZ[i][3] + ' ' + NOTIZ[i][4];
+    el.style.opacity = 1;
+  }, 260);
   fadenBaue(i, geschoben);
 }
 
 /* ---------- Legende ---------- */
-// Der Text der Richtungsskala nennt den Abschnitt, für den sie gerade gilt;
-// er wandert also mit der Zeit mit.
-function legendeText(a, b) {
-  document.getElementById('legText').textContent = 'Change per year, ' + D.B[a].jahr + ' to '
-    + D.B[b].jahr + '. Red: losing people. Blue: gaining. Grey: holding steady.';
+// Ein Satz zur eingestellten Form: das Volumen ist immer die Bevölkerung, und
+// wie es sich auf Fläche und Höhe verteilt, steht am Umschalter.
+function formSatz() {
+  // formZiel ist der Index in FORMEN: 0 Landkarte, 1 halb, 2 volles Kartogramm.
+  if (formZiel === 0) return 'True shape; the population is all in the height.';
+  if (formZiel === 2) return 'Area is population; nothing is left over for the height.';
+  return 'Half the distortion; the rest of the population is in the height.';
 }
 function legende() {
-  const r = document.getElementById('rampe');
-  const li = document.getElementById('legLinks'), re = document.getElementById('legRechts');
-  const t = document.getElementById('legText');
-  if (modus === 'relief') {
-    r.style.background = 'linear-gradient(90deg,' + NADEL.join(',') + ')';
-    li.textContent = '0'; re.textContent = nf.format(D2.hoechste);
-    t.textContent = 'Needle height and colour are both people per cell of '
-      + FLAECHE + ' km² of real ground — the same scale in every frame, so the country '
-      + 'really does grow into a skyline.';
-  } else if (modus === 'gelaende') {
-    r.style.background = 'linear-gradient(90deg,' + hypso().join(',') + ')';
-    li.textContent = 'flat'; re.textContent = 'peak';
-    t.textContent = 'Physical-map colours for the height: green is empty ground, brown and grey are '
-      + 'crowded. The contour lines follow the same figure. ' + formSatz();
-  } else if (modus === 'wandel') {
-    r.style.background = 'linear-gradient(90deg,' + [...arm(rampeRot())].reverse().join(',')
-      + ',' + MITTE() + ',' + arm(rampe()).join(',') + ')';
-    li.textContent = '−3 %'; re.textContent = '+3 %';
-    const [a, b] = bildBei(jahr);
-    t.textContent = 'Change per year, ' + D.B[a].jahr + ' to ' + D.B[b].jahr
-      + '. Red: losing people. Blue: gaining. Grey: holding steady. ' + formSatz();
-  } else {
-    r.style.background = 'linear-gradient(90deg,' + rampe().join(',') + ')';
-    li.textContent = nf.format(MENSCHEN_VON); re.textContent = (MENSCHEN_BIS / 1e6) + ' m';
-    t.textContent = 'People per county, logarithmic, same scale in every frame — which is why the '
-      + 'whole map darkens as the country fills up. ' + formSatz();
-  }
+  document.getElementById('rampe').style.background =
+    'linear-gradient(90deg,' + HYPSO.join(',') + ')';
+  legText();
 }
-// Ein Satz zur eingestellten Form. Er sagt jedes Mal dasselbe in anderen
-// Anteilen: das Volumen ist die Bevölkerung, und wie es sich auf Fläche und
-// Höhe verteilt, steht am Umschalter.
-function formSatz() {
-  if (formZiel === 2) return 'Area is population; every county is the same height.';
-  if (formZiel === 0) return 'True shape; the population is all in the height.';
-  return 'Half the distortion; the rest of the population is in the height.';
+// Was unter der Leiter steht. Die Zahlen an den Enden sind Vielfache der
+// mittleren Dichte des Bildes, also dessen, was ein Kreis an Höhe hätte, wenn
+// alle gleich dicht wohnten.
+function legText() {
+  const [a, b, u] = bildBei(jahr);
+  const zwischen = u > 0.001 && u < 0.999;
+  // Die Zahlen an den Enden der Leiter stehen je Bild neu: beim Überblenden von
+  // einer Form zur anderen wandert die Spanne mit.
+  const [von, bis] = skalaBreit(...hoehenSkala());
+  const zeig = x => (x >= 10 ? x.toFixed(0) : x >= 1 ? x.toFixed(1) : x.toFixed(2));
+  document.getElementById('legLinks').textContent = '×' + zeig(Math.exp(von));
+  document.getElementById('legRechts').textContent = '×' + zeig(Math.exp(bis));
+  // Wo keine Höhe mehr übrig ist, hat die Leiter auch nichts mehr zu erklären.
+  document.getElementById('legText').textContent =
+    (RELIEF_ANTEIL < 0.08
+      ? 'Every county is drawn at the same density now, so the land lies flat. '
+      : 'Height in multiples of the average density: green is empty ground, rock is crowded. ')
+    + formSatz()
+    + (zwischen ? ' Interpolated between ' + D.B[a].jahr + ' and ' + D.B[b].jahr + '.'
+                : ' ' + D.B[u < 0.5 ? a : b].stichtage.join(' and ') + '.');
 }
 
 /* ---------- Tippen ---------- */
@@ -1922,280 +1696,6 @@ cv.addEventListener('pointermove', e => {
 });
 cv.addEventListener('pointerleave', () => { tip.style.opacity = 0; });
 
-${mitRelief ? `/* ---------- Nadelrelief ----------
-   Dieselben Menschen, nur stellen sie sich auf: die Karte behält ihre wirkliche
-   Form, und über jeder Rasterzelle steht eine Nadel, so hoch wie die Menschen
-   darin. Die Zellen liegen versetzt — ein Dreiecksgitter, also dasselbe Muster
-   wie ein Sechseckraster; auf dem geraden Gitter standen die Nadeln in Spalten
-   wie auf Karopapier, und das Auge sah eher das Papier als das Land. */
-const D2 = ${JSON.stringify(nadeln.daten)};
-const FLAECHE = ${ZELLFLAECHE.toFixed(0)};
-/* Die Leiter des Reliefs, dreizehn Stufen, in OKLab gleichmässig in der
-   Helligkeit. Auf dunklem Grund läuft sie von einem Indigo, das kaum absteht,
-   nach hellem Gold; auf hellem Grund von blassem Creme ins tiefe Violett. Der
-   Grund selbst ist immer der der Seite: eine Seite, ein Hintergrund. Was auf
-   dunklem Grund als Glut nach oben leuchtet, wird auf hellem Grund zur Tusche —
-   die Helligkeit trägt in beiden Fällen die Höhe, nur die Richtung dreht sich. */
-const LEITER = ${JSON.stringify(NADELTON)}, LEITER_HELL = ${JSON.stringify(NADELTON_HELL)};
-const heller = (h, f) => '#' + [1, 3, 5]
-  .map(i => Math.min(255, Math.round(parseInt(h.slice(i, i + 2), 16) * f)).toString(16).padStart(2, '0')).join('');
-let NADEL = LEITER, KOPF = LEITER, HIMMEL = '#fff', BODEN1 = '#eee', BODEN2 = '#ddd', UFER = '#ccc';
-// Wie steil die Höhe auf die Stufen abgebildet wird. Auf dunklem Grund darf
-// das Land früh Farbe annehmen, es bleibt trotzdem dunkel; auf hellem Grund
-// stünde bei derselben Kurve die halbe Fläche in Orange, also bleibt das
-// flache Land dort länger im Blassen.
-let KURVE = 0.55;
-function reliefFarben() {
-  const d = dunkel();
-  NADEL = d ? LEITER : LEITER_HELL;
-  KOPF = NADEL.map(t => heller(t, d ? 1.45 : 1.12));
-  KURVE = d ? 0.55 : 0.72;
-  HIMMEL = stil('--surface');
-  BODEN1 = d ? '#262625' : '#efede6';        // hinten
-  BODEN2 = d ? '#353532' : '#e2dfd5';        // vorn
-  UFER = d ? '#4a4a45' : '#cfccc0';
-  bodenTon = null;
-}
-const ctx2 = cv2.getContext('2d');
-
-const kumI = a => { let v = 0; const o = new Int32Array(a.length); for (let i = 0; i < a.length; i++) { v += a[i]; o[i] = v; } return o; };
-const RGX = kumI(entpacke(D2.gx)), RGY = kumI(entpacke(D2.gy));
-const NZ = RGX.length, NF2 = D2.b.length;
-const RH = [];
-{ const d = entpacke(D2.h); let vor = new Float64Array(NZ);
-  for (let f = 0; f < NF2; f++) {
-    const jetzt = new Float64Array(NZ);
-    for (let i = 0; i < NZ; i++) jetzt[i] = vor[i] + d[f * NZ + i];
-    RH.push(jetzt); vor = jetzt;
-  } }
-const JAHRE2 = D2.b.map(b => b.t);
-// Der Boden: die Aussengrenze als Ringe, die Landesgrenzen als Striche darauf.
-// Beides in Zellenbreiten, dieselbe Einheit wie die Nadeln.
-const RPLATTE = [];
-{ const laengen = entpacke(D2.pl), pp = kumI(entpacke(D2.pp)); let o = 0;
-  for (const len of laengen) {
-    const r = new Float64Array(len * 2);
-    for (let i = 0; i < len * 2; i++) r[i] = pp[o + i] / D2.fein;
-    o += len * 2; RPLATTE.push(r);
-  } }
-const RGRENZ = kumI(entpacke(D2.gr));
-
-/* Kamera: im Süden, um fünfzig Grad über der Ebene, Blick nach Norden. Flacher
-   sähe man vor lauter Nadeln das Land nicht mehr, steiler verlöre das Relief
-   seine Tiefe; fünfzig Grad ist die übliche Wahl für Reliefbilder. Norden bleibt
-   oben, damit die Karte auf den ersten Blick als Deutschland zu erkennen ist.
-   Eine echte Lochkamera, kein Parallelbild: die vorderen Nadeln sind grösser
-   als die hinteren, und erst das macht die Tiefe. */
-const RPHI = 50 * Math.PI / 180, rsin = Math.sin(RPHI), rcos = Math.cos(RPHI);
-const rnx = D2.nx, rny = D2.ny * D2.reihe;            // Feldmass in Zellenbreiten
-const rmitte = rnx / 2;
-const rcamY = rny / 2 + 2.4 * rny * rcos, rcamZ = 2.4 * rny * rsin;
-// Höhe der höchsten Nadel, gemessen an der Nord-Süd-Ausdehnung des Landes. Sie
-// gilt für alle Bilder, damit das Feld über die Zeit wirklich wächst.
-const RHOCH = 0.66 * rny / (D2.hoechste / D2.stufe);
-const RB = 0.275, RS = 0.124;      // halbe Fussbreite, halbe Kopfbreite je Nadel
-const rwx = i => RGX[i] + 0.5 * (RGY[i] & 1), rwy = i => RGY[i] * D2.reihe;
-
-function rproj(x, y, z) {
-  const dy = y - rcamY, dz = z - rcamZ;
-  const t = -dy * rcos - dz * rsin;
-  if (t < 0.2) return null;
-  return [(x - rmitte) / t, (dy * rsin - dz * rcos) / t];
-}
-// Der Ausschnitt wird einmal über alles gelegt, was je zu sehen ist: jede Zelle
-// am Boden und mit ihrer höchsten Nadel über alle Bilder, dazu der Umriss. Sonst
-// wanderte das Bild, während die Zeit läuft.
-const RHOECHST = new Float64Array(NZ);
-for (const f of RH) for (let i = 0; i < NZ; i++) if (f[i] > RHOECHST[i]) RHOECHST[i] = f[i];
-let rL = Infinity, rR = -Infinity, rO = Infinity, rU = -Infinity;
-{ const merke = p => { if (!p) return;
-    if (p[0] < rL) rL = p[0]; if (p[0] > rR) rR = p[0];
-    if (p[1] < rO) rO = p[1]; if (p[1] > rU) rU = p[1]; };
-  for (let i = 0; i < NZ; i++) {
-    merke(rproj(rwx(i), rwy(i), 0));
-    merke(rproj(rwx(i), rwy(i), RHOECHST[i] * RHOCH));
-  }
-  for (const r of RPLATTE) for (let i = 0; i < r.length; i += 2) merke(rproj(r[i], r[i + 1], 0)); }
-
-let rhoehe = 0, rskala = 1, rvx = 0, rvy = 0, FLACH = 0;
-let PLATTE_S = [], GRENZ_S = new Float64Array(0);
-function reliefMasse(dpr) {
-  // Die Höhe des Bildes folgt dem Inhalt, statt fest zu sein: das Feld ist so
-  // hoch, wie das Land breit und Berlin hoch ist. Ein festes Format liesse
-  // entweder Himmel übrig oder schnitte die Spitzen ab.
-  rhoehe = Math.round(Math.min(breite * (rU - rO) / (rR - rL), platzImRahmen()));
-  cv2.width = Math.round(breite * dpr); cv2.height = Math.round(rhoehe * dpr);
-  cv2.style.height = rhoehe + 'px';
-  ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
-  rskala = breite * 0.98 / (rR - rL);
-  rvx = breite / 2 - rskala * (rL + rR) / 2;
-  rvy = rhoehe / 2 - rskala * (rO + rU) / 2;
-  // Der Boden bewegt sich nicht, also wird er einmal ausgerechnet und nicht
-  // fünfzigmal in der Sekunde.
-  bodenTon = null;
-  PLATTE_S = RPLATTE.map(r => {
-    const o = new Float64Array(r.length);
-    for (let i = 0; i < r.length; i += 2) {
-      const p = rproj(r[i], r[i + 1], 0);
-      o[i] = rvx + rskala * p[0]; o[i + 1] = rvy + rskala * p[1];
-    }
-    return o;
-  });
-  // Ab welcher Höhe ist eine Nadel mehr als eine Kachel? Gemessen in der Mitte
-  // des Feldes: was kürzer als zwei Pixel wäre, wird als flache Fläche
-  // gezeichnet — aus fünfzig Grad ist das genau das, was man sähe.
-  const m0 = rproj(rmitte, rny / 2, 0), m1 = rproj(rmitte, rny / 2, 1);
-  FLACH = 2 / (rskala * (m0[1] - m1[1]) * RHOCH);
-  GRENZ_S = new Float64Array(RGRENZ.length);
-  for (let i = 0; i < RGRENZ.length; i += 2) {
-    const p = rproj(RGRENZ[i] / D2.fein, RGRENZ[i + 1] / D2.fein, 0);
-    GRENZ_S[i] = rvx + rskala * p[0]; GRENZ_S[i + 1] = rvy + rskala * p[1];
-  }
-}
-
-function bildBei2(t) {
-  let a = 0;
-  while (a < NF2 - 2 && JAHRE2[a + 1] <= t) a++;
-  const b = Math.min(NF2 - 1, a + 1);
-  const u = JAHRE2[b] > JAHRE2[a] ? Math.max(0, Math.min(1, (t - JAHRE2[a]) / (JAHRE2[b] - JAHRE2[a]))) : 0;
-  return [a, b, u];
-}
-
-// Gezeichnet wird von hinten nach vorn, Zeile für Zeile — so verdecken die
-// vorderen Nadeln die hinteren und nicht umgekehrt. Innerhalb einer Zeile
-// stehen alle Nadeln gleich weit weg, also lassen sie sich nach Farbe bündeln:
-// aus zwölftausend einzelnen Füllungen werden ein paar Dutzend je Zeile, und
-// das ist der Unterschied zwischen dreissig Bildern in der Sekunde und fünf.
-const EIMER = NADEL.map(() => ({ b: [], k: [] }));
-function pfad(a) {
-  ctx2.beginPath();
-  for (let i = 0; i < a.length; i += 8) {
-    ctx2.moveTo(a[i], a[i + 1]); ctx2.lineTo(a[i + 2], a[i + 3]);
-    ctx2.lineTo(a[i + 4], a[i + 5]); ctx2.lineTo(a[i + 6], a[i + 7]);
-  }
-}
-function maleZeile() {
-  for (let s = 0; s < EIMER.length; s++) {
-    const e = EIMER[s];
-    if (e.b.length) { pfad(e.b); ctx2.fillStyle = NADEL[s]; ctx2.fill(); e.b.length = 0; }
-    if (e.k.length) { pfad(e.k); ctx2.fillStyle = KOPF[s]; ctx2.fill(); e.k.length = 0; }
-  }
-}
-
-// Der Boden bekommt einen Verlauf: hinten dunkler, vorn heller. Das ist keine
-// Beleuchtung, sondern Luftperspektive — dasselbe, was die Ferne im Gebirge
-// blasser macht — und es kostet nichts.
-let bodenTon = null;
-function bodenFarbe() {
-  if (!bodenTon) {
-    bodenTon = ctx2.createLinearGradient(0, 0, 0, rhoehe);
-    bodenTon.addColorStop(0, BODEN1); bodenTon.addColorStop(1, BODEN2);
-  }
-  return bodenTon;
-}
-
-// Dieselbe weiche Kurve wie im Kartogramm, hier für die Nadelhöhen: sonst
-// ruckt das ganze Feld an jeder Zählung.
-const RHOEHE = new Float64Array(NZ), RM1 = new Float64Array(NZ), RM2 = new Float64Array(NZ);
-let rTangFuer = -1;
-function reliefHoehen(a, b, u) {
-  if (rTangFuer !== a) {
-    rTangFuer = a;
-    const y = new Float64Array(4);
-    const von = Math.max(0, a - 1), bis = Math.min(NF2 - 1, a + 2);
-    const n = bis - von + 1, hh = [];
-    for (let f = von; f < bis; f++) hh.push(TAKT[f]);   // Relief: dieselben Bilder ohne das letzte
-    for (let i = 0; i < NZ; i++) {
-      for (let f = von; f <= bis; f++) y[f - von] = RH[f][i];
-      const m = steigungen(y, hh, a - von, n);
-      RM1[i] = m[0]; RM2[i] = m[1];
-    }
-  }
-  for (let i = 0; i < NZ; i++) RHOEHE[i] = hermite(RH[a][i], RH[b][i], RM1[i], RM2[i], u);
-}
-
-function zeichneRelief() {
-  const [a, b, u] = bildBei2(jahr);
-  reliefHoehen(a, b, u);
-  ctx2.fillStyle = HIMMEL; ctx2.fillRect(0, 0, breite, rhoehe);
-
-  ctx2.beginPath();
-  for (const r of PLATTE_S) {
-    ctx2.moveTo(r[0], r[1]);
-    for (let i = 2; i < r.length; i += 2) ctx2.lineTo(r[i], r[i + 1]);
-    ctx2.closePath();
-  }
-  ctx2.fillStyle = bodenFarbe(); ctx2.fill('evenodd');
-  ctx2.strokeStyle = UFER; ctx2.lineWidth = 0.8; ctx2.stroke();
-  ctx2.beginPath();
-  for (let i = 0; i < GRENZ_S.length; i += 4) {
-    ctx2.moveTo(GRENZ_S[i], GRENZ_S[i + 1]); ctx2.lineTo(GRENZ_S[i + 2], GRENZ_S[i + 3]);
-  }
-  ctx2.stroke();
-
-  // Farbe nach Höhe, mit einer Wurzelkurve: linear bliebe das Land eine
-  // schwarze Fläche mit ein paar hellen Nadeln darin, logarithmisch stünde
-  // schon jedes Dorf im Gold. Dazwischen liegt das Bild.
-  const hm = D2.hoechste / D2.stufe, NS = NADEL.length - 1;
-  const stufeVon = h => Math.min(NS, Math.round(Math.pow(Math.min(1, h / hm), KURVE) * NS));
-  const deckel = (e, x, y, z) => {
-    const C = rproj(x + RS, y + RS, z), E = rproj(x - RS, y + RS, z);
-    const F = rproj(x + RS, y - RS, z), G = rproj(x - RS, y - RS, z);
-    if (!C || !E || !F || !G) return;
-    e.k.push(rvx + rskala * E[0], rvy + rskala * E[1], rvx + rskala * C[0], rvy + rskala * C[1],
-      rvx + rskala * F[0], rvy + rskala * F[1], rvx + rskala * G[0], rvy + rskala * G[1]);
-  };
-
-  // Erst die flache Fläche. Eine Zelle, deren Nadel kürzer als zwei Pixel wäre,
-  // ist aus diesem Winkel nichts als eine Kachel auf dem Boden — und Kacheln
-  // verdecken einander nicht. Also lassen sie sich alle auf einmal nach Farbe
-  // bündeln, statt Zeile für Zeile: das sind die meisten Zellen, und danach
-  // kosten sie dreizehn Füllungen statt tausend.
-  for (let i = 0; i < NZ; i++) {
-    const h = RHOEHE[i];
-    if (h < 0.4 || h >= FLACH) continue;          // unter zehn Menschen je Zelle
-    deckel(EIMER[stufeVon(h)], rwx(i), rwy(i), h * RHOCH);
-  }
-  maleZeile();
-
-  // Dann, was wirklich steht: zeilenweise von hinten nach vorn, damit die
-  // vorderen Nadeln die hinteren verdecken und nicht umgekehrt.
-  let zeile = -1;
-  for (let i = 0; i < NZ; i++) {
-    const h = RHOEHE[i];
-    if (h < FLACH) continue;
-    if (RGY[i] !== zeile) { maleZeile(); zeile = RGY[i]; }
-    const x = rwx(i), y = rwy(i), z = h * RHOCH;
-    const A = rproj(x - RB, y + RB, 0), B = rproj(x + RB, y + RB, 0);
-    const C = rproj(x + RS, y + RS, z), E = rproj(x - RS, y + RS, z);
-    if (!A || !B || !C || !E) continue;
-    const ax = rvx + rskala * A[0], bx = rvx + rskala * B[0];
-    const e = EIMER[stufeVon(h)];
-    e.b.push(ax, rvy + rskala * A[1], bx, rvy + rskala * B[1],
-      rvx + rskala * C[0], rvy + rskala * C[1], rvx + rskala * E[0], rvy + rskala * E[1]);
-    if (bx - ax > 1.2) deckel(e, x, y, z);        // der Deckel, wenn er ein Pixel bedeckt
-  }
-  maleZeile();
-  schreibeRelief(a, b, u);
-  notizen();
-}
-
-function schreibeRelief(a, b, u) {
-  const ende = JAHRE2[NF2 - 1];
-  const steht = jahr > ende + 0.01;
-  const zwischen = !steht && u > 0.001 && u < 0.999;
-  const bd = D2.b[steht ? NF2 - 1 : (u < 0.5 ? a : b)];
-  document.getElementById('jahrZahl').textContent = zwischen ? Math.round(jahr) : bd.jahr;
-  const bev = D2.b[a].bev + (D2.b[b].bev - D2.b[a].bev) * u;
-  document.getElementById('jahrBev').textContent = (bev / 1e6).toFixed(1) + ' million people';
-  document.getElementById('kopf').textContent = steht
-    ? 'The municipality figures end in ' + bd.jahr + ' — the needles hold still while the clock runs on.'
-    : zwischen ? 'between ' + D2.b[a].jahr + ' and ' + D2.b[b].jahr + ' — heights interpolated'
-      : bd.stichtage.join(' and ') + ' · ' + bd.begriffe.join(', ') + ' · '
-        + nf.format(NZ) + ' cells of ' + FLAECHE + ' km²';
-  document.getElementById('zeit').value = Math.round(spiel * 1000);
-}
-` : ''}
 /* ---------- Ablauf ---------- */
 // Millisekunden für die ganze Zeitachse. Langsam genug, dass jede Notiz zu
 // lesen ist — zusammen mit der Untergrenze je Abschnitt (siehe D.takt).
@@ -2219,17 +1719,6 @@ document.getElementById('spiel').onclick = () => laeuft ? halte() : starte();
 document.getElementById('zeit').addEventListener('input', e => {
   halte(); setzeZeit(e.target.value / 1000); reliefFrisch(); zeichne();
 });
-const MODUSKNOPF = [...document.querySelectorAll('.modi button[data-modus]')];
-for (const b of MODUSKNOPF) b.onclick = () => {
-  modus = b.dataset.modus;
-  for (const o of MODUSKNOPF) o.setAttribute('aria-pressed', String(o === b));
-  // Im vollen Kartogramm steht jeder Kreis gleich hoch — dort hätte eine
-  // Geländekarte genau eine Farbe. Wer sie einschaltet, will Höhen sehen, also
-  // rückt die Form um eine Stufe zurück.
-  if (modus === 'gelaende' && formZiel === FORMEN.length - 1) FORMKNOPF[1].click();
-  ansicht(); legende(); reliefFrisch(); zeichne();
-};
-
 /* ---------- Umschalter zwischen den Formen ----------
    Nicht hart umschalten: die Karte läuft in einer halben Sekunde von der
    einen Form in die andere. Wer sieht, wie Berlin schrumpft und dafür
@@ -2259,18 +1748,7 @@ for (const b of FORMKNOPF) b.onclick = () => {
   legende();
   requestAnimationFrame(morphSchritt);
 };
-// Beim Umschalten wechselt nur die Leinwand — der Grund bleibt der der Seite.
-// Die Sprechblase der Karte hat im Relief nichts zu suchen.
-function ansicht() {
-  const relief = modus === 'relief';
-  cv.hidden = relief;
-  if (cv2) cv2.hidden = !relief;
-  // Das Nadelrelief hat seine eigene Geometrie; die Formleiste gilt dort nicht.
-  document.getElementById('formen').hidden = relief;
-  tip.style.opacity = 0; letzterTip = -1;
-}
 addEventListener('resize', () => { masse(); reliefFrisch(); zeichne(); });
-matchMedia('(prefers-color-scheme:dark)').addEventListener('change', () => { farbenHolen(); legende(); reliefFrisch(); zeichne(); });
 
 // Markierungen für die Zählungen auf der Zeitachse
 function marken() {
@@ -2282,24 +1760,7 @@ function marken() {
     (TAKTKUM[i] * 100).toFixed(2) + '%" title="' + b.jahr + '"></i>').join('');
 }
 
-// Umschalter zwischen den Reihen
-if (REIHEN.length > 1) {
-  const leiste = document.getElementById('reihen');
-  leiste.hidden = false;
-  REIHEN.forEach((r, i) => {
-    const b = document.createElement('button');
-    b.textContent = r.name;
-    b.setAttribute('aria-pressed', String(i === 0));
-    b.onclick = () => {
-      reihe = r;
-      for (const o of leiste.children) o.setAttribute('aria-pressed', String(o === b));
-      masse(); marken(); legende(); reliefFrisch(); zeichne();
-    };
-    leiste.appendChild(b);
-  });
-}
-
-farbenHolen(); ansicht(); masse(); marken(); legende(); zeichne();
+farbenHolen(); masse(); marken(); legende(); zeichne();
 requestAnimationFrame(schlag);
 setTimeout(starte, 700);
 </script>
