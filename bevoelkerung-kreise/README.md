@@ -12,78 +12,42 @@ Das Besondere gegenüber den anderen Kartogrammen hier: **die Karte wächst
 mit**. Ein Kartogramm für sich verteilt nur um, seine Gesamtfläche bleibt
 gleich, ob 1871 oder heute. Hier gilt für alle Zeitpunkte dieselbe Fläche je
 Mensch, also ist 1871 wirklich kleiner als 2024 — flächenproportional, halb so
-viele Menschen, halb so viel Karte. Die Seite ist auf Englisch und fürs
-Hochformat gebaut.
+viele Menschen, halb so viel Karte. Die Seite ist auf Englisch; im Hochformat
+füllt die Karte den Schirm, im Querformat rückt der Text in eine Spalte daneben.
 
-Die Ansicht lässt sich umschalten. **Growth** steht vorn und ist die eigentliche
-Karte: sie färbt jeden Kreis danach, wie schnell er gerade wächst oder
-schrumpft. **People** färbt nach Einwohnern,
-logarithmisch von 30 000 bis 1,5 Millionen und in jedem Bild gleich — dass die
-Karte über die Zeit nachdunkelt, ist deshalb kein Kniff, sondern das Ergebnis.
-**Growth** rechnet die Veränderung je Jahr über den Abschnitt, den die Zeit
-gerade durchläuft. Blau wächst, Rot schrumpft, Grau
-hält sich. Man sieht das Ruhrgebiet innerhalb eines Menschenlebens vom dunkelsten
-Blau der Karte ins Rot kippen und den Osten nach 1990 rot werden. An den
-Zählungen blendet die Lesart über, statt umzuspringen; die mittleren zwei Drittel
-jedes Abschnitts zeigen seine Rate unverfälscht.
+Eine Ansicht, eine Farbleiter, ein Bild auf schwarzem Grund. Die Karte wird
+gemalt, wie ein Atlas ein Gebirge malt: Tiefland grün, dann gelb, braun, oben
+Fels. Gefärbt wird die **Höhe** — Bevölkerung geteilt durch gezeichnete Fläche,
+bezogen auf die mittlere Dichte des Bildes —, und weil dieselbe Zahl auch das
+Relief trägt, laufen die Höhenlinien genau auf den Farbgrenzen, wie in einer
+physischen Karte. Grün heisst wenige Menschen auf viel Boden, Braun und Fels
+viele auf wenig.
 
-**Terrain** lässt die Datenfarbe weg und malt die Karte so, wie ein Atlas ein
-Gebirge malt: Tiefland grün, dann gelb, braun, oben Fels und Grau. Gefärbt wird
-die Höhe — dieselbe Zahl, die auch das Relief trägt —, also laufen die
-Höhenlinien genau auf den Farbgrenzen, wie in einer physischen Karte. Grün heisst
-wenige Menschen auf viel Boden, Braun und Grau viele auf wenig.
-
-Rot gegen Blau statt Rot gegen Grün: Rot und Grün sind genau das Paar, das
-etwa acht Prozent der Männer nicht auseinanderhalten können, und auf einer
-Karte mit 400 kleinen Flecken wäre das nicht nur unschön, sondern unlesbar.
-Rot gegen Blau trägt dieselbe Bedeutung und funktioniert bei jeder Form von
-Farbsehen.
-
-Je Farbe zwei Leitern, eine für hellen und eine für dunklen Grund — nicht eine
-umgedrehte. Umgedreht wird „viel" nachts fast weiss, und ein blassblauer
-Höchstwert neben einem tiefblauen Nichts liest sich gegen jede Erwartung. Beide
-Leitern laufen jetzt in dieselbe Richtung: **mehr ist satter.**
+Frühere Fassungen hatten drei Ansichten nebeneinander — Wachstum, Einwohner,
+Gelände — und dazu ein Nadelrelief. Sie sind weg. Die Geländekarte trägt
+dieselben Zahlen, und eine Seite, die eine Sache gut zeigt, ist mehr wert als
+eine mit vier Knöpfen.
 
 ## Was jeweils geschah
 
-Oben links **in** der Karte steht ein Faden aus Überschriften: Ostflucht,
-Weltkrieg, Vertreibung, Wirtschaftswunder, Gastarbeiter, Zechensterben, Wende,
-Zensuskorrektur 2011, Ukraine. Die Karte zeigt, *dass* sich etwas ändert und
-*wo* — das Warum steht in keiner Zahl, also steht es daneben. Kommt eine neue
-Überschrift, setzt sie sich obenauf und schiebt die vorigen eine Zeile nach
-unten, blasser mit jedem Schritt; sechs bleiben stehen, auf dem Telefon vier.
-Weil der Faden über der Zeichnung liegt und nicht über dem Rahmen, kostet er
-keine Höhe.
+Über der Karte steht, was gerade geschieht: Ostflucht, Weltkrieg, Vertreibung,
+Wirtschaftswunder, Gastarbeiter, Zechensterben, Wende, Zensuskorrektur 2011,
+Ukraine. Die Karte zeigt, *dass* sich etwas ändert und *wo* — das Warum steht
+in keiner Zahl, also steht es daneben, **ausgeschrieben**, mit Überschrift und
+Sätzen.
 
-Dreizehn Notizen sind es insgesamt, jede mit ihrem Zeitfenster; vollständig mit
-allen Sätzen noch einmal in einer Liste unter der Karte. Was darin eine
+Darunter hängt der Faden der vorigen Überschriften. Kommt eine neue Notiz,
+setzt sie sich obenauf und schiebt die vorigen eine Zeile nach unten, blasser
+mit jedem Schritt; sechs bleiben stehen, auf dem Telefon drei, auf einem kurzen
+Schirm keine. Der Faden hängt frei über dem leeren oberen Rand der Karte und
+kostet deshalb keine Höhe — sonst müsste die Karte neunmal im Lauf schrumpfen.
+
+Dreizehn Notizen sind es insgesamt, jede mit ihrem Zeitfenster. Was darin eine
 Kreiszahl nennt, ist aus der Tabelle dieser Seite genommen, der Rest ist
 Schulwissen und als solches gekennzeichnet.
 
 Die Uhr läuft siebzig Sekunden für 153 Jahre — langsam genug, um die
 Überschriften zu lesen.
-
-## Und dasselbe stehend
-
-**Standing up**, die dritte Ansicht, dreht die Idee um: die Karte behält ihre
-wirkliche Form, und die Menschen stellen sich auf. Über jeder Rasterzelle von
-31 km² steht eine Nadel, so hoch wie die Menschen darin — die Machart der
-„crisp spike maps" von Milos Popovic, nur läuft sie durch die Zeit. Aus der
-Ebene von 1871 wächst bis 2019 eine Skyline; die höchste Nadel hält 212 270
-Menschen. Der Blick steht fünfzig Grad über der Ebene, Norden oben, damit man
-die Karte wiedererkennt und trotzdem Tiefe sieht. Der Grund ist der der Seite:
-auf dunklem Papier glühen die Nadeln von Indigo nach Gold, auf hellem laufen
-sie von blassem Creme ins tiefe Violett — eine Seite, ein Hintergrund.
-
-Grundlage sind hier nicht die Kreise, sondern die 11 007 **Gemeinden** aus GPOP.
-Damit die Nadeln vergleichbar sind, verteilt jede Gemeinde ihre Menschen
-gleichmässig über eine Scheibe ihrer eigenen Fläche, und gezählt wird je
-Rasterzelle; die Nadelhöhe ist danach Dichte, nicht Gemeindegrösse. Die Zellen
-liegen versetzt — ein Dreiecksgitter, also dasselbe Muster wie ein
-Sechseckraster —, sonst stehen die Nadeln in Spalten wie auf Karopapier und man
-sieht eher das Papier als das Land. Dass beide Ansichten dieselben Zahlen
-zeigen, wird beim Bauen geprüft: die Gemeindesummen je Bild gegen die
-Kreissummen, 0,0000 Prozent.
 
 ## Gebietsstand
 
@@ -124,12 +88,12 @@ Orten.
 
 Und die Karte liegt nicht flach. Aus den Kreisflächen, ihren Höhen und den
 gleich breiten Fugen dazwischen entsteht ein Höhenfeld. Beleuchtet wird es von
-oben links — aber die Form tragen nicht Licht und Schatten, sondern
+oben links — aber die Form tragen nicht Licht und Schatten allein, sondern
 **beleuchtete Höhenlinien nach Tanaka**: weiss, wo der Hang der Sonne zugewandt
 ist, schwarz, wo er von ihr wegfällt, dick, wo er voll im Licht oder voll im
 Schatten steht. Der Grund dafür ist schlicht: die Fläche ist schon vergeben,
-sie trägt die Farbe der Daten. Eine Schattierung, die stark genug für ein
-Gebirge wäre, macht aus Rot und Blau Grau. Linien nehmen fast keine Fläche weg.
+sie trägt die Farbe der Höhe. Eine Schattierung, die stark genug für ein
+Gebirge wäre, wüsche sie aus. Linien nehmen fast keine Fläche weg.
 Dazu Schlagschatten aus einer flacheren Sonne — ein Strahl, der steiler abfällt
 als der Hang selbst, trifft nie auf Schatten. Und ein Tiefpass über die Bilder:
 das Raster des Höhenfeldes springt von Bild zu Bild um Bruchteile eines Punktes,
@@ -146,6 +110,22 @@ Gezeichnet wird die Höhe gestaucht (Wurzel, mit Sockel): zwischen dem leersten
 Landkreis und Berlin liegt auf der Landkarte der Faktor 134, und ein Relief mit
 Faktor 134 ist eine Wand neben einer Ebene. Die Reihenfolge bleibt richtig, der
 Abstand nicht; die Zahl steht beim Antippen.
+
+Wie weit die Höhen streuen, hängt ganz an der Stellung des Knopfes, also wird
+die Farbleiter **je Form einmal aus den Daten gemessen** — alle Kreise in allen
+Zählungen, ein halbes bis neunundneunzigeinhalb Prozent: auf der Landkarte von
+×0,19 bis ×17, bei halber Verzerrung von ×0,33 bis ×2,5. Eine feste Leiter für
+alle drei läge in zweien davon in einem einzigen Gelb. Zwischen zwei Formen
+wird logarithmisch übergeblendet, und die Zahlen an den Enden der Leiter wandern
+mit.
+
+Im vollen Kartogramm gibt es keine Spanne mehr: dort hat jeder Kreis dieselbe
+Dichte, weil die ganze Bevölkerung in der Fläche steckt. Eine Leiter, die über
+die verbliebenen anderthalb Prozent gespannt wird, machte aus Rundungsresten
+ein Gebirge — also bekommt sie eine Mindestbreite, und das Relief wird im
+selben Verhältnis ausgeblendet. Der Weg vom Relief zum Kartogramm zeigt damit
+genau das, worum es geht: **die Berge sinken in die Fläche, weil die Menschen
+von der Höhe in die Breite wandern.**
 
 Diffusionskartogramm nach Gastner und Newman (2004), wie bei den
 [Wahlkreisen](../wahlkreise-2025/): die Dichte wird als Wärme aufgefasst und
@@ -225,5 +205,5 @@ python3 quellen.py
 node build.mjs > ../index.html
 ```
 
-Alle drei Ansichten stecken in dieser einen Datei; `nadeln.mjs` rechnet das
-Relief und wird von `build.mjs` mitgenommen.
+Die ganze Seite steckt in dieser einen Datei — Zahlen, Geometrie, Skript, Stil;
+sie ist rund 600 kB gross und lädt nichts nach.

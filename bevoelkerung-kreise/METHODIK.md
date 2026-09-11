@@ -183,109 +183,12 @@ flächentreues Kartogramm, wenn ein eingeschlossenes Gebiet die Mehrheit der
 Menschen hält. Deutschlandweit stellt sich die Frage nicht: dort ist Berlin
 vier Prozent des Landes.
 
-## 4a. Das Nadelrelief
-
-Die dritte Ansicht — **Standing up** — zeigt dieselben Zahlen anders herum: die
-Karte behält ihre wirkliche Form, und die Bevölkerung stellt sich auf.
-Verfahren nach den „crisp spike maps" von Milos Popovic, die mit rayshader aus
-einem Bevölkerungsraster ein Nadelfeld rendern — hier in der Fläche gerechnet
-und durch die Zeit laufend. Die Uhr ist dieselbe wie im Kartogramm; nur bleibt
-das Feld nach 2019 stehen, weil die Gemeindezahlen dort enden.
-
-Grundlage sind die **11 007 Gemeinden** aus GPOP, nicht die Kreise. Die Datei
-führt zu jeder Gemeinde Länge, Breite und Fläche; Umrisse braucht ein Nadelbild
-nicht.
-
-Eine Nadel je Gemeinde wäre nicht vergleichbar — die kleinste Gemeinde hat vier
-Hektar, die grösste 891 km². Gerechnet wird deshalb auf ein flächentreues
-Raster: jede Gemeinde verteilt ihre Menschen gleichmässig über eine Scheibe
-ihrer eigenen Fläche (Streupunkte auf einer Fibonacci-Spirale, damit sie sich
-nicht klumpen), und gezählt wird je Zelle. Die Nadelhöhe ist danach Menschen je
-gleich grosser Fläche, also Dichte.
-
-Die Zellen liegen **versetzt**, jede Reihe um eine halbe Zelle verschoben:
-ein Dreiecksgitter, also dasselbe Muster, das ein Sechseckraster erzeugt —
-derselbe Grund, aus dem die Vorlage auf H3-Sechsecke setzt. Auf dem geraden
-Gitter standen die Nadeln in Spalten wie auf Karopapier, und das Auge sah eher
-das Papier als das Land. Die Zellen bleiben dabei alle gleich gross: Spalten im
-Abstand von 6 km, Reihen im Abstand von 6 km · √3/2, also 31 km² je Zelle und
-11 665 belegte Zellen. Zugeordnet wird nach dem nächsten Zellenmittelpunkt,
-wofür im versetzten Gitter zwei Reihen in Frage kommen und beide gerechnet
-werden.
-
-**Die Annahme:** innerhalb einer Gemeinde wohnen die Menschen gleichmässig
-verteilt. Das stimmt nie ganz — es ist aber genau die Annahme, die jede
-Flächenfärbung ohnehin macht, und sie steht auf der Seite.
-
-Neun Bilder statt zehn: der Zeitpunkt 2024 liegt nur auf Kreisebene vor und
-liesse sich nicht auf Gemeinden herunterbrechen, ohne Detail zu erfinden.
-
-Gegengeprüft wird beim Bauen: die Summe der Gemeinden je Bild gegen die Summe
-der Kreise aus `data/bevoelkerung_kreise_long.csv`, und die Summe nach dem
-Rastern gegen die Summe davor. Beides 0,0000 %. Damit ist belegt, dass beide
-Seiten dieselben Spalten zu denselben Bildern bündeln und beim Verteilen nichts
-verloren geht.
-
-### Kamera, Licht und Boden
-
-Der Blick steht **fünfzig Grad über der Ebene**, von Süden nach Norden, Norden
-also oben. Flacher — die erste Fassung schaute aus zwölf Grad und von der
-falschen Seite — sieht man vor lauter Nadeln das Land nicht mehr und erkennt
-die Karte nicht wieder; steiler verliert das Relief seine Tiefe. Gerechnet wird
-mit einer echten Lochkamera, nicht mit einer Parallelprojektion: die vorderen
-Nadeln sind grösser als die hinteren, und erst das macht die Tiefe. Der
-Ausschnitt wird einmal über alles gelegt, was je zu sehen ist — jede Zelle am
-Boden und mit ihrer höchsten Nadel über alle Bilder —, damit das Bild nicht
-wandert, während die Zeit läuft. Die Bildhöhe folgt dem Inhalt statt einem
-festen Format, sonst bliebe entweder Himmel übrig oder die Spitzen fielen
-heraus.
-
-Der Boden ist eine **gefüllte Platte**: die Aussengrenze, zu Ringen verkettet,
-mit den Landesgrenzen als Strichen darauf, auf 3 500 Knoten generalisiert. Ohne
-sie ist das Nadelfeld eine Wolke — aus fünfzig Grad sieht man zwischen den
-Nadeln hindurch, und dass man auf Deutschland schaut, bliebe offen. Der leichte
-Verlauf von hinten nach vorn ist keine Beleuchtung, sondern Luftperspektive.
-
-Jede Nadel ist ein leicht verjüngter Körper: die Südseite trägt die Farbe der
-Höhe, der Deckel dieselbe Farbe heller. Mehr Beleuchtung braucht ein Feld aus
-lauter gleich ausgerichteten Säulen nicht — bei Licht aus Südwesten und 60°
-über dem Horizont ist die waagerechte Fläche oben die hellste, und die
-Südseiten sähen ohnehin alle gleich aus.
-
-Gezeichnet wird nach dem Malerverfahren, von hinten nach vorn. Innerhalb einer
-Reihe stehen alle Nadeln gleich weit weg, verdecken einander also nicht — und
-lassen sich deshalb nach Farbe bündeln. Zellen, deren Nadel kürzer als zwei
-Pixel wäre, sind aus diesem Winkel nichts als Kacheln auf dem Boden; sie werden
-in einem Zug für das ganze Bild gebündelt. Aus zwölftausend einzelnen
-Füllungen werden so etwa sechzehnhundert.
-
-### Die Farbe des Reliefs
-
-Dreizehn Stufen, in OKLab gleichmässig in der Helligkeit gestuft, von einem
-Indigo, das kaum vom Boden absteht, bis zu hellem Gold. Perzeptuell
-gleichmässig heisst: gleiche Schritte in der Zahl sind gleich grosse Schritte
-im Eindruck. Beim Relief trägt die Helligkeit die Höhe, warm und hell oben auf
-dunklem Grund — so treten die Türme hervor, noch bevor die Beleuchtung wirkt.
-Ein Regenbogen täte das nicht.
-
-Die Höhe wird mit einer Wurzelkurve (Exponent 0,55) auf die Stufen abgebildet:
-linear bliebe das Land eine schwarze Fläche mit ein paar hellen Nadeln darin,
-logarithmisch stünde schon jedes Dorf im Gold.
-
-Der Grund ist immer der der Seite — eine Seite, ein Hintergrund. Auf hellem
-Papier lässt sich eine Helligkeitsleiter nicht von unten aufbauen, also dreht
-sie sich um: eine zweite Leiter, ebenfalls in OKLab, von einem Creme, das kaum
-vom Boden absteht, über Gold, Orange und Rot ins tiefe Violett. Nicht die
-umgedrehte Nachtleiter — die hätte in der Mitte ein lautes Orange, und damit
-stünde auf hellem Grund das halbe Land in Flammen. Aus demselben Grund ist die
-Kurve dort flacher (Exponent 0,72 statt 0,55): das flache Land bleibt länger im
-Blassen. In beiden Fällen trägt die Helligkeit die Höhe, nur die Richtung
-dreht sich.
-
 ## 4c. Die Untertitel
 
-Dreizehn Notizen laufen unter der Jahreszahl mit, eine je Zeitabschnitt, in
-allen drei Ansichten dieselben, weil sie nur an der Uhr hängen.
+Dreizehn Notizen laufen unter der Jahreszahl mit, eine je Zeitabschnitt; sie
+hängen nur an der Uhr, gelten also in jeder Form der Karte. Die laufende steht
+**ausgeschrieben** da, mit Überschrift und Sätzen — sie hat den Platz, also
+bekommt sie ihn. Darunter hängt der Faden der vorigen Überschriften.
 
 Sie sind **Zusammenhang, keine Daten**, und das steht auch auf der Seite. Was
 darin eine Kreiszahl nennt — Gelsenkirchen 23 794 auf 219 501, Berlin minus 1,2
@@ -299,26 +202,26 @@ Die Anzeigefenster sind nicht die Jahreszahlen des Ereignisses — die stehen in
 der Überschrift der Notiz. Die Fenster stossen aneinander, damit immer eine
 Notiz zu sehen ist. Gewechselt wird über Aus- und Einblenden, nicht hart.
 
-Zu sehen ist davon in der Karte nur die **Überschrift**, und zwar in der Karte
-selbst: oben links liegt ein Faden aus den letzten sechs, die neueste obenauf,
-darunter die vorigen, mit jeder Zeile blasser. Kommt eine dazu, rutschen die
-anderen eine Zeile nach unten.
+Von den vorigen bleibt nur die **Überschrift** stehen: unter der laufenden
+Notiz hängt ein Faden aus den letzten sechs, die jüngste obenauf, darunter die
+älteren, mit jeder Zeile blasser. Kommt eine dazu, rutschen die anderen eine
+Zeile nach unten.
 
-Er liegt **über** der Zeichnung, nicht über dem Rahmen, und kostet deshalb keine
-Höhe — die Karte soll so gross sein wie möglich, und über ihrer oberen linken
-Ecke liegt in jedem Bild Nordsee. Lesbar bleibt die Schrift über einem
-Farbfleck durch einen Halo in der Flächenfarbe. Auf einem Telefon bricht jede
-Überschrift auf zwei Zeilen um; dort hält der Faden vier statt sechs.
+Der Faden hängt **frei**, nicht im Fluss: stünde er im Textblock, wüchse dieser
+mit jeder Notiz, und die Karte darunter müsste neunmal im Lauf schrumpfen und
+sich neu setzen. So legt er sich über den leeren oberen Rand der Karte — die
+ist an ihrem Seitenverhältnis festgemacht und lässt dort in aller Regel Platz.
+Lesbar bleibt die Schrift auch über einem Farbfleck, durch einen Halo in der
+Flächenfarbe. Auf einem Telefon bricht jede Überschrift auf zwei Zeilen um;
+dort hält der Faden drei statt sechs, und auf einem kurzen Schirm fällt er ganz
+weg. Ist die Bühne breit genug für zwei Spalten, steht er ohnehin im Text und
+braucht weder Halo noch freies Hängen.
 
 Geschoben wird nicht Zeile für Zeile: der ganze Faden springt ohne Übergang um
 eine Zeilenhöhe nach oben und läuft dann nach unten zurück. Weil die neue
 Überschrift oben schon steht, sieht das aus, als drücke sie die anderen weg —
 und kostet eine Bewegung statt sechs. Läuft die Uhr am Regler rückwärts, wird
 der Faden neu aufgebaut statt fortgeschrieben.
-
-Verschwinden tut dabei nichts: unter der Karte steht die vollständige Liste mit
-allen Sätzen. Was vorbei ist, ist dort deutlich, die laufende Notiz ist
-angestrichen, das Kommende ist blass.
 
 ## 4d. Was zwischen den Zählungen steht
 
@@ -329,8 +232,8 @@ danach, wechselt das Tempo genau im Bild der Zählung — und das sieht aus wie
 ein Ruck, oft genug, um zu stören.
 
 Gerechnet wird deshalb mit einer **monotonen kubischen Kurve** (Fritsch–Carlson,
-wie PCHIP), für die Werte, für die Knoten des Kartogramms und für die
-Nadelhöhen. Sie geht durch jeden gezählten Wert und hat an den Zählungen keinen
+wie PCHIP), für die Werte wie für die Knoten des Kartogramms. Sie geht durch
+jeden gezählten Wert und hat an den Zählungen keinen
 Knick mehr. Der Unterschied zu einem gewöhnlichen Spline ist die Monotonie: wo
 eine Reihe steigt und dann fällt, wird die Steigung an der Spitze auf null
 gesetzt, statt eine Beule zu erfinden. Damit gilt: **zwischen zwei Zählungen
@@ -388,7 +291,7 @@ und ohne diesen Bezug entstünde an jeder Zählung genau der Knick zurück, den
 Ein Kartogramm steckt die ganze Bevölkerung in die Fläche. Bei Berlin heisst
 das: 0,25 Prozent des Bodens werden zu 4,4 Prozent der Karte, ein Faktor 17,6,
 und Deutschland sieht nicht mehr wie Deutschland aus. Eine Landkarte mit Höhen
-steckt sie ganz in die Höhe: die Form stimmt, aber die Städte sind Nadeln auf
+steckt sie ganz in die Höhe: die Form stimmt, aber die Städte sind Spitzen auf
 einer Fläche, die man nicht mehr trifft.
 
 Die Seite lässt beides nebeneinander stehen und dazwischen einen Zwischenschritt
@@ -452,8 +355,9 @@ Im vollen Kartogramm sind alle Höhen gleich, dann ist beides wirkungslos.
 
 Was hier nicht gemacht wird: die Karte kippen und die Kreise wirklich
 extrudieren. Perspektive verzerrt Flächen, und dann liesse sich die eine Aussage
-dieser Karte nicht mehr ablesen. Wer wirkliche Höhe von der Seite sehen will,
-findet sie in der dritten Ansicht, dem Nadelrelief.
+dieser Karte nicht mehr ablesen. Die Höhe steht deshalb senkrecht von oben da,
+als Licht, Schatten und Höhenlinie — die Machart einer Reliefkarte, nicht die
+eines Modells.
 
 ## 4g. Das Relief der Karte
 
@@ -467,10 +371,11 @@ gleiche Dicke —, aber es sah aus wie eine Kontur und nicht wie ein Körper.
 
 **Zweite Fassung: ein Höhenfeld mit Lambert-Beleuchtung.** Richtiger, aber zu
 schwach: eine Schattierung, die über eine farbige Fläche gelegt wird, muss
-sehr kräftig werden, ehe sie als Form gelesen wird — und dann ist von Rot und
-Blau nichts mehr übrig. Das ist kein Einstellungsfehler, sondern der Kern des
-Problems: **die Fläche ist schon vergeben.** Sie trägt die Farbe, und die Farbe
-sind die Daten.
+sehr kräftig werden, ehe sie als Form gelesen wird — und dann ist von der Farbe
+nichts mehr übrig (damals war das Rot gegen Blau, heute ist es die Geländeleiter;
+am Befund ändert das nichts). Das ist kein Einstellungsfehler, sondern der Kern
+des Problems: **die Fläche ist schon vergeben.** Sie trägt die Farbe, und die
+Farbe sind die Daten.
 
 **Dritte Fassung: Linien statt Fläche.** Linien nehmen fast keine Fläche weg.
 
@@ -501,11 +406,14 @@ sind die Daten.
 ### Was daraus gezeichnet wird
 
 **Schattierung**, aus dem Gefälle des Feldes die Normale, Lambert von oben
-links, 40 Grad über der Fläche. Aufgetragen als *Grau* im Mischmodus `overlay`
-(auf dunklem Grund `soft-light`), nicht als schwarze und weisse Deckkraft:
-Deckkraft zieht jede Farbe gegen Schwarz oder Weiss, `overlay` rechnet den Ton
-gegen die Farbe, die schon da liegt — dunkler wird dunkler, heller heller, der
-Farbton bleibt.
+links, 40 Grad über der Fläche. Aufgetragen als *Grau* im Mischmodus
+`soft-light`, nicht als schwarze und weisse Deckkraft: Deckkraft zieht jede
+Farbe gegen Schwarz oder Weiss, ein Mischmodus rechnet den Ton gegen die Farbe,
+die schon da liegt — dunkler wird dunkler, heller heller, der Farbton bleibt.
+`overlay` täte dasselbe und war lange eingestellt, rechnet aber um das mittlere
+Grau herum und lässt dunkle Farben fast unberührt; auf schwarzem Grund ist
+dieser Karte fast alles dunkel, also `soft-light`, das auch tiefe Töne noch
+hebt — und dafür eine kräftigere Stärke verträgt.
 
 **Mulden.** Was tiefer liegt als seine weite Umgebung, bekommt weniger Himmel
 ab; dasselbe, was in einem Tal weniger Licht ankommen lässt.
@@ -705,116 +613,93 @@ am wenigsten ausrichten kann): die Änderung des Feldes je Bild fällt auf
 **48 Prozent**. Auf einem Gerät mit sechzig Bildern ist der Unterschied um ein
 Vielfaches grösser.
 
-## 4b. Die beiden Farbskalen des Kartogramms
+## 4b. Die Farbskala der Karte
 
-**People** färbt nach Einwohnern, logarithmisch von 30 000 bis 1,5 Millionen.
-Die Grenzen sind mit Absicht runde Zahlen und nicht das Kleinste und Grösste
-der Reihe: Berlin hatte 1939 über vier Millionen, und liesse man die Skala bis
-dorthin laufen, sässe der halbe Rest im selben Blau. Die Skala ist für alle
-Bilder dieselbe — dass die Karte über die Zeit nachdunkelt, ist deshalb kein
-Kniff, sondern das Ergebnis.
+Die Karte wird gemalt, wie ein Atlas ein Gebirge malt: Tiefland grün, dann
+gelb, braun, oben Fels. Sechzehn Stufen, in OKLab von Hand gesetzt, auf einen
+schwarzen Grund abgestimmt.
 
-**Which way** färbt nach der Veränderung je Jahr über den Abschnitt, zwischen
-dessen beiden Zählungen die Karte gerade steht. Je Jahr, weil die Abstände sehr
-verschieden sind: achteinhalb Jahre zwischen 1939 und 1946, sechsunddreissig
-zwischen 1871 und 1900. Die Rate gehört dem Abschnitt, nicht einem Augenblick
-darin: sie bleibt stehen, solange die Karte von einem Bild zum nächsten läuft.
+Gefärbt wird die **Höhe** — dieselbe Zahl, die auch das Relief trägt, also
+Bevölkerung geteilt durch gezeichnete Fläche, bezogen auf die mittlere Dichte
+des Bildes. Daraus folgt das Schöne daran: die Höhenlinien laufen genau auf den
+Farbgrenzen, wie in einer physischen Karte, weil beide dieselbe Zahl zeigen.
+Grün heisst wenige Menschen auf viel Boden, Braun und Fels viele auf wenig.
 
-An der Zählung sprang sie um — und ein Sprung mitten in einer laufenden
-Bewegung sieht aus wie ein Fehler, nicht wie ein Befund. Sie blendet deshalb
-über — aber **nur nach hinten**: an der Zählung gilt noch die alte Rate, und
-erst im ersten Sechstel des neuen Abschnitts wandert die Farbe mit einer
-weichen Kurve zur neuen hinüber. Die Farbe läuft damit durch, ohne zu springen,
-und die Zahl in der Sprechblase nennt weiter die Rate des Abschnitts.
-
-Die erste Fassung blendete in beide Richtungen, und das war falsch: bei einem
-Abschnitt von neunundzwanzig Jahren reicht ein Sechstel fünf Jahre weit, also
-färbten sich die Städte schon **1934** rot — sie zeigten den Einbruch von 1939
-bis 1946, den es noch gar nicht gab. Nichts auf dieser Karte nimmt mehr etwas
-vorweg: was zu sehen ist, ist gezählt oder schon vorbei. Nachgemessen: von 1910
-bis 1939 zeigen Berlin, Hamburg, Essen und Dortmund durchgehend ihre gemessenen
-+0,5 bis +1,2 % im Jahr, und erst nach 1939 kippt es auf −2,3 bis −3,6.
-
-Zu unterscheiden davon ist die Glättung der **Werte** (4d): die schiesst nie
-über eine Zählung hinaus und lässt einen wachsenden Kreis auch nie unterwegs
-schrumpfen — nachgemessen über den Abschnitt 1910 bis 1939, kein einziger
-Rückgang bei keinem der 400 Kreise.
-
-Der Massstab endet bei ±3 % im Jahr und ist dazwischen nach asinh gestaucht.
-Neun von zehn Werten liegen zwischen −1 und +2, aber der Sprung von 1939 auf
-1946 reicht von −6 bis +9 — Flucht, Vertreibung, zerbombte Städte. Linear
-gerechnet wäre alles andere grau; hart abgeschnitten wäre dieser eine Übergang
-eine Fläche ohne Zeichnung. asinh gibt dem dichten Mittelfeld Auflösung und
-lässt die Ränder atmen.
-
-**Rot gegen Blau, nicht Rot gegen Grün.** Rot und Grün sind das eine Paar, das
-etwa acht Prozent der Männer nicht trennen können; auf einer Karte mit 400
-kleinen Flecken ist das nicht unschön, sondern unlesbar. Rot gegen Blau trägt
-dieselbe Bedeutung — Rot verliert Menschen, Blau gewinnt welche, Grau hält sich
-— und funktioniert bei jeder Form von Farbsehen.
-
-### Zwei Leitern je Farbe, nicht eine umgedrehte
-
-Die erste Fassung hatte je Farbe **eine** Leiter und drehte sie auf dunklem
-Grund um. Der Gedanke dahinter: der Schritt neben der Fläche soll immer „wenig"
-heissen, also hell auf hellem Grund, dunkel auf dunklem. Das Ergebnis war
-falsch herum: umgedreht wird „viel" nachts fast weiss, und ein **blassblauer
-Höchstwert neben einem tiefblauen Nichts** liest sich gegen jede Erwartung.
-Dasselbe am roten Arm: der stärkste Rückgang kam als hellrosa heraus.
-
-Beide Leitern laufen jetzt in dieselbe Richtung — **mehr ist satter**. Auf
-hellem Grund wird dabei auch dunkler (blass nach tiefblau), auf dunklem steigt
-vor allem die Buntheit: von einem fast grauen Blaugrau, das gerade über der
-Fläche liegt (OKLab L 0,37, C 0,02), bis zu einem kräftigen Azur (L 0,64,
-C 0,21). Der rote Arm spiegelt das bei gleicher Helligkeit, damit in der
-Richtungsskala keine Seite die andere überstrahlt. Gerechnet in OKLab, damit
-die dreizehn Stufen gleich weit auseinanderliegen.
-
-Auf hellem Grund hören beide Arme weiter vor den dunkelsten Stufen auf: dort
-laufen Blau und Rot beide gegen Schwarz, und dann ist die Richtung nicht mehr
-zu sehen. Auf dunklem Grund ist das nicht nötig — die Arme enden dort in
-kräftigem Azur und kräftigem Zinnober und bleiben bis zuletzt zu trennen.
-
-### Die dritte Skala: die Geländekarte
-
-**Terrain** lässt die Daten*farbe* weg und malt die Karte so, wie ein Atlas ein
-Gebirge malt: Tiefland grün, dann gelb, braun, oben Fels und Schnee. Sechzehn
-Stufen, in OKLab von Hand gesetzt; auf dunklem Grund eine Fassung mit
-angehobenem Fuss, damit das Tiefgrün nicht in der Fläche verschwindet.
-
-Gefärbt wird die **Höhe** — dieselbe Zahl, die auch das Relief trägt, auf einer
-festen logarithmischen Skala vom Sechstel bis zum Zwölffachen der mittleren
-Dichte des Bildes. Daraus folgt das Schöne daran: die Höhenlinien laufen genau
-auf den Farbgrenzen, wie in einer physischen Karte, weil beide dieselbe Zahl
-zeigen. Grün heisst wenige Menschen auf viel Boden, Braun und Grau viele auf
-wenig.
-
-Die Kreisgrenzen treten dort zurück (weiss auf zwanzig Prozent Deckkraft) und
+Die Kreisgrenzen treten dabei zurück (weiss auf dreizehn Prozent Deckkraft) und
 die Landesgrenzen werden zur dünnen dunklen Linie: eine Landschaft hat keine
 weissen Fugen, und so viel Orientierung ist auf einer physischen Karte üblich.
 
-Im vollen Kartogramm steht jeder Kreis gleich hoch — dort hätte die
-Geländekarte genau eine Farbe. Wer sie einschaltet, will Höhen sehen, also rückt
-die Form um eine Stufe zurück auf **Half and half**.
+### Die Leiter wird gemessen, nicht gesetzt
 
-Was die Karte **nicht** mehr zeigt: das Gitternetz, die Dichte je
-Quadratkilometer als eigene Ansicht und den Index gegen 1871.
+Wie weit die Höhen streuen, hängt ganz an der Stellung des Formreglers (4f):
+auf der Landkarte ist die Höhe die wirkliche Dichte, im vollen Kartogramm ist
+sie für jeden Kreis 1. Eine feste Leiter für alle drei Stellungen läge in
+zweien davon in einem einzigen Gelb.
 
-Das **Gitternetz** — Quadrate zu 30 × 30 km echter Fläche, die im Kartogramm
-mitschwammen — war eine Fassung lang da und ist wieder weg. Es zeigte die
-Verzerrung, die das Kartogramm aufgewendet hat, und war als Idee richtig; nur
-brachte es neben Relief und Formregler zu wenig für den Platz, den es auf der
-Fläche nahm. Den Regler zwischen Landkarte und Kartogramm (4f) beantwortet
-dieselbe Frage besser: man sieht die Verzerrung entstehen, statt sie
-abzulesen. Die 713 Knoten sind wieder aus dem Modell heraus.
+Also wird die Spanne **je Form einmal aus den Daten gemessen**: alle vierhundert
+Kreise in allen zehn Zählungen, das halbe und das neunundneunzigeinhalbte
+Prozent. Das geht, ohne zu zeichnen, weil die Höhe ein Verhältnis ist und sich
+beim Skalieren der ganzen Karte nicht ändert. Gemessen wird einmal je Form und
+dann behalten — dieselbe Farbe heisst damit über die ganzen hundertdreiund­
+fünfzig Jahre dasselbe.
 
-Dichte und Index standen ebenfalls einmal hier. Die Dichte, weil ein
-Bevölkerungskartogramm sie ohnehin schon in der Verzerrung trägt — ein dichter
-Kreis wird gross gezogen, das ist dieselbe Aussage zweimal, und im
-Zwischenschritt des Formreglers steht sie ausserdem als Höhe da. Der Index gegen
-1871, weil er nur eine Antwort hatte: fast jeder Kreis ist gewachsen, die Karte
-war blau, und das Interessante — wann und wo es gekippt ist — ging darin unter.
-Genau das zeigt **Which way**.
+| Form | gemessene Spanne |
+|---|---|
+| Real map (a = 0) | ×0,19 … ×16,8 |
+| Half and half (a = 0,5) | ×0,33 … ×2,5 |
+| Cartogram (a = 1) | ×0,99 … ×1,01 |
+
+Zwischen zwei Formen wird logarithmisch übergeblendet, und weil das während der
+Bewegung geschieht, stehen die Zahlen an den Enden der Leiter je Bild neu.
+
+### Wenn keine Höhe mehr übrig ist
+
+Die dritte Zeile der Tabelle ist keine Spanne, sondern Rundungsrest. Im vollen
+Kartogramm steckt die ganze Bevölkerung in der Fläche; jeder Kreis hat dann
+dieselbe Dichte, und was bleibt, ist die Genauigkeit des Diffusionsverfahrens.
+
+Eine Leiter, die über dieses eine Prozent gespannt wird, macht daraus ein
+Gebirge: sie stünde auf ×0,99 bis ×1,01 und zeigte doch alle sechzehn Farben.
+Das Höhenfeld tat dasselbe aus einem zweiten Grund — die Fugen zwischen den
+Kreisen sind gleich breit, also nagen sie an einem klein gezeichneten Kreis
+anteilig mehr als an einem grossen; nach dem Weichzeichnen behielt Berlin eine
+hohe Mitte und sah wieder aus wie ein Berg, obwohl es dort nur **gross**
+gezeichnet ist. Beides zusammen ergab eine reich gegliederte Landschaft ohne
+jeden Inhalt.
+
+Zwei Bremsen, beide aus derselben gemessenen Spanne:
+
+1. Die Leiter bekommt eine **Mindestbreite** (Faktor 2,6). Ist die Spanne
+   enger, wird sie um ihre Mitte auf dieses Mass aufgezogen; alle Werte landen
+   dann in der Mitte der Leiter, und die Karte liegt einfarbig da — wie es
+   einem Kartogramm zusteht.
+2. Das **Relief wird ausgeblendet**, im selben Verhältnis: Schattierung,
+   Mulden, Schlagschatten und Höhenlinien werden mit demselben Faktor
+   multipliziert. Bei voller Spanne steht es ganz, bei keiner gar nicht,
+   dazwischen anteilig. (Unter zwei Prozent wird die Linienverfolgung ganz
+   übersprungen, was im Kartogramm auch Rechenzeit spart.)
+
+Der Weg vom Relief zum Kartogramm zeigt damit genau das, worum es auf dieser
+Seite geht: **die Berge sinken in die Fläche, weil die Menschen von der Höhe in
+die Breite wandern.** Die Legende sagt es dann auch mit Worten — „every county
+is drawn at the same density now, so the land lies flat".
+
+### Was die Karte nicht mehr zeigt
+
+Frühere Fassungen hatten drei Datenansichten nebeneinander — Wachstum je Jahr
+(rot gegen blau), Einwohner (logarithmisch von 30 000 bis 1,5 Millionen) und
+das Gelände —, dazu ein Nadelrelief aus den 11 007 Gemeinden, einen Umschalter
+zwischen hellem und dunklem Grund mit je eigenen Farbleitern, ein Gitternetz aus
+30-km-Quadraten und einen Artikel unter der Karte. Alles das ist weg.
+
+Der Grund ist derselbe wie beim Gitternetz seinerzeit: es brachte zu wenig für
+den Platz, den es nahm. Die Geländekarte trägt dieselben Zahlen wie die
+Dichteansicht, und sie trägt sie besser, weil das Relief dieselbe Zahl noch
+einmal plastisch zeigt. Die Richtungsfarbe war eine eigene Aussage, aber sie
+brauchte die Fläche, die jetzt das Gelände trägt — beides zugleich ging nicht:
+eine Schattierung, die stark genug für ein Gebirge ist, macht aus Rot und Blau
+Grau. Und eine Seite, die eine Sache gut zeigt, ist mehr wert als eine mit vier
+Knöpfen.
 
 ## 5. Was geprüft ist
 

@@ -6,7 +6,7 @@ liegen, im selben Ordner wie `build.mjs`:
 | Datei | Quelle |
 |---|---|
 | `vg2500_krs.shp` + `.dbf` + `.shx` + `.cpg` | [BKG, Verwaltungsgebiete 1:2 500 000 (VG2500)](https://daten.gdz.bkg.bund.de/produkte/vg/vg2500/aktuell/) — `vg2500_01-01-2026.utm32s.shape.zip`, daraus `vg2500/VG2500_KRS.*`, umbenannt |
-| `gpop_county.csv` + `gpop_state.csv` + `gpop_muni.csv` | [German Local Population Database (GPOP), Version 1.0](https://leopard.tu-braunschweig.de/receive/dbbs_mods_00071017) — aus `gpop_v1.zip` die Dateien `data/county.csv`, `data/state.csv` und `data/muni.csv`, umbenannt. Die Gemeindedatei braucht nur das Nadelbild. CC BY 4.0 |
+| `gpop_county.csv` + `gpop_state.csv` + `gpop_muni.csv` | [German Local Population Database (GPOP), Version 1.0](https://leopard.tu-braunschweig.de/receive/dbbs_mods_00071017) — aus `gpop_v1.zip` die Dateien `data/county.csv`, `data/state.csv` und `data/muni.csv`, umbenannt. Die Gemeindedatei wird zurzeit nicht gebraucht. CC BY 4.0 |
 | `gvisys-04-kreise.xlsx` | Statistisches Bundesamt, [Gemeindeverzeichnis, Kreisfreie Städte und Landkreise](https://www.destatis.de/DE/Themen/Laender-Regionen/Regionales/Gemeindeverzeichnis/Administrativ/04-kreise.html) (`04-kreise.xlsx`) |
 | `hgv_brandenburg_1875-2005.pdf` | **Nur für die Gegenprobe, ohne sie läuft es auch.** Amt für Statistik Berlin-Brandenburg, *Historisches Gemeindeverzeichnis des Landes Brandenburg 1875 bis 2005* — irgendeiner der 15 Teile; Tabelle 1 mit allen Kreisen steht in jedem ([Teil 15, Uckermark](https://download.statistik-berlin-brandenburg.de/faedc7c46a0039e4/adf73748ddd2/SB_A01-99-15_2006u00_BB.pdf)) |
 
@@ -45,14 +45,6 @@ weniger als der Hälfte der Bilder Zahlen haben, entsteht zusätzlich eine
 zweite Reihe ohne sie (`zeitreihe-kern.json`), zwischen denen die Seite
 umschalten kann. Flächendeckend fällt das weg.
 
-Das Nadelrelief steckt in derselben Seite. `nadeln.mjs` rechnet es in Sekunden
-und kennt eine eigene Stellschraube: `ZELLE` ist der Spaltenabstand des
-versetzten Rasters in Metern, voreingestellt 6000; die Zellenfläche ist
-`ZELLE² · √3/2`, also 31 km². Kleiner heisst mehr und feinere Nadeln, aber auch
-eine grössere Datei — bei 6 km sind es 11 665 belegte Zellen und 182 kB. Wer
-nur die Karte will, ruft `nadeln.mjs` direkt auf; dann rechnet es und zeigt die
-Gegenproben, ohne eine Seite zu schreiben.
-
 Zwei Stellschrauben als Umgebungsvariablen:
 
 ```
@@ -81,4 +73,3 @@ Blick reichen `KNOTEN=2500 GITTER=420`, das dauert keine zwei Minuten.
 | `code.mjs` | kompakte Kodierung der Koordinaten für die Seite |
 | `nutzlast.mjs` | Geometrie, Zeitreihe und Kreisdaten in die Nutzlast |
 | `build.mjs` | erzeugt die fertige `index.html` |
-| `nadeln.mjs` | die Zahlen des Nadelreliefs: Gemeindedatei auf ein versetztes, flächentreues Raster gelegt, dazu die Bodenplatte |
