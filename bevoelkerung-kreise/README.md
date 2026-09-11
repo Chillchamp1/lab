@@ -125,9 +125,11 @@ Schatten steht. Der Grund dafür ist schlicht: die Fläche ist schon vergeben,
 sie trägt die Farbe der Daten. Eine Schattierung, die stark genug für ein
 Gebirge wäre, macht aus Rot und Blau Grau. Linien nehmen fast keine Fläche weg.
 Dazu Schlagschatten aus einer flacheren Sonne — ein Strahl, der steiler abfällt
-als der Hang selbst, trifft nie auf Schatten. Zweiunddreissig Linien über die
-volle Höhe, jede mindestens einen guten Bildpunkt breit: schmaler als ein Punkt
-des Höhenfelds wird aus einer Linie beim Hochrechnen ein Schmier.
+als der Hang selbst, trifft nie auf Schatten. Vierzig Linien über die volle
+Höhe, und sie werden verfolgt statt gemalt: Marching Squares über das Höhenfeld
+liefert sie als Strecken, gezeichnet werden sie als Pfade auf der Leinwand
+selbst. Im Raster gemalt und hochgerechnet blieben sie ein Schmier, bei jeder
+Auflösung.
 
 Gezeichnet wird die Höhe gestaucht (Wurzel, mit Sockel): zwischen dem leersten
 Landkreis und Berlin liegt auf der Landkarte der Faktor 134, und ein Relief mit

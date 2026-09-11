@@ -530,30 +530,47 @@ Auskunft wie eine Schattierung — aber als Kante, und eine Kante sieht das Auge
 sehr viel deutlicher als einen Verlauf. Vor allem: sie kosten fast keine
 Fläche, die Farbe der Kreise bleibt.
 
+### Verfolgt, nicht gemalt
+
+Die ersten Fassungen malten die Linien **ins Höhenfeld**, also in ein Raster von
+vierzig bis zweiundsechzig Prozent der Bildpunkte, und rechneten dieses Bild
+hinterher auf die Leinwand hoch. Das kann nicht scharf werden, und die
+Auflösung zu erhöhen half jedes Mal nur ein Stück weit: eine Linie ist ein bis
+zwei Rasterpunkte breit, und zwei Punkte, um das Anderthalb- bis
+Zweieinhalbfache gestreckt und weichgezeichnet, sind ein Schmier mit
+ungleichmässigem Rand. Das war das Zappeln, und es war nicht wegzustellen.
+
+Jetzt werden die Linien **verfolgt**: Marching Squares über das weite Feld
+liefert sie als Strecken, und gezeichnet werden sie als Pfade auf der Leinwand
+selbst — mit deren voller Auflösung und deren Kantenglättung. Das Höhenfeld
+darf dafür wieder grob sein (45 Prozent): es ist über fünfzehn Punkte
+weichgezeichnet, und die Stützstellen einer Linie dürfen weiter auseinander
+liegen als ein Bildpunkt, solange die Linie selbst scharf ist. Verfolgt wird
+auf einem Gitter von zwei Feldpunkten, also gut vier Bildpunkten je Stützstelle.
+
+Je Zelle wird einmal gerechnet, was für alle Niveaus darin gilt — Gefälle,
+Beleuchtungsrichtung, Strichstärke —, und nur die Niveaus zwischen dem
+kleinsten und grössten Eckwert werden überhaupt betrachtet; das sind meist
+null bis zwei. Gebündelt wird nach Beleuchtungsstärke: zwölf Stufen, hell und
+dunkel, also **vierundzwanzig Pfade statt Tausender einzelner Striche**.
+
 Gerechnet aus dem **weiten** Feld, nicht aus dem gemischten: das enge hat an
 jeder Kreisgrenze eine Stufe, und auf einer Stufe lägen alle Niveaus
 übereinander — das gäbe einen Strich an jeder Grenze statt einer Höhenlinie.
-Das weite Feld bekommt dafür auch seinen **eigenen Rand**, aus seinem eigenen
-Alphakanal: der ist über dieselbe weite Strecke verlaufen und damit glatt.
-Nähme es den schmalen Rand des engen Feldes, knickten die Linien entlang der
-Küste. Beschnitten wird die Linienlage trotzdem an der Vorlage — der weite Rand
-reicht über die Küste hinaus, und ohne Schablone schwämmen Höhenlinien im
-Leeren neben der Karte.
 
-Zweiunddreissig Niveaus über die volle Höhe. Drei Dinge halten die Linien
-sauber:
+Vierzig Niveaus über die volle Höhe. Drei Dinge halten die Linien sauber:
 
 - Über fast ebenem Land blenden sie mit dem Gefälle ein — sonst sind sie
   Kratzer.
-- Wo das Feld so steil abfällt, dass die Niveaus auf wenige Bildpunkte
-  zusammenrücken, blenden sie wieder aus — sonst flimmern sie.
-- Sie sind **mindestens einen guten Bildpunkt breit** (0,5 bis 1,2 Punkte
-  Halbbreite). Eine Linie, die schmaler ist als ein Punkt des Höhenfelds, wird
-  beim Hochrechnen auf die Leinwand zu einem ungleichmässigen Schmier — genau
-  dem Zappeln, das sie nicht haben soll.
+- Wo zwei Niveaus auf der Leinwand unter vier Bildpunkte zusammenrücken,
+  blenden sie aus — sonst verschmelzen sie zur Fläche.
+- Eine Zelle, deren vier Ecken nicht ganz auf der Karte liegen, wird
+  übersprungen. Das erspart das Beschneiden an einem Pfad aus vierhundert
+  Vielecken und lässt der Küste einen schmalen, linienfreien Saum — der sieht
+  ohnehin besser aus.
 
-Zwei Lagen also, weil sie verschieden gemischt gehören: die Schattierung als
-Grau im Modus `overlay`, die Linien schlicht darüber.
+Zwei Lagen also, weil sie verschieden gehören: die Schattierung als Grau im
+Modus `overlay` über die Fläche, die Linien als Pfade darüber.
 
 Die Fugen sind dabei überall gleich breit. Wie hoch ein Kreis steht, sagt 4f:
 im vollen Kartogramm für alle dasselbe, sonst Bevölkerung durch gezeichnete
@@ -572,16 +589,15 @@ unten und weich als Schatten, knapp darunter als Kante. Weil die Kreise die
 Fläche lückenlos teilen, ist die Vereinigung ihrer Umrisse zugleich die
 Silhouette der Karte; beides braucht denselben Pfad, und der entsteht ohnehin.
 
-Gerechnet wird das Höhenfeld auf **62 Prozent** der Bildpunkte. Das war einmal
-40, und die Linien waren daran zu erkennen: hochgerechnet auf die Leinwand
-wurden aus ihnen gezackte Schlieren. Die Höhen der Kreise werden ausserdem in
-**64 Stufen** abgelegt statt in 24 — die Stufen stecken hinterher im Feld, und
-wo sie zu grob sind, laufen die Höhenlinien an ihnen entlang statt an der
-Landschaft.
+Gerechnet wird das Höhenfeld auf **45 Prozent** der Bildpunkte — es trägt nur
+noch den Verlauf, und ein Verlauf verträgt das Hochrechnen. Die Höhen der
+Kreise werden in **64 Stufen** abgelegt statt in 24; die Stufen stecken
+hinterher im Feld, und wo sie zu grob sind, laufen die Höhenlinien an ihnen
+entlang statt an der Landschaft.
 
-Beschnitten wird nicht mit `clip` an einem Pfad aus vierhundert Vielecken,
-sondern mit derselben Vorlage als Schablone (`destination-in`), für beide
-Lagen.
+Beschnitten wird die Schattierung nicht mit `clip` an einem Pfad aus
+vierhundert Vielecken, sondern mit derselben Vorlage als Schablone
+(`destination-in`).
 
 ## 4h. Die Städtenamen
 
