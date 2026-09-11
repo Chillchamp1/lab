@@ -109,46 +109,64 @@ const daten = {
 // Was sich aus der Tabelle dieser Seite selbst belegen lässt, ist von dort
 // genommen; der Rest ist Schulwissen und als solches gekennzeichnet.
 const NOTIZEN = [
-  { von: 1872, bis: 1899, kopf: '1871–1900 · Coal and steel',
-    kurz: 'The Ruhr fills up while the farming east empties out — contemporaries called it the Ostflucht.',
+  { von: 1871, bis: 1899, kopf: '1871–1900 · Coal and steel',
+    kurz: 'The Ruhr fills up, the farming east empties — the Ostflucht.',
     mehr: 'Gelsenkirchen grows from 23,794 people in 1871 to 219,501 by 1910, on today’s boundaries.' },
   { von: 1899, bis: 1913, kopf: '1900–1910 · The metropolis',
-    kurz: 'Berlin passes three and a half million people, counted on today’s city boundaries.',
+    kurz: 'Berlin passes three and a half million people.',
     mehr: '931,984 in 1871, 3,734,258 by 1910. Almost all of the country’s growth is now urban.' },
   { von: 1913, bis: 1927, kopf: '1914–1918 · The First World War',
-    kurz: 'Two million soldiers killed, births halved — and no census between 1910 and 1939.',
+    kurz: 'Two million soldiers dead, and no census until 1939.',
     mehr: 'The map glides over the war years because nothing was counted in them. The loss is real; the dip is not drawn.' },
   { von: 1927, bis: 1937, kopf: '1933–1939 · Rearmament',
-    kurz: 'Whole towns are built for the arms industry: Wolfsburg in 1938, Salzgitter in 1942.',
+    kurz: 'Whole towns rise for the arms industry: Wolfsburg, Salzgitter.',
     mehr: 'Wolfsburg for the Volkswagen works, Salzgitter for ore and steel — open country until then, 94,026 and 111,510 people by 1961.' },
   { von: 1937, bis: 1945, kopf: '1939–1945 · The Second World War',
-    kurz: 'Bombing empties the cities: Berlin loses 1.2 million people by 1946, Essen a fifth of its own.',
+    kurz: 'Bombing empties the cities: Berlin loses 1.2 million people.',
     mehr: 'Hamburg is down 308,577. The count of October 1946 is taken in a country whose cities are rubble.' },
   { von: 1945, bis: 1952, kopf: '1945–1950 · Flight and expulsion',
-    kurz: 'Around twelve million Germans are driven out of the east and arrive in a smaller country.',
+    kurz: 'Twelve million Germans are expelled from the east.',
     mehr: 'The rural north takes the worst of it: Ostholstein doubles from 103,951 to 213,916 people, with nowhere to house them.' },
   { von: 1952, bis: 1962, kopf: '1950–1961 · Wirtschaftswunder',
-    kurz: 'The west rebuilds, the Ruhr peaks, and 2.7 million people leave the GDR before the Wall.',
+    kurz: 'The west rebuilds; 2.7 million leave the GDR before the Wall.',
     mehr: 'Essen holds 750,501 people in 1961 and never as many again. The Wall goes up in August of that year.' },
   { von: 1962, bis: 1973, kopf: '1961–1973 · Guest workers',
-    kurz: 'The factories recruit in Italy, Greece, Turkey and Yugoslavia.',
+    kurz: 'The factories recruit in Italy, Greece, Turkey, Yugoslavia.',
     mehr: 'From 1972 onward more people die in West Germany than are born there — every year since, growth has depended on who arrives.' },
   { von: 1973, bis: 1988, kopf: '1973–1987 · The pits close',
-    kurz: 'Coal and steel shut down, and the Ruhr turns from the deepest blue on this map to red.',
+    kurz: 'Coal and steel shut down; the Ruhr turns from blue to red.',
     mehr: 'It has stayed red ever since. The growth moves south and out to the districts around the cities.' },
   { von: 1988, bis: 1996, kopf: '1989–1996 · Reunification',
-    kurz: 'The east empties westward, and its birth rate halves within two years.',
+    kurz: 'The east goes west, and its birth rate halves in two years.',
     mehr: 'One of the sharpest peacetime falls ever recorded. Berlin is the exception and grows again.' },
   { von: 1996, bis: 2011, kopf: '1996–2011 · Shrinking, and recounting',
-    kurz: 'Part of this fall is arithmetic: the 2011 census found 1.5 million people who were not there.',
+    kurz: 'The 2011 census finds 1.5 million people who were not there.',
     mehr: 'The registers carried 81.8 million, the census counted 80.2. That correction sits on this stretch, on top of the real losses in the east.' },
   { von: 2011, bis: 2019, kopf: '2011–2019 · The cities fill again',
-    kurz: 'Free movement inside the EU and the refugee year of 2015 outweigh the deaths.',
+    kurz: 'Free movement in the EU and the refugees of 2015 outweigh the deaths.',
     mehr: 'Leipzig, down a third between 1939 and 2011, climbs back above 600,000 people.' },
   { von: 2019, bis: 2025, kopf: '2020–2024 · Covid, then Ukraine',
-    kurz: 'Migration stops for a year; then over a million people arrive from Ukraine in 2022.',
+    kurz: 'Migration stops, then a million arrive from Ukraine.',
     mehr: 'Germany reaches 83.6 million, and nearly all of the gain sits in the cities and the districts around them.' },
 ];
+
+// Die grössten Städte tragen ihren Namen auf der Karte. Genommen werden die
+// kreisfreien Städte und Stadtkreise, die in irgendeinem Bild über 400 000
+// Menschen haben, dazu die Region Hannover: die Stadt ist 2001 darin
+// aufgegangen, und ohne sie fehlte auf der Karte eine der zehn grössten.
+// Der Name wird gekürzt, wo er einen Zusatz trägt — auf einem Fleck von
+// zwanzig Pixeln ist „Frankfurt am Main, Stadt" nicht zu lesen.
+const kurzerName = n => n === 'Region Hannover' ? 'Hannover'
+  : n.split(',')[0].split(/ am | an der | im | \(/)[0].trim();
+const hoechsteBev = new Map();
+for (const b of bilder) for (const [ags, v] of b.werte) hoechsteBev.set(ags, Math.max(hoechsteBev.get(ags) ?? 0, v));
+const STADTKREISE = new Set(['Kreisfreie Stadt', 'Stadtkreis']);
+const staedte = jeKreis
+  .map((k, i) => ({ i, ags: k.ags, kurz: kurzerName(k.name), bev: hoechsteBev.get(k.ags) ?? 0,
+    stadt: STADTKREISE.has(k.bez) || k.ags === '03241' }))
+  .filter(k => k.stadt && k.bev >= 400000)
+  .sort((a, b) => b.bev - a.bev);
+log(`Beschriftet: ${staedte.length} Städte — ${staedte.map(k => k.kurz).join(', ')}`);
 
 const mio = n => (n / 1e6).toFixed(1);
 const zahl = n => n.toLocaleString('en-GB');
@@ -172,14 +190,18 @@ const nadeln = ganzesLand ? baueNadeln({ log: t => log('  ' + t) }) : null;
 // noch bevor die Beleuchtung anfängt zu wirken.
 const NADELTON = ['#0c0a1d','#240943','#41075a','#620966','#831369','#a12566','#bc3c60',
   '#d0585b','#de775d','#e7966a','#ebb483','#efd1a6','#f5ebce'];
+// Und dieselbe Leiter für helles Papier: von einem Creme, das kaum vom Boden
+// absteht, über Gold, Orange und Rot ins tiefe Violett. Nicht die umgedrehte
+// Nachtleiter — die hätte in der Mitte ein lautes Orange, und auf hellem Grund
+// stünde damit das halbe Land in Flammen. Diese hier bleibt unten blass.
+const NADELTON_HELL = ['#fbf5df','#f6dfb6','#f7c68f','#f7aa71','#f48c60','#ea715e','#d85965',
+  '#c0486d','#a33d71','#83376f','#633465','#452f52','#2d2838'];
 // Der Deckel einer Nadel bekommt dieselbe Farbe, nur heller: das Licht steht
 // hoch (60° über dem Horizont) und aus Südwesten, also ist die waagerechte
 // Fläche oben die hellste am ganzen Körper. Mehr Beleuchtung braucht ein Feld
 // aus lauter gleich ausgerichteten Säulen nicht — die Südseiten sähen ohnehin
-// alle gleich aus.
-const heller = (h, f) => '#' + [1, 3, 5]
-  .map(i => Math.min(255, Math.round(parseInt(h.slice(i, i + 2), 16) * f)).toString(16).padStart(2, '0')).join('');
-const NADELKOPF = NADELTON.map(t => heller(t, 1.45));
+// alle gleich aus. Gerechnet wird das auf der Seite, weil es davon abhängt,
+// ob die Leiter gerade auf hellem oder dunklem Grund steht.
 const ZELLFLAECHE = nadeln ? (nadeln.daten.zelle ** 2 * nadeln.daten.reihe / 1e6) : 0;
 const mitRelief = !!nadeln;
 // Beschriftung der Umschalter, jetzt wo die Ländernamen bekannt sind.
@@ -216,13 +238,11 @@ h1{font-size:24px;line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
   padding:8px;margin-bottom:12px}
 canvas{display:block;width:100%;height:auto;touch-action:manipulation}
 canvas[hidden]{display:none}
-/* Das Relief bringt seinen eigenen Nachthimmel mit: die Höhe wird über die
-   Helligkeit gelesen, und die braucht einen dunklen Grund. */
-.buehne.nacht{background:#080b12;border-color:#1b2334}
-.jahr{display:flex;align-items:baseline;gap:10px;margin:2px 2px 10px}
-.jahr b{font-size:34px;font-weight:650;letter-spacing:-.02em;line-height:1}
+.schild{padding:2px 4px 8px}
+.jahr{display:flex;align-items:baseline;gap:10px;margin:0 0 3px}
+.jahr b{font-size:32px;font-weight:650;letter-spacing:-.02em;line-height:1}
 .jahr span{color:var(--ink2);font-size:13px}
-.kopf{color:var(--muted);font-size:12px;margin:-4px 2px 12px;min-height:1.4em}
+.kopf{color:var(--muted);font-size:12px;margin:8px 2px 12px;min-height:1.4em}
 .regler{display:flex;align-items:center;gap:10px;margin-bottom:6px}
 button{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--axis);
   border-radius:8px;padding:7px 12px;cursor:pointer}
@@ -249,8 +269,11 @@ input[type=range]{width:100%;margin:0;accent-color:#2a78d6}
 .tip .warn{display:block;margin-top:4px;color:var(--ink2);font-size:12px}
 h2{font-size:17px;margin:26px 0 6px}
 h3{font-size:14px;margin:18px 0 4px}
-.notiz{margin:0 2px 12px;min-height:4.5em;font-size:13.5px;line-height:1.5;
+.notiz{margin:0;min-height:3em;font-size:13px;line-height:1.5;
   color:var(--ink2);opacity:0;transition:opacity .3s}
+/* Auf schmalen Geräten brauchen die längeren Notizen eine dritte Zeile. Der
+   Platz wird immer freigehalten, sonst rutscht die Karte bei jedem Wechsel. */
+@media(max-width:420px){.notiz{min-height:4.6em}}
 .notiz b{color:var(--ink)}
 .wann{margin:0}
 .wann dt{font-weight:600;margin-top:12px}
@@ -281,14 +304,15 @@ ${mitRelief ? `<p class="unter">Three views of the same figures: two of the cart
 the map keeps its real shape and the people stand up out of it instead.</p>` : ''}
 
 <div class="buehne" id="buehne">
+  <div class="schild">
+    <div class="jahr"><b id="jahrZahl">–</b><span id="jahrBev"></span></div>
+    <p class="notiz" id="notiz"></p>
+  </div>
   <canvas id="karte"></canvas>${mitRelief ? `
   <canvas id="relief" hidden></canvas>` : ''}
   <div class="tip" id="tip"></div>
 </div>
-
-<div class="jahr"><b id="jahrZahl">–</b><span id="jahrBev"></span></div>
 <div class="kopf" id="kopf"></div>
-<p class="notiz" id="notiz"></p>
 
 <div class="regler">
   <button id="spiel" aria-label="Play or pause">▶</button>
@@ -334,11 +358,22 @@ from 1871 to 1900. The scale ends at ±3 % a year and is squeezed in between, so
 decades still show something and the one violent stretch, 1939 to 1946, still fits.</p>
 
 <p>Tap a county for its numbers. Between two censuses the shapes and the figures are
-interpolated; the readout says so. The clock runs at a steady rate through the years —
-about fifty seconds for the ${jahrBis - jahrVon}, not one step per census — so 1946 and 1950
-pass in a blink and 1871 to 1900 takes a while.</p>
+interpolated; the readout says so.</p>
+
+<p>Every stretch between two censuses gets the same share of the clock, about five seconds
+each. The stretches are not the same length — seven years from 1939 to 1946, thirty-six from
+1871 to 1900 — so the map dwells on the crowded middle of the century instead of flashing
+through it. The marks under the slider sit where the censuses do: evenly, because the slider
+counts censuses and not years.</p>
+
+<p>The largest cities carry their names, and the type grows with the patch — it is sized
+from the drawn area, so a name appears only once its city is big enough to hold it. In
+${jahrVon} that is Berlin alone; by ${jahrBis} it is ten of them. Where a name will not fit
+or would land on top of another, it is left out.</p>
 ${mitRelief ? `
-<p><b>Standing up</b> drops the cartogram and gives the country its real shape back. The
+<p><b>Standing up</b> drops the cartogram and gives the country its real shape back. It
+keeps the page's own background — dark needles glowing to gold at night, pale ground and ink
+by day — because one page should not change its ground when you switch a view. The
 people become height instead: over every cell of ${ZELLFLAECHE.toFixed(0)} km² of ground
 stands a needle as tall as the people living on it. Same ground everywhere, so the height is
 density — which is why the Ruhr, Berlin, Hamburg and Munich rise out of a flat country. The
@@ -508,7 +543,11 @@ const ROT  = ['#f8d7d3','#f1c4bf','#edb0aa','#e69c95','#e08881','#d8746d','#d15d
 const dunkel = () => matchMedia('(prefers-color-scheme:dark)').matches;
 const stil = n => getComputedStyle(document.body).getPropertyValue(n).trim();
 let LEER = '#e6e5e0', STRICH = '#fcfcfb', GRENZE = '#fcfcfb';
-function farbenHolen() { LEER = stil('--leer'); STRICH = stil('--surface'); GRENZE = stil('--surface'); }
+let INK = '#0b0b0b';
+function farbenHolen() {
+  LEER = stil('--leer'); STRICH = stil('--surface'); GRENZE = stil('--surface'); INK = stil('--ink');
+  if (typeof reliefFarben === 'function') reliefFarben();
+}
 // Auf heller Fläche läuft die Skala hell -> dunkel, auf dunkler dunkel -> hell:
 // der Schritt neben der Fläche heisst immer „wenig".
 const rampe = () => dunkel() ? [...BLAU].reverse() : BLAU;
@@ -558,7 +597,18 @@ function farbe(modus, wert, k, rate) {
 }
 
 /* ---------- Zustand ---------- */
-let modus = 'menschen', jahr = T0, laeuft = false, letzterTip = -1;
+// Die Uhr läuft gleichmässig über die Bilder, nicht über die Jahre: jeder
+// Abschnitt zwischen zwei Zählungen bekommt dieselbe Zeit. Vorher war die
+// Zeitachse linear in Jahren, und dann rauscht das halbe zwanzigste
+// Jahrhundert vorbei, während die Karte zwischen 1871 und 1900 steht — die
+// Abstände der Zählungen reichen von siebeneinhalb bis siebenunddreissig
+// Jahren. „stelle" ist die Stelle auf der Bilderkette, „jahr" folgt daraus.
+let modus = 'menschen', stelle = 0, jahr = T0, laeuft = false, letzterTip = -1;
+function setzeZeit(p) {
+  stelle = Math.max(0, Math.min(NF - 1, p));
+  const a = Math.min(NF - 2, Math.floor(stelle));
+  jahr = JAHRE[a] + (JAHRE[a + 1] - JAHRE[a]) * (stelle - a);
+}
 const cv = document.getElementById('karte'), ctx = cv.getContext('2d');
 let breite = 0, hoehe = 0, mass = 1, verX = 0, verY = 0;
 
@@ -664,6 +714,7 @@ function zeichne() {
     ctx.lineTo(px[q] * mass + verX, py[q] * mass + verY);
   }
   ctx.strokeStyle = GRENZE; ctx.lineWidth = Math.max(0.7, Math.min(1.2, breite / 420)); ctx.stroke();
+  beschrifte(deck);
   schreibe(a, b, u, w, deck);
   notizen();
   if (modus === 'wandel') legendeText(a, b);
@@ -679,7 +730,64 @@ function schreibe(a, b, u, w, deck) {
   document.getElementById('kopf').textContent = zwischen
     ? 'between ' + D.B[a].jahr + ' and ' + D.B[b].jahr + ' — shapes and figures interpolated'
     : z.stichtage.join(' and ') + ' · ' + z.begriffe.join(', ') + ' · method ' + z.methoden.join('/');
-  document.getElementById('zeit').value = Math.round((jahr - T0) / (T1 - T0) * 1000);
+  document.getElementById('zeit').value = Math.round(stelle / (NF - 1) * 1000);
+}
+
+/* ---------- Städtenamen ----------
+   Die grössten Städte tragen ihren Namen, und die Schrift wächst mit dem
+   Fleck: die Schrifthöhe folgt der Wurzel aus der gezeichneten
+   Fläche, also wächst sie wie die Stadt, nicht wie ihre Einwohnerzahl. 1871
+   ist Dortmund ein Punkt und bleibt namenlos; irgendwann wird der Fleck gross
+   genug, und der Name erscheint von selbst.
+
+   Gezeichnet wird nur, was hineinpasst und nichts anderes verdeckt: zu kleine
+   Schrift fällt weg, ein Name breiter als sein Fleck fällt weg, und wer sich
+   mit einem schon gesetzten Namen überschneidet, fällt auch weg — die
+   grösseren zuerst, damit im Ruhrgebiet nicht die kleinste Stadt gewinnt. */
+const STADT = ${JSON.stringify(staedte.map(k => [k.i, k.kurz]))};
+function beschrifte(deck) {
+  const liste = [];
+  for (const [g, name] of STADT) {
+    if (!(deck[g] > 0.5)) continue;
+    let bestA = 0, mx = 0, my = 0, bb = 0, bh = 0;
+    for (const r of GEBIETE[g]) {
+      let A2 = 0, sx = 0, sy = 0, links = Infinity, rechts = -Infinity, oben = Infinity, unten = -Infinity;
+      for (let i = 0, n = r.length; i < n; i++) {
+        const a = r[i], b = r[(i + 1) % n];
+        const xa = px[a] * mass + verX, ya = py[a] * mass + verY;
+        const xb = px[b] * mass + verX, yb = py[b] * mass + verY;
+        const f = xa * yb - xb * ya;
+        A2 += f; sx += (xa + xb) * f; sy += (ya + yb) * f;
+        if (xa < links) links = xa; if (xa > rechts) rechts = xa;
+        if (ya < oben) oben = ya; if (ya > unten) unten = ya;
+      }
+      const A = Math.abs(A2 / 2);
+      if (A > bestA) { bestA = A; mx = sx / (3 * A2); my = sy / (3 * A2); bb = rechts - links; bh = unten - oben; }
+    }
+    if (bestA > 0) liste.push({ name, A: bestA, mx, my, bb, bh });
+  }
+  liste.sort((a, b) => b.A - a.A);
+
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+  const gesetzt = [];
+  for (const s of liste) {
+    // Aus der Fläche kommt die gewünschte Grösse, aus dem Fleck die erlaubte:
+    // ein langer Name auf einem runden Fleck muss kleiner ausfallen als ein
+    // kurzer. Unter acht Pixeln wird nichts gesetzt — dann ist die Stadt eben
+    // noch zu klein für ihren Namen.
+    ctx.font = '600 10px system-ui,-apple-system,sans-serif';
+    const je10 = ctx.measureText(s.name).width / 10;
+    const hoch = Math.min(Math.sqrt(s.A) * 0.40, 30, s.bb * 1.15 / je10, s.bh * 0.8);
+    if (hoch < 8) continue;
+    ctx.font = '600 ' + hoch.toFixed(1) + 'px system-ui,-apple-system,sans-serif';
+    const br = je10 * hoch;
+    const kasten = [s.mx - br / 2, s.my - hoch / 2, s.mx + br / 2, s.my + hoch / 2];
+    if (gesetzt.some(k => kasten[0] < k[2] && kasten[2] > k[0] && kasten[1] < k[3] && kasten[3] > k[1])) continue;
+    gesetzt.push(kasten);
+    ctx.lineWidth = Math.max(2, hoch * 0.2); ctx.strokeStyle = STRICH;
+    ctx.strokeText(s.name, s.mx, s.my);
+    ctx.fillStyle = INK; ctx.fillText(s.name, s.mx, s.my);
+  }
 }
 
 /* ---------- Untertitel ----------
@@ -796,9 +904,33 @@ ${mitRelief ? `/* ---------- Nadelrelief ----------
    wie ein Sechseckraster; auf dem geraden Gitter standen die Nadeln in Spalten
    wie auf Karopapier, und das Auge sah eher das Papier als das Land. */
 const D2 = ${JSON.stringify(nadeln.daten)};
-const NADEL = ${JSON.stringify(NADELTON)}, KOPF = ${JSON.stringify(NADELKOPF)};
 const FLAECHE = ${ZELLFLAECHE.toFixed(0)};
-const HIMMEL = '#080b12', BODEN = '#151c2b', UFER = '#2a3550';
+/* Die Leiter des Reliefs, dreizehn Stufen, in OKLab gleichmässig in der
+   Helligkeit. Auf dunklem Grund läuft sie von einem Indigo, das kaum absteht,
+   nach hellem Gold; auf hellem Grund von blassem Creme ins tiefe Violett. Der
+   Grund selbst ist immer der der Seite: eine Seite, ein Hintergrund. Was auf
+   dunklem Grund als Glut nach oben leuchtet, wird auf hellem Grund zur Tusche —
+   die Helligkeit trägt in beiden Fällen die Höhe, nur die Richtung dreht sich. */
+const LEITER = ${JSON.stringify(NADELTON)}, LEITER_HELL = ${JSON.stringify(NADELTON_HELL)};
+const heller = (h, f) => '#' + [1, 3, 5]
+  .map(i => Math.min(255, Math.round(parseInt(h.slice(i, i + 2), 16) * f)).toString(16).padStart(2, '0')).join('');
+let NADEL = LEITER, KOPF = LEITER, HIMMEL = '#fff', BODEN1 = '#eee', BODEN2 = '#ddd', UFER = '#ccc';
+// Wie steil die Höhe auf die Stufen abgebildet wird. Auf dunklem Grund darf
+// das Land früh Farbe annehmen, es bleibt trotzdem dunkel; auf hellem Grund
+// stünde bei derselben Kurve die halbe Fläche in Orange, also bleibt das
+// flache Land dort länger im Blassen.
+let KURVE = 0.55;
+function reliefFarben() {
+  const d = dunkel();
+  NADEL = d ? LEITER : LEITER_HELL;
+  KOPF = NADEL.map(t => heller(t, d ? 1.45 : 1.12));
+  KURVE = d ? 0.55 : 0.72;
+  HIMMEL = stil('--surface');
+  BODEN1 = d ? '#262625' : '#efede6';        // hinten
+  BODEN2 = d ? '#353532' : '#e2dfd5';        // vorn
+  UFER = d ? '#4a4a45' : '#cfccc0';
+  bodenTon = null;
+}
 const ctx2 = cv2.getContext('2d');
 
 const kumI = a => { let v = 0; const o = new Int32Array(a.length); for (let i = 0; i < a.length; i++) { v += a[i]; o[i] = v; } return o; };
@@ -932,7 +1064,7 @@ let bodenTon = null;
 function bodenFarbe() {
   if (!bodenTon) {
     bodenTon = ctx2.createLinearGradient(0, 0, 0, rhoehe);
-    bodenTon.addColorStop(0, '#101724'); bodenTon.addColorStop(1, '#1b2436');
+    bodenTon.addColorStop(0, BODEN1); bodenTon.addColorStop(1, BODEN2);
   }
   return bodenTon;
 }
@@ -959,7 +1091,7 @@ function zeichneRelief() {
   // schwarze Fläche mit ein paar hellen Nadeln darin, logarithmisch stünde
   // schon jedes Dorf im Gold. Dazwischen liegt das Bild.
   const hm = D2.hoechste / D2.stufe, NS = NADEL.length - 1;
-  const stufeVon = h => Math.min(NS, Math.round(Math.pow(Math.min(1, h / hm), 0.55) * NS));
+  const stufeVon = h => Math.min(NS, Math.round(Math.pow(Math.min(1, h / hm), KURVE) * NS));
   const deckel = (e, x, y, z) => {
     const C = rproj(x + RS, y + RS, z), E = rproj(x - RS, y + RS, z);
     const F = rproj(x + RS, y - RS, z), G = rproj(x - RS, y - RS, z);
@@ -1015,7 +1147,7 @@ function schreibeRelief(a, b, u) {
     : zwischen ? 'between ' + D2.b[a].jahr + ' and ' + D2.b[b].jahr + ' — heights interpolated'
       : bd.stichtage.join(' and ') + ' · ' + bd.begriffe.join(', ') + ' · '
         + nf.format(NZ) + ' cells of ' + FLAECHE + ' km²';
-  document.getElementById('zeit').value = Math.round((jahr - T0) / (T1 - T0) * 1000);
+  document.getElementById('zeit').value = Math.round(stelle / (NF - 1) * 1000);
 }
 ` : ''}
 /* ---------- Ablauf ---------- */
@@ -1025,32 +1157,31 @@ const DAUER = 48500;
 let zuletzt = 0;
 function schlag(t) {
   if (laeuft) {
-    if (zuletzt) jahr += (t - zuletzt) / DAUER * (T1 - T0);
+    if (zuletzt) setzeZeit(stelle + (t - zuletzt) / DAUER * (NF - 1));
     zuletzt = t;
-    if (jahr >= T1) { jahr = T1; halte(); }
+    if (stelle >= NF - 1) halte();
     zeichne();
   }
   requestAnimationFrame(schlag);
 }
 function starte() {
-  if (jahr >= T1 - 1e-6) jahr = T0;
+  if (stelle >= NF - 1 - 1e-9) setzeZeit(0);
   laeuft = true; zuletzt = 0; document.getElementById('spiel').textContent = '❚❚';
 }
 function halte() { laeuft = false; document.getElementById('spiel').textContent = '▶'; }
 document.getElementById('spiel').onclick = () => laeuft ? halte() : starte();
 document.getElementById('zeit').addEventListener('input', e => {
-  halte(); jahr = T0 + (T1 - T0) * e.target.value / 1000; zeichne();
+  halte(); setzeZeit((NF - 1) * e.target.value / 1000); zeichne();
 });
 for (const b of document.querySelectorAll('.modi button')) b.onclick = () => {
   modus = b.dataset.modus;
   for (const o of document.querySelectorAll('.modi button')) o.setAttribute('aria-pressed', String(o === b));
   ansicht(); legende(); zeichne();
 };
-// Beim Umschalten wechselt die Fläche mit: das Relief bringt seinen eigenen
-// dunklen Grund mit, und die Sprechblase der Karte hat dort nichts zu suchen.
+// Beim Umschalten wechselt nur die Leinwand — der Grund bleibt der der Seite.
+// Die Sprechblase der Karte hat im Relief nichts zu suchen.
 function ansicht() {
   const relief = modus === 'relief';
-  document.getElementById('buehne').classList.toggle('nacht', relief);
   cv.hidden = relief;
   if (cv2) cv2.hidden = !relief;
   tip.style.opacity = 0; letzterTip = -1;
@@ -1061,9 +1192,11 @@ matchMedia('(prefers-color-scheme:dark)').addEventListener('change', () => { far
 // Markierungen für die Zählungen auf der Zeitachse
 function marken() {
   const VOLL = Math.max(...reihe.BEV.map(b => b.filter(v => v > 0).length));
+  // Die Marken sitzen dort, wo die Zählungen auf dem Regler liegen — und der
+  // Regler misst jetzt Bilder, keine Jahre, also stehen sie gleichmässig.
   document.getElementById('marken').innerHTML = D.B.map((b, i) =>
     '<i class="' + (reihe.BEV[i].filter(v => v > 0).length >= VOLL ? 'voll' : '') + '" style="left:' +
-    ((b.t - T0) / (T1 - T0) * 100).toFixed(2) + '%" title="' + b.jahr + '"></i>').join('');
+    (i / (NF - 1) * 100).toFixed(2) + '%" title="' + b.jahr + '"></i>').join('');
 }
 
 // Umschalter zwischen den Reihen
