@@ -60,9 +60,10 @@ Zeitpunkt auf denselben Gebietsstand gerechnet, jede Zelle Methode A.
   bewegt. Zusammenhang, keine Daten — Kreiszahlen darin stammen aus der eigenen
   Tabelle, der Rest ist Schulwissen; vollständig noch einmal als Liste unter
   der Karte.
-- Die Uhr läuft rund fünfzig Sekunden für 153 Jahre, und jeder Abschnitt
-  zwischen zwei Zählungen bekommt gleich viel davon. Der Regler misst deshalb
-  Abschnitte, nicht Jahre.
+- Die Uhr läuft rund fünfzig Sekunden für 153 Jahre, linear in Jahren.
+  Zwischen den Zählungen wird mit einer monotonen kubischen Kurve gerechnet,
+  nicht geradlinig: kein Knick an den Zählungen, kein Überschiessen darüber
+  hinaus. Grösster Geschwindigkeitssprung von 125 auf 22 Prozent.
 - Die achtzehn grössten Städte tragen ihren Namen; die Schrift wächst mit der
   gezeichneten Fläche, 1871 ist nur Berlin gross genug dafür.
 - Das Relief nimmt den Hintergrund der Seite an, hell wie dunkel, mit je einer

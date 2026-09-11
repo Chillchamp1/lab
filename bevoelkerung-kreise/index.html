@@ -144,13 +144,15 @@ from 1871 to 1900. The scale ends at ±3 % a year and is squeezed in between, so
 decades still show something and the one violent stretch, 1939 to 1946, still fits.</p>
 
 <p>Tap a county for its numbers. Between two censuses the shapes and the figures are
-interpolated; the readout says so.</p>
+interpolated; the readout says so. The interpolation runs along a smooth curve rather than a
+straight line: it passes through every counted value exactly, has no kink at a census, and
+never leaves the range of the two it lies between. A county can never hold more people
+mid-stretch than it does at either end of it.</p>
 
-<p>Every stretch between two censuses gets the same share of the clock, about five seconds
-each. The stretches are not the same length — seven years from 1939 to 1946, thirty-six from
-1871 to 1900 — so the map dwells on the crowded middle of the century instead of flashing
-through it. The marks under the slider sit where the censuses do: evenly, because the slider
-counts censuses and not years.</p>
+<p>The clock runs at a steady rate through the years, about fifty seconds for the
+153: a year always takes as long as a year, so 1871 to 1900 runs five times
+as long as 1939 to 1946. The marks under the slider sit where the censuses actually fall,
+unevenly, because that is how they were taken.</p>
 
 <p>The largest cities carry their names, and the type grows with the patch — it is sized
 from the drawn area, so a name appears only once its city is big enough to hold it. In
@@ -312,15 +314,88 @@ const ANTEIL = entpacke(D.ai);
 const GRENZEN = kum(entpacke(D.gr));      // Knotenpaare an Landes- und Aussengrenzen
 let reihe = REIHEN[0];
 
+/* ---------- Weiche Interpolation ----------
+   Zwischen zwei Zählungen wurde geradlinig gerechnet. Das trifft die Zählungen
+   genau, aber die Bewegung knickt an jeder von ihnen: die Geschwindigkeit
+   springt, und das sieht aus wie ein Ruck. Zwischen 1946 und 1950 wächst ein
+   Kreis vielleicht doppelt so schnell wie zwischen 1950 und 1961, und genau
+   im Bild der Zählung wechselt das schlagartig.
+
+   Stattdessen eine monotone kubische Kurve (Fritsch–Carlson, wie PCHIP): sie
+   geht durch jeden gezählten Wert, hat an den Zählungen keinen Knick mehr —
+   und schiesst trotzdem nie über sie hinaus. Das ist der Unterschied zu einem
+   gewöhnlichen Spline: wo eine Reihe steigt und dann fällt, wird die Steigung
+   an der Spitze auf null gesetzt, statt eine Beule zu erfinden. Ein Kreis kann
+   also zwischen zwei Zählungen nie mehr Menschen haben als in beiden, und eine
+   Ecke der Karte wandert nie über den Ort hinaus, den sie in beiden Bildern
+   hat. Dass die Zählungen selbst unverändert bleiben, ist damit garantiert.
+
+   Gerechnet wird auf der Jahresachse, denn auf ihr läuft die Uhr: die
+   Zählungen liegen ungleich weit auseinander, und eine Steigung, die das nicht
+   berücksichtigt, ergäbe genau den Knick, den sie vermeiden soll. Die Abstände
+   kommen deshalb als h dazu.
+
+   Zurückgegeben werden die beiden Steigungen bereits mit h multipliziert, also
+   auf den Abschnitt normiert — dann rechnet hermite auf [0,1]. */
+function steigungen(y, h, f, n) {
+  const d1 = (y[f + 1] - y[f]) / h[f];
+  const d0 = f > 0 ? (y[f] - y[f - 1]) / h[f - 1] : d1;
+  const d2 = f + 2 < n ? (y[f + 2] - y[f + 1]) / h[f + 1] : d1;
+  let m1, m2;
+  // Am Rand einseitig; innen das gewichtete harmonische Mittel nach
+  // Fritsch–Carlson, das an einem Wendepunkt der Reihe auf null geht.
+  if (f === 0) m1 = d1;
+  else if (d0 * d1 <= 0) m1 = 0;
+  else { const w1 = 2 * h[f] + h[f - 1], w2 = h[f] + 2 * h[f - 1]; m1 = (w1 + w2) / (w1 / d0 + w2 / d1); }
+  if (f + 2 >= n) m2 = d1;
+  else if (d1 * d2 <= 0) m2 = 0;
+  else { const w1 = 2 * h[f + 1] + h[f], w2 = h[f + 1] + 2 * h[f]; m2 = (w1 + w2) / (w1 / d1 + w2 / d2); }
+  return [m1 * h[f], m2 * h[f]];
+}
+// Hermite auf [0,1] mit den beiden Steigungen
+function hermite(y1, y2, m1, m2, t) {
+  const t2 = t * t, t3 = t2 * t;
+  return y1 * (2 * t3 - 3 * t2 + 1) + m1 * (t3 - 2 * t2 + t)
+       + y2 * (-2 * t3 + 3 * t2) + m2 * (t3 - t2);
+}
+
 /* ---------- Zeichenkoordinaten ---------- */
 const px = new Float64Array(N), py = new Float64Array(N);
-function setzePunkte(a, b, u) {
-  const xa = reihe.ZX[a], ya = reihe.ZY[a], xb = reihe.ZX[b], yb = reihe.ZY[b];
-  const sa = reihe.SKALA[a], sb = reihe.SKALA[b];
+// Ein Knoten im Bild f, schon auf den gemeinsamen Massstab gebracht.
+const ortX = (f, i) => (reihe.ZX[f][i] - AX) * reihe.SKALA[f] + AX;
+const ortY = (f, i) => (reihe.ZY[f][i] - AY) * reihe.SKALA[f] + AY;
+
+// Die Steigungen hängen nur am Abschnitt, nicht an der Stelle darin — sie
+// werden einmal je Abschnitt gerechnet und dann für alle Bilder benutzt.
+let tangenteFuer = -1, tangenteReihe = null;
+const AX1 = new Float64Array(N), AX2 = new Float64Array(N);
+const AY1 = new Float64Array(N), AY2 = new Float64Array(N);
+const PX1 = new Float64Array(N), PX2 = new Float64Array(N);
+const PY1 = new Float64Array(N), PY2 = new Float64Array(N);
+function tangenten(a) {
+  if (tangenteFuer === a && tangenteReihe === reihe) return;
+  tangenteFuer = a; tangenteReihe = reihe;
+  const von = Math.max(0, a - 1), bis = Math.min(NF - 1, a + 2);
+  const n = bis - von + 1, hh = [];
+  for (let f = von; f < bis; f++) hh.push(JAHRE[f + 1] - JAHRE[f]);
+  const y = new Float64Array(4);
   for (let i = 0; i < N; i++) {
-    const pa = (xa[i] - AX) * sa + AX, qa = (ya[i] - AY) * sa + AY;
-    const pb = (xb[i] - AX) * sb + AX, qb = (yb[i] - AY) * sb + AY;
-    px[i] = pa + (pb - pa) * u; py[i] = qa + (qb - qa) * u;
+    for (let f = von; f <= bis; f++) y[f - von] = ortX(f, i);
+    let [m1, m2] = steigungen(y, hh, a - von, n);
+    PX1[i] = ortX(a, i); PX2[i] = ortX(a + 1, i); AX1[i] = m1; AX2[i] = m2;
+    for (let f = von; f <= bis; f++) y[f - von] = ortY(f, i);
+    [m1, m2] = steigungen(y, hh, a - von, n);
+    PY1[i] = ortY(a, i); PY2[i] = ortY(a + 1, i); AY1[i] = m1; AY2[i] = m2;
+  }
+}
+function setzePunkte(a, b, u) {
+  if (b === a) { for (let i = 0; i < N; i++) { px[i] = ortX(a, i); py[i] = ortY(a, i); } return; }
+  tangenten(a);
+  const t = u, t2 = t * t, t3 = t2 * t;
+  const c1 = 2 * t3 - 3 * t2 + 1, c2 = t3 - 2 * t2 + t, c3 = -2 * t3 + 3 * t2, c4 = t3 - t2;
+  for (let i = 0; i < N; i++) {
+    px[i] = PX1[i] * c1 + AX1[i] * c2 + PX2[i] * c3 + AX2[i] * c4;
+    py[i] = PY1[i] * c1 + AY1[i] * c2 + PY2[i] * c3 + AY2[i] * c4;
   }
 }
 // Grösster Rahmen je Reihe, gemessen nur an den Kreisen, die im jeweiligen
@@ -403,18 +478,12 @@ function farbe(modus, wert, k, rate) {
 }
 
 /* ---------- Zustand ---------- */
-// Die Uhr läuft gleichmässig über die Bilder, nicht über die Jahre: jeder
-// Abschnitt zwischen zwei Zählungen bekommt dieselbe Zeit. Vorher war die
-// Zeitachse linear in Jahren, und dann rauscht das halbe zwanzigste
-// Jahrhundert vorbei, während die Karte zwischen 1871 und 1900 steht — die
-// Abstände der Zählungen reichen von siebeneinhalb bis siebenunddreissig
-// Jahren. „stelle" ist die Stelle auf der Bilderkette, „jahr" folgt daraus.
-let modus = 'menschen', stelle = 0, jahr = T0, laeuft = false, letzterTip = -1;
-function setzeZeit(p) {
-  stelle = Math.max(0, Math.min(NF - 1, p));
-  const a = Math.min(NF - 2, Math.floor(stelle));
-  jahr = JAHRE[a] + (JAHRE[a + 1] - JAHRE[a]) * (stelle - a);
-}
+// Die Uhr läuft gleichmässig in Jahren: ein Jahr ist ein Jahr, also dauert
+// 1871 bis 1900 fünfmal so lang wie 1939 bis 1946. Das macht die Zeitachse zu
+// dem, was sie ist — eine Zeitachse — und nicht zu einer Reihe gleich breiter
+// Kapitel.
+let modus = 'menschen', jahr = T0, laeuft = false, letzterTip = -1;
+function setzeZeit(j) { jahr = Math.max(T0, Math.min(T1, j)); }
 const cv = document.getElementById('karte'), ctx = cv.getContext('2d');
 let breite = 0, hoehe = 0, mass = 1, verX = 0, verY = 0;
 
@@ -466,10 +535,21 @@ const UEBER = 1 / 6;
 const glatt = x => x * x * (3 - 2 * x);
 function werteBei(a, b, u) {
   const w = new Float64Array(NK), deck = new Float64Array(NK), rate = new Array(NK).fill(null);
+  const vonF = Math.max(0, a - 1), bisF = Math.min(NF - 1, b + 1), nF = bisF - vonF + 1;
+  const hh = [];
+  for (let f = vonF; f < bisF; f++) hh.push(JAHRE[f + 1] - JAHRE[f]);
   for (let k = 0; k < NK; k++) {
     const va = reihe.BEV[a][k], vb = reihe.BEV[b][k];
     if (va > 0 && vb > 0) {
-      w[k] = va + (vb - va) * u; deck[k] = 1;
+      // Dieselbe weiche Kurve wie für die Form, damit Zahl und Fläche
+      // zusammenpassen: über die Zählung hinaus geht sie nie.
+      const y = [];
+      for (let f = vonF; f <= bisF; f++) y.push(reihe.BEV[f][k]);
+      if (y.every(v => v > 0)) {
+        const [m1, m2] = steigungen(y, hh, a - vonF, nF);
+        w[k] = hermite(va, vb, m1, m2, u);
+      } else w[k] = va + (vb - va) * u;
+      deck[k] = 1;
       const hier = rateIm(a, k);
       if (hier !== null) {
         let r = hier;
@@ -536,7 +616,7 @@ function schreibe(a, b, u, w, deck) {
   document.getElementById('kopf').textContent = zwischen
     ? 'between ' + D.B[a].jahr + ' and ' + D.B[b].jahr + ' — shapes and figures interpolated'
     : z.stichtage.join(' and ') + ' · ' + z.begriffe.join(', ') + ' · method ' + z.methoden.join('/');
-  document.getElementById('zeit').value = Math.round(stelle / (NF - 1) * 1000);
+  document.getElementById('zeit').value = Math.round((jahr - T0) / (T1 - T0) * 1000);
 }
 
 /* ---------- Städtenamen ----------
@@ -875,8 +955,29 @@ function bodenFarbe() {
   return bodenTon;
 }
 
+// Dieselbe weiche Kurve wie im Kartogramm, hier für die Nadelhöhen: sonst
+// ruckt das ganze Feld an jeder Zählung.
+const RHOEHE = new Float64Array(NZ), RM1 = new Float64Array(NZ), RM2 = new Float64Array(NZ);
+let rTangFuer = -1;
+function reliefHoehen(a, b, u) {
+  if (rTangFuer !== a) {
+    rTangFuer = a;
+    const y = new Float64Array(4);
+    const von = Math.max(0, a - 1), bis = Math.min(NF2 - 1, a + 2);
+    const n = bis - von + 1, hh = [];
+    for (let f = von; f < bis; f++) hh.push(JAHRE2[f + 1] - JAHRE2[f]);
+    for (let i = 0; i < NZ; i++) {
+      for (let f = von; f <= bis; f++) y[f - von] = RH[f][i];
+      const m = steigungen(y, hh, a - von, n);
+      RM1[i] = m[0]; RM2[i] = m[1];
+    }
+  }
+  for (let i = 0; i < NZ; i++) RHOEHE[i] = hermite(RH[a][i], RH[b][i], RM1[i], RM2[i], u);
+}
+
 function zeichneRelief() {
   const [a, b, u] = bildBei2(jahr);
+  reliefHoehen(a, b, u);
   ctx2.fillStyle = HIMMEL; ctx2.fillRect(0, 0, breite, rhoehe);
 
   ctx2.beginPath();
@@ -912,7 +1013,7 @@ function zeichneRelief() {
   // bündeln, statt Zeile für Zeile: das sind die meisten Zellen, und danach
   // kosten sie dreizehn Füllungen statt tausend.
   for (let i = 0; i < NZ; i++) {
-    const h = RH[a][i] + (RH[b][i] - RH[a][i]) * u;
+    const h = RHOEHE[i];
     if (h < 0.4 || h >= FLACH) continue;          // unter zehn Menschen je Zelle
     deckel(EIMER[stufeVon(h)], rwx(i), rwy(i), h * RHOCH);
   }
@@ -922,7 +1023,7 @@ function zeichneRelief() {
   // vorderen Nadeln die hinteren verdecken und nicht umgekehrt.
   let zeile = -1;
   for (let i = 0; i < NZ; i++) {
-    const h = RH[a][i] + (RH[b][i] - RH[a][i]) * u;
+    const h = RHOEHE[i];
     if (h < FLACH) continue;
     if (RGY[i] !== zeile) { maleZeile(); zeile = RGY[i]; }
     const x = rwx(i), y = rwy(i), z = h * RHOCH;
@@ -953,7 +1054,7 @@ function schreibeRelief(a, b, u) {
     : zwischen ? 'between ' + D2.b[a].jahr + ' and ' + D2.b[b].jahr + ' — heights interpolated'
       : bd.stichtage.join(' and ') + ' · ' + bd.begriffe.join(', ') + ' · '
         + nf.format(NZ) + ' cells of ' + FLAECHE + ' km²';
-  document.getElementById('zeit').value = Math.round(stelle / (NF - 1) * 1000);
+  document.getElementById('zeit').value = Math.round((jahr - T0) / (T1 - T0) * 1000);
 }
 
 /* ---------- Ablauf ---------- */
@@ -963,21 +1064,21 @@ const DAUER = 48500;
 let zuletzt = 0;
 function schlag(t) {
   if (laeuft) {
-    if (zuletzt) setzeZeit(stelle + (t - zuletzt) / DAUER * (NF - 1));
+    if (zuletzt) setzeZeit(jahr + (t - zuletzt) / DAUER * (T1 - T0));
     zuletzt = t;
-    if (stelle >= NF - 1) halte();
+    if (jahr >= T1) halte();
     zeichne();
   }
   requestAnimationFrame(schlag);
 }
 function starte() {
-  if (stelle >= NF - 1 - 1e-9) setzeZeit(0);
+  if (jahr >= T1 - 1e-9) setzeZeit(T0);
   laeuft = true; zuletzt = 0; document.getElementById('spiel').textContent = '❚❚';
 }
 function halte() { laeuft = false; document.getElementById('spiel').textContent = '▶'; }
 document.getElementById('spiel').onclick = () => laeuft ? halte() : starte();
 document.getElementById('zeit').addEventListener('input', e => {
-  halte(); setzeZeit((NF - 1) * e.target.value / 1000); zeichne();
+  halte(); setzeZeit(T0 + (T1 - T0) * e.target.value / 1000); zeichne();
 });
 for (const b of document.querySelectorAll('.modi button')) b.onclick = () => {
   modus = b.dataset.modus;
@@ -998,11 +1099,11 @@ matchMedia('(prefers-color-scheme:dark)').addEventListener('change', () => { far
 // Markierungen für die Zählungen auf der Zeitachse
 function marken() {
   const VOLL = Math.max(...reihe.BEV.map(b => b.filter(v => v > 0).length));
-  // Die Marken sitzen dort, wo die Zählungen auf dem Regler liegen — und der
-  // Regler misst jetzt Bilder, keine Jahre, also stehen sie gleichmässig.
+  // Die Marken sitzen dort, wo die Zählungen wirklich liegen: ungleichmässig,
+  // weil sie ungleichmässig gezählt wurden.
   document.getElementById('marken').innerHTML = D.B.map((b, i) =>
     '<i class="' + (reihe.BEV[i].filter(v => v > 0).length >= VOLL ? 'voll' : '') + '" style="left:' +
-    (i / (NF - 1) * 100).toFixed(2) + '%" title="' + b.jahr + '"></i>').join('');
+    ((b.t - T0) / (T1 - T0) * 100).toFixed(2) + '%" title="' + b.jahr + '"></i>').join('');
 }
 
 // Umschalter zwischen den Reihen
