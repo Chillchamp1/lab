@@ -85,10 +85,14 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   blasser; sechs bleiben stehen, auf dem Telefon drei, auf einem kurzen Schirm
   keine. Zusammenhang, keine Daten — Kreiszahlen darin stammen aus der eigenen
   Tabelle, der Rest ist Schulwissen.
-- **Zwei Anordnungen.** Im Hochformat füllt die Karte, was der Text übrig lässt.
-  Ist die Bühne breiter als hoch, rückt der Text in eine Spalte daneben und die
-  Karte bekommt die volle Höhe — sonst stünde sie als Briefmarke in einem
-  breiten schwarzen Feld, denn ihr Seitenverhältnis ist fest.
+- **Der Text liegt über der Bühne, nicht in ihr.** Er nimmt der Karte keinen
+  Platz mehr weg, und die Karte springt nicht mehr, wenn eine Notiz länger ist
+  als die vorige. Drei Ebenen: Jahr und Einwohnerzahl über der Karte, mit Schein
+  dahinter; die Karte; darunter Notiz und Faden — wo Platz ist, stehen sie da,
+  wo die Karte hinreicht, verschwinden sie dahinter. Die Zweispaltigkeit im
+  Querformat ist damit hinfällig und wieder draussen.
+- Die **Legende** ist eine Zeile: die Zahlen an den Enden der Leiter, ein Wort
+  zur Form, der Stichtag. Umbruch unterbunden, sonst schöbe auch sie die Karte.
 - Die Uhr läuft 70 Sekunden für 153 Jahre. Die Spielzeit je Abschnitt mischt
   Dauer und Umschichtung (geometrisches Mittel) und liegt nie unter
   viereinhalb Sekunden, also bekommt 1939→1946 fünf Sekunden statt drei und
@@ -154,8 +158,16 @@ Freigabe, aus Bildvorlagen abzuschreiben.
 - **Die Farbe ist die Höhe.** Die Leiter einer physischen Karte — Tiefland grün,
   dann gelb, braun, oben Fels —, und gefärbt wird die Höhe, also dieselbe Zahl,
   die das Relief trägt. Die Höhenlinien laufen damit genau auf den Farbgrenzen,
-  wie in einem Atlas. Kreisgrenzen treten zurück, Landesgrenzen werden zur
-  dünnen dunklen Linie. Die Seite steht auf Half and half.
+  wie in einem Atlas. Die Seite steht auf Half and half.
+- **Keine Grenzen mehr**, in keiner der drei Sorten: die gezeichnete Linie um
+  Kreis und Land, die Fuge im Höhenfeld (`breite/420`), die als Graben dasselbe
+  zeigte, und die Naht zwischen zwei einzeln gefüllten Nachbarflächen, die die
+  Kantenglättung als halb durchsichtigen Spalt stehen lässt — auf schwarzem
+  Grund eine feine dunkle Linie, die niemand gezeichnet hat. Gegen die Naht hilft
+  ein Strich in der eigenen Farbe der Fläche: sie dehnt sich um einen halben
+  Bildpunkt, die Nachbarn überlappen sich, die Naht ist zu. Farbe, Hang und
+  Höhenlinie zeigen die Grenze dort, wo sich die Dichte ändert. 3 334 Knotenpaare
+  der Landesgrenzen fallen damit aus der Nutzlast.
 - **Die Leiter wird je Form aus den Daten gemessen**, einmal, über alle Kreise in
   allen Zählungen: q0,005 bis q0,995. Landkarte ×0,19 … ×17, Half and half
   ×0,33 … ×2,5, volles Kartogramm ×0,99 … ×1,01. Zwischen zwei Formen wird
@@ -164,12 +176,16 @@ Freigabe, aus Bildvorlagen abzuschreiben.
 - **Im vollen Kartogramm ist keine Höhe mehr übrig**, und das soll man sehen.
   Eine Leiter über die verbliebenen anderthalb Prozent machte aus Rundungsresten
   ein Gebirge — und das weichgezeichnete Feld tat dasselbe, weil ein gross
-  gezeichneter Kreis von den Fugen weniger abbekommt als ein kleiner; Berlin sah
-  wieder aus wie ein Berg, obwohl es nur gross gezeichnet ist. Also zwei Bremsen
+  gezeichneter Kreis von den Fugen weniger abbekam als ein kleiner; Berlin sah
+  wieder aus wie ein Berg, obwohl es nur gross gezeichnet ist. (Die Fugen sind
+  inzwischen weg, siehe oben; die Leiter bleibt.) Also zwei Bremsen
   aus derselben gemessenen Spanne: die Leiter bekommt eine Mindestbreite (Faktor
   2,6), und das Relief wird im selben Verhältnis ausgeblendet. Der Weg von der
   Landkarte zum Kartogramm zeigt damit genau das, worum es geht — die Berge
   sinken in die Fläche.
+- Die **Städtenamen** stehen nicht mehr auf dem Gipfel: jeder rückt um die
+  Hälfte des Radius nach unten, den ein Kreis seiner Fläche hätte. „Berlin"
+  und „Hamburg" deckten sonst genau den Berg zu, den sie benennen.
 - Die **Städtenamen** haben eine Obergrenze an der Kartenbreite (`breite/38`)
   statt fester dreissig Pixel: Berlin und Hamburg standen sonst als Überschrift
   über der Karte statt als Beschriftung darin.

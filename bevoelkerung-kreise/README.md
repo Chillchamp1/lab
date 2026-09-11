@@ -12,8 +12,8 @@ Das Besondere gegenüber den anderen Kartogrammen hier: **die Karte wächst
 mit**. Ein Kartogramm für sich verteilt nur um, seine Gesamtfläche bleibt
 gleich, ob 1871 oder heute. Hier gilt für alle Zeitpunkte dieselbe Fläche je
 Mensch, also ist 1871 wirklich kleiner als 2024 — flächenproportional, halb so
-viele Menschen, halb so viel Karte. Die Seite ist auf Englisch; im Hochformat
-füllt die Karte den Schirm, im Querformat rückt der Text in eine Spalte daneben.
+viele Menschen, halb so viel Karte. Die Seite ist auf Englisch, und die Karte
+füllt in jedem Format den Schirm; der Text legt sich darüber, wo Platz ist.
 
 Eine Ansicht, eine Farbleiter, ein Bild auf schwarzem Grund. Die Karte wird
 gemalt, wie ein Atlas ein Gebirge malt: Tiefland grün, dann gelb, braun, oben
@@ -38,9 +38,14 @@ Sätzen.
 
 Darunter hängt der Faden der vorigen Überschriften. Kommt eine neue Notiz,
 setzt sie sich obenauf und schiebt die vorigen eine Zeile nach unten, blasser
-mit jedem Schritt; sechs bleiben stehen, auf dem Telefon drei, auf einem kurzen
-Schirm keine. Der Faden hängt frei über dem leeren oberen Rand der Karte und
-kostet deshalb keine Höhe — sonst müsste die Karte neunmal im Lauf schrumpfen.
+mit jedem Schritt; sechs bleiben stehen, auf dem Telefon drei.
+
+Der Text liegt dabei **über der Bühne, nicht in ihr**: er nimmt der Karte keinen
+Platz mehr weg, und die Karte springt nicht mehr, wenn eine Notiz länger ist als
+die vorige. Drei Ebenen — Jahr und Einwohnerzahl über der Karte, mit Schein
+dahinter; die Karte; und darunter Notiz und Faden. Wo Platz ist, stehen sie da;
+wo die Karte hinreicht, verschwinden sie dahinter. Der Text weicht der Karte
+aus, statt sie zu verdrängen.
 
 Dreizehn Notizen sind es insgesamt, jede mit ihrem Zeitfenster. Was darin eine
 Kreiszahl nennt, ist aus der Tabelle dieser Seite genommen, der Rest ist
@@ -86,8 +91,16 @@ gemessen, nicht geschätzt. Die Zwischenform kostet kein Byte: die Landkarte
 steht ohnehin in der Datei, jeder Knoten liegt einfach zwischen seinen beiden
 Orten.
 
-Und die Karte liegt nicht flach. Aus den Kreisflächen, ihren Höhen und den
-gleich breiten Fugen dazwischen entsteht ein Höhenfeld. Beleuchtet wird es von
+Die Karte trägt **keine Grenzen** — weder um die Kreise noch um die Länder. Eine
+Geländekarte hat keine; sie hat Farbe, Hang und Höhenlinie, und die zeigen die
+Grenze dort, wo sie etwas bedeutet: wo sich die Dichte ändert. Wo zwei Nachbarn
+gleich dicht wohnen, war der Strich ohnehin nur Verwaltung. Weg sind dabei alle
+drei Sorten — die gezeichnete Linie, die Fuge im Höhenfeld, die als Graben
+dasselbe zeigte, und die Naht zwischen zwei einzeln gefüllten Nachbarflächen,
+die sich auf schwarzem Grund als feine dunkle Linie liest.
+
+Und die Karte liegt nicht flach. Aus den Kreisflächen und ihren Höhen entsteht
+ein Höhenfeld. Beleuchtet wird es von
 oben links — aber die Form tragen nicht Licht und Schatten allein, sondern
 **beleuchtete Höhenlinien nach Tanaka**: weiss, wo der Hang der Sonne zugewandt
 ist, schwarz, wo er von ihr wegfällt, dick, wo er voll im Licht oder voll im
@@ -148,7 +161,10 @@ ist.
 
 Dreizehn Städte tragen ihren Namen, von Anfang an und durchgehend. Die Schrift
 wächst mit dem Fleck, fällt aber nie unter das, was auf einem Telefon noch zu
-lesen ist, und steigt nie über ein Achtunddreissigstel der Kartenbreite; wo zwei Namen einander berühren, weichen sie aus. Städte im Umkreis
+lesen ist, und steigt nie über ein Achtunddreissigstel der Kartenbreite; wo zwei
+Namen einander berühren, weichen sie aus. Und keiner steht auf seinem Gipfel —
+jeder rückt um einen halben Fleckradius nach unten, sonst deckte „Berlin" genau
+den Berg zu, den es benennt. Städte im Umkreis
 von sechzig Kilometern um eine grössere sind nicht beschriftet — sonst trügen
 Rhein und Ruhr allein sieben Namen.
 
