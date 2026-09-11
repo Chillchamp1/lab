@@ -51,21 +51,24 @@ Zeitpunkt auf denselben Gebietsstand gerechnet, jede Zelle Methode A.
   gemeinsamer Massstab, sodass die Karte flächenproportional mit der
   Bevölkerung wächst.
 - `index.html`: eine einzelne Datei, Englisch, Hochformat, Zeitschieberegler
-  mit Marken auf den Zählungen, **drei Ansichten** an derselben Uhr —
-  Einwohner, Richtung (Veränderung je Jahr über den gerade durchlaufenen
-  Abschnitt, rot gegen blau) und das Nadelrelief; Antippen zeigt Zahlen, Rate,
+  mit Marken auf den Zählungen, **drei Ansichten** an derselben Uhr — Growth
+  (Veränderung je Jahr über den gerade durchlaufenen Abschnitt, rot gegen blau;
+  steht vorn), Einwohner und das Nadelrelief; Antippen zeigt Zahlen, Rate,
   Stichtag und Methode.
 - Im Rahmen über der Karte stehen Jahr, Einwohnerzahl und ein Untertitel:
   dreizehn Notizen zu je einem Zeitabschnitt, warum sich die Karte gerade so
   bewegt. Zusammenhang, keine Daten — Kreiszahlen darin stammen aus der eigenen
   Tabelle, der Rest ist Schulwissen; vollständig noch einmal als Liste unter
   der Karte.
-- Die Uhr läuft rund fünfzig Sekunden für 153 Jahre, linear in Jahren.
-  Zwischen den Zählungen wird mit einer monotonen kubischen Kurve gerechnet,
-  nicht geradlinig: kein Knick an den Zählungen, kein Überschiessen darüber
-  hinaus. Grösster Geschwindigkeitssprung von 125 auf 22 Prozent.
-- Die achtzehn grössten Städte tragen ihren Namen; die Schrift wächst mit der
-  gezeichneten Fläche, 1871 ist nur Berlin gross genug dafür.
+- Die Uhr läuft rund fünfzig Sekunden für 153 Jahre. Die Spielzeit je Abschnitt
+  mischt Dauer und Umschichtung (geometrisches Mittel), also bekommt 1939→1946
+  fünf Sekunden statt drei. Zwischen den Zählungen wird mit einer monotonen
+  kubischen Kurve gerechnet, nicht geradlinig: kein Knick, kein Überschiessen.
+  Grösster Geschwindigkeitssprung von 125 auf 21 Prozent.
+- Dreizehn Städte tragen ihren Namen, von Anfang an: die grössten, um
+  sechzig Kilometer voneinander ausgedünnt. Die Schrift wächst mit der
+  gezeichneten Fläche, fällt aber nie unter 9,5 Pixel; wo zwei Namen einander
+  berühren, weichen sie aus.
 - Das Relief nimmt den Hintergrund der Seite an, hell wie dunkel, mit je einer
   eigenen Farbleiter.
 - Der Bauvorgang kann auch mit Reihen umgehen, die nur einen Teil des Landes

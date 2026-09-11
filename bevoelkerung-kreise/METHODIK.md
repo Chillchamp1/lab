@@ -330,17 +330,37 @@ um, es entstehen also keine Faltungen.
 
 ## 4e. Die Uhr
 
-Die Uhr braucht rund fünfzig Sekunden für die 153 Jahre und läuft **linear in
-Jahren**: ein Jahr dauert so lang wie ein Jahr, also 1871 bis 1900 fünfmal so
-lang wie 1939 bis 1946. Die Marken auf dem Regler sitzen dort, wo die Zählungen
-wirklich liegen — ungleichmässig, weil sie ungleichmässig gezählt wurden.
+Die Uhr braucht rund fünfzig Sekunden für die 153 Jahre. Wie viel davon ein
+Abschnitt bekommt, hängt an zwei Dingen zugleich: **wie lang er dauerte und wie
+viel sich in ihm umschichtete**. Genommen wird das geometrische Mittel aus
+beiden Anteilen — dem an der Summe der Jahre und dem an der Summe aller
+Veränderungen je Kreis (Σ|Bevölkerung(b) − Bevölkerung(a)|).
 
-Der Vorschlag, jedem Abschnitt gleich viel Zeit zu geben, war einmal gebaut und
-ist wieder zurückgenommen: er macht aus der Zeitachse eine Reihe gleich breiter
-Kapitel, und dann stimmt die eine Aussage nicht mehr, die eine Zeitachse
-überhaupt macht. Der Eindruck, der dazu geführt hatte — die Bewegung wirke oft
-ruckartig —, kam ohnehin nicht von der Uhr, sondern von der geradlinigen
-Interpolation dazwischen; siehe 4d.
+| Abschnitt | Jahre | Umschichtung | Spielzeit |
+|---|---|---|---|
+| 1871 → 1900–1910 | 34,0 | 18,6 Mio | 11,3 s |
+| 1900–1910 → 1939 | 33,5 | 11,9 Mio | 8,5 s |
+| 1939 → 1946–1950 | 9,4 | 14,5 Mio | 4,9 s |
+| 1946–1950 → 1961–1964 | 14,5 | 12,0 Mio | 5,8 s |
+| 1961–1964 → 1985–1987 | 23,5 | 10,4 Mio | 7,0 s |
+| 1985–1987 → 1996 | 10,3 | 7,1 Mio | 3,7 s |
+| 1996 → 2011 | 14,4 | 4,7 Mio | 3,6 s |
+| 2011 → 2019 | 8,6 | 4,0 Mio | 2,6 s |
+| 2019 → 2024 | 5,0 | 1,6 Mio | 1,2 s |
+
+Rein nach Jahren bekäme der Bruch von 1939 auf 1946 drei Sekunden — die
+gewaltigste Umwälzung der ganzen Reihe, vorbei, ehe man hinsieht. Rein nach
+Umschichtung wäre die Zeitachse keine mehr. So bekommt er fünf, und die langen
+ruhigen Strecken behalten trotzdem den grössten Teil, weil sie am längsten sind.
+
+Der Regler misst entsprechend **Spielzeit**, und die Marken der Zählungen sitzen
+dort, wo sie im Ablauf liegen. Die Jahreszahl im Rahmen zeigt weiter das
+wirkliche Jahr; innerhalb eines Abschnitts läuft sie gleichmässig.
+
+Die Steigungen der weichen Kurve (4d) werden auf derselben Spielzeitachse
+gerechnet. Das ist der Punkt: sichtbar ist Bewegung je Sekunde, nicht je Jahr,
+und ohne diesen Bezug entstünde an jeder Zählung genau der Knick zurück, den
+4d beseitigt.
 
 ## 4f. Die Städtenamen
 
@@ -349,15 +369,23 @@ die in irgendeinem Bild über 400 000 Menschen haben, dazu die Region Hannover,
 in der die Stadt 2001 aufgegangen ist. Achtzehn Namen sind es insgesamt; zu
 sehen sind je nach Bild weniger.
 
-Die Schrifthöhe folgt der Wurzel aus der **gezeichneten** Fläche, wächst also
-mit dem Fleck und nicht mit der Einwohnerzahl — im Kartogramm ist das fast
-dasselbe, aber es ist die Fläche, die den Platz hergibt. Gesetzt wird nur, was
-hineinpasst: unter acht Pixeln gar nicht, breiter als der Fleck (mit etwas
-Überhang) gar nicht, und wo zwei Namen übereinanderlägen, gewinnt der grössere.
-Deshalb trägt 1871 nur Berlin einen Namen, und die anderen kommen dazu, wenn
-ihre Flecken gewachsen sind. Zwischen acht und elf Pixeln blendet ein Name ein,
-statt aufzupoppen — sonst wäre das Erscheinen die auffälligste plötzliche
-Bewegung der ganzen Karte.
+**Alle Namen stehen von Anfang an da**, auch 1871, wo die Flecken winzig sind.
+Ein Name, der im Lauf der Zeit erscheint oder verschwindet, ist ein Sprung im
+Bild, und davon hat die Karte genug.
+
+Damit das geht, sind zwei Dinge nötig. Erstens eine **Untergrenze**: die
+Schrifthöhe folgt der Wurzel aus der gezeichneten Fläche — wächst also mit dem
+Fleck, nicht mit der Einwohnerzahl —, fällt aber nie unter 9,5 Pixel, was auf
+einem Telefon gerade noch zu lesen ist. Zweitens **Abstand**: aus jedem Bündel
+eng benachbarter Städte bleibt die grösste, gemessen mit sechzig Kilometern auf
+dem Boden. Sonst trügen Rhein und Ruhr auf einem daumengrossen Bild sieben
+Namen. Übrig bleiben dreizehn.
+
+Wo zwei Namen einander trotzdem berühren, weichen beide aus: ein paar Runden
+Abstossen entlang der kleineren Überlappung, dazu eine schwache Feder, die
+jeden zu seinem Fleck zurückzieht. Das Ergebnis ändert sich von Bild zu Bild
+ruhig, flackert also nicht. Wer dabei weit von seinem Fleck weggerutscht ist,
+bekommt einen Haarstrich dorthin zurück.
 
 ## 4b. Die beiden Farbskalen des Kartogramms
 

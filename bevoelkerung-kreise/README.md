@@ -15,12 +15,13 @@ Mensch, also ist 1871 wirklich kleiner als 2024 — flächenproportional, halb s
 viele Menschen, halb so viel Karte. Die Seite ist auf Englisch und fürs
 Hochformat gebaut.
 
-Die Ansicht lässt sich umschalten. **People** färbt nach Einwohnern,
+Die Ansicht lässt sich umschalten. **Growth** steht vorn und ist die eigentliche
+Karte: sie färbt jeden Kreis danach, wie schnell er gerade wächst oder
+schrumpft. **People** färbt nach Einwohnern,
 logarithmisch von 30 000 bis 1,5 Millionen und in jedem Bild gleich — dass die
 Karte über die Zeit nachdunkelt, ist deshalb kein Kniff, sondern das Ergebnis.
-**Which way** ist die eigentliche Karte: sie färbt jeden Kreis danach, wie
-schnell er gerade wächst oder schrumpft, also nach der Veränderung je Jahr über
-den Abschnitt, den die Zeit gerade durchläuft. Blau wächst, Rot schrumpft, Grau
+**Growth** rechnet die Veränderung je Jahr über den Abschnitt, den die Zeit
+gerade durchläuft. Blau wächst, Rot schrumpft, Grau
 hält sich. Man sieht das Ruhrgebiet innerhalb eines Menschenlebens vom dunkelsten
 Blau der Karte ins Rot kippen und den Osten nach 1990 rot werden. An den
 Zählungen blendet die Lesart über, statt umzuspringen; die mittleren zwei Drittel
@@ -105,14 +106,16 @@ nicht und bleibt trotzdem immer zwischen den beiden Werten, die sie verbindet.
 Vorher sprang die Geschwindigkeit an jeder Zählung um bis zu 74 Prozent, jetzt
 um höchstens 12,8.
 
-Die Uhr läuft linear in Jahren: ein Jahr dauert so lang wie ein Jahr, 1871 bis
-1900 also fünfmal so lang wie 1939 bis 1946, und die Marken unter dem Regler
-sitzen dort, wo die Zählungen wirklich liegen.
+Die Uhr läuft nicht gleichmässig durch die Jahre. Jeder Abschnitt bekommt einen
+Anteil an den fünfzig Sekunden, der Dauer und Umschichtung mischt — der Bruch
+von 1939 auf 1946 also fünf Sekunden statt drei, während die langen ruhigen
+Strecken trotzdem den grössten Teil behalten, weil sie am längsten sind.
 
-Die grössten Städte tragen ihren Namen, und die Schrift wächst mit dem Fleck:
-sie wird aus der gezeichneten Fläche berechnet, ein Name erscheint also erst,
-wenn seine Stadt ihn tragen kann. 1871 ist das Berlin allein, 2024 sind es
-zehn. Was nicht hineinpasst oder auf einem anderen Namen läge, bleibt weg.
+Dreizehn Städte tragen ihren Namen, von Anfang an und durchgehend. Die Schrift
+wächst mit dem Fleck, fällt aber nie unter das, was auf einem Telefon noch zu
+lesen ist; wo zwei Namen einander berühren, weichen sie aus. Städte im Umkreis
+von sechzig Kilometern um eine grössere sind nicht beschriftet — sonst trügen
+Rhein und Ruhr allein sieben Namen.
 
 ## Was geprüft ist
 
