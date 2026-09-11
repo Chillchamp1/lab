@@ -1056,26 +1056,23 @@ function hoehen(w, deck) {
   return gross;
 }
 
-const RAUF = 0.40;                // Auflösung des Höhenfelds, Anteil der Bildpunkte
-const WEIT = 3;                   // das weite Feld noch einmal so viel gröber
+const RAUF = 0.62;                // Auflösung des Höhenfelds, Anteil der Bildpunkte
 const hkA = document.createElement('canvas'), hcA = hkA.getContext('2d');
 const hkB = document.createElement('canvas'), hcB = hkB.getContext('2d', { willReadFrequently: true });
 const hkC = document.createElement('canvas'), hcC = hkC.getContext('2d', { willReadFrequently: true });
 const hkL = document.createElement('canvas'), hcL = hkL.getContext('2d');
 const hkT = document.createElement('canvas'), hcT = hkT.getContext('2d');
-let rW = 0, rH = 0, kW = 0, kH = 0, rBild = null, tBild = null;
+let rW = 0, rH = 0, rBild = null, tBild = null;
 let feinH = null, grobH = null, grobAuf = null, feldH = null, maskeH = null, schatten = null;
 function reliefFeld() {
   const w = Math.max(8, Math.round(breite * RAUF)), h = Math.max(8, Math.round(hoehe * RAUF));
   if (w === rW && h === rH) return;
   rW = w; rH = h;
-  for (const k of [hkA, hkB, hkL, hkT]) { k.width = w; k.height = h; }
-  kW = Math.max(4, Math.round(w / WEIT)); kH = Math.max(4, Math.round(h / WEIT));
-  hkC.width = kW; hkC.height = kH;
+  for (const k of [hkA, hkB, hkC, hkL, hkT]) { k.width = w; k.height = h; }
   rBild = hcL.createImageData(w, h); tBild = hcT.createImageData(w, h);
   feinH = new Float32Array(w * h); feldH = new Float32Array(w * h);
-  grobAuf = new Float32Array(w * h); maskeH = new Float32Array(w * h);
-  schatten = new Float32Array(w * h); grobH = new Float32Array(kW * kH);
+  grobH = new Float32Array(w * h); grobAuf = new Float32Array(w * h);
+  maskeH = new Float32Array(w * h); schatten = new Float32Array(w * h);
 }
 // Die Stellschrauben des Reliefs.
 // Zwei Sonnen, und das ist Absicht. Die Modellierung braucht ein Licht, das
@@ -1089,8 +1086,12 @@ let WURFSONNE = 16;             // dasselbe Licht, flach, nur für den Schlagsch
 let UEBERHOEHT = 30;            // volle Höhe in Bildpunkten des Höhenfelds
 let MULDE = 0.70;               // wie stark Mulden verschatten
 let WURF = 0.50;                // wie dunkel ein Schlagschatten ist
-let LINIE = 1.1, NIVEAUS = 30, FLACHHANG = 0.008, DUNKELLINIE = 0.55;  // Höhenlinien: Stärke und Anzahl
-const STUFEN = 24;                // so viele Höhenstufen, in Bündeln gezeichnet
+let LINIE = 0.9, NIVEAUS = 32, FLACHHANG = 0.006, DUNKELLINIE = 0.55;  // Höhenlinien: Stärke und Anzahl
+// So fein wird die Höhe abgestuft, ehe sie weichgezeichnet wird. Gezeichnet
+// wird in Bündeln — vierundsechzig Füllungen statt vierhundert —, und die Zahl
+// ist nicht beliebig: die Stufen stecken hinterher im Feld, und wo sie zu grob
+// sind, laufen die Höhenlinien an ihnen entlang statt an der Landschaft.
+const STUFEN = 64;
 const EIMER_H = Array.from({ length: STUFEN }, () => []);
 function reliefUeber(sil, deck, gross) {
   if (!(breite > 60 && hoehe > 60)) return;
@@ -1108,8 +1109,8 @@ function reliefUeber(sil, deck, gross) {
   hcA.clearRect(0, 0, rW, rH);
   hcA.setTransform(s, 0, 0, s, 0, 0);
   // Jeder Kreis bekommt sein eigenes Grau: das ist seine Höhe. Gezeichnet
-  // wird in vierundzwanzig Bündeln statt in vierhundert Füllungen — dieselbe
-  // Ersparnis wie im Nadelrelief.
+  // wird in Bündeln statt in vierhundert Füllungen — dieselbe Ersparnis wie
+  // im Nadelrelief.
   for (const e of EIMER_H) e.length = 0;
   for (let g = 0; g < NK; g++) {
     if (!(deck[g] > 0.5) || !(HOCH[g] > 0)) continue;
@@ -1133,15 +1134,17 @@ function reliefUeber(sil, deck, gross) {
   }
   hcA.lineJoin = 'round'; hcA.lineWidth = fuge; hcA.strokeStyle = '#000'; hcA.stroke(sil);
 
-  // Das weite Feld entsteht auf einer dreimal gröberen Leinwand. Weichzeichnen
-  // kostet nach Fläche, und ein Feld, das ohnehin nur die grosse Form trägt,
-  // braucht die Auflösung nicht. Es wird getrennt gelesen, weil es zweimal
-  // gebraucht wird: als Anteil an der Oberfläche und als Bezug für die
-  // Verschattung in den Mulden.
+  // Das weite Feld. Es entstand eine Fassung lang auf einer dreimal gröberen
+  // Leinwand — Weichzeichnen kostet nach Fläche, und für die grosse Form
+  // schien die Auflösung zu reichen. Sie reichte für die Schattierung, aber
+  // nicht für die Höhenlinien: aus einem dreifach hochgerechneten Feld wurden
+  // zappelige Linien mit Knicken an jeder Stützstelle. Jetzt in voller
+  // Auflösung; Weichzeichnen ist ohnehin linear in der Fläche, nicht im
+  // Radius.
   hcC.setTransform(1, 0, 0, 1, 0, 0);
-  hcC.clearRect(0, 0, kW, kH);
-  hcC.filter = 'blur(' + (grob * s / WEIT).toFixed(2) + 'px)';
-  hcC.drawImage(hkA, 0, 0, kW, kH);
+  hcC.clearRect(0, 0, rW, rH);
+  hcC.filter = 'blur(' + (grob * s).toFixed(2) + 'px)';
+  hcC.drawImage(hkA, 0, 0);
   hcC.filter = 'none';
 
   hcB.setTransform(1, 0, 0, 1, 0, 0);
@@ -1173,26 +1176,21 @@ function reliefUeber(sil, deck, gross) {
     const a = df[(i << 2) + 3] / 255;
     maskeH[i] = a * a * (3 - 2 * a);
   }
-  const dg = hcC.getImageData(0, 0, kW, kH).data;
-  for (let i = 0, n = kW * kH; i < n; i++) grobH[i] = dg[i << 2] / 255;
+  // Das weite Feld bekommt seinen eigenen Rand, den aus seinem eigenen
+  // Alphakanal: der ist über dieselbe weite Strecke verlaufen und damit glatt.
+  // Nähme es den schmalen Rand des engen Feldes, knickten die Höhenlinien
+  // entlang der Küste.
+  const dg = hcC.getImageData(0, 0, rW, rH).data;
+  for (let i = 0, n = rW * rH; i < n; i++) {
+    grobH[i] = dg[i << 2] / 255;
+    const a = dg[(i << 2) + 3] / 255;
+    grobAuf[i] = grobH[i] * a * a * (3 - 2 * a);
+  }
 
   // Beide Felder zusammen ergeben die Oberfläche: das enge trägt den einzelnen
-  // Kreis, das weite die Landschaft. Das weite wird dabei zweifach linear
-  // hochgerechnet — die Stufen der groben Leinwand würden sonst als Kacheln
-  // durchschlagen.
-  const fx = (kW - 1) / Math.max(1, rW - 1), fy = (kH - 1) / Math.max(1, rH - 1);
-  for (let y = 0; y < rH; y++) {
-    const gy = y * fy, j0 = Math.min(kH - 1, gy | 0), j1 = Math.min(kH - 1, j0 + 1), tj = gy - j0;
-    for (let x = 0; x < rW; x++) {
-      const gx = x * fx, i0 = Math.min(kW - 1, gx | 0), i1 = Math.min(kW - 1, i0 + 1), ti = gx - i0;
-      const a0 = grobH[j0 * kW + i0] + (grobH[j0 * kW + i1] - grobH[j0 * kW + i0]) * ti;
-      const a1 = grobH[j1 * kW + i0] + (grobH[j1 * kW + i1] - grobH[j1 * kW + i0]) * ti;
-      const gh = a0 + (a1 - a0) * tj;
-      const i = y * rW + x;
-      grobAuf[i] = gh * maskeH[i];
-      feldH[i] = (0.40 * feinH[i] + 0.60 * gh) * maskeH[i];
-    }
-  }
+  // Kreis, das weite die Landschaft.
+  for (let i = 0, n = rW * rH; i < n; i++)
+    feldH[i] = (0.40 * feinH[i] + 0.60 * grobH[i]) * maskeH[i];
 
   /* Schlagschatten. Das ist der Unterschied zwischen einer gewölbten Fläche
      und einem Gebirge: ein Berg wirft einen Schatten über das, was hinter ihm
@@ -1266,7 +1264,11 @@ function reliefUeber(sil, deck, gross) {
           // Der Sonne zugewandt: +1, von ihr weg: −1. Das Licht kommt von oben
           // links, der Hang fällt in Richtung des negativen Gefälles.
           const f = (qx + qy) / (ql * Math.SQRT2);
-          const br = 0.22 + 0.85 * Math.abs(f);
+          // Mindestens gut einen Bildpunkt breit. Eine Linie, die schmaler
+          // ist als ein Punkt des Höhenfelds, wird beim Hochrechnen zu einem
+          // ungleichmässigen Schmier — genau dem Zappeln, das sie nicht haben
+          // soll.
+          const br = 0.50 + 0.70 * Math.abs(f);
           const weg = ab / steig;
           if (weg < br) {
             // Über fast ebenem Land soll keine Linie liegen: dort sagt sie
@@ -1277,7 +1279,7 @@ function reliefUeber(sil, deck, gross) {
             // rücken die Niveaus auf weniger als zwei Bildpunkte zusammen und
             // ergeben ein Flimmern statt einer Zeichnung — wie ein zu feines
             // Muster auf einem zu groben Raster.
-            const eng = steig > 0.33 ? Math.max(0, 1 - (steig - 0.33) / 0.37) : 1;
+            const eng = steig > 0.28 ? Math.max(0, 1 - (steig - 0.28) / 0.32) : 1;
             // Schwarz trägt auf hellem Grund weiter als Weiss, also weniger
             // davon — sonst liest sich das Gebirge als Tintenstrich.
             lDeck = (1 - weg / br) * Math.abs(f) * hang * eng * LINIE * (f > 0 ? 1 : DUNKELLINIE);
@@ -1315,10 +1317,14 @@ function reliefUeber(sil, deck, gross) {
   hcL.globalCompositeOperation = 'destination-in';   // nur, was auf der Karte liegt
   hcL.drawImage(hkA, 0, 0);
   hcL.globalCompositeOperation = 'source-over';
-  // Die Linien brauchen keine Schablone: sie kommen aus dem weiten Feld, und
-  // das ist ausserhalb der Karte null und damit eben — dort entsteht ohnehin
-  // keine Linie.
+  // Auch die Linien brauchen die Schablone. Das weite Feld hat einen weiten
+  // Rand — es ist über den halben Radius des Weichzeichners hinaus noch nicht
+  // null —, und ohne Schablone schwimmen Höhenlinien neben der Küste im
+  // Leeren.
   hcT.putImageData(tBild, 0, 0);
+  hcT.globalCompositeOperation = 'destination-in';
+  hcT.drawImage(hkA, 0, 0);
+  hcT.globalCompositeOperation = 'source-over';
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
   ctx.globalCompositeOperation = MISCHUNG;
@@ -1453,7 +1459,11 @@ function beschrifte(deck) {
   for (const s of liste) {
     ctx.font = '600 10px system-ui,-apple-system,sans-serif';
     s.je10 = ctx.measureText(s.name).width / 10;
-    s.hoch = Math.max(MINSCHRIFT, Math.min(Math.sqrt(s.A) * 0.40, 30, s.bb * 1.3 / s.je10, s.bh * 0.9));
+    // Der Deckel hängt an der Kartenbreite, nicht an einer festen Zahl: Berlin
+    // und Hamburg liefen sonst in jeder Grösse gegen dieselben dreissig Pixel
+    // und standen als Überschrift über der Karte statt als Beschriftung darin.
+    s.hoch = Math.max(MINSCHRIFT,
+      Math.min(Math.sqrt(s.A) * 0.40, breite / 38, s.bb * 1.3 / s.je10, s.bh * 0.9));
     s.br = s.je10 * s.hoch;
     s.x = s.mx; s.y = s.my;
   }

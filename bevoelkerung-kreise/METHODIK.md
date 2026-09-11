@@ -481,8 +481,13 @@ sind die Daten.
    Draussen bleibt sie durchsichtig. Gezeichnet in vierundzwanzig Bündeln statt
    in vierhundert Füllungen.
 2. Zweimal weichgezeichnet — einmal knapp (`breite/95`), einmal weit
-   (`breite/22`, auf einer dreimal gröberen Leinwand). Das knappe Feld trägt
-   den einzelnen Kreis, das weite die Landschaft darüber; gemischt 40 zu 60.
+   (`breite/22`). Das knappe Feld trägt den einzelnen Kreis, das weite die
+   Landschaft darüber; gemischt 40 zu 60. Das weite entstand eine Fassung lang
+   auf einer dreimal gröberen Leinwand, weil Weichzeichnen nach Fläche kostet.
+   Für die Schattierung reichte das, für die Höhenlinien nicht: aus einem
+   dreifach hochgerechneten Feld werden zappelige Linien mit einem Knick an
+   jeder Stützstelle. Jetzt in voller Auflösung — Weichzeichnen ist ohnehin
+   linear in der Fläche und nicht im Radius, der Aufpreis also überschaubar.
 3. **Gelesen in zwei Kanälen**, und das ist der Kniff. Weichzeichnen mischt am
    Rand Farbe mit Nichts; nähme man das Ergebnis einfach als Höhe, fiele die
    Karte schon dreissig Pixel vor der Küste ab, und der grösste Berg im Feld
@@ -528,10 +533,24 @@ Fläche, die Farbe der Kreise bleibt.
 Gerechnet aus dem **weiten** Feld, nicht aus dem gemischten: das enge hat an
 jeder Kreisgrenze eine Stufe, und auf einer Stufe lägen alle Niveaus
 übereinander — das gäbe einen Strich an jeder Grenze statt einer Höhenlinie.
-Dreissig Niveaus über die volle Höhe. Zwei Bremsen halten sie sauber: über fast
-ebenem Land blenden sie mit dem Gefälle ein (sonst sind sie Kratzer), und wo
-das Feld so steil abfällt, dass die Niveaus auf weniger als zwei Bildpunkte
-zusammenrücken, blenden sie wieder aus (sonst flimmern sie).
+Das weite Feld bekommt dafür auch seinen **eigenen Rand**, aus seinem eigenen
+Alphakanal: der ist über dieselbe weite Strecke verlaufen und damit glatt.
+Nähme es den schmalen Rand des engen Feldes, knickten die Linien entlang der
+Küste. Beschnitten wird die Linienlage trotzdem an der Vorlage — der weite Rand
+reicht über die Küste hinaus, und ohne Schablone schwämmen Höhenlinien im
+Leeren neben der Karte.
+
+Zweiunddreissig Niveaus über die volle Höhe. Drei Dinge halten die Linien
+sauber:
+
+- Über fast ebenem Land blenden sie mit dem Gefälle ein — sonst sind sie
+  Kratzer.
+- Wo das Feld so steil abfällt, dass die Niveaus auf wenige Bildpunkte
+  zusammenrücken, blenden sie wieder aus — sonst flimmern sie.
+- Sie sind **mindestens einen guten Bildpunkt breit** (0,5 bis 1,2 Punkte
+  Halbbreite). Eine Linie, die schmaler ist als ein Punkt des Höhenfelds, wird
+  beim Hochrechnen auf die Leinwand zu einem ungleichmässigen Schmier — genau
+  dem Zappeln, das sie nicht haben soll.
 
 Zwei Lagen also, weil sie verschieden gemischt gehören: die Schattierung als
 Grau im Modus `overlay`, die Linien schlicht darüber.
@@ -553,12 +572,16 @@ unten und weich als Schatten, knapp darunter als Kante. Weil die Kreise die
 Fläche lückenlos teilen, ist die Vereinigung ihrer Umrisse zugleich die
 Silhouette der Karte; beides braucht denselben Pfad, und der entsteht ohnehin.
 
-Gerechnet wird das Höhenfeld auf **40 Prozent** der Bildpunkte, das weite Feld
-noch einmal dreimal gröber — Weichzeichnen kostet nach Fläche, und ein Feld, das
-nur die grosse Form trägt, braucht die Auflösung nicht. Beschnitten wird nicht
-mit `clip` an einem Pfad aus vierhundert Vielecken, sondern mit derselben
-Vorlage als Schablone (`destination-in`); die Linienlage braucht nicht einmal
-das, weil das weite Feld ausserhalb der Karte null und damit eben ist.
+Gerechnet wird das Höhenfeld auf **62 Prozent** der Bildpunkte. Das war einmal
+40, und die Linien waren daran zu erkennen: hochgerechnet auf die Leinwand
+wurden aus ihnen gezackte Schlieren. Die Höhen der Kreise werden ausserdem in
+**64 Stufen** abgelegt statt in 24 — die Stufen stecken hinterher im Feld, und
+wo sie zu grob sind, laufen die Höhenlinien an ihnen entlang statt an der
+Landschaft.
+
+Beschnitten wird nicht mit `clip` an einem Pfad aus vierhundert Vielecken,
+sondern mit derselben Vorlage als Schablone (`destination-in`), für beide
+Lagen.
 
 ## 4h. Die Städtenamen
 
@@ -573,7 +596,11 @@ Bild, und davon hat die Karte genug.
 
 Damit das geht, sind zwei Dinge nötig. Erstens eine **Untergrenze**: die
 Schrifthöhe folgt der Wurzel aus der gezeichneten Fläche — wächst also mit dem
-Fleck, nicht mit der Einwohnerzahl —, fällt aber nie unter sieben Pixel. Das ist
+Fleck, nicht mit der Einwohnerzahl —, fällt aber nie unter sieben Pixel. Und
+eine **Obergrenze**, die an der Kartenbreite hängt (`breite/38`) statt an einer
+festen Zahl: Berlin und Hamburg liefen sonst in jeder Grösse gegen dieselben
+dreissig Pixel und standen als Überschrift über der Karte statt als
+Beschriftung darin. Das ist
 knapp, auf einem Telefon mit dreifacher Pixeldichte aber gut zu lesen, und es
 hält die Namen 1871 so klein, dass sie die Karte nicht zudecken. Zweitens **Abstand**: aus jedem Bündel
 eng benachbarter Städte bleibt die grösste, gemessen mit sechzig Kilometern auf
