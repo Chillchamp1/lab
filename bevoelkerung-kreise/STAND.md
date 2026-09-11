@@ -109,18 +109,22 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   schwarz, wo er wegfällt, dick, wo er voll im Licht oder Schatten steht. Grund:
   die Fläche ist schon mit Daten belegt — eine Schattierung, die stark genug für
   ein Gebirge wäre, macht aus Rot und Blau Grau; Linien nehmen fast keine Fläche
-  weg. 4,9 bis 5,1 Bilder je Sekunde im Prüfbrowser gegen 4,1 vor dem Umbau. Dazu Lambert-Schattierung als Grau im Modus `overlay` (dunkel:
+  weg. 5,9 bis 6,0 Bilder je Sekunde im Prüfbrowser gegen 4,1 vor dem Umbau. Dazu Lambert-Schattierung als Grau im Modus `overlay` (dunkel:
   `soft-light`), Muldenverschattung und Schlagschatten aus einer **flacheren
   Sonne** (16 statt 40 Grad — ein Strahl, der steiler abfällt als der Hang, trifft
   nie auf Schatten).
 - Das Höhenfeld wird **in zwei Kanälen** gelesen: unmultipliziertes Rot ist die
   normalisierte Faltung, also der Höhenmittelwert ohne Randabfall, Alpha ist der
   Rand der Karte. Sonst wäre der grösste Berg im Feld Deutschland selbst.
-- Aufgelöst wird es auf **62 Prozent** der Bildpunkte (vorher 40), das weite
-  Feld in voller Auflösung statt dreifach hochgerechnet, und die Höhen in **64
-  Stufen** statt 24. Zweiunddreissig Höhenlinien, jede mindestens einen guten
-  Bildpunkt breit. Das war der Unterschied zwischen gezackten Schlieren und
-  Linien; die drei Bremsen (flach, zu eng, zu schmal) halten sie sauber.
+- Die Höhenlinien werden **verfolgt statt gemalt**: Marching Squares über das
+  weite Feld, gezeichnet als Pfade auf der Leinwand selbst — in voller
+  Auflösung und mit deren Kantenglättung. Vorher lagen sie im Höhenfeld und
+  wurden mit ihm hochgerechnet; das liess sich durch mehr Auflösung nicht
+  beheben, weil eine Linie von ein bis zwei Rasterpunkten gestreckt immer ein
+  Schmier bleibt. Vierzig Niveaus, Gitterschritt zwei Feldpunkte, gebündelt in
+  24 Pfade nach Beleuchtungsstärke.
+- Das Höhenfeld selbst darf dafür wieder grob sein (45 % der Bildpunkte): es
+  trägt nur noch den Verlauf. Die Höhen der Kreise stehen in 64 Stufen statt 24.
 - Die **Städtenamen** haben eine Obergrenze an der Kartenbreite (`breite/38`)
   statt fester dreissig Pixel: Berlin und Hamburg standen sonst als Überschrift
   über der Karte statt als Beschriftung darin.

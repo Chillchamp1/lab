@@ -763,20 +763,19 @@ function hoehen(w, deck) {
   return gross;
 }
 
-const RAUF = 0.62;                // Auflösung des Höhenfelds, Anteil der Bildpunkte
+const RAUF = 0.45;                // Auflösung des Höhenfelds, Anteil der Bildpunkte
 const hkA = document.createElement('canvas'), hcA = hkA.getContext('2d');
 const hkB = document.createElement('canvas'), hcB = hkB.getContext('2d', { willReadFrequently: true });
 const hkC = document.createElement('canvas'), hcC = hkC.getContext('2d', { willReadFrequently: true });
 const hkL = document.createElement('canvas'), hcL = hkL.getContext('2d');
-const hkT = document.createElement('canvas'), hcT = hkT.getContext('2d');
-let rW = 0, rH = 0, rBild = null, tBild = null;
+let rW = 0, rH = 0, rBild = null;
 let feinH = null, grobH = null, grobAuf = null, feldH = null, maskeH = null, schatten = null;
 function reliefFeld() {
   const w = Math.max(8, Math.round(breite * RAUF)), h = Math.max(8, Math.round(hoehe * RAUF));
   if (w === rW && h === rH) return;
   rW = w; rH = h;
-  for (const k of [hkA, hkB, hkC, hkL, hkT]) { k.width = w; k.height = h; }
-  rBild = hcL.createImageData(w, h); tBild = hcT.createImageData(w, h);
+  for (const k of [hkA, hkB, hkC, hkL]) { k.width = w; k.height = h; }
+  rBild = hcL.createImageData(w, h);
   feinH = new Float32Array(w * h); feldH = new Float32Array(w * h);
   grobH = new Float32Array(w * h); grobAuf = new Float32Array(w * h);
   maskeH = new Float32Array(w * h); schatten = new Float32Array(w * h);
@@ -793,7 +792,8 @@ let WURFSONNE = 16;             // dasselbe Licht, flach, nur für den Schlagsch
 let UEBERHOEHT = 30;            // volle Höhe in Bildpunkten des Höhenfelds
 let MULDE = 0.70;               // wie stark Mulden verschatten
 let WURF = 0.50;                // wie dunkel ein Schlagschatten ist
-let LINIE = 0.9, NIVEAUS = 32, FLACHHANG = 0.006, DUNKELLINIE = 0.55;  // Höhenlinien: Stärke und Anzahl
+let LINIE = 0.9, NIVEAUS = 40, FLACHHANG = 0.006, DUNKELLINIE = 0.55;  // Höhenlinien: Stärke und Anzahl
+const LINIENSCHRITT = 2;          // Gitterschritt der Linienverfolgung, in Feldpunkten
 // So fein wird die Höhe abgestuft, ehe sie weichgezeichnet wird. Gezeichnet
 // wird in Bündeln — vierundsechzig Füllungen statt vierhundert —, und die Zahl
 // ist nicht beliebig: die Stufen stecken hinterher im Feld, und wo sie zu grob
@@ -923,7 +923,7 @@ function reliefUeber(sil, deck, gross) {
 
   // Licht von oben links. Auf dem Bildschirm zeigt y nach unten, oben links
   // ist also die negative Richtung in beiden Achsen.
-  const o = rBild.data, t = tBild.data;
+  const o = rBild.data;
   const hochL = Math.cos(Math.PI * SONNE / 180) * Math.SQRT1_2;
   const lx = -hochL, ly = -hochL, lz = Math.sin(Math.PI * SONNE / 180);
   for (let y = 0; y < rH; y++) {
@@ -943,101 +943,138 @@ function reliefUeber(sil, deck, gross) {
       // Und der Schlagschatten.
       if (schatten[i] > 0) I -= (schatten[i] < 0.05 ? schatten[i] / 0.05 : 1) * WURF;
 
-      /* Beleuchtete Höhenlinien, nach Tanaka Kitiro (1950). Eine gewöhnliche
-         Höhenlinie ist überall gleich dunkel und sagt über die Form nur, wo
-         gleiche Höhe liegt. Tanakas Linien werden **weiss, wo der Hang der
-         Sonne zugewandt ist, und schwarz, wo er von ihr wegfällt**, und dick,
-         wo der Hang voll im Licht oder voll im Schatten steht — sie tragen
-         damit dieselbe Information wie eine Schattierung, aber als Kante, und
-         eine Kante sieht das Auge sehr viel deutlicher als einen Verlauf.
-
-         Genau darum geht es hier: die Fläche ist schon mit Farbe belegt, und
-         eine Schattierung, die stark genug für ein Gebirge wäre, macht aus
-         Rot und Blau Grau. Linien nehmen fast keine Fläche weg.
-
-         Gerechnet aus dem weiten Feld, nicht aus dem gemischten: das enge hat
-         an jeder Kreisgrenze eine Stufe, und auf einer Stufe lägen alle
-         Niveaus übereinander — das gäbe einen Strich an jeder Grenze statt
-         einer Höhenlinie. */
-      let lFarbe = 0, lDeck = 0;
-      if (LINIE > 0) {
-        const qx = (grobAuf[zc + xp] - grobAuf[zc + xm]) * 0.5;
-        const qy = (grobAuf[zu + x] - grobAuf[zo + x]) * 0.5;
-        const ql = Math.sqrt(qx * qx + qy * qy);
-        const steig = ql * NIVEAUS;
-        if (steig > 0.003) {
-          const st = grobAuf[i] * NIVEAUS;
-          const ab = Math.abs(st - Math.round(st));
-          // Der Sonne zugewandt: +1, von ihr weg: −1. Das Licht kommt von oben
-          // links, der Hang fällt in Richtung des negativen Gefälles.
-          const f = (qx + qy) / (ql * Math.SQRT2);
-          // Mindestens gut einen Bildpunkt breit. Eine Linie, die schmaler
-          // ist als ein Punkt des Höhenfelds, wird beim Hochrechnen zu einem
-          // ungleichmässigen Schmier — genau dem Zappeln, das sie nicht haben
-          // soll.
-          const br = 0.50 + 0.70 * Math.abs(f);
-          const weg = ab / steig;
-          if (weg < br) {
-            // Über fast ebenem Land soll keine Linie liegen: dort sagt sie
-            // nichts und sieht aus wie ein Kratzer. Sie blendet deshalb mit
-            // dem Gefälle ein.
-            const hang = Math.min(1, ql / FLACHHANG);
-            // Und keine, wo sie zu eng lägen. Wo das Feld steil abfällt,
-            // rücken die Niveaus auf weniger als zwei Bildpunkte zusammen und
-            // ergeben ein Flimmern statt einer Zeichnung — wie ein zu feines
-            // Muster auf einem zu groben Raster.
-            const eng = steig > 0.28 ? Math.max(0, 1 - (steig - 0.28) / 0.32) : 1;
-            // Schwarz trägt auf hellem Grund weiter als Weiss, also weniger
-            // davon — sonst liest sich das Gebirge als Tintenstrich.
-            lDeck = (1 - weg / br) * Math.abs(f) * hang * eng * LINIE * (f > 0 ? 1 : DUNKELLINIE);
-            lFarbe = f;
-          }
-        }
-      }
-
-      /* Aufgetragen wird das Licht als Grau über der Farbe, gemischt im Modus
-         overlay, nicht als schwarze und weisse Deckkraft. Der Unterschied ist
-         der zwischen einem Relief und einem Schleier: Deckkraft zieht jede
-         Farbe gegen Schwarz oder Weiss, und bei der Stärke, die ein Gebirge
-         braucht, bleibt von Rot und Blau nichts übrig. Overlay rechnet den Ton
-         gegen die Farbe, die schon da liegt — dunkler wird dunkler, heller
-         heller, der Farbton bleibt. */
       const i4 = i << 2;
       let a = I * STAERKE;
       if (a > 0) { if (a > HELLMAX) a = HELLMAX; }
       else { if (a < -DUNKELMAX) a = -DUNKELMAX; }
       const g = 128 + a * 127;
       o[i4] = g; o[i4 + 1] = g; o[i4 + 2] = g; o[i4 + 3] = 255;
-      const j4 = i << 2;
-      if (lDeck > 0.004) {
-        const w = lFarbe > 0 ? 255 : 0;
-        t[j4] = w; t[j4 + 1] = w; t[j4 + 2] = w;
-        t[j4 + 3] = Math.min(255, lDeck * 255);
-      } else t[j4 + 3] = 0;
     }
   }
-  // Zwei Lagen, weil sie verschieden gemischt gehören: die Schattierung als
-  // Grau im Modus overlay, damit die Farbe der Fläche bleibt — die Linien
-  // schlicht darüber, damit sie Kanten bleiben und nicht in der Farbe
-  // versinken.
+  // Die Schattierung als Grau im Modus overlay, damit die Farbe der Fläche
+  // bleibt. Sie ist ein Verlauf und verträgt das Hochrechnen; die Linien
+  // kommen danach als Pfade, in voller Auflösung.
   hcL.putImageData(rBild, 0, 0);
   hcL.globalCompositeOperation = 'destination-in';   // nur, was auf der Karte liegt
   hcL.drawImage(hkA, 0, 0);
   hcL.globalCompositeOperation = 'source-over';
-  // Auch die Linien brauchen die Schablone. Das weite Feld hat einen weiten
-  // Rand — es ist über den halben Radius des Weichzeichners hinaus noch nicht
-  // null —, und ohne Schablone schwimmen Höhenlinien neben der Küste im
-  // Leeren.
-  hcT.putImageData(tBild, 0, 0);
-  hcT.globalCompositeOperation = 'destination-in';
-  hcT.drawImage(hkA, 0, 0);
-  hcT.globalCompositeOperation = 'source-over';
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
   ctx.globalCompositeOperation = MISCHUNG;
   ctx.drawImage(hkL, 0, 0, breite, hoehe);
   ctx.globalCompositeOperation = 'source-over';
-  ctx.drawImage(hkT, 0, 0, breite, hoehe);
+  if (LINIE > 0) hoehenLinien(s);
+}
+
+/* ---------- Beleuchtete Höhenlinien, nach Tanaka Kitiro (1950) ----------
+   Eine gewöhnliche Höhenlinie ist überall gleich dunkel und sagt über die Form
+   nur, wo gleiche Höhe liegt. Tanakas Linien werden **weiss, wo der Hang der
+   Sonne zugewandt ist, und schwarz, wo er von ihr wegfällt**, und dick, wo der
+   Hang voll im Licht oder voll im Schatten steht — sie tragen damit dieselbe
+   Auskunft wie eine Schattierung, aber als Kante, und eine Kante sieht das
+   Auge sehr viel deutlicher als einen Verlauf. Vor allem nehmen sie fast keine
+   Fläche weg, und die Fläche ist hier schon vergeben: sie trägt die Farbe, und
+   die Farbe sind die Daten.
+
+   Die ersten Fassungen malten sie **ins Höhenfeld**, also in ein Raster von
+   vierzig bis sechzig Prozent der Bildpunkte, und rechneten dieses Bild
+   hinterher hoch. Das kann nicht scharf werden: eine Linie ist ein bis zwei
+   Punkte breit, und zwei Punkte, um das Anderthalbfache gestreckt und weich
+   gezeichnet, sind ein Schmier mit ungleichmässigem Rand. Genau das war das
+   Zappeln.
+
+   Jetzt werden sie **verfolgt statt gemalt**: Marching Squares über das weite
+   Feld liefert die Linien als Strecken, und gezeichnet werden sie als Pfade
+   auf der Leinwand selbst — mit deren voller Auflösung und deren Kantenglättung.
+   Das Höhenfeld darf dafür ruhig grob sein: es ist über fünfzehn Punkte
+   weichgezeichnet, und die Stützstellen einer Linie dürfen weiter
+   auseinanderliegen als ein Bildpunkt, solange die Linie selbst scharf ist.
+
+   Gerechnet aus dem weiten Feld, nicht aus dem gemischten: das enge hat an
+   jeder Kreisgrenze eine Stufe, und auf einer Stufe lägen alle Niveaus
+   übereinander — das gäbe einen Strich an jeder Grenze statt einer Höhenlinie.
+
+   Gebündelt wird nach Beleuchtungsstärke: acht Stufen, hell und dunkel, also
+   sechzehn Pfade statt Tausender einzelner Striche. */
+const NSTUFE = 12;
+const LINIENEIMER = Array.from({ length: 2 * NSTUFE }, () => []);
+function hoehenLinien(s) {
+  for (const e of LINIENEIMER) e.length = 0;
+  const S = LINIENSCHRITT;
+  const je = 1 / s;                       // Feldpunkt -> Bildpunkt
+  const nx = Math.floor((rW - 1) / S), ny = Math.floor((rH - 1) / S);
+  const F = grobH, M = maskeH;
+  for (let cy = 0; cy < ny; cy++) {
+    const y0 = cy * S, y1 = y0 + S;
+    const r0 = y0 * rW, r1 = y1 * rW;
+    for (let cx = 0; cx < nx; cx++) {
+      const x0 = cx * S, x1 = x0 + S;
+      // Nur dort, wo die Zelle ganz auf der Karte liegt. Das erspart das
+      // Beschneiden an einem Pfad aus vierhundert Vielecken und lässt der
+      // Küste einen schmalen, linienfreien Saum — der sieht ohnehin besser aus.
+      if (M[r0 + x0] < 0.85 || M[r0 + x1] < 0.85 || M[r1 + x1] < 0.85 || M[r1 + x0] < 0.85) continue;
+      const a = F[r0 + x0], b = F[r0 + x1], c = F[r1 + x1], d = F[r1 + x0];
+      let lo = a, hi = a;
+      if (b < lo) lo = b; if (b > hi) hi = b;
+      if (c < lo) lo = c; if (c > hi) hi = c;
+      if (d < lo) lo = d; if (d > hi) hi = d;
+      const n0 = Math.ceil(lo * NIVEAUS), n1 = Math.floor(hi * NIVEAUS);
+      if (n1 < n0) continue;
+
+      // Gefälle der Zelle, je Feldpunkt. Daraus kommt alles Weitere.
+      const gx = ((b + c) - (a + d)) / (2 * S), gy = ((d + c) - (a + b)) / (2 * S);
+      const ql = Math.sqrt(gx * gx + gy * gy);
+      if (!(ql > 1e-7)) continue;
+      // Der Sonne zugewandt: +1, von ihr weg: −1.
+      const f = (gx + gy) / (ql * Math.SQRT2);
+      const hang = Math.min(1, ql / FLACHHANG);
+      // Wie weit zwei Niveaus auf der Leinwand auseinanderliegen. Rücken sie
+      // unter zwei Bildpunkte zusammen, verschmelzen die Linien zu einer
+      // Fläche — dann blenden sie aus.
+      const abstand = je / (ql * NIVEAUS);
+      const eng = abstand > 4 ? 1 : Math.max(0, (abstand - 1.6) / 2.4);
+      const st = Math.abs(f) * hang * eng;
+      if (st < 0.025) continue;
+      let k = (st * NSTUFE) | 0; if (k > NSTUFE - 1) k = NSTUFE - 1;
+      const eimer = LINIENEIMER[f > 0 ? k : NSTUFE + k];
+
+      const px0 = x0 * je, py0 = y0 * je, SS = S * je;
+      for (let n = n0; n <= n1; n++) {
+        const t = n / NIVEAUS;
+        const ka = (a > t ? 1 : 0) | (b > t ? 2 : 0) | (c > t ? 4 : 0) | (d > t ? 8 : 0);
+        if (ka === 0 || ka === 15) continue;
+        // Schnittpunkte auf den vier Kanten, geradlinig eingerechnet.
+        const e0x = px0 + SS * (t - a) / (b - a), e0y = py0;
+        const e1x = px0 + SS,                     e1y = py0 + SS * (t - b) / (c - b);
+        const e2x = px0 + SS * (t - d) / (c - d), e2y = py0 + SS;
+        const e3x = px0,                          e3y = py0 + SS * (t - a) / (d - a);
+        switch (ka) {
+          case 1: case 14: eimer.push(e3x, e3y, e0x, e0y); break;
+          case 2: case 13: eimer.push(e0x, e0y, e1x, e1y); break;
+          case 3: case 12: eimer.push(e3x, e3y, e1x, e1y); break;
+          case 4: case 11: eimer.push(e1x, e1y, e2x, e2y); break;
+          case 6: case 9:  eimer.push(e0x, e0y, e2x, e2y); break;
+          case 7: case 8:  eimer.push(e2x, e2y, e3x, e3y); break;
+          default:         // 5 und 10: der Sattel, beide Strecken
+            eimer.push(e3x, e3y, e0x, e0y, e1x, e1y, e2x, e2y);
+        }
+      }
+    }
+  }
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (let e = 0; e < LINIENEIMER.length; e++) {
+    const p = LINIENEIMER[e];
+    if (!p.length) continue;
+    const hell = e < NSTUFE, k = e - (hell ? 0 : NSTUFE);
+    const st = (k + 0.5) / NSTUFE;
+    ctx.beginPath();
+    for (let i = 0; i < p.length; i += 4) { ctx.moveTo(p[i], p[i + 1]); ctx.lineTo(p[i + 2], p[i + 3]); }
+    ctx.lineWidth = (0.40 + 1.15 * st) * Math.max(0.7, breite / 760);
+    ctx.strokeStyle = hell ? '#fff' : '#000';
+    ctx.globalAlpha = Math.min(1, LINIE * st * (hell ? 1 : DUNKELLINIE));
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
 }
 
 function zeichne() {
