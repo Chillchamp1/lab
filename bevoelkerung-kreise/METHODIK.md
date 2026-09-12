@@ -319,7 +319,7 @@ gerechnet. Das ist der Punkt: sichtbar ist Bewegung je Sekunde, nicht je Jahr,
 und ohne diesen Bezug entstünde an jeder Zählung genau der Knick zurück, den
 4d beseitigt.
 
-## 4f. Der Regler zwischen Landkarte und Kartogramm
+## 4f. Halbe Verzerrung: der Tausch zwischen Fläche und Höhe
 
 Ein Kartogramm steckt die ganze Bevölkerung in die Fläche. Bei Berlin heisst
 das: 0,25 Prozent des Bodens werden zu 4,4 Prozent der Karte, ein Faktor 17,6,
@@ -327,17 +327,24 @@ und Deutschland sieht nicht mehr wie Deutschland aus. Eine Landkarte mit Höhen
 steckt sie ganz in die Höhe: die Form stimmt, aber die Städte sind Spitzen auf
 einer Fläche, die man nicht mehr trifft.
 
-Die Seite lässt beides nebeneinander stehen und dazwischen einen Zwischenschritt
-— drei Knöpfe unter dem Regler:
+Die Seite zeigt den Schritt dazwischen, und nur ihn:
 
 | | Berlins Anteil an der Karte | Berlins Höhe | Höhenspanne im Bild |
 |---|---|---|---|
-| **Real map** | 0,25 % | 17,8 × Mittel | 134 : 1 |
-| **Half and half** | 1,75 % | 2,5 × Mittel | 9 : 1 |
-| **Cartogram** | 4,41 % | 1,0 × Mittel | 1 : 1 |
+| Real map (a = 0) | 0,25 % | 17,8 × Mittel | 134 : 1 |
+| **Half and half (a = 0,5)** | **1,75 %** | **2,5 × Mittel** | **9 : 1** |
+| Cartogram (a = 1) | 4,41 % | 1,0 × Mittel | 1 : 1 |
 
 Der Tausch ist exakt: 1,75 × 2,5 = 4,4 = 0,25 × 17,8. **Volumen bleibt
-Bevölkerung**, in jeder Stellung.
+Bevölkerung**, in jeder Stellung — die halbe ist nur die, in der beide Hälften
+des Tauschs noch zu sehen sind.
+
+Die anderen beiden waren eine Fassung lang als Knöpfe erreichbar und sind es
+nicht mehr. Was sie tragen, steht unverändert im Skript: `FORMEN` ist eine
+Liste, alles, was zwischen ihren Einträgen überblendet, rechnet weiterhin
+allgemein, und die Nutzlast enthält ohnehin beide Enden. Wer sie zurückholen
+will, trägt sie dort wieder ein und stellt die drei Knöpfe in die Seite
+zurück.
 
 ### Wie die Zwischenform entsteht
 
@@ -609,7 +616,8 @@ voller Auflösung, nicht in der des Feldes.
 Wie hoch ein Kreis steht, sagt 4f: im vollen Kartogramm für alle dasselbe, sonst
 Bevölkerung durch gezeichnete Fläche.
 
-> Volumen = Fläche × Höhe ∝ Bevölkerung — in jeder Stellung des Reglers.
+> Volumen = Fläche × Höhe ∝ Bevölkerung — bei jedem Wert von *a*, also auch
+> bei dem einen, der gezeichnet wird.
 
 **Eine Fassung lang lag auf jeder Kreisgrenze eine schwarze Fuge** (`breite/420`),
 damit jeder Kreis als eigene Platte modelliert wurde. Sie ist weg. Eine Fuge ist
@@ -817,14 +825,12 @@ Die kreisfreien Städte und Stadtkreise tragen doch einen Umriss, einen feinen
 dunklen, über dem Relief gezeichnet. Für einen Landkreis wäre er überflüssig: er
 wird kaum verzerrt, sein Umriss sagt nichts, was die Farbe nicht schon sagt.
 Eine kreisfreie Stadt ist der andere Fall. Sie ist auf dem Boden winzig und in
-der Karte gross — Berlin geht vom Viertelprozent der Fläche auf viereinhalb —,
+der Karte gross — Berlin geht vom Viertelprozent der Fläche auf knapp zwei —,
 und ihr Berg reicht nach dem Weichzeichnen weit über sie hinaus. Ohne Umriss
 verschwimmt sie mit dem Umland, dessen Farbe sie ja selbst mitgeprägt hat.
 
 Der Umriss sagt hier also etwas, das sonst niemand sagt: **bis hierhin reicht die
-Stadt, der Rest ist ihr Schatten.** Im vollen Kartogramm, wo die Fläche einfarbig
-ist, sind diese Umrisse das Einzige, was man noch sieht — und genau dort sind sie
-am meisten wert, weil sie zeigen, wie gross eine Stadt geworden ist.
+Stadt, der Rest ist ihr Schatten.**
 
 ### Volumen ist Bevölkerung
 
@@ -896,45 +902,44 @@ werden beim Umschalten verworfen. Gerechnet ist der Unterschied ein einziger
 Faktor — die Bevölkerung des Bildes geteilt durch die des letzten, also 0,35 im
 Jahr 1871.
 
-### Eine Leiter für alle drei Formen
+### Eine Leiter, und sie misst die Form, die gezeichnet wird
 
-Gemessen wurde die Spanne eine Fassung lang **je Form**, und zwischen zwei
-Formen wurde übergeblendet. Der Grund war gut: die Formen streuten sehr
-verschieden — auf der Landkarte vom Fünftel bis zum Fünfzehnfachen, im vollen
-Kartogramm gar nicht.
+Solange die Seite drei Formen zeigte, musste die Leiter alle drei umschliessen,
+sonst hiesse ×1 je nach Knopfstellung etwas anderes. Das kostete: die Landkarte
+streut am weitesten, also setzte **sie** das obere Ende, und in der halben
+Verzerrung blieb ein Stück Leiter ungenutzt.
 
-Mit festem Bezug und festem Massstab gilt das nicht mehr. Das Wachstum, Faktor
-2,85 über hundertfünfzig Jahre, steckt jetzt in **jeder** Form, auch im
-Kartogramm: dessen Fläche ist fest, seine Bevölkerung wächst, also steigt seine
-Dichte — von ×0,35 im Jahr 1871 auf ×1,00 im Jahr 2024. Die drei gemessenen
-Spannen liegen dadurch nah beieinander, und eine Leiter umschliesst sie alle:
-**×0,18 … ×2,29**.
+Mit einer Form misst die Leiter genau das, was auch gezeichnet wird. Ihr
+fünfundneunzigstes Prozent liegt bei ×2,04 statt bei ×2,29 der Landkarte, also
+rücken die Farben um gut ein Zehntel nach oben — was die Schneegrenze wieder
+ausgleicht (Faktor 1,17 statt 1,04, siehe unten). Am Ende steht die Leiter fast
+genau dort, wo sie vorher stand, **×0,28 … ×2,39**, aber sie steht dort aus dem
+richtigen Grund.
 
-Erst damit heisst ×1 überall dasselbe. Sonst bekäme derselbe Wert je nach
-Knopfstellung eine andere Farbe, und die Skala wäre nur innerhalb einer Form
-absolut.
-
-Das Kartogramm ist damit nicht mehr die tote Fläche, die es war: es liegt in
-jedem Jahr einfarbig da, aber die Farbe wandert mit den Jahren von Grün nach
-Orange — und das ist genau die mittlere Dichte des Landes.
+Was bleibt: dieselbe Farbe heisst über die ganzen hundertdreiundfünfzig Jahre
+dasselbe. Das hängt am festen Bezug und am festen Massstab, nicht an der Zahl
+der Formen.
 
 ### Die Leiter wird gemessen, nicht gesetzt
 
 Gesetzt ist an der Leiter nur, dass sie zwanzig Bänder hat; wo sie anfängt und
 aufhört, kommt **aus den Daten**: alle vierhundert Kreise in allen zehn
-Zählungen, das fünfte und das fünfundneunzigste Prozent (oben plus vier Prozent
-Schneegrenze, siehe unten), je Form einmal gemessen und dann behalten. Das geht, ohne zu zeichnen, weil die Höhe ein
-Verhältnis ist und sich beim Skalieren der ganzen Karte nicht ändert.
+Zählungen, das fünfte und das fünfundneunzigste Prozent (oben plus siebzehn
+Prozent Schneegrenze, siehe unten), einmal gemessen und dann behalten. Das geht,
+ohne zu zeichnen, weil die Höhe ein Verhältnis ist und sich beim Skalieren der
+ganzen Karte nicht ändert.
+
+Gemessen wird je Eintrag in `FORMEN`; steht dort nur die halbe Verzerrung, ist
+es diese eine Zeile:
 
 | Form | gemessene Spanne |
 |---|---|
-| Real map (a = 0) | ×0,18 … ×2,29 |
-| Half and half (a = 0,5) | ×0,28 … ×2,0 |
-| Cartogram (a = 1) | ×0,35 … ×1,00 |
+| **Half and half (a = 0,5)** | **×0,28 … ×2,39** |
+| Real map (a = 0), nicht gezeichnet | ×0,18 … ×2,68 |
+| Cartogram (a = 1), nicht gezeichnet | ×0,35 … ×1,17 |
 
-Die drei zusammen ergeben die eine Leiter, die alle umschliesst — bis ×2,29;
-linear fängt sie bei null an. Dieselbe Farbe heisst damit über die ganzen hundertdreiundfünfzig Jahre
-dasselbe **und** über alle drei Knopfstellungen.
+Nach oben läuft die Leiter als Knie weiter bis ×2,68 am Ende der Farbrampe;
+linear fängt sie bei null an.
 
 ### Das Ruhrgebiet und Berlin
 
@@ -1004,9 +1009,10 @@ den obersten beiden. Und die Schneegrenze wandert mit den Jahren — 1943 liegt
 nichts darüber, die Gipfel entstehen erst.
 
 Was bleibt, bleibt zu Recht. Die gleichfarbige Zone ist im Ruhrgebiet grösser,
-weil dort auf grösserer Fläche ähnlich dicht gewohnt wird. Wer die Bevölkerung
-vergleichen will, schaltet auf Cartogram: dort ist die Fläche die Bevölkerung,
-und Berlins 3,7 Millionen stehen neben den 5,0 des Ruhrgebiets.
+weil dort auf grösserer Fläche ähnlich dicht gewohnt wird. Bei halber
+Verzerrung steckt die Hälfte des Unterschieds in der Fläche und die andere in
+der Höhe; wer die reinen Zahlen will, tippt einen Kreis an — Berlins 3,7
+Millionen stehen neben den 5,0 des Ruhrgebiets.
 
 Gewichtet wird mit der **Fläche**, nicht je Kreis gleich. Das ist der
 Unterschied zwischen „wie dicht wohnt ein Kreis" und „wie dicht ist das Land
@@ -1019,6 +1025,11 @@ den Enden statt eines halben: das Weichzeichnen zieht die Verteilung ohnehin zur
 Mitte.
 
 ### Wenn keine Höhe mehr übrig ist
+
+*Seit die Seite nur noch die halbe Verzerrung zeigt, greift das Folgende nicht
+mehr — dort steht das Relief voll. Der Mechanismus bleibt, weil er an den
+Formen hängt und nicht an der Seite; wer das volle Kartogramm zurückholt,
+braucht ihn sofort wieder.*
 
 Im vollen Kartogramm steckt die ganze Bevölkerung in der Fläche; **innerhalb**
 eines Jahres hat dort jeder Kreis dieselbe Dichte, es gibt also keine Höhe. Was
@@ -1044,17 +1055,17 @@ aus:
    Ost-West-Verlauf über dem Kartogramm, der wie ein Befund aussah und keiner
    war.
 
-Der Weg vom Relief zum Kartogramm zeigt damit genau das, worum es geht: **die
+Der Weg vom Relief zum Kartogramm zeigte damit genau das, worum es geht: **die
 Berge sinken in die Fläche, weil die Menschen von der Höhe in die Breite
-wandern** — und die Farben gleichen sich an, während sie sinken. Die Legende
-sagt es dann auch mit Worten: „every county is drawn at the same density now,
-so the land lies flat".
+wandern** — und die Farben gleichen sich an, während sie sinken. Den Weg kann
+man auf der Seite gerade nicht gehen; die Mechanik dafür steht noch.
 
-Die **Mindestbreite** der Leiter (Faktor 2,6, um ein halbes Band verschoben)
-steht weiterhin im Code, greift aber nicht mehr: die gemeinsame Leiter ist
-breit genug. Sie ist die Sicherung für den Fall, dass jemand auf den relativen
-Bezug zurückschaltet — dort schnurrt die Kartogramm-Spanne wieder auf ein
-Prozent zusammen.
+Auch die **Mindestbreite** der Leiter (Faktor 2,6, um ein halbes Band
+verschoben) greift nicht: die gemessene Spanne der halben Verzerrung ist mit
+1,76 weit über den 0,96, ab denen sie eingreifen würde. Beide sind die
+Sicherung für den Fall, dass jemand die anderen Formen oder den relativen Bezug
+zurückholt — dort schnurrt die Kartogramm-Spanne wieder auf ein Prozent
+zusammen.
 
 ### Was die Karte nicht mehr zeigt
 

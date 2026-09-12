@@ -79,7 +79,7 @@ canvas{position:absolute;left:0;top:0;width:100%;height:100%;touch-action:manipu
   font-variant-numeric:tabular-nums}
 .rampe{flex:1;height:9px;border-radius:5px;border:1px solid var(--ring)}
 
-/* Die Bedienung, so wenig wie möglich: ein Knopf, ein Regler, drei Formen. */
+/* Die Bedienung, so wenig wie möglich: ein Knopf und ein Regler. */
 .regler{display:flex;align-items:center;gap:9px;flex:0 0 auto;margin-top:6px}
 button{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--axis);
   border-radius:8px;padding:5px 10px;cursor:pointer}
@@ -90,10 +90,6 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
 .marken{position:relative;height:9px;margin-top:1px}
 .marken i{position:absolute;top:0;width:1px;height:4px;background:var(--axis)}
 .marken i.voll{height:7px;background:var(--muted)}
-.formen{display:flex;gap:5px;flex:0 0 auto;margin-top:5px}
-.formen button{flex:1;min-width:64px;padding:4px 3px;font-size:11.5px;color:var(--muted)}
-.formen button[aria-pressed=true]{color:var(--ink);border-color:var(--ink2);font-weight:600}
-
 .tip{position:absolute;pointer-events:none;background:#141412;border:1px solid var(--axis);
   border-radius:9px;padding:7px 9px;font-size:12.5px;box-shadow:0 6px 20px rgba(0,0,0,.5);
   max-width:210px;opacity:0;transition:opacity .12s}
@@ -120,11 +116,6 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
       <input type="range" id="zeit" min="0" max="1000" value="0" step="1" aria-label="Year">
       <div class="marken" id="marken"></div>
     </div>
-  </div>
-  <div class="formen" id="formen" role="group" aria-label="How much of the population goes into area">
-    <button data-form="0">Real map</button>
-    <button data-form="0.5" aria-pressed="true">Half and half</button>
-    <button data-form="1">Cartogram</button>
   </div>
   <div class="schild"><b id="jahrZahl">–</b><span id="jahrBev"></span></div>
   <div class="text">
@@ -256,8 +247,22 @@ const px = new Float64Array(N), py = new Float64Array(N);
    Was dabei an Fläche fehlt, holt die Höhe zurück; das rechnet hoehen()
    weiter unten. Die Grösse der ganzen Karte bleibt in jedem Fall die
    Bevölkerung, dafür sorgt SKALA. */
-const FORMEN = [0, 0.5, 1];
-let FORM = 0.5, formZiel = 1;    // formZiel ist der Index in FORMEN
+/* ---------- Nur noch eine Form ----------
+   Die Seite konnte zwischen drei Formen umschalten: Landkarte, halbe
+   Verzerrung, volles Kartogramm. Sie zeigt jetzt nur noch die mittlere.
+
+   Das ist mehr als ein weggelassener Knopf. Die Farbleiter wurde bisher über
+   **alle drei** Formen gemessen, damit ×1 in jeder Knopfstellung dasselbe
+   heisst — und die Landkarte streut am weitesten, also setzte sie das obere
+   Ende für alle. Mit einer Form allein misst die Leiter genau das, was auch
+   gezeichnet wird, und die Farben rücken um gut ein Zehntel nach oben.
+
+   Die Maschinerie dahinter bleibt: FORMEN ist eine Liste, und alles, was
+   zwischen ihren Einträgen überblendet, rechnet weiterhin allgemein. Wer die
+   anderen beiden zurückholen will, trägt sie hier wieder ein und stellt die
+   Knöpfe in die Seite zurück. */
+const FORMEN = [0.5];
+let FORM = FORMEN[0];
 const ortX = (f, i) => ((GX[i] + FORM * (reihe.ZX[f][i] - GX[i])) - AX) * reihe.SKALA[f] + AX;
 const ortY = (f, i) => ((GY[i] + FORM * (reihe.ZY[f][i] - GY[i])) - AY) * reihe.SKALA[f] + AY;
 
@@ -317,12 +322,20 @@ function rahmenFuer(r, form) {
   return { x: a, y: c, w: b - a, h: d - c };
 }
 for (const r of REIHEN) r.rahmenJe = FORMEN.map(f => rahmenFuer(r, f));
+/* Wo die eingestellte Form in FORMEN liegt: der Index davor und der Anteil
+   zum nächsten. Bei einer einzigen Form ist der Anteil null, und wer damit
+   rechnet, muss den zweiten Eintrag dann gar nicht erst anfassen — es gibt
+   keinen. */
+function formLage() {
+  if (FORMEN.length < 2) return [0, 0];
+  let k = 0; while (k < FORMEN.length - 2 && FORMEN[k + 1] < FORM) k++;
+  return [k, Math.max(0, Math.min(1, (FORM - FORMEN[k]) / (FORMEN[k + 1] - FORMEN[k])))];
+}
 // Der Rahmen zur gerade eingestellten Form, zwischen den beiden nächsten
 // gemessenen überblendet.
 function rahmenJetzt() {
-  const R = reihe.rahmenJe;
-  let k = 0; while (k < FORMEN.length - 2 && FORMEN[k + 1] < FORM) k++;
-  const t = Math.max(0, Math.min(1, (FORM - FORMEN[k]) / (FORMEN[k + 1] - FORMEN[k])));
+  const R = reihe.rahmenJe, [k, t] = formLage();
+  if (t <= 0) return R[k];
   const A = R[k], B = R[k + 1];
   return { x: A.x + (B.x - A.x) * t, y: A.y + (B.y - A.y) * t,
            w: A.w + (B.w - A.w) * t, h: A.h + (B.h - A.h) * t };
@@ -521,9 +534,9 @@ function hoehenSkala() {
 }
 // Die Binnenspanne zur eingestellten Form, gleich übergeblendet.
 function binnenSpanne() {
-  let k = 0; while (k < FORMEN.length - 2 && FORMEN[k + 1] < FORM) k++;
-  const t = Math.max(0, Math.min(1, (FORM - FORMEN[k]) / (FORMEN[k + 1] - FORMEN[k])));
-  return hoehenSpanne(k)[2] + (hoehenSpanne(k + 1)[2] - hoehenSpanne(k)[2]) * t;
+  const [k, t] = formLage();
+  return t <= 0 ? hoehenSpanne(k)[2]
+                : hoehenSpanne(k)[2] + (hoehenSpanne(k + 1)[2] - hoehenSpanne(k)[2]) * t;
 }
 /* ---------- Wenn keine Höhe mehr übrig ist ----------
    Im vollen Kartogramm steckt die ganze Bevölkerung in der Fläche; jeder Kreis
@@ -900,16 +913,23 @@ let FEINTEILER = 95, GROBTEILER = 28, ENGANTEIL = 1.15;
    der Vorsprung des höchsten Berges deutlicher. Gemessen für 2024:
 
      Schneegrenze   Fels und Schnee   Gipfel Berlin : Ruhr   Volumen R:B
-        1,00            2,9 %            0,99 : 0,92           1,48
-        1,04            1,8 %            0,97 : 0,89           1,44
-        1,08            1,4 %            0,95 : 0,86           1,44
+        1,04            5,2 %            1,00 : 0,97           1,54
+        1,12            3,0 %            0,99 : 0,93           1,48
+        1,17            1,8 %            0,97 : 0,89           1,45
+        1,24            1,2 %            0,93 : 0,84           1,43
 
-   (Die Menschen stehen 1,36 : 1.) Gewählt ist 1,04: knapp ein Prozent der
+   (Die Menschen stehen 1,36 : 1.) Gewählt ist 1,17: knapp ein Prozent der
    Fläche im weissen Band, knapp zwei in den obersten beiden. Berlin steht dort
    allein im Schnee, das Ruhrgebiet bleibt im Rot — und das ist die Reihenfolge,
    die auch in den Zahlen steht. Die Schneegrenze wandert mit den Jahren: 1943
-   liegt nichts darüber, die Gipfel entstehen erst. */
-let KOPF = 1.04;
+   liegt nichts darüber, die Gipfel entstehen erst.
+
+   Der Faktor stand eine Fassung lang bei 1,04, und dass er gestiegen ist,
+   heisst nicht, dass die Leiter höher endet — sie endet fast genau dort, wo
+   vorher. Gemessen wird jetzt nur noch die eine gezeichnete Form, und deren
+   Quantil liegt bei ×2,04 statt bei ×2,29 der Landkarte. Der Faktor gleicht
+   das aus; oben steht danach ×2,39 gegen vorher ×2,38. */
+let KOPF = 1.17;
 const RAUF = 0.55;                // Auflösung des Höhenfelds, Anteil der Bildpunkte
 const hkA = document.createElement('canvas'), hcA = hkA.getContext('2d');
 const hkB = document.createElement('canvas'), hcB = hkB.getContext('2d', { willReadFrequently: true });
@@ -1799,10 +1819,11 @@ function notizen() {
 // wie es sich auf Fläche und Höhe verteilt, steht am Umschalter.
 // Ein Wort zur eingestellten Form, nicht mehr. Was sie bedeutet, steht am
 // Knopf darunter; die Leiter muss es nicht noch einmal erklären.
-// formZiel ist der Index in FORMEN: 0 Landkarte, 1 halb, 2 volles Kartogramm.
-function formWort() {
-  return formZiel === 0 ? 'true shape' : formZiel === 2 ? 'full cartogram' : 'half distortion';
-}
+// Ein Wort zur gezeichneten Form. Es steht in der Legende, weil es sonst
+// nirgends mehr steht: ohne Umschalter sieht man der Karte nicht an, dass sie
+// überhaupt verzogen ist.
+const formWort = () => FORM === 0 ? 'true shape' : FORM === 1 ? 'full cartogram'
+                     : 'half distortion';
 function legende() {
   document.getElementById('rampe').style.background =
     'linear-gradient(90deg,' + HYPSO.join(',') + ')';
@@ -1862,7 +1883,7 @@ function zeigeTip(x, y) {
     + '<dt>' + (D.L[k[3]] || '') + '</dt><dd>' + k[2] + '</dd>'
     + '<dt>People</dt><dd>' + nf.format(Math.round(v)) + '</dd>'
     + (k[4] ? '<dt>Per km²</dt><dd>' + nf.format(Math.round(v / k[4])) + '</dd>' : '')
-    + (formZiel < 2 && HOCH[treffer] > 0
+    + (HOCH[treffer] > 0
       ? '<dt>Stands</dt><dd>' + HOCH[treffer].toFixed(1) + '× average</dd>' : '')
     + (abschnitt === null ? ''
       : '<dt>' + D.B[a].jahr + '→' + D.B[b].jahr + '</dt><dd>'
@@ -1912,35 +1933,10 @@ document.getElementById('spiel').onclick = () => laeuft ? halte() : starte();
 document.getElementById('zeit').addEventListener('input', e => {
   halte(); setzeZeit(e.target.value / 1000); reliefFrisch(); zeichne();
 });
-/* ---------- Umschalter zwischen den Formen ----------
-   Nicht hart umschalten: die Karte läuft in einer halben Sekunde von der
-   einen Form in die andere. Wer sieht, wie Berlin schrumpft und dafür
-   aufsteigt, versteht den Tausch ohne Beschriftung. Der Kasten richtet sich
-   dabei schon nach dem Ziel — sonst würde die Leinwand während der Bewegung
-   vierzigmal neu angelegt. */
-const FORMKNOPF = [...document.querySelectorAll('#formen button')];
-const MORPH = 600;
-let morphVon = 1, morphAuf = 1, morphEnde = 0;
-function morphSchritt(t) {
-  const rest = morphEnde - t;
-  const u = rest <= 0 ? 1 : 1 - rest / MORPH;
-  FORM = morphVon + (morphAuf - morphVon) * glatt(Math.max(0, Math.min(1, u)));
-  tangenteFuer = -1;
-  masse(); reliefFrisch();
-  if (!laeuft) zeichne();
-  if (rest > 0) requestAnimationFrame(morphSchritt);
-  else { FORM = morphAuf; tangenteFuer = -1; masse(); reliefFrisch(); zeichne(); }
-}
-for (const b of FORMKNOPF) b.onclick = () => {
-  const z = FORMEN.indexOf(Number(b.dataset.form));
-  if (z < 0 || z === formZiel) return;
-  formZiel = z;
-  for (const o of FORMKNOPF) o.setAttribute('aria-pressed', String(o === b));
-  morphVon = FORM; morphAuf = FORMEN[z]; morphEnde = performance.now() + MORPH;
-  tip.style.opacity = 0; letzterTip = -1;
-  legende();
-  requestAnimationFrame(morphSchritt);
-};
+/* Hier stand der Umschalter zwischen den Formen, samt einer halben Sekunde
+   Überblendung von der einen in die andere. Er ist weg, weil die Seite nur
+   noch eine Form zeigt; was zwischen Formen überblendet, steht weiterhin
+   allgemein da (siehe formLage) und wartet auf den zweiten Eintrag. */
 addEventListener('resize', () => { masse(); reliefFrisch(); zeichne(); });
 /* Und dasselbe, wenn sich das Feld ändert, ohne dass das Fenster es tut.
    Die Massfunktion misst die Leinwand einmal und hält die Zahl; ändert das Auslegen
