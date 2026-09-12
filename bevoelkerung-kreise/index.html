@@ -24,7 +24,12 @@ body{background:var(--plane);color:var(--ink);
    sie lang („1946–1950 → 1961–1964"), dehnte sie die ganze Bühne über ihren
    Rahmen hinaus — die Karte sprang um siebzehn Bildpunkte in die Breite und
    wieder zurück, je nachdem, welche Notiz gerade galt. */
-.buehne{position:relative;flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;
+/* container-type macht die Bühne zum Massstab für alles darin: 1cqw ist ein
+   Hundertstel ihrer Breite. Damit kann der Text mit der Karte wachsen, statt
+   in Bildpunkten festzustehen — die Karte selbst misst sich ja auch an dieser
+   Breite (breite/38 für den grössten Stadtnamen). */
+.buehne{container-type:inline-size;
+  position:relative;flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;
   background:var(--surface);border:1px solid var(--ring);border-radius:14px;padding:10px 12px 8px}
 
 /* Kopfzeile: Jahr und Einwohnerzahl. */
@@ -59,16 +64,25 @@ body{background:var(--plane);color:var(--ink);
    gesetzt ist er da, wenn man ihn sucht, und im Weg, wenn nicht. Zwischendurch
    stand er bei 7 und war zu klein — das hier ist die Mitte. Der Faden darunter
    geht im selben Verhältnis mit, sonst wären die alten Überschriften grösser
-   als die laufende Notiz. */
+   als die laufende Notiz.
+
+   Die neun Bildpunkte sind jetzt der **Boden**, nicht der Wert: darüber hängt
+   die Grösse an der Breite der Bühne. Auf dem Telefon ändert sich damit nichts,
+   auf einem breiten Schirm wächst der Text mit der Karte mit — er stand dort
+   sonst als immer kleiner werdender Fleck neben einer Karte, deren Schrift sich
+   nach genau dieser Breite richtet. Nach oben ist gedeckelt, weil die Bühne bei
+   860 Bildpunkten aufhört und die Notiz eine Notiz bleiben soll. */
 .jetzt{margin:0;max-width:min(94%,470px);
-  font-size:9px;line-height:1.5;color:var(--ink2);opacity:0;transition:opacity .4s}
-.jetzt b{display:block;color:var(--ink);font-weight:650;font-size:9.8px;margin-bottom:2px}
+  font-size:clamp(9px,1.36cqw,11.6px);line-height:1.5;color:var(--ink2);
+  opacity:0;transition:opacity .4s}
+.jetzt b{display:block;color:var(--ink);font-weight:650;
+  font-size:clamp(9.8px,1.48cqw,12.6px);margin-bottom:2px}
 
 /* Darunter die vorigen Überschriften, mit jeder Zeile blasser. */
 .faden{width:min(52%,210px);padding-top:4px;
   display:flex;flex-direction:column;gap:2px;will-change:transform}
-.faden b{font-size:7.2px;line-height:1.3;font-weight:600;color:var(--ink);
-  transition:opacity .5s}
+.faden b{font-size:clamp(7.2px,1.09cqw,9.3px);line-height:1.3;font-weight:600;
+  color:var(--ink);transition:opacity .5s}
 @media(max-width:540px){.faden b{font-size:6.5px}}
 
 /* Die Karte füllt die Bühne. */
@@ -1540,7 +1554,7 @@ function zeichne() {
 
   reliefUeber(sil, deck);
 
-  beschrifte(deck);
+  beschrifte(deck, w);
   schreibe(a, b, u, w, deck);
   notizen();
 }
@@ -1566,12 +1580,16 @@ function schreibe(a, b, u, w, deck) {
    Schrift fällt weg, ein Name breiter als sein Fleck fällt weg, und wer sich
    mit einem schon gesetzten Namen überschneidet, fällt auch weg — die
    grösseren zuerst, damit im Ruhrgebiet nicht die kleinste Stadt gewinnt. */
-/* Je Stadt ein **Grad** statt einer Zahl: vier Stufen nach der höchsten
-   Einwohnerzahl, die sie je hatte. Die Schrift richtet sich danach, nicht mehr
-   nach der gezeichneten Fläche — die steht seit dem festen Boden ohnehin still,
-   und die Fläche eines Kreises sagt auch wenig über die Stadt darin: Leipzig
-   hat ein weites Stadtgebiet, Nürnberg ein enges. */
-const STADT = [[324,"Berlin",3],[15,"Hamburg",3],[223,"München",3],[26,"Hannover",2],[79,"Köln",2],[361,"Leipzig",2],[117,"Frankfurt",2],[356,"Dresden",2],[105,"Dortmund",1],[178,"Stuttgart",1],[61,"Bremen",1],[283,"Nürnberg",1],[351,"Chemnitz",0],[366,"Magdeburg",0],[97,"Bielefeld",0],[196,"Mannheim",0],[1,"Kiel",0]];
+/* Der Vorrat, nicht die Auswahl: Kreis, kurzer Name und der Ort auf der
+   **Landkarte** in Kilometern. Die Landkarte, nicht der feste Boden, weil der
+   Ort hier nur für einen Zweck gebraucht wird — den Mindestabstand zwischen
+   zwei Namen —, und sechzig Kilometer sind sechzig Kilometer, gleich wie weit
+   der Boden an dieser Stelle auseinandergezogen ist. */
+const STADT = [[324,"Berlin",228,-60],[15,"Hamburg",-12,-179],[223,"München",116,426],[26,"Hannover",-19,-45],[79,"Köln",-214,111],[361,"Leipzig",166,71],[117,"Frankfurt",-98,208],[65,"Essen",-207,59],[63,"Düsseldorf",-221,82],[356,"Dresden",264,96],[64,"Duisburg",-227,56],[105,"Dortmund",-175,50],[178,"Stuttgart",-61,359],[61,"Bremen",-85,-132],[283,"Nürnberg",79,285],[104,"Bochum",-192,56],[72,"Wuppertal",-198,81],[351,"Chemnitz",205,126],[90,"Gelsenkirchen",-202,46],[366,"Magdeburg",113,-15],[97,"Bielefeld",-101,-2],[78,"Bonn",-204,141],[365,"Halle",137,58],[196,"Mannheim",-108,278],[91,"Münster",-163,3],[192,"Karlsruhe",-115,332],[304,"Augsburg",65,406],[119,"Wiesbaden",-125,212],[1,"Kiel",8,-261],[16,"Braunschweig",35,-33],[67,"Mönchengladbach",-249,87],[69,"Oberhausen",-218,50],[66,"Krefeld",-238,67],[343,"Rostock",140,-241],[203,"Freiburg",-163,444],[2,"Lübeck",48,-208],[378,"Erfurt",71,114],[106,"Hagen",-175,72],[162,"Mainz",-126,224],[108,"Herne",-193,47],[135,"Kassel",-37,76],[68,"Mülheim",-216,60],[328,"Potsdam",206,-53],[107,"Hamm",-151,36],[161,"Ludwigshafen",-116,280],[46,"Oldenburg",-118,-129],[71,"Solingen",-204,90],[80,"Leverkusen",-209,100],[47,"Osnabrück",-133,-33],[116,"Darmstadt",-97,236],[195,"Heidelberg",-96,289],[258,"Regensburg",154,329],[364,"Dessau-Roßlau",154,15],[62,"Bremerhaven",-94,-173],[222,"Ingolstadt",103,360],[379,"Gera",147,122],[199,"Pforzheim",-95,348],[294,"Würzburg",-4,248],[326,"Cottbus",301,16],[118,"Offenbach",-86,212],[282,"Fürth",70,279],[184,"Heilbronn",-60,317],[216,"Ulm",-4,403],[18,"Wolfsburg",54,-46],[344,"Schwerin",93,-181],[70,"Remscheid",-194,88],[89,"Bottrop",-212,44],[17,"Salzgitter",25,-12],[142,"Koblenz",-173,182],[281,"Erlangen",71,268],[48,"Wilhelmshaven",-126,-175],[153,"Trier",-241,244],[380,"Jena",111,119],[0,"Flensburg",-36,-311],[159,"Kaiserslautern",-162,284]];
+const ZEIGE = 17;      // so viele Namen zur selben Zeit
+const ABSTAND = 60;   // Kilometer, die zwei Namen auseinanderliegen müssen
+const SAUM = 0.06;     // wie weit unter der Schwelle ein Name ausblendet, im Logarithmus
+const STUFUNG = 14;    // um diesen Faktor über der Schwelle ist die Schrift am grössten
 /* Hier stand ein feiner dunkler Strich um jede der hundertsieben kreisfreien
    Städte. Er hatte seinen Grund, solange sich die Karte verformte: eine Stadt
    wuchs dann mit ihrer Bevölkerung, und der Umriss sagte, wie weit sie reicht.
@@ -1580,24 +1598,68 @@ const STADT = [[324,"Berlin",3],[15,"Hamburg",3],[223,"München",3],[26,"Hannove
    das Letzte, was von den Kreisgrenzen übrig war. Eine Geländekarte hat keine
    Grenzen; sie hat Gelände. */
 const MINSCHRIFT = 7;       // kleinste Schrift; auf einem Telefon knapp, aber lesbar
-function beschrifte(deck) {
+/* Welche Städte gerade einen Namen bekommen. Nicht ein für alle Mal die
+   siebzehn grössten von heute, sondern die siebzehn grössten **jetzt**: die
+   Auswahl läuft in jedem Bild neu über die laufende Einwohnerzahl. 1871 stehen
+   damit Karlsruhe, Kassel und Erfurt auf der Karte und Bielefeld, Mannheim und
+   Kiel nicht; heute ist es umgekehrt. Chemnitz und Magdeburg sind 1871 unter
+   den zwölf grössten und heute die letzten der Liste — das ist die Geschichte,
+   die der Berg daneben erzählt, noch einmal in Schrift.
+
+   Zwei Regeln wie vorher: aus einem Bündel eng benachbarter Städte bleibt die
+   grösste, sonst hiesse das Ruhrgebiet siebenmal; und gemessen wird auf der
+   Landkarte, nicht auf dem gezogenen Boden.
+
+   Der Übergang darf nicht springen. Die **Schwelle** ist der Wert des
+   siebzehnten Namens; wer darüber liegt, steht voll da, wer darunter rutscht,
+   blendet über einen Saum von sechs Prozent aus. Im Augenblick des Wechsels
+   sind beide gleich gross, also ist die Blende dort gerade offen — niemand
+   erscheint oder verschwindet plötzlich, die Namen werden blass und dicht wie
+   die Berge unter ihnen. */
+function auswahl(deck, w) {
+  const kand = [];
+  for (const s of STADT) if (deck[s[0]] > 0.5 && w[s[0]] > 0) kand.push(s);
+  kand.sort((a, b) => w[b[0]] - w[a[0]]);
+  const durch = [];
+  for (const s of kand) {
+    let nah = false;
+    for (const t of durch) if (Math.hypot(t[2] - s[2], t[3] - s[3]) < ABSTAND) { nah = true; break; }
+    if (nah) continue;
+    durch.push(s);
+    // Ein paar über der Grenze mitnehmen: das sind die, die gerade ausblenden.
+    if (durch.length >= ZEIGE + 5) break;
+  }
+  const schwelle = durch.length >= ZEIGE ? w[durch[ZEIGE - 1][0]] : 0;
+  return { durch, schwelle };
+}
+function beschrifte(deck, w) {
   const liste = [];
-  for (const [g, name, grad] of STADT) {
-    if (!(deck[g] > 0.5)) continue;
-    let bestA = 0, mx = 0, my = 0, bb = 0, bh = 0;
+  const { durch, schwelle } = auswahl(deck, w);
+  for (let r = 0; r < durch.length; r++) {
+    const [g, name] = durch[r];
+    /* Sichtbarkeit und Schriftgrösse kommen beide aus dem Verhältnis zur
+       Schwelle, nicht aus der Einwohnerzahl selbst. Das ist Absicht: der Berg
+       sagt, wie viele Menschen da sind — absolut, über hundertfünfzig Jahre
+       vergleichbar. Der Name sagt, wer hier gerade zu den grössten gehört. In
+       absoluten Zahlen wäre Chemnitz heute grösser geschrieben als 1871, obwohl
+       es damals die elftgrösste Stadt war und heute die sechzehnte. */
+    const sicht = glatt(Math.max(0, Math.min(1,
+      r < ZEIGE ? 1 : 1 - Math.log(schwelle / w[g]) / SAUM)));
+    // Unter einem Zwölftel Deckkraft ist ein Name nicht mehr zu sehen, kostet
+    // aber Schwerpunkt, Punkt und Strich. Dort endet die Blende.
+    if (sicht < 0.08) continue;
+    let bestA = 0, mx = 0, my = 0;
     for (const r of GEBIETE[g]) {
-      let A2 = 0, sx = 0, sy = 0, links = Infinity, rechts = -Infinity, oben = Infinity, unten = -Infinity;
+      let A2 = 0, sx = 0, sy = 0;
       for (let i = 0, n = r.length; i < n; i++) {
         const a = r[i], b = r[(i + 1) % n];
         const xa = px[a] * mass + verX, ya = py[a] * mass + verY;
         const xb = px[b] * mass + verX, yb = py[b] * mass + verY;
         const f = xa * yb - xb * ya;
         A2 += f; sx += (xa + xb) * f; sy += (ya + yb) * f;
-        if (xa < links) links = xa; if (xa > rechts) rechts = xa;
-        if (ya < oben) oben = ya; if (ya > unten) unten = ya;
       }
       const A = Math.abs(A2 / 2);
-      if (A > bestA) { bestA = A; mx = sx / (3 * A2); my = sy / (3 * A2); bb = rechts - links; bh = unten - oben; }
+      if (A > bestA) { bestA = A; mx = sx / (3 * A2); my = sy / (3 * A2); }
     }
     /* Nicht auf den Gipfel. Der Berg eines Kreises sitzt in seiner Mitte —
        das weite Weichzeichnen macht aus der Fläche eine Kuppe, und ihr höchster
@@ -1618,30 +1680,39 @@ function beschrifte(deck) {
          hergibt. */
       const versatz = Math.sqrt(bestA / Math.PI) * 0.5 + breite / 90;
       // ox/oy ist der Ort selbst, mx/my der Ankerpunkt der Schrift darunter.
-      liste.push({ name, grad, A: bestA, ox: mx, oy: my, mx, my: my + versatz, bb, bh });
+      liste.push({ name, A: bestA, sicht, gross: w[g] / schwelle,
+        ox: mx, oy: my, mx, my: my + versatz });
     }
   }
   liste.sort((a, b) => b.A - a.A);
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
 
-  /* Grösse: vier Stufen nach der Stadt, nicht nach ihrem Fleck. Angegeben als
+  /* Grösse: stufenlos, aus dem Logarithmus des Verhältnisses zur Schwelle.
+     Der kleinste Name der Auswahl bekommt breite/56, wer vierzehnmal so gross
+     ist wie er, breite/33; dazwischen läuft es gleichmässig. Die Spreizung ist
+     weiter als die der vier alten Stufen (52 bis 38): weil die Grösse jetzt
+     etwas aussagt, soll man sie auch sehen — Berlin steht in jedem Bild fast
+     doppelt so gross da wie der letzte Name der Auswahl. Angegeben als
      Teiler der Kartenbreite, damit dieselbe Ordnung auf dem Telefon und auf dem
      Schirm gilt — Berlin lief sonst in jeder Grösse gegen dieselben dreissig
      Bildpunkte und stand als Überschrift über der Karte statt als Beschriftung
      darin.
 
-     Vorher kam die Grösse aus der Wurzel der gezeichneten Fläche. Das hatte
-     seinen Sinn, solange die Fläche mit der Bevölkerung wuchs; seit der Boden
-     stillsteht, ist sie über alle Jahre dieselbe und sagt zudem mehr über den
-     Zuschnitt des Kreises als über die Stadt darin.
+     Dass die Schrift am Verhältnis hängt und nicht an der Einwohnerzahl, hält
+     die Ordnung über hundertfünfzig Jahre lesbar: der Abstand zwischen der
+     grössten Stadt und der siebzehnten liegt in jedem Bild zwischen zwölf und
+     zweiundzwanzig — 1871 wie 2024. Eine absolute Skala hätte 1871 siebzehn
+     gleich kleine Namen gezeigt, weil ausser Berlin keine Stadt 500 000
+     Menschen hatte.
 
-     Alle Namen stehen von Anfang an da — 1871 sind die Berge winzig, und ein
-     Name, der erst später erscheint, ist ein Sprung im Bild. */
-  const GRADE = [52, 46, 42, 38];
+     Vorher waren es vier feste Stufen nach der höchsten Einwohnerzahl, die eine
+     Stadt je hatte. Das stand still, während die Karte lief. */
+  const KLEIN = 56, GROSS = 33;
   for (const s of liste) {
     ctx.font = '600 10px system-ui,-apple-system,sans-serif';
     s.je10 = ctx.measureText(s.name).width / 10;
-    s.hoch = Math.max(MINSCHRIFT, breite / GRADE[s.grad]);
+    const t = Math.max(0, Math.min(1, Math.log(s.gross) / Math.log(STUFUNG)));
+    s.hoch = Math.max(MINSCHRIFT, breite / (KLEIN + (GROSS - KLEIN) * t));
     s.br = s.je10 * s.hoch;
     s.x = s.mx; s.y = s.my;
   }
@@ -1656,16 +1727,24 @@ function beschrifte(deck) {
       const ux = (a.br + b.br) / 2 + 4 - Math.abs(dx);
       const uy = (a.hoch + b.hoch) / 2 + 3 - Math.abs(dy);
       if (ux <= 0 || uy <= 0) continue;
+      /* Jeder weicht so weit aus, wie der andere **da** ist. Ein Name, der
+         gerade ausblendet, schiebt darum kaum noch — sonst rückte die halbe
+         Karte in dem Augenblick zur Seite, in dem ein siebzehnter Name unter
+         die Schwelle rutscht, und das wäre ein Sprung an einer Stelle, an der
+         nichts springen soll. Weggeschoben wird er trotzdem voll. */
       if (uy / (a.hoch + b.hoch) < ux / (a.br + b.br)) {
-        const v = (dy >= 0 ? 1 : -1) * uy * 0.3; a.y -= v; b.y += v;
+        const v = (dy >= 0 ? 1 : -1) * uy * 0.3; a.y -= v * b.sicht; b.y += v * a.sicht;
       } else {
-        const v = (dx >= 0 ? 1 : -1) * ux * 0.3; a.x -= v; b.x += v;
+        const v = (dx >= 0 ? 1 : -1) * ux * 0.3; a.x -= v * b.sicht; b.x += v * a.sicht;
       }
     }
     for (const s of liste) { s.x += (s.mx - s.x) * 0.08; s.y += (s.my - s.y) * 0.08; }
   }
 
   for (const s of liste) {
+    // Ein Name, der gerade unter die Schwelle rutscht, geht mitsamt seinem
+    // Punkt und seinem Strich aus — sonst bliebe ein roter Fleck ohne Namen.
+    ctx.globalAlpha = s.sicht;
     ctx.font = '600 ' + s.hoch.toFixed(1) + 'px system-ui,-apple-system,sans-serif';
     /* Ein kleiner roter Punkt auf dem Ort selbst. Der Name steht darunter, und
        ohne den Punkt sagt er nur ungefähr, wo die Stadt liegt — seit die
@@ -1686,13 +1765,14 @@ function beschrifte(deck) {
       ctx.beginPath(); ctx.moveTo(s.ox, s.oy); ctx.lineTo(s.x, s.y);
       ctx.strokeStyle = STRICH; ctx.lineWidth = 2.5; ctx.stroke();
       ctx.beginPath(); ctx.moveTo(s.ox, s.oy); ctx.lineTo(s.x, s.y);
-      ctx.strokeStyle = INK; ctx.lineWidth = 0.7; ctx.globalAlpha = 0.45; ctx.stroke();
-      ctx.globalAlpha = 1;
+      ctx.strokeStyle = INK; ctx.lineWidth = 0.7; ctx.globalAlpha = s.sicht * 0.45; ctx.stroke();
+      ctx.globalAlpha = s.sicht;
     }
     ctx.lineWidth = Math.max(2, s.hoch * 0.2); ctx.strokeStyle = STRICH;
     ctx.strokeText(s.name, s.x, s.y);
     ctx.fillStyle = INK; ctx.fillText(s.name, s.x, s.y);
   }
+  ctx.globalAlpha = 1;
 }
 
 /* ---------- Der Faden ----------
