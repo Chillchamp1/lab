@@ -82,7 +82,14 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Stichtag und Methode. Die früheren Ansichten (Wachstum, Einwohner, Nadelrelief)
   und die Notizenliste unter der Karte sind entfallen, ebenso der Umschalter
   zwischen hellem und dunklem Grund: 818 kB → **259 kB**.
-- Über der Karte stehen Jahr und Einwohnerzahl und die **laufende Notiz
+- Über der Karte stehen Jahr und Einwohnerzahl — zwischen zwei Zählungen mit
+  einem **Ungefähr-Zeichen** und dem Zusatz „interpolated between the counts of
+  … and …", auf einer Zählung mit ihrem Stichtag. Ohne das las sich „1941 ·
+  60,5 Millionen" wie ein Befund, und im Krieg wäre das ein falscher: gezählt
+  sind 59,63 Mio (17.5.1939) und 66,19 Mio (1946/1950), der Weg dazwischen ist
+  eine monotone Kurve. Die Zunahme ist echt — zwölf Millionen Vertriebene —,
+  aber sie kam 1945 und 1946 und nicht gleichmässig ab 1940. Dazu die
+  **laufende Notiz
   ausgeschrieben**, mit Überschrift und Sätzen: dreizehn Notizen zu je einem
   Zeitabschnitt, warum sich die Karte gerade so bewegt. Darunter der Faden der
   vorigen Überschriften, jede neue schiebt die vorigen eine Zeile nach unten und
@@ -363,6 +370,18 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   hundertsieben winzigen kreisfreien Städte das obere Quantil, und die halbe
   Palette blieb leer; jetzt sind 2024 dreiundzwanzig der fünfundzwanzig Bänder
   belegt.
+- **Zwischen zwei Zählungen sagt die Zahl über der Karte, dass sie keine
+  Zählung ist.** Vorher stand dort schlicht „1941 · 60.5 million people", und
+  das las sich wie ein Befund. Im Krieg ist es einer der falschen: gezählt sind
+  **59,63 Mio** am 17.5.1939 und **66,19 Mio** 1946/1950 (heutiger
+  Gebietsstand), und die Zunahme dazwischen ist echt — zwölf Millionen
+  Vertriebene, mehr als der Krieg gekostet hat —, nur kam sie 1945 und 1946 und
+  nicht gleichmässig ab 1940. Dazwischen liegt keine Zählung, die Kurve ist eine
+  Annahme. Jetzt: „≈ 60.5 million people · interpolated between the counts of
+  1939 and 1946–1950", auf schmalen Schirmen „≈ 60.5 million · 1939 →
+  1946–1950"; auf einer Zählung steht stattdessen der Stichtag. Der Zusatz
+  stand früher in der Legende und war mit ihrer Kürzung weggefallen — er gehört
+  aber ohnehin zur Jahreszahl und nicht zur Farbleiter.
 - **Der Meeresspiegel ist jetzt eine Zahl, die etwas heisst.** Er lag bei ×0,43
   der heutigen mittleren Dichte, und das war kein Schwellenwert, sondern das
   Nebenprodukt zweier anderer Entscheidungen: vier von vierundzwanzig Bändern
