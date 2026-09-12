@@ -197,16 +197,19 @@ Freigabe, aus Bildvorlagen abzuschreiben.
 - **Die hellste Stufe ist wieder eine Spitze.** Berlin ist 2024 der dichteste
   Kreis (×2,51 gegen Oberhausen ×2,39), sah aber kleiner aus als das
   Ruhrgebiet: die Leiter endete bei q0,95 = ×2,29, alles darüber lag im
-  hellsten Band, und **über zehn Prozent der Kartenfläche** waren 2024 in diesem
-  einen Ton. Kehrseite des absoluten Bezugs — die Leiter ist über alle zehn
-  Zählungen gemessen, 2024 klemmt oben an. Jetzt q0,97, und dazu enger geglättet
+  hellsten Band, und reichlich **vier Prozent der Kartenfläche** waren 2024 in
+  diesem einen Ton — keine Gipfel, sondern eine Hochebene. Kehrseite des
+  absoluten Bezugs: die Leiter ist über alle zehn Zählungen gemessen, 2024
+  klemmt oben an. Jetzt reicht sie **acht Prozent über q0,95** hinaus — die
+  Schneegrenze, gemessen: 2,0 % der Fläche in der hellsten Stufe 2024, 0,3 %
+  1982, davor nichts. Dazu enger geglättet
   (weiter Radius `breite/28` statt `/22`, enges Feld 0,55 statt 0,40 Gewicht):
   das weite Feld bevorzugt Plateaus vor Spitzen, und das Ruhrgebiet ist ein
   Plateau, Berlin eine Spitze. Nebenbei zerfällt das Ruhrgebiet wieder in die
   Städte, aus denen es besteht. Zeitkonstante des engen Feldes dafür von 0,30 s
   auf 0,55 s; gemessen ist die Bewegung danach ruhiger als vorher (0,77 statt
   0,81 Promille Änderung je Bild).
-- **Eine Leiter für alle drei Formen**, ×0,18 … ×3,62 — sonst hiesse ×1 je nach
+- **Eine Leiter für alle drei Formen**, ×0,18 … ×2,48 — sonst hiesse ×1 je nach
   Knopfstellung etwas anderes. Möglich geworden, weil das Wachstum jetzt in
   jeder Form steckt, auch im Kartogramm: dessen Fläche ist fest, seine
   Bevölkerung wächst, also steigt seine Dichte von ×0,35 auf ×1,00. Das
@@ -220,8 +223,8 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   sichtbare Farbbänder (1943 ein Ost-West-Verlauf über dem Kartogramm, der wie
   ein Befund aussah und keiner war).
 - **Die Leiter wird je Form aus den Daten gemessen**, einmal, über alle Kreise in
-  allen Zählungen, **flächengewichtet**: q0,05 bis q0,97. Landkarte ×0,18 … ×3,62,
-  Half and half ×0,28 … ×2,6, volles Kartogramm ×0,35 … ×1,00. Flächengewichtet,
+  allen Zählungen, **flächengewichtet**: q0,05 bis q0,95 + 8 %. Landkarte
+  ×0,18 … ×2,48, Half and half ×0,28 … ×2,2, Kartogramm ×0,35 … ×1,08. Flächengewichtet,
   weil Fläche gefärbt wird und nicht Kreise — ungewichtet setzten die
   hundertsieben winzigen kreisfreien Städte das obere Quantil, und acht von
   sechzehn Bändern blieben leer; jetzt sind zwölf bis dreizehn belegt.

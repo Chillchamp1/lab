@@ -151,12 +151,16 @@ Linie.** So macht es ein Schulatlas.
 
 Wie weit die Höhen streuen, hängt an der Stellung des Knopfes, also wird die
 Leiter **je Form einmal aus den Daten gemessen** — alle Kreise in allen
-Zählungen, fünf bis siebenundneunzig Prozent, **gewichtet mit der Fläche**; die
-drei zusammen ergeben eine Leiter für alle, ×0,18 bis ×3,62. Oben siebenund­
-neunzig und nicht fünfundneunzig, damit die hellste Stufe eine Spitze bleibt:
-bei q0,95 endete die Leiter unter den dichtesten Orten, und über zehn Prozent
-der Kartenfläche lagen 2024 im selben hellsten Ton — das Ruhrgebiet als eine
-grosse weisse Kappe, obwohl Berlin der dichtere Kreis ist.
+Zählungen, fünf bis fünfundneunzig Prozent, **gewichtet mit der Fläche**; die
+drei zusammen ergeben eine Leiter für alle, ×0,18 bis ×2,48.
+
+Oben reicht sie acht Prozent über das gemessene Quantil hinaus, und das ist die
+**Schneegrenze**. Endet die Leiter genau am Quantil, deckt die hellste Stufe
+2024 reichlich vier Prozent der Karte — keine Gipfel, sondern eine Hochebene,
+und das Ruhrgebiet lag darin als eine grosse weisse Fläche, obwohl Berlin der
+dichtere Kreis ist. Acht Prozent darüber deckt sie zwei Prozent (Ruhrgebiet und
+Berlin), 1982 ein Drittel Prozent, davor nichts: die Gipfel entstehen erst im
+Lauf der Zeit.
 Flächengewichtet, weil Fläche gefärbt wird und nicht Kreise — ungewichtet
 setzten die hundertsieben winzigen kreisfreien Städte das obere Quantil, und die
 halbe Palette blieb ungenutzt.
