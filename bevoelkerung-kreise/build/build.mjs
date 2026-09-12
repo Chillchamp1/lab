@@ -118,16 +118,20 @@ reihen.push({ id: 'alle', name: kommtSpaet.length ? 'with ' + spaeteNamen.join('
   bilder, zeitreihe: rechneZeitreihe({ gebiete: geo.gebiete, X: geo.X, Y: geo.Y, attr: modell.attr,
     bilder, groesste, gitter: GITTER, cache: 'zeitreihe-alle' + CACHE + '.json', log }) });
 
-// Die Zwischenformen. Die Seite kann von der Landkarte zum Kartogramm
-// überblenden, indem sie jeden Knoten zwischen seinen beiden Orten setzt. Das
-// ist billig — die Landkarte steht schon in der Nutzlast —, aber eine lineare
-// Mischung zweier knickfreier Formen muss selbst nicht knickfrei sein. Also
-// nachgezählt: kein Ring darf sich dabei umstülpen.
+// Die Form, auf der die Seite steht: der Mittelwert aller Kartogramme, zur
+// Hälfte in die Landkarte gemischt. Eine lineare Mischung knickfreier Formen
+// muss selbst nicht knickfrei sein — und hier werden gleich elf gemischt, zehn
+// Kartogramme und die Landkarte. Also nachgezählt: kein Ring darf sich dabei
+// umstülpen. Die einzelnen Zwischenformen stehen mit in der Ausgabe, weil sie
+// zeigen, ob es an der Mischung liegt oder an einer der Vorlagen.
 {
   const vorz = ringVorzeichen(geo.gebiete, geo.X, geo.Y);
+  const zs = reihen[reihen.length - 1].zeitreihe.zustaende;
+  const MX = new Float64Array(geo.X.length), MY = new Float64Array(geo.Y.length);
+  for (const z of zs) for (let i = 0; i < MX.length; i++) { MX[i] += z.X[i] / zs.length; MY[i] += z.Y[i] / zs.length; }
   for (const a of [0.25, 0.5, 0.75]) {
     let kaputt = 0, gesamt = 0;
-    for (const z of reihen[reihen.length - 1].zeitreihe.zustaende) {
+    for (const z of zs) {
       const BX = new Float64Array(z.X.length), BY = new Float64Array(z.Y.length);
       for (let i = 0; i < z.X.length; i++) {
         BX[i] = geo.X[i] + a * (z.X[i] - geo.X[i]);
@@ -136,8 +140,15 @@ reihen.push({ id: 'alle', name: kommtSpaet.length ? 'with ' + spaeteNamen.join('
       const f = gefalteteRinge(geo.gebiete, BX, BY, vorz);
       kaputt += f.kaputt; gesamt += f.gesamt;
     }
-    log(`  Zwischenform ${a}: ${kaputt} gefaltete Ringe von ${gesamt}`);
+    log(`  einzeln, Zwischenform ${a}: ${kaputt} gefaltete Ringe von ${gesamt}`);
   }
+  const BX = new Float64Array(MX.length), BY = new Float64Array(MY.length);
+  for (let i = 0; i < MX.length; i++) {
+    BX[i] = geo.X[i] + 0.5 * (MX[i] - geo.X[i]);
+    BY[i] = geo.Y[i] + 0.5 * (MY[i] - geo.Y[i]);
+  }
+  const f = gefalteteRinge(geo.gebiete, BX, BY, vorz);
+  log(`  Mittelform, halb eingemischt: ${f.kaputt} gefaltete Ringe von ${f.gesamt}`);
 }
 
 log('Nutzlast …');
@@ -509,7 +520,33 @@ const REIHEN = D.R.map((r, ri) => {
      und das ist genau das, was man sehen soll. */
   const sk = r.zustaende.map(z => z.skala);
   const fest = sk[sk.length - 1];
-  return { id: r.id, name: r.name, ZX, ZY, BEV, SKALA: sk.map(() => fest) };
+  /* ---------- Ein Boden, der keinem Jahr gehört ----------
+     Die Karte stand lange auf dem Kartogramm **des jeweiligen Jahres**: die
+     Fläche eines Kreises war sein Anteil an der Bevölkerung dieses Bildes, und
+     der Umriss verformte sich im Lauf der Zeit. Das zeigte gut, wo die Menschen
+     gerade sind — und machte zwei Bilder unvergleichbar. Berlin hatte 1910
+     dieselben 3,7 Millionen wie heute, wurde aber sechzig Prozent breiter
+     gezeichnet, weil es damals fast jeden dreizehnten Deutschen hielt und heute
+     nur noch jeden dreiundzwanzigsten. Bei festem Volumen je Mensch muss die
+     Höhe das ausgleichen: derselbe Berg lag flach.
+
+     Jetzt steht der Boden still, und zwar auf dem **Mittel aller zehn
+     Kartogramme**. Nicht auf dem von 2024 — das wäre ein Körper, der einem Jahr
+     gehört, und 1871 würde auf der Gestalt von heute gezeichnet. Der Mittelwert
+     gehört keinem Jahr und allen.
+
+     Daraus folgt das, worum es geht: die Grundfläche eines Kreises ist über
+     hundertfünfzig Jahre dieselbe, also ist seine **Höhe unmittelbar seine
+     Bevölkerung**. Zwei Bilder sind vergleichbar; Berlin 1910 steht so hoch wie
+     Berlin 2024, und 1939 steht höher als beide. Was die Karte dafür aufgibt,
+     ist die Bewegung: sie verformt sich nicht mehr, sie steigt und fällt. */
+  const MX = new Float64Array(N), MY = new Float64Array(N);
+  for (let i = 0; i < N; i++) {
+    let sx = 0, sy = 0;
+    for (let f = 0; f < ZX.length; f++) { sx += ZX[f][i]; sy += ZY[f][i]; }
+    MX[i] = sx / ZX.length; MY[i] = sy / ZY.length;
+  }
+  return { id: r.id, name: r.name, MX, MY, BEV, SKALA: fest };
 });
 const ANTEIL = entpacke(D.ai);
 let reihe = REIHEN[0];
@@ -592,41 +629,22 @@ const px = new Float64Array(N), py = new Float64Array(N);
    sie das obere Ende für alle. Jetzt misst die Leiter genau das, was gezeichnet
    wird. */
 const FORM = 0.5;
-const ortX = (f, i) => ((GX[i] + FORM * (reihe.ZX[f][i] - GX[i])) - AX) * reihe.SKALA[f] + AX;
-const ortY = (f, i) => ((GY[i] + FORM * (reihe.ZY[f][i] - GY[i])) - AY) * reihe.SKALA[f] + AY;
+const ortX = i => ((GX[i] + FORM * (reihe.MX[i] - GX[i])) - AX) * reihe.SKALA + AX;
+const ortY = i => ((GY[i] + FORM * (reihe.MY[i] - GY[i])) - AY) * reihe.SKALA + AY;
 
-// Die Steigungen hängen nur am Abschnitt, nicht an der Stelle darin — sie
-// werden einmal je Abschnitt gerechnet und dann für alle Bilder benutzt.
-let tangenteFuer = -1, tangenteReihe = null;
-const AX1 = new Float64Array(N), AX2 = new Float64Array(N);
-const AY1 = new Float64Array(N), AY2 = new Float64Array(N);
-const PX1 = new Float64Array(N), PX2 = new Float64Array(N);
-const PY1 = new Float64Array(N), PY2 = new Float64Array(N);
-function tangenten(a) {
-  if (tangenteFuer === a && tangenteReihe === reihe) return;
-  tangenteFuer = a; tangenteReihe = reihe;
-  const von = Math.max(0, a - 1), bis = Math.min(NF - 1, a + 2);
-  const n = bis - von + 1, hh = [];
-  for (let f = von; f < bis; f++) hh.push(TAKT[f]);
-  const y = new Float64Array(4);
-  for (let i = 0; i < N; i++) {
-    for (let f = von; f <= bis; f++) y[f - von] = ortX(f, i);
-    let [m1, m2] = steigungen(y, hh, a - von, n);
-    PX1[i] = ortX(a, i); PX2[i] = ortX(a + 1, i); AX1[i] = m1; AX2[i] = m2;
-    for (let f = von; f <= bis; f++) y[f - von] = ortY(f, i);
-    [m1, m2] = steigungen(y, hh, a - von, n);
-    PY1[i] = ortY(a, i); PY2[i] = ortY(a + 1, i); AY1[i] = m1; AY2[i] = m2;
-  }
-}
-function setzePunkte(a, b, u) {
-  if (b === a) { for (let i = 0; i < N; i++) { px[i] = ortX(a, i); py[i] = ortY(a, i); } return; }
-  tangenten(a);
-  const t = u, t2 = t * t, t3 = t2 * t;
-  const c1 = 2 * t3 - 3 * t2 + 1, c2 = t3 - 2 * t2 + t, c3 = -2 * t3 + 3 * t2, c4 = t3 - t2;
-  for (let i = 0; i < N; i++) {
-    px[i] = PX1[i] * c1 + AX1[i] * c2 + PX2[i] * c3 + AX2[i] * c4;
-    py[i] = PY1[i] * c1 + AY1[i] * c2 + PY2[i] * c3 + AY2[i] * c4;
-  }
+/* Hier stand die Bahn zwischen zwei Bildern: acht Zahlenreihen zu je
+   zwölftausend Knoten und eine monoton kubische Kurve, damit sich die Karte
+   ohne Knick und ohne Überschiessen von einem Kartogramm ins nächste
+   verformte. Sie ist weg, weil es nur noch **eine** Form gibt. Die Orte hängen
+   nicht mehr an der Zeit, also werden sie einmal gerechnet und dann behalten;
+   was sich über die Jahre bewegt, ist die Höhe, und die steckt in der Farbe.
+   Die Kurve selbst lebt weiter, einen Stock tiefer: die Bevölkerungszahlen
+   zwischen zwei Zählungen laufen weiterhin über sie (siehe werteBei). */
+let punkteFuer = null;
+function setzePunkte() {
+  if (punkteFuer === reihe) return;
+  punkteFuer = reihe;
+  for (let i = 0; i < N; i++) { px[i] = ortX(i); py[i] = ortY(i); }
 }
 // Grösster Rahmen je Reihe, gemessen nur an den Kreisen, die im jeweiligen
 // Bild auch gezeichnet werden. So füllt die Karte die Fläche, statt sich nach
@@ -645,7 +663,7 @@ function rahmenFuer(r) {
       }
     }
   }
-  reihe = merkR; tangenteFuer = -1;
+  reihe = merkR; punkteFuer = null;
   return { x: a, y: c, w: b - a, h: d - c };
 }
 for (const r of REIHEN) r.rahmen = rahmenFuer(r);
@@ -790,7 +808,7 @@ function hoehenSkala() {
      also enger stehen als die rohen Kreiswerte. */
   const q = gewichtet(alle);
   const lo = Math.max(1e-3, q(0.05)), hi = Math.max(lo * 1.02, q(0.95) * KOPF);
-  reihe = merkR; tangenteFuer = -1;
+  reihe = merkR; punkteFuer = null;
   return (SPANNE = [Math.log(lo), Math.log(hi)]);
 }
 /* Hier standen zwei Bremsen für das volle Kartogramm: eine Mindestbreite der
@@ -1152,7 +1170,7 @@ let WEITTEILER = 9, SCHAERFE = 0.13;
    vorher. Gemessen wird jetzt nur noch die eine gezeichnete Form, und deren
    Quantil liegt bei ×2,04 statt bei ×2,29 der Landkarte. Der Faktor gleicht
    das aus; oben steht danach ×2,39 gegen vorher ×2,38. */
-let KOPF = 1.17;
+let KOPF = 1.10;
 const RAUF = 0.55;                // Auflösung des Höhenfelds, Anteil der Bildpunkte
 const hkA = document.createElement('canvas'), hcA = hkA.getContext('2d');
 const hkB = document.createElement('canvas'), hcB = hkB.getContext('2d', { willReadFrequently: true });
@@ -2087,7 +2105,7 @@ function notizen() {
 // Ein Wort zur gezeichneten Form. Es steht in der Legende, weil es sonst
 // nirgends mehr steht: ohne Umschalter sieht man der Karte nicht an, dass sie
 // überhaupt verzogen ist.
-const FORMWORT = 'half distortion';
+const FORMWORT = 'fixed ground';
 function legende() {
   document.getElementById('rampe').style.background =
     'linear-gradient(90deg,' + HYPSO.join(',') + ')';
