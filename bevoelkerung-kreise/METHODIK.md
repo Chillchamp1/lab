@@ -360,14 +360,22 @@ zehn Bilder: **0 gefaltete Ringe von 4650**.
 
 Zwischen dem leersten Landkreis und Berlin liegt auf der Landkarte der Faktor
 134. Ein Relief mit Faktor 134 ist eine senkrechte Wand neben einer Ebene, in
-der nichts mehr zu unterscheiden ist. Gezeichnet wird deshalb
+der nichts mehr zu unterscheiden ist. Gestaucht wird deshalb **logarithmisch**,
+auf die gemessene Spanne der Farbleiter (4b):
 
-    Grauwert = 0,34 + 0,66 · (Höhe / höchste Höhe)^0,45
+    Feldwert = (ln Höhe − unteres Leiterende) / Spanne,
+               auf −⅛ … 1+⅛ geklemmt und auf 0 … 1 gelegt
 
-— ein Sockel, damit die Ebene eine Ebene bleibt und nicht im Dunkeln liegt, und
-eine Wurzel, die sich beleuchten lässt. Die **Reihenfolge bleibt richtig, der
-Abstand nicht**; die Zahl selbst steht beim Antippen („Stands 2,5 × average").
-Im vollen Kartogramm sind alle Höhen gleich, dann ist beides wirkungslos.
+Damit steht im Höhenfeld dieselbe Zahl, die auch die Farbe zeigt — und das ist
+der ganze Punkt (4b, „Eine Zahl, drei Darstellungen"). Die **Reihenfolge bleibt
+richtig, der Abstand nicht**; die Zahl selbst steht beim Antippen („Stands
+2,5 × average"). Im vollen Kartogramm sind alle Höhen gleich, dann ist es
+wirkungslos.
+
+Das Achtel Luft über und unter der Leiter ist nicht Kosmetik: die Spanne ist an
+den Enden gekappt, und ohne Luft bekäme der dichteste Fleck einen
+abgeschnittenen Gipfel — ein Plateau ohne Modellierung. Und die Zahl ist mit
+Bedacht ein Achtel, siehe die Höhenlinien weiter unten.
 
 Was hier nicht gemacht wird: die Karte kippen und die Kreise wirklich
 extrudieren. Perspektive verzerrt Flächen, und dann liesse sich die eine Aussage
@@ -507,15 +515,18 @@ Versuch gewesen: das erste Bild hatte Linien, alle weiteren nicht.)
 
 Je Zelle wird einmal gerechnet, was für alle Niveaus darin gilt, und nur die
 Niveaus zwischen dem kleinsten und grössten Eckwert werden überhaupt
-betrachtet; das sind meist null bis zwei von vierzig. Gebündelt wird nach
+betrachtet; das ist meist keines oder eines von zwanzig. Gebündelt wird nach
 Beleuchtungsstärke: zwölf Stufen, hell und dunkel, also **vierundzwanzig Züge
 für die ganze Karte** statt zweitausend einzelner Striche.
 
-Gerechnet aus dem **weiten** Feld, nicht aus dem gemischten: das enge hat an
-jeder Kreisgrenze eine Stufe, und auf einer Stufe lägen alle Niveaus
-übereinander — das gäbe einen Strich an jeder Grenze statt einer Höhenlinie.
+Gerechnet aus **demselben Feld, aus dem die Farbe kommt** — dem gemischten aus
+eng und weit, 40 zu 60. Eine Fassung lang war es das weite allein, weil das
+enge an jeder Kreisgrenze eine Stufe hatte und auf einer Stufe alle Niveaus
+übereinanderlägen. Diese Stufen sind weg, seit die Fugen weg sind (4g), und
+dafür ist etwas anderes wichtiger geworden: Farbe und Linie müssen aus derselben
+Zahl kommen, sonst laufen sie auseinander.
 
-Vierzig Niveaus über die volle Höhe, und sie decken die Karte **flächendeckend**
+**Zwanzig Niveaus**, und sie decken die Karte **flächendeckend**
 — das war eine Fassung lang anders. Wer die Linien über flachem Land wegblendet,
 lässt über den Hängen einzelne lange Striche stehen, und die lesen sich als
 Tintenstrich statt als Gelände; erst im Verbund einer Schar wird eine Linie zur
@@ -647,11 +658,46 @@ Die Karte wird gemalt, wie ein Atlas ein Gebirge malt: Tiefland grün, dann
 gelb, braun, oben Fels. Sechzehn Stufen, in OKLab von Hand gesetzt, auf einen
 schwarzen Grund abgestimmt.
 
-Gefärbt wird die **Höhe** — dieselbe Zahl, die auch das Relief trägt, also
-Bevölkerung geteilt durch gezeichnete Fläche, bezogen auf die mittlere Dichte
-des Bildes. Daraus folgt das Schöne daran: die Höhenlinien laufen genau auf den
-Farbgrenzen, wie in einer physischen Karte, weil beide dieselbe Zahl zeigen.
-Grün heisst wenige Menschen auf viel Boden, Braun und Fels viele auf wenig.
+Gefärbt wird die **Höhe**: Bevölkerung geteilt durch gezeichnete Fläche,
+bezogen auf die mittlere Dichte des Bildes. Grün heisst wenige Menschen auf viel
+Boden, Braun und Fels viele auf wenig.
+
+### Eine Zahl, drei Darstellungen
+
+Das war eine Fassung lang eine Behauptung und nicht wahr. Gefärbt wurde **Kreis
+für Kreis**: jede Fläche bekam ihre eigene Dichte als Ton, und heraus kam ein
+Mosaik mit den Umrissen der Verwaltung. Die Höhenlinien dagegen kamen aus dem
+weichgezeichneten Feld, das über die Kreisgrenzen hinwegläuft.
+
+Zwei verschiedene Geometrien derselben Zahl, und das sah man: **Berlin war ein
+kleiner Farbfleck in der Form seines Kreises, während sein Berg weit darüber
+hinausreichte** und die Linien sich darin drängten. Die Karte sagte an
+derselben Stelle zweierlei — hier ist es steil, aber hier ist es auch schon zu
+Ende.
+
+Jetzt kommen Farbe, Schattierung und Höhenlinien aus **einem** Feld:
+
+| | |
+|---|---|
+| im Feld steht | (ln Dichte − unteres Leiterende) / Spanne, auf −⅛ … 1+⅛ geklemmt |
+| die Farbe ist | das Band, in das dieser Wert fällt — sechzehn gleich breite |
+| die Höhenlinie liegt | auf den Bandgrenzen |
+| das Licht kommt | aus dem Gefälle desselben Feldes |
+
+Gezeichnet wird das Feld in seiner eigenen, gröberen Auflösung und beim
+Hochrechnen bilinear geglättet: die Bandgrenze wird dadurch ein Übergang von
+ein, zwei Bildpunkten, und die Höhenlinie liegt in seiner Mitte. Scharf
+gerastert sähe dieselbe Grenze treppig aus. Darunter liegt die Silhouette in
+**einer** Farbe, der Mitte der Leiter — nicht als Farbe der Karte, sondern als
+scharfe Kante, weil der Rand des hochgerechneten Feldes ein, zwei Bildpunkte
+weich ist.
+
+**Und die Zahlen passen zusammen.** Ein Achtel Reserve über und unter der Leiter
+legt deren fünfzehn Grenzen im Feld auf 2/20 bis 17/20 — bei zwanzig Niveaus
+also genau auf die Niveaus 2 bis 17. **Jede Höhenlinie ist eine Farbgrenze, und
+jede Farbgrenze trägt ihre Linie.** Das ist die Konstruktion eines Schulatlas,
+und es ist das, was eine Höhenlinie auf einer Geländekarte überhaupt tun soll:
+den Farbwechsel begründen, statt quer durch ihn hindurchzulaufen.
 
 ### Keine Grenzen
 
@@ -675,6 +721,21 @@ Grenzen; sie hat Gelände.
 
 Damit entfielen auch die 3 334 Knotenpaare der Landesgrenzen aus der Nutzlast.
 
+### Eine Ausnahme: die Städte
+
+Die kreisfreien Städte und Stadtkreise tragen doch einen Umriss, einen feinen
+dunklen, über dem Relief gezeichnet. Für einen Landkreis wäre er überflüssig: er
+wird kaum verzerrt, sein Umriss sagt nichts, was die Farbe nicht schon sagt.
+Eine kreisfreie Stadt ist der andere Fall. Sie ist auf dem Boden winzig und in
+der Karte gross — Berlin geht vom Viertelprozent der Fläche auf viereinhalb —,
+und ihr Berg reicht nach dem Weichzeichnen weit über sie hinaus. Ohne Umriss
+verschwimmt sie mit dem Umland, dessen Farbe sie ja selbst mitgeprägt hat.
+
+Der Umriss sagt hier also etwas, das sonst niemand sagt: **bis hierhin reicht die
+Stadt, der Rest ist ihr Schatten.** Im vollen Kartogramm, wo die Fläche einfarbig
+ist, sind diese Umrisse das Einzige, was man noch sieht — und genau dort sind sie
+am meisten wert, weil sie zeigen, wie gross eine Stadt geworden ist.
+
 ### Die Leiter wird gemessen, nicht gesetzt
 
 Wie weit die Höhen streuen, hängt ganz an der Stellung des Formreglers (4f):
@@ -683,17 +744,27 @@ sie für jeden Kreis 1. Eine feste Leiter für alle drei Stellungen läge in
 zweien davon in einem einzigen Gelb.
 
 Also wird die Spanne **je Form einmal aus den Daten gemessen**: alle vierhundert
-Kreise in allen zehn Zählungen, das halbe und das neunundneunzigeinhalbte
-Prozent. Das geht, ohne zu zeichnen, weil die Höhe ein Verhältnis ist und sich
-beim Skalieren der ganzen Karte nicht ändert. Gemessen wird einmal je Form und
-dann behalten — dieselbe Farbe heisst damit über die ganzen hundertdreiund­
-fünfzig Jahre dasselbe.
+Kreise in allen zehn Zählungen, das fünfte und das fünfundneunzigste Prozent.
+Das geht, ohne zu zeichnen, weil die Höhe ein Verhältnis ist und sich beim
+Skalieren der ganzen Karte nicht ändert. Gemessen wird einmal je Form und dann
+behalten — dieselbe Farbe heisst damit über die ganzen hundertdreiundfünfzig
+Jahre dasselbe.
+
+Gewichtet wird dabei mit der **Fläche**, nicht je Kreis gleich. Das ist der
+Unterschied zwischen „wie dicht wohnt ein Kreis" und „wie dicht ist das Land
+hier", und gefärbt wird Fläche. Ungewichtet setzten die hundertsieben
+kreisfreien Städte das obere Quantil: sie sind dicht, aber winzig, und nach dem
+Weichzeichnen bleibt von ihnen wenig übrig. Die Leiter reichte dann weit über
+das hinaus, was im Feld je vorkommt, und **die halbe Palette blieb ungenutzt** —
+acht von sechzehn Bändern auf der Landkarte. Aus demselben Grund fünf Prozent an
+den Enden statt eines halben: das Weichzeichnen zieht die Verteilung ohnehin zur
+Mitte. Jetzt sind es zwölf bis dreizehn belegte Bänder.
 
 | Form | gemessene Spanne |
 |---|---|
-| Real map (a = 0) | ×0,19 … ×16,8 |
-| Half and half (a = 0,5) | ×0,33 … ×2,5 |
-| Cartogram (a = 1) | ×0,99 … ×1,01 |
+| Real map (a = 0) | ×0,26 … ×2,9 |
+| Half and half (a = 0,5) | ×0,44 … ×2,3 |
+| Cartogram (a = 1) | ×1,00 … ×1,02 |
 
 Zwischen zwei Formen wird logarithmisch übergeblendet, und weil das während der
 Bewegung geschieht, stehen die Zahlen an den Enden der Leiter je Bild neu.
@@ -714,6 +785,13 @@ Zwei Bremsen, beide aus derselben gemessenen Spanne:
    enger, wird sie um ihre Mitte auf dieses Mass aufgezogen; alle Werte landen
    dann in der Mitte der Leiter, und die Karte liegt einfarbig da — wie es
    einem Kartogramm zusteht.
+
+   Aufgezogen und dann noch um ein **halbes Band** verschoben. Symmetrisch läge
+   die Mitte der Werte auf genau der Grenze zwischen dem achten und dem neunten
+   Band, und dort, wo alle Werte dicht um diese Mitte liegen, kippte jeder
+   Rundungsrest über die Grenze: die Fläche war mit Flecken des Nachbartons
+   gesprenkelt. Um ein halbes Band verschoben fällt die Mitte in die Mitte eines
+   Bandes, und die Fläche bleibt, was sie sein soll — einfarbig.
 2. Das **Relief wird ausgeblendet**, im selben Verhältnis: Schattierung,
    Mulden, Schlagschatten und Höhenlinien werden mit demselben Faktor
    multipliziert. Bei voller Spanne steht es ganz, bei keiner gar nicht,

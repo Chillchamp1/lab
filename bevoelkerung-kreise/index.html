@@ -322,10 +322,16 @@ const HYPSO = ['#1f5c33','#2b7239','#3c883f','#559b48','#72ac55','#92bb63','#b0c
 const stil = n => getComputedStyle(document.body).getPropertyValue(n).trim();
 let LEER = '#1a1a18', INK = '#fff', STRICH = '#0c0c0c';
 const SCHATTEN = 'rgba(0,0,0,.6)', KANTE3D = '#060605';
+const STADTSTRICH = 'rgba(0,0,0,.42)';
 const HELLMAX = 0.55, DUNKELMAX = 0.55;
 function farbenHolen() {
   LEER = stil('--leer'); INK = stil('--ink'); STRICH = stil('--surface');
 }
+/* Sechzehn Bänder gleicher Breite, Grenzen bei k/16. Nicht gerundet auf
+   sechzehn Stützstellen, sondern abgeschnitten auf sechzehn Bänder — das ist
+   der Unterschied zwischen „sechzehn Farben" und „fünfzehn Grenzen an
+   bekannten Stellen", und die Höhenlinien brauchen die Grenzen. */
+const bandIdx = u => Math.max(0, Math.min(15, Math.floor(u * 16)));
 const stufe = (r, u) => r[Math.max(0, Math.min(r.length - 1, Math.round(u * (r.length - 1))))];
 
 /* ---------- Die Höhenskala ----------
@@ -369,14 +375,30 @@ function hoehenSpanne(fi) {
     const mittel = sA > 0 ? sP / sA : 1;
     for (let g = 0; g < NK; g++) {
       const w = reihe.BEV[f][g];
-      if (w > 0 && fl[g] > 0) alle.push((w / fl[g]) / mittel);
+      if (w > 0 && fl[g] > 0) alle.push([(w / fl[g]) / mittel, fl[g]]);
     }
   }
-  alle.sort((a, b) => a - b);
-  const q = t => alle[Math.max(0, Math.min(alle.length - 1, Math.round(t * (alle.length - 1))))];
+  /* Gewichtet mit der **Fläche**, nicht je Kreis gleich. Das ist der
+     Unterschied zwischen „wie dicht wohnt ein Kreis" und „wie dicht ist das
+     Land hier", und gefärbt wird Fläche. Ungewichtet setzten die hundertsieben
+     kreisfreien Städte das obere Quantil — sie sind dicht, aber winzig, und
+     nach dem Weichzeichnen bleibt von ihnen wenig übrig. Die Leiter reichte
+     deshalb weit über das hinaus, was im Feld je vorkommt, und die halbe
+     Palette blieb ungenutzt.
+
+     Aus demselben Grund ein Fünftelprozent statt eines halben an den Enden:
+     das Weichzeichnen zieht die Verteilung ohnehin zur Mitte, die Leiter darf
+     also enger stehen als die rohen Kreiswerte. */
+  alle.sort((a, b) => a[0] - b[0]);
+  let ges = 0; for (const [, fa] of alle) ges += fa;
+  const q = t => {
+    let ziel = t * ges, lauf = 0;
+    for (const [v, fa] of alle) { lauf += fa; if (lauf >= ziel) return v; }
+    return alle[alle.length - 1][0];
+  };
   // Im vollen Kartogramm liegen alle Werte auf 1; eine Spanne gibt es dort
   // nicht, und die Karte ist zu Recht einfarbig.
-  const lo = Math.max(1e-3, q(0.005)), hi = Math.max(lo * 1.02, q(0.995));
+  const lo = Math.max(1e-3, q(0.05)), hi = Math.max(lo * 1.02, q(0.95));
   FORM = merkF; reihe = merkR; tangenteFuer = -1;
   return (SPANNEJE[fi] = [Math.log(lo), Math.log(hi)]);
 }
@@ -411,21 +433,22 @@ function hoehenSkala() {
 const SPANNE_MIN = Math.log(2.6);
 function skalaBreit(von, bis) {
   const fehlt = SPANNE_MIN - (bis - von);
-  return fehlt > 0 ? [von - fehlt / 2, bis + fehlt / 2] : [von, bis];
+  if (fehlt <= 0) return [von, bis];
+  /* Symmetrisch aufgezogen läge die Mitte der Werte auf u = 0,5 — und das ist
+     genau die Grenze zwischen dem achten und dem neunten Farbband. Im
+     Kartogramm, wo alle Werte dicht um diese Mitte liegen, kippte deshalb jeder
+     Rundungsrest über die Grenze und sprenkelte die Fläche mit Flecken des
+     Nachbartons. Also um ein halbes Band verschoben: die Mitte fällt in die
+     Mitte eines Bandes, und die Fläche bleibt einfarbig. */
+  const a = von - fehlt / 2, b = bis + fehlt / 2;
+  const halbesBand = (b - a) / 32;
+  return [a - halbesBand, b - halbesBand];
 }
 function reliefAnteil(von, bis) {
   return Math.max(0, Math.min(1, (bis - von) / SPANNE_MIN));
 }
 
-// Nicht die Farbe, sondern ihre Stufe: gezeichnet wird in Bündeln, und dafür
-// muss gleiche Farbe gleiche Zahl sein. −1 heisst „ohne Zahl".
-function farbStufe(wert, k) {
-  if (!(wert > 0)) return -1;
-  const h = HOCH[k];
-  if (!(h > 0)) return -1;
-  const u = Math.max(0, Math.min(1, (Math.log(h) - skalaVon) / (skalaBis - skalaVon)));
-  return Math.round(u * (HYPSO.length - 1));
-}
+
 let skalaVon = -1, skalaBis = 1, RELIEF_ANTEIL = 1;
 
 /* ---------- Zustand ---------- */
@@ -569,13 +592,38 @@ function werteBei(a, b, u) {
    die Zahl selbst steht beim Antippen. */
 const GEZEICHNET = new Float64Array(NK), HOCH = new Float64Array(NK);
 // Je Farbstufe ein Eimer, dazu einer für die Kreise ohne Zahl.
-const EIMER_F = Array.from({ length: HYPSO.length }, () => []), EIMER_LEER = [];
 // Die Stauchung und der Sockel, auf dem das Relief steht. Ohne Sockel läge auf
 // der Landkarte das halbe Land im Dunkeln, weil eine einzige Stadt die Skala
 // setzt; mit Sockel ist die Ebene eine Ebene und die Städte steigen daraus auf.
 // Im vollen Kartogramm sind alle Höhen gleich, dann ist der Sockel wirkungslos
 // und es bleibt genau beim flachen Deckel von vorher.
-let STAUCH = 0.45, BODEN_H = 0.12;
+/* ---------- Was im Höhenfeld steht ----------
+   Bis hierher stand darin die **gestauchte Höhe**: Wurzel aus der Dichte,
+   normiert auf den höchsten Kreis des Bildes. Die Farbe dagegen kam aus
+   log(Dichte) auf der gemessenen Leiter, und gefärbt wurde Kreis für Kreis.
+   Zwei verschiedene Grössen, zwei verschiedene Geometrien — und das sah man:
+   Berlin war ein kleiner Farbfleck in der Form seines Kreises, während sein
+   Berg, aus dem weiten Feld gezogen, weit darüber hinausreichte und seine
+   Höhenlinien sich drängten. Farbe und Relief widersprachen einander.
+
+   Jetzt steht im Feld **dieselbe Zahl, die auch die Leiter zeigt**: die
+   logarithmische Dichte, linear auf die gemessene Spanne abgebildet. Daraus
+   kommen Farbe, Schattierung und Höhenlinien gemeinsam — dieselbe Zahl,
+   dieselbe Glättung, dieselbe Geometrie.
+
+   RESERVE ist Luft über und unter der Farbleiter: die Spanne ist bei einem
+   halben Prozent gekappt (q0,005 / q0,995), und ohne Luft bekäme Berlin einen
+   abgeschnittenen Gipfel — ein flaches Plateau ohne Modellierung. Ein Achtel
+   der Spanne nach jeder Seite reicht.
+
+   Der Wert ist mit Bedacht ein Achtel. Damit liegen die fünfzehn Farbgrenzen
+   (bei k/16 der Leiter) im Feld auf (k+2)/20, und bei vierzig Niveaus ist das
+   jedes zweite: **jede zweite Höhenlinie ist eine Farbgrenze.** Das ist die
+   Konstruktion eines Schulatlas. */
+const RESERVE = 0.125;
+// Leiterwert (0 = unteres Ende der Farbskala, 1 = oberes) → Feldwert und zurück.
+const zuFeld = u => Math.max(0, Math.min(1, (u + RESERVE) / (1 + 2 * RESERVE)));
+const ausFeld = v => v * (1 + 2 * RESERVE) - RESERVE;
 function hoehen(w, deck) {
   let sP = 0, sA = 0;
   for (let g = 0; g < NK; g++) {
@@ -588,12 +636,8 @@ function hoehen(w, deck) {
     if (deck[g] > 0.5 && w[g] > 0 && GEZEICHNET[g] > 0) { sP += w[g]; sA += GEZEICHNET[g]; }
   }
   const mittel = sA > 0 ? sP / sA : 1;
-  let gross = 1;
-  for (let g = 0; g < NK; g++) {
+  for (let g = 0; g < NK; g++)
     HOCH[g] = (deck[g] > 0.5 && GEZEICHNET[g] > 0 && w[g] > 0) ? (w[g] / GEZEICHNET[g]) / mittel : 0;
-    if (HOCH[g] > gross) gross = HOCH[g];
-  }
-  return gross;
 }
 
 const RAUF = 0.55;                // Auflösung des Höhenfelds, Anteil der Bildpunkte
@@ -601,8 +645,15 @@ const hkA = document.createElement('canvas'), hcA = hkA.getContext('2d');
 const hkB = document.createElement('canvas'), hcB = hkB.getContext('2d', { willReadFrequently: true });
 const hkC = document.createElement('canvas'), hcC = hkC.getContext('2d', { willReadFrequently: true });
 const hkL = document.createElement('canvas'), hcL = hkL.getContext('2d');
-let rW = 0, rH = 0, rBild = null;
-let feinH = null, grobH = null, grobAuf = null, feldH = null, maskeH = null, schatten = null;
+const hkF = document.createElement('canvas'), hcF = hkF.getContext('2d');
+let rW = 0, rH = 0, rBild = null, fBild = null;
+let feinH = null, grobH = null, grobM = null, grobAuf = null, feldH = null,
+    farbF = null, maskeH = null, schatten = null;
+// Die Farbleiter als drei Zahlenreihen — je Bildpunkt ein Nachschlagen statt
+// eines Zerlegens von '#rrggbb'.
+const HYPSO_R = HYPSO.map(h => parseInt(h.slice(1, 3), 16));
+const HYPSO_G = HYPSO.map(h => parseInt(h.slice(3, 5), 16));
+const HYPSO_B = HYPSO.map(h => parseInt(h.slice(5, 7), 16));
 /* ---------- Tiefpass ----------
    Das Höhenfeld wird jedes Bild neu gerastert, und dabei rutschen die Kreise um
    Bruchteile eines Feldpunktes. Das Feld selbst ist glatt, aber sein Raster
@@ -626,16 +677,18 @@ let feinH = null, grobH = null, grobAuf = null, feldH = null, maskeH = null, sch
 // Umrissen der Kreise — liefen sie zu weit nach, sässe die Schattierung neben
 // ihrer Fläche.
 const TIEFPASS_GROB = 1.2, TIEFPASS_FEIN = 0.30;
-let glattFein = null, glattGrob = null, glattMaske = null, glattDa = false;
+let glattFein = null, glattGrob = null, glattGrobM = null, glattMaske = null, glattDa = false;
 function reliefFrisch() { glattDa = false; }
 function reliefFeld() {
   const w = Math.max(8, Math.round(breite * RAUF)), h = Math.max(8, Math.round(hoehe * RAUF));
   if (w === rW && h === rH) return;
   rW = w; rH = h;
-  for (const k of [hkA, hkB, hkC, hkL]) { k.width = w; k.height = h; }
+  for (const k of [hkA, hkB, hkC, hkL, hkF]) { k.width = w; k.height = h; }
   rBild = hcL.createImageData(w, h);
+  fBild = hcL.createImageData(w, h);
   feinH = new Float32Array(w * h); feldH = new Float32Array(w * h);
-  grobH = new Float32Array(w * h); grobAuf = new Float32Array(w * h);
+  grobH = new Float32Array(w * h); grobM = new Float32Array(w * h);
+  grobAuf = new Float32Array(w * h); farbF = new Float32Array(w * h);
   maskeH = new Float32Array(w * h); schatten = new Float32Array(w * h);
 }
 // Die Stellschrauben des Reliefs.
@@ -654,7 +707,13 @@ let WURFSONNE = 16;             // dasselbe Licht, flach, nur für den Schlagsch
 let UEBERHOEHT = 30;            // volle Höhe in Bildpunkten des Höhenfelds
 let MULDE = 0.85;               // wie stark Mulden verschatten
 let WURF = 0.50;                // wie dunkel ein Schlagschatten ist
-let LINIE = 0.72, NIVEAUS = 40, FLACHHANG = 0.0012, DUNKELLINIE = 0.85;  // Höhenlinien: Stärke und Anzahl
+/* Zwanzig Niveaus, und die Zahl ist nicht frei gewählt: mit einem Achtel
+   Reserve über und unter der Farbleiter liegen deren fünfzehn Grenzen im Feld
+   auf 2/20 bis 17/20 — also **ist jede Höhenlinie eine Farbgrenze** und jede
+   Farbgrenze trägt ihre Linie. Das ist die Konstruktion eines Schulatlas, und
+   es ist das, was eine Höhenlinie auf einer Geländekarte überhaupt tun soll:
+   den Farbwechsel begründen, statt quer durch ihn hindurchzulaufen. */
+let LINIE = 0.72, NIVEAUS = 20, FLACHHANG = 0.0012, DUNKELLINIE = 0.85;
 const LINIENSCHRITT = 2;          // Gitterschritt der Linienverfolgung, in Feldpunkten
 // So fein wird die Höhe abgestuft, ehe sie weichgezeichnet wird. Gezeichnet
 // wird in Bündeln, und die Zahl ist nicht beliebig: die Stufen stecken
@@ -663,7 +722,7 @@ const LINIENSCHRITT = 2;          // Gitterschritt der Linienverfolgung, in Feld
 // einer Stufe zur nächsten, und die Linien in seiner Umgebung zucken mit.
 const STUFEN = 200;
 const EIMER_H = Array.from({ length: STUFEN }, () => []);
-function reliefUeber(sil, deck, gross) {
+function reliefUeber(sil, deck) {
   if (!(breite > 60 && hoehe > 60)) return;
   reliefFeld();
   const s = rW / breite;
@@ -683,7 +742,7 @@ function reliefUeber(sil, deck, gross) {
   for (const e of EIMER_H) e.length = 0;
   for (let g = 0; g < NK; g++) {
     if (!(deck[g] > 0.5) || !(HOCH[g] > 0)) continue;
-    const v = BODEN_H + (1 - BODEN_H) * Math.pow(HOCH[g] / gross, STAUCH);
+    const v = zuFeld((Math.log(HOCH[g]) - skalaVon) / (skalaBis - skalaVon));
     let st = Math.round(v * (STUFEN - 1));
     if (st < 1) st = 1; if (st > STUFEN - 1) st = STUFEN - 1;
     EIMER_H[st].push(g);
@@ -765,34 +824,87 @@ function reliefUeber(sil, deck, gross) {
   for (let i = 0, n = rW * rH; i < n; i++) {
     grobH[i] = dg[i << 2] / 255;
     const a = dg[(i << 2) + 3] / 255;
-    grobAuf[i] = grobH[i] * a * a * (3 - 2 * a);
+    grobM[i] = a * a * (3 - 2 * a);
   }
 
   // Und hier der Tiefpass. Drei Felder, ein Gewicht, aus der wirklich
   // vergangenen Zeit gerechnet.
   const n3 = rW * rH;
   if (!glattFein || glattFein.length !== n3) {
-    glattFein = new Float32Array(n3); glattGrob = new Float32Array(n3); glattMaske = new Float32Array(n3);
+    glattFein = new Float32Array(n3); glattGrob = new Float32Array(n3);
+    glattGrobM = new Float32Array(n3); glattMaske = new Float32Array(n3);
     glattDa = false;
   }
   if (!glattDa) {
-    glattFein.set(feinH); glattGrob.set(grobAuf); glattMaske.set(maskeH);
+    glattFein.set(feinH); glattGrob.set(grobH); glattGrobM.set(grobM); glattMaske.set(maskeH);
     glattDa = true;
   } else {
     const dt = Math.max(0.001, Math.min(0.25, dtSek));
     const gG = 1 - Math.exp(-dt / TIEFPASS_GROB), gF = 1 - Math.exp(-dt / TIEFPASS_FEIN);
     for (let i = 0; i < n3; i++) {
       glattFein[i] += (feinH[i] - glattFein[i]) * gF;
-      glattGrob[i] += (grobAuf[i] - glattGrob[i]) * gG;
+      glattGrob[i] += (grobH[i] - glattGrob[i]) * gG;
+      glattGrobM[i] += (grobM[i] - glattGrobM[i]) * gG;
       glattMaske[i] += (maskeH[i] - glattMaske[i]) * gF;
     }
   }
-  feinH.set(glattFein); grobAuf.set(glattGrob); maskeH.set(glattMaske);
+  // Der Tiefpass liegt jetzt auf dem **weiten Feld selbst**, nicht mehr auf
+  // seinem Produkt mit dem Rand: aus diesem Feld kommt gleich die Farbe der
+  // Karte, und die darf den Randabfall nicht mitnehmen — sonst bekäme die
+  // Küste eine grüne Bordüre.
+  feinH.set(glattFein); grobH.set(glattGrob); grobM.set(glattGrobM); maskeH.set(glattMaske);
 
-  // Beide Felder zusammen ergeben die Oberfläche: das enge trägt den einzelnen
-  // Kreis, das weite die Landschaft. Beide sind durch den Tiefpass gelaufen.
-  for (let i = 0, n = rW * rH; i < n; i++)
+  /* Drei Felder aus denselben zwei Weichzeichnungen:
+
+     Das Farbfeld trägt **Farbe und Höhenlinien**. Es mischt eng und weit, 40 zu 60 —
+     das weite allein wäre für die Farbe zu grob, eine kreisfreie Stadt von
+     zwölf Bildpunkten verschwände darin ganz. Ohne Randabfall, denn die Küste
+     soll keine grüne Bordüre bekommen und dort werden ohnehin keine Linien
+     gezogen.
+
+     Das Relieffeld trägt die **Schattierung** und ist dasselbe, nur mit dem Rand: der
+     Abfall zur Küste hin ist es, der ihr eine Kante gibt. Im Inneren, wo die
+     Maske 1 ist, sind beide gleich — also liegen Farbe, Linie und Licht
+     aufeinander.
+
+     Das dritte ist das weite Feld mit seinem eigenen, breiteren Rand; aus ihm
+     kommt die Muldenverschattung, die ja gerade die weite Umgebung braucht. */
+  for (let i = 0; i < n3; i++) {
+    grobAuf[i] = grobH[i] * grobM[i];
+    farbF[i] = 0.40 * feinH[i] + 0.60 * grobH[i];
     feldH[i] = 0.40 * feinH[i] * maskeH[i] + 0.60 * grobAuf[i];
+  }
+
+  /* ---------- Die Farbe der Karte, aus demselben Feld ----------
+     Gefärbt wurde bisher Kreis für Kreis: jede Fläche bekam ihre eigene Dichte
+     als Ton, und heraus kam ein Mosaik. Die Höhenlinien dagegen kamen aus dem
+     weiten Feld, das über die Kreisgrenzen hinweg verläuft. Berlin war deshalb
+     ein kleiner Farbfleck in der Form seines Kreises, während sein Berg weit
+     darüber hinausreichte — Farbe und Relief widersprachen einander.
+
+     Jetzt kommt die Farbe aus dem weiten Feld selbst, also aus genau dem, das die
+     Linien trägt. Sechzehn Bänder, und weil ein Achtel Reserve über und unter
+     der Leiter liegt, fällt jede zweite Höhenlinie auf eine Farbgrenze.
+
+     Gezeichnet wird das Feld in seiner eigenen, gröberen Auflösung und beim
+     Hochrechnen bilinear geglättet: die Bandgrenze wird dadurch ein weicher
+     Übergang von ein, zwei Bildpunkten, und die Höhenlinie liegt in seiner
+     Mitte. Scharf gerastert sähe dieselbe Grenze treppig aus. */
+  const fo = fBild.data;
+  for (let i = 0; i < n3; i++) {
+    const k = bandIdx(ausFeld(farbF[i]));
+    const j = i << 2;
+    fo[j] = HYPSO_R[k]; fo[j + 1] = HYPSO_G[k]; fo[j + 2] = HYPSO_B[k]; fo[j + 3] = 255;
+  }
+  hcF.setTransform(1, 0, 0, 1, 0, 0);
+  hcF.globalCompositeOperation = 'source-over';
+  hcF.putImageData(fBild, 0, 0);
+  hcF.globalCompositeOperation = 'destination-in';   // nur, was auf der Karte liegt
+  hcF.drawImage(hkA, 0, 0);
+  hcF.globalCompositeOperation = 'source-over';
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(hkF, 0, 0, breite, hoehe);
 
   /* Schlagschatten. Das ist der Unterschied zwischen einer gewölbten Fläche
      und einem Gebirge: ein Berg wirft einen Schatten über das, was hinter ihm
@@ -996,7 +1108,7 @@ function linienMalen(strichBreite) {
 function hoehenLinien(s) {
   linienFeld();
   const S = LSCHRITT, je = 1 / s, nx = lnx, ny = lny;
-  const F = grobAuf, M = maskeH;
+  const F = farbF, M = maskeH;   // dasselbe Feld, aus dem die Farbe kommt
   const strichBreite = Math.max(0.7, breite / 760);
   const lang = bahnX.length;
   for (const z of zellenJe) z.length = 0;
@@ -1116,7 +1228,7 @@ function zeichne() {
      und Relief hängen alle daran. */
   const TIEFE = Math.max(2.5, breite / 130);
   const sil = new Path2D();
-  const gross = hoehen(w, deck);
+  hoehen(w, deck);
   const roh = hoehenSkala();
   RELIEF_ANTEIL = reliefAnteil(roh[0], roh[1]);
   [skalaVon, skalaBis] = skalaBreit(roh[0], roh[1]);
@@ -1137,52 +1249,28 @@ function zeichne() {
   ctx.fillStyle = KANTE3D; ctx.fill(sil);
   ctx.restore();
 
-  /* Gezeichnet wird in **Farbbündeln**, nicht Kreis für Kreis: die Leiter hat
-     sechzehn Stufen, also braucht die ganze Karte sechzehn Füllungen statt
-     vierhundert. Kreise, die gerade ein- oder ausblenden, haben eine eigene
-     Deckkraft und kommen einzeln dran — flächendeckend gibt es die nicht.
+  /* Die Grundfläche, in **einer** Farbe: der Mitte der Leiter, also dem Ton,
+     den ein Kreis von durchschnittlicher Dichte hat.
 
-     Zu jeder Füllung ein Strich **in derselben Farbe**. Das ist keine Grenze,
-     sondern ihr Gegenteil: zwei Nachbarn werden getrennt gefüllt, und die
-     Kantenglättung lässt an der gemeinsamen Kante einen halb durchsichtigen
-     Spalt stehen. Auf schwarzem Grund liest der sich als feine dunkle Linie —
-     eine Grenze, die niemand gezeichnet hat. Der Strich dehnt jede Fläche um
-     einen halben Bildpunkt, die Nachbarn überlappen sich, und die Naht ist
-     zu. */
-  for (const e of EIMER_F) e.length = 0;
-  const blass = [];
-  for (let g = 0; g < NK; g++) {
-    if (!(deck[g] > 0.001)) continue;             // ohne Zahl wird nicht gezeichnet
-    const st = farbStufe(w[g], g);
-    if (deck[g] < 0.999) { blass.push([g, st]); continue; }
-    if (st < 0) EIMER_LEER.push(g); else EIMER_F[st].push(g);
-  }
-  const malBuendel = (liste, farbe) => {
-    if (!liste.length) return;
-    ctx.beginPath();
-    for (const g of liste) for (const r of GEBIETE[g]) {
-      ctx.moveTo(px[r[0]] * mass + verX, py[r[0]] * mass + verY);
-      for (let i = 1; i < r.length; i++) ctx.lineTo(px[r[i]] * mass + verX, py[r[i]] * mass + verY);
-      ctx.closePath();
-    }
-    ctx.fillStyle = farbe; ctx.fill('evenodd');
-    ctx.strokeStyle = farbe; ctx.stroke();
-  };
-  ctx.lineWidth = 1; ctx.lineJoin = 'round';
-  malBuendel(EIMER_LEER, LEER); EIMER_LEER.length = 0;
-  for (let st = 0; st < EIMER_F.length; st++) malBuendel(EIMER_F[st], HYPSO[st]);
-  for (const [g, st] of blass) {
-    ctx.globalAlpha = deck[g];
-    malBuendel([g], st < 0 ? LEER : HYPSO[st]);
-  }
-  ctx.globalAlpha = 1;
+     Sie ist nicht die Farbe der Karte — die kommt gleich aus dem Höhenfeld und
+     legt sich darüber. Sie ist nur die scharfe Kante: das Feld hat seine
+     eigene, gröbere Auflösung, und sein Rand ist beim Hochrechnen ein, zwei
+     Bildpunkte weich. Darunter muss etwas liegen, sonst franst die Küste aus.
+
+     Eine Farbe und nicht vierhundert, weil das Durchscheinende sonst als
+     Flecken sichtbar wird — im Kartogramm, wo das Feld einfarbig ist, lagen an
+     jeder schmalen Stelle Reste der alten Kreisfärbung. */
+  ctx.fillStyle = HYPSO[bandIdx((0 - skalaVon) / (skalaBis - skalaVon))];
+  ctx.fill(sil, 'evenodd');
+
   /* Keine Grenzen mehr, weder um die Kreise noch um die Länder. Eine
      Geländekarte hat keine; sie hat Farbe, Hang und Höhenlinie, und die
      zeigen dieselbe Grenze dort, wo sie etwas bedeutet — wo sich die Dichte
      ändert. Wo zwei Nachbarn gleich dicht wohnen, war der Strich ohnehin nur
      Verwaltung. */
 
-  reliefUeber(sil, deck, gross);
+  reliefUeber(sil, deck);
+  stadtRand(deck);
 
   beschrifte(deck);
   schreibe(a, b, u, w, deck);
@@ -1199,6 +1287,26 @@ function schreibe(a, b, u, w, deck) {
   document.getElementById('zeit').value = Math.round(spiel * 1000);
 }
 
+/* Ein feiner dunkler Strich um jede kreisfreie Stadt, nach dem Relief
+   gezeichnet, damit er darüber liegt und nicht von der Schattierung
+   weggewaschen wird. Dunkel, nicht hell: eine Stadt ist auf dieser Karte ein
+   Berg, und ein dunkler Umriss liest sich als sein Fuss. */
+function stadtRand(deck) {
+  ctx.beginPath();
+  for (const g of STADTRAND) {
+    if (!(deck[g] > 0.5)) continue;
+    for (const r of GEBIETE[g]) {
+      ctx.moveTo(px[r[0]] * mass + verX, py[r[0]] * mass + verY);
+      for (let i = 1; i < r.length; i++) ctx.lineTo(px[r[i]] * mass + verX, py[r[i]] * mass + verY);
+      ctx.closePath();
+    }
+  }
+  ctx.strokeStyle = STADTSTRICH;
+  ctx.lineWidth = Math.max(0.5, Math.min(1.1, breite / 620));
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+}
+
 /* ---------- Städtenamen ----------
    Die grössten Städte tragen ihren Namen, und die Schrift wächst mit dem
    Fleck: die Schrifthöhe folgt der Wurzel aus der gezeichneten
@@ -1211,6 +1319,18 @@ function schreibe(a, b, u, w, deck) {
    mit einem schon gesetzten Namen überschneidet, fällt auch weg — die
    grösseren zuerst, damit im Ruhrgebiet nicht die kleinste Stadt gewinnt. */
 const STADT = [[324,"Berlin"],[15,"Hamburg"],[223,"München"],[26,"Hannover"],[79,"Köln"],[361,"Leipzig"],[117,"Frankfurt"],[356,"Dresden"],[105,"Dortmund"],[178,"Stuttgart"],[61,"Bremen"],[283,"Nürnberg"],[351,"Chemnitz"]];
+/* ---------- Der Umriss der Städte ----------
+   Die Kreisgrenzen sind weg, und für einen Landkreis ist das richtig: er wird
+   im Kartogramm kaum verzerrt, also sagt sein Umriss nichts, was die Farbe
+   nicht schon sagt. Eine kreisfreie Stadt ist der andere Fall. Sie ist auf dem
+   Boden winzig und in der Karte gross — Berlin geht vom Viertelprozent der
+   Fläche auf viereinhalb —, und ohne Umriss verschwimmt sie mit dem Umland,
+   dessen Farbe sie ohnehin mitgeprägt hat. Der Umriss sagt hier also etwas,
+   das sonst niemand sagt: bis hierhin reicht die Stadt.
+
+   Nur die hundertsieben kreisfreien Städte und Stadtkreise, nicht die
+   Landkreise. */
+const STADTRAND = [0,1,2,3,15,16,17,18,44,45,46,47,48,61,62,63,64,65,66,67,68,69,70,71,72,78,79,80,89,90,91,97,104,105,106,107,108,116,117,118,119,135,142,153,158,159,160,161,162,163,164,165,166,167,178,184,191,192,195,196,199,203,216,222,223,224,245,246,247,257,258,259,267,268,269,270,280,281,282,283,284,292,293,294,304,305,306,307,324,325,326,327,328,343,344,351,356,361,364,365,366,378,379,380,381,382];
 const MINSCHRIFT = 7;       // kleinste Schrift; auf einem Telefon knapp, aber lesbar
 function beschrifte(deck) {
   const liste = [];

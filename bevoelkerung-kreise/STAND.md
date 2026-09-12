@@ -168,11 +168,32 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Bildpunkt, die Nachbarn überlappen sich, die Naht ist zu. Farbe, Hang und
   Höhenlinie zeigen die Grenze dort, wo sich die Dichte ändert. 3 334 Knotenpaare
   der Landesgrenzen fallen damit aus der Nutzlast.
+- **Farbe, Licht und Höhenlinie aus einer Zahl.** Bis hierher war das eine
+  Behauptung: gefärbt wurde Kreis für Kreis (ein Mosaik in den Umrissen der
+  Verwaltung), die Höhenlinien kamen aus dem weichgezeichneten Feld, das
+  darüber hinwegläuft. Berlin war deshalb ein kleiner Farbfleck, während sein
+  Berg weit darüber hinausreichte und die Linien sich darin drängten. Jetzt
+  steht im Höhenfeld die logarithmische Dichte auf der gemessenen Leiter, und
+  daraus kommt alles: Farbe als eines von sechzehn gleich breiten Bändern,
+  Schattierung aus dem Gefälle, Höhenlinien auf den Bandgrenzen. Die Silhouette
+  darunter in **einer** Farbe — nicht als Farbe der Karte, sondern als scharfe
+  Kante, weil der Rand des hochgerechneten Feldes weich ist.
+- **Jede Höhenlinie ist eine Farbgrenze.** Ein Achtel Reserve über und unter der
+  Leiter legt deren fünfzehn Grenzen im Feld auf 2/20 bis 17/20 — bei zwanzig
+  Niveaus (vorher vierzig) genau auf die Niveaus 2 bis 17.
 - **Die Leiter wird je Form aus den Daten gemessen**, einmal, über alle Kreise in
-  allen Zählungen: q0,005 bis q0,995. Landkarte ×0,19 … ×17, Half and half
-  ×0,33 … ×2,5, volles Kartogramm ×0,99 … ×1,01. Zwischen zwei Formen wird
-  logarithmisch übergeblendet, und die Zahlen an den Enden der Leiter wandern je
-  Bild mit.
+  allen Zählungen, **flächengewichtet**: q0,05 bis q0,95. Landkarte ×0,26 … ×2,9,
+  Half and half ×0,44 … ×2,3, volles Kartogramm ×1,00 … ×1,02. Flächengewichtet,
+  weil Fläche gefärbt wird und nicht Kreise — ungewichtet setzten die
+  hundertsieben winzigen kreisfreien Städte das obere Quantil, und acht von
+  sechzehn Bändern blieben leer; jetzt sind zwölf bis dreizehn belegt. Zwischen
+  zwei Formen wird logarithmisch übergeblendet, und die Zahlen an den Enden der
+  Leiter wandern je Bild mit.
+- **Die kreisfreien Städte tragen doch einen Umriss**, einen feinen dunklen über
+  dem Relief. Ein Landkreis braucht keinen, er wird kaum verzerrt; eine
+  kreisfreie Stadt ist auf dem Boden winzig und in der Karte gross, und ihr Berg
+  reicht weit über sie hinaus. Im vollen Kartogramm sind diese Umrisse das
+  Einzige, was auf der einfarbigen Fläche noch zu sehen ist.
 - **Im vollen Kartogramm ist keine Höhe mehr übrig**, und das soll man sehen.
   Eine Leiter über die verbliebenen anderthalb Prozent machte aus Rundungsresten
   ein Gebirge — und das weichgezeichnete Feld tat dasselbe, weil ein gross
@@ -180,7 +201,9 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   wieder aus wie ein Berg, obwohl es nur gross gezeichnet ist. (Die Fugen sind
   inzwischen weg, siehe oben; die Leiter bleibt.) Also zwei Bremsen
   aus derselben gemessenen Spanne: die Leiter bekommt eine Mindestbreite (Faktor
-  2,6), und das Relief wird im selben Verhältnis ausgeblendet. Der Weg von der
+  2,6, danach um ein halbes Band verschoben, sonst kippen die Rundungsreste über
+  die Bandgrenze und sprenkeln die Fläche), und das Relief wird im selben
+  Verhältnis ausgeblendet. Der Weg von der
   Landkarte zum Kartogramm zeigt damit genau das, worum es geht — die Berge
   sinken in die Fläche.
 - Die **Städtenamen** stehen nicht mehr auf dem Gipfel: jeder rückt um die
