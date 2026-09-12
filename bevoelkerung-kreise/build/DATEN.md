@@ -69,12 +69,39 @@ null gestellt gilt wieder das gemessene Quantil. Die drei hängen zusammen —
 weil dann alles rund aufgeht: ein Band ×0,1, die Küste bei ×0,5, das Ende der
 Rampe bei ×2,5, das Knie bei ×2,222 (gemessenes Quantil ×2,305).
 
+## Der Film
+
+`film.mjs` macht aus der Seite ein hochkantes mp4 — für Reddit und alles
+andere, wo eine Webseite nicht hinpasst. Der Inhalt ist der der Seite, nichts
+nachgebaut: sie wird geladen, der Regler ausgeblendet, dann Bild für Bild
+weitergestellt.
+
+```
+node film.mjs ../index.html film.mp4 30
+```
+
+1080 × 1920, dreissig Bilder in der Sekunde, 84 Sekunden Lauf plus zwei
+Sekunden Standbild am Ende; rund 25 MB. Gerechnet wird nicht in Echtzeit —
+der Browser schafft hier weich gerendert elf Bilder in der Sekunde —, sondern
+mit gestellter Uhr: je Bild `dtSek = 1/FPS` und `setzeZeit(i/(n−1))`, genau
+das, was die Seite bei flüssigem Lauf täte. Die Spielzeit stimmt damit auf die
+Sekunde, und der Tiefpass über die Bilder bekommt denselben Zeitschritt wie im
+Browser. Ein Lauf dauert etwa fünf Minuten je Minute Film.
+
+Zwei Dinge, die man wissen sollte. Erstens braucht das Skript `playwright-core`
+und `ffmpeg-static`, beide **nicht im Repo** — es ist Werkzeug, keine Seite,
+und die Regel „keine npm-Abhängigkeiten" gilt weiter für alles, was
+ausgeliefert wird. Zweitens hängen die Blenden der Notizen an CSS-Übergängen
+und damit an der wirklichen Uhr: ein Wechsel blendet im Film über zwei Bilder
+statt über zwölf.
+
 ## Was wo liegt
 
 | Datei | Aufgabe |
 |---|---|
 | `quellen.py` | liest GPOP und die amtlichen Tabellen, prüft dreifach gegen, schreibt die lange CSV und `stammdaten.json` |
 | `shp.mjs` | Shapefile- und DBF-Leser, ohne Fremdbibliothek |
+| `film.mjs` | macht aus der fertigen Seite ein hochkantes mp4 (Werkzeug, nicht Teil der Seite) |
 | `laden.mjs` | Kreisgeometrie einlesen, egal ob Shapefile oder GeoJSON |
 | `geometrie.mjs` | flächentreue Projektion, Umkehrung der UTM-Abbildung, Ringflächen, Faltungsprüfung |
 | `topologie.mjs` | Verschweissen, Auflösen alter Gebietsstände, Generalisieren, Einschränken |

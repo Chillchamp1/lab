@@ -370,6 +370,16 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   hundertsieben winzigen kreisfreien Städte das obere Quantil, und die halbe
   Palette blieb leer; jetzt sind 2024 dreiundzwanzig der fünfundzwanzig Bänder
   belegt.
+- **Die Seite gibt es auch als Film.** `build/film.mjs` macht aus ihr ein
+  hochkantes mp4 — 1080 × 1920, dreissig Bilder in der Sekunde, 84 Sekunden
+  Lauf plus zwei Sekunden Standbild, rund 25 MB. Der Inhalt ist der der Seite,
+  nichts nachgebaut: sie wird geladen, der Regler ausgeblendet, dann Bild für
+  Bild weitergestellt. Nicht in Echtzeit abgefilmt — der Browser schafft hier
+  elf Bilder in der Sekunde —, sondern mit **gestellter Uhr**: je Bild
+  `dtSek = 1/FPS` und `setzeZeit(i/(n−1))`, also genau das, was die Seite bei
+  flüssigem Lauf täte. Spielzeit auf die Sekunde, derselbe Tiefpass. Das
+  Skript braucht `playwright-core` und `ffmpeg-static`, beide nicht im Repo:
+  Werkzeug, keine Seite.
 - **Kein Name läuft mehr aus der Leinwand.** Mönchengladbach liegt so weit im
   Westen, dass sein Name auf dem Telefon zwanzig Bildpunkte links neben der
   Karte begann — das M war weg. Jeder Name wird jetzt in jeder der vierzig
