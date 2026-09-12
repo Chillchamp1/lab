@@ -60,6 +60,14 @@ Voreinstellung 9000 — sie wiegt dadurch etwas mehr und hält die kleinen
 kreisfreien Städte in Form. Wer die Seite neu baut, sollte das mitgeben, sonst
 wird sie unbemerkt gröber.
 
+Drei weitere, nur zum Ausprobieren der Farbleiter: `NBAND` (Zahl der Bänder,
+Voreinstellung 22), `WASSER` (wie viele davon blau sind, 3) und `UFER` (wo der
+Meeresspiegel liegen soll, in Vielfachen der mittleren Dichte von 2024, 0,35).
+`UFER` setzt das obere Ende der Leiter so, dass die Küste genau dort fällt; auf
+null gestellt gilt wieder das gemessene Quantil. Die drei hängen zusammen —
+`Ufer = WASSER / NBAND · (1 + RESERVE) · Leiterende` —, und 22/3 sind gewählt,
+weil das gesetzte Leiterende dann auf ein Prozent an das gemessene herankommt.
+
 ## Was wo liegt
 
 | Datei | Aufgabe |

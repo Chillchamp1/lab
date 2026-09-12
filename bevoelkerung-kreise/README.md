@@ -157,29 +157,35 @@ deshalb ein kleiner Farbfleck, während sein Berg weit darüber hinausreichte un
 die Linien sich darin drängten — die Karte sagte an derselben Stelle zweierlei.
 
 Jetzt steht im Höhenfeld die Dichte auf der gemessenen Leiter,
-und daraus kommt alles: die Farbe als eines von vierundzwanzig gleich breiten
+und daraus kommt alles: die Farbe als eines von zweiundzwanzig gleich breiten
 Bändern, die Schattierung aus dem Gefälle, die Höhenlinien auf den Bandgrenzen.
 Bänder und Niveaus liegen auf denselben Stellen, also **ist jede Höhenlinie eine
 Farbgrenze, und jede Farbgrenze trägt ihre Linie.** So macht es ein Schulatlas.
 Oben endet die Leiter in Weiss: die beiden hellsten Bänder, Fels und Schnee,
 liegen über dem gemessenen Quantil und gehören der Spitze allein.
 
-**Unten liegt Wasser.** Die untersten vier Bänder sind ein See, tief dunkelblau
+**Unten liegt Wasser.** Die untersten drei Bänder sind ein See, tief dunkelblau
 und zum Ufer hin heller — dort, wo auf die Fläche am wenigsten Menschen kommen.
 Das schärft zweierlei: die Uferlinie zeigt auf einen Blick, welcher Teil des
 Landes leer ist, und weil das untere Ende der Leiter ans Wasser geht, lösen die
-Landbänder feiner auf. Die Wasserlinie liegt bei ×0,45 der heutigen mittleren
-Dichte und deckt 2024 knapp 7 Prozent der Karte — Brandenburg, Mecklenburg,
-Altmark, Eifel. 1871 sind es vier Fünftel, und das ist kein Fehler: die Leiter
-ist absolut, und nach heutigem Massstab war das Land damals fast leer. Die Karte
-ist dann eine Inselgruppe, und der Lauf der Jahre zeigt, wie das Land aus dem
-Wasser steigt.
+Landbänder feiner auf.
 
-Wo die Leiter anfängt und aufhört, wird **aus den Daten gemessen** — alle Kreise
-in allen Zählungen, fünf bis fünfundneunzig Prozent, **gewichtet mit der
-Fläche**, und zwar an genau der Form, die gezeichnet wird: ×0,28 bis ×2,39. Und
-darüber läuft sie als weiches Knie weiter, bis ×2,68 am Ende der Farbrampe, ohne
-je zu kappen.
+Und der Meeresspiegel ist eine Zahl, die etwas heisst: er liegt bei **×0,35 der
+heutigen mittleren Dichte, und das ist die mittlere Dichte Deutschlands im Jahr
+1871** — 29,3 Millionen auf den 357 677 km² von heute, also 82 Menschen je
+Quadratkilometer. Unter Wasser steht damit genau das Land, in dem heute dünner
+gewohnt wird als im ganzen Kaiserreich am Anfang des Films. 1871 ist das die
+Hälfte der Fläche, die Karte ist eine Inselgruppe; um 1950 ist die See fast
+verschwunden (0,1 Prozent), weil nie so viel Deutschland in der Fläche wohnte
+wie nach der Vertreibung; seither steigt sie wieder und steht 2024 bei 4,3
+Prozent, fast ganz im Nordosten.
+
+Wo die Leiter aufhört, wird **aus den Daten gemessen** — alle Kreise in allen
+Zählungen, fünf bis fünfundneunzig Prozent, **gewichtet mit der Fläche**, und
+zwar an genau der Form, die gezeichnet wird: ×2,305. Genommen wird dann ×2,281,
+und zwar deshalb, weil dort die Küste auf ×0,35 fällt; ein Prozent Unterschied.
+Darüber läuft die Leiter als weiches Knie weiter, bis ×2,57 am Ende der
+Farbrampe, ohne je zu kappen.
 
 Die Leiter teilt dabei **linear** auf, nicht logarithmisch, und das ist eine
 inhaltliche Entscheidung: Weichzeichnen erhält das Integral, also ist das
