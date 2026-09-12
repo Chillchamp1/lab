@@ -273,7 +273,7 @@ process.stdout.write(`<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>${titel}</title>
-<meta name="description" content="Every one of today's ${anzahlKreise} counties in ${gebietsname} sized by the people living in it, from ${jahrVon} to ${jahrBis}. The map grows as the population does.">
+<meta name="description" content="Every one of today's ${anzahlKreise} counties in ${gebietsname} sized by the people living in it, from ${jahrVon} to ${jahrBis}. A relief map: colour and shading are how densely the land is settled.">
 <style>
 /* Eine Seite, ein Bild. Schwarz aussen, die Karte füllt den Schirm; alles, was
    nicht zur Karte gehört, ist weg. Nur ein Farbklima, kein Umschalten zwischen
@@ -289,7 +289,13 @@ body{background:var(--plane);color:var(--ink);
   font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.5;
   -webkit-text-size-adjust:100%;overflow:hidden}
 .wrap{max-width:860px;margin:0 auto;height:100dvh;padding:6px;display:flex}
-.buehne{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;
+/* Die Null bei min-width ist kein Feinschliff, sondern ein Fehler, den es zu
+   beheben galt: ein Flex-Kind ist voreingestellt mindestens so breit wie sein
+   Inhalt, und in der Legende steht eine Zeile, die nicht umbrechen darf. Wurde
+   sie lang („1946–1950 → 1961–1964"), dehnte sie die ganze Bühne über ihren
+   Rahmen hinaus — die Karte sprang um siebzehn Bildpunkte in die Breite und
+   wieder zurück, je nachdem, welche Notiz gerade galt. */
+.buehne{position:relative;flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;
   background:var(--surface);border:1px solid var(--ring);border-radius:14px;padding:10px 12px 8px}
 
 /* Kopfzeile: Jahr und Einwohnerzahl. */
@@ -334,9 +340,12 @@ body{background:var(--plane);color:var(--ink);
 .feld{position:relative;z-index:1;flex:1 1 auto;min-height:0}
 canvas{position:absolute;left:0;top:0;width:100%;height:100%;touch-action:manipulation}
 
-.fuss{flex:0 0 auto;padding:6px 0 0}
+.fuss{flex:0 0 auto;min-width:0;padding:6px 0 0}
+/* Eine Zeile, und zwar auch dann, wenn sie noch leer ist: sonst ist die Leiste
+   beim ersten Messen niedriger als gleich darauf, und die Karte wird für eine
+   Höhe gezeichnet, die es nicht mehr gibt. */
 .fuss .klein{margin:4px 0 0;font-size:11.5px;line-height:1.35;color:var(--ink2);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  min-height:1.35em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .legende{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink2);
   font-variant-numeric:tabular-nums}
 .rampe{flex:1;height:9px;border-radius:5px;border:1px solid var(--ring)}
@@ -800,8 +809,30 @@ function reliefAnteil(binnen) {
 
 let skalaVon = -1, skalaBis = 1, RELIEF_ANTEIL = 1;
 // Wo das Mittel dieses Bildes auf der Leiter liegt, von 0 bis 1.
-const mitteAufLeiter = () =>
-  Math.max(0, Math.min(1, (Math.log(MITTELHOCH) - skalaVon) / (skalaBis - skalaVon)));
+/* ---------- Wo eine Dichte auf der Leiter liegt ----------
+   Zwei Möglichkeiten, und sie sind nicht gleichwertig.
+
+   **Logarithmisch.** Gleiche Vielfache liegen gleich weit auseinander: von ×0,5
+   auf ×1 ist derselbe Weg wie von ×1 auf ×2. Das löst unten gut auf, wo die
+   meisten Kreise liegen, und staucht oben. Die Farbe ist damit eine gute
+   Rangfolge, aber die Fläche darunter bedeutet nichts.
+
+   **Linear.** Der Feldwert ist die Dichte selbst. Und daraus folgt das, worum
+   es hier geht: Weichzeichnen erhält das Integral, also ist
+
+       Volumen unter der Geländeoberfläche = Bevölkerung
+
+   nicht nur je Kreis, sondern über jeden Ausschnitt, den man herausgreift.
+   Zwei gleich grosse Flecken mit gleicher Farbe haben dann gleich viele
+   Menschen, und ein doppelt so hoher Berg auf halber Fläche ebenso. Der Preis
+   ist unten: die Hälfte der Fläche liegt in den untersten zwei, drei Bändern,
+   und die frühen Bilder verlieren ihre Zeichnung fast ganz. */
+let LINEAR = true;
+const aufLeiter = h => (h > 0)
+  ? Math.max(0, Math.min(1, LINEAR ? h / Math.exp(skalaBis)
+                                   : (Math.log(h) - skalaVon) / (skalaBis - skalaVon)))
+  : 0;
+const mitteAufLeiter = () => aufLeiter(MITTELHOCH);
 
 /* ---------- Zustand ---------- */
 // Die Uhr läuft über die Spielzeit, nicht über die Jahre. Wie viel Spielzeit
@@ -1065,17 +1096,30 @@ function hoehen(w, deck) {
    Berlin und Essen trennen fünf Prozent, ein Band ist siebzehn breit — sie
    müssen dieselbe Farbe haben. */
 const FEINTEILER = 95, GROBTEILER = 28, ENGANTEIL = 0.55;
-/* Wie weit die Leiter über das gemessene Quantil hinausreicht — die
-   Schneegrenze. Steht sie auf 1, endet die Leiter genau dort, und die hellste
-   Stufe deckt 2024 reichlich vier Prozent der Karte: keine Gipfel, sondern
-   Hochebenen. Steht sie zu hoch, bleiben die hellsten Töne für immer leer, wie
-   ein Atlas ohne Schnee.
+/* Wo die Leiter oben endet, im Verhältnis zum gemessenen Quantil — die
+   Schneegrenze. Sie ist gemessen, nicht geraten, und sie hängt daran, ob die
+   Leiter linear oder logarithmisch steht: linear ist die Verteilung oben dünner,
+   also darf die Leiter knapper enden.
 
-   Acht Prozent darüber: die hellste Stufe deckt 2024 gut zwei Prozent —
-   Ruhrgebiet und Berlin —, 1982 ein Drittel Prozent, davor nichts. Die
-   Schneegrenze wandert damit mit den Jahren, und das ist genau richtig: die
-   Gipfel entstehen erst. */
-let KOPF = 1.08;
+   Und sie ist ein Abwägen, denn sie schneidet oben ab: was über die Leiter
+   ragt, wird geklemmt, und geklemmt wird zuerst die Spitze — also genau das,
+   was Berlin vom Ruhrgebiet unterscheidet. Gemessen für 2024, Berlin gegen das
+   Ruhrgebiet:
+
+     Schneegrenze  Gipfelfläche   mittlere Höhe Berlin : Ruhr   Volumen
+       0,90           2,4 %              0,84 : 0,80  (+5 %)     1,82
+       1,00           0,9 %              0,83 : 0,75  (+11 %)    1,74
+       1,08           0,2 %              0,83 : 0,70  (+18 %)    1,63
+
+   (Die Bevölkerung steht 1,35 : 1. Dass das Volumen darüber liegt, ist das
+   Weichzeichnen: Berlins Berg trägt einen Teil seines Volumens über die eigene
+   Kreisgrenze hinaus, das Ruhrgebiet als grosses Gebiet behält mehr im
+   Inneren.)
+
+   Eins ist der Kompromiss: knapp ein Prozent Gipfelfläche 2024, elf Prozent
+   Vorsprung für Berlin. Und die Schneegrenze wandert mit den Jahren — 1943
+   liegt nichts darüber, die Gipfel entstehen erst. */
+let KOPF = 1.0;
 const RAUF = 0.55;                // Auflösung des Höhenfelds, Anteil der Bildpunkte
 const hkA = document.createElement('canvas'), hcA = hkA.getContext('2d');
 const hkB = document.createElement('canvas'), hcB = hkB.getContext('2d', { willReadFrequently: true });
@@ -1178,7 +1222,7 @@ function reliefUeber(sil, deck) {
   for (const e of EIMER_H) e.length = 0;
   for (let g = 0; g < NK; g++) {
     if (!(deck[g] > 0.5) || !(HOCH[g] > 0)) continue;
-    const v = zuFeld((Math.log(HOCH[g]) - skalaVon) / (skalaBis - skalaVon));
+    const v = zuFeld(aufLeiter(HOCH[g]));
     let st = Math.round(v * (STUFEN - 1));
     if (st < 1) st = 1; if (st > STUFEN - 1) st = STUFEN - 1;
     EIMER_H[st].push(g);
@@ -1956,7 +2000,8 @@ function legText() {
   // einer Form zur anderen wandert die Spanne mit.
   const [von, bis] = skalaBreit(hoehenSkala()[0], hoehenSkala()[1]);
   const zeig = x => (x >= 10 ? x.toFixed(0) : x >= 1 ? x.toFixed(1) : x.toFixed(2));
-  document.getElementById('legLinks').textContent = '×' + zeig(Math.exp(von));
+  // Linear fängt die Leiter bei null an, nicht beim unteren Quantil.
+  document.getElementById('legLinks').textContent = LINEAR ? '0' : '×' + zeig(Math.exp(von));
   document.getElementById('legRechts').textContent = '×' + zeig(Math.exp(bis));
   // Eine Zeile: was die Zahlen an der Leiter sind, welche Form eingestellt ist,
   // und welcher Stichtag gilt. Der Rest steht in der Methodik, nicht hier.
@@ -2076,6 +2121,22 @@ for (const b of FORMKNOPF) b.onclick = () => {
   requestAnimationFrame(morphSchritt);
 };
 addEventListener('resize', () => { masse(); reliefFrisch(); zeichne(); });
+/* Und dasselbe, wenn sich das Feld ändert, ohne dass das Fenster es tut.
+   Die Massfunktion misst die Leinwand einmal und hält die Zahl; ändert das Auslegen
+   danach noch etwas — eine Zeile, die sich füllt, eine Schrift, die nachlädt —,
+   zeichnet die Karte weiter für die alte Grösse, und die Leinwand wird per CSS
+   auf die neue gestreckt. Genau so war sie eine Fassung lang um drei Prozent
+   gestaucht. Der Beobachter macht daraus einen Nicht-Fehler: wer die Grösse
+   ändert, löst das Neumessen aus, egal wer es war. */
+if (window.ResizeObserver) {
+  let zuletztW = 0, zuletztH = 0;
+  new ResizeObserver(() => {
+    const f = cv.parentElement;
+    if (f.clientWidth === zuletztW && f.clientHeight === zuletztH) return;
+    zuletztW = f.clientWidth; zuletztH = f.clientHeight;
+    masse(); reliefFrisch(); zeichne();
+  }).observe(cv.parentElement);
+}
 
 // Markierungen für die Zählungen auf der Zeitachse
 function marken() {
