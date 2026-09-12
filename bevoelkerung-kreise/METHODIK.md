@@ -935,6 +935,36 @@ Grenzen; sie hat Gelände.
 
 Damit entfielen auch die 3 334 Knotenpaare der Landesgrenzen aus der Nutzlast.
 
+### Ein roter Punkt auf dem Ort
+
+Seit die Umrisse weg sind, sagt kein Strich mehr, wo eine Stadt genau liegt —
+der Name steht ja bewusst **unter** dem Gipfel, damit er ihn nicht zudeckt.
+Also ein kleiner roter Punkt auf den Ort selbst, mit dunklem Ring, und der Name
+darunter. Das ist die älteste Konvention der Kartografie und die einzige, die
+hier noch fehlte.
+
+Rot, weil es die einzige Farbe ist, die auf dieser Leiter **nichts bedeutet**:
+Blau, Grün, Gelb, Orange und Weiss sind Daten, ein roter Punkt ist eine Marke.
+Der dunkle Ring trägt ihn über das rote Band und durch den Schnee.
+
+**Siebzehn Städte statt dreizehn**, dazu Magdeburg, Bielefeld, Mannheim und
+Kiel — die Schwelle liegt bei 250 000 statt 400 000 Einwohnern, gemessen am
+höchsten Stand, den die Stadt je hatte. Zwei Namen bleiben mindestens sechzig
+Kilometer voneinander entfernt, sonst stünde das halbe Ruhrgebiet als Liste da.
+
+Die **Schriftgrösse** kommt jetzt aus der Stadt, in vier Stufen nach der
+höchsten Einwohnerzahl: Berlin, Hamburg und München oben, darunter Köln,
+Hannover, Leipzig, Frankfurt und Dresden, dann Dortmund, Stuttgart, Bremen und
+Nürnberg, unten die übrigen fünf. Angegeben als Teiler der Kartenbreite
+(38, 42, 46, 52), damit dieselbe Ordnung auf dem Telefon und auf dem Schirm
+gilt.
+
+Vorher kam die Grösse aus der Wurzel der **gezeichneten Fläche**. Das hatte
+seinen Sinn, solange die Fläche mit der Bevölkerung wuchs; seit der Boden
+stillsteht, ist sie über alle Jahre dieselbe — und sie sagt ohnehin mehr über
+den Zuschnitt des Kreises als über die Stadt darin: Leipzig hat ein weites
+Stadtgebiet, Nürnberg ein enges.
+
 ### Die Ausnahme ist auch weg
 
 Die hundertsieben kreisfreien Städte trugen als Einzige noch einen Umriss, einen

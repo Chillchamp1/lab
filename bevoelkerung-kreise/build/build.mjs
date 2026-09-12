@@ -275,7 +275,7 @@ const staedte = [];
 for (const k of jeKreis
   .map((k, i) => ({ i, ags: k.ags, kurz: kurzerName(k.name), bev: hoechsteBev.get(k.ags) ?? 0,
     stadt: STADTKREISE.has(k.bez) || k.ags === '03241' }))
-  .filter(k => k.stadt && k.bev >= 400000)
+  .filter(k => k.stadt && k.bev >= 250000)
   .sort((a, b) => b.bev - a.bev)) {
   const m = mitte.get(k.ags);
   if (!m) continue;
@@ -392,16 +392,21 @@ body{background:var(--plane);color:var(--ink);
 .text{position:absolute;left:12px;right:12px;top:48px;z-index:0;pointer-events:none}
 
 /* Die laufende Notiz, ausgeschrieben: Überschrift und Sätze. */
-.jetzt{margin:0;max-width:min(94%,540px);
-  font-size:13.5px;line-height:1.45;color:var(--ink2);opacity:0;transition:opacity .4s}
-.jetzt b{display:block;color:var(--ink);font-weight:650;font-size:14.5px;margin-bottom:1px}
+/* Halb so gross wie zuvor (13,5 → 7 und 14,5 → 7,5). Der Text stand als Block
+   über der Karte und zog den Blick, bevor die Karte ihn bekam; klein gesetzt
+   ist er da, wenn man ihn sucht, und im Weg, wenn nicht. Der Faden darunter
+   geht im selben Verhältnis mit, sonst wären die alten Überschriften grösser
+   als die laufende Notiz. */
+.jetzt{margin:0;max-width:min(94%,440px);
+  font-size:7px;line-height:1.5;color:var(--ink2);opacity:0;transition:opacity .4s}
+.jetzt b{display:block;color:var(--ink);font-weight:650;font-size:7.5px;margin-bottom:2px}
 
 /* Darunter die vorigen Überschriften, mit jeder Zeile blasser. */
-.faden{width:min(52%,210px);padding-top:5px;
-  display:flex;flex-direction:column;gap:3px;will-change:transform}
-.faden b{font-size:10.5px;line-height:1.25;font-weight:600;color:var(--ink);
+.faden{width:min(52%,210px);padding-top:4px;
+  display:flex;flex-direction:column;gap:2px;will-change:transform}
+.faden b{font-size:5.5px;line-height:1.3;font-weight:600;color:var(--ink);
   transition:opacity .5s}
-@media(max-width:540px){.faden b{font-size:9.5px}}
+@media(max-width:540px){.faden b{font-size:5px}}
 
 /* Die Karte füllt die Bühne. */
 .feld{position:relative;z-index:1;flex:1 1 auto;min-height:0}
@@ -692,6 +697,7 @@ const WASSER = ${WASSER};
 const stil = n => getComputedStyle(document.body).getPropertyValue(n).trim();
 let LEER = '#1a1a18', INK = '#fff', STRICH = '#0c0c0c';
 const SCHATTEN = 'rgba(0,0,0,.6)', KANTE3D = '#060605';
+const STADTPUNKT = '#e8291c';
 const HELLMAX = 0.55, DUNKELMAX = 0.55;
 function farbenHolen() {
   LEER = stil('--leer'); INK = stil('--ink'); STRICH = stil('--surface');
@@ -1895,7 +1901,13 @@ function schreibe(a, b, u, w, deck) {
    Schrift fällt weg, ein Name breiter als sein Fleck fällt weg, und wer sich
    mit einem schon gesetzten Namen überschneidet, fällt auch weg — die
    grösseren zuerst, damit im Ruhrgebiet nicht die kleinste Stadt gewinnt. */
-const STADT = ${JSON.stringify(staedte.map(k => [k.i, k.kurz]))};
+/* Je Stadt ein **Grad** statt einer Zahl: vier Stufen nach der höchsten
+   Einwohnerzahl, die sie je hatte. Die Schrift richtet sich danach, nicht mehr
+   nach der gezeichneten Fläche — die steht seit dem festen Boden ohnehin still,
+   und die Fläche eines Kreises sagt auch wenig über die Stadt darin: Leipzig
+   hat ein weites Stadtgebiet, Nürnberg ein enges. */
+const STADT = ${JSON.stringify(staedte.map(k =>
+  [k.i, k.kurz, k.bev >= 1.4e6 ? 3 : k.bev >= 7e5 ? 2 : k.bev >= 4.5e5 ? 1 : 0]))};
 /* Hier stand ein feiner dunkler Strich um jede der hundertsieben kreisfreien
    Städte. Er hatte seinen Grund, solange sich die Karte verformte: eine Stadt
    wuchs dann mit ihrer Bevölkerung, und der Umriss sagte, wie weit sie reicht.
@@ -1906,7 +1918,7 @@ const STADT = ${JSON.stringify(staedte.map(k => [k.i, k.kurz]))};
 const MINSCHRIFT = 7;       // kleinste Schrift; auf einem Telefon knapp, aber lesbar
 function beschrifte(deck) {
   const liste = [];
-  for (const [g, name] of STADT) {
+  for (const [g, name, grad] of STADT) {
     if (!(deck[g] > 0.5)) continue;
     let bestA = 0, mx = 0, my = 0, bb = 0, bh = 0;
     for (const r of GEBIETE[g]) {
@@ -1936,23 +1948,31 @@ function beschrifte(deck) {
        wenigsten. */
     if (bestA > 0) {
       const versatz = Math.sqrt(bestA / Math.PI) * 0.5;
-      liste.push({ name, A: bestA, mx, my: my + versatz, bb, bh });
+      // ox/oy ist der Ort selbst, mx/my der Ankerpunkt der Schrift darunter.
+      liste.push({ name, grad, A: bestA, ox: mx, oy: my, mx, my: my + versatz, bb, bh });
     }
   }
   liste.sort((a, b) => b.A - a.A);
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
 
-  // Grösse: aus der Fläche, aber nie unter MINSCHRIFT und nie grösser, als der
-  // Fleck trägt. Alle Namen stehen von Anfang an da — 1871 sind die Flecken
-  // winzig, und ein Name, der erst später erscheint, ist ein Sprung im Bild.
+  /* Grösse: vier Stufen nach der Stadt, nicht nach ihrem Fleck. Angegeben als
+     Teiler der Kartenbreite, damit dieselbe Ordnung auf dem Telefon und auf dem
+     Schirm gilt — Berlin lief sonst in jeder Grösse gegen dieselben dreissig
+     Bildpunkte und stand als Überschrift über der Karte statt als Beschriftung
+     darin.
+
+     Vorher kam die Grösse aus der Wurzel der gezeichneten Fläche. Das hatte
+     seinen Sinn, solange die Fläche mit der Bevölkerung wuchs; seit der Boden
+     stillsteht, ist sie über alle Jahre dieselbe und sagt zudem mehr über den
+     Zuschnitt des Kreises als über die Stadt darin.
+
+     Alle Namen stehen von Anfang an da — 1871 sind die Berge winzig, und ein
+     Name, der erst später erscheint, ist ein Sprung im Bild. */
+  const GRADE = [52, 46, 42, 38];
   for (const s of liste) {
     ctx.font = '600 10px system-ui,-apple-system,sans-serif';
     s.je10 = ctx.measureText(s.name).width / 10;
-    // Der Deckel hängt an der Kartenbreite, nicht an einer festen Zahl: Berlin
-    // und Hamburg liefen sonst in jeder Grösse gegen dieselben dreissig Pixel
-    // und standen als Überschrift über der Karte statt als Beschriftung darin.
-    s.hoch = Math.max(MINSCHRIFT,
-      Math.min(Math.sqrt(s.A) * 0.40, breite / 38, s.bb * 1.3 / s.je10, s.bh * 0.9));
+    s.hoch = Math.max(MINSCHRIFT, breite / GRADE[s.grad]);
     s.br = s.je10 * s.hoch;
     s.x = s.mx; s.y = s.my;
   }
@@ -1978,12 +1998,25 @@ function beschrifte(deck) {
 
   for (const s of liste) {
     ctx.font = '600 ' + s.hoch.toFixed(1) + 'px system-ui,-apple-system,sans-serif';
-    // Weit ausgewichen? Dann ein Strich zurück zum Fleck, sonst weiss niemand,
-    // wem der Name gehört.
-    if (Math.hypot(s.x - s.mx, s.y - s.my) > s.hoch * 0.9) {
-      ctx.beginPath(); ctx.moveTo(s.mx, s.my); ctx.lineTo(s.x, s.y);
+    /* Ein kleiner roter Punkt auf dem Ort selbst. Der Name steht darunter, und
+       ohne den Punkt sagt er nur ungefähr, wo die Stadt liegt — seit die
+       Stadtumrisse weg sind, sagt es sonst niemand mehr. Rot, weil es die
+       einzige Farbe ist, die auf dieser Leiter nichts bedeutet: Wasser, Grün,
+       Gelb, Orange und Weiss sind Daten, ein roter Punkt ist eine Marke. Ein
+       dunkler Ring darum, damit er auch auf dem roten Band und im Schnee steht. */
+    const punkt = Math.max(1.6, Math.min(3.4, breite / 190));
+    ctx.beginPath(); ctx.arc(s.ox, s.oy, punkt + 1, 0, 6.2832);
+    ctx.fillStyle = STRICH; ctx.fill();
+    ctx.beginPath(); ctx.arc(s.ox, s.oy, punkt, 0, 6.2832);
+    ctx.fillStyle = STADTPUNKT; ctx.fill();
+
+    // Weit ausgewichen? Dann ein Strich vom Punkt zum Namen. Gemessen wird ab
+    // dem Punkt, nicht ab dem Ankerpunkt — der liegt ohnehin immer ein Stück
+    // darunter, und ein Strich für diesen Versatz allein wäre nur Gestrüpp.
+    if (Math.hypot(s.x - s.ox, s.y - s.oy) > s.hoch * 1.8) {
+      ctx.beginPath(); ctx.moveTo(s.ox, s.oy); ctx.lineTo(s.x, s.y);
       ctx.strokeStyle = STRICH; ctx.lineWidth = 2.5; ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(s.mx, s.my); ctx.lineTo(s.x, s.y);
+      ctx.beginPath(); ctx.moveTo(s.ox, s.oy); ctx.lineTo(s.x, s.y);
       ctx.strokeStyle = INK; ctx.lineWidth = 0.7; ctx.globalAlpha = 0.45; ctx.stroke();
       ctx.globalAlpha = 1;
     }
