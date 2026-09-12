@@ -890,6 +890,16 @@ Und wer gerade ausblendet, schiebt nur nach Massgabe seiner Deckkraft —
 weggeschoben wird er voll. Sonst rückte die halbe Karte in dem Augenblick zur
 Seite, in dem ein Name unter die Schwelle fällt.
 
+Und keiner darf aus der Leinwand laufen. Mönchengladbach liegt so weit im
+Westen, dass sein Name auf dem Telefon zwanzig Bildpunkte links neben der Karte
+begann — das M war abgeschnitten. Jeder Name wird deshalb in jeder Runde in den
+Rahmen geklemmt, mit einem halben Wortmass Luft an den Seiten und einem
+Dreiviertel-Zeilenmass oben und unten. Das Klemmen steht **innerhalb** der
+vierzig Runden und nicht danach: so weicht der Nachbar in der nächsten Runde
+aus, statt dass zwei Namen am Rand übereinanderstehen. Nachgemessen über den
+ganzen Lauf, in drei Fenstergrössen (1280, 420 und 390 Bildpunkte): kein Name
+ragt mehr heraus.
+
 ## 4j. Der Tiefpass über die Bilder
 
 Das Höhenfeld wird jedes Bild neu gerastert, und dabei rutschen die Kreise um
@@ -1042,9 +1052,17 @@ der ganze bewohnte Bereich drängt sich ins linke Drittel, und wo darin ×1 lieg
 war nicht zu erraten.
 
 Jetzt trägt die Leiter sechs Marken, alle rund oder halb, jede an ihrer
-wirklichen Stelle: **0, ×0,5, ×1, ×1,5, ×2 und ×2,5**. Weil die Leiter linear
-teilt und bei ×2,5 endet, sitzen sie bei 0, 20, 40, 60 und 80 Prozent —
-gleichmässig, jede auf einer Bandgrenze, und die ×0,5 genau auf der Uferkante.
+wirklichen Stelle: **0, ×0,5, ×1, ×1,5, ×2 und ×3**. Weil die Leiter linear
+teilt und bei ×2,5 endet, sitzen die ersten fünf bei 0, 20, 40, 60 und 80
+Prozent — gleichmässig, jede auf einer Bandgrenze, und die ×0,5 genau auf der
+Uferkante.
+
+Die letzte ist die ×3, und sie steht am Ende der Rampe, bei 99 Prozent. Dass
+nach der ×2 nicht die ×2,5 kommt, sondern gleich die ×3, liegt am Knie: ab
+×2,222 biegt es die Leiter weich um, das letzte Fünftel der Rampe trägt deshalb
+eine ganze statt einer halben Stufe. Die Marken stehen dadurch alle rund zwanzig
+Prozent auseinander, und die Zahlen sagen, dass der letzte Schritt der doppelte
+ist. Eine ×2,5 stünde drei Prozent vor der ×3 und läge auf ihr.
 
 **Warum ×1 nicht in der Mitte steht.** In der Mitte stünde sie nur bei einem
 Ende von ×2,0 — und dort ist zu wenig Platz. Über ×2,0 liegen 2024 noch
@@ -1054,14 +1072,21 @@ genau daran krankte eine frühere Fassung („Die Leiter war oben zu"). Über ×
 liegen nur noch 0,65 Prozent — das ist ein Gipfel und keine Landschaft, und
 dafür sind Fels und Schnee da.
 
-**Und was ist das sinnvolle Maximum?** ×2,5, aber als Ende der Farben und nicht
-als Deckel. Ab ×2,222 biegt das Knie die Leiter weich um; ×2,5 sitzt deshalb bei
-96 statt bei 100 Prozent der Rampe, und der schmale Rest dahinter trägt alles,
-was darüber liegt — bis ins Unendliche, ohne je abzuschneiden. Gemessen reicht
-das aus: der höchste Kreis überhaupt ist **München 2024 mit ×3,16**, danach
-Leverkusen ×2,71, Frankfurt ×2,56, Berlin und Köln ×2,36. Nach dem Schärfen
-steht 0,012 Prozent der Fläche am rechnerischen Anschlag — zwölf Millionstel,
-und dort ist ohnehin schon alles weiss.
+**Und was ist das sinnvolle Maximum?** Die Farben enden bei ×2,5, die Leiter
+endet nicht: ab ×2,222 biegt das Knie sie weich um, und der schmale Rest der
+Rampe trägt alles darüber — bis ins Unendliche, ohne je abzuschneiden. Die
+letzte Marke steht deshalb auf der ×3, der höchsten runden Zahl, die noch auf
+die Rampe passt. Gemessen reicht das aus: der höchste Kreis überhaupt ist
+**München 2024 mit ×3,16**, danach Leverkusen ×2,71, Frankfurt ×2,56, Berlin und
+Köln ×2,36. Nach dem Schärfen steht 0,012 Prozent der Fläche am rechnerischen
+Anschlag — zwölf Millionstel, und dort ist ohnehin schon alles weiss.
+
+Ein Ende bei ×3 statt bei ×2,5 wurde ausprobiert (24 Bänder, 4 blaue: die Küste
+bliebe auf ×0,5, die Marken stünden bei 0, 16,7, 33,3, 50, 66,7 und 83,3
+Prozent). Es sieht schlechter aus: das Knie läge dann bei ×2,667 und damit
+sechzehn Prozent über dem gemessenen Quantil, die obersten vier Bänder trügen
+zusammen 0,4 statt 2,2 Prozent der Fläche, und Berlin, Köln und Hamburg
+verlören ihre weissen Kappen. Die Leiter wäre runder und die Karte flacher.
 
 Vorher stand rechts „×2,3+". Die Zahl war das gemessene Quantil, das Pluszeichen
 sollte sagen, dass es weitergeht — nur stand sie am äussersten Rand, und damit

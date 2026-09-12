@@ -192,8 +192,10 @@ die ×2,5 sitzt deshalb bei 96 Prozent der Rampe, und der Rest dahinter trägt
 alles darüber — der höchste Kreis überhaupt ist München 2024 mit ×3,16.
 
 **Die Zahlen stehen auf der Leiter**, nicht daneben: sechs Marken bei 0, ×0,5,
-×1, ×1,5, ×2 und ×2,5, jede an ihrer wirklichen Stelle, also gleichmässig bei
-0, 20, 40, 60 und 80 Prozent. ×1 steht damit bei 40 Prozent und nicht in der
+×1, ×1,5, ×2 und ×3, jede an ihrer wirklichen Stelle — die ersten fünf
+gleichmässig bei 0, 20, 40, 60 und 80 Prozent, die ×3 am Ende der Rampe. Dass
+nach der ×2 gleich die ×3 kommt, liegt am Knie: das letzte Fünftel trägt eine
+ganze statt einer halben Stufe. ×1 steht damit bei 40 Prozent und nicht in der
 Mitte — in der Mitte stünde sie nur bei einem Ende von ×2,0, und darüber liegen
 2024 noch sieben Prozent der Fläche, die sich dann das letzte Fünftel der Farben
 teilen müssten. Die ×0,5 fällt auf die Uferkante. Darunter steht ein einziger

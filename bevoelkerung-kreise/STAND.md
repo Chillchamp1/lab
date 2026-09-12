@@ -106,7 +106,7 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Loch über der Legende. Die Zweispaltigkeit im
   Querformat ist damit hinfällig und wieder draussen.
 - Die **Legende** ist die Leiter mit sechs Zahlen darauf (0, ×0,5, ×1, ×1,5,
-  ×2, ×2,5) und darunter ein Satz, was die Höhe misst. Umbruch unterbunden, sonst schöbe
+  ×2, ×3) und darunter ein Satz, was die Höhe misst. Umbruch unterbunden, sonst schöbe
   er die Karte.
 - Die Uhr läuft 84 Sekunden für 153 Jahre. Die Spielzeit je Abschnitt mischt
   Dauer und Umschichtung (geometrisches Mittel) und liegt nie unter
@@ -370,6 +370,22 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   hundertsieben winzigen kreisfreien Städte das obere Quantil, und die halbe
   Palette blieb leer; jetzt sind 2024 dreiundzwanzig der fünfundzwanzig Bänder
   belegt.
+- **Kein Name läuft mehr aus der Leinwand.** Mönchengladbach liegt so weit im
+  Westen, dass sein Name auf dem Telefon zwanzig Bildpunkte links neben der
+  Karte begann — das M war weg. Jeder Name wird jetzt in jeder der vierzig
+  Runden in den Rahmen geklemmt, und zwar **innerhalb** der Runden, damit der
+  Nachbar ausweichen kann statt sich zu überlagern. Nachgemessen über den
+  ganzen Lauf bei 1280, 420 und 390 Bildpunkten Fensterbreite: nichts ragt mehr
+  heraus.
+- **Am Ende der Leiter steht jetzt die ×3.** Nach der ×2 folgte nichts mehr, und
+  das letzte Fünftel der Rampe stand unbeschriftet da. Jetzt: **0, ×0,5, ×1,
+  ×1,5, ×2, ×3** — die ersten fünf bei 0, 20, 40, 60, 80 Prozent, die ×3 bei 99.
+  Dass der letzte Schritt ein ganzer ist und kein halber, liegt am Knie: ab
+  ×2,222 biegt es die Leiter um, eine ×2,5 läge drei Prozent vor der ×3 und
+  damit auf ihr. Eine Leiter, die wirklich bei ×3 endet (24 Bänder, 4 blaue),
+  wurde ausprobiert und verworfen: das Knie läge dann sechzehn Prozent über dem
+  gemessenen Quantil, die obersten vier Bänder trügen 0,4 statt 2,2 Prozent der
+  Fläche, und Berlin, Köln und Hamburg verlören ihre weissen Kappen.
 - **Zwischen zwei Zählungen sagt die Zahl über der Karte, dass sie keine
   Zählung ist.** Vorher stand dort schlicht „1941 · 60.5 million people", und
   das las sich wie ein Befund. Im Krieg ist es einer der falschen: gezählt sind
