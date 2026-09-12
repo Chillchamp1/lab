@@ -53,7 +53,7 @@ mit jedem Schritt; sechs bleiben stehen, auf dem Telefon drei.
 Der Text liegt dabei **über der Bühne, nicht in ihr**: er nimmt der Karte keinen
 Platz mehr weg, und die Karte springt nicht mehr, wenn eine Notiz länger ist als
 die vorige. Die Karte steht dafür im Hochformat unten statt mittig — der freie
-Platz, der bei festem Seitenverhältnis übrig bleibt, gehört ganz dem Text. Drei Ebenen — Jahr und Einwohnerzahl über der Karte, mit Schein
+Platz, der bei festem Seitenverhältnis übrig bleibt, gehört ganz dem Text. Drei Ebenen — Jahr und Einwohnerzahl über der Karte (zwischen zwei Zählungen mit Ungefähr-Zeichen und dem Hinweis, zwischen welchen sie liegt; auf einer Zählung mit ihrem Stichtag), mit Schein
 dahinter; die Karte; und darunter Notiz und Faden. Wo Platz ist, stehen sie da;
 wo die Karte hinreicht, verschwinden sie dahinter. Der Text weicht der Karte
 aus, statt sie zu verdrängen.

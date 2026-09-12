@@ -2018,7 +2018,23 @@ function schreibe(a, b, u, w, deck) {
   const zwischen = u > 0.001 && u < 0.999;
   let summe = 0; for (let k = 0; k < NK; k++) summe += w[k] * deck[k];
   document.getElementById('jahrZahl').textContent = zwischen ? Math.round(jahr) : D.B[u < 0.5 ? a : b].jahr;
-  document.getElementById('jahrBev').textContent = (summe / 1e6).toFixed(1) + ' million people';
+  /* Zwischen zwei Zählungen ist die Zahl **keine Zählung**, und das muss
+     danebenstehen. Sonst liest sich „1941 · 60,5 Millionen" wie ein Befund,
+     und im Krieg wäre das ein falscher: die beiden Enden sind gezählt (59,6
+     Mio 1939, 66,2 Mio 1946/1950 — die Vertriebenen), der Weg dazwischen ist
+     eine monotone Kurve und keine Geschichte. In Wirklichkeit fiel die Zahl
+     erst und stieg dann in zwei Jahren.
+
+     Auf schmalen Schirmen die kurze Fassung, sonst schöbe sie sich über die
+     Karte. */
+  const eng = document.getElementById('buehne').clientWidth < 620;
+  const bev = (summe / 1e6).toFixed(1);
+  document.getElementById('jahrBev').textContent = zwischen
+    ? '≈ ' + bev + ' million' + (eng ? '' : ' people') + ' · '
+      + (eng ? D.B[a].jahr + ' → ' + D.B[b].jahr
+             : 'interpolated between the counts of ' + D.B[a].jahr + ' and ' + D.B[b].jahr)
+    : bev + ' million people' + (eng ? '' : ' · counted '
+      + D.B[u < 0.5 ? a : b].stichtage.join(', '));
   // Die Legende hängt nicht mehr am Jahr: sie sagt einen Satz, und die Zahlen
   // auf der Leiter stehen fest. Einmal gesetzt, nicht je Bild.
   document.getElementById('zeit').value = Math.round(spiel * 1000);

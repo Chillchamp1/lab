@@ -316,6 +316,35 @@ also gezählt, nicht geglättet. Berlin zum Beispiel: 4 338 756 (1939),
 Jahrzehnte flach, und der Stand von 1939 ist bis heute nicht wieder erreicht.
 Die Glättung verschiebt dort höchstens 9 000 Menschen.
 
+### Die Kriegsjahre sind die eine Stelle, an der die Kurve etwas behauptet
+
+Sie ist monoton, also steigt sie zwischen 1939 und 1946 gleichmässig an, und
+das liest sich, als sei Deutschland durch den Krieg hindurch gewachsen. **Das
+war es nicht.**
+
+Gezählt sind nur die beiden Enden, und beide stimmen: **59,63 Millionen** am
+17. Mai 1939 und **66,19 Millionen** 1946/1950, jeweils auf den heutigen
+Gebietsstand gerechnet. Die Zunahme ist echt — sie ist die **Flucht und
+Vertreibung**: rund zwölf Millionen Deutsche aus den Ostgebieten kamen in die
+vier Zonen, mehr als der Krieg an Menschen gekostet hat. Die Bevölkerung des
+heutigen Deutschlands war 1946 tatsächlich grösser als 1939.
+
+Nur lief sie nicht so dorthin. Dazwischen liegt **keine einzige Zählung**; der
+Weg ist eine Annahme, und die wirkliche Kurve fiel erst — Gefallene, Bombentote,
+Ermordete — und sprang dann binnen zweier Jahre, 1945 und 1946, nach oben. Die
+Karte zeigt stattdessen acht Sekunden ruhiges Wachstum. Was in den Kriegsjahren
+zutrifft, ist die **Umschichtung**, nicht die Summe: die Städte leeren sich, das
+Land füllt sich, und beide Enden davon sind gezählt.
+
+Deshalb steht die Zahl über der Karte zwischen zwei Zählungen mit einem
+Ungefähr-Zeichen und dem Zusatz, zwischen welchen Zählungen sie liegt. Auf einer
+Zählung steht dort stattdessen ihr Stichtag.
+
+Und auch das Ende dieses Abschnitts ist kein einzelner Tag: von den 400 Kreisen
+sind **224 am 29. Oktober 1946** gezählt (47,57 Mio, die Zählung in den
+Besatzungszonen) und **176 am 13. September 1950** (18,62 Mio). Die Quelle gibt
+her, was sie hat; die Karte nennt beide Stichtage.
+
 ## 4e. Die Uhr
 
 Die Uhr braucht 84 Sekunden für die 153 Jahre. Wie viel davon ein Abschnitt
