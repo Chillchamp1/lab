@@ -196,9 +196,11 @@ Bevölkerung je **gezeichneter** Fläche, und der Boden ist ein halb eingemischt
 Kartogramm — München steht auf ×3,2 und ist wirklich ×20,7 (4 844 E/km²), Berlin
 auf ×2,4 und ist ×17,7. Der Verzerrungsfaktor läuft von 0,57 bis 7,5, im Median
 0,99: für einen gewöhnlichen Landkreis stimmen die beiden fast überein, für
-Städte nicht. Deshalb sagt die Legende „people per patch of map · Germany
-2024 sits at ×1" und nennt das Wort Dichte nicht mehr: je Stück gezeichneter
-Karte, nicht je Quadratkilometer. Wer die wirkliche Dichte will, tippt einen
+Städte nicht. Deshalb sagt die Legende „×1 is Germany's average in 2024.
+×2 means twice as many people in the same space." und nennt das Wort Dichte
+nicht mehr. „In the same space" trägt dabei die Ehrlichkeit, ohne sie
+auszusprechen: verglichen wird, was gleich gross **gezeichnet** ist, nicht was
+gleich viele Quadratkilometer hat. Wer die wirkliche Dichte will, tippt einen
 Kreis an — im Zettel stehen beide Zahlen nebeneinander.
 
 **Die Zahlen stehen auf der Leiter**, nicht daneben: sechs Marken bei 0, ×0,5,

@@ -1142,21 +1142,39 @@ auf k/(N−1) und mischt dazwischen, die Bänder der Karte liegen aber auf k/N u
 mischen nicht — das Ufer lag im Verlauf drei Prozent links von seiner Zahl. Die
 Leiter zeigt jetzt dieselben fünfundzwanzig Bänder wie die Karte.
 
-Darunter steht ein einziger Satz: **„people per patch of map · Germany 2024
-sits at ×1"** — was gemessen wird, und wo das Land auf der Leiter steht. Was dort früher noch stand
-— der Meeresspiegel, der Stichtag — steht jetzt woanders besser: die Zahlen auf
-der Leiter selbst, der Stichtag im Tippen, wo ohnehin Zahl, Rate und Methode des
-Kreises stehen.
+Darunter stehen **zwei Sätze**:
 
-„per patch of map" ist dabei die ganze Ehrlichkeit in vier Wörtern: gefärbt wird
-nicht je Quadratkilometer, sondern je Stück **gezeichneter** Karte, und die ist
-verzerrt. Und das Verb ist kein Schmuck: „×1 = Germany in 2024" stand eine
-Fassung lang da und las sich wie eine Gleichung zwischen einer Zahl und einem
-Land. Gemeint ist ein **Ort auf der Leiter**, und „sits at" sagt das. Das Wort
-selbst auf die Marke zu setzen wurde geprüft und verworfen: „Germany 2024"
-braucht 86 Bildpunkte, die Marken stehen bei 360 Bildpunkten Fensterbreite aber
-nur 52 auseinander — es hätte die ×0,5 überschrieben, und das ist die
-Uferkante. Zwei Fassungen davor stand dort „× the average population density of
+> ×1 is Germany's average in 2024. ×2 means twice as many people in the same
+> space.
+
+Diese Zeile hat vier Fassungen gebraucht, und jede scheiterte an derselben
+Stelle: **an der Eins**. „× the average population density of Germany 2024" war
+schlicht falsch (siehe unten) — Berlin stünde damit auf 551 Einwohnern je km²
+statt auf 4 136. „volume = people · ×1 = the German average of 2024" war
+ehrlich und unlesbar: zwei Gleichungen nebeneinander, und keine sagt, wovon das
+Mittel das Mittel ist. „people per patch of map · Germany 2024 sits at ×1" war
+ehrlich und immer noch unverständlich — „patch of map" ist genau der
+Fachbegriff, den zu vermeiden die ganze Übung war.
+
+Der Fehler lag nicht an den Wörtern, sondern am **Platz**: auf dem Telefon sind
+fünfzig Zeichen das Ende der Fahnenstange, und in fünfzig Zeichen lässt sich
+nicht sagen, worauf sich ein Vielfaches bezieht. Also dort zwei feste Zeilen
+statt einer — vierzehn Bildpunkte Kartenhöhe für hundert Zeichen — und zwei
+gewöhnliche Sätze statt einer Formel.
+
+Der zweite Satz trägt die Ehrlichkeit, ohne sie auszusprechen: **„in the same
+space"** heisst, dass verglichen wird, was gleich gross **gezeichnet** ist, und
+nicht, was gleich viele Quadratkilometer hat. Wer die wirkliche Dichte will,
+tippt einen Kreis an; im Zettel stehen beide Zahlen nebeneinander.
+
+Was dort früher noch stand — der Meeresspiegel, der Stichtag — steht woanders
+besser: die Zahlen auf der Leiter selbst, der Stichtag im Schild über der Karte.
+
+Geprüft und verworfen wurde unterwegs auch, das Wort direkt auf die Marke zu
+setzen — „Germany 2024" statt „×1", dann erklärt sich die Leiter von allein.
+Nachgemessen ist es zu breit: die Beschriftung braucht 86 Bildpunkte, die Marken
+stehen bei 360 Bildpunkten Fensterbreite aber nur 52 auseinander. Sie hätte die
+×0,5 überschrieben, und das ist die Uferkante. Zwei Fassungen davor stand dort „× the average population density of
 Germany 2024" und versprach damit wirkliche Dichte (siehe unten); eine Fassung
 davor „volume = people · ×1 = the German average of 2024" — ehrlich, aber nicht
 lesbar: zwei Gleichungen nebeneinander, und keine sagt, wovon das Mittel das

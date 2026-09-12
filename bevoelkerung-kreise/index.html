@@ -95,6 +95,16 @@ canvas{position:absolute;left:0;top:0;width:100%;height:100%;touch-action:manipu
    Höhe gezeichnet, die es nicht mehr gibt. */
 .fuss .klein{margin:4px 0 0;font-size:11.5px;line-height:1.35;color:var(--ink2);
   min-height:1.35em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Und auf dem Telefon zwei Zeilen statt einer. Fünfzig Zeichen sind dort das
+   Ende der Fahnenstange, und in fünfzig Zeichen liess sich nicht erklären, was
+   die Eins auf der Leiter bedeutet — jede Fassung, die hineinpasste, war
+   entweder ungenau oder Jargon. Zwei feste Zeilen kosten vierzehn Bildpunkte
+   Kartenhöhe und kaufen hundert Zeichen. Fest, damit die Leiste so hoch bleibt
+   wie beim ersten Messen und die Karte nicht für eine Höhe gezeichnet wird, die
+   es nicht mehr gibt. */
+@media(max-width:540px){
+  .fuss .klein{white-space:normal;min-height:2.7em;max-height:2.7em}
+}
 /* Die Leiter trug ihre beiden Zahlen links und rechts daneben — den Anfang und
    das Ende, und dazwischen nichts. Bei einer linearen Leiter ist das die
    ungünstigste aller Auskünfte: der ganze bewohnte Bereich drängt sich im
@@ -2042,53 +2052,39 @@ function stufen() {
     e.appendChild(s);
   }
 }
-/* ---------- Und darunter ein einziger Satz ----------
-   Da standen einmal drei Angaben nebeneinander — wofür das Kreuz steht, wo der
-   Meeresspiegel liegt, wann gezählt wurde —, und jede davon steht jetzt
-   woanders besser: die Zahlen auf der Leiter selbst, der Stichtag im Tippen.
-   Übrig bleibt der eine Satz, der sagt, was die Karte misst.
+/* ---------- Und darunter zwei Sätze ----------
+   Diese Zeile hat vier Fassungen gebraucht, und jede scheiterte an derselben
+   Stelle: **an der Eins**.
 
-   Und der sagte eine Fassung lang zu viel. „× the average population density of
-   Germany 2024" verspricht **wirkliche Dichte**, und die ist es nicht: gefärbt
-   wird Bevölkerung je **gezeichneter** Fläche, und der Boden ist ein halb
-   eingemischtes Kartogramm. Gemessen für 2024 geht das auseinander, wo man
-   zuerst hinsieht — München steht auf ×3,16 und ist wirklich ×20,7 (4 844
-   E/km²), Berlin auf ×2,36 und ist ×17,7, die Prignitz auf ×0,25 und ist
-   ×0,15. Der Verzerrungsfaktor läuft von 0,57 bis 7,5, im Median 0,99: für
-   einen gewöhnlichen Landkreis stimmte der Satz, für Städte nicht.
+   „× the average population density of Germany 2024" war schlicht falsch — die
+   Höhe ist keine wirkliche Dichte, sondern Bevölkerung je gezeichneter Fläche,
+   und die Karte ist ein halb eingemischtes Kartogramm (siehe unten). Berlin
+   stünde damit auf 551 Einwohnern je km² statt auf 4 136.
 
-   Der erste Versuch dagegen war „volume = people · ×1 = the German average of
-   2024", und der war ehrlich, aber nicht lesbar: zwei Gleichungen nebeneinander,
-   und keine sagt, wovon das Mittel eigentlich das Mittel ist.
+   „volume = people · ×1 = the German average of 2024" war ehrlich und
+   unlesbar: zwei Gleichungen nebeneinander, und keine sagt, wovon das Mittel
+   das Mittel ist.
 
-   Jetzt zwei Halbsätze statt zweier Gleichungen — **was gemessen wird**, und
-   **wo die Eins liegt**:
+   „people per patch of map · Germany 2024 sits at ×1" war ehrlich und immer
+   noch unverständlich: „patch of map" ist genau der Fachbegriff, den zu
+   vermeiden die ganze Übung war.
 
-       people per patch of map · ×1 = Germany in 2024
+   Der Fehler lag nicht an den Wörtern, sondern am **Platz**. Auf dem Telefon
+   sind fünfzig Zeichen das Ende, und in fünfzig Zeichen lässt sich nicht sagen,
+   worauf sich ein Vielfaches bezieht. Also zwei Zeilen statt einer, und dafür
+   zwei gewöhnliche Sätze:
 
-   „per patch of map" ist die ganze Ehrlichkeit in vier Wörtern: nicht je
-   Quadratkilometer, sondern je Stück gezeichneter Karte, und die ist verzerrt.
-   Wer daraufhin fragt, wie viele es denn je km² sind, tippt einen Kreis an —
-   im Zettel stehen beide Zahlen nebeneinander. Dass das Volumen die
-   Bevölkerung ist, steht nicht mehr hier: das ist ein Bauprinzip und kein
-   Schlüssel zur Farbleiter, und es steht in der Methodik.
+       ×1 is Germany’s average in 2024.
+       ×2 means twice as many people in the same space.
 
-   Und dann stand da „people per patch of map · ×1 = Germany in 2024" und war
-   an einer Stelle immer noch nicht zu verstehen: **an der Eins**. „×1 =
-   Germany in 2024" liest sich wie eine Gleichung zwischen einer Zahl und einem
-   Land, und das ist keine. Gemeint ist ein **Ort auf der Leiter**.
-
-   Ein Verb reicht:
-
-       people per patch of map · Germany 2024 sits at ×1
-
-   Jetzt sucht das Auge die ×1 auf der Leiter und findet dort das ganze Land;
-   alles links davon ist leerer, alles rechts voller. Dass das Mittel **fest**
-   ist und nicht das des laufenden Jahres, steht in der Jahreszahl: 1871 liegt
-   Deutschland links von seiner eigenen Marke, und das ist der Befund. */
+   Der zweite Satz trägt die Ehrlichkeit, ohne sie auszusprechen: **„in the same
+   space"** heisst, dass verglichen wird, was gleich gross gezeichnet ist — und
+   nicht, was gleich viele Quadratkilometer hat. Wer genau wissen will, wie
+   viele Menschen je km² dort wirklich wohnen, tippt den Kreis an; im Zettel
+   stehen beide Zahlen nebeneinander. */
 function legText() {
   document.getElementById('legText').textContent =
-    'people per patch of map · Germany 2024 sits at ×1';
+    '×1 is Germany’s average in 2024. ×2 means twice as many people in the same space.';
 }
 
 /* ---------- Tippen ---------- */
