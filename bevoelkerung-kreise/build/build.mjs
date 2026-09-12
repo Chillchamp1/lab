@@ -718,7 +718,7 @@ function hoehenSpanne(fi) {
      das Weichzeichnen zieht die Verteilung ohnehin zur Mitte, die Leiter darf
      also enger stehen als die rohen Kreiswerte. */
   const q = gewichtet(alle);
-  const lo = Math.max(1e-3, q(0.05)), hi = Math.max(lo * 1.02, q(0.95));
+  const lo = Math.max(1e-3, q(0.05)), hi = Math.max(lo * 1.02, q(OBEN));
   FORM = merkF; reihe = merkR; tangenteFuer = -1;
   return (SPANNEJE[fi] = [Math.log(lo), Math.log(hi), binnen]);
 }
@@ -1033,6 +1033,38 @@ function hoehen(w, deck) {
     HOCH[g] = (deck[g] > 0.5 && GEZEICHNET[g] > 0 && w[g] > 0) ? (w[g] / GEZEICHNET[g]) / mittel : 0;
 }
 
+/* ---------- Wie weit geglättet und wie weit gespreizt ----------
+   Drei Zahlen, die zusammen entscheiden, wie gross die hellste Stufe wird — und
+   das ist die Frage, an der sich das Ruhrgebiet und Berlin messen.
+
+   Berlin ist 2024 der dichteste Kreis der Karte (×2,51 bei halber Verzerrung),
+   dichter als jede einzelne Ruhrstadt (Oberhausen ×2,39, Essen ×2,35). Auf der
+   Karte sah es umgekehrt aus: das Ruhrgebiet trug eine grosse, fast weisse
+   Kappe, Berlin einen kleinen roten Fleck. Zwei Gründe, und beide sind
+   Darstellung, nicht Befund.
+
+   **Die Leiter war oben zu.** Sie endete bei ×2,29, und alles darüber landete
+   im hellsten Band — Berlin, München, Essen, Oberhausen, ununterscheidbar.
+   Über zehn Prozent der Kartenfläche lagen 2024 in diesem einen Ton. Das
+   kommt vom absoluten Bezug: die Leiter ist über alle zehn Zählungen gemessen,
+   und 2024 ist die dichteste; sie klemmt dort oben an, wie 1871 unten. Also
+   das obere Quantil von 0,95 auf 0,97 — die hellsten Töne bleiben jetzt der
+   Spitze vorbehalten, die es in keinem Bild gibt.
+
+   **Und zu weit geglättet.** Das weite Feld bevorzugt Plateaus vor Spitzen: das
+   Ruhrgebiet ist ein fünfzig Kilometer breites Band dichter Städte, da mittelt
+   der Weichzeichner nur Hohes; Berlin ist ein Fleck in dünn besiedeltem
+   Brandenburg, da mittelt er die Spitze weg. Ein engerer weiter Radius (breite
+   durch 28 statt 22) und mehr Gewicht auf dem engen Feld (0,55 statt 0,40)
+   geben dem einzelnen Kreis seinen Wert zurück — und nebenbei zerfällt das
+   Ruhrgebiet wieder in die Städte, aus denen es besteht, statt als ein
+   einziger glatter Berg dazuliegen.
+
+   Was bleibt, bleibt zu Recht: die gleichfarbige Zone ist im Ruhrgebiet
+   grösser, weil dort auf grösserer Fläche ähnlich dicht gewohnt wird. Und
+   Berlin und Essen trennen fünf Prozent, ein Band ist siebzehn breit — sie
+   müssen dieselbe Farbe haben. */
+const FEINTEILER = 95, GROBTEILER = 28, ENGANTEIL = 0.55, OBEN = 0.97;
 const RAUF = 0.55;                // Auflösung des Höhenfelds, Anteil der Bildpunkte
 const hkA = document.createElement('canvas'), hcA = hkA.getContext('2d');
 const hkB = document.createElement('canvas'), hcB = hkB.getContext('2d', { willReadFrequently: true });
@@ -1069,7 +1101,7 @@ const HYPSO_B = HYPSO.map(h => parseInt(h.slice(5, 7), 16));
 // Jahre Nachlauf sieht dort niemand. Das enge Feld und der Rand hängen an den
 // Umrissen der Kreise — liefen sie zu weit nach, sässe die Schattierung neben
 // ihrer Fläche.
-const TIEFPASS_GROB = 1.2, TIEFPASS_FEIN = 0.30;
+const TIEFPASS_GROB = 1.2, TIEFPASS_FEIN = 0.55;
 let glattFein = null, glattGrob = null, glattGrobM = null, glattMaske = null, glattDa = false;
 function reliefFrisch() { glattDa = false; }
 function reliefFeld() {
@@ -1119,8 +1151,8 @@ function reliefUeber(sil, deck) {
   if (!(breite > 60 && hoehe > 60)) return;
   reliefFeld();
   const s = rW / breite;
-  const fein = Math.max(2.2, breite / 95);      // enges Weichzeichnen: der einzelne Kreis
-  const grob = Math.max(7, breite / 22);        // weites: die Landschaft darüber
+  const fein = Math.max(2.2, breite / FEINTEILER);   // enges Weichzeichnen: der einzelne Kreis
+  const grob = Math.max(7, breite / GROBTEILER);     // weites: die Landschaft darüber
 
   // Die Vorlage. Draussen bleibt sie durchsichtig, nicht schwarz: dieselbe
   // Fläche dient hinterher als Schablone, mit der das Licht auf die Karte
@@ -1264,7 +1296,7 @@ function reliefUeber(sil, deck) {
      kommt die Muldenverschattung, die ja gerade die weite Umgebung braucht. */
   for (let i = 0; i < n3; i++) {
     grobAuf[i] = grobH[i] * grobM[i];
-    farbF[i] = 0.40 * feinH[i] + 0.60 * grobH[i];
+    farbF[i] = ENGANTEIL * feinH[i] + (1 - ENGANTEIL) * grobH[i];
     feldH[i] = 0.40 * feinH[i] * maskeH[i] + 0.60 * grobAuf[i];
   }
 
