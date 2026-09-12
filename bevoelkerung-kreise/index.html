@@ -317,8 +317,17 @@ function rahmenJetzt() {
    Gesetzt ist sie auf schwarzen Grund; die Seite kennt kein zweites Klima
    mehr. Das spart nicht nur Code, es ist auch der Grund, warum das Tiefgrün
    so tief sein darf. */
-const HYPSO = ['#1f5c33','#2b7239','#3c883f','#559b48','#72ac55','#92bb63','#b0c672','#c9cb80',
-               '#d5c077','#d3ac66','#c89658','#b9804d','#a76b45','#94583e','#9d7c69','#c2a797'];
+/* Die Leiter einer Reliefkarte, und zwar die gesättigte: Tiefland in sattem
+   Grün, dann Gelbgrün, Gelb, Ocker, Orange, Rot — oben die helle Kappe. Die
+   erste Fassung war um eine ganze Stufe blasser, gedämpftes Oliv und Graubraun,
+   aus Sorge um das Relief, das darüber liegt. Die Sorge war unbegründet:
+   weiches Licht bleicht eine satte Farbe nicht aus, es hebt und senkt sie. Und
+   auf schwarzem Grund braucht eine Karte Farbe, sonst wird sie zu Schlamm.
+
+   Die Helligkeit steigt durchgehend vom ersten zum letzten Band — das trägt die
+   Höhe auch dann, wenn jemand die Farbtöne nicht trennen kann. */
+const HYPSO = ['#15633a','#177546','#18884c','#2e9b4e','#50af52','#7ac159','#a7d05e','#d1da60',
+               '#edd254','#f3b741','#f29c33','#eb802c','#de6228','#ca4628','#bf5f48','#e3b5a4'];
 const stil = n => getComputedStyle(document.body).getPropertyValue(n).trim();
 let LEER = '#1a1a18', INK = '#fff', STRICH = '#0c0c0c';
 const SCHATTEN = 'rgba(0,0,0,.6)', KANTE3D = '#060605';
@@ -486,7 +495,17 @@ function masse() {
   const V = rahmenJetzt();
   mass = Math.min(breite / V.w, hoehe / V.h) * 0.99;
   verX = (breite - V.w * mass) / 2 - V.x * mass;
-  verY = (hoehe - V.h * mass) / 2 - V.y * mass;
+  /* Nicht senkrecht mittig, sondern **nach unten gerückt**. Die Karte hat ein
+     festes Seitenverhältnis; im Hochformat begrenzt sie die Breite, und was an
+     Höhe übrig bleibt, lag bisher zur Hälfte oben und zur Hälfte unten. Oben
+     aber steht der Text, und unten stand nichts. Also bekommt der Text den
+     freien Platz und die Karte rückt bis kurz vor die Legende — beides
+     gewinnt. Ein Achtel Rest bleibt unten stehen, damit sie nicht anstösst.
+
+     Im Querformat, wo die Höhe die Karte begrenzt, ist der Rest null und die
+     Zeile tut nichts. */
+  const rest = Math.max(0, hoehe - V.h * mass);
+  verY = rest * 0.875 - V.y * mass;
 }
 
 function bildBei(t) {

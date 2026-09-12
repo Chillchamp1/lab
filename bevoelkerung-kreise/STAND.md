@@ -89,7 +89,10 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Platz mehr weg, und die Karte springt nicht mehr, wenn eine Notiz länger ist
   als die vorige. Drei Ebenen: Jahr und Einwohnerzahl über der Karte, mit Schein
   dahinter; die Karte; darunter Notiz und Faden — wo Platz ist, stehen sie da,
-  wo die Karte hinreicht, verschwinden sie dahinter. Die Zweispaltigkeit im
+  wo die Karte hinreicht, verschwinden sie dahinter. Im Hochformat steht die
+  Karte dabei unten statt mittig: bei festem Seitenverhältnis begrenzt die
+  Breite sie, und der übrige Platz gehört ganz dem Text statt zur Hälfte einem
+  Loch über der Legende. Die Zweispaltigkeit im
   Querformat ist damit hinfällig und wieder draussen.
 - Die **Legende** ist eine Zeile: die Zahlen an den Enden der Leiter, ein Wort
   zur Form, der Stichtag. Umbruch unterbunden, sonst schöbe auch sie die Karte.
@@ -155,8 +158,9 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Umschalten, Fenstergrösse —, wird der Filter geleert statt nachgezogen.
   Gemessen im Prüfbrowser (6 Bilder/s, wo der Filter am wenigsten kann):
   Änderung je Bild auf **48 %**.
-- **Die Farbe ist die Höhe.** Die Leiter einer physischen Karte — Tiefland grün,
-  dann gelb, braun, oben Fels —, und gefärbt wird die Höhe, also dieselbe Zahl,
+- **Die Farbe ist die Höhe.** Die Leiter einer physischen Karte, und zwar die
+  gesättigte — Tiefland in sattem Grün, dann Gelbgrün, Gelb, Ocker, Orange, Rot,
+  oben die helle Kappe; durchgehend steigende Helligkeit —, und gefärbt wird die Höhe, also dieselbe Zahl,
   die das Relief trägt. Die Höhenlinien laufen damit genau auf den Farbgrenzen,
   wie in einem Atlas. Die Seite steht auf Half and half.
 - **Keine Grenzen mehr**, in keiner der drei Sorten: die gezeichnete Linie um

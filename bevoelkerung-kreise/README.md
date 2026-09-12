@@ -16,8 +16,8 @@ viele Menschen, halb so viel Karte. Die Seite ist auf Englisch, und die Karte
 füllt in jedem Format den Schirm; der Text legt sich darüber, wo Platz ist.
 
 Eine Ansicht, eine Farbleiter, ein Bild auf schwarzem Grund. Die Karte wird
-gemalt, wie ein Atlas ein Gebirge malt: Tiefland grün, dann gelb, braun, oben
-Fels. Gefärbt wird die **Höhe** — Bevölkerung geteilt durch gezeichnete Fläche,
+gemalt, wie ein Atlas ein Gebirge malt: Tiefland in sattem Grün, dann Gelbgrün,
+Gelb, Ocker, Orange, Rot — oben die helle Kappe. Gefärbt wird die **Höhe** — Bevölkerung geteilt durch gezeichnete Fläche,
 bezogen auf die mittlere Dichte des Bildes —, und weil dieselbe Zahl auch das
 Relief trägt, laufen die Höhenlinien genau auf den Farbgrenzen, wie in einer
 physischen Karte. Grün heisst wenige Menschen auf viel Boden, Braun und Fels
@@ -42,7 +42,8 @@ mit jedem Schritt; sechs bleiben stehen, auf dem Telefon drei.
 
 Der Text liegt dabei **über der Bühne, nicht in ihr**: er nimmt der Karte keinen
 Platz mehr weg, und die Karte springt nicht mehr, wenn eine Notiz länger ist als
-die vorige. Drei Ebenen — Jahr und Einwohnerzahl über der Karte, mit Schein
+die vorige. Die Karte steht dafür im Hochformat unten statt mittig — der freie
+Platz, der bei festem Seitenverhältnis übrig bleibt, gehört ganz dem Text. Drei Ebenen — Jahr und Einwohnerzahl über der Karte, mit Schein
 dahinter; die Karte; und darunter Notiz und Faden. Wo Platz ist, stehen sie da;
 wo die Karte hinreicht, verschwinden sie dahinter. Der Text weicht der Karte
 aus, statt sie zu verdrängen.
