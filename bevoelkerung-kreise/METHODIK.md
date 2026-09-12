@@ -752,6 +752,33 @@ Stadt, der Rest ist ihr Schatten.** Im vollen Kartogramm, wo die Fläche einfarb
 ist, sind diese Umrisse das Einzige, was man noch sieht — und genau dort sind sie
 am meisten wert, weil sie zeigen, wie gross eine Stadt geworden ist.
 
+### Bezogen worauf? Relativ, nicht absolut
+
+Die Höhe ist ein Verhältnis, und die Frage ist, wozu. Bezug ist die mittlere
+Dichte **desselben Bildes**:
+
+    Höhe = Dichte des Kreises / mittlere Dichte des Jahres
+
+Ein Kreis steht also auf ×2, wenn dort doppelt so dicht gewohnt wird wie im
+Landesdurchschnitt *jenes* Jahres — und ein Kreis, der mit dem Land Schritt
+hält, behält seine Farbe über hundertfünfzig Jahre. Das zeigt die
+**Verteilung**: wo sich die Menschen ballen und wie sich das verschiebt. Das
+Wachstum trägt die Karte ohnehin schon, in ihrer Fläche.
+
+Die Alternative wäre ein fester Bezug, etwa Deutschland 2024; dann hiesse ×2 in
+jedem Jahr dasselbe. Gerechnet ist der Unterschied ein einziger Faktor — die
+Bevölkerung des Bildes geteilt durch die des letzten, also 0,35 im Jahr 1871.
+Ausprobiert ist es, und es zeigt das Wachstum eindrucksvoll: 1871 liegt fast
+einfarbig im Tiefgrün, und über die Jahre steigt das ganze Land daraus auf. Der
+Preis ist, dass die frühen Bilder ihre Binnenzeichnung verlieren — 1871 ist das
+Ruhrgebiet kaum noch vom Umland zu trennen, weil sein Vorsprung am Maßstab von
+2024 gemessen verschwindend klein ist. Und die Farbe zeigte dann dasselbe wie
+die Fläche noch einmal.
+
+Die Seite steht deshalb auf relativ. Der Schalter steckt im Skript
+(`bezugAbsolut(true)`), ohne Knopf: die gemessenen Spannen hängen daran und
+werden beim Umschalten verworfen.
+
 ### Die Leiter wird gemessen, nicht gesetzt
 
 Wie weit die Höhen streuen, hängt ganz an der Stellung des Formreglers (4f):

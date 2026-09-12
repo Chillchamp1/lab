@@ -631,6 +631,13 @@ const stufe = (r, u) => r[Math.max(0, Math.min(r.length - 1, Math.round(u * (r.l
    dieselbe Farbe heisst damit über die ganzen hundertfünfzig Jahre dasselbe.
    Zwischen zwei Formen wird logarithmisch übergeblendet. */
 const SPANNEJE = [];
+// Umschalten zwischen relativ und absolut: die gemessenen Spannen hängen daran
+// und werden verworfen.
+function bezugAbsolut(an) {
+  if (ABSOLUT === an) return;
+  ABSOLUT = an; SPANNEJE.length = 0;
+  masse(); reliefFrisch(); zeichne();
+}
 function hoehenSpanne(fi) {
   if (SPANNEJE[fi]) return SPANNEJE[fi];
   const merkR = reihe, merkF = FORM;
@@ -650,7 +657,7 @@ function hoehenSpanne(fi) {
       fl[g] = Math.abs(A2 / 2);
       if (w > 0 && fl[g] > 0) { sP += w; sA += fl[g]; }
     }
-    const mittel = sA > 0 ? sP / sA : 1;
+    const mittel = (sA > 0 ? sP / sA : 1) * (ABSOLUT && sP > 0 ? bezugsBev() / sP : 1);
     for (let g = 0; g < NK; g++) {
       const w = reihe.BEV[f][g];
       if (w > 0 && fl[g] > 0) alle.push([(w / fl[g]) / mittel, fl[g]]);
@@ -912,6 +919,31 @@ const RESERVE = 0.125;
 // Leiterwert (0 = unteres Ende der Farbskala, 1 = oberes) → Feldwert und zurück.
 const zuFeld = u => Math.max(0, Math.min(1, (u + RESERVE) / (1 + 2 * RESERVE)));
 const ausFeld = v => v * (1 + 2 * RESERVE) - RESERVE;
+/* ---------- Bezogen worauf? ----------
+   Die Höhe ist ein Verhältnis, und die Frage ist, wozu.
+
+   **Relativ** (bisher, und weiterhin die Voreinstellung): zur mittleren Dichte
+   **desselben Bildes**. Ein Kreis steht auf ×2, wenn dort doppelt so dicht
+   gewohnt wird wie im Landesdurchschnitt jenes Jahres. Wächst das ganze Land,
+   wächst der Bezug mit — ein Kreis, der mit dem Land Schritt hält, behält seine
+   Farbe über hundertfünfzig Jahre. Das zeigt die **Verteilung**: wo sich die
+   Menschen ballen, und wie sich das verschiebt.
+
+   **Absolut**: zu einer festen Dichte, der des letzten Bildes. Dann heisst ×2
+   in jedem Jahr dasselbe — doppelt so dicht wie Deutschland 2024. Das ganze
+   Land steigt im Lauf der Zeit aus dem Grün heraus, weil es sich fast
+   verdreifacht. Das zeigt das **Wachstum**, aber die Verteilung der frühen
+   Jahre versinkt dabei im Tiefland.
+
+   Gerechnet ist der Unterschied ein Faktor: die Bevölkerung dieses Bildes,
+   geteilt durch die des letzten. */
+let ABSOLUT = false;
+// Die Bevölkerung des letzten Bildes, einmal gerechnet und behalten.
+let bevRef = 0;
+function bezugsBev() {
+  if (!bevRef) for (let g = 0; g < NK; g++) bevRef += reihe.BEV[NF - 1][g];
+  return bevRef;
+}
 function hoehen(w, deck) {
   let sP = 0, sA = 0;
   for (let g = 0; g < NK; g++) {
@@ -923,7 +955,7 @@ function hoehen(w, deck) {
     GEZEICHNET[g] = Math.abs(A2 / 2) * mass * mass;
     if (deck[g] > 0.5 && w[g] > 0 && GEZEICHNET[g] > 0) { sP += w[g]; sA += GEZEICHNET[g]; }
   }
-  const mittel = sA > 0 ? sP / sA : 1;
+  const mittel = (sA > 0 ? sP / sA : 1) * (ABSOLUT && sP > 0 ? bezugsBev() / sP : 1);
   for (let g = 0; g < NK; g++)
     HOCH[g] = (deck[g] > 0.5 && GEZEICHNET[g] > 0 && w[g] > 0) ? (w[g] / GEZEICHNET[g]) / mittel : 0;
 }
