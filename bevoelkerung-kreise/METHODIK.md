@@ -233,6 +233,15 @@ einem Telefon im Hochformat ist die Karte breitenbegrenzt und lässt oben Rand,
 dort steht die Notiz fast vollständig frei; auf einem breiten Schirm füllt die
 Karte die Bühne und nimmt sich den Platz.
 
+Und die Karte steht dort **nicht senkrecht mittig, sondern unten**. Sie hat ein
+festes Seitenverhältnis; im Hochformat begrenzt die Breite sie, und was an Höhe
+übrig bleibt, lag zur Hälfte oben und zur Hälfte unten. Oben aber steht der
+Text, und unten stand nichts — ein Loch von gut hundert Bildpunkten über der
+Legende. Jetzt rückt die Karte bis kurz vor die Legende und der freie Platz
+gehört ganz dem Text. Ein Achtel Rest bleibt unten, damit sie nicht anstösst.
+Im Querformat, wo die Höhe die Karte begrenzt, ist der Rest null und die Regel
+tut nichts.
+
 Geschoben wird nicht Zeile für Zeile: der ganze Faden springt ohne Übergang um
 eine Zeilenhöhe nach oben und läuft dann nach unten zurück. Weil die neue
 Überschrift oben schon steht, sieht das aus, als drücke sie die anderen weg —
@@ -654,9 +663,16 @@ Vielfaches grösser.
 
 ## 4b. Die Farbskala der Karte
 
-Die Karte wird gemalt, wie ein Atlas ein Gebirge malt: Tiefland grün, dann
-gelb, braun, oben Fels. Sechzehn Stufen, in OKLab von Hand gesetzt, auf einen
-schwarzen Grund abgestimmt.
+Die Karte wird gemalt, wie ein Atlas ein Gebirge malt: Tiefland in sattem Grün,
+dann Gelbgrün, Gelb, Ocker, Orange, Rot — oben die helle Kappe. Sechzehn Stufen
+von Hand gesetzt, mit durchgehend steigender Helligkeit, damit die Höhe auch
+dann lesbar bleibt, wenn jemand die Farbtöne nicht trennen kann.
+
+Die erste Fassung war um eine ganze Stufe blasser — gedämpftes Oliv und
+Graubraun, aus Sorge um das Relief, das darüber liegt. Die Sorge war
+unbegründet: weiches Licht bleicht eine satte Farbe nicht aus, es hebt und
+senkt sie. Und auf schwarzem Grund braucht eine Karte Farbe, sonst wird sie zu
+Schlamm.
 
 Gefärbt wird die **Höhe**: Bevölkerung geteilt durch gezeichnete Fläche,
 bezogen auf die mittlere Dichte des Bildes. Grün heisst wenige Menschen auf viel
