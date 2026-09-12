@@ -1142,30 +1142,33 @@ auf k/(N−1) und mischt dazwischen, die Bänder der Karte liegen aber auf k/N u
 mischen nicht — das Ufer lag im Verlauf drei Prozent links von seiner Zahl. Die
 Leiter zeigt jetzt dieselben fünfundzwanzig Bänder wie die Karte.
 
-Darunter stehen **zwei Sätze**:
+Darunter steht ein Satz:
 
-> ×1 is Germany's average in 2024. ×2 means twice as many people in the same
-> space.
+> people per area relative to Germany's average in 2024
 
-Diese Zeile hat vier Fassungen gebraucht, und jede scheiterte an derselben
-Stelle: **an der Eins**. „× the average population density of Germany 2024" war
-schlicht falsch (siehe unten) — Berlin stünde damit auf 551 Einwohnern je km²
-statt auf 4 136. „volume = people · ×1 = the German average of 2024" war
-ehrlich und unlesbar: zwei Gleichungen nebeneinander, und keine sagt, wovon das
-Mittel das Mittel ist. „people per patch of map · Germany 2024 sits at ×1" war
-ehrlich und immer noch unverständlich — „patch of map" ist genau der
-Fachbegriff, den zu vermeiden die ganze Übung war.
+Diese Zeile hat fünf Fassungen gebraucht, und die ersten vier scheiterten an
+derselben Stelle: **an der Eins**.
 
-Der Fehler lag nicht an den Wörtern, sondern am **Platz**: auf dem Telefon sind
-fünfzig Zeichen das Ende der Fahnenstange, und in fünfzig Zeichen lässt sich
-nicht sagen, worauf sich ein Vielfaches bezieht. Also dort zwei feste Zeilen
-statt einer — vierzehn Bildpunkte Kartenhöhe für hundert Zeichen — und zwei
-gewöhnliche Sätze statt einer Formel.
+| Fassung | Problem |
+|---|---|
+| `× the average population density of Germany 2024` | schlicht falsch: Berlin stünde auf 551 E/km² statt 4 136 |
+| `volume = people · ×1 = the German average of 2024` | ehrlich, aber zwei Gleichungen nebeneinander, und keine sagt, wovon das Mittel das Mittel ist |
+| `people per patch of map · Germany 2024 sits at ×1` | ehrlich, aber „patch of map" ist genau der Fachbegriff, den zu vermeiden die Übung war |
+| `×1 is Germany's average in 2024. ×2 means twice as many people in the same space.` | verständlich, brauchte aber zwei Zeilen |
 
-Der zweite Satz trägt die Ehrlichkeit, ohne sie auszusprechen: **„in the same
-space"** heisst, dass verglichen wird, was gleich gross **gezeichnet** ist, und
-nicht, was gleich viele Quadratkilometer hat. Wer die wirkliche Dichte will,
-tippt einen Kreis an; im Zettel stehen beide Zahlen nebeneinander.
+Das Wort, das gefehlt hat, ist **„relative to"**. Es sagt in zwei Silben, dass
+die Zahlen an der Leiter ein Verhältnis sind und wozu — und danach braucht keine
+Gleichung mehr erklärt zu werden. Die Zeile passt mit fünf Bildpunkten Luft auf
+eine Zeile bis 360 Bildpunkte Fensterbreite hinunter; darunter bricht sie um.
+
+**Bezahlt ist das mit einer Ungenauigkeit, und sie sei hier benannt.** „Per area"
+lässt offen, welche Fläche gemeint ist, und gemeint ist die **gezeichnete**. Für
+das Land als Ganzes stimmt der Satz genau — die Leiter ist ja darauf geeicht.
+Für einen einzelnen Kreis untertreibt er, weil das Kartogramm die Städte schon
+breiter gezogen hat: Berlin steht auf ×2,4 und ist wirklich ×17,7. Wer das genau
+wissen will, tippt den Kreis an; im Zettel stehen beide Zahlen nebeneinander.
+Eine Legende, die gelesen wird, ist mehr wert als eine genauere, die keiner
+versteht — und falsch ist der Satz nicht, nur ungefähr.
 
 Was dort früher noch stand — der Meeresspiegel, der Stichtag — steht woanders
 besser: die Zahlen auf der Leiter selbst, der Stichtag im Schild über der Karte.

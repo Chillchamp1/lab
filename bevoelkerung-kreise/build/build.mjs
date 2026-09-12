@@ -497,15 +497,14 @@ canvas{position:absolute;left:0;top:0;width:100%;height:100%;touch-action:manipu
    Höhe gezeichnet, die es nicht mehr gibt. */
 .fuss .klein{margin:4px 0 0;font-size:11.5px;line-height:1.35;color:var(--ink2);
   min-height:1.35em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* Und auf dem Telefon zwei Zeilen statt einer. Fünfzig Zeichen sind dort das
-   Ende der Fahnenstange, und in fünfzig Zeichen liess sich nicht erklären, was
-   die Eins auf der Leiter bedeutet — jede Fassung, die hineinpasste, war
-   entweder ungenau oder Jargon. Zwei feste Zeilen kosten vierzehn Bildpunkte
-   Kartenhöhe und kaufen hundert Zeichen. Fest, damit die Leiste so hoch bleibt
-   wie beim ersten Messen und die Karte nicht für eine Höhe gezeichnet wird, die
-   es nicht mehr gibt. */
+/* Auf dem Telefon darf die Zeile umbrechen statt abzureissen — zwei Zeilen
+   höchstens. Bei 360 Bildpunkten Fensterbreite passt sie mit fünf Bildpunkten
+   Luft noch auf eine; darunter bricht sie um, und dann ist eine zweite Zeile
+   allemal besser als drei abgeschnittene Wörter. Reserviert wird sie nicht:
+   die eine Zeile ist der Normalfall, und die Leiste soll dafür nicht vierzehn
+   Bildpunkte Kartenhöhe verschenken. */
 @media(max-width:540px){
-  .fuss .klein{white-space:normal;min-height:2.7em;max-height:2.7em}
+  .fuss .klein{white-space:normal;max-height:2.7em}
 }
 /* Die Leiter trug ihre beiden Zahlen links und rechts daneben — den Anfang und
    das Ende, und dazwischen nichts. Bei einer linearen Leiter ist das die
@@ -2452,39 +2451,40 @@ function stufen() {
     e.appendChild(s);
   }
 }
-/* ---------- Und darunter zwei Sätze ----------
-   Diese Zeile hat vier Fassungen gebraucht, und jede scheiterte an derselben
-   Stelle: **an der Eins**.
+/* ---------- Und darunter ein Satz ----------
+   Diese Zeile hat fünf Fassungen gebraucht, und die ersten vier scheiterten an
+   derselben Stelle: **an der Eins**.
 
    „× the average population density of Germany 2024" war schlicht falsch — die
-   Höhe ist keine wirkliche Dichte, sondern Bevölkerung je gezeichneter Fläche,
-   und die Karte ist ein halb eingemischtes Kartogramm (siehe unten). Berlin
-   stünde damit auf 551 Einwohnern je km² statt auf 4 136.
+   Höhe ist keine wirkliche Dichte, sondern Bevölkerung je gezeichneter Fläche
+   auf einem halb eingemischten Kartogramm (siehe unten). Berlin stünde damit
+   auf 551 Einwohnern je km² statt auf 4 136.
 
    „volume = people · ×1 = the German average of 2024" war ehrlich und
    unlesbar: zwei Gleichungen nebeneinander, und keine sagt, wovon das Mittel
-   das Mittel ist.
+   das Mittel ist. „people per patch of map · Germany 2024 sits at ×1" war
+   ehrlich und immer noch unverständlich — „patch of map" ist genau der
+   Fachbegriff, den zu vermeiden die ganze Übung war. Und zwei erklärende Sätze
+   waren zwar verständlich, brauchten aber zwei Zeilen.
 
-   „people per patch of map · Germany 2024 sits at ×1" war ehrlich und immer
-   noch unverständlich: „patch of map" ist genau der Fachbegriff, den zu
-   vermeiden die ganze Übung war.
+   Das Wort, das gefehlt hat, ist **„relative to"**. Es sagt in zwei Silben,
+   dass die Zahlen an der Leiter ein Verhältnis sind und wozu — und danach
+   braucht keine Gleichung mehr erklärt zu werden:
 
-   Der Fehler lag nicht an den Wörtern, sondern am **Platz**. Auf dem Telefon
-   sind fünfzig Zeichen das Ende, und in fünfzig Zeichen lässt sich nicht sagen,
-   worauf sich ein Vielfaches bezieht. Also zwei Zeilen statt einer, und dafür
-   zwei gewöhnliche Sätze:
+       people per area relative to Germany’s average in 2024
 
-       ×1 is Germany’s average in 2024.
-       ×2 means twice as many people in the same space.
-
-   Der zweite Satz trägt die Ehrlichkeit, ohne sie auszusprechen: **„in the same
-   space"** heisst, dass verglichen wird, was gleich gross gezeichnet ist — und
-   nicht, was gleich viele Quadratkilometer hat. Wer genau wissen will, wie
-   viele Menschen je km² dort wirklich wohnen, tippt den Kreis an; im Zettel
-   stehen beide Zahlen nebeneinander. */
+   Bezahlt ist das mit einer Ungenauigkeit, und sie sei hier benannt: „per area"
+   lässt offen, welche Fläche gemeint ist, und gemeint ist die **gezeichnete**.
+   Für das Land als Ganzes stimmt der Satz genau — die Leiter ist ja darauf
+   geeicht. Für einen einzelnen Kreis untertreibt er, weil das Kartogramm die
+   Städte schon breiter gezogen hat: Berlin steht auf ×2,4 und ist wirklich
+   ×17,7. Wer das genau wissen will, tippt den Kreis an; im Zettel stehen beide
+   Zahlen nebeneinander. Eine Legende, die gelesen wird, ist mehr wert als eine
+   genauere, die keiner versteht — und falsch ist der Satz nicht, nur
+   ungefähr. */
 function legText() {
   document.getElementById('legText').textContent =
-    '×1 is Germany\u2019s average in 2024. ×2 means twice as many people in the same space.';
+    'people per area relative to Germany\u2019s average in 2024';
 }
 
 /* ---------- Tippen ---------- */

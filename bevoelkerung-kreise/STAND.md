@@ -106,9 +106,8 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Loch über der Legende. Die Zweispaltigkeit im
   Querformat ist damit hinfällig und wieder draussen.
 - Die **Legende** ist die Leiter mit sechs Zahlen darauf (0, ×0,5, ×1, ×1,5,
-  ×2, ×3) und darunter zwei Sätze, was die Höhe misst: „×1 is Germany's average
-  in 2024. ×2 means twice as many people in the same space." (auf dem Telefon
-  zweizeilig). Umbruch unterbunden, sonst schöbe
+  ×2, ×3) und darunter ein Satz, was die Höhe misst: „people per area relative
+  to Germany's average in 2024". Umbruch unterbunden, sonst schöbe
   er die Karte.
 - Die Uhr läuft 84 Sekunden für 153 Jahre. Die Spielzeit je Abschnitt mischt
   Dauer und Umschichtung (geometrisches Mittel) und liegt nie unter
@@ -379,13 +378,15 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   wo man zuerst hinsieht: München ×3,16 auf der Karte gegen ×20,7 wirklich
   (4 844 E/km²), Berlin ×2,36 gegen ×17,7, die Prignitz ×0,25 gegen ×0,15. Der
   Verzerrungsfaktor läuft von 0,57 bis 7,5, im Median 0,99 — für einen
-  gewöhnlichen Landkreis stimmte der Satz, für Städte nicht. Jetzt stehen dort
-  **zwei gewöhnliche Sätze**: „×1 is Germany's average in 2024. ×2 means twice
-  as many people in the same space." Der zweite trägt die Ehrlichkeit, ohne sie
-  auszusprechen — „in the same space" heisst, dass verglichen wird, was gleich
-  gross **gezeichnet** ist. Dafür stehen auf dem Telefon zwei feste Zeilen statt
-  einer: vierzehn Bildpunkte Kartenhöhe für hundert Zeichen, und in fünfzig
-  Zeichen liess sich nicht sagen, worauf sich ein Vielfaches bezieht. (Dazwischen lag eine Fassung „volume = people · ×1 = the
+  gewöhnlichen Landkreis stimmte der Satz, für Städte nicht. Jetzt steht dort
+  **„people per area relative to Germany's average in 2024"**. Das Wort, das
+  vier Fassungen lang gefehlt hat, ist „relative to": es sagt in zwei Silben,
+  dass die Zahlen an der Leiter ein Verhältnis sind und wozu. Bezahlt mit einer
+  benannten Ungenauigkeit — „per area" lässt offen, welche Fläche gemeint ist,
+  und gemeint ist die gezeichnete; für das Land als Ganzes stimmt der Satz
+  genau, für einen einzelnen Kreis untertreibt er (Berlin ×2,4 gegen wirklich
+  ×17,7). Eine Legende, die gelesen wird, ist mehr wert als eine genauere, die
+  keiner versteht. (Dazwischen lag eine Fassung „volume = people · ×1 = the
   German average of 2024" — ehrlich, aber nicht lesbar: zwei Gleichungen
   nebeneinander, und keine sagt, wovon das Mittel das Mittel ist. dann zwei
   Fassungen mit „patch of map", die ehrlich waren und trotzdem keiner verstand —
