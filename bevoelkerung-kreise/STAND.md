@@ -370,6 +370,36 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   hundertsieben winzigen kreisfreien Städte das obere Quantil, und die halbe
   Palette blieb leer; jetzt sind 2024 dreiundzwanzig der fünfundzwanzig Bänder
   belegt.
+- **Die Legende behauptete eine Dichte, die die Höhe nicht ist.** Da stand
+  „× the average population density of Germany 2024", und das verspricht
+  wirkliche Dichte. Gefärbt wird aber Bevölkerung je **gezeichneter** Fläche
+  auf einem halb eingemischten Kartogramm, und das geht genau dort auseinander,
+  wo man zuerst hinsieht: München ×3,16 auf der Karte gegen ×20,7 wirklich
+  (4 844 E/km²), Berlin ×2,36 gegen ×17,7, die Prignitz ×0,25 gegen ×0,15. Der
+  Verzerrungsfaktor läuft von 0,57 bis 7,5, im Median 0,99 — für einen
+  gewöhnlichen Landkreis stimmte der Satz, für Städte nicht. Jetzt steht dort,
+  was die Karte wirklich zusichert: „volume = people · ×1 = the German average
+  of 2024". Und der Zettel beim Antippen stellt die beiden Zahlen nebeneinander
+  — „Per km² 4 136 · ×17,7" gegen „Height here ×2,4" —, das ist der einzige
+  Ort, an dem sich der Unterschied zeigen lässt, ohne die Karte zuzudecken.
+- **Vier Stellen in der Methodik nachgemessen und richtiggestellt.** „Volumen =
+  Bevölkerung" galt dort auf die Stelle; gemessen sind es **+2,4 %** über die
+  ganze Karte (davon 2,1 % vom randnormierten Weichzeichnen, nicht von der
+  Schärfung), **+5,8 %** beim Vergleich Ruhrgebiet gegen Berlin und **+18 %**
+  am Berliner Gipfel allein durch die Schärfung, bezahlt mit einer Mulde von
+  0,05 rings um jede Stadt. Der Tiefpass hinkt dem Jahr um **1,1 bis 2,9
+  Jahre** nach (Tabelle stand auf einer 70-Sekunden-Uhr und mit τ = 0,30 statt
+  0,55). Das weite Weichzeichnen ist `breite/28` und die Mischung 85:15, nicht
+  `breite/22` und 40:60. Und die Stufe an den Ländergrenzen im Bild 1900–1910
+  ist jetzt beziffert: Bayern 1900 (96 Kreise, 5,41 Mio), Nordwesten 1905 (155,
+  16,26 Mio), der Rest 1910 (149, 26,11 Mio), bei 15,2 % Reichswachstum im
+  Jahrzehnt. Aus GPOP nicht zu heilen — die Spalten schliessen einander aus.
+- **Neu in der Methodik: die Form eines Berges ist die Form des
+  Weichzeichners.** Ein Kreis ist ein Plateau einer einzigen Höhe; die Kuppe
+  kommt vom Gaussschen Kern und nicht von der Besiedlung. Berlins Kegel sagt
+  nicht, dass die Mitte dichter ist — die Karte weiss innerhalb von 891 km²
+  nichts. Auflösung: 400 Zellen, kleinste Schweinfurt 35,7 km², grösste
+  Mecklenburgische Seenplatte 5 495 km², Median 800.
 - **Die Seite gibt es auch als Film.** `build/film.mjs` macht aus ihr ein
   hochkantes mp4 — 1080 × 1920, dreissig Bilder in der Sekunde, 84 Sekunden
   Lauf plus zwei Sekunden Standbild, rund 25 MB. Der Inhalt ist der der Seite,

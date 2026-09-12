@@ -191,6 +191,15 @@ genau der Form, die gezeichnet wird: ×2,305. Dort beginnt jetzt das Knie
 die ×2,5 sitzt deshalb bei 96 Prozent der Rampe, und der Rest dahinter trägt
 alles darüber — der höchste Kreis überhaupt ist München 2024 mit ×3,16.
 
+**Was die Zahl an der Leiter nicht ist:** die wirkliche Dichte. Gefärbt wird
+Bevölkerung je **gezeichneter** Fläche, und der Boden ist ein halb eingemischtes
+Kartogramm — München steht auf ×3,2 und ist wirklich ×20,7 (4 844 E/km²), Berlin
+auf ×2,4 und ist ×17,7. Der Verzerrungsfaktor läuft von 0,57 bis 7,5, im Median
+0,99: für einen gewöhnlichen Landkreis stimmen die beiden fast überein, für
+Städte nicht. Deshalb sagt die Legende „volume = people · ×1 = the German
+average of 2024" und nennt das Wort Dichte nicht mehr; wer sie will, tippt einen
+Kreis an — im Zettel stehen beide Zahlen nebeneinander.
+
 **Die Zahlen stehen auf der Leiter**, nicht daneben: sechs Marken bei 0, ×0,5,
 ×1, ×1,5, ×2 und ×3, jede an ihrer wirklichen Stelle — die ersten fünf
 gleichmässig bei 0, 20, 40, 60 und 80 Prozent, die ×3 am Ende der Rampe. Dass

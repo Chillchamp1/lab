@@ -105,6 +105,38 @@ angeglichen**: jede Zeile behält ihren eigenen Stichtag, das Bild trägt beide,
 und auf der Zeitachse sitzt es dort, wo sein Bevölkerungsschwerpunkt liegt —
 das Bild 1961–1964 also näher an 1961, weil im Westen mehr Menschen wohnten.
 
+#### Was das kostet: eine Stufe an der Ländergrenze
+
+Das ist die grösste offene Schwäche der Karte, und sie hat einen sichtbaren Ort.
+Weil die Stichtage innerhalb eines Bildes um bis zu zehn Jahre auseinanderliegen
+und die Ländergrenzen entlanglaufen, **springt der Stand an diesen Grenzen**.
+Das Bild 1900–1910 ist der schlimmste Fall:
+
+| Stichtag | Kreise | Menschen |
+|---|---|---|
+| 1.12.1900 (Bayern) | 96 | 5,41 Mio |
+| 1.12.1905 (SH, NI, NW, RP, SL) | 155 | 16,26 Mio |
+| 1.12.1910 (übrige) | 149 | 26,11 Mio |
+
+Das Reich wuchs in diesem Jahrzehnt um **15,2 Prozent** (56,4 auf 64,9
+Millionen). Bayern steht in diesem Bild also grob ein Zehntel unter dem Stand,
+den es 1910 hatte, und die Grenze zu Baden-Württemberg trägt eine Stufe, die
+nichts als Buchführung ist. Im Ruhrgebiet, das damals mehrere Prozent im Jahr
+wuchs, ist die Fünfjahresstufe zu Hessen deutlich grösser als die
+Landesdurchschnitte vermuten lassen. Dasselbe, schwächer, im Bild 1946–1950:
+Rheinland-Pfalz, Baden-Württemberg und Bayern liegen vier Jahre vor dem Rest —
+mitten in der Verteilung der Vertriebenen.
+
+**Reparieren lässt sich das aus dieser Quelle nicht.** GPOPs Spalten schliessen
+einander aus: `pop_1900` ist für 96 Kreise belegt, `pop_1905` für 155,
+`pop_1910` für 150 — zusammen genau die 401. Es gibt für Bayern kein 1910 und
+für Sachsen kein 1900. Die Alternative wäre, jeden Kreis auf einen gemeinsamen
+Tag zu rechnen; das ginge nur durch Interpolation über die 39-Jahre-Lücke zu
+1939 und ersetzte eine ehrliche Flickendecke durch eine geschätzte. Deshalb
+bleibt sie, wird aber überall genannt: das Schild über der Karte führt alle
+Stichtage eines Bildes auf, und der Zettel beim Antippen nennt den des
+einzelnen Kreises.
+
 ### Bevölkerungsbegriff
 
 Nicht stillschweigend gemischt, sondern je Zeile in der Spalte `begriff`
@@ -371,7 +403,10 @@ wo die Zählungen dicht liegen — 2019 bis 2024 bekäme sonst zwei Sekunden. We
 | 2019 → 2024 | 5,0 | 1,6 Mio | 5,4 s |
 
 Die Jahre sind die Abstände der **Zähltage**, nicht der Jahreszahlen; wo eine
-Zählung als Spanne geführt wird (1900–1910), steht ihre Mitte.
+Zählung als Spanne geführt wird (1900–1910), steht sie dort, wo ihr
+Bevölkerungsschwerpunkt liegt — nicht in der blossen Mitte der Daten. Für
+1900–1910 sind das 1908,1 und nicht 1905, weil hinter dem Stichtag 1910
+sechsundzwanzig der siebenundvierzig Millionen stehen.
 
 Rein nach Jahren bekäme der Bruch von 1939 auf 1946 vier Sekunden — die
 gewaltigste Umwälzung der ganzen Reihe, vorbei, ehe man hinsieht. Rein nach
@@ -600,8 +635,8 @@ Farbe sind die Daten.
    Kantenglättung sonst zwischen zwei Bündeln einen halb durchsichtigen Spalt
    stehen lässt, aus dem nach dem Weichzeichnen eine Kerbe wird.
 2. Zweimal weichgezeichnet — einmal knapp (`breite/95`), einmal weit
-   (`breite/22`). Das knappe Feld trägt den einzelnen Kreis, das weite die
-   Landschaft darüber; gemischt 40 zu 60. Das weite entstand eine Fassung lang
+   (`breite/28`). Das knappe Feld trägt den einzelnen Kreis, das weite die
+   Landschaft darüber; gemischt 85 zu 15. Das weite entstand eine Fassung lang
    auf einer dreimal gröberen Leinwand, weil Weichzeichnen nach Fläche kostet.
    Für die Schattierung reichte das, für die Höhenlinien nicht: aus einem
    dreifach hochgerechneten Feld werden zappelige Linien mit einem Knick an
@@ -915,10 +950,18 @@ dem gerechneten:
 
 Zwei Zeitkonstanten, weil zwei Dinge daran hängen:
 
-| | τ | entspricht bei 70 s für 153 Jahre |
+| | τ | Nachlauf im Lauf |
 |---|---|---|
-| **weites Feld** (Höhenlinien, grosse Form) | 1,2 s | rund 2,6 Jahre |
-| **enges Feld und Rand** (Schattierung am Kreis) | 0,30 s | rund 0,7 Jahre |
+| **weites Feld** (Höhenlinien, grosse Form) | 1,2 s | 1,1 bis 2,9 Jahre |
+| **enges Feld und Rand** (Schattierung am Kreis) | 0,55 s | 0,5 bis 1,3 Jahre |
+
+Die Spanne kommt daher, dass die Uhr nicht gleichmässig läuft: zwischen 1996 und
+2011 sind es 2,44 Jahre je Sekunde, zwischen 2019 und 2024 nur 0,93 (siehe die
+Taktverteilung in 4e). **Das Relief hinkt der Jahreszahl in der Ecke also um
+ein bis drei Jahre nach, solange der Film läuft** — von hundertdreiundfünfzig,
+und am Zähltag zusätzlich leicht gedämpft. Wer am Regler zieht, sieht den
+genauen Stand: dieser Weg setzt den Tiefpass zurück, statt ihn laufen zu
+lassen.
 
 Das weite Feld darf träge sein: es ist ohnehin über fünfzehn Punkte verschmiert,
 und ein paar Jahre Nachlauf sieht dort niemand. Das enge Feld und der Rand
@@ -1252,6 +1295,50 @@ Integral, also gilt
 nicht nur je Kreis, sondern über jeden Ausschnitt, den man herausgreift. Zwei
 gleich grosse Flecken gleicher Farbe haben dann gleich viele Menschen, und ein
 doppelt so hoher Berg auf halber Fläche ebenso.
+
+**Wie genau, nachgemessen.** Der Satz ist die Absicht der Konstruktion und
+gilt bis auf ein paar Prozent, nicht auf die Stelle. Drei Zahlen dazu, alle für
+2024:
+
+| | |
+|---|---|
+| Volumen über die ganze Karte, gegen die Summe der Zählwerte | **+2,4 %** |
+| davon ohne die Schärfung | +2,1 % |
+| Ruhrgebiet gegen Berlin: Volumenverhältnis 1,433 gegen 1,355 Menschen | **+5,8 %** |
+| Berliner Gipfel mit Schärfung ×2,65, ohne ×2,25 | **+18 %** |
+
+Die zwei Prozent über die ganze Karte kommen nicht von der Schärfung, sondern
+vom **Rand**: das weite Weichzeichnen wird mit der weichgezeichneten Maske
+normiert, damit die Küste keine grüne Bordüre bekommt. Das erhält den örtlichen
+Mittelwert und bläht das Integral leicht auf.
+
+Die achtzehn Prozent am Gipfel sind die Schärfung, und sie sind Absicht (siehe
+„Weichzeichnen und Schärfen"): sie holt die Spitzen zurück, die das weite
+Weichzeichnen wegbügelt. Bezahlt wird mit einer flachen Mulde rings um jede
+Stadt — gemessen 0,05 Höheneinheiten, vierzig bis sechzig Feldpunkte vom
+Gipfel. Volumen wird also von der Flanke auf den Gipfel verschoben.
+
+Praktisch heisst das: **gleiches Volumen = gleich viele Menschen gilt oberhalb
+der Grösse eines Ballungsraums**, nicht für den einzelnen Gipfel. Wer zwei
+Berge auf drei Prozent vergleichen will, tippt sie an.
+
+### Die Form eines Berges ist die Form des Weichzeichners
+
+Das ist die wichtigste Grenze der Karte und die leichteste, sie zu überlesen.
+Ein Kreis ist ein **Plateau von einer einzigen Höhe** — innerhalb seiner Grenzen
+weiss diese Karte nichts. Was aus dem Plateau einen Berg macht, ist allein das
+Weichzeichnen: die Kuppe ist die Form des Gaussschen Kerns, nicht die Form der
+Besiedlung.
+
+Berlin hat 891 km² in einem einzigen Stück, Hamburg 755. Der Kegel über Berlin
+sagt also **nicht**, dass es in der Mitte am dichtesten ist — das ist wahr, aber
+die Karte weiss es nicht. Sie kennt nur „3,69 Millionen, gleichmässig über 891
+km²", und der Rest ist Weichzeichner.
+
+Die Auflösung ist damit der Kreis: 400 Zellen, die kleinste Schweinfurt mit
+35,7 km², die grösste die Mecklenburgische Seenplatte mit 5 495 km², im Median
+800. Zweiundvierzig kreisfreie Städte liegen unter 100 km² — dort ist die Karte
+am feinsten, und genau dort stehen die Gipfel.
 
 Das entscheidet den Fall Ruhrgebiet gegen Berlin, der weiter unten steht.
 Gemessen für 2024, innerhalb der jeweiligen Kreisgrenzen:

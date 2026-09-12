@@ -1213,6 +1213,20 @@ function bezugsBev() {
   if (!bevRef) for (let g = 0; g < NK; g++) bevRef += reihe.BEV[NF - 1][g];
   return bevRef;
 }
+/* Die wirkliche mittlere Dichte des Landes 2024, auf der **amtlichen** Fläche:
+   83,6 Millionen auf 357 677 km², also 234 Einwohner je Quadratkilometer. Sie
+   hat mit der Höhenskala nichts zu tun — die rechnet auf der gezeichneten
+   Fläche — und steht nur im Zettel, damit dort beide Zahlen nebeneinander
+   stehen können. */
+let dichteRef = 0;
+function landesDichte() {
+  if (!dichteRef) {
+    let fl = 0;
+    for (let g = 0; g < NK; g++) if (D.k[g][4] && reihe.BEV[NF - 1][g] > 0) fl += D.k[g][4];
+    dichteRef = fl > 0 ? bezugsBev() / fl : 1;
+  }
+  return dichteRef;
+}
 function hoehen(w, deck) {
   let sP = 0, sA = 0;
   for (let g = 0; g < NK; g++) {
@@ -2425,10 +2439,23 @@ function stufen() {
    Da standen einmal drei Angaben nebeneinander — wofür das Kreuz steht, wo der
    Meeresspiegel liegt, wann gezählt wurde —, und jede davon steht jetzt
    woanders besser: die Zahlen auf der Leiter selbst, der Stichtag im Tippen.
-   Übrig bleibt der eine Satz, der sagt, was die Karte misst. */
+   Übrig bleibt der eine Satz, der sagt, was die Karte misst.
+
+   Und der sagte eine Fassung lang zu viel. „× the average population density of
+   Germany 2024" verspricht **wirkliche Dichte**, und die ist es nicht: gefärbt
+   wird Bevölkerung je **gezeichneter** Fläche, und der Boden ist ein halb
+   eingemischtes Kartogramm. Gemessen für 2024 geht das auseinander, wo man
+   zuerst hinsieht — München steht auf ×3,16 und ist wirklich ×20,7 (4 844
+   E/km²), Berlin auf ×2,36 und ist ×17,7, die Prignitz auf ×0,25 und ist
+   ×0,15. Der Verzerrungsfaktor läuft von 0,57 bis 7,5, im Median 0,99: für
+   einen gewöhnlichen Landkreis stimmte der Satz, für Städte nicht.
+
+   Jetzt steht dort, was die Karte wirklich zusichert — das Volumen —, und die
+   Zahl an der Leiter ohne das Wort, das sie nicht halten kann. Wer die
+   wirkliche Dichte will, tippt einen Kreis an: dort stehen beide Zahlen. */
 function legText() {
   document.getElementById('legText').textContent =
-    '× the average population density of Germany 2024';
+    'volume = people · ×1 = the German average of 2024';
 }
 
 /* ---------- Tippen ---------- */
@@ -2460,9 +2487,18 @@ function zeigeTip(x, y) {
   tip.innerHTML = '<b>' + k[1] + '</b><dl>'
     + '<dt>' + (D.L[k[3]] || '') + '</dt><dd>' + k[2] + '</dd>'
     + '<dt>People</dt><dd>' + nf.format(Math.round(v)) + '</dd>'
-    + (k[4] ? '<dt>Per km²</dt><dd>' + nf.format(Math.round(v / k[4])) + '</dd>' : '')
+    /* Zwei Zahlen, und sie sind nicht dieselbe. „Per km²" ist die wirkliche
+       Dichte auf der amtlichen Fläche, samt Vielfachem des Landesmittels von
+       2024; „Height here" ist, wie hoch der Kreis auf dieser Karte steht, also
+       Menschen je **gezeichneter** Fläche. Der Boden ist ein halb
+       eingemischtes Kartogramm, deshalb gehen die beiden bei den Städten um
+       das Fünf- bis Siebenfache auseinander. Hier stehen sie nebeneinander —
+       das ist der einzige Ort, an dem sich der Unterschied zeigen lässt, ohne
+       die Karte mit Text zuzudecken. */
+    + (k[4] ? '<dt>Per km²</dt><dd>' + nf.format(Math.round(v / k[4]))
+        + ' · ×' + ((v / k[4]) / landesDichte()).toFixed(1) + '</dd>' : '')
     + (HOCH[treffer] > 0
-      ? '<dt>Stands</dt><dd>' + HOCH[treffer].toFixed(1) + '× average</dd>' : '')
+      ? '<dt>Height here</dt><dd>×' + HOCH[treffer].toFixed(1) + '</dd>' : '')
     + (abschnitt === null ? ''
       : '<dt>' + D.B[a].jahr + '→' + D.B[b].jahr + '</dt><dd>'
         + (abschnitt >= 0 ? '+' : '−') + Math.abs(abschnitt).toFixed(2) + ' %/yr</dd>')
