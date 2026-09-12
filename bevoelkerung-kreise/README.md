@@ -8,20 +8,30 @@ gezeichnet, wie er Menschen hat, und die Karte läuft durch die Zeit — von der
 ersten Reichszählung 1871 bis zum 31. Dezember 2024, von 29,3 auf 83,6
 Millionen.
 
-Das Besondere gegenüber den anderen Kartogrammen hier: **die Karte wächst
-mit**. Ein Kartogramm für sich verteilt nur um, seine Gesamtfläche bleibt
-gleich, ob 1871 oder heute. Hier gilt für alle Zeitpunkte dieselbe Fläche je
-Mensch, also ist 1871 wirklich kleiner als 2024 — flächenproportional, halb so
-viele Menschen, halb so viel Karte. Die Seite ist auf Englisch, und die Karte
-füllt in jedem Format den Schirm; der Text legt sich darüber, wo Platz ist.
+**Das Wachstum steht in der Farbe, nicht in der Fläche.** Die Aussengrenze
+bleibt über hundertfünfzig Jahre ungefähr, wo sie ist — ein Kartogramm verteilt
+nur um, seine Gesamtfläche ist erhalten, und der Massstab ist für alle Bilder
+derselbe. Was sich bewegt, bewegt sich also, weil sich die Kreise
+**gegeneinander** verschieben. Die Seite ist auf Englisch, und die Karte füllt
+in jedem Format den Schirm; der Text legt sich darüber, wo Platz ist.
 
 Eine Ansicht, eine Farbleiter, ein Bild auf schwarzem Grund. Die Karte wird
 gemalt, wie ein Atlas ein Gebirge malt: Tiefland in sattem Grün, dann Gelbgrün,
-Gelb, Ocker, Orange, Rot — oben die helle Kappe. Gefärbt wird die **Höhe** — Bevölkerung geteilt durch gezeichnete Fläche,
-bezogen auf die mittlere Dichte des Bildes —, und weil dieselbe Zahl auch das
-Relief trägt, laufen die Höhenlinien genau auf den Farbgrenzen, wie in einer
-physischen Karte. Grün heisst wenige Menschen auf viel Boden, Braun und Fels
-viele auf wenig.
+Gelb, Ocker, Orange, Rot — oben die helle Kappe. Gefärbt wird die **Höhe**:
+Menschen je gezeichneter Fläche, bezogen auf die Dichte **Deutschlands 2024**.
+Der Bezug ist fest, ×2 heisst also in jedem Jahr dasselbe — und daraus folgt
+das Bild, um das es geht: 1871 liegt das Land fast einfarbig im Tiefgrün, und
+über die Jahrzehnte steigt es daraus auf, bis 2024 die halbe Karte im Orange
+liegt. Weil dieselbe Zahl auch das Relief trägt, laufen die Höhenlinien genau
+auf den Farbgrenzen, wie in einer physischen Karte.
+
+Eine frühere Fassung machte es umgekehrt: die Karte wuchs flächenproportional
+mit der Bevölkerung, und die Farbe war die Dichte im Verhältnis zum
+Landesdurchschnitt *desselben* Jahres. Das zeigte die Verteilung schärfer,
+liess das Wachstum aber allein an der Fläche hängen — und wer mit dem Land
+Schritt hielt, behielt über hundertfünfzig Jahre dieselbe Farbe. Beides
+zugleich ging nicht: zweimal dasselbe zu zeigen kostet nur die Aufmerksamkeit
+für alles andere.
 
 Frühere Fassungen hatten drei Ansichten nebeneinander — Wachstum, Einwohner,
 Gelände — und dazu ein Nadelrelief. Sie sind weg. Die Geländekarte trägt

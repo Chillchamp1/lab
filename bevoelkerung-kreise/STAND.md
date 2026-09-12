@@ -70,8 +70,12 @@ Freigabe, aus Bildvorlagen abzuschreiben.
 ### Karte
 
 - Ein Diffusionskartogramm je Zeitpunkt, warm vom vorigen gestartet;
-  gemeinsamer Massstab, sodass die Karte flächenproportional mit der
-  Bevölkerung wächst.
+  gemeinsamer Massstab, und zwar **für alle Bilder derselbe**. Die Aussengrenze
+  bleibt damit über hundertfünfzig Jahre ungefähr, wo sie ist; was sich bewegt,
+  bewegt sich, weil sich die Kreise gegeneinander verschieben. Bis dahin wuchs
+  die Karte flächenproportional mit der Bevölkerung — das Wachstum ist in die
+  Farbe umgezogen (siehe unten), weil es zweimal gezeigt nur die Aufmerksamkeit
+  für alles andere kostete.
 - `index.html`: eine einzelne Datei, Englisch, **eine einzige Ansicht** — die
   Geländekarte auf schwarzem Grund. Zeitschieberegler mit Marken auf den
   Zählungen, drei Formknöpfe, sonst nichts; Antippen zeigt Zahlen, Rate,
@@ -185,14 +189,30 @@ Freigabe, aus Bildvorlagen abzuschreiben.
 - **Jede Höhenlinie ist eine Farbgrenze.** Ein Achtel Reserve über und unter der
   Leiter legt deren fünfzehn Grenzen im Feld auf 2/20 bis 17/20 — bei zwanzig
   Niveaus (vorher vierzig) genau auf die Niveaus 2 bis 17.
+- **Der Bezug der Höhe ist absolut**: die Dichte Deutschlands 2024, für jedes
+  Bild dieselbe. ×2 heisst damit in jedem Jahr dasselbe, und das Wachstum steht
+  in der Farbe — 1871 liegt das Land fast einfarbig im Tiefgrün, 2024 im Orange.
+  Der relative Bezug (mittlere Dichte desselben Bildes) steckt als Schalter im
+  Skript, `bezugAbsolut(false)`, ohne Knopf.
+- **Eine Leiter für alle drei Formen**, ×0,18 … ×2,29 — sonst hiesse ×1 je nach
+  Knopfstellung etwas anderes. Möglich geworden, weil das Wachstum jetzt in
+  jeder Form steckt, auch im Kartogramm: dessen Fläche ist fest, seine
+  Bevölkerung wächst, also steigt seine Dichte von ×0,35 auf ×1,00. Das
+  Kartogramm ist damit nicht mehr die tote Fläche, die es war — es liegt in
+  jedem Jahr einfarbig da, aber die Farbe wandert mit den Jahren.
+- **Das Relief hängt jetzt an der Binnenspanne**, also der Streuung innerhalb
+  *eines* Bildes, nicht mehr an der Gesamtspanne über alle. Im Kartogramm sind
+  die beiden grundverschieden: innerhalb eines Jahres keine Streuung, über die
+  Jahre die volle. Mit demselben Anteil läuft auch die **Farbe** gegen das
+  Bildmittel — sonst wurden aus den Konvergenzresten des Diffusionsverfahrens
+  sichtbare Farbbänder (1943 ein Ost-West-Verlauf über dem Kartogramm, der wie
+  ein Befund aussah und keiner war).
 - **Die Leiter wird je Form aus den Daten gemessen**, einmal, über alle Kreise in
-  allen Zählungen, **flächengewichtet**: q0,05 bis q0,95. Landkarte ×0,26 … ×2,9,
-  Half and half ×0,44 … ×2,3, volles Kartogramm ×1,00 … ×1,02. Flächengewichtet,
+  allen Zählungen, **flächengewichtet**: q0,05 bis q0,95. Landkarte ×0,18 … ×2,29,
+  Half and half ×0,28 … ×2,04, volles Kartogramm ×0,35 … ×1,00. Flächengewichtet,
   weil Fläche gefärbt wird und nicht Kreise — ungewichtet setzten die
   hundertsieben winzigen kreisfreien Städte das obere Quantil, und acht von
-  sechzehn Bändern blieben leer; jetzt sind zwölf bis dreizehn belegt. Zwischen
-  zwei Formen wird logarithmisch übergeblendet, und die Zahlen an den Enden der
-  Leiter wandern je Bild mit.
+  sechzehn Bändern blieben leer; jetzt sind zwölf bis dreizehn belegt.
 - **Die kreisfreien Städte tragen doch einen Umriss**, einen feinen dunklen über
   dem Relief. Ein Landkreis braucht keinen, er wird kaum verzerrt; eine
   kreisfreie Stadt ist auf dem Boden winzig und in der Karte gross, und ihr Berg

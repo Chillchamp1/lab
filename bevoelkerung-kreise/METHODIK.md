@@ -153,13 +153,21 @@ wird.
 
 **Gemeinsamer Massstab.** Das Kartogramm selbst verteilt nur um; seine
 Gesamtfläche bleibt die der Ausgangskarte, gleich wie viele Menschen darin
-wohnen. Damit die Karte *mit* der Bevölkerung wächst, gilt für alle Zeitpunkte
-dieselbe Fläche je Mensch — so viel, dass das bevölkerungsreichste Bild gerade
-die Fläche der geografischen Karte einnimmt. Jeder gespeicherte Zustand ist auf
-diese Fläche normiert und um den festen Schwerpunkt der Gesamtkarte zentriert;
-die Grösse steckt allein im Faktor √(Bevölkerung / grösste Bevölkerung), der
-beim Zeichnen wieder daraufkommt. Halb so viele Menschen heisst dann wirklich
-halb so viel Karte.
+wohnen. Jeder gespeicherte Zustand ist auf diese Fläche normiert und um den
+festen Schwerpunkt der Gesamtkarte zentriert; die Grösse steckt allein in einem
+Faktor, der beim Zeichnen daraufkommt.
+
+Dieser Faktor war lange √(Bevölkerung / grösste Bevölkerung): dieselbe Fläche
+je Mensch für alle Zeitpunkte, also **wuchs die Karte mit** — halb so viele
+Menschen, halb so viel Karte. Er ist jetzt für alle Bilder derselbe, der des
+letzten. Die Aussengrenze bleibt damit über hundertfünfzig Jahre ungefähr, wo
+sie ist, und was sich noch bewegt, bewegt sich, weil sich die Kreise
+gegeneinander verschieben.
+
+Das Wachstum ist deshalb nicht verschwunden, es ist umgezogen: es steht jetzt
+in der **Farbe** (4b). Beides zugleich zeigte dasselbe zweimal und kostete nur
+die Aufmerksamkeit für alles andere. Die Zahlen der Nutzlast sind unverändert;
+geändert hat sich allein, mit welchem Faktor sie gezeichnet werden.
 
 Zwischen zwei Zeitpunkten läuft die Karte linear in der Zeit, nicht in gleichen
 Schritten je Zählung. Was zwischen zwei Stichtagen gezeigt wird, ist
@@ -752,48 +760,75 @@ Stadt, der Rest ist ihr Schatten.** Im vollen Kartogramm, wo die Fläche einfarb
 ist, sind diese Umrisse das Einzige, was man noch sieht — und genau dort sind sie
 am meisten wert, weil sie zeigen, wie gross eine Stadt geworden ist.
 
-### Bezogen worauf? Relativ, nicht absolut
+### Bezogen worauf? Absolut
 
-Die Höhe ist ein Verhältnis, und die Frage ist, wozu. Bezug ist die mittlere
-Dichte **desselben Bildes**:
+Die Höhe ist ein Verhältnis, und die Frage ist, wozu. Bezug ist die Dichte
+**Deutschlands 2024**, für jedes Bild dieselbe:
 
-    Höhe = Dichte des Kreises / mittlere Dichte des Jahres
+    Höhe = Dichte des Kreises / Dichte Deutschlands 2024
 
-Ein Kreis steht also auf ×2, wenn dort doppelt so dicht gewohnt wird wie im
-Landesdurchschnitt *jenes* Jahres — und ein Kreis, der mit dem Land Schritt
-hält, behält seine Farbe über hundertfünfzig Jahre. Das zeigt die
-**Verteilung**: wo sich die Menschen ballen und wie sich das verschiebt. Das
-Wachstum trägt die Karte ohnehin schon, in ihrer Fläche.
+×2 heisst damit in jedem Jahr dasselbe, und daraus folgt das Bild, um das es
+geht: 1871 liegt das Land fast einfarbig im Tiefgrün, und über die Jahrzehnte
+steigt es daraus auf, bis 2024 die halbe Karte im Orange liegt. Seit die Karte
+nicht mehr mitwächst (2.), ist die Farbe der einzige Ort, an dem das Wachstum
+steht — und dort steht es richtig.
 
-Die Alternative wäre ein fester Bezug, etwa Deutschland 2024; dann hiesse ×2 in
-jedem Jahr dasselbe. Gerechnet ist der Unterschied ein einziger Faktor — die
-Bevölkerung des Bildes geteilt durch die des letzten, also 0,35 im Jahr 1871.
-Ausprobiert ist es, und es zeigt das Wachstum eindrucksvoll: 1871 liegt fast
-einfarbig im Tiefgrün, und über die Jahre steigt das ganze Land daraus auf. Der
-Preis ist, dass die frühen Bilder ihre Binnenzeichnung verlieren — 1871 ist das
-Ruhrgebiet kaum noch vom Umland zu trennen, weil sein Vorsprung am Maßstab von
-2024 gemessen verschwindend klein ist. Und die Farbe zeigte dann dasselbe wie
-die Fläche noch einmal.
+Der Preis ist bekannt: die frühen Bilder haben weniger Binnenzeichnung. 1871
+hebt sich das Ruhrgebiet nur noch schwach vom Umland ab, weil sein Vorsprung am
+Maßstab von 2024 gemessen klein ist. Das Relief trägt dort, was die Farbe nicht
+mehr trägt.
 
-Die Seite steht deshalb auf relativ. Der Schalter steckt im Skript
-(`bezugAbsolut(true)`), ohne Knopf: die gemessenen Spannen hängen daran und
-werden beim Umschalten verworfen.
+Die Gegenrechnung, **relativ**, war lange die Voreinstellung: Bezug ist dann die
+mittlere Dichte *desselben Bildes*, ein Kreis steht auf ×2, wenn dort doppelt so
+dicht gewohnt wird wie im Landesdurchschnitt jenes Jahres, und wer mit dem Land
+Schritt hält, behält seine Farbe über hundertfünfzig Jahre. Das zeigt die
+Verteilung schärfer und verschweigt das Wachstum. Der Schalter steckt im Skript
+(`bezugAbsolut(false)`), ohne Knopf; die gemessenen Spannen hängen daran und
+werden beim Umschalten verworfen. Gerechnet ist der Unterschied ein einziger
+Faktor — die Bevölkerung des Bildes geteilt durch die des letzten, also 0,35 im
+Jahr 1871.
+
+### Eine Leiter für alle drei Formen
+
+Gemessen wurde die Spanne eine Fassung lang **je Form**, und zwischen zwei
+Formen wurde übergeblendet. Der Grund war gut: die Formen streuten sehr
+verschieden — auf der Landkarte vom Fünftel bis zum Fünfzehnfachen, im vollen
+Kartogramm gar nicht.
+
+Mit festem Bezug und festem Massstab gilt das nicht mehr. Das Wachstum, Faktor
+2,85 über hundertfünfzig Jahre, steckt jetzt in **jeder** Form, auch im
+Kartogramm: dessen Fläche ist fest, seine Bevölkerung wächst, also steigt seine
+Dichte — von ×0,35 im Jahr 1871 auf ×1,00 im Jahr 2024. Die drei gemessenen
+Spannen liegen dadurch nah beieinander, und eine Leiter umschliesst sie alle:
+**×0,18 … ×2,29**.
+
+Erst damit heisst ×1 überall dasselbe. Sonst bekäme derselbe Wert je nach
+Knopfstellung eine andere Farbe, und die Skala wäre nur innerhalb einer Form
+absolut.
+
+Das Kartogramm ist damit nicht mehr die tote Fläche, die es war: es liegt in
+jedem Jahr einfarbig da, aber die Farbe wandert mit den Jahren von Grün nach
+Orange — und das ist genau die mittlere Dichte des Landes.
 
 ### Die Leiter wird gemessen, nicht gesetzt
 
-Wie weit die Höhen streuen, hängt ganz an der Stellung des Formreglers (4f):
-auf der Landkarte ist die Höhe die wirkliche Dichte, im vollen Kartogramm ist
-sie für jeden Kreis 1. Eine feste Leiter für alle drei Stellungen läge in
-zweien davon in einem einzigen Gelb.
+Gesetzt ist an der Leiter nur, dass sie sechzehn Bänder hat; wo sie anfängt und
+aufhört, kommt **aus den Daten**: alle vierhundert Kreise in allen zehn
+Zählungen, das fünfte und das fünfundneunzigste Prozent, je Form einmal
+gemessen und dann behalten. Das geht, ohne zu zeichnen, weil die Höhe ein
+Verhältnis ist und sich beim Skalieren der ganzen Karte nicht ändert.
 
-Also wird die Spanne **je Form einmal aus den Daten gemessen**: alle vierhundert
-Kreise in allen zehn Zählungen, das fünfte und das fünfundneunzigste Prozent.
-Das geht, ohne zu zeichnen, weil die Höhe ein Verhältnis ist und sich beim
-Skalieren der ganzen Karte nicht ändert. Gemessen wird einmal je Form und dann
-behalten — dieselbe Farbe heisst damit über die ganzen hundertdreiundfünfzig
-Jahre dasselbe.
+| Form | gemessene Spanne |
+|---|---|
+| Real map (a = 0) | ×0,18 … ×2,29 |
+| Half and half (a = 0,5) | ×0,28 … ×2,04 |
+| Cartogram (a = 1) | ×0,35 … ×1,00 |
 
-Gewichtet wird dabei mit der **Fläche**, nicht je Kreis gleich. Das ist der
+Die drei zusammen ergeben die eine Leiter, die alle umschliesst — ×0,18 bis
+×2,29. Dieselbe Farbe heisst damit über die ganzen hundertdreiundfünfzig Jahre
+dasselbe **und** über alle drei Knopfstellungen.
+
+Gewichtet wird mit der **Fläche**, nicht je Kreis gleich. Das ist der
 Unterschied zwischen „wie dicht wohnt ein Kreis" und „wie dicht ist das Land
 hier", und gefärbt wird Fläche. Ungewichtet setzten die hundertsieben
 kreisfreien Städte das obere Quantil: sie sind dicht, aber winzig, und nach dem
@@ -801,50 +836,45 @@ Weichzeichnen bleibt von ihnen wenig übrig. Die Leiter reichte dann weit über
 das hinaus, was im Feld je vorkommt, und **die halbe Palette blieb ungenutzt** —
 acht von sechzehn Bändern auf der Landkarte. Aus demselben Grund fünf Prozent an
 den Enden statt eines halben: das Weichzeichnen zieht die Verteilung ohnehin zur
-Mitte. Jetzt sind es zwölf bis dreizehn belegte Bänder.
-
-| Form | gemessene Spanne |
-|---|---|
-| Real map (a = 0) | ×0,26 … ×2,9 |
-| Half and half (a = 0,5) | ×0,44 … ×2,3 |
-| Cartogram (a = 1) | ×1,00 … ×1,02 |
-
-Zwischen zwei Formen wird logarithmisch übergeblendet, und weil das während der
-Bewegung geschieht, stehen die Zahlen an den Enden der Leiter je Bild neu.
+Mitte.
 
 ### Wenn keine Höhe mehr übrig ist
 
-Die dritte Zeile der Tabelle ist keine Spanne, sondern Rundungsrest. Im vollen
-Kartogramm steckt die ganze Bevölkerung in der Fläche; jeder Kreis hat dann
-dieselbe Dichte, und was bleibt, ist die Genauigkeit des Diffusionsverfahrens.
+Im vollen Kartogramm steckt die ganze Bevölkerung in der Fläche; **innerhalb**
+eines Jahres hat dort jeder Kreis dieselbe Dichte, es gibt also keine Höhe. Was
+das Feld dort noch an Unterschieden zeigt, ist der Rest, den das
+Diffusionsverfahren nicht ganz wegbekommen hat.
 
-Eine Leiter, die über dieses eine Prozent gespannt wird, macht daraus ein
-Gebirge: sie stünde auf ×0,99 bis ×1,01 und zeigte doch alle sechzehn Farben —
-eine reich gegliederte Landschaft ohne jeden Inhalt.
+Gemessen wird deshalb eine zweite Zahl: die **Binnenspanne**, also die
+gewichtete Spanne innerhalb *eines* Bildes, und davon die grösste über alle
+Bilder. Sie ist etwas anderes als die Gesamtspanne, aus der die Farbleiter
+kommt — im Kartogramm sind die beiden sogar grundverschieden: innerhalb eines
+Jahres keine Streuung, über die Jahre die volle. Vorher fielen sie zusammen und
+eine Zahl reichte für beides; seit die Karte nicht mehr mitwächst, nicht mehr.
 
-Zwei Bremsen, beide aus derselben gemessenen Spanne:
+Aus der Binnenspanne kommt ein Anteil zwischen 0 und 1, und der blendet zweierlei
+aus:
 
-1. Die Leiter bekommt eine **Mindestbreite** (Faktor 2,6). Ist die Spanne
-   enger, wird sie um ihre Mitte auf dieses Mass aufgezogen; alle Werte landen
-   dann in der Mitte der Leiter, und die Karte liegt einfarbig da — wie es
-   einem Kartogramm zusteht.
-
-   Aufgezogen und dann noch um ein **halbes Band** verschoben. Symmetrisch läge
-   die Mitte der Werte auf genau der Grenze zwischen dem achten und dem neunten
-   Band, und dort, wo alle Werte dicht um diese Mitte liegen, kippte jeder
-   Rundungsrest über die Grenze: die Fläche war mit Flecken des Nachbartons
-   gesprenkelt. Um ein halbes Band verschoben fällt die Mitte in die Mitte eines
-   Bandes, und die Fläche bleibt, was sie sein soll — einfarbig.
-2. Das **Relief wird ausgeblendet**, im selben Verhältnis: Schattierung,
-   Mulden, Schlagschatten und Höhenlinien werden mit demselben Faktor
-   multipliziert. Bei voller Spanne steht es ganz, bei keiner gar nicht,
-   dazwischen anteilig. (Unter zwei Prozent wird die Linienverfolgung ganz
+1. Das **Relief** — Schattierung, Mulden, Schlagschatten, Höhenlinien werden mit
+   ihm multipliziert. (Unter zwei Prozent wird die Linienverfolgung ganz
    übersprungen, was im Kartogramm auch Rechenzeit spart.)
+2. Die **Farbe**, die mit demselben Anteil gegen die Farbe des Bildmittels
+   läuft. Ohne das wurden aus den Konvergenzresten sichtbare Farbbänder: auf
+   einer Leiter, deren Band einen Faktor 1,17 breit ist, lag 1943 ein
+   Ost-West-Verlauf über dem Kartogramm, der wie ein Befund aussah und keiner
+   war.
 
-Der Weg vom Relief zum Kartogramm zeigt damit genau das, worum es auf dieser
-Seite geht: **die Berge sinken in die Fläche, weil die Menschen von der Höhe in
-die Breite wandern.** Die Legende sagt es dann auch mit Worten — „every county
-is drawn at the same density now, so the land lies flat".
+Der Weg vom Relief zum Kartogramm zeigt damit genau das, worum es geht: **die
+Berge sinken in die Fläche, weil die Menschen von der Höhe in die Breite
+wandern** — und die Farben gleichen sich an, während sie sinken. Die Legende
+sagt es dann auch mit Worten: „every county is drawn at the same density now,
+so the land lies flat".
+
+Die **Mindestbreite** der Leiter (Faktor 2,6, um ein halbes Band verschoben)
+steht weiterhin im Code, greift aber nicht mehr: die gemeinsame Leiter ist
+breit genug. Sie ist die Sicherung für den Fall, dass jemand auf den relativen
+Bezug zurückschaltet — dort schnurrt die Kartogramm-Spanne wieder auf ein
+Prozent zusammen.
 
 ### Was die Karte nicht mehr zeigt
 
