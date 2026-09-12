@@ -91,7 +91,12 @@ gemessen, nicht geschätzt. Die Zwischenform kostet kein Byte: die Landkarte
 steht ohnehin in der Datei, jeder Knoten liegt einfach zwischen seinen beiden
 Orten.
 
-Die Karte trägt **keine Grenzen** — weder um die Kreise noch um die Länder. Eine
+Die Karte trägt **keine Grenzen** — bis auf einen feinen Umriss um jede
+kreisfreie Stadt. Für einen Landkreis wäre er überflüssig, er wird kaum
+verzerrt; eine kreisfreie Stadt dagegen ist auf dem Boden winzig und in der
+Karte gross, und ihr Berg reicht weit über sie hinaus. Der Umriss sagt dort,
+was sonst niemand sagt: bis hierhin reicht die Stadt, der Rest ist ihr Schatten.
+Sonst aber keine Grenzen, weder um die Kreise noch um die Länder. Eine
 Geländekarte hat keine; sie hat Farbe, Hang und Höhenlinie, und die zeigen die
 Grenze dort, wo sie etwas bedeutet: wo sich die Dichte ändert. Wo zwei Nachbarn
 gleich dicht wohnen, war der Strich ohnehin nur Verwaltung. Weg sind dabei alle
@@ -112,25 +117,35 @@ als der Hang selbst, trifft nie auf Schatten. Und ein Tiefpass über die Bilder:
 das Raster des Höhenfeldes springt von Bild zu Bild um Bruchteile eines Punktes,
 und die Linien zappelten mit; jetzt folgt das gezeigte Feld dem gerechneten mit
 gut einer Sekunde, also knapp drei Jahren Kartenzeit — das Zittern fällt weg,
-die Bewegung über die Jahre bleibt. Vierzig Linien über die volle
+die Bewegung über die Jahre bleibt. Zwanzig Linien über die volle
 Höhe, und sie werden verfolgt statt gemalt: Marching Squares über das Höhenfeld
 liefert die Strecken, die Strecken werden zu durchgehenden Linien verkettet, und
 gezeichnet wird als weiche Kurve auf der Leinwand selbst. Im Raster gemalt und
 hochgerechnet blieben sie ein Schmier, bei jeder Auflösung; Strecke für Strecke
 gezeichnet sahen sie gepunktet aus.
 
-Gezeichnet wird die Höhe gestaucht (Wurzel, mit Sockel): zwischen dem leersten
-Landkreis und Berlin liegt auf der Landkarte der Faktor 134, und ein Relief mit
-Faktor 134 ist eine Wand neben einer Ebene. Die Reihenfolge bleibt richtig, der
-Abstand nicht; die Zahl steht beim Antippen.
+**Farbe, Licht und Höhenlinie kommen aus einer einzigen Zahl.** Das war eine
+Fassung lang eine Behauptung und nicht wahr: gefärbt wurde Kreis für Kreis, und
+heraus kam ein Mosaik mit den Umrissen der Verwaltung, während die Höhenlinien
+aus dem weichgezeichneten Feld kamen, das darüber hinwegläuft. Berlin war
+deshalb ein kleiner Farbfleck, während sein Berg weit darüber hinausreichte und
+die Linien sich darin drängten — die Karte sagte an derselben Stelle zweierlei.
 
-Wie weit die Höhen streuen, hängt ganz an der Stellung des Knopfes, also wird
-die Farbleiter **je Form einmal aus den Daten gemessen** — alle Kreise in allen
-Zählungen, ein halbes bis neunundneunzigeinhalb Prozent: auf der Landkarte von
-×0,19 bis ×17, bei halber Verzerrung von ×0,33 bis ×2,5. Eine feste Leiter für
-alle drei läge in zweien davon in einem einzigen Gelb. Zwischen zwei Formen
-wird logarithmisch übergeblendet, und die Zahlen an den Enden der Leiter wandern
-mit.
+Jetzt steht im Höhenfeld die logarithmische Dichte auf der gemessenen Leiter,
+und daraus kommt alles: die Farbe als eines von sechzehn gleich breiten Bändern,
+die Schattierung aus dem Gefälle, die Höhenlinien auf den Bandgrenzen. Ein
+Achtel Luft über und unter der Leiter sorgt dafür, dass die Zahlen zusammen­
+passen: **jede Höhenlinie ist eine Farbgrenze, und jede Farbgrenze trägt ihre
+Linie.** So macht es ein Schulatlas.
+
+Wie weit die Höhen streuen, hängt an der Stellung des Knopfes, also wird die
+Leiter **je Form einmal aus den Daten gemessen** — alle Kreise in allen
+Zählungen, fünf bis fünfundneunzig Prozent, **gewichtet mit der Fläche**: auf
+der Landkarte von ×0,26 bis ×2,9, bei halber Verzerrung von ×0,44 bis ×2,3.
+Flächengewichtet, weil Fläche gefärbt wird und nicht Kreise — ungewichtet
+setzten die hundertsieben winzigen kreisfreien Städte das obere Quantil, und die
+halbe Palette blieb ungenutzt. Zwischen zwei Formen wird logarithmisch
+übergeblendet, und die Zahlen an den Enden der Leiter wandern mit.
 
 Im vollen Kartogramm gibt es keine Spanne mehr: dort hat jeder Kreis dieselbe
 Dichte, weil die ganze Bevölkerung in der Fläche steckt. Eine Leiter, die über
