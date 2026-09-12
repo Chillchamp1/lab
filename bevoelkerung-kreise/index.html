@@ -1848,6 +1848,16 @@ function beschrifte(deck, w) {
        Abstossung). Bei 0,08 gegen 0,3 blieb ein Fünftel stehen — genug, dass
        aus zwei Namen ein Wort wurde. Bei 0,05 gegen 0,45 ist es ein Zehntel. */
     for (const s of liste) { s.x += (s.mx - s.x) * 0.05; s.y += (s.my - s.y) * 0.05; }
+    /* Und keiner darf aus der Leinwand laufen. Mönchengladbach liegt so weit
+       im Westen, dass sein Name auf dem Telefon zwanzig Bildpunkte links neben
+       der Karte begann — das M war weg. Das Klemmen steht **innerhalb** der
+       Runden, nicht danach: so weicht der Nachbar in der nächsten Runde aus,
+       statt dass zwei Namen am Rand übereinanderstehen. */
+    for (const s of liste) {
+      const halb = s.br / 2 + 2, rand = s.hoch * 0.7;
+      s.x = Math.max(halb, Math.min(breite - halb, s.x));
+      s.y = Math.max(rand, Math.min(hoehe - rand, s.y));
+    }
   }
 
   for (const s of liste) {
@@ -1986,12 +1996,17 @@ function legende() {
    Frankfurt, das halbe Ruhrgebiet —, und die müssten sich das letzte Fünftel
    der Farben teilen. Über ×2,5 liegt nur noch ein halbes Prozent.
 
-   Die letzte Marke ist zugleich die Antwort auf „was ist oben?": ×2,5 ist das
-   Ende der Farbrampe, aber kein Deckel. Ab ×2,222 biegt das Knie die Leiter
-   weich um, ×2,5 sitzt deshalb bei 96 statt bei 100 Prozent, und der Rest der
-   Rampe trägt alles darüber — der höchste Kreis überhaupt ist München 2024 mit
-   ×3,16. Abgeschnitten wird nichts. */
-const MARKEN = [0, 0.5, 1, 1.5, 2, 2.5];
+   Die letzte Marke ist die ×3, und sie steht am Ende der Rampe (99 Prozent).
+   Dass auf die ×2 keine ×2,5 folgt, sondern gleich die ×3, hat einen Grund:
+   ab ×2,222 biegt das Knie die Leiter weich um, und das letzte Fünftel der
+   Rampe trägt deshalb eine ganze statt einer halben Stufe. Die Marken stehen
+   damit alle rund zwanzig Prozent auseinander, und die Zahlen sagen, dass der
+   letzte Schritt der doppelte ist.
+
+   Ein Deckel ist die ×3 nicht. Die Rampe endet rechnerisch im Unendlichen;
+   der höchste Kreis überhaupt ist München 2024 mit ×3,16, und abgeschnitten
+   wird nichts. */
+const MARKEN = [0, 0.5, 1, 1.5, 2, 3];
 function stufen() {
   const [, bis] = hoehenSkala(), hi = Math.exp(bis), e = document.getElementById('legStufen');
   const zeig = x => (x >= 10 ? x.toFixed(0) : x >= 1 ? x.toFixed(1) : x.toFixed(1));
