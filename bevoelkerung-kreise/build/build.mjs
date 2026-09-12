@@ -2471,7 +2471,7 @@ function stufen() {
    dass die Zahlen an der Leiter ein Verhältnis sind und wozu — und danach
    braucht keine Gleichung mehr erklärt zu werden:
 
-       people per area relative to Germany’s average in 2024
+       People per area relative to Germany’s average in 2024
 
    Bezahlt ist das mit einer Ungenauigkeit, und sie sei hier benannt: „per area"
    lässt offen, welche Fläche gemeint ist, und gemeint ist die **gezeichnete**.
@@ -2484,7 +2484,7 @@ function stufen() {
    ungefähr. */
 function legText() {
   document.getElementById('legText').textContent =
-    'people per area relative to Germany\u2019s average in 2024';
+    'People per area relative to Germany\u2019s average in 2024';
 }
 
 /* ---------- Tippen ---------- */
