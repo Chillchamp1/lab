@@ -1142,15 +1142,21 @@ auf k/(N−1) und mischt dazwischen, die Bänder der Karte liegen aber auf k/N u
 mischen nicht — das Ufer lag im Verlauf drei Prozent links von seiner Zahl. Die
 Leiter zeigt jetzt dieselben fünfundzwanzig Bänder wie die Karte.
 
-Darunter steht ein einziger Satz: **„people per patch of map · ×1 = Germany in
-2024"** — was gemessen wird, und wo die Eins liegt. Was dort früher noch stand
+Darunter steht ein einziger Satz: **„people per patch of map · Germany 2024
+sits at ×1"** — was gemessen wird, und wo das Land auf der Leiter steht. Was dort früher noch stand
 — der Meeresspiegel, der Stichtag — steht jetzt woanders besser: die Zahlen auf
 der Leiter selbst, der Stichtag im Tippen, wo ohnehin Zahl, Rate und Methode des
 Kreises stehen.
 
 „per patch of map" ist dabei die ganze Ehrlichkeit in vier Wörtern: gefärbt wird
 nicht je Quadratkilometer, sondern je Stück **gezeichneter** Karte, und die ist
-verzerrt. Zwei Fassungen davor stand dort „× the average population density of
+verzerrt. Und das Verb ist kein Schmuck: „×1 = Germany in 2024" stand eine
+Fassung lang da und las sich wie eine Gleichung zwischen einer Zahl und einem
+Land. Gemeint ist ein **Ort auf der Leiter**, und „sits at" sagt das. Das Wort
+selbst auf die Marke zu setzen wurde geprüft und verworfen: „Germany 2024"
+braucht 86 Bildpunkte, die Marken stehen bei 360 Bildpunkten Fensterbreite aber
+nur 52 auseinander — es hätte die ×0,5 überschrieben, und das ist die
+Uferkante. Zwei Fassungen davor stand dort „× the average population density of
 Germany 2024" und versprach damit wirkliche Dichte (siehe unten); eine Fassung
 davor „volume = people · ×1 = the German average of 2024" — ehrlich, aber nicht
 lesbar: zwei Gleichungen nebeneinander, und keine sagt, wovon das Mittel das
