@@ -121,6 +121,12 @@ canvas{position:absolute;left:0;top:0;width:100%;height:100%;touch-action:manipu
    linken Drittel, und wo darin ×1 liegt, war nicht zu erraten. Jetzt stehen
    die Zahlen **auf der Leiter**, jede an ihrer Stelle. */
 .legende{font-size:11.5px;color:var(--ink2);font-variant-numeric:tabular-nums}
+/* Zwei Wörter über der Leiter, an ihre Enden gesetzt. Die Farben sagen die
+   Richtung schon — aber erst diese beiden Wörter sagen, wovon die Richtung
+   handelt, und zwar bevor man die Zahlen darunter liest. Blasser als die
+   Zahlen, denn sie sind Beschriftung und keine Daten. */
+.pole{display:flex;justify-content:space-between;color:var(--muted);
+  margin-bottom:3px;line-height:1.2}
 .rampe{height:9px;border-radius:5px;border:1px solid var(--ring)}
 .stufen{position:relative;height:1.2em;margin-top:3px}
 .stufen span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
@@ -160,7 +166,7 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
     <div class="tip" id="tip"></div>
   </div>
   <div class="fuss">
-    <div class="legende"><div class="rampe" id="rampe"></div><div class="stufen" id="legStufen"></div></div>
+    <div class="legende"><div class="pole"><span>less crowded</span><span>more crowded</span></div><div class="rampe" id="rampe"></div><div class="stufen" id="legStufen"></div></div>
     <p class="klein" id="legText"></p>
   </div>
   <div class="regler">
@@ -2089,9 +2095,15 @@ function stufen() {
    an der Leiter ein Verhältnis sind und wozu — und danach braucht keine
    Gleichung mehr erklärt zu werden:
 
-       How crowded, compared with Germany in 2024
+       less crowded  [ Leiter ]  more crowded
+       Compared with Germany in 2024
 
-   „How crowded" statt „people per area", und das ist nicht nur kürzer. „People
+   Der Satz steht seit den beiden Wörtern über der Leiter auf zwei Zeilen
+   verteilt, und jede tut eine Sache: oben, **was** gemessen wird, unten,
+   **wogegen**. „How crowded, compared with Germany in 2024" stand eine Fassung
+   lang ganz unten und sagte „crowded" dann dreimal im selben Block.
+
+   „Crowded" statt „people per area", und das ist nicht nur kürzer. „People
    per area" klingt nach einer Zahl, die man ausrechnen kann — und genau diese
    Rechnung ist die falsche: ×2,4 mal 234 wären 561 Einwohner je km², Berlin hat
    4 136. Ein qualitatives Wort lädt nicht dazu ein. Es ist also gleichzeitig
@@ -2106,7 +2118,7 @@ function stufen() {
    wert als eine genauere, die keiner versteht. */
 function legText() {
   document.getElementById('legText').textContent =
-    'How crowded, compared with Germany in 2024';
+    'Compared with Germany in 2024';
 }
 
 /* ---------- Tippen ---------- */

@@ -106,8 +106,9 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Loch über der Legende. Die Zweispaltigkeit im
   Querformat ist damit hinfällig und wieder draussen.
 - Die **Legende** ist die Leiter mit sechs Zahlen darauf (0, ×0,5, ×1, ×1,5,
-  ×2, ×3) und darunter ein Satz, was die Höhe misst: „How crowded, compared with
-  Germany in 2024". Ein angetippter Kreis bekommt dazu seinen Umriss. Umbruch
+  ×2, ×3), darüber „less crowded" und „more crowded" an ihren Enden und darunter
+  „Compared with Germany in 2024". Ein angetippter Kreis bekommt dazu seinen
+  Umriss. Umbruch
   unterbunden, sonst schöbe er die Karte.
 - Die Uhr läuft 84 Sekunden für 153 Jahre. Die Spielzeit je Abschnitt mischt
   Dauer und Umschichtung (geometrisches Mittel) und liegt nie unter
@@ -397,8 +398,10 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   wo man zuerst hinsieht: München ×3,16 auf der Karte gegen ×20,7 wirklich
   (4 844 E/km²), Berlin ×2,36 gegen ×17,7, die Prignitz ×0,25 gegen ×0,15. Der
   Verzerrungsfaktor läuft von 0,57 bis 7,5, im Median 0,99 — für einen
-  gewöhnlichen Landkreis stimmte der Satz, für Städte nicht. Jetzt steht dort
-  **„How crowded, compared with Germany in 2024"**. Zwei Wörter tragen das:
+  gewöhnlichen Landkreis stimmte der Satz, für Städte nicht. Jetzt trägt die Leiter
+  **„less crowded" und „more crowded" an ihren Enden** und darunter
+  **„Compared with Germany in 2024"** — oben, was gemessen wird und in welche
+  Richtung, unten, wogegen. Zwei Wörter tragen das:
   „compared with" sagt, dass die Zahlen an der Leiter ein Verhältnis sind und
   wozu; „how crowded" statt „people per area" ist nicht nur kürzer, sondern
   robuster — „people per area" klingt nach einer Zahl, die man ausrechnen kann,
