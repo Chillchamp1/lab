@@ -490,6 +490,17 @@ body{background:var(--plane);color:var(--ink);
 /* Die Karte füllt die Bühne. */
 .feld{position:relative;z-index:1;flex:1 1 auto;min-height:0}
 canvas{position:absolute;left:0;top:0;width:100%;height:100%;touch-action:manipulation}
+/* Die zweite Leinwand trägt nur den Umriss des angetippten Kreises. Sie liegt
+   über der Karte und lässt die Zeiger durch — sonst bekäme sie die Tipper, die
+   der Karte gelten.
+
+   Und sie ist weggeschaltet, solange sie leer ist: eine zweite Ebene derselben
+   Grösse kann den Setzer in jedem Bild eine Überblendung kosten, auch wenn
+   nichts darauf steht. Nachgemessen ist der Unterschied hier allerdings keiner
+   — 9,0 gegen 9,1 Bilder in der Sekunde, weich gerendert, und dieselbe Zahl
+   misst auch die Fassung ohne die zweite Leinwand. Es bleibt trotzdem so: was
+   nichts zeigt, soll auch nicht da sein. */
+#umriss{pointer-events:none;display:none}
 
 .fuss{flex:0 0 auto;min-width:0;padding:6px 0 0}
 /* Eine Zeile, und zwar auch dann, wenn sie noch leer ist: sonst ist die Leiste
@@ -547,6 +558,7 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
 <div class="buehne" id="buehne">
   <div class="feld">
     <canvas id="karte"></canvas>
+    <canvas id="umriss"></canvas>
     <div class="tip" id="tip"></div>
   </div>
   <div class="fuss">
@@ -1022,6 +1034,7 @@ function setzeZeit(p) {
   jahr = JAHRE[a] + (JAHRE[a + 1] - JAHRE[a]) * u;
 }
 const cv = document.getElementById('karte'), ctx = cv.getContext('2d');
+const uv = document.getElementById('umriss'), uctx = uv.getContext('2d');
 let breite = 0, hoehe = 0, mass = 1, verX = 0, verY = 0;
 
 function masse() {
@@ -1035,6 +1048,8 @@ function masse() {
   const bw = Math.round(breite * dpr), bh = Math.round(hoehe * dpr);
   if (cv.width !== bw || cv.height !== bh) { cv.width = bw; cv.height = bh; }
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (uv.width !== bw || uv.height !== bh) { uv.width = bw; uv.height = bh; }
+  uctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const V = reihe.rahmen;
   mass = Math.min(breite / V.w, hoehe / V.h) * 0.99;
   verX = (breite - V.w * mass) / 2 - V.x * mass;
@@ -1049,6 +1064,9 @@ function masse() {
      Zeile tut nichts. */
   const rest = Math.max(0, hoehe - V.h * mass);
   verY = rest * 0.875 - V.y * mass;
+  // Der Umriss hängt an mass/verX/verY und wird sonst nie ungültig — der Boden
+  // steht still. Eine Grössenänderung ist der einzige Fall.
+  zeigeUmriss(letzterTip);
 }
 
 function bildBei(t) {
@@ -2467,27 +2485,74 @@ function stufen() {
    Fachbegriff, den zu vermeiden die ganze Übung war. Und zwei erklärende Sätze
    waren zwar verständlich, brauchten aber zwei Zeilen.
 
-   Das Wort, das gefehlt hat, ist **„relative to"**. Es sagt in zwei Silben,
-   dass die Zahlen an der Leiter ein Verhältnis sind und wozu — und danach
-   braucht keine Gleichung mehr erklärt zu werden:
+   Das Wort, das gefehlt hat, ist **„compared with"**. Es sagt, dass die Zahlen
+   an der Leiter ein Verhältnis sind und wozu — und danach braucht keine
+   Gleichung mehr erklärt zu werden:
 
-       People per area relative to Germany’s average in 2024
+       How crowded, compared with Germany in 2024
 
-   Bezahlt ist das mit einer Ungenauigkeit, und sie sei hier benannt: „per area"
-   lässt offen, welche Fläche gemeint ist, und gemeint ist die **gezeichnete**.
-   Für das Land als Ganzes stimmt der Satz genau — die Leiter ist ja darauf
-   geeicht. Für einen einzelnen Kreis untertreibt er, weil das Kartogramm die
-   Städte schon breiter gezogen hat: Berlin steht auf ×2,4 und ist wirklich
-   ×17,7. Wer das genau wissen will, tippt den Kreis an; im Zettel stehen beide
-   Zahlen nebeneinander. Eine Legende, die gelesen wird, ist mehr wert als eine
-   genauere, die keiner versteht — und falsch ist der Satz nicht, nur
-   ungefähr. */
+   „How crowded" statt „people per area", und das ist nicht nur kürzer. „People
+   per area" klingt nach einer Zahl, die man ausrechnen kann — und genau diese
+   Rechnung ist die falsche: ×2,4 mal 234 wären 561 Einwohner je km², Berlin hat
+   4 136. Ein qualitatives Wort lädt nicht dazu ein. Es ist also gleichzeitig
+   verständlicher und an der einen wunden Stelle robuster.
+
+   Die Ungenauigkeit bleibt und sei hier benannt: gemeint ist die Dichte auf der
+   **gezeichneten** Fläche. Für das Land als Ganzes stimmt der Satz genau — die
+   Leiter ist ja darauf geeicht. Für einen einzelnen Kreis untertreibt er, weil
+   das Kartogramm die Städte schon breiter gezogen hat. Wer es genau wissen
+   will, tippt den Kreis an: der Zettel nennt beide Zahlen, und der Umriss zeigt
+   dazu, wovon überhaupt die Rede ist. Eine Legende, die gelesen wird, ist mehr
+   wert als eine genauere, die keiner versteht. */
 function legText() {
   document.getElementById('legText').textContent =
-    'People per area relative to Germany\u2019s average in 2024';
+    'How crowded, compared with Germany in 2024';
 }
 
 /* ---------- Tippen ---------- */
+/* ---------- Der Umriss des angetippten Kreises ----------
+   „Eine Geländekarte hat keine Grenzen; sie hat Gelände" — das steht weiter
+   oben und bleibt richtig. Dies hier ist keine Grenze, sondern eine **Marke**,
+   dieselbe Sorte wie der rote Punkt auf einer Stadt: sie steht nicht im Bild,
+   sondern in der Antwort auf eine Frage, und verschwindet mit ihr.
+
+   Die Frage ist: **wovon ist hier eigentlich die Rede?** Das Weichzeichnen
+   verschmilzt Nachbarn zu einem Buckel, und der grösste ist selten der, dessen
+   Namen er trägt. Der „Nürnberg"-Buckel sind acht Kreise mit 1,37 Millionen
+   Menschen; die Stadt Nürnberg macht davon 38,6 Prozent aus. Wer die Zahl im
+   Zettel liest, soll sehen, auf welches Stück Land sie sich bezieht.
+
+   Gezeichnet wird auf einer **zweiten Leinwand** über der Karte, und das aus
+   zwei Gründen. Erstens ist das Zeichnen der Karte teuer — drei Weichzeichner,
+   mehrere Durchläufe über das ganze Feld, Höhenlinien —, und ein Neuzeichnen
+   bei jeder Mausbewegung wäre unbrauchbar. Zweitens steht der Boden still: seit der
+   festen Form ändern sich px/py über die Zeit nicht mehr. Ein einmal
+   gezeichneter Umriss bleibt damit hundertfünfzig Jahre lang richtig und muss
+   nur bei einer Grössenänderung neu.
+
+   Dunkel und breit unter hell und schmal, dasselbe Muster wie bei der
+   Führungslinie einer Beschriftung: so liest die Linie über Tiefblau, Grün, Rot
+   und Schnee gleich gut. */
+function zeigeUmriss(g) {
+  if (!(breite > 0 && hoehe > 0)) return;
+  uctx.clearRect(0, 0, breite, hoehe);
+  if (!(g >= 0) || !GEBIETE[g]) { uv.style.display = 'none'; return; }
+  uv.style.display = 'block';
+  const pfad = new Path2D();
+  for (const r of GEBIETE[g]) {
+    pfad.moveTo(px[r[0]] * mass + verX, py[r[0]] * mass + verY);
+    for (let i = 1; i < r.length; i++) pfad.lineTo(px[r[i]] * mass + verX, py[r[i]] * mass + verY);
+    pfad.closePath();
+  }
+  uctx.lineJoin = 'round';
+  uctx.globalAlpha = 0.85;
+  uctx.strokeStyle = STRICH; uctx.lineWidth = Math.max(2.2, breite / 330);
+  uctx.stroke(pfad);
+  uctx.globalAlpha = 1;
+  uctx.strokeStyle = INK; uctx.lineWidth = Math.max(0.9, breite / 820);
+  uctx.stroke(pfad);
+}
+
 function imGebiet(g, x, y) {
   let drin = false;
   for (const r of GEBIETE[g]) {
@@ -2505,8 +2570,16 @@ function zeigeTip(x, y) {
   const { w, deck, rate } = werteBei(a, b, u);
   let treffer = -1;
   for (let g = 0; g < NK; g++) if (deck[g] > 0.001 && imGebiet(g, x, y)) { treffer = g; break; }
-  if (treffer < 0) { tip.style.opacity = 0; letzterTip = -1; return; }
-  letzterTip = treffer;
+  /* letzterTip war bis hierher eine tote Variable: dreimal geschrieben, nie
+     gelesen. Jetzt ist sie der Zustand — und der Umriss wird nur dann neu
+     gezogen, wenn sich der getroffene Kreis wirklich geändert hat. Beim Fahren
+     über die Karte sind das ein paar Male in der Sekunde statt sechzig. */
+  if (treffer < 0) {
+    tip.style.opacity = 0;
+    if (letzterTip !== -1) { letzterTip = -1; zeigeUmriss(-1); }
+    return;
+  }
+  if (treffer !== letzterTip) { letzterTip = treffer; zeigeUmriss(treffer); }
   const k = D.k[treffer], v = w[treffer];
   const abschnitt = rateIm(a, treffer);
   const f = D.B[u < 0.5 ? a : b];
@@ -2551,7 +2624,10 @@ cv.addEventListener('pointermove', e => {
   const r = cv.getBoundingClientRect();
   zeigeTip(e.clientX - r.left, e.clientY - r.top);
 });
-cv.addEventListener('pointerleave', () => { tip.style.opacity = 0; });
+cv.addEventListener('pointerleave', () => {
+  tip.style.opacity = 0;
+  if (letzterTip !== -1) { letzterTip = -1; zeigeUmriss(-1); }
+});
 
 /* ---------- Ablauf ---------- */
 // Millisekunden für die ganze Zeitachse. Langsam genug, dass jede Notiz zu

@@ -106,9 +106,9 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Loch über der Legende. Die Zweispaltigkeit im
   Querformat ist damit hinfällig und wieder draussen.
 - Die **Legende** ist die Leiter mit sechs Zahlen darauf (0, ×0,5, ×1, ×1,5,
-  ×2, ×3) und darunter ein Satz, was die Höhe misst: „people per area relative
-  to Germany's average in 2024". Umbruch unterbunden, sonst schöbe
-  er die Karte.
+  ×2, ×3) und darunter ein Satz, was die Höhe misst: „How crowded, compared with
+  Germany in 2024". Ein angetippter Kreis bekommt dazu seinen Umriss. Umbruch
+  unterbunden, sonst schöbe er die Karte.
 - Die Uhr läuft 84 Sekunden für 153 Jahre. Die Spielzeit je Abschnitt mischt
   Dauer und Umschichtung (geometrisches Mittel) und liegt nie unter
   5,4 Sekunden, also bekommt 1939→1946 acht Sekunden statt vier und
@@ -371,6 +371,25 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   hundertsieben winzigen kreisfreien Städte das obere Quantil, und die halbe
   Palette blieb leer; jetzt sind 2024 dreiundzwanzig der fünfundzwanzig Bänder
   belegt.
+- **Ein angetippter Kreis bekommt seinen Umriss.** Die Buckel sind keine Städte:
+  der, den man „Nürnberg" nennt, sind gemessen für 2024 **acht Kreise mit 1,37
+  Mio Menschen**, und die Stadt macht davon **38,6 %** aus (Nürnberger Land
+  12,3 %, Erlangen-Höchstadt 10,1 %, Fürth Stadt und Land 18,2 %, Roth 9,4 %,
+  Erlangen 8,5 %, Schwabach 3,0 %). Wer den Buckel als die Stadt liest,
+  überschätzt sie um das Zweieinhalbfache; im Ruhrgebiet sind es zehn Kreise mit
+  3,31 Mio, München ist mit 80,9 % der gutmütige Fall. Also zeigt die Karte beim
+  Antippen, wovon die Rede ist. Das ist **keine Grenze, sondern eine Marke** —
+  dieselbe Begründung wie beim roten Städtepunkt: sie steht nicht im Bild,
+  sondern in der Antwort auf eine Frage, und verschwindet mit ihr. Gezeichnet
+  wird auf einer **zweiten, durchsichtigen Leinwand**, aus zwei Gründen: das
+  Zeichnen der Karte ist teuer (drei Weichzeichner, Höhenlinien, mehrere
+  Durchläufe über das Feld), und der Boden steht still — ein einmal gezogener
+  Umriss bleibt über alle hundertfünfzig Jahre richtig und muss nur bei einer
+  Grössenänderung neu. Nachgemessen: beim Antippen wird die Karte **null Mal**
+  neu gezeichnet, derselbe Punkt zweimal angetippt zieht den Umriss nicht neu,
+  ein Sprung auf 1871 lässt ihn unverändert stehen, und das Verlassen der Karte
+  räumt ihn weg. Die Zustandsvariable dafür war bis dahin tot — dreimal
+  geschrieben, nie gelesen.
 - **Die Legende behauptete eine Dichte, die die Höhe nicht ist.** Da stand
   „× the average population density of Germany 2024", und das verspricht
   wirkliche Dichte. Gefärbt wird aber Bevölkerung je **gezeichneter** Fläche
@@ -379,13 +398,14 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   (4 844 E/km²), Berlin ×2,36 gegen ×17,7, die Prignitz ×0,25 gegen ×0,15. Der
   Verzerrungsfaktor läuft von 0,57 bis 7,5, im Median 0,99 — für einen
   gewöhnlichen Landkreis stimmte der Satz, für Städte nicht. Jetzt steht dort
-  **„People per area relative to Germany's average in 2024"**. Das Wort, das
-  vier Fassungen lang gefehlt hat, ist „relative to": es sagt in zwei Silben,
-  dass die Zahlen an der Leiter ein Verhältnis sind und wozu. Bezahlt mit einer
-  benannten Ungenauigkeit — „per area" lässt offen, welche Fläche gemeint ist,
-  und gemeint ist die gezeichnete; für das Land als Ganzes stimmt der Satz
-  genau, für einen einzelnen Kreis untertreibt er (Berlin ×2,4 gegen wirklich
-  ×17,7). Eine Legende, die gelesen wird, ist mehr wert als eine genauere, die
+  **„How crowded, compared with Germany in 2024"**. Zwei Wörter tragen das:
+  „compared with" sagt, dass die Zahlen an der Leiter ein Verhältnis sind und
+  wozu; „how crowded" statt „people per area" ist nicht nur kürzer, sondern
+  robuster — „people per area" klingt nach einer Zahl, die man ausrechnen kann,
+  und genau die Rechnung ist falsch (×2,4 mal 234 wären 561 E/km², Berlin hat
+  4 136). Bezahlt mit einer benannten Ungenauigkeit: gemeint ist die Dichte auf
+  der gezeichneten Fläche; für das Land als Ganzes stimmt der Satz genau, für
+  einen einzelnen Kreis untertreibt er. Eine Legende, die gelesen wird, ist mehr wert als eine genauere, die
   keiner versteht. (Dazwischen lag eine Fassung „volume = people · ×1 = the
   German average of 2024" — ehrlich, aber nicht lesbar: zwei Gleichungen
   nebeneinander, und keine sagt, wovon das Mittel das Mittel ist. dann zwei
