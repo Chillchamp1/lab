@@ -90,17 +90,21 @@ ihren Begriff und ihren wirklichen Stichtag mit. Ausführlich in
 
 ## Verfahren
 
-Wie stark verzerrt wird, ist ein Knopf. **Cartogram** steckt die ganze
-Bevölkerung in die Fläche — Berlin nimmt 4,4 Prozent der Karte, und Deutschland
-sieht nicht mehr wie Deutschland aus. **Real map** steckt sie ganz in die Höhe:
-die Form stimmt, Berlin behält seine 0,25 Prozent Boden und steht dafür
-siebzehnmal so hoch wie der Durchschnitt. **Half and half** ist der Tausch
-dazwischen: die Form bleibt erkennbar, Berlin fällt auf 1,8 Prozent der Fläche,
-und die fehlenden 2,5 stecken in der Höhe. Fläche mal Höhe ist in jeder Stellung
-die Bevölkerung — die Höhe wird dafür an der wirklich gezeichneten Fläche
-gemessen, nicht geschätzt. Die Zwischenform kostet kein Byte: die Landkarte
-steht ohnehin in der Datei, jeder Knoten liegt einfach zwischen seinen beiden
-Orten.
+Die Karte steht auf **halber Verzerrung**, und das ist ein Tausch. Ein volles
+Kartogramm steckte die ganze Bevölkerung in die Fläche — Berlin nähme 4,4
+Prozent der Karte, und Deutschland sähe nicht mehr wie Deutschland aus. Eine
+reine Landkarte steckte sie ganz in die Höhe: die Form stimmte, Berlin behielte
+seine 0,25 Prozent Boden und stünde dafür siebzehnmal so hoch wie der
+Durchschnitt. Halb und halb bleibt die Form erkennbar, Berlin fällt auf 1,8
+Prozent der Fläche, und die fehlenden 2,5 stecken in der Höhe: 1,75 × 2,5 = 4,4
+= 0,25 × 17,8.
+
+**Fläche mal Höhe ist die Bevölkerung**, bei jedem Wert dazwischen — die Höhe
+wird dafür an der wirklich gezeichneten Fläche gemessen, nicht geschätzt. Die
+Zwischenform kostet kein Byte: die Landkarte steht ohnehin in der Datei, jeder
+Knoten liegt einfach zwischen seinen beiden Orten. Die beiden Enden waren eine
+Fassung lang als Knöpfe erreichbar; die Maschinerie dafür steht noch im
+Skript.
 
 Die Karte trägt **keine Grenzen** — bis auf einen feinen Umriss um jede
 kreisfreie Stadt. Für einen Landkreis wäre er überflüssig, er wird kaum
@@ -150,12 +154,11 @@ eine Farbgrenze, und jede Farbgrenze trägt ihre Linie.** So macht es ein
 Schulatlas. Oben endet die Leiter in Weiss: die beiden hellsten Bänder, Fels und
 Schnee, liegen über dem gemessenen Quantil und gehören der Spitze allein.
 
-Wie weit die Höhen streuen, hängt an der Stellung des Knopfes, also wird die
-Leiter **je Form einmal aus den Daten gemessen** — alle Kreise in allen
-Zählungen, fünf bis fünfundneunzig Prozent, **gewichtet mit der Fläche**; die
-drei zusammen ergeben eine Leiter für alle, ×0,18 bis ×2,38 — und darüber
-läuft sie als weiches Knie weiter, bis ×2,68 am Ende der Farbrampe, ohne je zu
-kappen.
+Wo die Leiter anfängt und aufhört, wird **aus den Daten gemessen** — alle Kreise
+in allen Zählungen, fünf bis fünfundneunzig Prozent, **gewichtet mit der
+Fläche**, und zwar an genau der Form, die gezeichnet wird: ×0,28 bis ×2,39. Und
+darüber läuft sie als weiches Knie weiter, bis ×2,68 am Ende der Farbrampe, ohne
+je zu kappen.
 
 Die Leiter teilt dabei **linear** auf, nicht logarithmisch, und das ist eine
 inhaltliche Entscheidung: Weichzeichnen erhält das Integral, also ist das
@@ -183,13 +186,13 @@ Flächengewichtet, weil Fläche gefärbt wird und nicht Kreise — ungewichtet
 setzten die hundertsieben winzigen kreisfreien Städte das obere Quantil, und die
 halbe Palette blieb ungenutzt.
 
-Im vollen Kartogramm gibt es keine Spanne mehr: dort hat jeder Kreis dieselbe
+Im vollen Kartogramm gäbe es keine Spanne mehr: dort hat jeder Kreis dieselbe
 Dichte, weil die ganze Bevölkerung in der Fläche steckt. Eine Leiter, die über
-die verbliebenen anderthalb Prozent gespannt wird, machte aus Rundungsresten
-ein Gebirge — also bekommt sie eine Mindestbreite, und das Relief wird im
-selben Verhältnis ausgeblendet. Der Weg vom Relief zum Kartogramm zeigt damit
-genau das, worum es geht: **die Berge sinken in die Fläche, weil die Menschen
-von der Höhe in die Breite wandern.**
+die verbliebenen anderthalb Prozent gespannt würde, machte aus Rundungsresten
+ein Gebirge — also bekommt sie eine Mindestbreite, und das Relief wird im selben
+Verhältnis ausgeblendet. Bei halber Verzerrung greift das nicht (die Binnenspanne
+steht bei 1,76 gegen 0,96 Mindestbreite, das Relief also voll); der Mechanismus
+bleibt, weil er an den Formen hängt und nicht an der Seite.
 
 Diffusionskartogramm nach Gastner und Newman (2004), wie bei den
 [Wahlkreisen](../wahlkreise-2025/): die Dichte wird als Wärme aufgefasst und

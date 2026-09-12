@@ -77,8 +77,8 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Farbe umgezogen (siehe unten), weil es zweimal gezeigt nur die Aufmerksamkeit
   für alles andere kostete.
 - `index.html`: eine einzelne Datei, Englisch, **eine einzige Ansicht** — die
-  Geländekarte auf schwarzem Grund. Zeitschieberegler mit Marken auf den
-  Zählungen, drei Formknöpfe, sonst nichts; Antippen zeigt Zahlen, Rate,
+  Geländekarte auf schwarzem Grund bei halber Verzerrung. Zeitschieberegler mit
+  Marken auf den Zählungen, sonst nichts; Antippen zeigt Zahlen, Rate,
   Stichtag und Methode. Die früheren Ansichten (Wachstum, Einwohner, Nadelrelief)
   und die Notizenliste unter der Karte sind entfallen, ebenso der Umschalter
   zwischen hellem und dunklem Grund: 818 kB → 612 kB.
@@ -106,18 +106,16 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   2019→2024 viereinhalb statt eineinhalb. Zwischen den Zählungen wird mit einer monotonen
   kubischen Kurve gerechnet, nicht geradlinig: kein Knick, kein Überschiessen.
   Grösster Geschwindigkeitssprung von 125 auf 19 Prozent.
-- **Drei Kartogramm-Typen zum Umschalten**, an einem Regler zwischen Landkarte
-  und Kartogramm: Real map (a = 0), Half and half (a = 0,5), Cartogram (a = 1).
-  Jeder Knoten liegt bei `Landkarte + a · (Kartogramm − Landkarte)`; die
-  Landkarte steht ohnehin als Anfang der Differenzkette in der Nutzlast, also
-  kostet das kein Byte und keine zweite Zeitreihe. Berlin: 4,41 % der Fläche
-  bei a = 1, 1,75 % bei a = 0,5, 0,25 % bei a = 0.
-- **Volumen bleibt Bevölkerung, in jeder Stellung.** Was der Fläche fehlt, holt
-  die Höhe: Höhe = Bevölkerung / *gezeichnete* Fläche, an den Umrissen gemessen
-  statt aus einer Formel. Berlin steht dadurch 1,0 / 2,5 / 17,8 mal so hoch wie
-  der Durchschnitt — 1,75 × 2,5 = 4,4 = 0,25 × 17,8. Gezeichnet gestaucht
-  (`0,34 + 0,66 · (h/hmax)^0,45`), weil die Spanne auf der Landkarte 134 : 1
-  beträgt; die Zahl steht beim Antippen.
+- **Eine Form, die halbe Verzerrung** (a = 0,5). Jeder Knoten liegt bei
+  `Landkarte + a · (Kartogramm − Landkarte)`; die Landkarte steht ohnehin als
+  Anfang der Differenzkette in der Nutzlast, also kostet die Zwischenform kein
+  Byte und keine zweite Zeitreihe. Berlin nimmt damit 1,75 % der Fläche — gegen
+  4,41 % im vollen Kartogramm und 0,25 % auf der Landkarte.
+- **Volumen bleibt Bevölkerung.** Was der Fläche fehlt, holt die Höhe: Höhe =
+  Bevölkerung / *gezeichnete* Fläche, an den Umrissen gemessen statt aus einer
+  Formel. Berlin steht dadurch 2,5 mal so hoch wie der Durchschnitt —
+  1,75 × 2,5 = 4,4 = 0,25 × 17,8, der Tausch geht exakt auf. Die Zahl steht beim
+  Antippen.
 - Nachgezählt, dass die Zwischenformen nichts umstülpen: **0 gefaltete Ringe von
   4650** bei a = 0,25, 0,5 und 0,75 über alle zehn Bilder.
 - Das **Relief** ist ein Höhenfeld, und die Form tragen **beleuchtete
@@ -166,7 +164,7 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   gesättigte — tiefes Waldgrün, Grasgrün, Gelbgrün, Gelb, Ocker, Orange, Rot,
   oben Fels und Schnee —, und gefärbt wird die Höhe, also dieselbe Zahl,
   die das Relief trägt. Die Höhenlinien laufen damit genau auf den Farbgrenzen,
-  wie in einem Atlas. Die Seite steht auf Half and half.
+  wie in einem Atlas.
 - **Keine Grenzen mehr**, in keiner der drei Sorten: die gezeichnete Linie um
   Kreis und Land, die Fuge im Höhenfeld (`breite/420`), die als Graben dasselbe
   zeigte, und die Naht zwischen zwei einzeln gefüllten Nachbarflächen, die die
@@ -214,6 +212,15 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   `min-width:0`, einer reservierten Zeilenhöhe und einem **ResizeObserver** auf
   dem Kartenfeld, der neu misst, wenn sich das Auslegen ändert — wer immer es
   ändert.
+- **Nur noch eine Form: halbe Verzerrung.** Real map und Cartogram sind als
+  Knöpfe weg, die Karte zeigt den Schritt dazwischen und nur ihn. Der Platz der
+  Knopfleiste geht an die Karte. Was dranhängt: die Leiter wurde bisher über
+  **alle drei** Formen gemessen, damit ×1 in jeder Knopfstellung dasselbe heisst
+  — und die Landkarte streut am weitesten, setzte also das obere Ende für alle.
+  Jetzt misst sie genau die gezeichnete Form. Die Maschinerie bleibt: `FORMEN`
+  ist eine Liste, alles, was zwischen ihren Einträgen überblendet, rechnet
+  weiterhin allgemein, und die Nutzlast enthält ohnehin beide Enden — wer die
+  zwei zurückholen will, trägt sie dort wieder ein.
 - **Berlin ist der höchste Berg, und jetzt sieht man es auch.** Es ist 2024 der
   zweitdichteste Kreis (×2,51; nur München steht mit ×2,58 darüber), dichter als
   jede einzelne Ruhrstadt — auf der Karte sah es umgekehrt aus. Drei Ursachen,
@@ -266,12 +273,13 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Ruhrgebiet wieder in die Städte, aus denen es besteht. Zeitkonstante des engen
   Feldes dafür von 0,30 s auf 0,55 s; gemessen ist die Bewegung danach ruhiger
   als vorher (0,77 statt 0,81 Promille Änderung je Bild).
-- **Eine Leiter für alle drei Formen**, bis ×2,38 und als Knie weiter bis ×2,68 (linear ab null) — sonst hiesse ×1 je nach
-  Knopfstellung etwas anderes. Möglich geworden, weil das Wachstum jetzt in
-  jeder Form steckt, auch im Kartogramm: dessen Fläche ist fest, seine
-  Bevölkerung wächst, also steigt seine Dichte von ×0,35 auf ×1,00. Das
-  Kartogramm ist damit nicht mehr die tote Fläche, die es war — es liegt in
-  jedem Jahr einfarbig da, aber die Farbe wandert mit den Jahren.
+- **Die Leiter misst die Form, die gezeichnet wird**, bis ×2,39 und als Knie
+  weiter bis ×2,68 (linear ab null). Solange drei Formen umschaltbar waren,
+  musste sie alle drei umschliessen, sonst hiesse ×1 je nach Knopfstellung etwas
+  anderes — und dann setzte die Landkarte mit ihrer weitesten Streuung das obere
+  Ende für alle. Mit einer Form misst sie genau das Gezeichnete: q0,95 liegt bei
+  ×2,04 statt ×2,29, was die Schneegrenze ausgleicht (1,17 statt 1,04). Am Ende
+  steht die Leiter fast dort, wo sie vorher stand, aber aus dem richtigen Grund.
 - **Das Relief hängt jetzt an der Binnenspanne**, also der Streuung innerhalb
   *eines* Bildes, nicht mehr an der Gesamtspanne über alle. Im Kartogramm sind
   die beiden grundverschieden: innerhalb eines Jahres keine Streuung, über die
@@ -281,15 +289,15 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   ein Befund aussah und keiner war).
 - **Die Leiter wird je Form aus den Daten gemessen**, einmal, über alle Kreise in
   allen Zählungen, **flächengewichtet**: q0,05 bis q0,95. Landkarte
-  ×0,18 … ×2,38, Half and half ×0,28 … ×2,12, Kartogramm ×0,35 … ×1,04. Flächengewichtet,
+  Half and half ×0,28 … ×2,39 (nicht gezeichnet: Landkarte ×0,18 … ×2,68,
+  Kartogramm ×0,35 … ×1,17). Flächengewichtet,
   weil Fläche gefärbt wird und nicht Kreise — ungewichtet setzten die
   hundertsieben winzigen kreisfreien Städte das obere Quantil, und die halbe
   Palette blieb leer; jetzt sind 2024 achtzehn der zwanzig Bänder belegt.
 - **Die kreisfreien Städte tragen doch einen Umriss**, einen feinen dunklen über
   dem Relief. Ein Landkreis braucht keinen, er wird kaum verzerrt; eine
   kreisfreie Stadt ist auf dem Boden winzig und in der Karte gross, und ihr Berg
-  reicht weit über sie hinaus. Im vollen Kartogramm sind diese Umrisse das
-  Einzige, was auf der einfarbigen Fläche noch zu sehen ist.
+  reicht weit über sie hinaus.
 - **Im vollen Kartogramm ist keine Höhe mehr übrig**, und das soll man sehen.
   Eine Leiter über die verbliebenen anderthalb Prozent machte aus Rundungsresten
   ein Gebirge — und das weichgezeichnete Feld tat dasselbe, weil ein gross
@@ -299,9 +307,9 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   aus derselben gemessenen Spanne: die Leiter bekommt eine Mindestbreite (Faktor
   2,6, danach um ein halbes Band verschoben, sonst kippen die Rundungsreste über
   die Bandgrenze und sprenkeln die Fläche), und das Relief wird im selben
-  Verhältnis ausgeblendet. Der Weg von der
-  Landkarte zum Kartogramm zeigt damit genau das, worum es geht — die Berge
-  sinken in die Fläche.
+  Verhältnis ausgeblendet. Bei halber Verzerrung greift keine von beiden
+  (Binnenspanne 1,76 gegen 0,96 Mindestbreite, Relief also voll); der
+  Mechanismus bleibt, weil er an den Formen hängt und nicht an der Seite.
 - Die **Städtenamen** stehen nicht mehr auf dem Gipfel: jeder rückt um die
   Hälfte des Radius nach unten, den ein Kreis seiner Fläche hätte. „Berlin"
   und „Hamburg" deckten sonst genau den Berg zu, den sie benennen.
