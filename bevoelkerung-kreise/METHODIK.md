@@ -1142,10 +1142,20 @@ auf k/(N−1) und mischt dazwischen, die Bänder der Karte liegen aber auf k/N u
 mischen nicht — das Ufer lag im Verlauf drei Prozent links von seiner Zahl. Die
 Leiter zeigt jetzt dieselben fünfundzwanzig Bänder wie die Karte.
 
-Darunter steht ein einziger Satz: **„× the average population density of Germany
-2024"**. Was dort früher noch stand — der Meeresspiegel, der Stichtag — steht
-jetzt woanders besser: die Zahlen auf der Leiter selbst, der Stichtag im
-Tippen, wo ohnehin Zahl, Rate und Methode des Kreises stehen.
+Darunter steht ein einziger Satz: **„people per patch of map · ×1 = Germany in
+2024"** — was gemessen wird, und wo die Eins liegt. Was dort früher noch stand
+— der Meeresspiegel, der Stichtag — steht jetzt woanders besser: die Zahlen auf
+der Leiter selbst, der Stichtag im Tippen, wo ohnehin Zahl, Rate und Methode des
+Kreises stehen.
+
+„per patch of map" ist dabei die ganze Ehrlichkeit in vier Wörtern: gefärbt wird
+nicht je Quadratkilometer, sondern je Stück **gezeichneter** Karte, und die ist
+verzerrt. Zwei Fassungen davor stand dort „× the average population density of
+Germany 2024" und versprach damit wirkliche Dichte (siehe unten); eine Fassung
+davor „volume = people · ×1 = the German average of 2024" — ehrlich, aber nicht
+lesbar: zwei Gleichungen nebeneinander, und keine sagt, wovon das Mittel das
+Mittel ist. Dass das Volumen die Bevölkerung ist, steht jetzt nicht mehr in der
+Legende: das ist ein Bauprinzip und kein Schlüssel zur Farbleiter.
 
 Unter Wasser wird weiter schattiert und weiter Höhenlinie gezogen. Das ist
 Absicht: es sind Tiefenlinien, wie sie ein Atlas auch zeichnet, und sie kommen
