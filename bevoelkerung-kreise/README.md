@@ -157,7 +157,7 @@ deshalb ein kleiner Farbfleck, während sein Berg weit darüber hinausreichte un
 die Linien sich darin drängten — die Karte sagte an derselben Stelle zweierlei.
 
 Jetzt steht im Höhenfeld die Dichte auf der gemessenen Leiter,
-und daraus kommt alles: die Farbe als eines von sechsundzwanzig gleich breiten
+und daraus kommt alles: die Farbe als eines von fünfundzwanzig gleich breiten
 Bändern, die Schattierung aus dem Gefälle, die Höhenlinien auf den Bandgrenzen.
 Bänder und Niveaus liegen auf denselben Stellen, also **ist jede Höhenlinie eine
 Farbgrenze, und jede Farbgrenze trägt ihre Linie.** So macht es ein Schulatlas.
@@ -178,23 +178,26 @@ nennt, wenn man es an der Dichte misst. „Ungefähr", weil gezeichnete Dichte
 gefärbt wird und der feste Boden leere Kreise schrumpft: die Kreise am Spiegel
 haben real zwischen 78 und 126 Einwohner je km², im Median 95. 1871 liegen neun
 Zehntel des Landes unter Wasser und die Karte ist eine Inselgruppe; um 1950
-steht die See mit 11,6 Prozent am tiefsten, weil nie so viel Deutschland in der
-Fläche wohnte wie nach der Vertreibung; seither steigt sie wieder auf 12,4
+steht die See mit 11,4 Prozent am tiefsten, weil nie so viel Deutschland in der
+Fläche wohnte wie nach der Vertreibung; seither steigt sie wieder auf 12,2
 Prozent (2024), fast nur im Nordosten.
 
-Wo die Leiter aufhört, wird **aus den Daten gemessen** — alle Kreise in allen
-Zählungen, fünf bis fünfundneunzig Prozent, **gewichtet mit der Fläche**, und
-zwar an genau der Form, die gezeichnet wird: ×2,305. Genommen wird ×2,311, weil
-die Küste dann auf ×0,50 fällt; ein Viertelprozent Unterschied. Darüber läuft
-die Leiter als weiches Knie weiter, bis ×2,60 am Ende der Farbrampe, ohne je zu
-kappen.
+Mit **25 Bändern und 5 blauen** geht die ganze Leiter in runden Zahlen auf: ein
+Band ist ×0,1, fünf Bänder sind die Küste bei ×0,5, und die Farbrampe endet bei
+**×2,5**. Wo sie aufhören sollte, ist trotzdem gemessen — alle Kreise in allen
+Zählungen, fünf bis fünfundneunzig Prozent, **gewichtet mit der Fläche**, an
+genau der Form, die gezeichnet wird: ×2,305. Dort beginnt jetzt das Knie
+(×2,222, vier Prozent daneben), das die Leiter weich umbiegt, statt zu kappen;
+die ×2,5 sitzt deshalb bei 96 Prozent der Rampe, und der Rest dahinter trägt
+alles darüber — der höchste Kreis überhaupt ist München 2024 mit ×3,16.
 
-**Die Zahlen stehen auf der Leiter**, nicht daneben: vier Marken bei 0, ×0,5,
-×1 und ×2,3, jede an ihrer wirklichen Stelle. Weil die Leiter linear teilt,
-sagt schon ihr Abstand etwas — bis zur heutigen mittleren Dichte ist es das
-erste Drittel, der ganze Rest liegt darüber. Die ×0,5 fällt auf die Uferkante.
-Darunter steht ein einziger Satz: „× the average population density of Germany
-2024".
+**Die Zahlen stehen auf der Leiter**, nicht daneben: sechs Marken bei 0, ×0,5,
+×1, ×1,5, ×2 und ×2,5, jede an ihrer wirklichen Stelle, also gleichmässig bei
+0, 20, 40, 60 und 80 Prozent. ×1 steht damit bei 40 Prozent und nicht in der
+Mitte — in der Mitte stünde sie nur bei einem Ende von ×2,0, und darüber liegen
+2024 noch sieben Prozent der Fläche, die sich dann das letzte Fünftel der Farben
+teilen müssten. Die ×0,5 fällt auf die Uferkante. Darunter steht ein einziger
+Satz: „× the average population density of Germany 2024".
 
 Die Leiter teilt dabei **linear** auf, nicht logarithmisch, und das ist eine
 inhaltliche Entscheidung: Weichzeichnen erhält das Integral, also ist das

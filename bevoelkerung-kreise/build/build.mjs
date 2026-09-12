@@ -54,17 +54,24 @@ const CACHE = process.env.CACHE ? '-' + process.env.CACHE : '';
 
        Ufer = WASSER / NBAND · (1 + RESERVE) · Leiterende
 
-   Zwei davon sind frei, die dritte folgt. Gewählt sind 26 Bänder und 5 blaue,
-   weil das Leiterende dann bei ×2,311 herauskommt und damit fast genau dort,
-   wo es das gemessene Quantil ohnehin hinlegt (×2,305). Die Küste bekommt ihre
-   Bedeutung also umsonst; oben ändert sich nichts.
+   Zwei davon sind frei, die dritte folgt. Gewählt sind **25 Bänder und 5
+   blaue**, und damit geht die ganze Leiter in runden Zahlen auf:
+
+       ein Band          = ×0,1
+       fünf Bänder       = ×0,5 = die Küste
+       die Rampe endet   = ×2,5
+       das Knie beginnt  = ×2,222 (gemessenes Quantil ×2,305, 4 % daneben)
+
+   Jede halbe Stufe fällt damit auf eine Bandgrenze, also auf eine Höhenlinie,
+   und die Marken der Legende stehen bei 0, 20, 40, 60 und 80 Prozent der
+   Leiter.
 
    Was das über die Zeit zeigt: 1871 liegen 90 % der Fläche unter Wasser, die
-   Karte ist eine Inselgruppe. 1900 sind es 56 %, 1939 35 %, um 1950 nur noch
-   11,6 % — nie wohnte in der Fläche so viel Deutschland wie nach der
-   Vertreibung. Seither steigt die See wieder: 9,1 % 1996, 11,3 % 2011, 12,4 %
+   Karte ist eine Inselgruppe. 1900 sind es 56 %, 1939 34 %, um 1950 nur noch
+   11,4 % — nie wohnte in der Fläche so viel Deutschland wie nach der
+   Vertreibung. Seither steigt die See wieder: 8,9 % 1996, 11,4 % 2011, 12,2 %
    2024, und sie steht fast ganz im Nordosten. */
-const NBAND = Number(process.env.NBAND ?? 26), WASSER = Number(process.env.WASSER ?? 5);
+const NBAND = Number(process.env.NBAND ?? 25), WASSER = Number(process.env.WASSER ?? 5);
 const UFER = Number(process.env.UFER ?? 0.50);   // Meeresspiegel, Vielfache von 2024
 const svg = t => t > 0.0031308 ? 1.055 * Math.pow(t, 1 / 2.4) - 0.055 : 12.92 * t;
 function oklab(L, a, b) {
@@ -503,6 +510,8 @@ canvas{position:absolute;left:0;top:0;width:100%;height:100%;touch-action:manipu
   height:4px;background:var(--axis)}
 .stufen .a{transform:none}
 .stufen .a::before{left:0}
+.stufen .z{transform:translateX(-100%)}
+.stufen .z::before{left:100%}
 
 /* Die Bedienung, so wenig wie möglich: ein Knopf und ein Regler. */
 .regler{display:flex;align-items:center;gap:9px;flex:0 0 auto;margin-top:6px}
@@ -785,7 +794,7 @@ for (const r of REIHEN) r.rahmen = rahmenFuer(r);
    Gesetzt ist sie auf schwarzen Grund; die Seite kennt kein zweites Klima
    mehr. Das spart nicht nur Code, es ist auch der Grund, warum das Tiefgrün
    so tief sein darf. */
-/* Sechsundzwanzig Bänder, beim Bauen aus ihrer Beschreibung gerechnet (siehe
+/* Fünfundzwanzig Bänder, beim Bauen aus ihrer Beschreibung gerechnet (siehe
    oben im Bauskript): je Band eine Helligkeit, ein Farbton und die grösste
    Buntheit, die sRGB an dieser Stelle noch hergibt.
 
@@ -916,10 +925,10 @@ function hoehenSkala() {
   const lo = Math.max(1e-3, q(0.05));
   let hi = Math.max(lo * 1.02, q(0.95) * KOPF);
   /* Und dann wird das obere Ende nicht genommen, sondern gesetzt — damit die
-     Küste auf UFER fällt. Der gemessene Wert bleibt trotzdem die Richtschnur:
-     26 Bänder und 5 blaue sind gerade so gewählt, dass beide Zahlen auf ein
-     Viertelprozent zusammenfallen (gemessen ×2,305, gesetzt ×2,311). Steht
-     UFER auf null, gilt wieder das Quantil. */
+     Küste auf UFER fällt. Der gemessene Wert bleibt die Richtschnur: 25 Bänder
+     und 5 blaue setzen das Knie auf ×2,222, vier Prozent unter das gemessene
+     Quantil ×2,305 — und dafür endet die Rampe auf der runden ×2,5. Steht UFER
+     auf null, gilt wieder das Quantil. */
   if (UFER > 0) hi = UFER * NBAND / (WASSER * (1 + RESERVE));
   reihe = merkR; punkteFuer = null;
   return (SPANNE = [Math.log(lo), Math.log(hi)]);
@@ -2341,8 +2350,8 @@ function legende() {
      liegen aber auf k/N und mischen nicht. Der Unterschied ist klein und
      ausgerechnet an der einen Stelle sichtbar, auf die es hier ankommt: das
      Ufer lag im Verlauf drei Prozent links von der Zahl, die darunter steht.
-     Jetzt zeigt die Leiter dieselben sechsundzwanzig Bänder wie die Karte,
-     und die Uferkante fällt genau auf die ×0,5. */
+     Jetzt zeigt die Leiter dieselben fünfundzwanzig Bänder wie die Karte, und
+     die Uferkante fällt genau auf die ×0,5. */
   const n = HYPSO.length, halt = [];
   for (let i = 0; i < n; i++)
     halt.push(HYPSO[i] + ' ' + (100 * i / n).toFixed(3) + '% ' + (100 * (i + 1) / n).toFixed(3) + '%');
@@ -2351,13 +2360,22 @@ function legende() {
   legText();
 }
 /* ---------- Die Zahlen auf der Leiter ----------
-   Vier Marken: null, der Meeresspiegel, die heutige mittlere Dichte und das
-   gemessene Quantil. Sie stehen dort, wo der Wert wirklich liegt, und weil die
-   Leiter linear teilt, sagt schon ihr Abstand etwas — zwischen ×0 und ×1 liegt
-   das erste Drittel der Leiter, darüber der ganze Rest. Die ×0,5 fällt auf die
-   Uferkante, die ×2,3 lässt Fels und Schnee hinter sich; was dahinter liegt,
-   trägt das Knie. */
-const MARKEN = [0, 0.5, 1, 2.3];
+   Sechs Marken, alle rund oder halb, jede an ihrer wirklichen Stelle. Weil die
+   Leiter linear teilt und bei ×2,5 endet, sitzen sie bei 0, 20, 40, 60 und 80
+   Prozent — gleichmässig, und ×1 damit bei 40 Prozent und nicht in der Mitte.
+
+   Das ist keine Schieflage, sondern die Ansage, wo die Leiter aufhört. In der
+   Mitte stünde ×1 nur bei einem Ende von ×2,0, und dort ist zu wenig Platz:
+   über ×2,0 liegen 2024 noch sieben Prozent der Fläche — Berlin, München,
+   Frankfurt, das halbe Ruhrgebiet —, und die müssten sich das letzte Fünftel
+   der Farben teilen. Über ×2,5 liegt nur noch ein halbes Prozent.
+
+   Die letzte Marke ist zugleich die Antwort auf „was ist oben?": ×2,5 ist das
+   Ende der Farbrampe, aber kein Deckel. Ab ×2,222 biegt das Knie die Leiter
+   weich um, ×2,5 sitzt deshalb bei 96 statt bei 100 Prozent, und der Rest der
+   Rampe trägt alles darüber — der höchste Kreis überhaupt ist München 2024 mit
+   ×3,16. Abgeschnitten wird nichts. */
+const MARKEN = [0, 0.5, 1, 1.5, 2, 2.5];
 function stufen() {
   const [, bis] = hoehenSkala(), hi = Math.exp(bis), e = document.getElementById('legStufen');
   const zeig = x => (x >= 10 ? x.toFixed(0) : x >= 1 ? x.toFixed(1) : x.toFixed(1));
@@ -2368,6 +2386,7 @@ function stufen() {
     // Feldwert, nicht Leiterwert: die Reserve über dem Quantil zählt mit.
     s.style.left = (100 * aufLeiter(m) / (1 + RESERVE)).toFixed(2) + '%';
     if (m === 0) s.className = 'a';
+    if (m === MARKEN[MARKEN.length - 1]) s.className = 'z';
     e.appendChild(s);
   }
 }

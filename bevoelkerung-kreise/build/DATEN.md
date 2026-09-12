@@ -61,13 +61,13 @@ kreisfreien Städte in Form. Wer die Seite neu baut, sollte das mitgeben, sonst
 wird sie unbemerkt gröber.
 
 Drei weitere, nur zum Ausprobieren der Farbleiter: `NBAND` (Zahl der Bänder,
-Voreinstellung 26), `WASSER` (wie viele davon blau sind, 5) und `UFER` (wo der
+Voreinstellung 25), `WASSER` (wie viele davon blau sind, 5) und `UFER` (wo der
 Meeresspiegel liegen soll, in Vielfachen der mittleren Dichte von 2024, 0,50).
 `UFER` setzt das obere Ende der Leiter so, dass die Küste genau dort fällt; auf
 null gestellt gilt wieder das gemessene Quantil. Die drei hängen zusammen —
-`Ufer = WASSER / NBAND · (1 + RESERVE) · Leiterende` —, und 26/5 sind gewählt,
-weil das gesetzte Leiterende dann auf ein Viertelprozent an das gemessene
-herankommt.
+`Ufer = WASSER / NBAND · (1 + RESERVE) · Leiterende` —, und 25/5 sind gewählt,
+weil dann alles rund aufgeht: ein Band ×0,1, die Küste bei ×0,5, das Ende der
+Rampe bei ×2,5, das Knie bei ×2,222 (gemessenes Quantil ×2,305).
 
 ## Was wo liegt
 
