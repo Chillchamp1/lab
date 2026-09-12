@@ -29,7 +29,38 @@ const CACHE = process.env.CACHE ? '-' + process.env.CACHE : '';
    hin heller. Darüber das Land, von Waldgrün über Grasgrün, Gelb und Ocker bis
    Rot, und ganz oben zwei feste Töne — ein fast entsättigtes Grau als Fels und
    reines Weiss als Schnee. */
-const NBAND = 24, WASSER = Number(process.env.WASSER ?? 4);
+/* ---------- Wo die Küste liegt ----------
+   Das Ufer war eine Zahl ohne Bedeutung: vier der vierundzwanzig Bänder waren
+   blau, das Leiterende lag bei ×2,31, und daraus fiel eine Küste bei ×0,43
+   heraus — kein Schwellenwert, den irgendwer kennt, sondern ein Nebenprodukt
+   zweier anderer Entscheidungen. Blau hiess „unten", weiter nichts.
+
+   Jetzt heisst es etwas. **Der Meeresspiegel liegt bei ×0,35, und das ist die
+   mittlere Dichte Deutschlands im Jahr 1871** — 29,3 Millionen auf den
+   357 677 km² von heute, also 82 Menschen je Quadratkilometer. Unter Wasser
+   steht damit genau das Land, in dem heute dünner gewohnt wird als im ganzen
+   Kaiserreich am Anfang dieses Films.
+
+   Der Wert ist exakt, nicht ungefähr: die Höhe ist auf die Dichte von 2024
+   bezogen, und das Mittel des ersten Bildes ist damit von sich aus ×0,35.
+
+   Damit die Küste genau dort liegt, hängen drei Zahlen zusammen — die Zahl der
+   Bänder, die Zahl der blauen darunter und das obere Ende der Leiter:
+
+       Ufer = WASSER / NBAND · (1 + RESERVE) · Leiterende
+
+   Zwei davon sind frei, die dritte folgt. Gewählt sind 22 Bänder und 3 blaue,
+   weil das Leiterende dann bei ×2,281 herauskommt und damit fast genau dort,
+   wo es das gemessene Quantil ohnehin hinlegt (×2,305). Die Küste bekommt ihre
+   Bedeutung also praktisch umsonst; oben ändert sich nichts.
+
+   Was das über die Zeit zeigt: 1871 liegt 53 % der Fläche unter Wasser, 1900
+   noch 25 %, 1939 7 %. Um 1950 ist die See fast verschwunden (0,1 %) — nie
+   wohnte in der Fläche so viel Deutschland wie nach der Vertreibung. Seither
+   steigt sie wieder: 1,2 % 1987, 3,6 % 2011, 4,3 % 2024, und sie steht fast
+   ganz im Nordosten. */
+const NBAND = Number(process.env.NBAND ?? 22), WASSER = Number(process.env.WASSER ?? 3);
+const UFER = Number(process.env.UFER ?? 0.35);   // Meeresspiegel, Vielfache von 2024
 const svg = t => t > 0.0031308 ? 1.055 * Math.pow(t, 1 / 2.4) - 0.055 : 12.92 * t;
 function oklab(L, a, b) {
   const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
@@ -454,6 +485,14 @@ canvas{position:absolute;left:0;top:0;width:100%;height:100%;touch-action:manipu
    Höhe gezeichnet, die es nicht mehr gibt. */
 .fuss .klein{margin:4px 0 0;font-size:11.5px;line-height:1.35;color:var(--ink2);
   min-height:1.35em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Auf dem Telefon passt die Zeile nicht mehr, und seit der Meeresspiegel darin
+   steht, ist das Abgeschnittene nicht mehr entbehrlich. Dort also zwei Zeilen
+   — feste zwei, damit die Leiste weiterhin genauso hoch ist wie beim ersten
+   Messen und die Karte nicht für eine Höhe gezeichnet wird, die es nicht mehr
+   gibt. */
+@media(max-width:540px){
+  .fuss .klein{white-space:normal;min-height:2.7em;max-height:2.7em}
+}
 .legende{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink2);
   font-variant-numeric:tabular-nums}
 .rampe{flex:1;height:9px;border-radius:5px;border:1px solid var(--ring)}
@@ -739,11 +778,11 @@ for (const r of REIHEN) r.rahmen = rahmenFuer(r);
    Gesetzt ist sie auf schwarzen Grund; die Seite kennt kein zweites Klima
    mehr. Das spart nicht nur Code, es ist auch der Grund, warum das Tiefgrün
    so tief sein darf. */
-/* Vierundzwanzig Bänder, beim Bauen aus ihrer Beschreibung gerechnet (siehe
+/* Zweiundzwanzig Bänder, beim Bauen aus ihrer Beschreibung gerechnet (siehe
    oben im Bauskript): je Band eine Helligkeit, ein Farbton und die grösste
    Buntheit, die sRGB an dieser Stelle noch hergibt.
 
-   Die untersten vier sind **Wasser**. Wo auf die Fläche am wenigsten Menschen
+   Die untersten drei sind **Wasser**. Wo auf die Fläche am wenigsten Menschen
    kommen, liegt jetzt ein See: tief dunkelblau, zum Ufer hin heller. Das ist
    nicht nur hübsch, es räumt zwei Dinge zugleich auf. Die Grenze zwischen
    Wasser und Land ist die schärfste, die eine Geländekarte kennt — man sieht
@@ -764,6 +803,7 @@ for (const r of REIHEN) r.rahmen = rahmenFuer(r);
    ins Weiss. */
 const HYPSO = ${JSON.stringify(HYPSO)};
 const WASSER = ${WASSER};
+const UFER = ${UFER};
 const stil = n => getComputedStyle(document.body).getPropertyValue(n).trim();
 let LEER = '#1a1a18', INK = '#fff', STRICH = '#0c0c0c';
 const SCHATTEN = 'rgba(0,0,0,.6)', KANTE3D = '#060605';
@@ -772,10 +812,10 @@ const HELLMAX = 0.55, DUNKELMAX = 0.55;
 function farbenHolen() {
   LEER = stil('--leer'); INK = stil('--ink'); STRICH = stil('--surface');
 }
-/* Zwanzig Bänder gleicher Breite, und sie liegen jetzt **auf dem Feldwert**
+/* Bänder gleicher Breite, und sie liegen jetzt **auf dem Feldwert**
    statt auf dem Leiterwert. Das klingt nach nichts und räumt zwei Dinge auf.
 
-   Die Grenzen fallen bei k/20 — das sind genau die zwanzig Niveaus der
+   Die Grenzen fallen bei k/NBAND — das sind genau die Niveaus der
    Höhenlinien. Jede Linie ist damit eine Farbgrenze und jede Farbgrenze trägt
    ihre Linie, ohne dass die Reserve ein bestimmter Bruch sein müsste. Vorher
    hing das an RESERVE = 1/8 und galt nur für jede zweite Linie.
@@ -786,8 +826,8 @@ function farbenHolen() {
    das obere Ende des Feldes — die beiden obersten Bänder, Fels und Schnee,
    gehören der Spitze allein.
 
-   Abgeschnitten, nicht gerundet: es sind zwanzig Bänder, nicht zwanzig
-   Stützstellen, und die Höhenlinien brauchen die Grenzen. */
+   Abgeschnitten, nicht gerundet: es sind Bänder, nicht Stützstellen, und die
+   Höhenlinien brauchen die Grenzen. */
 const NBAND = HYPSO.length;
 const bandIdx = v => Math.max(0, Math.min(NBAND - 1, Math.floor(v * NBAND)));
 const stufe = (r, u) => r[Math.max(0, Math.min(r.length - 1, Math.round(u * (r.length - 1))))];
@@ -866,7 +906,14 @@ function hoehenSkala() {
      das Weichzeichnen zieht die Verteilung ohnehin zur Mitte, die Leiter darf
      also enger stehen als die rohen Kreiswerte. */
   const q = gewichtet(alle);
-  const lo = Math.max(1e-3, q(0.05)), hi = Math.max(lo * 1.02, q(0.95) * KOPF);
+  const lo = Math.max(1e-3, q(0.05));
+  let hi = Math.max(lo * 1.02, q(0.95) * KOPF);
+  /* Und dann wird das obere Ende nicht genommen, sondern gesetzt — damit die
+     Küste auf UFER fällt. Der gemessene Wert bleibt trotzdem die Richtschnur:
+     22 Bänder und 3 blaue sind gerade so gewählt, dass beide Zahlen auf ein
+     Prozent zusammenfallen (gemessen ×2,305, gesetzt ×2,281). Steht UFER auf
+     null, gilt wieder das Quantil. */
+  if (UFER > 0) hi = UFER * NBAND / (WASSER * (1 + RESERVE));
   reihe = merkR; punkteFuer = null;
   return (SPANNE = [Math.log(lo), Math.log(hi)]);
 }
@@ -2301,8 +2348,13 @@ function legText() {
   document.getElementById('legRechts').textContent = '×' + zeig(Math.exp(bis)) + '+';
   // Eine Zeile: was die Zahlen an der Leiter sind, welche Form eingestellt ist,
   // und welcher Stichtag gilt. Der Rest steht in der Methodik, nicht hier.
+  /* Drei Angaben: was die Zahlen an der Leiter sind, was das Blau bedeutet,
+     und welcher Stichtag gilt. Der Meeresspiegel steht hier, weil er sonst
+     nirgends steht — er ist eine gewählte Schwelle und keine Eigenschaft der
+     Daten. */
   document.getElementById('legText').textContent =
-    'height: × the average density of Germany in 2024 · '
+    'height: × the average density of Germany in 2024 · sea level ×0.35, '
+    + 'Germany in 1871 · '
     + (zwischen ? 'between the counts of ' + D.B[a].jahr + ' and ' + D.B[b].jahr
                 : 'counted ' + D.B[u < 0.5 ? a : b].stichtage.join(', '));
 }
