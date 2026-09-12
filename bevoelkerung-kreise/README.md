@@ -143,28 +143,42 @@ deshalb ein kleiner Farbfleck, während sein Berg weit darüber hinausreichte un
 die Linien sich darin drängten — die Karte sagte an derselben Stelle zweierlei.
 
 Jetzt steht im Höhenfeld die Dichte auf der gemessenen Leiter,
-und daraus kommt alles: die Farbe als eines von sechzehn gleich breiten Bändern,
-die Schattierung aus dem Gefälle, die Höhenlinien auf den Bandgrenzen. Ein
-Achtel Luft über und unter der Leiter sorgt dafür, dass die Zahlen zusammen­
-passen: **jede Höhenlinie ist eine Farbgrenze, und jede Farbgrenze trägt ihre
-Linie.** So macht es ein Schulatlas.
+und daraus kommt alles: die Farbe als eines von zwanzig gleich breiten Bändern,
+die Schattierung aus dem Gefälle, die Höhenlinien auf den Bandgrenzen. Bänder
+und Niveaus liegen auf denselben zwanzig Stellen, also **ist jede Höhenlinie
+eine Farbgrenze, und jede Farbgrenze trägt ihre Linie.** So macht es ein
+Schulatlas. Oben endet die Leiter in Weiss: die beiden hellsten Bänder, Fels und
+Schnee, liegen über dem gemessenen Quantil und gehören der Spitze allein.
 
 Wie weit die Höhen streuen, hängt an der Stellung des Knopfes, also wird die
 Leiter **je Form einmal aus den Daten gemessen** — alle Kreise in allen
 Zählungen, fünf bis fünfundneunzig Prozent, **gewichtet mit der Fläche**; die
-drei zusammen ergeben eine Leiter für alle, ×0,18 bis ×2,48.
+drei zusammen ergeben eine Leiter für alle, ×0,18 bis ×2,38 — und darüber
+läuft sie als weiches Knie weiter, bis ×2,68 am Ende der Farbrampe, ohne je zu
+kappen.
 
 Die Leiter teilt dabei **linear** auf, nicht logarithmisch, und das ist eine
 inhaltliche Entscheidung: Weichzeichnen erhält das Integral, also ist das
 Volumen unter der Geländeoberfläche die Bevölkerung — über jeden Ausschnitt, den
 man herausgreift. Logarithmisch standen Berlin und das Ruhrgebiet gleich hoch,
-obwohl Berlin dichter ist; linear steht Berlin elf Prozent höher. Der Preis
-steht unten: die frühen Bilder verlieren an Zeichnung, dort trägt das Relief,
-was die Farbe nicht mehr trägt.
+obwohl Berlin dichter ist; linear steht Berlin höher. Der Preis steht unten:
+die frühen Bilder verlieren an Zeichnung, dort trägt das Relief, was die Farbe
+nicht mehr trägt.
+
+Weichzeichnen erhält das Integral allerdings nur über die **ganze** Karte, nicht
+über einen Ausschnitt: es trägt Volumen über die Kreisgrenze, und wen das trifft,
+entscheidet die Nachbarschaft. Berlin verliert an das leere Brandenburg und
+bekommt nichts zurück, Essen verliert an Bochum und bekommt von Bochum dasselbe
+wieder. Dagegen steht eine **Unscharfmaskierung** — die Differenz aus engem und
+weitem Feld wieder aufgeschlagen, gross bei einem einzelnen Gipfel, null über
+einem Plateau. Damit steht das Ruhrgebiet 2024 bei 1,44 mal Berlin, wo die
+Menschen 1,36 stehen; vorher waren es 1,76.
 
 Wo die Leiter oben endet, ist die **Schneegrenze**, und sie wandert mit den
-Jahren: 2024 liegt knapp ein Prozent der Fläche in der hellsten Stufe — Berlin,
-das Ruhrzentrum, München —, 1943 nichts. Die Gipfel entstehen erst.
+Jahren: 2024 liegt knapp ein Prozent der Fläche im weissen Band — Berlin,
+München, Frankfurt —, 1943 nichts. Die Gipfel entstehen erst. Geklemmt wird
+dort nichts: über dem Quantil geht die Leiter in ein weiches Knie über, sodass
+die Reihenfolge der Gipfel erhalten bleibt.
 Flächengewichtet, weil Fläche gefärbt wird und nicht Kreise — ungewichtet
 setzten die hundertsieben winzigen kreisfreien Städte das obere Quantil, und die
 halbe Palette blieb ungenutzt.

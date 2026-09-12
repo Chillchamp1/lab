@@ -55,6 +55,11 @@ KNOTEN=9000 GITTER=1600 node build.mjs > ../index.html
 Diffusionsgitters. Kleiner heisst schneller und ungenauer; für einen schnellen
 Blick reichen `KNOTEN=2500 GITTER=420`, das dauert keine zwei Minuten.
 
+**Die veröffentlichte Seite ist mit `KNOTEN=12000` gebaut**, nicht mit der
+Voreinstellung 9000 — sie wiegt dadurch rund 120 kB mehr und hält die kleinen
+kreisfreien Städte in Form. Wer die Seite neu baut, sollte das mitgeben, sonst
+wird sie unbemerkt gröber.
+
 ## Was wo liegt
 
 | Datei | Aufgabe |
