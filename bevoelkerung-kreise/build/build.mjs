@@ -609,17 +609,32 @@ function rahmenJetzt() {
    Gesetzt ist sie auf schwarzen Grund; die Seite kennt kein zweites Klima
    mehr. Das spart nicht nur Code, es ist auch der Grund, warum das Tiefgrün
    so tief sein darf. */
-/* Die Leiter einer Reliefkarte, und zwar die gesättigte: Tiefland in sattem
-   Grün, dann Gelbgrün, Gelb, Ocker, Orange, Rot — oben die helle Kappe. Die
-   erste Fassung war um eine ganze Stufe blasser, gedämpftes Oliv und Graubraun,
-   aus Sorge um das Relief, das darüber liegt. Die Sorge war unbegründet:
-   weiches Licht bleicht eine satte Farbe nicht aus, es hebt und senkt sie. Und
-   auf schwarzem Grund braucht eine Karte Farbe, sonst wird sie zu Schlamm.
+/* Zwanzig Bänder, und sie sind gerechnet statt gegriffen: je Band eine
+   Helligkeit und ein Farbton, und dazu die **grösste Buntheit, die der
+   Bildschirm an dieser Stelle noch hergibt**. Der Weg geht von tiefem Waldgrün
+   über Grasgrün, Gelbgrün, Gelb und Ocker zu Orange und Rot; darüber Fels und
+   Schnee.
 
-   Die Helligkeit steigt durchgehend vom ersten zum letzten Band — das trägt die
-   Höhe auch dann, wenn jemand die Farbtöne nicht trennen kann. */
-const HYPSO = ['#15633a','#177546','#18884c','#2e9b4e','#50af52','#7ac159','#a7d05e','#d1da60',
-               '#edd254','#f3b741','#f29c33','#eb802c','#de6228','#ca4628','#bf5f48','#e3b5a4'];
+   Zwei Fassungen zuvor war die Leiter um eine ganze Stufe blasser, aus Sorge um
+   das Relief, das darüber liegt. Die Sorge war unbegründet. Auf schwarzem Grund
+   braucht eine Karte Farbe, sonst wird sie zu Schlamm — im Mittel liegt die
+   Buntheit der achtzehn Datenbänder jetzt bei 0,17 gegen 0,15 der vorigen und
+   0,13 der ersten Fassung (OKLab).
+
+   Oben endet sie in **Weiss**, nicht in einem hellen Braun. Das ist der
+   Unterschied zwischen Schnee und altem Schnee, und auf einer Karte, deren
+   Gipfel die Frage sind, entscheidet er, ob man einen Gipfel als solchen
+   erkennt. Das vorletzte Band ist ein sehr helles, fast entsättigtes Grau: der
+   Übergang von Fels zu Schnee, und zugleich die Stelle, an der die Farbe die
+   Sättigung ablegt, damit das Weiss darüber als Weiss ankommt.
+
+   Die Helligkeit steigt vom ersten bis zum zwölften Band durchgehend und fällt
+   dann mit den Rot-Tönen wieder — das ist die Konvention eines Schulatlas und
+   nicht zu vermeiden, wenn Gelb der hellste Farbton sein soll; die beiden
+   obersten Bänder steigen wieder bis ins Weiss. */
+const HYPSO = ['#00621b','#006e1c','#007a1d','#00871d','#009418','#04a100','#26ad00','#42b800',
+               '#6ac300','#89ce00','#b3d400','#ddd900','#edcf00','#f3ba00','#f49d00','#ec7b00',
+               '#e15500','#d72b00','#f2ebe6','#ffffff'];
 const stil = n => getComputedStyle(document.body).getPropertyValue(n).trim();
 let LEER = '#1a1a18', INK = '#fff', STRICH = '#0c0c0c';
 const SCHATTEN = 'rgba(0,0,0,.6)', KANTE3D = '#060605';
@@ -628,11 +643,24 @@ const HELLMAX = 0.55, DUNKELMAX = 0.55;
 function farbenHolen() {
   LEER = stil('--leer'); INK = stil('--ink'); STRICH = stil('--surface');
 }
-/* Sechzehn Bänder gleicher Breite, Grenzen bei k/16. Nicht gerundet auf
-   sechzehn Stützstellen, sondern abgeschnitten auf sechzehn Bänder — das ist
-   der Unterschied zwischen „sechzehn Farben" und „fünfzehn Grenzen an
-   bekannten Stellen", und die Höhenlinien brauchen die Grenzen. */
-const bandIdx = u => Math.max(0, Math.min(15, Math.floor(u * 16)));
+/* Zwanzig Bänder gleicher Breite, und sie liegen jetzt **auf dem Feldwert**
+   statt auf dem Leiterwert. Das klingt nach nichts und räumt zwei Dinge auf.
+
+   Die Grenzen fallen bei k/20 — das sind genau die zwanzig Niveaus der
+   Höhenlinien. Jede Linie ist damit eine Farbgrenze und jede Farbgrenze trägt
+   ihre Linie, ohne dass die Reserve ein bestimmter Bruch sein müsste. Vorher
+   hing das an RESERVE = 1/8 und galt nur für jede zweite Linie.
+
+   Und die Reserve bekommt Farbe. Vorher endete die Leiter bei ihrem oberen
+   Quantil, und was darüber lag, hatte keinen eigenen Ton mehr: München, Berlin
+   und Oberhausen sassen im selben hellsten Band. Jetzt reicht die Farbe bis an
+   das obere Ende des Feldes — die beiden obersten Bänder, Fels und Schnee,
+   gehören der Spitze allein.
+
+   Abgeschnitten, nicht gerundet: es sind zwanzig Bänder, nicht zwanzig
+   Stützstellen, und die Höhenlinien brauchen die Grenzen. */
+const NBAND = HYPSO.length;
+const bandIdx = v => Math.max(0, Math.min(NBAND - 1, Math.floor(v * NBAND)));
 const stufe = (r, u) => r[Math.max(0, Math.min(r.length - 1, Math.round(u * (r.length - 1))))];
 
 /* ---------- Die Höhenskala ----------
@@ -828,11 +856,37 @@ let skalaVon = -1, skalaBis = 1, RELIEF_ANTEIL = 1;
    ist unten: die Hälfte der Fläche liegt in den untersten zwei, drei Bändern,
    und die frühen Bilder verlieren ihre Zeichnung fast ganz. */
 let LINEAR = true;
+/* ---------- Und oben: ein Knie statt eines Deckels ----------
+   Die Leiter endet bei einem gemessenen Quantil, und was darüber lag, wurde
+   abgeschnitten. Das war der eigentliche Grund, warum das Ruhrgebiet höher
+   aussah als Berlin.
+
+   Denn geklemmt wurden 2024 elf Kreise auf einmal — München (×2,58), Berlin
+   (×2,51), Oberhausen (×2,39), Essen — und sie bekamen dabei **alle denselben
+   Wert**.
+   Der Unterschied zwischen ihnen, also genau das, worum es geht, war weg,
+   bevor der erste Weichzeichner lief. Was danach noch entschied, war allein
+   die Breite der Fläche, und da gewinnt ein fünfzig Kilometer langes Band
+   dichter Städte gegen einen einzelnen Fleck. Berlins Gipfel lag im Feld bei
+   0,866, der des Ruhrgebiets bei 0,877: die falsche Reihenfolge, und sie kam
+   nicht aus den Zahlen, sondern aus dem Deckel.
+
+   Jetzt ein Knie: bis zum Quantil bleibt die Leiter genau linear — daran hängt
+   ja, dass das Volumen die Bevölkerung ist —, darüber läuft sie weich in die
+   Reserve und erreicht sie erst im Unendlichen. Nichts wird mehr geklemmt, die
+   Reihenfolge bleibt überall erhalten, und die Spitze behält ihren Vorsprung.
+   Auf der Landkarte, wo die Dichte bis zum Fünfzehnfachen geht, staucht das
+   Knie stark — aber es staucht, statt zu kappen. */
+const knie = u => u > 1 ? 1 + RESERVE * (1 - Math.exp((1 - u) / RESERVE))
+                : u < 0 ? -RESERVE * (1 - Math.exp(u / RESERVE))
+                : u;
 const aufLeiter = h => (h > 0)
-  ? Math.max(0, Math.min(1, LINEAR ? h / Math.exp(skalaBis)
-                                   : (Math.log(h) - skalaVon) / (skalaBis - skalaVon)))
+  ? knie(LINEAR ? h / Math.exp(skalaBis)
+                : (Math.log(h) - skalaVon) / (skalaBis - skalaVon))
   : 0;
 const mitteAufLeiter = () => aufLeiter(MITTELHOCH);
+// Dasselbe im Feld; dort liegen Farbe und Höhenlinien.
+const mitteImFeld = () => zuFeld(aufLeiter(MITTELHOCH));
 
 /* ---------- Zustand ---------- */
 // Die Uhr läuft über die Spielzeit, nicht über die Jahre. Wie viel Spielzeit
@@ -1005,19 +1059,28 @@ let MITTELHOCH = 1;
    kommen Farbe, Schattierung und Höhenlinien gemeinsam — dieselbe Zahl,
    dieselbe Glättung, dieselbe Geometrie.
 
-   RESERVE ist Luft über und unter der Farbleiter: die Spanne ist bei einem
-   halben Prozent gekappt (q0,005 / q0,995), und ohne Luft bekäme Berlin einen
-   abgeschnittenen Gipfel — ein flaches Plateau ohne Modellierung. Ein Achtel
-   der Spanne nach jeder Seite reicht.
+   RESERVE ist Luft über der Farbleiter, und sie hat jetzt zwei Aufgaben statt
+   einer. Die alte: der Gipfel soll Platz haben. Die neue: sie **bekommt Farbe**
+   — die obersten Bänder, Fels und Schnee, liegen genau dort. Zusammen mit dem
+   Knie in aufLeiter heisst das, dass über dem gemessenen Quantil weder die
+   Höhe noch die Farbe abreisst.
 
-   Der Wert ist mit Bedacht ein Achtel. Damit liegen die fünfzehn Farbgrenzen
-   (bei k/16 der Leiter) im Feld auf (k+2)/20, und bei vierzig Niveaus ist das
-   jedes zweite: **jede zweite Höhenlinie ist eine Farbgrenze.** Das ist die
-   Konstruktion eines Schulatlas. */
+   An eine bestimmte Zahl ist der Wert nicht mehr gebunden. Er war es einmal:
+   solange die Farbbänder auf dem Leiterwert lagen, fiel eine Farbgrenze nur
+   dann auf eine Höhenlinie, wenn die Reserve genau ein Achtel betrug. Seit die
+   Bänder auf dem Feldwert liegen, fallen sie immer zusammen. */
 const RESERVE = 0.125;
-// Leiterwert (0 = unteres Ende der Farbskala, 1 = oberes) → Feldwert und zurück.
-const zuFeld = u => Math.max(0, Math.min(1, (u + RESERVE) / (1 + 2 * RESERVE)));
-const ausFeld = v => v * (1 + 2 * RESERVE) - RESERVE;
+/* Leiterwert (0 = unteres Ende der Farbskala, 1 = oberes) → Feldwert.
+
+   Unten braucht die lineare Leiter keine Luft: sie fängt bei null an, und unter
+   null wohnt niemand — mit Reserve blieben dort die beiden untersten Bänder
+   leer. Die logarithmische fängt bei einem gemessenen Quantil an und braucht
+   sie. */
+const unten = () => LINEAR ? 0 : RESERVE;
+const zuFeld = u => {
+  const v = (u + unten()) / (1 + unten() + RESERVE);
+  return v < 0 ? 0 : v > 1 ? 1 : v;
+};
 /* ---------- Bezogen worauf? ----------
    Die Höhe ist ein Verhältnis, und die Frage ist, wozu.
 
@@ -1064,71 +1127,66 @@ function hoehen(w, deck) {
     HOCH[g] = (deck[g] > 0.5 && GEZEICHNET[g] > 0 && w[g] > 0) ? (w[g] / GEZEICHNET[g]) / mittel : 0;
 }
 
-/* ---------- Wie weit geglättet und wie weit gespreizt ----------
-   Drei Zahlen, die zusammen entscheiden, wie gross die hellste Stufe wird — und
-   das ist die Frage, an der sich das Ruhrgebiet und Berlin messen.
+/* ---------- Wie weit geglättet, und wie stark nachgeschärft ----------
+   Drei Zahlen, und an ihnen hängt die Frage, an der sich das Ruhrgebiet und
+   Berlin messen.
 
-   Berlin ist 2024 der dichteste Kreis der Karte (×2,51 bei halber Verzerrung),
-   dichter als jede einzelne Ruhrstadt (Oberhausen ×2,39, Essen ×2,35). Auf der
-   Karte sah es umgekehrt aus: das Ruhrgebiet trug eine grosse, fast weisse
-   Kappe, Berlin einen kleinen roten Fleck. Zwei Gründe, und beide sind
-   Darstellung, nicht Befund.
+   2024 sind die dichtesten Kreise bei halber Verzerrung München ×2,58, Berlin
+   ×2,51, Frankfurt ×2,41, Oberhausen ×2,39 — Berlin ist also dichter als jede
+   einzelne Ruhrstadt. Auf der Karte sah es lange umgekehrt aus: das Ruhrgebiet
+   trug die grosse helle Kappe, Berlin einen Fleck. Drei Gründe, und alle drei
+   sind Darstellung, nicht Befund. Zwei davon sind anderswo behoben — der
+   Deckel der Leiter steht jetzt als Knie in aufLeiter, die Farbe reicht bis in
+   die Reserve hinauf. Der dritte steht hier.
 
-   **Die Leiter war oben zu.** Sie endete bei ×2,29, und alles darüber landete
-   im hellsten Band — Berlin, München, Essen, Oberhausen, ununterscheidbar.
-   Über zehn Prozent der Kartenfläche lagen 2024 in diesem einen Ton. Das
-   kommt vom absoluten Bezug: die Leiter ist über alle zehn Zählungen gemessen,
-   und 2024 ist die dichteste; sie klemmt dort oben an, wie 1871 unten. Also
-   das obere Quantil von 0,95 auf 0,97 — die hellsten Töne bleiben jetzt der
-   Spitze vorbehalten, die es in keinem Bild gibt.
+   **Weichzeichnen trägt Volumen über die Kreisgrenze.** Über die ganze Karte
+   bleibt das Integral erhalten, über einen Ausschnitt nicht — und wen es
+   trifft, entscheidet die Nachbarschaft. Berlin verliert an Brandenburg und
+   bekommt von dort nichts zurück; Essen verliert an Bochum und bekommt von
+   Bochum dasselbe wieder. Der Weichzeichner bevorzugt damit systematisch das
+   Plateau vor der Spitze.
 
-   **Und zu weit geglättet.** Das weite Feld bevorzugt Plateaus vor Spitzen: das
-   Ruhrgebiet ist ein fünfzig Kilometer breites Band dichter Städte, da mittelt
-   der Weichzeichner nur Hohes; Berlin ist ein Fleck in dünn besiedeltem
-   Brandenburg, da mittelt er die Spitze weg. Ein engerer weiter Radius (breite
-   durch 28 statt 22) und mehr Gewicht auf dem engen Feld (0,55 statt 0,40)
-   geben dem einzelnen Kreis seinen Wert zurück — und nebenbei zerfällt das
-   Ruhrgebiet wieder in die Städte, aus denen es besteht, statt als ein
-   einziger glatter Berg dazuliegen.
+   Dagegen steht ENGANTEIL über eins: eine Unscharfmaskierung, die genau die
+   Differenz aus engem und weitem Feld wieder aufschlägt. Sie ist gross, wo ein
+   Berg allein steht, null, wo ein Plateau liegt, und über die ganze Karte
+   mittelwertfrei. Gemessen für 2024 steht das Ruhrgebiet danach bei 1,44 mal
+   Berlin, wo die Menschen 1,36 stehen; vorher waren es 1,76.
+
+   Ihr Preis steht im Gipfel: eine Unscharfmaskierung überschiesst, und Berlins
+   höchster Punkt liest sich dadurch um knapp ein Zehntel über der Dichte
+   seines Kreises. Das ist der Tausch — der Gipfel ist eine Schätzung, das
+   Volumen ist die Bevölkerung.
 
    Was bleibt, bleibt zu Recht: die gleichfarbige Zone ist im Ruhrgebiet
-   grösser, weil dort auf grösserer Fläche ähnlich dicht gewohnt wird. Und
-   Berlin und Essen trennen fünf Prozent, ein Band ist siebzehn breit — sie
-   müssen dieselbe Farbe haben. */
-const FEINTEILER = 95, GROBTEILER = 28, ENGANTEIL = 0.55;
+   grösser, weil dort auf grösserer Fläche ähnlich dicht gewohnt wird. */
+let FEINTEILER = 95, GROBTEILER = 28, ENGANTEIL = 1.15;
 /* Wo die Leiter oben endet, im Verhältnis zum gemessenen Quantil — die
-   Schneegrenze. Sie ist gemessen, nicht geraten, und sie hängt daran, ob die
-   Leiter linear oder logarithmisch steht: linear ist die Verteilung oben dünner,
-   also darf die Leiter knapper enden.
+   Schneegrenze. Sie ist gemessen, nicht geraten.
 
-   Und sie ist ein Abwägen, denn sie schneidet oben ab: was über die Leiter
-   ragt, wird geklemmt, und geklemmt wird zuerst die Spitze — also genau das,
-   was Berlin vom Ruhrgebiet unterscheidet. Gemessen für 2024, Berlin gegen das
-   Ruhrgebiet:
+   Seit das Knie in aufLeiter nichts mehr kappt, entscheidet sie nicht mehr
+   darüber, ob ein Gipfel Zeichnung behält, sondern nur noch, **wie hoch der
+   Schnee anfängt**: schiebt man sie hoch, wird die weisse Kappe seltener und
+   der Vorsprung des höchsten Berges deutlicher. Gemessen für 2024:
 
-     Schneegrenze  Gipfelfläche   mittlere Höhe Berlin : Ruhr   Volumen
-       0,90           2,4 %              0,84 : 0,80  (+5 %)     1,82
-       1,00           0,9 %              0,83 : 0,75  (+11 %)    1,74
-       1,08           0,2 %              0,83 : 0,70  (+18 %)    1,63
+     Schneegrenze   Fels und Schnee   Gipfel Berlin : Ruhr   Volumen R:B
+        1,00            2,9 %            0,99 : 0,92           1,48
+        1,04            1,8 %            0,97 : 0,89           1,44
+        1,08            1,4 %            0,95 : 0,86           1,44
 
-   (Die Bevölkerung steht 1,35 : 1. Dass das Volumen darüber liegt, ist das
-   Weichzeichnen: Berlins Berg trägt einen Teil seines Volumens über die eigene
-   Kreisgrenze hinaus, das Ruhrgebiet als grosses Gebiet behält mehr im
-   Inneren.)
-
-   Eins ist der Kompromiss: knapp ein Prozent Gipfelfläche 2024, elf Prozent
-   Vorsprung für Berlin. Und die Schneegrenze wandert mit den Jahren — 1943
+   (Die Menschen stehen 1,36 : 1.) Gewählt ist 1,04: knapp ein Prozent der
+   Fläche im weissen Band, knapp zwei in den obersten beiden. Berlin steht dort
+   allein im Schnee, das Ruhrgebiet bleibt im Rot — und das ist die Reihenfolge,
+   die auch in den Zahlen steht. Die Schneegrenze wandert mit den Jahren: 1943
    liegt nichts darüber, die Gipfel entstehen erst. */
-let KOPF = 1.0;
+let KOPF = 1.04;
 const RAUF = 0.55;                // Auflösung des Höhenfelds, Anteil der Bildpunkte
 const hkA = document.createElement('canvas'), hcA = hkA.getContext('2d');
 const hkB = document.createElement('canvas'), hcB = hkB.getContext('2d', { willReadFrequently: true });
 const hkC = document.createElement('canvas'), hcC = hkC.getContext('2d', { willReadFrequently: true });
-const hkL = document.createElement('canvas'), hcL = hkL.getContext('2d');
 const hkF = document.createElement('canvas'), hcF = hkF.getContext('2d');
-let rW = 0, rH = 0, rBild = null, fBild = null;
+let rW = 0, rH = 0, fBild = null;
 let feinH = null, grobH = null, grobM = null, grobAuf = null, feldH = null,
-    farbF = null, maskeH = null, schatten = null;
+    farbF = null, maskeH = null, schatten = null, licht = null;
 // Die Farbleiter als drei Zahlenreihen — je Bildpunkt ein Nachschlagen statt
 // eines Zerlegens von '#rrggbb'.
 const HYPSO_R = HYPSO.map(h => parseInt(h.slice(1, 3), 16));
@@ -1163,13 +1221,13 @@ function reliefFeld() {
   const w = Math.max(8, Math.round(breite * RAUF)), h = Math.max(8, Math.round(hoehe * RAUF));
   if (w === rW && h === rH) return;
   rW = w; rH = h;
-  for (const k of [hkA, hkB, hkC, hkL, hkF]) { k.width = w; k.height = h; }
-  rBild = hcL.createImageData(w, h);
-  fBild = hcL.createImageData(w, h);
+  for (const k of [hkA, hkB, hkC, hkF]) { k.width = w; k.height = h; }
+  fBild = hcF.createImageData(w, h);
   feinH = new Float32Array(w * h); feldH = new Float32Array(w * h);
   grobH = new Float32Array(w * h); grobM = new Float32Array(w * h);
   grobAuf = new Float32Array(w * h); farbF = new Float32Array(w * h);
   maskeH = new Float32Array(w * h); schatten = new Float32Array(w * h);
+  licht = new Float32Array(w * h);
 }
 // Die Stellschrauben des Reliefs.
 // Zwei Sonnen, und das ist Absicht. Die Modellierung braucht ein Licht, das
@@ -1177,22 +1235,25 @@ function reliefFeld() {
 // braucht ein Licht, das flach genug steht, damit überhaupt einer entsteht —
 // ein Strahl, der steiler abfällt als der Hang selbst, trifft nie auf Schatten.
 // Kartenzeichner machen das seit jeher so.
-// Auf schwarzem Grund. Weiches Licht statt Ueberlagern: Ueberlagern rechnet um
-// das mittlere Grau herum und laesst dunkle Farben fast unberuehrt, und auf
-// dieser Karte ist fast alles dunkel. Weiches Licht hebt auch tiefe Toene noch,
-// darum darf die Staerke hoeher liegen.
-const STAERKE = 2.2, MISCHUNG = 'soft-light';
+/* Das Licht wird in die Farbe gerechnet, nicht mehr darübergelegt: der helle
+   Hang laeuft anteilig gegen Weiss, der dunkle gegen Schwarz. Zwei Zahlen
+   statt eines Mischmodus, und sie gelten fuer jede Farbe gleich — auch fuer
+   die weisse Kappe, an der weiches Licht abprallte.
+
+   Aufhellen wiegt weniger als Abdunkeln: eine Leiter, die oben in Weiss
+   endet, hat nach oben kaum noch Weg, nach unten aber viel. */
+let STAERKE = 1.6, AUFHELLEN = 0.55, ABDUNKELN = 0.70;
 let SONNE = 40;                 // Grad über der Fläche, Licht von oben links
 let WURFSONNE = 16;             // dasselbe Licht, flach, nur für den Schlagschatten
 let UEBERHOEHT = 30;            // volle Höhe in Bildpunkten des Höhenfelds
 let MULDE = 0.85;               // wie stark Mulden verschatten
-let WURF = 0.50;                // wie dunkel ein Schlagschatten ist
-/* Zwanzig Niveaus, und die Zahl ist nicht frei gewählt: mit einem Achtel
-   Reserve über und unter der Farbleiter liegen deren fünfzehn Grenzen im Feld
-   auf 2/20 bis 17/20 — also **ist jede Höhenlinie eine Farbgrenze** und jede
-   Farbgrenze trägt ihre Linie. Das ist die Konstruktion eines Schulatlas, und
-   es ist das, was eine Höhenlinie auf einer Geländekarte überhaupt tun soll:
-   den Farbwechsel begründen, statt quer durch ihn hindurchzulaufen. */
+let WURF = 0.32;                // wie dunkel ein Schlagschatten ist
+/* Zwanzig Niveaus, und es sind dieselben zwanzig wie die Farbbänder: beide
+   liegen bei k/20 des Feldwerts. **Jede Höhenlinie ist damit eine Farbgrenze**
+   und jede Farbgrenze trägt ihre Linie. Das ist die Konstruktion eines
+   Schulatlas, und es ist das, was eine Höhenlinie auf einer Geländekarte
+   überhaupt tun soll: den Farbwechsel begründen, statt quer durch ihn
+   hindurchzulaufen. Wer NIVEAUS ändert, muss die Palette mitändern. */
 let LINIE = 0.72, NIVEAUS = 20, FLACHHANG = 0.0012, DUNKELLINIE = 0.85;
 const LINIENSCHRITT = 2;          // Gitterschritt der Linienverfolgung, in Feldpunkten
 // So fein wird die Höhe abgestuft, ehe sie weichgezeichnet wird. Gezeichnet
@@ -1334,73 +1395,50 @@ function reliefUeber(sil, deck) {
   // Küste eine grüne Bordüre.
   feinH.set(glattFein); grobH.set(glattGrob); grobM.set(glattGrobM); maskeH.set(glattMaske);
 
-  /* Drei Felder aus denselben zwei Weichzeichnungen:
+  /* Ein Kern, zwei Ableitungen, und der Kern ist **geschärft**.
 
-     Das Farbfeld trägt **Farbe und Höhenlinien**. Es mischt eng und weit, 40 zu 60 —
-     das weite allein wäre für die Farbe zu grob, eine kreisfreie Stadt von
-     zwölf Bildpunkten verschwände darin ganz. Ohne Randabfall, denn die Küste
-     soll keine grüne Bordüre bekommen und dort werden ohnehin keine Linien
-     gezogen.
+     ENGANTEIL steht über eins, und das ist kein Tippfehler, sondern eine
+     Unscharfmaskierung: 1,15 mal das enge Feld minus 0,15 mal das weite. Der
+     Grund ist der zweite Teil der Ruhrgebietsfrage. Weichzeichnen erhält das
+     Integral über die ganze Karte, aber nicht über einen Ausschnitt — es trägt
+     Volumen über die Kreisgrenze hinaus. Wen das trifft, hängt an der
+     Nachbarschaft: Berlin, ein dichter Fleck in dünnem Brandenburg, verliert
+     nach aussen und bekommt nichts zurück; Essen verliert an Bochum und bekommt
+     von Bochum dasselbe wieder. Die Differenz aus engem und weitem Feld ist
+     genau dieses Mass — sie ist gross, wo ein Berg allein steht, und null, wo
+     ein Plateau liegt. Sie wieder aufzuschlagen gibt dem einzelnen Gipfel
+     zurück, was der Weichzeichner ihm genommen hat, und das Plateau lässt sie
+     in Ruhe. Über die ganze Karte ist sie mittelwertfrei, das Volumen bleibt
+     also die Bevölkerung.
 
-     Das Relieffeld trägt die **Schattierung** und ist dasselbe, nur mit dem Rand: der
-     Abfall zur Küste hin ist es, der ihr eine Kante gibt. Im Inneren, wo die
-     Maske 1 ist, sind beide gleich — also liegen Farbe, Linie und Licht
-     aufeinander.
+     Gemessen für 2024 steht das Ruhrgebiet danach bei 1,44 mal Berlin, wo die
+     Menschen 1,36 stehen — vorher 1,76. Mehr als 1,15 klemmt den Gipfel oben
+     wieder an, dann ist nichts gewonnen.
 
-     Das dritte ist das weite Feld mit seinem eigenen, breiteren Rand; aus ihm
+     Aus dem Kern kommen **Farbe und Höhenlinien** unmittelbar. Die
+     **Schattierung** ist derselbe Kern, nur mit dem Randabfall multipliziert:
+     der Abfall zur Küste hin ist es, der ihr eine Kante gibt, und im Inneren,
+     wo die Maske eins ist, sind beide gleich — also liegen Farbe, Linie und
+     Licht wirklich aufeinander. Vorher taten sie das nicht: die Schattierung
+     mischte eng und weit 40 zu 60, die Farbe 55 zu 45, und der Kommentar
+     behauptete trotzdem, es sei dasselbe Feld.
+
+     Daneben bleibt das weite Feld mit seinem eigenen, breiteren Rand; aus ihm
      kommt die Muldenverschattung, die ja gerade die weite Umgebung braucht. */
   for (let i = 0; i < n3; i++) {
     grobAuf[i] = grobH[i] * grobM[i];
-    farbF[i] = ENGANTEIL * feinH[i] + (1 - ENGANTEIL) * grobH[i];
-    feldH[i] = 0.40 * feinH[i] * maskeH[i] + 0.60 * grobAuf[i];
+    let k = ENGANTEIL * feinH[i] + (1 - ENGANTEIL) * grobH[i];
+    if (k < 0) k = 0; else if (k > 1) k = 1;
+    farbF[i] = k;
+    feldH[i] = k * (0.40 * maskeH[i] + 0.60 * grobM[i]);
   }
 
-  /* ---------- Die Farbe der Karte, aus demselben Feld ----------
-     Gefärbt wurde bisher Kreis für Kreis: jede Fläche bekam ihre eigene Dichte
-     als Ton, und heraus kam ein Mosaik. Die Höhenlinien dagegen kamen aus dem
-     weiten Feld, das über die Kreisgrenzen hinweg verläuft. Berlin war deshalb
-     ein kleiner Farbfleck in der Form seines Kreises, während sein Berg weit
-     darüber hinausreichte — Farbe und Relief widersprachen einander.
-
-     Jetzt kommt die Farbe aus dem weiten Feld selbst, also aus genau dem, das die
-     Linien trägt. Sechzehn Bänder, und weil ein Achtel Reserve über und unter
-     der Leiter liegt, fällt jede zweite Höhenlinie auf eine Farbgrenze.
-
-     Gezeichnet wird das Feld in seiner eigenen, gröberen Auflösung und beim
-     Hochrechnen bilinear geglättet: die Bandgrenze wird dadurch ein weicher
-     Übergang von ein, zwei Bildpunkten, und die Höhenlinie liegt in seiner
-     Mitte. Scharf gerastert sähe dieselbe Grenze treppig aus. */
-  /* Die Farbe läuft mit dem Relief gegen die Mitte. Im vollen Kartogramm hat
-     jeder Kreis dieselbe Dichte, es gibt also keine Höhe — und was das Feld
-     dort noch an Unterschieden zeigt, ist der Rest, den das Diffusionsverfahren
-     nicht ganz wegbekommen hat. Auf einer Leiter, deren Band einen Faktor 1,17
-     breit ist, wurden daraus sichtbare Farbbänder: 1943 lag ein Ost-West-
-     Verlauf über dem Kartogramm, der wie ein Befund aussah und keiner war.
-
-     Also derselbe Anteil wie beim Relief: bei voller Binnenspanne die Farbe des
-     Feldes, bei keiner die Farbe des Bildmittels, dazwischen anteilig. Die
-     Farben gleichen sich an, während die Berge sinken — beides sagt dasselbe. */
-  const fo = fBild.data, uM = mitteAufLeiter(), a = RELIEF_ANTEIL;
-  for (let i = 0; i < n3; i++) {
-    const k = bandIdx(uM + (ausFeld(farbF[i]) - uM) * a);
-    const j = i << 2;
-    fo[j] = HYPSO_R[k]; fo[j + 1] = HYPSO_G[k]; fo[j + 2] = HYPSO_B[k]; fo[j + 3] = 255;
-  }
-  hcF.setTransform(1, 0, 0, 1, 0, 0);
-  hcF.globalCompositeOperation = 'source-over';
-  hcF.putImageData(fBild, 0, 0);
-  hcF.globalCompositeOperation = 'destination-in';   // nur, was auf der Karte liegt
-  hcF.drawImage(hkA, 0, 0);
-  hcF.globalCompositeOperation = 'source-over';
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(hkF, 0, 0, breite, hoehe);
-
-  /* Schlagschatten. Das ist der Unterschied zwischen einer gewölbten Fläche
-     und einem Gebirge: ein Berg wirft einen Schatten über das, was hinter ihm
-     liegt. Gerechnet in einem einzigen Durchgang — das Licht kommt aus genau
-     45 Grad von oben links, also laufen die Strahlen auf der Leinwand
-     diagonal, und je Diagonale genügt ein mitgeführter Horizont:
+  /* ---------- Schlagschatten ----------
+     Das ist der Unterschied zwischen einer gewölbten Fläche und einem
+     Gebirge: ein Berg wirft einen Schatten über das, was hinter ihm liegt.
+     Gerechnet in einem einzigen Durchgang — das Licht kommt aus genau 45 Grad
+     von oben links, also laufen die Strahlen auf der Leinwand diagonal, und je
+     Diagonale genügt ein mitgeführter Horizont:
 
          s = max(s − Abfall, Höhe)      und im Schatten liegt, was unter s ist.
 
@@ -1420,7 +1458,6 @@ function reliefUeber(sil, deck) {
 
   // Licht von oben links. Auf dem Bildschirm zeigt y nach unten, oben links
   // ist also die negative Richtung in beiden Achsen.
-  const o = rBild.data;
   const hochL = Math.cos(Math.PI * SONNE / 180) * Math.SQRT1_2;
   const lx = -hochL, ly = -hochL, lz = Math.sin(Math.PI * SONNE / 180);
   for (let y = 0; y < rH; y++) {
@@ -1440,26 +1477,63 @@ function reliefUeber(sil, deck) {
       // Und der Schlagschatten.
       if (schatten[i] > 0) I -= (schatten[i] < 0.05 ? schatten[i] / 0.05 : 1) * WURF;
 
-      const i4 = i << 2;
       let a = I * STAERKE * RELIEF_ANTEIL;
-      if (a > 0) { if (a > HELLMAX) a = HELLMAX; }
-      else { if (a < -DUNKELMAX) a = -DUNKELMAX; }
-      const g = 128 + a * 127;
-      o[i4] = g; o[i4 + 1] = g; o[i4 + 2] = g; o[i4 + 3] = 255;
+      if (a > HELLMAX) a = HELLMAX; else if (a < -DUNKELMAX) a = -DUNKELMAX;
+      licht[i] = a;
     }
   }
-  // Die Schattierung als Grau im Modus overlay, damit die Farbe der Fläche
-  // bleibt. Sie ist ein Verlauf und verträgt das Hochrechnen; die Linien
-  // kommen danach als Pfade, in voller Auflösung.
-  hcL.putImageData(rBild, 0, 0);
-  hcL.globalCompositeOperation = 'destination-in';   // nur, was auf der Karte liegt
-  hcL.drawImage(hkA, 0, 0);
-  hcL.globalCompositeOperation = 'source-over';
+
+  /* ---------- Die Farbe der Karte, und das Licht darin ----------
+     Gefärbt wurde bisher Kreis für Kreis: jede Fläche bekam ihre eigene Dichte
+     als Ton, und heraus kam ein Mosaik. Die Höhenlinien dagegen kamen aus dem
+     weiten Feld, das über die Kreisgrenzen hinweg verläuft. Berlin war deshalb
+     ein kleiner Farbfleck in der Form seines Kreises, während sein Berg weit
+     darüber hinausreichte — Farbe und Relief widersprachen einander.
+
+     Jetzt kommt die Farbe aus demselben Feld, das die Linien trägt, und das
+     Licht wird gleich mit hineingerechnet. Auch das ist neu, und es war ein
+     Fehler, es nicht zu tun: die Schattierung lag eine Fassung lang als graues
+     Bild im Modus *soft-light* darüber, und weiches Licht kann Weiss nicht
+     dunkler machen. Die Rechenvorschrift enthält den Faktor Cb·(1−Cb), und der
+     ist bei Weiss null — auf den hellsten Bändern, also genau auf den Gipfeln,
+     kam überhaupt keine Hangschattierung an. Ein Aufhellen zum Weiss und ein
+     Abdunkeln zum Schwarz hat diese Schwäche nicht, und es spart nebenbei eine
+     Leinwand und einen Durchgang.
+
+     Gezeichnet wird das Feld in seiner eigenen, gröberen Auflösung und beim
+     Hochrechnen bilinear geglättet: die Bandgrenze wird dadurch ein weicher
+     Übergang von ein, zwei Bildpunkten, und die Höhenlinie liegt in seiner
+     Mitte. Scharf gerastert sähe dieselbe Grenze treppig aus. */
+  /* Die Farbe läuft mit dem Relief gegen die Mitte. Im vollen Kartogramm hat
+     jeder Kreis dieselbe Dichte, es gibt also keine Höhe — und was das Feld
+     dort noch an Unterschieden zeigt, ist der Rest, den das Diffusionsverfahren
+     nicht ganz wegbekommen hat. Auf einer Leiter, deren Band einen Faktor 1,17
+     breit ist, wurden daraus sichtbare Farbbänder: 1943 lag ein Ost-West-
+     Verlauf über dem Kartogramm, der wie ein Befund aussah und keiner war.
+
+     Also derselbe Anteil wie beim Relief: bei voller Binnenspanne die Farbe des
+     Feldes, bei keiner die Farbe des Bildmittels, dazwischen anteilig. Die
+     Farben gleichen sich an, während die Berge sinken — beides sagt dasselbe. */
+  const fo = fBild.data, vM = mitteImFeld(), av = RELIEF_ANTEIL;
+  for (let i = 0; i < n3; i++) {
+    const k = bandIdx(vM + (farbF[i] - vM) * av);
+    let r = HYPSO_R[k], g = HYPSO_G[k], b = HYPSO_B[k];
+    const a = licht[i];
+    if (a > 0) { r += (255 - r) * a * AUFHELLEN; g += (255 - g) * a * AUFHELLEN; b += (255 - b) * a * AUFHELLEN; }
+    else if (a < 0) { const f = 1 + a * ABDUNKELN; r *= f; g *= f; b *= f; }
+    const j = i << 2;
+    fo[j] = r; fo[j + 1] = g; fo[j + 2] = b; fo[j + 3] = 255;
+  }
+  hcF.setTransform(1, 0, 0, 1, 0, 0);
+  hcF.globalCompositeOperation = 'source-over';
+  hcF.putImageData(fBild, 0, 0);
+  hcF.globalCompositeOperation = 'destination-in';   // nur, was auf der Karte liegt
+  hcF.drawImage(hkA, 0, 0);
+  hcF.globalCompositeOperation = 'source-over';
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
-  ctx.globalCompositeOperation = MISCHUNG;
-  ctx.drawImage(hkL, 0, 0, breite, hoehe);
-  ctx.globalCompositeOperation = 'source-over';
+  ctx.drawImage(hkF, 0, 0, breite, hoehe);
+
   if (LINIE * RELIEF_ANTEIL > 0.02) hoehenLinien(s);
 }
 
@@ -1628,6 +1702,20 @@ function hoehenLinien(s) {
     const zellen = zellenJe[n];
     if (zellen.length < 2) continue;
     const t = n / NIVEAUS;
+    /* Wie lange dieses Niveau durchhält, wenn die Linien zusammenrücken.
+
+       Vorher blendeten **alle** Linien aus, sobald zwei Niveaus auf der
+       Leinwand näher als vier Bildpunkte beieinander lagen, und unter
+       anderthalb waren sie ganz weg. Das trifft genau den steilsten Hang —
+       also Berlin, dessen Flanke in wenigen Bildpunkten durch fünf Niveaus
+       fällt. Heraus kam die Umkehrung dessen, was eine Höhenlinie tun soll:
+       je steiler das Gelände, desto weniger Linien.
+
+       Jetzt wird ausgedünnt, wie es ein Kartenzeichner tut: jedes vierte
+       Niveau hält am längsten durch, dann jedes zweite, dann der Rest. Am
+       steilen Hang bleiben vier Linien statt keiner, und ihr Abstand
+       untereinander ist wieder lesbar. */
+    const haelt = (n % 4 === 0) ? 4 : (n % 2 === 0) ? 2 : 1;
     const stempel = ++stempelZaehler;
     let nk = 0;
 
@@ -1685,7 +1773,7 @@ function hoehenLinien(s) {
           bahnF[m] = ql > 1e-7 ? (gx + gy) / (ql * Math.SQRT2) : 0;
           // Über fast ebenem Land blenden die Linien ein, und wo zwei Niveaus
           // auf der Leinwand zusammenrücken, wieder aus.
-          const abstand = ql > 1e-7 ? je / (ql * NIVEAUS) : 1e9;
+          const abstand = (ql > 1e-7 ? je / (ql * NIVEAUS) : 1e9) * haelt;
           bahnG[m] = Math.min(1, ql / FLACHHANG)
             * (abstand > 4 ? 1 : Math.max(0, (abstand - 1.4) / 2.6));
           m++;
@@ -1750,7 +1838,7 @@ function zeichne() {
      Eine Farbe und nicht vierhundert, weil das Durchscheinende sonst als
      Flecken sichtbar wird — im Kartogramm, wo das Feld einfarbig ist, lagen an
      jeder schmalen Stelle Reste der alten Kreisfärbung. */
-  ctx.fillStyle = HYPSO[bandIdx(mitteAufLeiter())];
+  ctx.fillStyle = HYPSO[bandIdx(mitteImFeld())];
   ctx.fill(sil, 'evenodd');
 
   /* Keine Grenzen mehr, weder um die Kreise noch um die Länder. Eine
@@ -2002,7 +2090,10 @@ function legText() {
   const zeig = x => (x >= 10 ? x.toFixed(0) : x >= 1 ? x.toFixed(1) : x.toFixed(2));
   // Linear fängt die Leiter bei null an, nicht beim unteren Quantil.
   document.getElementById('legLinks').textContent = LINEAR ? '0' : '×' + zeig(Math.exp(von));
-  document.getElementById('legRechts').textContent = '×' + zeig(Math.exp(bis));
+  /* Rechts das gemessene Quantil, und dahinter ein Pluszeichen. Die Leiter
+     endet seit dem Knie nicht mehr dort: das letzte Stück, Fels und Schnee,
+     trägt alles, was darüber liegt, und läuft erst im Unendlichen aus. */
+  document.getElementById('legRechts').textContent = '×' + zeig(Math.exp(bis)) + '+';
   // Eine Zeile: was die Zahlen an der Leiter sind, welche Form eingestellt ist,
   // und welcher Stichtag gilt. Der Rest steht in der Methodik, nicht hier.
   document.getElementById('legText').textContent =

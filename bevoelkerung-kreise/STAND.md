@@ -1,6 +1,6 @@
 # Stand
 
-Stand: 11. September 2026.
+Stand: 12. September 2026.
 
 ## Fertig
 
@@ -125,13 +125,13 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   schwarz, wo er wegfällt, dick, wo er voll im Licht oder Schatten steht. Grund:
   die Fläche ist schon mit der Höhenfarbe belegt — eine Schattierung, die stark
   genug für ein Gebirge wäre, wüsche sie aus; Linien nehmen fast keine Fläche
-  weg. Dazu Lambert-Schattierung als Grau im Modus `soft-light` (auf schwarzem
-  Grund rechnet `overlay` um das mittlere Grau herum und lässt dunkle Farben fast
-  unberührt), Muldenverschattung und Schlagschatten aus einer **flacheren Sonne**
-  (16 statt 40 Grad — ein Strahl, der steiler abfällt als der Hang, trifft nie
-  auf Schatten). 4,8 bis 5,8 Bilder je Sekunde im softwaregerenderten
-  Prüfbrowser; das ist der Boden, nicht das, was ein Gerät mit Grafikkarte
-  zeigt.
+  weg. Dazu Lambert-Schattierung, **in die Farbe gerechnet** statt als Mischmodus
+  darübergelegt (weiches Licht kann Weiss nicht dunkler machen — auf den Gipfeln
+  kam gar keine Hangschattierung an), Muldenverschattung und Schlagschatten aus
+  einer **flacheren Sonne** (16 statt 40 Grad — ein Strahl, der steiler abfällt
+  als der Hang, trifft nie auf Schatten). 12,9 Bilder je Sekunde im
+  softwaregerenderten Prüfbrowser gegen 11,1 mit dem Mischmodus; das ist der
+  Boden, nicht das, was ein Gerät mit Grafikkarte zeigt.
 - Das Höhenfeld wird **in zwei Kanälen** gelesen: unmultipliziertes Rot ist die
   normalisierte Faltung, also der Höhenmittelwert ohne Randabfall, Alpha ist der
   Rand der Karte. Sonst wäre der grösste Berg im Feld Deutschland selbst.
@@ -163,8 +163,8 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Gemessen im Prüfbrowser (6 Bilder/s, wo der Filter am wenigsten kann):
   Änderung je Bild auf **48 %**.
 - **Die Farbe ist die Höhe.** Die Leiter einer physischen Karte, und zwar die
-  gesättigte — Tiefland in sattem Grün, dann Gelbgrün, Gelb, Ocker, Orange, Rot,
-  oben die helle Kappe; durchgehend steigende Helligkeit —, und gefärbt wird die Höhe, also dieselbe Zahl,
+  gesättigte — tiefes Waldgrün, Grasgrün, Gelbgrün, Gelb, Ocker, Orange, Rot,
+  oben Fels und Schnee —, und gefärbt wird die Höhe, also dieselbe Zahl,
   die das Relief trägt. Die Höhenlinien laufen damit genau auf den Farbgrenzen,
   wie in einem Atlas. Die Seite steht auf Half and half.
 - **Keine Grenzen mehr**, in keiner der drei Sorten: die gezeichnete Linie um
@@ -182,13 +182,14 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   darüber hinwegläuft. Berlin war deshalb ein kleiner Farbfleck, während sein
   Berg weit darüber hinausreichte und die Linien sich darin drängten. Jetzt
   steht im Höhenfeld die Dichte auf der gemessenen Leiter, und
-  daraus kommt alles: Farbe als eines von sechzehn gleich breiten Bändern,
+  daraus kommt alles: Farbe als eines von zwanzig gleich breiten Bändern,
   Schattierung aus dem Gefälle, Höhenlinien auf den Bandgrenzen. Die Silhouette
   darunter in **einer** Farbe — nicht als Farbe der Karte, sondern als scharfe
   Kante, weil der Rand des hochgerechneten Feldes weich ist.
-- **Jede Höhenlinie ist eine Farbgrenze.** Ein Achtel Reserve über und unter der
-  Leiter legt deren fünfzehn Grenzen im Feld auf 2/20 bis 17/20 — bei zwanzig
-  Niveaus (vorher vierzig) genau auf die Niveaus 2 bis 17.
+- **Jede Höhenlinie ist eine Farbgrenze.** Die zwanzig Bandgrenzen und die
+  zwanzig Niveaus liegen auf denselben k/20 des Feldwerts. Die beiden obersten
+  Bänder, Fels und Schnee, liegen dabei **über** dem gemessenen Quantil: die
+  Reserve trägt jetzt selbst Farbe, statt farblos Platz zu halten.
 - **Der Bezug der Höhe ist absolut**: die Dichte Deutschlands 2024, für jedes
   Bild dieselbe. ×2 heisst damit in jedem Jahr dasselbe, und das Wachstum steht
   in der Farbe — 1871 liegt das Land fast einfarbig im Tiefgrün, 2024 im Orange.
@@ -213,25 +214,59 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   `min-width:0`, einer reservierten Zeilenhöhe und einem **ResizeObserver** auf
   dem Kartenfeld, der neu misst, wenn sich das Auslegen ändert — wer immer es
   ändert.
-- **Die hellste Stufe ist wieder eine Spitze.** Berlin ist 2024 der dichteste
-  Kreis (×2,51 gegen Oberhausen ×2,39), sah aber kleiner aus als das
-  Ruhrgebiet: die Leiter endete bei q0,95 = ×2,29, alles darüber lag im
-  hellsten Band, und reichlich **vier Prozent der Kartenfläche** waren 2024 in
-  diesem einen Ton — keine Gipfel, sondern eine Hochebene. Kehrseite des
-  absoluten Bezugs: die Leiter ist über alle zehn Zählungen gemessen, 2024
-  klemmt oben an. Jetzt reicht sie **acht Prozent über q0,95** hinaus — die
-  Schneegrenze. Sie ist ein Abwägen, weil sie abschneidet, und geklemmt wird
-  zuerst die Spitze: bei 0,90 × q0,95 deckt sie 2,4 % der Fläche, Berlins
-  Vorsprung schmilzt auf 5 %; bei 1,08 nur 0,2 %, Vorsprung 18 %. Eins ist der
-  Kompromiss — 0,9 % Gipfelfläche 2024, 11 % Vorsprung, 1943 nichts. Dazu enger
-  geglättet
-  (weiter Radius `breite/28` statt `/22`, enges Feld 0,55 statt 0,40 Gewicht):
-  das weite Feld bevorzugt Plateaus vor Spitzen, und das Ruhrgebiet ist ein
-  Plateau, Berlin eine Spitze. Nebenbei zerfällt das Ruhrgebiet wieder in die
-  Städte, aus denen es besteht. Zeitkonstante des engen Feldes dafür von 0,30 s
-  auf 0,55 s; gemessen ist die Bewegung danach ruhiger als vorher (0,77 statt
-  0,81 Promille Änderung je Bild).
-- **Eine Leiter für alle drei Formen**, bis ×2,29 (linear ab null) — sonst hiesse ×1 je nach
+- **Berlin ist der höchste Berg, und jetzt sieht man es auch.** Es ist 2024 der
+  zweitdichteste Kreis (×2,51; nur München steht mit ×2,58 darüber), dichter als
+  jede einzelne Ruhrstadt — auf der Karte sah es umgekehrt aus. Drei Ursachen,
+  alle drei Darstellung:
+  **(1) Die Leiter war oben zu.** Was über q0,95 lag, wurde auf denselben Wert
+  geklemmt: elf Kreise 2024, und ihr Unterschied war weg, *bevor der erste
+  Weichzeichner lief*. Danach entschied nur noch die Breite der Fläche, und da
+  gewinnt ein Band dichter Städte gegen einen Fleck — Berlins Gipfel stand im
+  Feld auf 0,866, der des Ruhrgebiets auf 0,877. Statt des Deckels jetzt ein
+  **weiches Knie**: linear bis zum Quantil, darüber exponentiell in die Reserve,
+  nichts wird mehr gekappt.
+  **(2) Die Reserve hatte keine Farbe.** Die Bänder liegen jetzt auf dem
+  Feldwert statt auf dem Leiterwert; die beiden obersten, Fels und Schnee,
+  gehören der Spitze über dem Quantil allein.
+  **(3) Weichzeichnen trägt Volumen über die Kreisgrenze**, und wen es trifft,
+  entscheidet die Nachbarschaft: Berlin verliert an Brandenburg und bekommt
+  nichts zurück, Essen verliert an Bochum und bekommt von Bochum dasselbe wieder.
+  Dagegen eine **Unscharfmaskierung** (`ENGANTEIL` 1,15 statt 0,55) — sie schlägt
+  genau die Differenz aus engem und weitem Feld wieder auf, ist gross bei einem
+  einzelnen Gipfel, null über einem Plateau und über die Karte mittelwertfrei.
+  Gemessen 2024: Gipfel Berlin 0,972 gegen Ruhrgebiet 0,889, Bänder 19 gegen 17,
+  **Volumen Ruhr : Berlin 1,44 : 1** bei 1,36 : 1 Menschen — vorher 1,76 : 1.
+  Der Preis: eine Unscharfmaskierung überschiesst, Berlins höchster Punkt liest
+  sich knapp ein Zehntel über der Dichte seines Kreises. Der Gipfel ist eine
+  Schätzung, das Volumen ist die Bevölkerung.
+- **Zwanzig Bänder statt sechzehn, und oben echter Schnee.** Die Leiter ist
+  gerechnet statt gegriffen: je Band eine Helligkeit, ein Farbton und die
+  grösste Buntheit, die der Bildschirm dort hergibt — mittlere Buntheit der
+  achtzehn Datenbänder 0,17 (OKLab) gegen 0,15 der vorigen Fassung. Das oberste
+  Band ist **weiss**, nicht hellbraun; darunter ein fast entsättigtes Grau als
+  Übergang von Fels zu Schnee. 2024 sind achtzehn der zwanzig Bänder belegt.
+- **Die Höhenlinien werden ausgedünnt, nicht fallengelassen.** Wo zwei Niveaus
+  auf der Leinwand zusammenrückten, blendeten bisher *alle* aus — was genau den
+  steilsten Hang traf. Berlins Flanke fällt in wenigen Bildpunkten durch fünf
+  Niveaus, also hatte ausgerechnet der höchste Berg keine Höhenlinien mehr.
+  Jetzt hält jedes vierte Niveau am längsten durch, dann jedes zweite, dann der
+  Rest; mittlere Sichtbarkeit in Berlin 0,74 statt 0,59.
+- **Die Schattierung wird in die Farbe gerechnet.** Sie lag als Grau im
+  Mischmodus `soft-light` darüber, und dessen Rechenvorschrift enthält den
+  Faktor C·(1−C) — bei Weiss also null. Auf den hellsten Bändern, den Gipfeln,
+  kam **überhaupt keine Hangschattierung an**; `overlay` und `hard-light` haben
+  dieselbe Stelle. Jetzt läuft der helle Hang anteilig gegen Weiss, der dunkle
+  gegen Schwarz, im selben Durchgang, in dem das Farbband nachgeschlagen wird.
+  Das greift stärker in tiefe Töne ein, also Stärke 1,6 statt 2,2 und
+  Schlagschatten 0,32 statt 0,50 — und es spart eine Leinwand und einen
+  Kompositionsdurchgang: 12,9 statt 11,1 Bilder je Sekunde im Prüfbrowser.
+- **Enger geglättet** (weiter Radius `breite/28` statt `/22`, enges Feld 0,55
+  statt 0,40 Gewicht): das weite Feld bevorzugt Plateaus vor Spitzen, und das
+  Ruhrgebiet ist ein Plateau, Berlin eine Spitze. Nebenbei zerfällt das
+  Ruhrgebiet wieder in die Städte, aus denen es besteht. Zeitkonstante des engen
+  Feldes dafür von 0,30 s auf 0,55 s; gemessen ist die Bewegung danach ruhiger
+  als vorher (0,77 statt 0,81 Promille Änderung je Bild).
+- **Eine Leiter für alle drei Formen**, bis ×2,38 und als Knie weiter bis ×2,68 (linear ab null) — sonst hiesse ×1 je nach
   Knopfstellung etwas anderes. Möglich geworden, weil das Wachstum jetzt in
   jeder Form steckt, auch im Kartogramm: dessen Fläche ist fest, seine
   Bevölkerung wächst, also steigt seine Dichte von ×0,35 auf ×1,00. Das
@@ -246,10 +281,10 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   ein Befund aussah und keiner war).
 - **Die Leiter wird je Form aus den Daten gemessen**, einmal, über alle Kreise in
   allen Zählungen, **flächengewichtet**: q0,05 bis q0,95. Landkarte
-  ×0,18 … ×2,29, Half and half ×0,28 … ×2,0, Kartogramm ×0,35 … ×1,00. Flächengewichtet,
+  ×0,18 … ×2,38, Half and half ×0,28 … ×2,12, Kartogramm ×0,35 … ×1,04. Flächengewichtet,
   weil Fläche gefärbt wird und nicht Kreise — ungewichtet setzten die
-  hundertsieben winzigen kreisfreien Städte das obere Quantil, und acht von
-  sechzehn Bändern blieben leer; jetzt sind zwölf bis dreizehn belegt.
+  hundertsieben winzigen kreisfreien Städte das obere Quantil, und die halbe
+  Palette blieb leer; jetzt sind 2024 achtzehn der zwanzig Bänder belegt.
 - **Die kreisfreien Städte tragen doch einen Umriss**, einen feinen dunklen über
   dem Relief. Ein Landkreis braucht keinen, er wird kaum verzerrt; eine
   kreisfreie Stadt ist auf dem Boden winzig und in der Karte gross, und ihr Berg

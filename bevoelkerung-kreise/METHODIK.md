@@ -380,11 +380,31 @@ Zwischen dem leersten Landkreis und Berlin liegt auf der Landkarte der Faktor
 der nichts mehr zu unterscheiden ist. Gestaucht wird deshalb — aber **linear**,
 auf die gemessene Spanne der Farbleiter (4b):
 
-    Feldwert = Höhe / oberes Leiterende,
-               auf −⅛ … 1+⅛ geklemmt und auf 0 … 1 gelegt
+    Leiterwert = Höhe / oberes Leiterende,   darüber ein weiches Knie
+    Feldwert   = Leiterwert, auf 0 … 1+⅛ gelegt
 
 Linear und nicht logarithmisch, und das ist eine inhaltliche Entscheidung, kein
 Geschmack: siehe „Volumen ist Bevölkerung" in 4b.
+
+**Das Knie war vorher ein Deckel, und das war der Fehler, der Berlin klein
+gemacht hat.** Alles über dem oberen Leiterende wurde auf denselben Wert
+geklemmt. 2024 traf das elf Kreise auf einmal — Berlin, München, Oberhausen,
+Essen —, und sie wurden dadurch **ununterscheidbar, bevor der erste
+Weichzeichner lief**. Was danach noch über die Höhe entschied, war allein die
+Breite der Fläche, und da gewinnt ein fünfzig Kilometer langes Band dichter
+Städte gegen einen einzelnen Fleck: Berlins Gipfel stand im Feld auf 0,866, der
+des Ruhrgebiets auf 0,877. Die falsche Reihenfolge, und sie kam nicht aus den
+Zahlen, sondern aus dem Deckel.
+
+Jetzt läuft die Leiter bis zum gemessenen Quantil **genau linear** — daran hängt
+ja, dass das Volumen die Bevölkerung ist — und geht darüber in ein
+exponentielles Knie über, das die Reserve erst im Unendlichen erreicht:
+
+    darüber:  1 + ⅛ · (1 − e^−(u−1)/⅛)
+
+Geklemmt wird damit nichts mehr, die Reihenfolge bleibt überall erhalten, und
+die Spitze behält ihren Vorsprung. Auf der Landkarte, wo die Dichte bis zum
+Fünfzehnfachen geht, staucht das Knie stark — aber es staucht, statt zu kappen.
 
 Damit steht im Höhenfeld dieselbe Zahl, die auch die Farbe zeigt — und das ist
 der ganze Punkt (4b, „Eine Zahl, drei Darstellungen"). Die **Reihenfolge bleibt
@@ -392,10 +412,12 @@ richtig, der Abstand nicht**; die Zahl selbst steht beim Antippen („Stands
 2,5 × average"). Im vollen Kartogramm sind alle Höhen gleich, dann ist es
 wirkungslos.
 
-Das Achtel Luft über und unter der Leiter ist nicht Kosmetik: die Spanne ist an
-den Enden gekappt, und ohne Luft bekäme der dichteste Fleck einen
-abgeschnittenen Gipfel — ein Plateau ohne Modellierung. Und die Zahl ist mit
-Bedacht ein Achtel, siehe die Höhenlinien weiter unten.
+Die Reserve über der Leiter hat seither zwei Aufgaben. Die alte: der Gipfel
+soll Platz haben. Die neue: **sie bekommt Farbe** — die beiden obersten Bänder,
+Fels und Schnee, liegen genau dort. An eine bestimmte Zahl ist sie nicht mehr
+gebunden; das war sie, solange die Farbbänder auf dem Leiterwert lagen (siehe
+4b). Nach unten braucht die lineare Leiter gar keine: sie fängt bei null an,
+und unter null wohnt niemand.
 
 Was hier nicht gemacht wird: die Karte kippen und die Kreise wirklich
 extrudieren. Perspektive verzerrt Flächen, und dann liesse sich die eine Aussage
@@ -452,14 +474,25 @@ Farbe sind die Daten.
 ### Was daraus gezeichnet wird
 
 **Schattierung**, aus dem Gefälle des Feldes die Normale, Lambert von oben
-links, 40 Grad über der Fläche. Aufgetragen als *Grau* im Mischmodus
-`soft-light`, nicht als schwarze und weisse Deckkraft: Deckkraft zieht jede
-Farbe gegen Schwarz oder Weiss, ein Mischmodus rechnet den Ton gegen die Farbe,
-die schon da liegt — dunkler wird dunkler, heller heller, der Farbton bleibt.
-`overlay` täte dasselbe und war lange eingestellt, rechnet aber um das mittlere
-Grau herum und lässt dunkle Farben fast unberührt; auf schwarzem Grund ist
-dieser Karte fast alles dunkel, also `soft-light`, das auch tiefe Töne noch
-hebt — und dafür eine kräftigere Stärke verträgt.
+links, 40 Grad über der Fläche. Sie wird **in die Farbe gerechnet**, im selben
+Durchgang, in dem das Band nachgeschlagen wird: der helle Hang läuft anteilig
+gegen Weiss, der dunkle gegen Schwarz.
+
+Zwei Fassungen lang lag sie stattdessen als graues Bild im Mischmodus
+`soft-light` darüber, und das war aus gutem Grund so — ein Mischmodus rechnet
+den Ton gegen die Farbe, die schon da liegt, statt jede Farbe gegen Schwarz oder
+Weiss zu ziehen. Es hatte nur einen Fehler, und es war der teuerste dieser
+Karte: **weiches Licht kann Weiss nicht dunkler machen.** In der
+Rechenvorschrift steht der Faktor C·(1−C), und der ist bei Weiss null. Auf den
+hellsten Bändern — also genau auf den Gipfeln, um die es hier geht — kam
+überhaupt keine Hangschattierung an. `overlay` und `hard-light` haben dieselbe
+Stelle.
+
+Aufhellen und Abdunkeln haben diese Schwäche nicht. Sie greifen dafür stärker in
+tiefe Töne ein, also steht die Stärke jetzt bei 1,6 statt 2,2 und der
+Schlagschatten bei 0,32 statt 0,50. Nebenbei entfällt eine Leinwand und ein
+ganzer Kompositionsdurchgang über die volle Bildfläche; gemessen im weich
+gerenderten Prüfbrowser läuft die Seite dadurch mit 12,9 statt 11,1 Bildern.
 
 **Mulden.** Was tiefer liegt als seine weite Umgebung, bekommt weniger Himmel
 ab; dasselbe, was in einem Tal weniger Licht ankommen lässt.
@@ -554,15 +587,24 @@ Höhenlinie. Drei Dinge halten sie trotzdem sauber:
 
 - Über wirklich ebenem Land blenden sie mit dem Gefälle ein — sonst sind sie
   Kratzer.
-- Wo zwei Niveaus auf der Leinwand unter vier Bildpunkte zusammenrücken,
-  blenden sie aus — sonst verschmelzen sie zur Fläche.
+- Wo zwei Niveaus auf der Leinwand unter vier Bildpunkte zusammenrücken, wird
+  **ausgedünnt statt abgeschaltet**: jedes vierte Niveau hält am längsten durch,
+  dann jedes zweite, dann der Rest. Vorher blendeten alle gemeinsam aus, und
+  unter anderthalb Bildpunkten waren sie ganz weg — was genau den steilsten Hang
+  traf. Berlins Flanke fällt in wenigen Bildpunkten durch fünf Niveaus, also
+  hatte ausgerechnet der höchste Berg der Karte keine Höhenlinien mehr: die
+  Umkehrung dessen, was eine Höhenlinie tun soll. Ausgedünnt bleiben dort vier
+  Linien statt keiner, und ihr Abstand untereinander ist wieder lesbar.
+  Gemessen für 2024 steigt die mittlere Sichtbarkeit in Berlin von 0,59 auf
+  0,74.
 - Eine Zelle, deren vier Ecken nicht ganz auf der Karte liegen, wird
   übersprungen. Das erspart das Beschneiden an einem Pfad aus vierhundert
   Vielecken und lässt der Küste einen schmalen, linienfreien Saum — der sieht
   ohnehin besser aus.
 
-Zwei Lagen also, weil sie verschieden gehören: die Schattierung als Grau im
-Modus `overlay` über die Fläche, die Linien als Pfade darüber.
+Zwei Lagen also, weil sie verschieden gehören: die Fläche, in die Farbe und
+Schattierung gemeinsam gerechnet sind, und die Linien als Pfade darüber — in
+voller Auflösung, nicht in der des Feldes.
 
 Wie hoch ein Kreis steht, sagt 4f: im vollen Kartogramm für alle dasselbe, sonst
 Bevölkerung durch gezeichnete Fläche.
@@ -674,16 +716,29 @@ Vielfaches grösser.
 
 ## 4b. Die Farbskala der Karte
 
-Die Karte wird gemalt, wie ein Atlas ein Gebirge malt: Tiefland in sattem Grün,
-dann Gelbgrün, Gelb, Ocker, Orange, Rot — oben die helle Kappe. Sechzehn Stufen
-von Hand gesetzt, mit durchgehend steigender Helligkeit, damit die Höhe auch
-dann lesbar bleibt, wenn jemand die Farbtöne nicht trennen kann.
+Die Karte wird gemalt, wie ein Atlas ein Gebirge malt: Tiefland in tiefem
+Waldgrün, dann Grasgrün, Gelbgrün, Gelb, Ocker, Orange, Rot — oben Fels und
+Schnee. **Zwanzig Bänder**, und sie sind gerechnet statt gegriffen: je Band eine
+Helligkeit und ein Farbton, und dazu die grösste Buntheit, die der Bildschirm
+an dieser Stelle noch hergibt.
 
-Die erste Fassung war um eine ganze Stufe blasser — gedämpftes Oliv und
-Graubraun, aus Sorge um das Relief, das darüber liegt. Die Sorge war
-unbegründet: weiches Licht bleicht eine satte Farbe nicht aus, es hebt und
-senkt sie. Und auf schwarzem Grund braucht eine Karte Farbe, sonst wird sie zu
-Schlamm.
+Die ersten Fassungen waren blasser — gedämpftes Oliv und Graubraun, aus Sorge um
+das Relief, das darüber liegt. Die Sorge war unbegründet, und auf schwarzem
+Grund braucht eine Karte Farbe, sonst wird sie zu Schlamm. Gemessen in OKLab
+liegt die mittlere Buntheit der achtzehn Datenbänder jetzt bei 0,17, gegen 0,15
+der vorigen und 0,13 der ersten Fassung.
+
+**Oben endet die Leiter in Weiss**, nicht in einem hellen Braun — das ist der
+Unterschied zwischen Schnee und altem Schnee, und auf einer Karte, deren Gipfel
+die Frage sind, entscheidet er, ob man einen Gipfel als solchen erkennt. Das
+vorletzte Band ist ein sehr helles, fast entsättigtes Grau: der Übergang von
+Fels zu Schnee, und zugleich die Stelle, an der die Farbe die Sättigung ablegt,
+damit das Weiss darüber als Weiss ankommt.
+
+Die Helligkeit steigt vom ersten bis zum zwölften Band durchgehend und fällt
+dann mit den Rot-Tönen wieder. Das ist die Konvention eines Schulatlas und nicht
+zu umgehen, wenn Gelb der hellste Farbton sein soll; die beiden obersten Bänder
+steigen wieder bis ins Weiss.
 
 Gefärbt wird die **Höhe**: Bevölkerung geteilt durch gezeichnete Fläche,
 bezogen auf die mittlere Dichte des Bildes. Grün heisst wenige Menschen auf viel
@@ -706,8 +761,8 @@ Jetzt kommen Farbe, Schattierung und Höhenlinien aus **einem** Feld:
 
 | | |
 |---|---|
-| im Feld steht | (ln Dichte − unteres Leiterende) / Spanne, auf −⅛ … 1+⅛ geklemmt |
-| die Farbe ist | das Band, in das dieser Wert fällt — sechzehn gleich breite |
+| im Feld steht | Dichte / oberes Leiterende, mit Knie, auf 0 … 1 gelegt |
+| die Farbe ist | das Band, in das dieser Wert fällt — zwanzig gleich breite |
 | die Höhenlinie liegt | auf den Bandgrenzen |
 | das Licht kommt | aus dem Gefälle desselben Feldes |
 
@@ -719,12 +774,20 @@ gerastert sähe dieselbe Grenze treppig aus. Darunter liegt die Silhouette in
 scharfe Kante, weil der Rand des hochgerechneten Feldes ein, zwei Bildpunkte
 weich ist.
 
-**Und die Zahlen passen zusammen.** Ein Achtel Reserve über und unter der Leiter
-legt deren fünfzehn Grenzen im Feld auf 2/20 bis 17/20 — bei zwanzig Niveaus
-also genau auf die Niveaus 2 bis 17. **Jede Höhenlinie ist eine Farbgrenze, und
-jede Farbgrenze trägt ihre Linie.** Das ist die Konstruktion eines Schulatlas,
-und es ist das, was eine Höhenlinie auf einer Geländekarte überhaupt tun soll:
-den Farbwechsel begründen, statt quer durch ihn hindurchzulaufen.
+**Und die Zahlen passen zusammen.** Die zwanzig Bandgrenzen liegen bei k/20 des
+Feldwerts, und die zwanzig Höhenlinien-Niveaus liegen bei denselben k/20.
+**Jede Höhenlinie ist eine Farbgrenze, und jede Farbgrenze trägt ihre Linie.**
+Das ist die Konstruktion eines Schulatlas, und es ist das, was eine Höhenlinie
+auf einer Geländekarte überhaupt tun soll: den Farbwechsel begründen, statt quer
+durch ihn hindurchzulaufen.
+
+Das hing vorher an einer Zahl. Solange die Bänder auf dem *Leiterwert* lagen,
+fiel eine Farbgrenze nur dann auf ein Niveau, wenn die Reserve genau ein Achtel
+betrug — und auch dann nur jede zweite. Seit die Bänder auf dem *Feldwert*
+liegen, fallen sie immer zusammen, und die Reserve bekommt obendrein selbst
+Farbe: **die beiden obersten Bänder, Fels und Schnee, liegen oberhalb des
+gemessenen Quantils.** Vorher hatte dieser Bereich keinen eigenen Ton, und
+München, Berlin und Oberhausen sassen zusammen im hellsten Band.
 
 ### Keine Grenzen
 
@@ -785,19 +848,20 @@ doppelt so hoher Berg auf halber Fläche ebenso.
 Das entscheidet den Fall Ruhrgebiet gegen Berlin, der weiter unten steht.
 Gemessen für 2024, innerhalb der jeweiligen Kreisgrenzen:
 
-| | logarithmisch | linear |
-|---|---|---|
-| mittlere Höhe Berlin | 0,88 | 0,83 |
-| mittlere Höhe Ruhrgebiet | 0,88 | 0,75 |
-| Volumen Ruhr : Berlin | 1,94 : 1 | 1,74 : 1 |
-| Menschen Ruhr : Berlin | 1,35 : 1 | 1,35 : 1 |
+| | logarithmisch | linear | linear, mit Knie und Schärfung |
+|---|---|---|---|
+| mittlere Höhe Berlin | 0,88 | 0,83 | 0,89 |
+| mittlere Höhe Ruhrgebiet | 0,88 | 0,75 | 0,67 |
+| Gipfel Berlin : Ruhr | — | 0,87 : 0,88 | 0,97 : 0,89 |
+| Volumen Ruhr : Berlin | 1,94 : 1 | 1,74 : 1 | **1,44 : 1** |
+| Menschen Ruhr : Berlin | 1,36 : 1 | 1,36 : 1 | 1,36 : 1 |
 
-Logarithmisch stehen die beiden **gleich hoch**, obwohl Berlin dichter ist;
-linear steht Berlin elf Prozent höher, und das Volumen rückt in die richtige
-Richtung. Dass es nicht ganz bei 1,35 ankommt, ist das Weichzeichnen: Berlins
-Berg trägt einen Teil seines Volumens über die eigene Kreisgrenze hinaus, das
-Ruhrgebiet behält als grosses Gebiet mehr im Inneren. Wer weiter aussen misst,
-kommt näher heran.
+Logarithmisch stehen die beiden **gleich hoch**, obwohl Berlin dichter ist.
+Linear steht Berlin höher, aber sein *Gipfel* stand immer noch niedriger als
+der des Ruhrgebiets — das lag am Deckel der Leiter und am Weichzeichnen, und
+beides ist behoben (Knie, siehe 4f; Schärfung, gleich unten). Der Rest, 1,44
+statt 1,36, ist das, was der Weichzeichner immer noch über Berlins Kreisgrenze
+hinausträgt; wer weiter aussen misst, kommt näher heran.
 
 Der Preis steht unten: die Hälfte der Fläche liegt in den untersten zwei, drei
 Bändern, und die frühen Bilder verlieren an Zeichnung — 1900 liegen ein Viertel
@@ -856,9 +920,9 @@ Orange — und das ist genau die mittlere Dichte des Landes.
 
 ### Die Leiter wird gemessen, nicht gesetzt
 
-Gesetzt ist an der Leiter nur, dass sie sechzehn Bänder hat; wo sie anfängt und
+Gesetzt ist an der Leiter nur, dass sie zwanzig Bänder hat; wo sie anfängt und
 aufhört, kommt **aus den Daten**: alle vierhundert Kreise in allen zehn
-Zählungen, das fünfte und das fünfundneunzigste Prozent (oben plus acht Prozent
+Zählungen, das fünfte und das fünfundneunzigste Prozent (oben plus vier Prozent
 Schneegrenze, siehe unten), je Form einmal gemessen und dann behalten. Das geht, ohne zu zeichnen, weil die Höhe ein
 Verhältnis ist und sich beim Skalieren der ganzen Karte nicht ändert.
 
@@ -874,53 +938,75 @@ dasselbe **und** über alle drei Knopfstellungen.
 
 ### Das Ruhrgebiet und Berlin
 
-Berlin ist 2024 der dichteste Kreis der Karte: ×2,51 bei halber Verzerrung,
-dichter als jede einzelne Ruhrstadt (Oberhausen ×2,39, Essen ×2,35, Dortmund
-×2,18). Auf der Karte sah es lange umgekehrt aus — das Ruhrgebiet trug eine
-grosse, fast weisse Kappe, Berlin einen kleinen roten Fleck, und wer das liest,
-liest dort zwei- bis dreimal so viele Menschen. Zwei Gründe, und beide sind
-Darstellung, nicht Befund.
+Die dichtesten Kreise sind 2024 bei halber Verzerrung München ×2,58, Berlin
+×2,51, Frankfurt ×2,41, Oberhausen ×2,39, Stuttgart ×2,36. Berlin ist also
+dichter als jede einzelne Ruhrstadt. Auf der Karte sah es lange umgekehrt aus —
+das Ruhrgebiet trug die grosse helle Kappe, Berlin einen Fleck, und wer das
+liest, liest dort zwei- bis dreimal so viele Menschen. **Drei Gründe, und alle
+drei sind Darstellung, nicht Befund.**
 
-**Die Leiter war oben zu.** Sie endete beim fünfundneunzigsten Prozent, also bei
-×2,29, und alles darüber landete im hellsten Band: Berlin, München, Essen,
-Oberhausen, ununterscheidbar. Reichlich **vier Prozent der Kartenfläche** lagen
-2024 in diesem einen Ton — keine Gipfel, sondern eine Hochebene. Das ist die
-Kehrseite des absoluten Bezugs: die Leiter ist über alle zehn Zählungen
-gemessen, und 2024 ist die dichteste; sie klemmt dort oben an, wie 1871 unten.
+**1. Die Leiter war oben zu.** Sie endete beim fünfundneunzigsten Prozent, und
+alles darüber wurde auf denselben Wert geklemmt: Berlin, München, Essen,
+Oberhausen, ununterscheidbar, reichlich vier Prozent der Kartenfläche in einem
+Ton. Schlimmer noch — der Unterschied zwischen ihnen war weg, **bevor der erste
+Weichzeichner lief**. Was danach noch über die Höhe entschied, war allein die
+Breite der Fläche, und da gewinnt ein Band dichter Städte gegen einen einzelnen
+Fleck: Berlins Gipfel stand im Feld auf 0,866, der des Ruhrgebiets auf 0,877.
+Behoben durch das **Knie** (4f): die Leiter läuft bis zum Quantil genau linear
+und darüber weich weiter, geklemmt wird nichts mehr.
 
-Wo die Leiter oben endet, ist deshalb eine eigene Stellschraube — die
-**Schneegrenze** —, und sie ist ein Abwägen, weil sie abschneidet: was über die
-Leiter ragt, wird geklemmt, und geklemmt wird zuerst die Spitze, also genau das,
-was Berlin vom Ruhrgebiet unterscheidet. Gemessen für 2024:
+**2. Die Reserve hatte keine Farbe.** Die Farbbänder endeten am Quantil, die
+Spitze darüber bekam keinen eigenen Ton. Jetzt liegen die Bänder auf dem
+Feldwert, und die beiden obersten — Fels und Schnee — gehören ihr allein.
 
-| Schneegrenze | Gipfelfläche | Höhe Berlin : Ruhr | Volumen |
+**3. Weichzeichnen trägt Volumen über die Kreisgrenze.** Über die ganze Karte
+bleibt das Integral erhalten, über einen Ausschnitt nicht, und wen es trifft,
+entscheidet die Nachbarschaft: Berlin verliert an Brandenburg und bekommt von
+dort nichts zurück, Essen verliert an Bochum und bekommt von Bochum dasselbe
+wieder. Der Weichzeichner bevorzugt damit systematisch das Plateau vor der
+Spitze.
+
+Dagegen steht eine **Unscharfmaskierung**: `ENGANTEIL` ist 1,15, also 1,15 mal
+das enge Feld minus 0,15 mal das weite. Die Differenz der beiden ist genau das
+Mass für „steht dieser Berg allein" — gross bei einem einzelnen Gipfel, null
+über einem Plateau, und über die ganze Karte mittelwertfrei, sodass das Volumen
+die Bevölkerung bleibt.
+
+| | ohne Schärfung | mit 1,15 |
+|---|---|---|
+| Gipfel Berlin | 0,949 | 0,972 |
+| Gipfel Ruhrgebiet | 0,910 | 0,889 |
+| Band Berlin : Ruhr | 18 : 18 | **19 : 17** |
+| Volumen Ruhr : Berlin | 1,52 | **1,44** |
+
+Berlin steht damit als einziges grosses Gebiet im Schnee, das Ruhrgebiet bleibt
+im Rot — und das ist die Reihenfolge, die auch in den Zahlen steht.
+
+**Der Preis steht im Gipfel.** Eine Unscharfmaskierung überschiesst: Berlins
+höchster Punkt liest sich um knapp ein Zehntel über der Dichte seines eigenen
+Kreises. Das ist der Tausch — der Gipfel ist eine Schätzung, das Volumen ist
+die Bevölkerung. Mehr als 1,15 klemmt den Gipfel oben wieder an, dann ist nichts
+gewonnen.
+
+Wo die Leiter oben endet, bleibt eine eigene Stellschraube — die
+**Schneegrenze**. Seit das Knie nichts mehr kappt, entscheidet sie nicht mehr
+darüber, ob ein Gipfel Zeichnung behält, sondern nur noch, wie hoch der Schnee
+anfängt. Gemessen für 2024:
+
+| Schneegrenze | Fels und Schnee | Gipfel Berlin : Ruhr | Volumen R:B |
 |---|---|---|---|
-| 0,90 × q0,95 | 2,4 % | 0,84 : 0,80 (+5 %) | 1,82 |
-| **1,00 × q0,95** | **0,9 %** | **0,83 : 0,75 (+11 %)** | **1,74** |
-| 1,08 × q0,95 | 0,2 % | 0,83 : 0,70 (+18 %) | 1,63 |
+| 1,00 × q0,95 | 2,9 % | 0,99 : 0,92 | 1,48 |
+| **1,04 × q0,95** | **1,8 %** | **0,97 : 0,89** | **1,44** |
+| 1,08 × q0,95 | 1,4 % | 0,95 : 0,86 | 1,44 |
 
-Eins ist der Kompromiss. Und die Schneegrenze wandert mit den Jahren: 1943
-liegt nichts darüber, die Gipfel entstehen erst.
-
-**Und zu weit geglättet.** Das weite Feld bevorzugt Plateaus vor Spitzen. Das
-Ruhrgebiet ist ein fünfzig Kilometer breites Band dichter Städte — dort mittelt
-der Weichzeichner nur Hohes. Berlin ist ein Fleck in dünn besiedeltem
-Brandenburg — dort mittelt er die Spitze weg. Ein engerer weiter Radius
-(`breite/28` statt `breite/22`) und mehr Gewicht auf dem engen Feld (0,55 statt
-0,40) geben dem einzelnen Kreis seinen Wert zurück. Nebenbei zerfällt das
-Ruhrgebiet damit wieder in die Städte, aus denen es besteht, statt als ein
-einziger glatter Berg dazuliegen — und das ist der ehrlichere Eindruck.
-
-Das enge Feld trägt jetzt mehr, also bekommt es eine trägere Zeitkonstante
-(0,55 s statt 0,30 s). Gemessen ist die Bewegung danach sogar ruhiger als
-vorher: 0,77 statt 0,81 Promille Änderung je Bild.
+Gewählt ist 1,04: knapp ein Prozent der Fläche im weissen Band, knapp zwei in
+den obersten beiden. Und die Schneegrenze wandert mit den Jahren — 1943 liegt
+nichts darüber, die Gipfel entstehen erst.
 
 Was bleibt, bleibt zu Recht. Die gleichfarbige Zone ist im Ruhrgebiet grösser,
-weil dort auf grösserer Fläche ähnlich dicht gewohnt wird. Und Berlin und Essen
-trennen fünf Prozent, während ein Band siebzehn Prozent breit ist — sie **müssen**
-dieselbe Farbe haben. Wer die Bevölkerung vergleichen will, schaltet auf
-Cartogram: dort ist die Fläche die Bevölkerung, und Berlins 3,7 Millionen stehen
-neben den 5,0 des Ruhrgebiets.
+weil dort auf grösserer Fläche ähnlich dicht gewohnt wird. Wer die Bevölkerung
+vergleichen will, schaltet auf Cartogram: dort ist die Fläche die Bevölkerung,
+und Berlins 3,7 Millionen stehen neben den 5,0 des Ruhrgebiets.
 
 Gewichtet wird mit der **Fläche**, nicht je Kreis gleich. Das ist der
 Unterschied zwischen „wie dicht wohnt ein Kreis" und „wie dicht ist das Land
@@ -928,7 +1014,7 @@ hier", und gefärbt wird Fläche. Ungewichtet setzten die hundertsieben
 kreisfreien Städte das obere Quantil: sie sind dicht, aber winzig, und nach dem
 Weichzeichnen bleibt von ihnen wenig übrig. Die Leiter reichte dann weit über
 das hinaus, was im Feld je vorkommt, und **die halbe Palette blieb ungenutzt** —
-acht von sechzehn Bändern auf der Landkarte. Aus demselben Grund fünf Prozent an
+die Hälfte der Bänder auf der Landkarte. Aus demselben Grund fünf Prozent an
 den Enden statt eines halben: das Weichzeichnen zieht die Verteilung ohnehin zur
 Mitte.
 
