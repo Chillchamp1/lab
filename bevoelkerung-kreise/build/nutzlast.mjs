@@ -1,10 +1,14 @@
 // Geometrie, Zeitreihe und Kreisdaten in eine kompakte Nutzlast für die Seite.
 //
-// Die Zustände liegen alle im selben Bezug und unterscheiden sich von einem
-// Zeitpunkt zum nächsten nur wenig. Kodiert wird deshalb nicht jeder Zustand
-// für sich, sondern der Unterschied zum vorigen — beim ersten der Unterschied
-// zur Landkarte. Zusammen mit dem Zickzack-Varint aus `code.mjs` schrumpft
-// das auf ein bis zwei Zeichen je Koordinate.
+// Gerechnet wird für jeden Zeitpunkt ein eigenes Kartogramm — die Seite
+// zeichnet aber nur noch **eine** Form, den Mittelwert aller. Also steht auch
+// nur der in der Nutzlast, als Unterschied zur Landkarte, mit dem
+// Zickzack-Varint aus `code.mjs` auf ein bis zwei Zeichen je Koordinate.
+//
+// Eine Fassung lang lagen hier alle zehn Zustände als Kette von Unterschieden,
+// weil die Karte sich von einem zum nächsten verformte. Das waren rund 450 kB
+// für neun Formen, die niemand mehr zu sehen bekam; sie gingen nur noch in den
+// Mittelwert ein, und den kann man auch hier rechnen.
 
 import { packe } from './code.mjs';
 
@@ -41,7 +45,6 @@ function rahmen(px, py) {
 // zu erkennen. Beide teilen Knoten, Ringe und Massstab; unterschiedlich sind
 // nur die Koordinaten je Bild.
 export function baueNutzlast({ gebiete, attr, X, Y, reihen, bilder, kreisInfo, log = () => {} }) {
-  const anker = reihen[0].zeitreihe.anker;
   const zustaende = reihen[0].zeitreihe.zustaende;
 
   // Gemeinsames Gitter: alle Zustände und die Landkarte in einen Rahmen,
@@ -65,11 +68,14 @@ export function baueNutzlast({ gebiete, attr, X, Y, reihen, bilder, kreisInfo, l
   const laufend = arr => { const d = new Array(arr.length); let v = 0; for (let i = 0; i < arr.length; i++) { d[i] = arr[i] - v; v = arr[i]; } return d; };
   const gegen = (a, b) => { const d = new Array(a.length); for (let i = 0; i < a.length; i++) d[i] = a[i] - b[i]; return d; };
 
+  /* Der Ankerpunkt stand hier, und mit ihm je Zustand ein Massstab: damit wuchs
+     die Karte flächenproportional mit der Bevölkerung. Beides ist weg. Der
+     Massstab wurde schon eingefroren, als das Wachstum in die Farbe zog, und
+     ein fester Massstab um einen festen Punkt ist wirkungslos, sobald die Seite
+     den Kartenausschnitt ohnehin auf die Leinwand normiert — sie misst den
+     Rahmen der gezeichneten Punkte und rechnet ihn passend. */
   const nutz = {
     breite: BREITE, hoehe,
-    // Der Ankerpunkt, um den jeder Zustand beim Zeichnen auf seine Grösse
-    // gebracht wird — im selben Gitter wie die Koordinaten.
-    ank: [Math.round((anker.x - minX) * skala), Math.round((anker.y - minY) * skala)],
     gx: packe(laufend(G.qx)), gy: packe(laufend(G.qy)),
     ringzahl: packe(gebiete.map(g => g.length)),
     ringe: packe(gebiete.flatMap(g => g.map(r => r.length))),
@@ -90,29 +96,37 @@ export function baueNutzlast({ gebiete, attr, X, Y, reihen, bilder, kreisInfo, l
     return Math.abs(A / 2);
   };
 
-  // Zustände als Kette von Unterschieden, je Reihe
+  /* Eine Form je Reihe: der Mittelwert aller Kartogramme, im selben ganzzahligen
+     Gitter. Gemittelt wird **nach** dem Rastern, damit in der Nutzlast genau
+     die Zahlen stehen, aus denen die Seite hinterher rechnet.
+
+     Gemessen wird danach, wie sehr diese eine Form noch ein Kartogramm ist:
+     ihre Flächen gegen den **mittleren** Bevölkerungsanteil über alle Bilder.
+     Das ist die Aussage, die die Nutzlast jetzt trägt — nicht mehr „Fläche ist
+     Bevölkerung dieses Jahres", sondern „Fläche ist Bevölkerung im Mittel der
+     hundertfünfzig Jahre". */
   nutz.reihen = reihen.map(r => {
     const K = r.zeitreihe.zustaende.map(z => gitter(z.X, z.Y));
-    r.zeitreihe.zustaende.forEach((z, i) => {
-      const drin = z.abgedeckt.flatMap((a, g) => a ? [g] : []);
-      const fl = drin.map(g => flaecheGanz(gebiete[g], K[i].qx, K[i].qy));
-      const summeF = fl.reduce((a, b) => a + b, 0);
-      const summeW = drin.reduce((a, g) => a + (r.bilder.find(x => x.jahr === z.jahr).werte.get(attr[g].ags) ?? 0), 0);
-      drin.forEach((g, k) => {
-        const wert = r.bilder.find(x => x.jahr === z.jahr).werte.get(attr[g].ags) ?? 0;
-        if (wert > 0) abweichungen.push(Math.abs(fl[k] / (summeF * wert / summeW) - 1));
-      });
+    const MX = new Int32Array(G.qx.length), MY = new Int32Array(G.qy.length);
+    for (let i = 0; i < MX.length; i++) {
+      let sx = 0, sy = 0;
+      for (const k of K) { sx += k.qx[i]; sy += k.qy[i]; }
+      MX[i] = Math.round(sx / K.length); MY[i] = Math.round(sy / K.length);
+    }
+    // Mittlerer Anteil je Kreis über alle Bilder, und dagegen die Fläche.
+    const drin = r.zeitreihe.zustaende[0].abgedeckt.flatMap((a, g) => a ? [g] : []);
+    const anteil = new Map(drin.map(g => [g, 0]));
+    for (const b of r.bilder) {
+      let summeW = 0;
+      for (const g of drin) summeW += b.werte.get(attr[g].ags) ?? 0;
+      for (const g of drin) anteil.set(g, anteil.get(g) + (b.werte.get(attr[g].ags) ?? 0) / summeW / r.bilder.length);
+    }
+    const fl = drin.map(g => flaecheGanz(gebiete[g], MX, MY));
+    const summeF = fl.reduce((a, b) => a + b, 0);
+    drin.forEach((g, k) => {
+      if (anteil.get(g) > 0) abweichungen.push(Math.abs(fl[k] / (summeF * anteil.get(g)) - 1));
     });
-    let vorX = G.qx, vorY = G.qy;
-    return {
-      id: r.id, name: r.name,
-      zustaende: r.zeitreihe.zustaende.map((z, i) => {
-        const dx = packe(gegen(K[i].qx, vorX)), dy = packe(gegen(K[i].qy, vorY));
-        vorX = K[i].qx; vorY = K[i].qy;
-        const b = r.bilder.find(x => x.jahr === z.jahr);
-        return { jahr: z.jahr, skala: Number(z.skala.toFixed(5)), bev: z.bevoelkerung, dx, dy };
-      }),
-    };
+    return { id: r.id, name: r.name, mx: packe(gegen(MX, G.qx)), my: packe(gegen(MY, G.qy)) };
   });
 
   // Was für alle Reihen gleich ist, steht nur einmal da.
@@ -132,7 +146,7 @@ export function baueNutzlast({ gebiete, attr, X, Y, reihen, bilder, kreisInfo, l
     ueber1: abweichungen.filter(a => a > 0.01).length,
     zellen: abweichungen.length,
   };
-  log(`  Flächen in der Nutzlast: Median ${(nutz.guete.median * 100).toFixed(2)} %, `
+  log(`  Mittelform gegen den mittleren Anteil: Median ${(nutz.guete.median * 100).toFixed(2)} %, `
     + `Max ${(nutz.guete.max * 100).toFixed(1)} %, über 1 %: ${nutz.guete.ueber1} von ${nutz.guete.zellen}`);
 
   // Kreisdaten: Stammdaten einmal, Bevölkerung je Bild als Kette
@@ -154,7 +168,7 @@ export function baueNutzlast({ gebiete, attr, X, Y, reihen, bilder, kreisInfo, l
   nutz.methodenJeWert = bilder.map(b => attr.map(a => (b.methodeJeKreis?.get(a.ags) ?? '-')).join('')).join('');
   nutz.anteilJeWert = packe(bilder.flatMap(b => attr.map(a => Math.round((b.anteilJeKreis?.get(a.ags) ?? 0) * 100))));
 
-  log(`  Nutzlast: ${reihen.length} Reihen à ${zustaende.length} Zustände, `
+  log(`  Nutzlast: ${reihen.length} Reihe(n), eine Form aus ${zustaende.length} Kartogrammen, `
     + `${(JSON.stringify(nutz).length / 1024).toFixed(0)} kB roh`);
   return { nutz, jeKreis };
 }

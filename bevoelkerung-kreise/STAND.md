@@ -81,7 +81,7 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Marken auf den Zählungen, sonst nichts; Antippen zeigt Zahlen, Rate,
   Stichtag und Methode. Die früheren Ansichten (Wachstum, Einwohner, Nadelrelief)
   und die Notizenliste unter der Karte sind entfallen, ebenso der Umschalter
-  zwischen hellem und dunklem Grund: 818 kB → 612 kB.
+  zwischen hellem und dunklem Grund: 818 kB → **259 kB**.
 - Über der Karte stehen Jahr und Einwohnerzahl und die **laufende Notiz
   ausgeschrieben**, mit Überschrift und Sätzen: dreizehn Notizen zu je einem
   Zeitabschnitt, warum sich die Karte gerade so bewegt. Darunter der Faden der
@@ -215,6 +215,17 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   `min-width:0`, einer reservierten Zeilenhöhe und einem **ResizeObserver** auf
   dem Kartenfeld, der neu misst, wenn sich das Auslegen ändert — wer immer es
   ändert.
+- **Die Nutzlast trägt nur noch eine Form.** Neun der zehn Kartogramme gingen
+  nur in den Mittelwert ein — rund 450 kB für Formen, die niemand zu sehen
+  bekam. Gemittelt wird jetzt beim Bauen: **138 statt 500 kB Nutzlast, 259 statt
+  632 kB Seite.** Mit ihnen fielen der Massstab je Zustand und der Ankerpunkt,
+  um den er wirkte — ein fester Massstab um einen festen Punkt tut nichts mehr,
+  sobald `masse()` den Rahmen der gezeichneten Punkte auf die Leinwand normiert.
+  Gemessen wird beim Bauen jetzt, wie sehr die eine Form noch ein Kartogramm
+  ist: ihre Flächen gegen den **mittleren** Anteil über alle Bilder, Median
+  0,78 %, Max 7,9 %, über 1 % bei 155 von 400. Schlechter als ein einzelnes
+  Kartogramm (Median 0,18 %) und kein Fehler — der Mittelwert zehn flächentreuer
+  Formen ist selbst nicht flächentreu.
 - **Der Boden steht still: der Mittelwert aller zehn Kartogramme.** Verzerrt
   wurde bisher auf das Kartogramm des jeweiligen Jahres — die Fläche eines
   Kreises war sein Anteil an der Bevölkerung *dieses* Bildes. Damit sind zwei
@@ -353,10 +364,11 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   hundertsieben winzigen kreisfreien Städte das obere Quantil, und die halbe
   Palette blieb leer; jetzt sind 2024 zweiundzwanzig der vierundzwanzig Bänder
   belegt.
-- **Die kreisfreien Städte tragen doch einen Umriss**, einen feinen dunklen über
-  dem Relief. Ein Landkreis braucht keinen, er wird kaum verzerrt; eine
-  kreisfreie Stadt ist auf dem Boden winzig und in der Karte gross, und ihr Berg
-  reicht weit über sie hinaus.
+- **Auch die Städte tragen keinen Umriss mehr.** Die hundertsieben kreisfreien
+  Städte waren die letzte Ausnahme von „keine Grenzen"; der Strich sagte, wie
+  weit eine Stadt reicht, solange sie mit ihrer Bevölkerung wuchs. Bei festem
+  Boden ist die Grundfläche über alle Jahre dieselbe, er zeigt also nur noch
+  Verwaltung.
 - **Im vollen Kartogramm ist keine Höhe mehr übrig**, und das soll man sehen.
   Eine Leiter über die verbliebenen anderthalb Prozent machte aus Rundungsresten
   ein Gebirge — und das weichgezeichnete Feld tat dasselbe, weil ein gross
