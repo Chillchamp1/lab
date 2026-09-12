@@ -98,8 +98,8 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Breite sie, und der übrige Platz gehört ganz dem Text statt zur Hälfte einem
   Loch über der Legende. Die Zweispaltigkeit im
   Querformat ist damit hinfällig und wieder draussen.
-- Die **Legende** ist die Leiter mit vier Zahlen darauf (0, ×0,5, ×1, ×2,3)
-  und darunter ein Satz, was die Höhe misst. Umbruch unterbunden, sonst schöbe
+- Die **Legende** ist die Leiter mit sechs Zahlen darauf (0, ×0,5, ×1, ×1,5,
+  ×2, ×2,5) und darunter ein Satz, was die Höhe misst. Umbruch unterbunden, sonst schöbe
   er die Karte.
 - Die Uhr läuft 84 Sekunden für 153 Jahre. Die Spielzeit je Abschnitt mischt
   Dauer und Umschichtung (geometrisches Mittel) und liegt nie unter
@@ -253,7 +253,7 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   einmal gerechnet. Nachgezählt, dass die Mischung aus elf Formen nichts
   umstülpt: **0 gefaltete Ringe von 465**. Schneegrenze dafür von 1,17 auf 1,10,
   Wasser 2024 9,2 % statt 6,6 %.
-- **Unten Wasser.** Die untersten fünf der sechsundzwanzig Bänder sind ein See:
+- **Unten Wasser.** Die untersten fünf der fünfundzwanzig Bänder sind ein See:
   tief dunkelblau, zum Ufer hin heller. Wo auf die Fläche am wenigsten Menschen
   kommen, liegt jetzt Wasser, und die Uferlinie ist die schärfste Grenze, die
   eine Geländekarte kennt. Zwei Gewinne: die Landbänder verteilen sich über
@@ -318,7 +318,7 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   mittlere Buntheit der Landbänder 0,17 (OKLab) gegen 0,15 der vorigen Fassung.
   Das oberste Band ist **weiss**, nicht hellbraun; darunter ein fast
   entsättigtes Grau als Übergang von Fels zu Schnee. 2024 sind zweiundzwanzig
-  der vierundzwanzig Bänder belegt. (Heute sind es sechsundzwanzig Bänder,
+  der vierundzwanzig Bänder belegt. (Heute sind es fünfundzwanzig Bänder,
   siehe „Der Meeresspiegel".)
 - **Die Höhenlinien werden ausgedünnt, nicht fallengelassen.** Wo zwei Niveaus
   auf der Leinwand zusammenrückten, blendeten bisher *alle* aus — was genau den
@@ -361,7 +361,7 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Kartogramm ×0,35 … ×1,17). Flächengewichtet,
   weil Fläche gefärbt wird und nicht Kreise — ungewichtet setzten die
   hundertsieben winzigen kreisfreien Städte das obere Quantil, und die halbe
-  Palette blieb leer; jetzt sind 2024 vierundzwanzig der sechsundzwanzig Bänder
+  Palette blieb leer; jetzt sind 2024 dreiundzwanzig der fünfundzwanzig Bänder
   belegt.
 - **Der Meeresspiegel ist jetzt eine Zahl, die etwas heisst.** Er lag bei ×0,43
   der heutigen mittleren Dichte, und das war kein Schwellenwert, sondern das
@@ -375,24 +375,35 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   schrumpft leere Kreise — die 27 Kreise zwischen ×0,48 und ×0,52 haben real
   zwischen 78 und 126 Einwohner je km², im Median 95; unter Wasser stehen
   12,4 Prozent der Karte, während real 31,9 Prozent der Landesfläche unter
-  100 E/km² liegen. Bezahlt ist der Spiegel mit **26 Bändern statt 24 und fünf
-  blauen statt vier**: das Leiterende fällt damit auf ×2,311 und liegt ein
-  Viertelprozent neben dem gemessenen Quantil (×2,305); oben ändert sich
-  nichts, Berlin bleibt mit ×0,965 im Feld über dem Ruhrgebiet mit ×0,884, und
-  24 der 26 Bänder sind 2024 belegt. Geprüft und verworfen: ×1,00 (die heutige
+  100 E/km² liegen. Bezahlt ist der Spiegel mit **25 Bändern statt 24 und fünf
+  blauen statt vier** — und damit geht die ganze Leiter in runden Zahlen auf:
+  ein Band ist ×0,1, fünf Bänder sind die Küste, die Rampe endet bei ×2,5, das
+  Knie beginnt bei ×2,222 (gemessenes Quantil ×2,305, vier Prozent daneben).
+  Jede halbe Stufe fällt auf eine Bandgrenze; 23 der 25 Bänder sind 2024
+  belegt, Berlin bleibt im Feld über dem Ruhrgebiet. Geprüft und verworfen: ×1,00 (die heutige
   mittlere Dichte) setzt 58 Prozent der Fläche unter Wasser und 1871 das ganze
   Land; ×0,35 (die mittlere Dichte von 1871, 82 E/km²) ist die schönere
   Erzählung, zeigt 2024 aber nur 4 Prozent Blau. Der Lauf der Küste: 1871
   **90,5 %** der Fläche unter Wasser — die Karte ist eine Inselgruppe —, 1900
-  55,8 %, 1939 34,6 %, um 1950 **11,6 %** (nie wohnte in der Fläche so viel
-  Deutschland wie nach der Vertreibung), dann wieder 9,1 % 1996, 11,3 % 2011,
-  **12,4 % 2024**, fast nur im Nordosten.
+  55,9 %, 1939 34,4 %, um 1950 **11,4 %** (nie wohnte in der Fläche so viel
+  Deutschland wie nach der Vertreibung), dann wieder 8,9 % 1996, 11,4 % 2011,
+  **12,2 % 2024**, fast nur im Nordosten.
 - **Die Zahlen stehen auf der Leiter statt daneben.** Links und rechts standen
   Anfang und Ende, dazwischen nichts — bei einer linearen Leiter die
   ungünstigste aller Auskünfte, weil sich der bewohnte Bereich ins linke
-  Drittel drängt. Jetzt vier Marken an ihrer wirklichen Stelle: **0, ×0,5, ×1,
-  ×2,3**. Die ×0,5 fällt auf die Uferkante, die ×2,3 auf das gemessene
-  Quantil. Damit das stimmt, zeigt die Rampe **harte Stufen** statt eines
+  Drittel drängt. Jetzt sechs Marken an ihrer wirklichen Stelle, alle rund oder
+  halb: **0, ×0,5, ×1, ×1,5, ×2, ×2,5** — gleichmässig bei 0, 20, 40, 60 und 80
+  Prozent, jede auf einer Bandgrenze, die ×0,5 auf der Uferkante. ×1 steht
+  damit bei 40 Prozent und nicht in der Mitte: in der Mitte stünde sie nur bei
+  einem Ende von ×2,0, und darüber liegen 2024 noch **7,1 Prozent der Fläche**
+  (Berlin, München, Frankfurt, das halbe Ruhrgebiet), die sich dann das letzte
+  Fünftel der Farben teilen müssten — genau die Krankheit, die „Die Leiter war
+  oben zu" schon einmal hatte. Über ×2,5 liegen nur 0,65 Prozent. Und ×2,5 ist
+  kein Deckel: ab ×2,222 biegt das Knie weich um, die Marke sitzt deshalb bei
+  96 statt 100 Prozent, der Rest der Rampe trägt alles darüber (höchster Kreis:
+  München 2024 mit ×3,16). Vorher stand rechts „×2,3+" am äussersten Rand und
+  sah aus wie Schluss. Damit die ×0,5 stimmt, zeigt die Rampe **harte Stufen**
+  statt eines
   weichen Verlaufs: ein CSS-Verlauf setzt seine Stützstellen auf k/(N−1) und
   mischt, die Bänder liegen aber auf k/N — das Ufer lag im Verlauf drei Prozent
   neben seiner Zahl. Und die Legendenzeile sagt nur noch einen Satz:

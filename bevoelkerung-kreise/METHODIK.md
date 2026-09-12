@@ -905,7 +905,7 @@ Vielfaches grösser.
 
 Die Karte wird gemalt, wie ein Atlas ein Gebirge malt: unten Wasser, dann
 Tiefland in tiefem Waldgrün, Grasgrün, Gelbgrün, Gelb, Ocker, Orange, Rot —
-oben Fels und Schnee. **Sechsundzwanzig Bänder**, und sie werden beim Bauen aus
+oben Fels und Schnee. **Fünfundzwanzig Bänder**, und sie werden beim Bauen aus
 ihrer Beschreibung gerechnet statt von Hand gesetzt: je Band eine Helligkeit,
 ein Farbton und die grösste Buntheit, die sRGB an dieser Stelle noch hergibt,
 gesucht per Halbierung in OKLCh.
@@ -959,13 +959,19 @@ Bänder, der Zahl der blauen darunter und dem oberen Ende der Leiter:
 
     Ufer = WASSER / NBAND · (1 + RESERVE) · Leiterende
 
-Zwei davon sind frei, die dritte folgt. Gewählt sind **26 Bänder und 5 blaue**,
-weil das Leiterende dann bei ×2,311 liegt — und damit fast genau dort, wo das
-gemessene Quantil es ohnehin hinlegt (×2,305, ein Viertelprozent daneben). Die
-Küste bekommt ihre Bedeutung also umsonst: oben ändert sich nichts, die
-Höhenlinien werden um ein Zwölftel feiner (26 Niveaus statt 24), und Berlins
-Gipfel bleibt mit ×0,965 im Feld über dem des Ruhrgebiets mit ×0,884. 2024 sind
-24 der 26 Bänder belegt.
+Zwei davon sind frei, die dritte folgt. Gewählt sind **25 Bänder und 5 blaue**,
+und damit geht die ganze Leiter in runden Zahlen auf:
+
+| | |
+|---|---|
+| ein Band | ×0,1 |
+| fünf Bänder | ×0,5 — die Küste |
+| Ende der Farbrampe | ×2,5 |
+| Beginn des Knies | ×2,222 (gemessenes Quantil ×2,305, vier Prozent daneben) |
+
+Jede halbe Stufe fällt damit auf eine Bandgrenze und also auf eine Höhenlinie.
+2024 sind 23 der 25 Bänder belegt, und Berlins Gipfel bleibt im Feld über dem
+des Ruhrgebiets.
 
 Andere Schwellen wurden geprüft und verworfen. Die **mittlere Dichte von heute**
 (×1,00) setzt 58 Prozent der Fläche unter Wasser und 1871 das ganze Land — sie
@@ -980,14 +986,14 @@ Was die Küste über die Zeit zeigt:
 | Jahr | Wasserfläche |
 |---|---|
 | 1871 | 90,5 % |
-| 1900–1910 | 55,8 % |
-| 1939 | 34,6 % |
-| 1946–1950 | **11,6 %** |
-| 1961–1964 | 13,2 % |
-| 1985–1987 | 10,2 % |
-| 1996 | 9,1 % |
-| 2011 | 11,3 % |
-| 2024 | 12,4 % |
+| 1900–1910 | 55,9 % |
+| 1939 | 34,4 % |
+| 1946–1950 | **11,4 %** |
+| 1961–1964 | 13,1 % |
+| 1985–1987 | 9,9 % |
+| 1996 | 8,9 % |
+| 2011 | 11,4 % |
+| 2024 | 12,2 % |
 
 1871 ist Deutschland eine Inselgruppe: neun Zehntel des Landes liegen unter der
 Marke, über Wasser stehen Ruhr und Köln als grosse Insel, dazu Berlin, Hamburg,
@@ -995,7 +1001,7 @@ Sachsen, Frankfurt, Stuttgart und München. Das ist kein Fehler und keine
 Übertreibung — nach heutigem Massstab war das Land damals fast leer. Dann steigt
 es, und **um 1950 ist der Tiefstand erreicht**: nie wohnte in der Fläche so viel
 Deutschland wie nach der Vertreibung. Seither steigt die See wieder, langsam und
-fast nur im Nordosten — 9,1 Prozent 1996, 11,3 Prozent 2011, 12,4 Prozent 2024.
+fast nur im Nordosten — 8,9 Prozent 1996, 11,4 Prozent 2011, 12,2 Prozent 2024.
 Das Binnenmeer über Mecklenburg, der Uckermark, der Altmark und der Lausitz ist
 der sichtbarste Befund der ganzen Karte.
 
@@ -1006,18 +1012,38 @@ nichts. Bei einer **linearen** Leiter ist das die ungünstigste aller Auskünfte
 der ganze bewohnte Bereich drängt sich ins linke Drittel, und wo darin ×1 liegt,
 war nicht zu erraten.
 
-Jetzt trägt die Leiter vier Marken an ihrer wirklichen Stelle: **0, ×0,5, ×1 und
-×2,3**. Der Abstand sagt damit selbst etwas — von null bis zur heutigen
-mittleren Dichte ist es das erste Drittel, der ganze Rest liegt darüber. Die
-×0,5 fällt genau auf die Uferkante, die ×2,3 auf das gemessene Quantil; was
-dahinter liegt, sind Fels und Schnee, und dorthin trägt das Knie alles, was über
-dem Quantil steht.
+Jetzt trägt die Leiter sechs Marken, alle rund oder halb, jede an ihrer
+wirklichen Stelle: **0, ×0,5, ×1, ×1,5, ×2 und ×2,5**. Weil die Leiter linear
+teilt und bei ×2,5 endet, sitzen sie bei 0, 20, 40, 60 und 80 Prozent —
+gleichmässig, jede auf einer Bandgrenze, und die ×0,5 genau auf der Uferkante.
 
-Damit die ×0,5 wirklich auf der Kante sitzt, zeigt die Farbrampe jetzt **harte
+**Warum ×1 nicht in der Mitte steht.** In der Mitte stünde sie nur bei einem
+Ende von ×2,0 — und dort ist zu wenig Platz. Über ×2,0 liegen 2024 noch
+**7,1 Prozent der Fläche**: Berlin, München, Frankfurt, das halbe Ruhrgebiet,
+Hamburg, Stuttgart. Die müssten sich das letzte Fünftel der Farben teilen, und
+genau daran krankte eine frühere Fassung („Die Leiter war oben zu"). Über ×2,5
+liegen nur noch 0,65 Prozent — das ist ein Gipfel und keine Landschaft, und
+dafür sind Fels und Schnee da.
+
+**Und was ist das sinnvolle Maximum?** ×2,5, aber als Ende der Farben und nicht
+als Deckel. Ab ×2,222 biegt das Knie die Leiter weich um; ×2,5 sitzt deshalb bei
+96 statt bei 100 Prozent der Rampe, und der schmale Rest dahinter trägt alles,
+was darüber liegt — bis ins Unendliche, ohne je abzuschneiden. Gemessen reicht
+das aus: der höchste Kreis überhaupt ist **München 2024 mit ×3,16**, danach
+Leverkusen ×2,71, Frankfurt ×2,56, Berlin und Köln ×2,36. Nach dem Schärfen
+steht 0,012 Prozent der Fläche am rechnerischen Anschlag — zwölf Millionstel,
+und dort ist ohnehin schon alles weiss.
+
+Vorher stand rechts „×2,3+". Die Zahl war das gemessene Quantil, das Pluszeichen
+sollte sagen, dass es weitergeht — nur stand sie am äussersten Rand, und damit
+sah es aus, als wäre dort Schluss. Jetzt steht sie, wo sie hingehört, und das
+letzte Stück Rampe ist sichtbar mehr.
+
+Damit die ×0,5 wirklich auf der Kante sitzt, zeigt die Farbrampe **harte
 Stufen** statt eines weichen Verlaufs: ein CSS-Verlauf setzt seine Stützstellen
 auf k/(N−1) und mischt dazwischen, die Bänder der Karte liegen aber auf k/N und
 mischen nicht — das Ufer lag im Verlauf drei Prozent links von seiner Zahl. Die
-Leiter zeigt jetzt dieselben sechsundzwanzig Bänder wie die Karte.
+Leiter zeigt jetzt dieselben fünfundzwanzig Bänder wie die Karte.
 
 Darunter steht ein einziger Satz: **„× the average population density of Germany
 2024"**. Was dort früher noch stand — der Meeresspiegel, der Stichtag — steht
@@ -1244,7 +1270,7 @@ der Formen.
 
 ### Die Leiter wird gemessen, nicht gesetzt
 
-Gesetzt ist an der Leiter nur, dass sie sechsundzwanzig Bänder hat; wo sie
+Gesetzt ist an der Leiter nur, dass sie fünfundzwanzig Bänder hat; wo sie
 anfängt und aufhört, kommt **aus den Daten**: alle vierhundert Kreise in allen zehn
 Zählungen, das fünfte und das fünfundneunzigste Prozent (oben plus siebzehn
 Prozent Schneegrenze, siehe unten), einmal gemessen und dann behalten. Das geht,
@@ -1256,17 +1282,19 @@ Zum Vergleich, damals mitgemessen: die Landkarte streute ×0,18 … ×2,68, das
 volle Kartogramm ×0,35 … ×1,17 — die Landkarte setzte also das obere Ende für
 alle drei.
 
-Nach oben läuft die Leiter als Knie weiter bis ×2,60 am Ende der Farbrampe;
-unten fängt sie bei null an, und die untersten fünf Bänder sind Wasser. Das
-obere Ende steht seit dem gesetzten Meeresspiegel nicht mehr auf dem gemessenen
-Quantil, sondern auf ×2,311 — ein Viertelprozent darüber (siehe „Der
-Meeresspiegel ist eine Zahl, die etwas heisst").
+Nach oben läuft die Leiter als Knie weiter bis ×2,50 am Ende der Farbrampe;
+unten fängt sie bei null an, und die untersten fünf Bänder sind Wasser. Das Knie
+beginnt seit dem gesetzten Meeresspiegel nicht mehr beim gemessenen Quantil,
+sondern bei ×2,222 — vier Prozent darunter, und dafür endet die Rampe auf einer
+runden Zahl (siehe „Der Meeresspiegel ist eine Zahl, die etwas heisst").
 
 ### Das Ruhrgebiet und Berlin
 
-Die dichtesten Kreise sind 2024 bei halber Verzerrung München ×2,58, Berlin
-×2,51, Frankfurt ×2,41, Oberhausen ×2,39, Stuttgart ×2,36. Berlin ist also
-dichter als jede einzelne Ruhrstadt. Auf der Karte sah es lange umgekehrt aus —
+Die dichtesten Kreise sind 2024 auf dem festen Boden München ×3,16,
+Leverkusen ×2,71, Frankfurt ×2,56, Berlin und Köln ×2,36, Oberhausen ×2,31,
+Hamburg ×2,22, Essen ×2,07. Berlin ist also dichter als jede einzelne
+Ruhrstadt. (Die Zahlen sind Höhen auf dem gezeichneten Boden, nicht Einwohner
+je km²: der Boden streckt die Ballungsräume und staucht die leeren Kreise.) Auf der Karte sah es lange umgekehrt aus —
 das Ruhrgebiet trug die grosse helle Kappe, Berlin einen Fleck, und wer das
 liest, liest dort zwei- bis dreimal so viele Menschen. **Drei Gründe, und alle
 drei sind Darstellung, nicht Befund.**
