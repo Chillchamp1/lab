@@ -151,12 +151,15 @@ Linie.** So macht es ein Schulatlas.
 
 Wie weit die Höhen streuen, hängt an der Stellung des Knopfes, also wird die
 Leiter **je Form einmal aus den Daten gemessen** — alle Kreise in allen
-Zählungen, fünf bis fünfundneunzig Prozent, **gewichtet mit der Fläche**: auf
-der Landkarte von ×0,26 bis ×2,9, bei halber Verzerrung von ×0,44 bis ×2,3.
+Zählungen, fünf bis siebenundneunzig Prozent, **gewichtet mit der Fläche**; die
+drei zusammen ergeben eine Leiter für alle, ×0,18 bis ×3,62. Oben siebenund­
+neunzig und nicht fünfundneunzig, damit die hellste Stufe eine Spitze bleibt:
+bei q0,95 endete die Leiter unter den dichtesten Orten, und über zehn Prozent
+der Kartenfläche lagen 2024 im selben hellsten Ton — das Ruhrgebiet als eine
+grosse weisse Kappe, obwohl Berlin der dichtere Kreis ist.
 Flächengewichtet, weil Fläche gefärbt wird und nicht Kreise — ungewichtet
 setzten die hundertsieben winzigen kreisfreien Städte das obere Quantil, und die
-halbe Palette blieb ungenutzt. Zwischen zwei Formen wird logarithmisch
-übergeblendet, und die Zahlen an den Enden der Leiter wandern mit.
+halbe Palette blieb ungenutzt.
 
 Im vollen Kartogramm gibt es keine Spanne mehr: dort hat jeder Kreis dieselbe
 Dichte, weil die ganze Bevölkerung in der Fläche steckt. Eine Leiter, die über

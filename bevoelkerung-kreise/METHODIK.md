@@ -820,13 +820,51 @@ Verhältnis ist und sich beim Skalieren der ganzen Karte nicht ändert.
 
 | Form | gemessene Spanne |
 |---|---|
-| Real map (a = 0) | ×0,18 … ×2,29 |
-| Half and half (a = 0,5) | ×0,28 … ×2,04 |
+| Real map (a = 0) | ×0,18 … ×3,62 |
+| Half and half (a = 0,5) | ×0,28 … ×2,6 |
 | Cartogram (a = 1) | ×0,35 … ×1,00 |
 
 Die drei zusammen ergeben die eine Leiter, die alle umschliesst — ×0,18 bis
-×2,29. Dieselbe Farbe heisst damit über die ganzen hundertdreiundfünfzig Jahre
+×3,62. Dieselbe Farbe heisst damit über die ganzen hundertdreiundfünfzig Jahre
 dasselbe **und** über alle drei Knopfstellungen.
+
+### Das Ruhrgebiet und Berlin
+
+Berlin ist 2024 der dichteste Kreis der Karte: ×2,51 bei halber Verzerrung,
+dichter als jede einzelne Ruhrstadt (Oberhausen ×2,39, Essen ×2,35, Dortmund
+×2,18). Auf der Karte sah es lange umgekehrt aus — das Ruhrgebiet trug eine
+grosse, fast weisse Kappe, Berlin einen kleinen roten Fleck, und wer das liest,
+liest dort zwei- bis dreimal so viele Menschen. Zwei Gründe, und beide sind
+Darstellung, nicht Befund.
+
+**Die Leiter war oben zu.** Sie endete beim fünfundneunzigsten Prozent, also bei
+×2,29, und alles darüber landete im hellsten Band: Berlin, München, Essen,
+Oberhausen, ununterscheidbar. **Über zehn Prozent der Kartenfläche** lagen 2024
+in diesem einen Ton. Das ist die Kehrseite des absoluten Bezugs — die Leiter ist
+über alle zehn Zählungen gemessen, und 2024 ist die dichteste; sie klemmt dort
+oben an, wie 1871 unten. Das obere Quantil steht deshalb jetzt auf 0,97: die
+hellsten Töne bleiben einer Spitze vorbehalten, die es in keinem Bild gibt, und
+die gesättigte Fläche ist verschwunden.
+
+**Und zu weit geglättet.** Das weite Feld bevorzugt Plateaus vor Spitzen. Das
+Ruhrgebiet ist ein fünfzig Kilometer breites Band dichter Städte — dort mittelt
+der Weichzeichner nur Hohes. Berlin ist ein Fleck in dünn besiedeltem
+Brandenburg — dort mittelt er die Spitze weg. Ein engerer weiter Radius
+(`breite/28` statt `breite/22`) und mehr Gewicht auf dem engen Feld (0,55 statt
+0,40) geben dem einzelnen Kreis seinen Wert zurück. Nebenbei zerfällt das
+Ruhrgebiet damit wieder in die Städte, aus denen es besteht, statt als ein
+einziger glatter Berg dazuliegen — und das ist der ehrlichere Eindruck.
+
+Das enge Feld trägt jetzt mehr, also bekommt es eine trägere Zeitkonstante
+(0,55 s statt 0,30 s). Gemessen ist die Bewegung danach sogar ruhiger als
+vorher: 0,77 statt 0,81 Promille Änderung je Bild.
+
+Was bleibt, bleibt zu Recht. Die gleichfarbige Zone ist im Ruhrgebiet grösser,
+weil dort auf grösserer Fläche ähnlich dicht gewohnt wird. Und Berlin und Essen
+trennen fünf Prozent, während ein Band siebzehn Prozent breit ist — sie **müssen**
+dieselbe Farbe haben. Wer die Bevölkerung vergleichen will, schaltet auf
+Cartogram: dort ist die Fläche die Bevölkerung, und Berlins 3,7 Millionen stehen
+neben den 5,0 des Ruhrgebiets.
 
 Gewichtet wird mit der **Fläche**, nicht je Kreis gleich. Das ist der
 Unterschied zwischen „wie dicht wohnt ein Kreis" und „wie dicht ist das Land
