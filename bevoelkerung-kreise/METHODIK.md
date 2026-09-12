@@ -276,11 +276,45 @@ liegt kein Wert ausserhalb dieser beiden.** Ein Kreis hat unterwegs nie mehr
 Menschen als in einem der beiden Bilder, und eine Ecke der Karte wandert nie
 über den Ort hinaus, den sie in beiden hat.
 
-Nachgemessen an 900 Stellen der Zeitachse: das Überschiessen über die
-Zählwerte ist **0,0000 %**, der grösste Sprung der Bewegungsgeschwindigkeit
-fällt von **74 % auf 12,8 %** (er bleibt, wo eine Reihe kippt — dort ist die
-Steigung mit Absicht null), und kein Ring dreht unterwegs seine Orientierung
-um, es entstehen also keine Faltungen.
+### Was sie kostet, und ob sie das wert ist
+
+Die Kurve war für die **Knoten des Kartogramms** gedacht; der Boden steht
+still, seit die Karte eine feste Form hat. Also nachgemessen, über alle Kreise
+und neunhundert Stellen der Achse. `STRAFF` ist ein Regler von der Geraden (0)
+zur vollen Fritsch–Carlson-Kurve (1) — eine Hermite-Kurve, deren beide
+Steigungen gleich der Sehne sind, *ist* die Gerade, also lässt sich dazwischen
+stufenlos mischen. Gemessen wird die Abweichung von der Geraden gegen den
+Knick der Höhe an einer Zählung (Median über die 400 Kreise):
+
+| STRAFF | grösste Abweichung | im Mittel | Knick im Median |
+|---|---|---|---|
+| 0 (Gerade) | 0 | 0,00 % | 74 % |
+| 0,25 | 58 305 | 0,19 % | 65 % |
+| 0,5 | 116 611 | 0,38 % | 53 % |
+| 0,75 | 174 916 | 0,57 % | 35 % |
+| **1 (eingestellt)** | **233 221** | **0,75 %** | **5 %** |
+
+Die Mitte ist das Schlechteste von beidem: den halben Preis für ein Viertel
+des Nutzens. Also ganz oder gar nicht — und ganz, weil ein Knick von 74 Prozent
+heisst, dass die Wachstumsgeschwindigkeit des mittleren Kreises an jeder
+Zählung fast um die Hälfte springt. Neunmal im Lauf, über vierhundert Kreise
+zugleich: ein sichtbares Zucken.
+
+Der Preis liegt nicht gleichmässig. Fast alles davon steckt in der einen
+39-Jahre-Lücke zwischen 1871 und 1910, wo Berlin um bis zu **233 221 Menschen**
+über der Geraden läuft: die Kurve zieht das Wachstum nach vorn, weil der
+folgende Abschnitt flach ist und die Monotonie diese Flachheit rückwärts in
+die Anfahrt trägt. Für eine Stadt, deren Wachstum sich in der Gründerzeit
+beschleunigte, zeigt das in die falsche Richtung. Gezählt ist dort nichts;
+beide Annahmen sind Annahmen, und die gerade wäre die vorsichtigere.
+
+Was die Kurve dagegen **nicht** tut: etwas erfinden, was über die Zählwerte
+hinausgeht. Das Überschiessen ist **0,0000 %** — zwischen zwei Zählungen liegt
+kein Wert ausserhalb dieser beiden. Ein langer Tiefstand auf der Karte ist
+also gezählt, nicht geglättet. Berlin zum Beispiel: 4 338 756 (1939),
+3 170 832 (1946), 3 270 959 (1964), 3 075 670 (1987), 3 458 763 (1996) — vier
+Jahrzehnte flach, und der Stand von 1939 ist bis heute nicht wieder erreicht.
+Die Glättung verschiebt dort höchstens 9 000 Menschen.
 
 ## 4e. Die Uhr
 
@@ -787,16 +821,45 @@ und heute die sechzehnte. Der Abstand zwischen der grössten Stadt und der
 siebzehnten liegt übrigens in jedem Bild zwischen zwölf und zweiundzwanzig,
 1871 wie 2024: dieselbe Spreizung, dieselbe Schrift.
 
-Dazu **Abstand**: aus jedem Bündel eng benachbarter Städte bleibt die grösste,
-gemessen mit sechzig Kilometern auf der Landkarte — nicht auf dem gezogenen
-Boden, denn sechzig Kilometer sind sechzig Kilometer. Sonst trügen Rhein und
-Ruhr auf einem daumengrossen Bild sieben Namen.
+### Abstand — und warum das Ruhrgebiet ihn anders braucht
 
-Wo zwei Namen einander trotzdem berühren, weichen beide aus: ein paar Runden
+Aus jedem Bündel eng benachbarter Städte bleibt die grösste, sonst trügen
+Rhein und Ruhr auf einem daumengrossen Bild sieben Namen. Die Regel war
+**sechzig Kilometer auf der Landkarte**, und daran ging genau diese Region
+zugrunde: Köln liegt 55 Kilometer von Essen entfernt, warf es also aus der
+Liste — und Essen war 1910 mit 477 611 Menschen die neuntgrösste Stadt des
+Landes, grösser als Dortmund, das stattdessen dastand. Übrig blieb ein
+einziger Name für eine Region, in der sechs Städte unter den zwanzig grössten
+lagen: Essen, Dortmund, Düsseldorf, Duisburg, Wuppertal, Bochum.
+
+Gedrängt wird aber nicht auf der Landkarte, sondern **auf dem Bild**. Und der
+feste Boden ist ein halb eingemischtes Kartogramm, zieht das Ruhrgebiet also
+auseinander: dort liegen rund zwei Bildpunkte auf einem Kilometer, im Land im
+Mittel 0,9. Derselbe Abstand auf dem Bild lässt dem Revier damit gut die
+doppelte Zahl an Namen — und genau da braucht man sie.
+
+Gemessen wird als Bruchteil der Kartenbreite, ein Zwölftel, in Bodenmass. Das
+hängt an nichts als der Karte: dieselben Städte auf dem Telefon wie auf dem
+Schirm, gleich wie hoch oder breit das Fenster steht. Seither stehen Essen,
+Dortmund und Köln nebeneinander, und 2024 kommen Münster und Karlsruhe dazu —
+beide grösser als Chemnitz, beide vorher von einem Nachbarn verdeckt.
+
+Wo zwei Namen einander trotzdem berühren, weichen beide aus: vierzig Runden
 Abstossen entlang der kleineren Überlappung, dazu eine schwache Feder, die
 jeden zu seinem Fleck zurückzieht. Das Ergebnis ändert sich von Bild zu Bild
 ruhig, flackert also nicht. Wer dabei weit von seinem Fleck weggerutscht ist,
 bekommt einen Haarstrich dorthin zurück.
+
+Zwei Feinheiten, ohne die aus zwei Namen ein Wort wird. Erstens: Abstossen und
+Feder stehen im Gleichgewicht, die Überlappung wird also nie ganz aufgelöst,
+sondern nur bis auf Feder/(Feder + Abstossung). Bei 0,08 gegen 0,3 blieb ein
+Fünftel stehen — „HannoverBraunschweig"; bei 0,05 gegen 0,45 ist es ein
+Zehntel. Zweitens hängt der Luftspalt an der Schrift statt an einer festen
+Zahl: vier Bildpunkte sind bei einer 24-Punkt-Schrift ein Haar.
+
+Und wer gerade ausblendet, schiebt nur nach Massgabe seiner Deckkraft —
+weggeschoben wird er voll. Sonst rückte die halbe Karte in dem Augenblick zur
+Seite, in dem ein Name unter die Schwelle fällt.
 
 ## 4j. Der Tiefpass über die Bilder
 

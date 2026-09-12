@@ -249,9 +249,14 @@ Sechsundfünfzigstel der Kartenbreite bis zum Dreiunddreissigstel — der Berg
 sagt, wie viele Menschen da sind, der Name sagt, wer gerade zu den grössten
 gehört. Wo zwei Namen einander berühren, weichen sie aus. Und keiner steht auf
 seinem Gipfel: jeder rückt um einen halben Fleckradius nach unten, sonst deckte
-„Berlin" genau den Berg zu, den es benennt. Städte im Umkreis von sechzig
-Kilometern um eine grössere sind nicht beschriftet — sonst trügen Rhein und
-Ruhr allein sieben Namen.
+„Berlin" genau den Berg zu, den es benennt.
+
+Zwei Namen bleiben mindestens ein Zwölftel der Kartenbreite voneinander
+entfernt — sonst trügen Rhein und Ruhr allein sieben. Gemessen auf dem Bild,
+nicht auf der Landkarte: der feste Boden zieht das Ruhrgebiet auseinander, dort
+stehen also doppelt so viele Namen auf denselben Kilometern. Genau da braucht
+man sie, denn 1910 lagen sechs Städte des Reviers unter den zwanzig grössten
+des Landes.
 
 ## Was geprüft ist
 
