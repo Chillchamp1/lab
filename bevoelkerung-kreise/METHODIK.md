@@ -284,7 +284,7 @@ um, es entstehen also keine Faltungen.
 
 ## 4e. Die Uhr
 
-Die Uhr braucht 70 Sekunden für die 153 Jahre. Wie viel davon ein Abschnitt
+Die Uhr braucht 84 Sekunden für die 153 Jahre. Wie viel davon ein Abschnitt
 bekommt, hängt an zwei Dingen zugleich: **wie lang er dauerte und wie viel sich
 in ihm umschichtete**. Genommen wird das geometrische Mittel aus beiden
 Anteilen — dem an der Summe der Jahre und dem an der Summe aller Veränderungen
@@ -946,6 +946,11 @@ hier noch fehlte.
 Rot, weil es die einzige Farbe ist, die auf dieser Leiter **nichts bedeutet**:
 Blau, Grün, Gelb, Orange und Weiss sind Daten, ein roter Punkt ist eine Marke.
 Der dunkle Ring trägt ihn über das rote Band und durch den Schnee.
+
+Der Versatz des Namens nach unten hat zwei Teile. Der eine hängt am Fleck — bei
+einem grossen rückt der Name weiter herunter, damit der Gipfel frei bleibt. Der
+andere ist ein fester Abstand zur Kartenbreite; ohne ihn klebt die Schrift einer
+kleinen Stadt am Punkt, weil deren Fleck kaum Versatz hergibt.
 
 **Siebzehn Städte statt dreizehn**, dazu Magdeburg, Bielefeld, Mannheim und
 Kiel — die Schwelle liegt bei 250 000 statt 400 000 Einwohnern, gemessen am

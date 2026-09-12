@@ -303,8 +303,8 @@ const abschnitte = bilder.slice(0, -1).map((b, i) => {
 // 2019 bis 2024 — bekämen nach Jahren und Umschichtung sonst zwei Sekunden und
 // weniger. Wer über der Grenze liegt, gibt dafür anteilig ab; das wird ein paar
 // Mal wiederholt, bis es steht.
-const SPIELZEIT = 70;             // Sekunden für die ganze Achse
-const MINDEST = 4.5 / SPIELZEIT;  // kleinster Anteil je Abschnitt
+const SPIELZEIT = 84;             // Sekunden für die ganze Achse
+const MINDEST = 5.4 / SPIELZEIT;  // kleinster Anteil je Abschnitt
 {
   const sj = abschnitte.reduce((x, a) => x + a.jahre, 0), su = abschnitte.reduce((x, a) => x + a.um, 0);
   const roh = abschnitte.map(a => Math.sqrt((a.jahre / sj) * (a.um / su)));
@@ -392,21 +392,22 @@ body{background:var(--plane);color:var(--ink);
 .text{position:absolute;left:12px;right:12px;top:48px;z-index:0;pointer-events:none}
 
 /* Die laufende Notiz, ausgeschrieben: Überschrift und Sätze. */
-/* Halb so gross wie zuvor (13,5 → 7 und 14,5 → 7,5). Der Text stand als Block
-   über der Karte und zog den Blick, bevor die Karte ihn bekam; klein gesetzt
-   ist er da, wenn man ihn sucht, und im Weg, wenn nicht. Der Faden darunter
+/* Deutlich kleiner als in den ersten Fassungen (13,5 → 9). Der Text stand als
+   Block über der Karte und zog den Blick, bevor die Karte ihn bekam; klein
+   gesetzt ist er da, wenn man ihn sucht, und im Weg, wenn nicht. Zwischendurch
+   stand er bei 7 und war zu klein — das hier ist die Mitte. Der Faden darunter
    geht im selben Verhältnis mit, sonst wären die alten Überschriften grösser
    als die laufende Notiz. */
-.jetzt{margin:0;max-width:min(94%,440px);
-  font-size:7px;line-height:1.5;color:var(--ink2);opacity:0;transition:opacity .4s}
-.jetzt b{display:block;color:var(--ink);font-weight:650;font-size:7.5px;margin-bottom:2px}
+.jetzt{margin:0;max-width:min(94%,470px);
+  font-size:9px;line-height:1.5;color:var(--ink2);opacity:0;transition:opacity .4s}
+.jetzt b{display:block;color:var(--ink);font-weight:650;font-size:9.8px;margin-bottom:2px}
 
 /* Darunter die vorigen Überschriften, mit jeder Zeile blasser. */
 .faden{width:min(52%,210px);padding-top:4px;
   display:flex;flex-direction:column;gap:2px;will-change:transform}
-.faden b{font-size:5.5px;line-height:1.3;font-weight:600;color:var(--ink);
+.faden b{font-size:7.2px;line-height:1.3;font-weight:600;color:var(--ink);
   transition:opacity .5s}
-@media(max-width:540px){.faden b{font-size:5px}}
+@media(max-width:540px){.faden b{font-size:6.5px}}
 
 /* Die Karte füllt die Bühne. */
 .feld{position:relative;z-index:1;flex:1 1 auto;min-height:0}
@@ -1947,7 +1948,12 @@ function beschrifte(deck) {
        kommt: der Südhang liegt im Schatten, dort stört die Schrift am
        wenigsten. */
     if (bestA > 0) {
-      const versatz = Math.sqrt(bestA / Math.PI) * 0.5;
+      /* Der Versatz hat zwei Teile. Der eine hängt am Fleck — bei einem grossen
+         rückt der Name weiter herunter, damit der Gipfel frei bleibt. Der
+         andere ist ein fester Abstand zur Kartenbreite: ohne ihn klebt die
+         Schrift einer kleinen Stadt am Punkt, weil deren Fleck kaum Versatz
+         hergibt. */
+      const versatz = Math.sqrt(bestA / Math.PI) * 0.5 + breite / 90;
       // ox/oy ist der Ort selbst, mx/my der Ankerpunkt der Schrift darunter.
       liste.push({ name, grad, A: bestA, ox: mx, oy: my, mx, my: my + versatz, bb, bh });
     }
@@ -2004,8 +2010,8 @@ function beschrifte(deck) {
        einzige Farbe ist, die auf dieser Leiter nichts bedeutet: Wasser, Grün,
        Gelb, Orange und Weiss sind Daten, ein roter Punkt ist eine Marke. Ein
        dunkler Ring darum, damit er auch auf dem roten Band und im Schnee steht. */
-    const punkt = Math.max(1.6, Math.min(3.4, breite / 190));
-    ctx.beginPath(); ctx.arc(s.ox, s.oy, punkt + 1, 0, 6.2832);
+    const punkt = Math.max(0.8, Math.min(1.7, breite / 380));
+    ctx.beginPath(); ctx.arc(s.ox, s.oy, punkt + 0.6, 0, 6.2832);
     ctx.fillStyle = STRICH; ctx.fill();
     ctx.beginPath(); ctx.arc(s.ox, s.oy, punkt, 0, 6.2832);
     ctx.fillStyle = STADTPUNKT; ctx.fill();
