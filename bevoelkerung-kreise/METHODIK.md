@@ -402,10 +402,22 @@ Eine lineare Mischung knickfreier Formen muss selbst nicht knickfrei sein, und
 hier werden eng eine Landkarte und zehn Kartogramme gemischt. Nachgezählt beim
 Bauen: **0 gefaltete Ringe von 465.**
 
-**Offen:** die Nutzlast trägt weiterhin alle zehn Kartogramme, obwohl neun davon
-nur noch in den Mittelwert eingehen. Rechnete man ihn beim Bauen, blieben von
-den 500 kB rund 50 — die Seite fiele von 632 auf etwa 180 kB. Das ist der
-nächste Schritt, nicht dieser.
+**Und die Nutzlast schrumpft.** Neun der zehn Kartogramme gingen nur noch in den
+Mittelwert ein — rund 450 kB für Formen, die niemand mehr zu sehen bekam.
+Gemittelt wird jetzt beim Bauen, in der Seite steht nur die eine Form als
+Unterschied zur Landkarte: **138 statt 500 kB Nutzlast, 259 statt 632 kB Seite.**
+
+Mit ihnen fielen zwei weitere Reste: der **Massstab je Zustand** (eingefroren,
+seit das Wachstum in die Farbe zog) und der **Ankerpunkt**, um den er wirkte.
+Ein fester Massstab um einen festen Punkt tut nichts mehr, sobald die Seite den
+Rahmen der gezeichneten Punkte misst und auf die Leinwand normiert — beide
+Faktoren kürzen sich heraus.
+
+Was die eine Form noch an Kartogramm ist, wird beim Bauen gemessen: ihre Flächen
+gegen den **mittleren** Bevölkerungsanteil über alle zehn Bilder, Median 0,78 %,
+grösste Abweichung 7,9 %, über ein Prozent bei 155 von 400 Kreisen. Das ist
+schlechter als ein einzelnes Kartogramm (Median 0,18 %) und kein Fehler: der
+Mittelwert zehn flächentreuer Formen ist selbst nicht flächentreu.
 
 ### Wie die Zwischenform entsteht
 
@@ -923,18 +935,17 @@ Grenzen; sie hat Gelände.
 
 Damit entfielen auch die 3 334 Knotenpaare der Landesgrenzen aus der Nutzlast.
 
-### Eine Ausnahme: die Städte
+### Die Ausnahme ist auch weg
 
-Die kreisfreien Städte und Stadtkreise tragen doch einen Umriss, einen feinen
-dunklen, über dem Relief gezeichnet. Für einen Landkreis wäre er überflüssig: er
-wird kaum verzerrt, sein Umriss sagt nichts, was die Farbe nicht schon sagt.
-Eine kreisfreie Stadt ist der andere Fall. Sie ist auf dem Boden winzig und in
-der Karte gross — Berlin geht vom Viertelprozent der Fläche auf knapp zwei —,
-und ihr Berg reicht nach dem Weichzeichnen weit über sie hinaus. Ohne Umriss
-verschwimmt sie mit dem Umland, dessen Farbe sie ja selbst mitgeprägt hat.
+Die hundertsieben kreisfreien Städte trugen als Einzige noch einen Umriss, einen
+feinen dunklen über dem Relief. Er hatte seinen Grund, solange sich die Karte
+verformte: eine Stadt wuchs dann mit ihrer Bevölkerung, und der Strich sagte,
+wie weit sie reicht — **bis hierhin die Stadt, der Rest ihr Schatten.**
 
-Der Umriss sagt hier also etwas, das sonst niemand sagt: **bis hierhin reicht die
-Stadt, der Rest ist ihr Schatten.**
+Seit der Boden stillsteht, sagt er das nicht mehr. Die Grundfläche ist über alle
+Jahre dieselbe, der Umriss zeigt also nur noch Verwaltung, und Verwaltung ist
+genau das, was von dieser Karte verschwinden sollte. Damit trägt sie **keine
+Grenze mehr**, in keiner Sorte.
 
 ### Volumen ist Bevölkerung
 

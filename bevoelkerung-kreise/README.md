@@ -117,12 +117,11 @@ unmittelbar die Bevölkerung: Berlin 1910 steht so hoch wie Berlin heute, 1939
 höher als beide, und Leipzig, Dresden und Chemnitz sinken sichtbar. Der Preis
 ist die Bewegung — die Karte verformt sich nicht mehr, sie steigt und fällt.
 
-Die Karte trägt **keine Grenzen** — bis auf einen feinen Umriss um jede
-kreisfreie Stadt. Für einen Landkreis wäre er überflüssig, er wird kaum
-verzerrt; eine kreisfreie Stadt dagegen ist auf dem Boden winzig und in der
-Karte gross, und ihr Berg reicht weit über sie hinaus. Der Umriss sagt dort,
-was sonst niemand sagt: bis hierhin reicht die Stadt, der Rest ist ihr Schatten.
-Sonst aber keine Grenzen, weder um die Kreise noch um die Länder. Eine
+Die Karte trägt **keine Grenzen**, in keiner Sorte — weder um die Kreise noch um
+die Länder. Die kreisfreien Städte trugen als Letzte noch einen feinen Umriss;
+der hatte seinen Grund, solange sich die Karte verformte und eine Stadt mit
+ihrer Bevölkerung wuchs. Seit der Boden stillsteht, zeigt er nur noch
+Verwaltung. Eine
 Geländekarte hat keine; sie hat Farbe, Hang und Höhenlinie, und die zeigen die
 Grenze dort, wo sie etwas bedeutet: wo sich die Dichte ändert. Wo zwei Nachbarn
 gleich dicht wohnen, war der Strich ohnehin nur Verwaltung. Weg sind dabei alle

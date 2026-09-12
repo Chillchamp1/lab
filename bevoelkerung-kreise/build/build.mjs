@@ -486,40 +486,9 @@ const GEBIETE = [];
 const NK = D.k.length, NF = D.B.length;
 const JAHRE = D.B.map(b => b.t);
 const T0 = JAHRE[0], T1 = JAHRE[NF - 1];
-const [AX, AY] = D.ank;
 
 /* ---------- Die Reihen: dieselbe Geometrie, andere Verzerrung ---------- */
 const REIHEN = D.R.map((r, ri) => {
-  const ZX = [], ZY = [];
-  let px = GX, py = GY;
-  for (const z of r.zustaende) {
-    const dx = entpacke(z.dx), dy = entpacke(z.dy);
-    const nx = new Int32Array(N), ny = new Int32Array(N);
-    for (let i = 0; i < N; i++) { nx[i] = px[i] + dx[i]; ny[i] = py[i] + dy[i]; }
-    ZX.push(nx); ZY.push(ny); px = nx; py = ny;
-  }
-  const BEV = [];
-  const d = entpacke(D.bev[ri]);
-  let vor = new Float64Array(NK);
-  for (let f = 0; f < NF; f++) {
-    const jetzt = new Float64Array(NK);
-    for (let k = 0; k < NK; k++) jetzt[k] = vor[k] + d[f * NK + k];
-    BEV.push(jetzt); vor = jetzt;
-  }
-  /* ---------- Ein fester Massstab ----------
-     Die Karte wuchs eine lange Zeit flächenproportional mit der Bevölkerung:
-     1871 war sie kleiner als 2024, weil weniger Menschen darin wohnten. Das
-     war das Besondere an ihr — und es ist weg, weil das Wachstum jetzt die
-     **Farbe** trägt (siehe 4b). Zweimal dasselbe zu zeigen, kostet nur die
-     Aufmerksamkeit für das, was sonst noch da ist.
-
-     Also ein Massstab für alle Bilder, der des letzten. Die Aussengrenze bleibt
-     damit über hundertfünfzig Jahre ungefähr, wo sie ist — ein Diffusions-
-     kartogramm verteilt nur um, seine Gesamtfläche ist erhalten. Was sich noch
-     bewegt, bewegt sich, weil sich die Kreise **gegeneinander** verschieben,
-     und das ist genau das, was man sehen soll. */
-  const sk = r.zustaende.map(z => z.skala);
-  const fest = sk[sk.length - 1];
   /* ---------- Ein Boden, der keinem Jahr gehört ----------
      Die Karte stand lange auf dem Kartogramm **des jeweiligen Jahres**: die
      Fläche eines Kreises war sein Anteil an der Bevölkerung dieses Bildes, und
@@ -530,23 +499,32 @@ const REIHEN = D.R.map((r, ri) => {
      nur noch jeden dreiundzwanzigsten. Bei festem Volumen je Mensch muss die
      Höhe das ausgleichen: derselbe Berg lag flach.
 
-     Jetzt steht der Boden still, und zwar auf dem **Mittel aller zehn
-     Kartogramme**. Nicht auf dem von 2024 — das wäre ein Körper, der einem Jahr
-     gehört, und 1871 würde auf der Gestalt von heute gezeichnet. Der Mittelwert
-     gehört keinem Jahr und allen.
+     Jetzt steht der Boden still, auf dem **Mittel aller zehn Kartogramme**.
+     Nicht auf dem von 2024 — das wäre ein Körper, der einem Jahr gehört, und
+     1871 würde auf der Gestalt von heute gezeichnet. Der Mittelwert gehört
+     keinem Jahr und allen.
 
      Daraus folgt das, worum es geht: die Grundfläche eines Kreises ist über
      hundertfünfzig Jahre dieselbe, also ist seine **Höhe unmittelbar seine
      Bevölkerung**. Zwei Bilder sind vergleichbar; Berlin 1910 steht so hoch wie
      Berlin 2024, und 1939 steht höher als beide. Was die Karte dafür aufgibt,
-     ist die Bewegung: sie verformt sich nicht mehr, sie steigt und fällt. */
-  const MX = new Float64Array(N), MY = new Float64Array(N);
-  for (let i = 0; i < N; i++) {
-    let sx = 0, sy = 0;
-    for (let f = 0; f < ZX.length; f++) { sx += ZX[f][i]; sy += ZY[f][i]; }
-    MX[i] = sx / ZX.length; MY[i] = sy / ZY.length;
+     ist die Bewegung: sie verformt sich nicht mehr, sie steigt und fällt.
+
+     Gemittelt wird nicht mehr hier, sondern beim Bauen: in der Nutzlast steht
+     nur noch die eine Form, als Unterschied zur Landkarte. Die neun anderen
+     Kartogramme wogen rund 450 kB und gingen nur in diesen Mittelwert ein. */
+  const dx = entpacke(r.mx), dy = entpacke(r.my);
+  const MX = new Int32Array(N), MY = new Int32Array(N);
+  for (let i = 0; i < N; i++) { MX[i] = GX[i] + dx[i]; MY[i] = GY[i] + dy[i]; }
+  const BEV = [];
+  const d = entpacke(D.bev[ri]);
+  let vor = new Float64Array(NK);
+  for (let f = 0; f < NF; f++) {
+    const jetzt = new Float64Array(NK);
+    for (let k = 0; k < NK; k++) jetzt[k] = vor[k] + d[f * NK + k];
+    BEV.push(jetzt); vor = jetzt;
   }
-  return { id: r.id, name: r.name, MX, MY, BEV, SKALA: fest };
+  return { id: r.id, name: r.name, MX, MY, BEV };
 });
 const ANTEIL = entpacke(D.ai);
 let reihe = REIHEN[0];
@@ -607,8 +585,7 @@ const px = new Float64Array(N), py = new Float64Array(N);
    seinem Ort im Kartogramm.
 
    Was dabei an Fläche fehlt, holt die Höhe zurück; das rechnet hoehen()
-   weiter unten. Die Grösse der ganzen Karte bleibt in jedem Fall die
-   Bevölkerung, dafür sorgt SKALA. */
+   weiter unten. */
 /* ---------- Eine Form, und nur eine ----------
    Die Seite konnte zwischen drei Formen umschalten — Landkarte, halbe
    Verzerrung, volles Kartogramm —, dann nur noch zwischen einer, und jetzt ist
@@ -629,8 +606,15 @@ const px = new Float64Array(N), py = new Float64Array(N);
    sie das obere Ende für alle. Jetzt misst die Leiter genau das, was gezeichnet
    wird. */
 const FORM = 0.5;
-const ortX = i => ((GX[i] + FORM * (reihe.MX[i] - GX[i])) - AX) * reihe.SKALA + AX;
-const ortY = i => ((GY[i] + FORM * (reihe.MY[i] - GY[i])) - AY) * reihe.SKALA + AY;
+/* Hier stand noch ein Massstab und ein Ankerpunkt: jeder Zustand wurde um
+   diesen Punkt auf seine Grösse gebracht, damals, als die Karte
+   flächenproportional mit der Bevölkerung wuchs. Der Massstab wurde
+   eingefroren, als das Wachstum in die Farbe zog — und ein fester Massstab um
+   einen festen Punkt tut nichts mehr, sobald masse() den Rahmen der
+   gezeichneten Punkte misst und auf die Leinwand normiert: beide Faktoren
+   kürzen sich heraus. Also weg damit. */
+const ortX = i => GX[i] + FORM * (reihe.MX[i] - GX[i]);
+const ortY = i => GY[i] + FORM * (reihe.MY[i] - GY[i]);
 
 /* Hier stand die Bahn zwischen zwei Bildern: acht Zahlenreihen zu je
    zwölftausend Knoten und eine monoton kubische Kurve, damit sich die Karte
@@ -708,7 +692,6 @@ const WASSER = ${WASSER};
 const stil = n => getComputedStyle(document.body).getPropertyValue(n).trim();
 let LEER = '#1a1a18', INK = '#fff', STRICH = '#0c0c0c';
 const SCHATTEN = 'rgba(0,0,0,.6)', KANTE3D = '#060605';
-const STADTSTRICH = 'rgba(0,0,0,.42)';
 const HELLMAX = 0.55, DUNKELMAX = 0.55;
 function farbenHolen() {
   LEER = stil('--leer'); INK = stil('--ink'); STRICH = stil('--surface');
@@ -1885,7 +1868,6 @@ function zeichne() {
      Verwaltung. */
 
   reliefUeber(sil, deck);
-  stadtRand(deck);
 
   beschrifte(deck);
   schreibe(a, b, u, w, deck);
@@ -1902,26 +1884,6 @@ function schreibe(a, b, u, w, deck) {
   document.getElementById('zeit').value = Math.round(spiel * 1000);
 }
 
-/* Ein feiner dunkler Strich um jede kreisfreie Stadt, nach dem Relief
-   gezeichnet, damit er darüber liegt und nicht von der Schattierung
-   weggewaschen wird. Dunkel, nicht hell: eine Stadt ist auf dieser Karte ein
-   Berg, und ein dunkler Umriss liest sich als sein Fuss. */
-function stadtRand(deck) {
-  ctx.beginPath();
-  for (const g of STADTRAND) {
-    if (!(deck[g] > 0.5)) continue;
-    for (const r of GEBIETE[g]) {
-      ctx.moveTo(px[r[0]] * mass + verX, py[r[0]] * mass + verY);
-      for (let i = 1; i < r.length; i++) ctx.lineTo(px[r[i]] * mass + verX, py[r[i]] * mass + verY);
-      ctx.closePath();
-    }
-  }
-  ctx.strokeStyle = STADTSTRICH;
-  ctx.lineWidth = Math.max(0.5, Math.min(1.1, breite / 620));
-  ctx.lineJoin = 'round';
-  ctx.stroke();
-}
-
 /* ---------- Städtenamen ----------
    Die grössten Städte tragen ihren Namen, und die Schrift wächst mit dem
    Fleck: die Schrifthöhe folgt der Wurzel aus der gezeichneten
@@ -1934,19 +1896,13 @@ function stadtRand(deck) {
    mit einem schon gesetzten Namen überschneidet, fällt auch weg — die
    grösseren zuerst, damit im Ruhrgebiet nicht die kleinste Stadt gewinnt. */
 const STADT = ${JSON.stringify(staedte.map(k => [k.i, k.kurz]))};
-/* ---------- Der Umriss der Städte ----------
-   Die Kreisgrenzen sind weg, und für einen Landkreis ist das richtig: er wird
-   im Kartogramm kaum verzerrt, also sagt sein Umriss nichts, was die Farbe
-   nicht schon sagt. Eine kreisfreie Stadt ist der andere Fall. Sie ist auf dem
-   Boden winzig und in der Karte gross — Berlin geht vom Viertelprozent der
-   Fläche auf viereinhalb —, und ohne Umriss verschwimmt sie mit dem Umland,
-   dessen Farbe sie ohnehin mitgeprägt hat. Der Umriss sagt hier also etwas,
-   das sonst niemand sagt: bis hierhin reicht die Stadt.
-
-   Nur die hundertsieben kreisfreien Städte und Stadtkreise, nicht die
-   Landkreise. */
-const STADTRAND = ${JSON.stringify(jeKreis.map((k, i) => [i, k.bez])
-  .filter(([, bez]) => STADTKREISE.has(bez)).map(([i]) => i))};
+/* Hier stand ein feiner dunkler Strich um jede der hundertsieben kreisfreien
+   Städte. Er hatte seinen Grund, solange sich die Karte verformte: eine Stadt
+   wuchs dann mit ihrer Bevölkerung, und der Umriss sagte, wie weit sie reicht.
+   Seit der Boden stillsteht, sagt er das nicht mehr — die Grundfläche ist über
+   alle Jahre dieselbe, der Strich zeigt also nur noch Verwaltung. Und er war
+   das Letzte, was von den Kreisgrenzen übrig war. Eine Geländekarte hat keine
+   Grenzen; sie hat Gelände. */
 const MINSCHRIFT = 7;       // kleinste Schrift; auf einem Telefon knapp, aber lesbar
 function beschrifte(deck) {
   const liste = [];
