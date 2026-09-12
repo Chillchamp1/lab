@@ -364,6 +364,18 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   hundertsieben winzigen kreisfreien Städte das obere Quantil, und die halbe
   Palette blieb leer; jetzt sind 2024 zweiundzwanzig der vierundzwanzig Bänder
   belegt.
+- **Ein roter Punkt auf dem Ort, und siebzehn Städte statt dreizehn.** Seit die
+  Umrisse weg sind, sagt kein Strich mehr, wo eine Stadt genau liegt — der Name
+  steht ja bewusst unter dem Gipfel. Also ein kleiner roter Punkt mit dunklem
+  Ring, Name darunter. Rot, weil es die einzige Farbe ist, die auf dieser Leiter
+  nichts bedeutet. Schwelle 250 000 statt 400 000 Einwohner (höchster Stand),
+  dazu Magdeburg, Bielefeld, Mannheim und Kiel. Die **Schriftgrösse** kommt aus
+  der Stadt statt aus der gezeichneten Fläche, in vier Stufen als Teiler der
+  Kartenbreite (38, 42, 46, 52) — die Fläche steht seit dem festen Boden still
+  und sagte ohnehin mehr über den Zuschnitt des Kreises als über die Stadt.
+- **Der beschreibende Text ist halb so gross** (13,5 → 7 px, Überschrift
+  14,5 → 7,5, der Faden im selben Verhältnis). Er stand als Block über der Karte
+  und zog den Blick, bevor die Karte ihn bekam.
 - **Auch die Städte tragen keinen Umriss mehr.** Die hundertsieben kreisfreien
   Städte waren die letzte Ausnahme von „keine Grenzen"; der Strich sagte, wie
   weit eine Stadt reicht, solange sie mit ihrer Bevölkerung wuchs. Bei festem
