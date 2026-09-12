@@ -2020,14 +2020,21 @@ function legende() {
    Ein Deckel ist die ×3 nicht. Die Rampe endet rechnerisch im Unendlichen;
    der höchste Kreis überhaupt ist München 2024 mit ×3,16, und abgeschnitten
    wird nichts. */
+/* Die Eins sollte einmal ihren Namen tragen statt ihrer Zahl — „Germany 2024"
+   direkt auf der Marke, dann erklärt sich die Leiter von allein. Nachgemessen
+   war es zu breit: die Beschriftung braucht 86 Bildpunkte, die Marken stehen
+   bei 360 Bildpunkten Fensterbreite aber nur 52 auseinander. Sie hätte die
+   ×0,5 und die ×1,5 überschrieben, und die ×0,5 ist die Uferkante. Also bleibt
+   die Zahl auf der Marke, und die Zeile darunter sagt, wo das Land steht. */
 const MARKEN = [0, 0.5, 1, 1.5, 2, 3];
+const MARKENWORT = {};
 function stufen() {
   const [, bis] = hoehenSkala(), hi = Math.exp(bis), e = document.getElementById('legStufen');
   const zeig = x => (x >= 10 ? x.toFixed(0) : x >= 1 ? x.toFixed(1) : x.toFixed(1));
   e.textContent = '';
   for (const m of MARKEN) {
     const s = document.createElement('span');
-    s.textContent = m === 0 ? '0' : '×' + zeig(m);
+    s.textContent = MARKENWORT[m] || (m === 0 ? '0' : '×' + zeig(m));
     // Feldwert, nicht Leiterwert: die Reserve über dem Quantil zählt mit.
     s.style.left = (100 * aufLeiter(m) / (1 + RESERVE)).toFixed(2) + '%';
     if (m === 0) s.className = 'a';
@@ -2066,11 +2073,22 @@ function stufen() {
    Bevölkerung ist, steht nicht mehr hier: das ist ein Bauprinzip und kein
    Schlüssel zur Farbleiter, und es steht in der Methodik.
 
-   Gemessen passt die Zeile bis auf 360 Bildpunkte Fensterbreite hinunter (287
-   von 322 verfügbaren); die alte brauchte 310. */
+   Und dann stand da „people per patch of map · ×1 = Germany in 2024" und war
+   an einer Stelle immer noch nicht zu verstehen: **an der Eins**. „×1 =
+   Germany in 2024" liest sich wie eine Gleichung zwischen einer Zahl und einem
+   Land, und das ist keine. Gemeint ist ein **Ort auf der Leiter**.
+
+   Ein Verb reicht:
+
+       people per patch of map · Germany 2024 sits at ×1
+
+   Jetzt sucht das Auge die ×1 auf der Leiter und findet dort das ganze Land;
+   alles links davon ist leerer, alles rechts voller. Dass das Mittel **fest**
+   ist und nicht das des laufenden Jahres, steht in der Jahreszahl: 1871 liegt
+   Deutschland links von seiner eigenen Marke, und das ist der Befund. */
 function legText() {
   document.getElementById('legText').textContent =
-    'people per patch of map · ×1 = Germany in 2024';
+    'people per patch of map · Germany 2024 sits at ×1';
 }
 
 /* ---------- Tippen ---------- */
