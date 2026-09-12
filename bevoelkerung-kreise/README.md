@@ -106,6 +106,17 @@ Knoten liegt einfach zwischen seinen beiden Orten. Die beiden Enden waren eine
 Fassung lang als Knöpfe erreichbar; der Code dafür ist entfernt, die Daten
 stehen weiter in der Datei.
 
+**Der Boden steht still.** Verzerrt wird nicht auf das Kartogramm des jeweiligen
+Jahres, sondern auf den **Mittelwert aller zehn** — ein Körper, der keinem Jahr
+gehört und allen. Das ist nicht Kosmetik: Volumen = Fläche × Höhe, und wenn das
+Volumen je Mensch feststeht, muss die Höhe ausgleichen, was die Fläche tut.
+Folgte die Fläche dem Anteil des Jahres, dann lag Berlin 1910 mit denselben 3,7
+Millionen wie heute flach da, weil es damals fast jeden dreizehnten Deutschen
+hielt und heute jeden dreiundzwanzigsten. Bei festem Boden ist die Höhe
+unmittelbar die Bevölkerung: Berlin 1910 steht so hoch wie Berlin heute, 1939
+höher als beide, und Leipzig, Dresden und Chemnitz sinken sichtbar. Der Preis
+ist die Bewegung — die Karte verformt sich nicht mehr, sie steigt und fällt.
+
 Die Karte trägt **keine Grenzen** — bis auf einen feinen Umriss um jede
 kreisfreie Stadt. Für einen Landkreis wäre er überflüssig, er wird kaum
 verzerrt; eine kreisfreie Stadt dagegen ist auf dem Boden winzig und in der

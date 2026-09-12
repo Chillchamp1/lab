@@ -143,8 +143,9 @@ Restfehler erneut ausgeglichen.
 
 **Warmer Start.** Zwei aufeinanderfolgende Zählungen unterscheiden sich wenig.
 Das Kartogramm des nächsten Zeitpunkts fängt deshalb beim vorigen Ergebnis an,
-nicht wieder bei der Landkarte. Das spart Rechenzeit und hält die Bilder
-beieinander, sodass der Übergang eine Bewegung ist und kein Sprung.
+nicht wieder bei der Landkarte. Das spart Rechenzeit und hält die zehn Bilder
+beieinander — was jetzt doppelt zählt, weil aus ihnen ein Mittelwert wird (4f):
+zehn Formen, die auseinanderlaufen, mitteln sich zu Matsch.
 
 **Ausschnitt nach den Daten.** Das Gitter richtet sich nach den Kreisen, für
 die es Zahlen gibt. Solange das alle sind, ist das ganz Deutschland; sobald
@@ -265,7 +266,8 @@ danach, wechselt das Tempo genau im Bild der Zählung — und das sieht aus wie
 ein Ruck, oft genug, um zu stören.
 
 Gerechnet wird deshalb mit einer **monotonen kubischen Kurve** (Fritsch–Carlson,
-wie PCHIP), für die Werte wie für die Knoten des Kartogramms. Sie geht durch
+wie PCHIP). Sie galt einmal auch den Knoten des Kartogramms; seit der Boden
+stillsteht, gilt sie nur noch den Zahlen. Sie geht durch
 jeden gezählten Wert und hat an den Zählungen keinen
 Knick mehr. Der Unterschied zu einem gewöhnlichen Spline ist die Monotonie: wo
 eine Reihe steigt und dann fällt, wird die Steigung an der Spitze auf null
@@ -350,6 +352,60 @@ auf der Landkarte und seinem Ort im Kartogramm. **Beide Enden stehen weiterhin
 in der Nutzlast** — die Landkarte ist der Anfang der Differenzkette —, die
 Zwischenform kostet also nichts, und wer die Knöpfe zurückwill, braucht dafür
 keine neuen Daten, nur wieder Code.
+
+### Ein Boden, der keinem Jahr gehört
+
+Welches Kartogramm? Lange war es das **des jeweiligen Jahres**: die Fläche eines
+Kreises war sein Anteil an der Bevölkerung dieses Bildes, und der Umriss
+verformte sich im Lauf der Zeit. Das zeigte gut, wo die Menschen gerade sind —
+und machte zwei Bilder unvergleichbar.
+
+Der Grund ist Arithmetik, kein Fehler. Volumen = Grundfläche × Höhe, und das
+Volumen je Mensch steht fest. Folgt die Grundfläche dem Anteil des Jahres, muss
+die Höhe das ausgleichen. Berlin hatte 1910 dieselben 3,7 Millionen wie heute,
+hielt damals aber fast jeden dreizehnten Deutschen und heute nur noch jeden
+dreiundzwanzigsten — es wurde also sechzig Prozent breiter gezeichnet und lag
+entsprechend flach. Gleich viele Menschen, sehr verschiedener Berg.
+
+Jetzt steht der Boden still, und zwar auf dem **Mittelwert aller zehn
+Kartogramme**, zur Hälfte in die Landkarte gemischt. Nicht auf dem von 2024:
+das wäre ein Körper, der einem Jahr gehört, und 1871 würde auf der Gestalt von
+heute gezeichnet. Der Mittelwert gehört keinem Jahr und allen.
+
+Daraus folgt, worum es geht: die Grundfläche eines Kreises ist über
+hundertfünfzig Jahre dieselbe, also **ist seine Höhe unmittelbar seine
+Bevölkerung**. Gemessen für Berlin:
+
+| Jahr | Menschen | Grundfläche | Höhe | Band |
+|---|---|---|---|---|
+| 1871 | 0,93 Mio | 1,87 % | ×0,60 | 5 |
+| 1900–1910 | 3,73 Mio | 1,87 % | ×2,39 | 23 |
+| 1939 | 4,34 Mio | 1,87 % | **×2,78** | 23 |
+| 1946–1950 | 3,17 Mio | 1,87 % | ×2,03 | 19 |
+| 1985–1987 | 3,08 Mio | 1,87 % | ×1,97 | 19 |
+| 2024 | 3,69 Mio | 1,87 % | ×2,36 | 23 |
+
+Berlin 1910 steht damit so hoch wie Berlin heute, und 1939 — sein wirklicher
+Höchststand — höher als beide. Das Volumen je Million Menschen bleibt dabei über
+alle zehn Zählungen konstant bei 182 (1871: 178, −2 % durch das Klemmen bei
+null). Und es wird etwas sichtbar, das die wandernde
+Form verbarg: **Orte, die schrumpfen.** Leipzig, Dresden und Chemnitz ragen 1910
+heraus und sinken danach; vorher schrumpfte mit ihren Menschen auch ihre
+Grundfläche, und die Höhe blieb, wo sie war.
+
+Was die Karte dafür aufgibt, ist die **Bewegung**: sie verformt sich nicht mehr,
+sie steigt und fällt. Damit fällt auch die Bahn zwischen zwei Bildern weg — acht
+Zahlenreihen zu je zwölftausend Knoten und eine kubische Kurve je Abschnitt.
+Die Orte hängen nicht mehr an der Zeit und werden einmal gerechnet.
+
+Eine lineare Mischung knickfreier Formen muss selbst nicht knickfrei sein, und
+hier werden eng eine Landkarte und zehn Kartogramme gemischt. Nachgezählt beim
+Bauen: **0 gefaltete Ringe von 465.**
+
+**Offen:** die Nutzlast trägt weiterhin alle zehn Kartogramme, obwohl neun davon
+nur noch in den Mittelwert eingehen. Rechnete man ihn beim Bauen, blieben von
+den 500 kB rund 50 — die Seite fiele von 632 auf etwa 180 kB. Das ist der
+nächste Schritt, nicht dieser.
 
 ### Wie die Zwischenform entsteht
 

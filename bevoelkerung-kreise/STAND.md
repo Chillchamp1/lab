@@ -106,18 +106,20 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   2019→2024 viereinhalb statt eineinhalb. Zwischen den Zählungen wird mit einer monotonen
   kubischen Kurve gerechnet, nicht geradlinig: kein Knick, kein Überschiessen.
   Grösster Geschwindigkeitssprung von 125 auf 19 Prozent.
-- **Eine Form, die halbe Verzerrung** (a = 0,5). Jeder Knoten liegt bei
-  `Landkarte + a · (Kartogramm − Landkarte)`; die Landkarte steht ohnehin als
-  Anfang der Differenzkette in der Nutzlast, also kostet die Zwischenform kein
-  Byte und keine zweite Zeitreihe. Berlin nimmt damit 1,75 % der Fläche — gegen
-  4,41 % im vollen Kartogramm und 0,25 % auf der Landkarte.
+- **Eine Form, die halbe Verzerrung** (a = 0,5), auf den Mittelwert aller zehn
+  Kartogramme. Jeder Knoten liegt bei `Landkarte + a · (Mittelkartogramm −
+  Landkarte)`; die Landkarte steht ohnehin als Anfang der Differenzkette in der
+  Nutzlast, also kostet die Zwischenform kein Byte und keine zweite Zeitreihe.
+  Berlin nimmt damit 1,87 % der Fläche — gegen 4,41 % im vollen Kartogramm und
+  0,25 % auf der Landkarte.
 - **Volumen bleibt Bevölkerung.** Was der Fläche fehlt, holt die Höhe: Höhe =
   Bevölkerung / *gezeichnete* Fläche, an den Umrissen gemessen statt aus einer
   Formel. Berlin steht dadurch 2,5 mal so hoch wie der Durchschnitt —
   1,75 × 2,5 = 4,4 = 0,25 × 17,8, der Tausch geht exakt auf. Die Zahl steht beim
   Antippen.
 - Nachgezählt, dass die Zwischenformen nichts umstülpen: **0 gefaltete Ringe von
-  4650** bei a = 0,25, 0,5 und 0,75 über alle zehn Bilder.
+  4650** bei a = 0,25, 0,5 und 0,75 über alle zehn Bilder — und **0 von 465** für
+  die Mittelform, auf der die Seite steht.
 - Das **Relief** ist ein Höhenfeld, und die Form tragen **beleuchtete
   Höhenlinien nach Tanaka (1950)**: weiss, wo der Hang der Sonne zugewandt ist,
   schwarz, wo er wegfällt, dick, wo er voll im Licht oder Schatten steht. Grund:
@@ -213,6 +215,30 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   `min-width:0`, einer reservierten Zeilenhöhe und einem **ResizeObserver** auf
   dem Kartenfeld, der neu misst, wenn sich das Auslegen ändert — wer immer es
   ändert.
+- **Der Boden steht still: der Mittelwert aller zehn Kartogramme.** Verzerrt
+  wurde bisher auf das Kartogramm des jeweiligen Jahres — die Fläche eines
+  Kreises war sein Anteil an der Bevölkerung *dieses* Bildes. Damit sind zwei
+  Bilder unvergleichbar, und zwar aus Arithmetik: Volumen = Fläche × Höhe, das
+  Volumen je Mensch steht fest, also muss die Höhe ausgleichen, was die Fläche
+  tut. Berlin hatte 1910 dieselben 3,7 Millionen wie heute, hielt aber fast
+  jeden dreizehnten Deutschen statt jeden dreiundzwanzigsten — wurde 60 % breiter
+  gezeichnet und lag flach.
+  Jetzt der **Mittelwert aller zehn Kartogramme**, zur Hälfte eingemischt: ein
+  Körper, der keinem Jahr gehört und allen (das Kartogramm von 2024 würde 1871
+  auf der Gestalt von heute zeichnen). Berlins Grundfläche steht damit in jedem
+  Bild auf 1,87 %, und seine Höhe ist unmittelbar seine Bevölkerung: ×0,60
+  (1871), ×2,39 (1910), **×2,78 (1939)**, ×2,03 (1948), ×1,97 (1987), ×2,36
+  (2024). Berlin 1910 steht so hoch wie heute — beide im obersten Band —, 1939
+  höher als beide. Volumen je Million Menschen über alle zehn Zählungen konstant
+  bei 182. Neu sichtbar: **Orte, die
+  schrumpfen** — Leipzig, Dresden, Chemnitz ragen 1910 heraus und sinken, vorher
+  schrumpfte mit ihren Menschen auch ihre Grundfläche.
+  Der Preis ist die Bewegung: die Karte verformt sich nicht mehr, sie steigt und
+  fällt. Damit fällt auch die Bahn zwischen zwei Bildern weg — acht Zahlenreihen
+  zu je 12 000 Knoten und eine kubische Kurve je Abschnitt; die Orte werden
+  einmal gerechnet. Nachgezählt, dass die Mischung aus elf Formen nichts
+  umstülpt: **0 gefaltete Ringe von 465**. Schneegrenze dafür von 1,17 auf 1,10,
+  Wasser 2024 9,2 % statt 6,6 %.
 - **Unten Wasser.** Die untersten vier der vierundzwanzig Bänder sind ein See:
   tief dunkelblau, zum Ufer hin heller. Wo auf die Fläche am wenigsten Menschen
   kommen, liegt jetzt Wasser, und die Uferlinie ist die schärfste Grenze, die
