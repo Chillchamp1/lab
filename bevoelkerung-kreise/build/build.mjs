@@ -17,6 +17,62 @@ const GITTER = Number(process.env.GITTER ?? 1600);
 // lässt sich ein schneller Probebau fahren, ohne den guten Stand zu überschreiben.
 const CACHE = process.env.CACHE ? '-' + process.env.CACHE : '';
 
+/* ---------- Die Farbleiter, gerechnet statt gegriffen ----------
+   Sie stand als Liste von vierundzwanzig Zeichenketten in der Seite, und der
+   Kommentar daneben behauptete, sie sei berechnet. Das stimmte auch — nur eben
+   einmal, von Hand, und das Ergebnis war hineinkopiert. Jetzt rechnet sie hier,
+   aus ihrer Beschreibung: je Band eine Helligkeit, ein Farbton und ein Anteil
+   der **grössten Buntheit, die sRGB an dieser Stelle noch hergibt**. Gesucht
+   wird die per Halbierung, in OKLCh.
+
+   Zwei Bahnen. Die untersten Bänder sind **Wasser**: tief dunkelblau, zum Ufer
+   hin heller. Darüber das Land, von Waldgrün über Grasgrün, Gelb und Ocker bis
+   Rot, und ganz oben zwei feste Töne — ein fast entsättigtes Grau als Fels und
+   reines Weiss als Schnee. */
+const NBAND = 24, WASSER = Number(process.env.WASSER ?? 4);
+const svg = t => t > 0.0031308 ? 1.055 * Math.pow(t, 1 / 2.4) - 0.055 : 12.92 * t;
+function oklab(L, a, b) {
+  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+  const m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+  const q = (L - 0.0894841775 * a - 1.2914855480 * b) ** 3;
+  return [ 4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * q,
+          -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * q,
+          -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * q];
+}
+const imRaum = v => v.every(x => x >= -0.0005 && x <= 1.0005);
+function ton(L, anteil, h) {
+  const r = h * Math.PI / 180;
+  let lo = 0, hi = 0.4;
+  for (let i = 0; i < 44; i++) {
+    const m = (lo + hi) / 2;
+    if (imRaum(oklab(L, m * Math.cos(r), m * Math.sin(r)))) lo = m; else hi = m;
+  }
+  const C = lo * anteil, v = oklab(L, C * Math.cos(r), C * Math.sin(r));
+  return '#' + v.map(x => Math.round(Math.max(0, Math.min(1, svg(x))) * 255).toString(16).padStart(2, '0')).join('');
+}
+// Stützstellen: Anteil, Helligkeit, Farbton, Anteil der grössten Buntheit.
+const bahn = (P, t, k) => {
+  let i = 0; while (i < P.length - 2 && P[i + 1][0] < t) i++;
+  const u = Math.max(0, Math.min(1, (t - P[i][0]) / (P[i + 1][0] - P[i][0])));
+  return P[i][k] + (P[i + 1][k] - P[i][k]) * u;
+};
+const WASSERBAHN = [[0, 0.30, 258, 0.85], [1, 0.62, 242, 0.80]];
+const LANDBAHN = [[0, 0.43, 146, 1.0], [0.22, 0.57, 144, 1.0], [0.40, 0.68, 140, 0.95],
+                  [0.55, 0.79, 128, 0.88], [0.66, 0.87, 106, 0.88], [0.74, 0.84, 93, 0.92],
+                  [0.84, 0.75, 66, 0.95], [0.93, 0.64, 44, 0.94], [1, 0.57, 33, 0.92]];
+const HYPSO = [];
+for (let i = 0; i < WASSER; i++) {
+  const t = WASSER > 1 ? i / (WASSER - 1) : 0;
+  HYPSO.push(ton(bahn(WASSERBAHN, t, 1), bahn(WASSERBAHN, t, 3), bahn(WASSERBAHN, t, 2)));
+}
+const NLAND = NBAND - WASSER - 2;
+for (let i = 0; i < NLAND; i++) {
+  const t = i / (NLAND - 1);
+  HYPSO.push(ton(bahn(LANDBAHN, t, 1), bahn(LANDBAHN, t, 3), bahn(LANDBAHN, t, 2)));
+}
+HYPSO.push('#f2ebe6', '#ffffff');            // Fels, Schnee
+log(`Farbleiter: ${NBAND} Bänder, davon ${WASSER} Wasser`);
+
 log('Daten …');
 const zeilen = leseLang();
 const bilder = baueBilder(zeilen);
@@ -516,22 +572,26 @@ const px = new Float64Array(N), py = new Float64Array(N);
    Was dabei an Fläche fehlt, holt die Höhe zurück; das rechnet hoehen()
    weiter unten. Die Grösse der ganzen Karte bleibt in jedem Fall die
    Bevölkerung, dafür sorgt SKALA. */
-/* ---------- Nur noch eine Form ----------
-   Die Seite konnte zwischen drei Formen umschalten: Landkarte, halbe
-   Verzerrung, volles Kartogramm. Sie zeigt jetzt nur noch die mittlere.
+/* ---------- Eine Form, und nur eine ----------
+   Die Seite konnte zwischen drei Formen umschalten — Landkarte, halbe
+   Verzerrung, volles Kartogramm —, dann nur noch zwischen einer, und jetzt ist
+   auch die Maschinerie dafür weg: kein Umblenden zwischen Formen, keine Leiter
+   je Form, keine Mindestbreite, kein Ausblenden des Reliefs. Das waren alles
+   Vorkehrungen für das volle Kartogramm, in dem jeder Kreis dieselbe Dichte
+   hat und nichts mehr zu modellieren ist; bei halber Verzerrung greift keine
+   davon.
 
-   Das ist mehr als ein weggelassener Knopf. Die Farbleiter wurde bisher über
-   **alle drei** Formen gemessen, damit ×1 in jeder Knopfstellung dasselbe
-   heisst — und die Landkarte streut am weitesten, also setzte sie das obere
-   Ende für alle. Mit einer Form allein misst die Leiter genau das, was auch
-   gezeichnet wird, und die Farben rücken um gut ein Zehntel nach oben.
+   Was bleibt, ist die Zahl: jeder Knoten liegt auf halbem Weg zwischen seinem
+   Ort auf der Landkarte und seinem Ort im Kartogramm. Beide Enden stehen
+   weiterhin in der Nutzlast — die Landkarte ist der Anfang der Differenzkette
+   —, die Zwischenform kostet also nichts und wäre jederzeit wieder aufziehbar.
 
-   Die Maschinerie dahinter bleibt: FORMEN ist eine Liste, und alles, was
-   zwischen ihren Einträgen überblendet, rechnet weiterhin allgemein. Wer die
-   anderen beiden zurückholen will, trägt sie hier wieder ein und stellt die
-   Knöpfe in die Seite zurück. */
-const FORMEN = [0.5];
-let FORM = FORMEN[0];
+   Der Nebeneffekt, und er ist der Grund, warum das mehr ist als Aufräumen: die
+   Farbleiter wurde über **alle drei** Formen gemessen, damit ×1 in jeder
+   Knopfstellung dasselbe heisst. Die Landkarte streut am weitesten, also setzte
+   sie das obere Ende für alle. Jetzt misst die Leiter genau das, was gezeichnet
+   wird. */
+const FORM = 0.5;
 const ortX = (f, i) => ((GX[i] + FORM * (reihe.ZX[f][i] - GX[i])) - AX) * reihe.SKALA[f] + AX;
 const ortY = (f, i) => ((GY[i] + FORM * (reihe.ZY[f][i] - GY[i])) - AY) * reihe.SKALA[f] + AY;
 
@@ -568,14 +628,12 @@ function setzePunkte(a, b, u) {
     py[i] = PY1[i] * c1 + AY1[i] * c2 + PY2[i] * c3 + AY2[i] * c4;
   }
 }
-// Grösster Rahmen je Reihe und je Form, gemessen nur an den Kreisen, die im
-// jeweiligen Bild auch gezeichnet werden. So füllt jede Ansicht die Fläche,
-// statt sich nach Gebieten zu richten, die gar nicht zu sehen sind. Je Form
-// ein eigener Rahmen, weil die Landkarte hochkant steht und das Kartogramm
-// breiter läuft; dazwischen wird zwischen den Rahmen überblendet.
-function rahmenFuer(r, form) {
-  const merkR = reihe, merkF = FORM;
-  reihe = r; FORM = form;
+// Grösster Rahmen je Reihe, gemessen nur an den Kreisen, die im jeweiligen
+// Bild auch gezeichnet werden. So füllt die Karte die Fläche, statt sich nach
+// Gebieten zu richten, die gar nicht zu sehen sind.
+function rahmenFuer(r) {
+  const merkR = reihe;
+  reihe = r;
   let a = Infinity, b = -Infinity, c = Infinity, d = -Infinity;
   for (let f = 0; f < NF; f++) {
     setzePunkte(f, f, 0);
@@ -587,28 +645,10 @@ function rahmenFuer(r, form) {
       }
     }
   }
-  reihe = merkR; FORM = merkF; tangenteFuer = -1;
+  reihe = merkR; tangenteFuer = -1;
   return { x: a, y: c, w: b - a, h: d - c };
 }
-for (const r of REIHEN) r.rahmenJe = FORMEN.map(f => rahmenFuer(r, f));
-/* Wo die eingestellte Form in FORMEN liegt: der Index davor und der Anteil
-   zum nächsten. Bei einer einzigen Form ist der Anteil null, und wer damit
-   rechnet, muss den zweiten Eintrag dann gar nicht erst anfassen — es gibt
-   keinen. */
-function formLage() {
-  if (FORMEN.length < 2) return [0, 0];
-  let k = 0; while (k < FORMEN.length - 2 && FORMEN[k + 1] < FORM) k++;
-  return [k, Math.max(0, Math.min(1, (FORM - FORMEN[k]) / (FORMEN[k + 1] - FORMEN[k])))];
-}
-// Der Rahmen zur gerade eingestellten Form, zwischen den beiden nächsten
-// gemessenen überblendet.
-function rahmenJetzt() {
-  const R = reihe.rahmenJe, [k, t] = formLage();
-  if (t <= 0) return R[k];
-  const A = R[k], B = R[k + 1];
-  return { x: A.x + (B.x - A.x) * t, y: A.y + (B.y - A.y) * t,
-           w: A.w + (B.w - A.w) * t, h: A.h + (B.h - A.h) * t };
-}
+for (const r of REIHEN) r.rahmen = rahmenFuer(r);
 
 /* ---------- Die Farbleiter ----------
    Eine einzige, und es ist die eines Schulatlas: Tiefland grün, dann gelb,
@@ -622,32 +662,31 @@ function rahmenJetzt() {
    Gesetzt ist sie auf schwarzen Grund; die Seite kennt kein zweites Klima
    mehr. Das spart nicht nur Code, es ist auch der Grund, warum das Tiefgrün
    so tief sein darf. */
-/* Zwanzig Bänder, und sie sind gerechnet statt gegriffen: je Band eine
-   Helligkeit und ein Farbton, und dazu die **grösste Buntheit, die der
-   Bildschirm an dieser Stelle noch hergibt**. Der Weg geht von tiefem Waldgrün
-   über Grasgrün, Gelbgrün, Gelb und Ocker zu Orange und Rot; darüber Fels und
+/* Vierundzwanzig Bänder, beim Bauen aus ihrer Beschreibung gerechnet (siehe
+   oben im Bauskript): je Band eine Helligkeit, ein Farbton und die grösste
+   Buntheit, die sRGB an dieser Stelle noch hergibt.
+
+   Die untersten vier sind **Wasser**. Wo auf die Fläche am wenigsten Menschen
+   kommen, liegt jetzt ein See: tief dunkelblau, zum Ufer hin heller. Das ist
+   nicht nur hübsch, es räumt zwei Dinge zugleich auf. Die Grenze zwischen
+   Wasser und Land ist die schärfste, die eine Geländekarte kennt — man sieht
+   auf einen Blick, welcher Teil des Landes leer ist. Und weil das untere Ende
+   der Leiter damit an das Wasser geht, verteilen sich die Landbänder über
+   einen engeren Bereich: dieselben Farben lösen feiner auf, dort, wo die
+   Menschen wohnen.
+
+   Darüber das Land, von Waldgrün über Grasgrün, Gelbgrün, Gelb und Ocker zu
+   Orange und Rot. Oben endet es in **Weiss**, nicht in einem hellen Braun; das
+   vorletzte Band ist ein fast entsättigtes Grau als Übergang von Fels zu
    Schnee.
 
-   Zwei Fassungen zuvor war die Leiter um eine ganze Stufe blasser, aus Sorge um
-   das Relief, das darüber liegt. Die Sorge war unbegründet. Auf schwarzem Grund
-   braucht eine Karte Farbe, sonst wird sie zu Schlamm — im Mittel liegt die
-   Buntheit der achtzehn Datenbänder jetzt bei 0,17 gegen 0,15 der vorigen und
-   0,13 der ersten Fassung (OKLab).
-
-   Oben endet sie in **Weiss**, nicht in einem hellen Braun. Das ist der
-   Unterschied zwischen Schnee und altem Schnee, und auf einer Karte, deren
-   Gipfel die Frage sind, entscheidet er, ob man einen Gipfel als solchen
-   erkennt. Das vorletzte Band ist ein sehr helles, fast entsättigtes Grau: der
-   Übergang von Fels zu Schnee, und zugleich die Stelle, an der die Farbe die
-   Sättigung ablegt, damit das Weiss darüber als Weiss ankommt.
-
-   Die Helligkeit steigt vom ersten bis zum zwölften Band durchgehend und fällt
-   dann mit den Rot-Tönen wieder — das ist die Konvention eines Schulatlas und
-   nicht zu vermeiden, wenn Gelb der hellste Farbton sein soll; die beiden
-   obersten Bänder steigen wieder bis ins Weiss. */
-const HYPSO = ['#00621b','#006e1c','#007a1d','#00871d','#009418','#04a100','#26ad00','#42b800',
-               '#6ac300','#89ce00','#b3d400','#ddd900','#edcf00','#f3ba00','#f49d00','#ec7b00',
-               '#e15500','#d72b00','#f2ebe6','#ffffff'];
+   Die Helligkeit steigt im Wasser durchgehend bis zum Ufer, dann fällt sie
+   scharf ins Waldgrün, steigt wieder bis zum Gelb und fällt mit den Rot-Tönen
+   — das ist die Konvention eines Schulatlas und nicht zu vermeiden, wenn Gelb
+   der hellste Farbton sein soll; die beiden obersten Bänder steigen wieder bis
+   ins Weiss. */
+const HYPSO = ${JSON.stringify(HYPSO)};
+const WASSER = ${WASSER};
 const stil = n => getComputedStyle(document.body).getPropertyValue(n).trim();
 let LEER = '#1a1a18', INK = '#fff', STRICH = '#0c0c0c';
 const SCHATTEN = 'rgba(0,0,0,.6)', KANTE3D = '#060605';
@@ -694,12 +733,12 @@ const stufe = (r, u) => r[Math.max(0, Math.min(r.length - 1, Math.round(u * (r.l
    ganzen Karte nicht ändert. Gemessen wird einmal je Form und dann behalten:
    dieselbe Farbe heisst damit über die ganzen hundertfünfzig Jahre dasselbe.
    Zwischen zwei Formen wird logarithmisch übergeblendet. */
-const SPANNEJE = [];
-// Umschalten zwischen relativ und absolut: die gemessenen Spannen hängen daran
-// und werden verworfen.
+let SPANNE = null;
+// Umschalten zwischen relativ und absolut: die gemessene Spanne hängt daran
+// und wird verworfen.
 function bezugAbsolut(an) {
   if (ABSOLUT === an) return;
-  ABSOLUT = an; SPANNEJE.length = 0; SPANNE_ALLE = null;
+  ABSOLUT = an; SPANNE = null;
   masse(); reliefFrisch(); zeichne();
 }
 // Flächengewichtetes Quantil über eine sortierte Liste von [Wert, Fläche].
@@ -712,12 +751,10 @@ function gewichtet(liste) {
     return liste[liste.length - 1][0];
   };
 }
-function hoehenSpanne(fi) {
-  if (SPANNEJE[fi]) return SPANNEJE[fi];
-  const merkR = reihe, merkF = FORM;
-  FORM = FORMEN[fi];
+function hoehenSkala() {
+  if (SPANNE) return SPANNE;
+  const merkR = reihe;
   const alle = [];
-  let binnen = 0;            // grösste Spanne **innerhalb** eines Bildes
   const fl = new Float64Array(NK);
   for (let f = 0; f < NF; f++) {
     setzePunkte(f, f, 0);
@@ -738,22 +775,6 @@ function hoehenSpanne(fi) {
       const w = reihe.BEV[f][g];
       if (w > 0 && fl[g] > 0) jeBild.push([(w / fl[g]) / mittel, fl[g]]);
     }
-    /* Zwei Spannen, und sie beantworten zwei verschiedene Fragen.
-
-       Die **Gesamtspanne** über alle Bilder trägt die Farbleiter: dieselbe
-       Farbe soll über hundertfünfzig Jahre dasselbe heissen.
-
-       Die **Binnenspanne** eines einzelnen Bildes sagt, ob es überhaupt etwas
-       zu modellieren gibt. Im vollen Kartogramm sind beide grundverschieden:
-       innerhalb eines Jahres hat dort jeder Kreis dieselbe Dichte (keine
-       Höhe), über die Jahre aber steigt sie, weil die Fläche fest ist und die
-       Bevölkerung wächst (volle Farbspanne). Vorher fielen die zwei zusammen,
-       und aus der einen Zahl liess sich beides ablesen; seit die Karte nicht
-       mehr mitwächst, nicht mehr. */
-    if (jeBild.length) {
-      const qB = gewichtet(jeBild.slice());
-      binnen = Math.max(binnen, Math.log(Math.max(1e-6, qB(0.95)) / Math.max(1e-6, qB(0.05))));
-    }
     for (const e of jeBild) alle.push(e);
   }
   /* Gewichtet mit der **Fläche**, nicht je Kreis gleich. Das ist der
@@ -769,86 +790,18 @@ function hoehenSpanne(fi) {
      also enger stehen als die rohen Kreiswerte. */
   const q = gewichtet(alle);
   const lo = Math.max(1e-3, q(0.05)), hi = Math.max(lo * 1.02, q(0.95) * KOPF);
-  FORM = merkF; reihe = merkR; tangenteFuer = -1;
-  return (SPANNEJE[fi] = [Math.log(lo), Math.log(hi), binnen]);
+  reihe = merkR; tangenteFuer = -1;
+  return (SPANNE = [Math.log(lo), Math.log(hi)]);
 }
-/* ---------- Eine Leiter für alles ----------
-   Gemessen wurde die Spanne eine Fassung lang **je Form**, und zwischen zwei
-   Formen wurde übergeblendet. Der Grund war gut: die Formen streuten sehr
-   verschieden — auf der Landkarte vom Fünftel bis zum Fünfzehnfachen, im
-   vollen Kartogramm gar nicht —, und eine feste Leiter läge in zweien davon in
-   einem einzigen Gelb.
+/* Hier standen zwei Bremsen für das volle Kartogramm: eine Mindestbreite der
+   Leiter und ein Ausblenden des Reliefs, beide aus der Spanne **innerhalb**
+   eines Bildes gerechnet. Dort hat jeder Kreis dieselbe Dichte, die Spanne
+   schnurrt auf ein Prozent zusammen, und ohne Bremse wird aus den
+   Rundungsresten des Diffusionsverfahrens ein Gebirge. Bei halber Verzerrung
+   steht diese Spanne bei 1,76 gegen 0,96, ab denen die Bremse überhaupt
+   greifen würde — beide sind mit dem Kartogramm weggefallen. */
 
-   Mit festem Bezug und festem Massstab gilt das nicht mehr. Das Wachstum,
-   Faktor 2,85 über hundertfünfzig Jahre, steckt jetzt in **jeder** Form, auch
-   im Kartogramm: dessen Fläche ist fest, seine Bevölkerung wächst, also steigt
-   seine Dichte. Die drei Spannen liegen dadurch nah beieinander.
-
-   Also eine Leiter, die alle drei umschliesst. Erst damit heisst ×1 überall
-   dasselbe — auf der Landkarte, bei halber Verzerrung und im Kartogramm. Sonst
-   bekäme derselbe Wert je nach Knopfstellung eine andere Farbe, und die Skala
-   wäre nur innerhalb einer Form absolut. */
-let SPANNE_ALLE = null;
-function hoehenSkala() {
-  if (!SPANNE_ALLE) {
-    let lo = Infinity, hi = -Infinity;
-    for (let i = 0; i < FORMEN.length; i++) {
-      const sp = hoehenSpanne(i);
-      if (sp[0] < lo) lo = sp[0];
-      if (sp[1] > hi) hi = sp[1];
-    }
-    SPANNE_ALLE = [lo, Math.max(lo + 1e-4, hi)];
-  }
-  return SPANNE_ALLE;
-}
-// Die Binnenspanne zur eingestellten Form, gleich übergeblendet.
-function binnenSpanne() {
-  const [k, t] = formLage();
-  return t <= 0 ? hoehenSpanne(k)[2]
-                : hoehenSpanne(k)[2] + (hoehenSpanne(k + 1)[2] - hoehenSpanne(k)[2]) * t;
-}
-/* ---------- Wenn keine Höhe mehr übrig ist ----------
-   Im vollen Kartogramm steckt die ganze Bevölkerung in der Fläche; jeder Kreis
-   hat dann dieselbe Dichte, und die gemessene Spanne schnurrt auf ein Prozent
-   zusammen. Eine Leiter, die über dieses eine Prozent gespannt wird, macht aus
-   Rundungsresten ein Gebirge: sie stünde auf ×0,99 bis ×1,01 und zeigte doch
-   alle sechzehn Farben. Das Feld selbst tut dasselbe — was dort im Kartogramm
-   noch an Bergen steht, sind die Fugen zwischen den Kreisen, weichgezeichnet;
-   ein grosser Kreis behält davon mehr Mitte als ein kleiner, und schon sieht
-   Berlin wieder aus wie ein Berg, obwohl es nur gross gezeichnet ist.
-
-   Also zwei Bremsen, beide aus derselben gemessenen Spanne:
-
-   1. Die Leiter bekommt eine **Mindestbreite**. Ist die Spanne enger, wird sie
-      um ihre Mitte auf dieses Mass aufgezogen; alle Werte landen dann in der
-      Mitte der Leiter, und die Karte liegt einfarbig da — wie es einem
-      Kartogramm zusteht.
-   2. Das **Relief wird ausgeblendet**, im selben Verhältnis. Bei voller Spanne
-      steht es ganz, bei keiner gar nicht, dazwischen anteilig. Der Weg vom
-      Relief zum Kartogramm zeigt damit genau das, worum es geht: die Berge
-      sinken in die Fläche, weil die Menschen von der Höhe in die Breite
-      wandern. */
-const SPANNE_MIN = Math.log(2.6);
-function skalaBreit(von, bis) {
-  const fehlt = SPANNE_MIN - (bis - von);
-  if (fehlt <= 0) return [von, bis];
-  /* Symmetrisch aufgezogen läge die Mitte der Werte auf u = 0,5 — und das ist
-     genau die Grenze zwischen dem achten und dem neunten Farbband. Im
-     Kartogramm, wo alle Werte dicht um diese Mitte liegen, kippte deshalb jeder
-     Rundungsrest über die Grenze und sprenkelte die Fläche mit Flecken des
-     Nachbartons. Also um ein halbes Band verschoben: die Mitte fällt in die
-     Mitte eines Bandes, und die Fläche bleibt einfarbig. */
-  const a = von - fehlt / 2, b = bis + fehlt / 2;
-  const halbesBand = (b - a) / 32;
-  return [a - halbesBand, b - halbesBand];
-}
-// Aus der **Binnenspanne**: ob es in diesem Bild Höhenunterschiede gibt.
-function reliefAnteil(binnen) {
-  return Math.max(0, Math.min(1, binnen / SPANNE_MIN));
-}
-
-
-let skalaVon = -1, skalaBis = 1, RELIEF_ANTEIL = 1;
+let skalaVon = -1, skalaBis = 1;
 // Wo das Mittel dieses Bildes auf der Leiter liegt, von 0 bis 1.
 /* ---------- Wo eine Dichte auf der Leiter liegt ----------
    Zwei Möglichkeiten, und sie sind nicht gleichwertig.
@@ -933,7 +886,7 @@ function masse() {
   const bw = Math.round(breite * dpr), bh = Math.round(hoehe * dpr);
   if (cv.width !== bw || cv.height !== bh) { cv.width = bw; cv.height = bh; }
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const V = rahmenJetzt();
+  const V = reihe.rahmen;
   mass = Math.min(breite / V.w, hoehe / V.h) * 0.99;
   verX = (breite - V.w * mass) / 2 - V.x * mass;
   /* Nicht senkrecht mittig, sondern **nach unten gerückt**. Die Karte hat ein
@@ -1172,7 +1125,8 @@ function hoehen(w, deck) {
 
    Was bleibt, bleibt zu Recht: die gleichfarbige Zone ist im Ruhrgebiet
    grösser, weil dort auf grösserer Fläche ähnlich dicht gewohnt wird. */
-let FEINTEILER = 95, GROBTEILER = 28, ENGANTEIL = 1.15;
+let FEINTEILER = 95, GROBTEILER = 28, ENGANTEIL = 0.85;
+let WEITTEILER = 9, SCHAERFE = 0.13;
 /* Wo die Leiter oben endet, im Verhältnis zum gemessenen Quantil — die
    Schneegrenze. Sie ist gemessen, nicht geraten.
 
@@ -1206,12 +1160,62 @@ const hkC = document.createElement('canvas'), hcC = hkC.getContext('2d', { willR
 const hkF = document.createElement('canvas'), hcF = hkF.getContext('2d');
 let rW = 0, rH = 0, fBild = null;
 let feinH = null, grobH = null, grobM = null, grobAuf = null, feldH = null,
-    farbF = null, maskeH = null, schatten = null, licht = null;
+    farbF = null, maskeH = null, schatten = null, licht = null, weitH = null,
+    kastenA = null, kastenB = null;
 // Die Farbleiter als drei Zahlenreihen — je Bildpunkt ein Nachschlagen statt
 // eines Zerlegens von '#rrggbb'.
 const HYPSO_R = HYPSO.map(h => parseInt(h.slice(1, 3), 16));
 const HYPSO_G = HYPSO.map(h => parseInt(h.slice(3, 5), 16));
 const HYPSO_B = HYPSO.map(h => parseInt(h.slice(5, 7), 16));
+/* ---------- Ein sehr weites Feld, in Zahlen statt auf der Leinwand ----------
+   Gebraucht wird eine dritte, viel weitere Glättung — als Bezug für die
+   Schärfung, siehe unten. Über die Leinwand ginge das auch, kostete aber eine
+   weitere Weichzeichnung **und** ein weiteres Auslesen der Bildpunkte, und das
+   Auslesen ist der teuerste Schritt am ganzen Relief.
+
+   Also von Hand, mit laufender Summe: ein Kastenfilter kostet je Bildpunkt
+   dasselbe, egal wie breit er ist, und zweimal quer angewendet ergibt er einen
+   Dreieckskern, der für einen Bezugswert glatt genug ist. Vier Durchgänge über
+   neunzigtausend Zahlen, ohne eine einzige Leinwand anzufassen. */
+function kastenX(a, b, r, w, h) {
+  const f = 1 / (2 * r + 1);
+  for (let y = 0; y < h; y++) {
+    const z = y * w;
+    let summe = 0;
+    for (let x = -r; x <= r; x++) summe += a[z + (x < 0 ? 0 : x > w - 1 ? w - 1 : x)];
+    for (let x = 0; x < w; x++) {
+      b[z + x] = summe * f;
+      const rein = x + r + 1, raus = x - r;
+      summe += a[z + (rein > w - 1 ? w - 1 : rein)] - a[z + (raus < 0 ? 0 : raus)];
+    }
+  }
+}
+function kastenY(a, b, r, w, h) {
+  const f = 1 / (2 * r + 1);
+  for (let x = 0; x < w; x++) {
+    let summe = 0;
+    for (let y = -r; y <= r; y++) summe += a[(y < 0 ? 0 : y > h - 1 ? h - 1 : y) * w + x];
+    for (let y = 0; y < h; y++) {
+      b[y * w + x] = summe * f;
+      const rein = y + r + 1, raus = y - r;
+      summe += a[(rein > h - 1 ? h - 1 : rein) * w + x] - a[(raus < 0 ? 0 : raus) * w + x];
+    }
+  }
+}
+// Zweimal Kasten, quer und längs — und **normalisiert**: geteilt wird durch
+// dieselbe Glättung der Deckung, sonst zöge das Meer die Küste herunter und
+// eine Hafenstadt sähe weniger allein aus, als sie ist.
+function weitesFeld(r) {
+  const n = rW * rH;
+  for (let i = 0; i < n; i++) kastenA[i] = grobH[i] * grobM[i];
+  kastenX(kastenA, kastenB, r, rW, rH); kastenY(kastenB, kastenA, r, rW, rH);
+  kastenX(kastenA, kastenB, r, rW, rH); kastenY(kastenB, weitH, r, rW, rH);
+  for (let i = 0; i < n; i++) kastenA[i] = grobM[i];
+  kastenX(kastenA, kastenB, r, rW, rH); kastenY(kastenB, kastenA, r, rW, rH);
+  kastenX(kastenA, kastenB, r, rW, rH); kastenY(kastenB, kastenA, r, rW, rH);
+  for (let i = 0; i < n; i++) weitH[i] = kastenA[i] > 0.02 ? weitH[i] / kastenA[i] : 0;
+}
+
 /* ---------- Tiefpass ----------
    Das Höhenfeld wird jedes Bild neu gerastert, und dabei rutschen die Kreise um
    Bruchteile eines Feldpunktes. Das Feld selbst ist glatt, aber sein Raster
@@ -1247,7 +1251,8 @@ function reliefFeld() {
   grobH = new Float32Array(w * h); grobM = new Float32Array(w * h);
   grobAuf = new Float32Array(w * h); farbF = new Float32Array(w * h);
   maskeH = new Float32Array(w * h); schatten = new Float32Array(w * h);
-  licht = new Float32Array(w * h);
+  licht = new Float32Array(w * h); weitH = new Float32Array(w * h);
+  kastenA = new Float32Array(w * h); kastenB = new Float32Array(w * h);
 }
 // Die Stellschrauben des Reliefs.
 // Zwei Sonnen, und das ist Absicht. Die Modellierung braucht ein Licht, das
@@ -1268,13 +1273,12 @@ let WURFSONNE = 16;             // dasselbe Licht, flach, nur für den Schlagsch
 let UEBERHOEHT = 30;            // volle Höhe in Bildpunkten des Höhenfelds
 let MULDE = 0.85;               // wie stark Mulden verschatten
 let WURF = 0.32;                // wie dunkel ein Schlagschatten ist
-/* Zwanzig Niveaus, und es sind dieselben zwanzig wie die Farbbänder: beide
-   liegen bei k/20 des Feldwerts. **Jede Höhenlinie ist damit eine Farbgrenze**
-   und jede Farbgrenze trägt ihre Linie. Das ist die Konstruktion eines
-   Schulatlas, und es ist das, was eine Höhenlinie auf einer Geländekarte
-   überhaupt tun soll: den Farbwechsel begründen, statt quer durch ihn
-   hindurchzulaufen. Wer NIVEAUS ändert, muss die Palette mitändern. */
-let LINIE = 0.72, NIVEAUS = 20, FLACHHANG = 0.0012, DUNKELLINIE = 0.85;
+/* So viele Niveaus, wie es Farbbänder gibt, und beide liegen bei k/NBAND des
+   Feldwerts. **Jede Höhenlinie ist damit eine Farbgrenze** und jede Farbgrenze
+   trägt ihre Linie. Das ist die Konstruktion eines Schulatlas, und es ist das,
+   was eine Höhenlinie auf einer Geländekarte überhaupt tun soll: den
+   Farbwechsel begründen, statt quer durch ihn hindurchzulaufen. */
+let LINIE = 0.72, NIVEAUS = NBAND, FLACHHANG = 0.0012, DUNKELLINIE = 0.85;
 const LINIENSCHRITT = 2;          // Gitterschritt der Linienverfolgung, in Feldpunkten
 // So fein wird die Höhe abgestuft, ehe sie weichgezeichnet wird. Gezeichnet
 // wird in Bündeln, und die Zahl ist nicht beliebig: die Stufen stecken
@@ -1445,9 +1449,11 @@ function reliefUeber(sil, deck) {
 
      Daneben bleibt das weite Feld mit seinem eigenen, breiteren Rand; aus ihm
      kommt die Muldenverschattung, die ja gerade die weite Umgebung braucht. */
+  weitesFeld(Math.max(3, Math.round(breite / WEITTEILER * s)));
   for (let i = 0; i < n3; i++) {
     grobAuf[i] = grobH[i] * grobM[i];
-    let k = ENGANTEIL * feinH[i] + (1 - ENGANTEIL) * grobH[i];
+    let k = ENGANTEIL * feinH[i] + (1 - ENGANTEIL) * grobH[i]
+          + SCHAERFE * (feinH[i] - weitH[i]);
     if (k < 0) k = 0; else if (k > 1) k = 1;
     farbF[i] = k;
     feldH[i] = k * (0.40 * maskeH[i] + 0.60 * grobM[i]);
@@ -1497,7 +1503,7 @@ function reliefUeber(sil, deck) {
       // Und der Schlagschatten.
       if (schatten[i] > 0) I -= (schatten[i] < 0.05 ? schatten[i] / 0.05 : 1) * WURF;
 
-      let a = I * STAERKE * RELIEF_ANTEIL;
+      let a = I * STAERKE;
       if (a > HELLMAX) a = HELLMAX; else if (a < -DUNKELMAX) a = -DUNKELMAX;
       licht[i] = a;
     }
@@ -1524,19 +1530,14 @@ function reliefUeber(sil, deck) {
      Hochrechnen bilinear geglättet: die Bandgrenze wird dadurch ein weicher
      Übergang von ein, zwei Bildpunkten, und die Höhenlinie liegt in seiner
      Mitte. Scharf gerastert sähe dieselbe Grenze treppig aus. */
-  /* Die Farbe läuft mit dem Relief gegen die Mitte. Im vollen Kartogramm hat
-     jeder Kreis dieselbe Dichte, es gibt also keine Höhe — und was das Feld
-     dort noch an Unterschieden zeigt, ist der Rest, den das Diffusionsverfahren
-     nicht ganz wegbekommen hat. Auf einer Leiter, deren Band einen Faktor 1,17
-     breit ist, wurden daraus sichtbare Farbbänder: 1943 lag ein Ost-West-
-     Verlauf über dem Kartogramm, der wie ein Befund aussah und keiner war.
-
-     Also derselbe Anteil wie beim Relief: bei voller Binnenspanne die Farbe des
-     Feldes, bei keiner die Farbe des Bildmittels, dazwischen anteilig. Die
-     Farben gleichen sich an, während die Berge sinken — beides sagt dasselbe. */
-  const fo = fBild.data, vM = mitteImFeld(), av = RELIEF_ANTEIL;
+  /* Hier lief die Farbe eine Fassung lang anteilig gegen die Farbe des
+     Bildmittels — dieselbe Bremse wie beim Relief, und aus demselben Grund:
+     im vollen Kartogramm wurden aus den Rundungsresten des
+     Diffusionsverfahrens sichtbare Farbbänder. Mit dem Kartogramm ist auch
+     sie weg; das Feld färbt jetzt unvermittelt. */
+  const fo = fBild.data;
   for (let i = 0; i < n3; i++) {
-    const k = bandIdx(vM + (farbF[i] - vM) * av);
+    const k = bandIdx(farbF[i]);
     let r = HYPSO_R[k], g = HYPSO_G[k], b = HYPSO_B[k];
     const a = licht[i];
     if (a > 0) { r += (255 - r) * a * AUFHELLEN; g += (255 - g) * a * AUFHELLEN; b += (255 - b) * a * AUFHELLEN; }
@@ -1554,7 +1555,7 @@ function reliefUeber(sil, deck) {
   ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(hkF, 0, 0, breite, hoehe);
 
-  if (LINIE * RELIEF_ANTEIL > 0.02) hoehenLinien(s);
+  hoehenLinien(s);
 }
 
 /* ---------- Beleuchtete Höhenlinien, nach Tanaka Kitiro (1950) ----------
@@ -1683,7 +1684,7 @@ function linienMalen(strichBreite) {
     p.length = 0;
     ctx.lineWidth = (0.40 + 0.95 * st) * strichBreite;
     ctx.strokeStyle = hell ? '#fff' : '#000';
-    ctx.globalAlpha = Math.min(1, LINIE * RELIEF_ANTEIL * st * (hell ? 1 : DUNKELLINIE));
+    ctx.globalAlpha = Math.min(1, LINIE * st * (hell ? 1 : DUNKELLINIE));
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -1827,9 +1828,7 @@ function zeichne() {
   const TIEFE = Math.max(2.5, breite / 130);
   const sil = new Path2D();
   hoehen(w, deck);
-  const roh = hoehenSkala();
-  RELIEF_ANTEIL = reliefAnteil(binnenSpanne());
-  [skalaVon, skalaBis] = skalaBreit(roh[0], roh[1]);
+  [skalaVon, skalaBis] = hoehenSkala();
   for (let g = 0; g < NK; g++) {
     if (!(deck[g] > 0.5)) continue;
     for (const r of GEBIETE[g]) {
@@ -2085,15 +2084,10 @@ function notizen() {
 }
 
 /* ---------- Legende ---------- */
-// Ein Satz zur eingestellten Form: das Volumen ist immer die Bevölkerung, und
-// wie es sich auf Fläche und Höhe verteilt, steht am Umschalter.
-// Ein Wort zur eingestellten Form, nicht mehr. Was sie bedeutet, steht am
-// Knopf darunter; die Leiter muss es nicht noch einmal erklären.
 // Ein Wort zur gezeichneten Form. Es steht in der Legende, weil es sonst
 // nirgends mehr steht: ohne Umschalter sieht man der Karte nicht an, dass sie
 // überhaupt verzogen ist.
-const formWort = () => FORM === 0 ? 'true shape' : FORM === 1 ? 'full cartogram'
-                     : 'half distortion';
+const FORMWORT = 'half distortion';
 function legende() {
   document.getElementById('rampe').style.background =
     'linear-gradient(90deg,' + HYPSO.join(',') + ')';
@@ -2105,9 +2099,7 @@ function legende() {
 function legText() {
   const [a, b, u] = bildBei(jahr);
   const zwischen = u > 0.001 && u < 0.999;
-  // Die Zahlen an den Enden der Leiter stehen je Bild neu: beim Überblenden von
-  // einer Form zur anderen wandert die Spanne mit.
-  const [von, bis] = skalaBreit(hoehenSkala()[0], hoehenSkala()[1]);
+  const [von, bis] = hoehenSkala();
   const zeig = x => (x >= 10 ? x.toFixed(0) : x >= 1 ? x.toFixed(1) : x.toFixed(2));
   // Linear fängt die Leiter bei null an, nicht beim unteren Quantil.
   document.getElementById('legLinks').textContent = LINEAR ? '0' : '×' + zeig(Math.exp(von));
@@ -2118,7 +2110,7 @@ function legText() {
   // Eine Zeile: was die Zahlen an der Leiter sind, welche Form eingestellt ist,
   // und welcher Stichtag gilt. Der Rest steht in der Methodik, nicht hier.
   document.getElementById('legText').textContent =
-    '× the 2024 average density · ' + formWort() + ' · '
+    '× the 2024 average density · ' + FORMWORT + ' · '
     + (zwischen ? D.B[a].jahr + ' → ' + D.B[b].jahr
                 : D.B[u < 0.5 ? a : b].stichtage.join(', '));
 }
@@ -2203,10 +2195,6 @@ document.getElementById('spiel').onclick = () => laeuft ? halte() : starte();
 document.getElementById('zeit').addEventListener('input', e => {
   halte(); setzeZeit(e.target.value / 1000); reliefFrisch(); zeichne();
 });
-/* Hier stand der Umschalter zwischen den Formen, samt einer halben Sekunde
-   Überblendung von der einen in die andere. Er ist weg, weil die Seite nur
-   noch eine Form zeigt; was zwischen Formen überblendet, steht weiterhin
-   allgemein da (siehe formLage) und wartet auf den zweiten Eintrag. */
 addEventListener('resize', () => { masse(); reliefFrisch(); zeichne(); });
 /* Und dasselbe, wenn sich das Feld ändert, ohne dass das Fenster es tut.
    Die Massfunktion misst die Leinwand einmal und hält die Zahl; ändert das Auslegen
