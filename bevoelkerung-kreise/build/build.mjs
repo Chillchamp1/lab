@@ -208,43 +208,43 @@ const FADEN_DECK = [1, 0.52, 0.38, 0.27, 0.19, 0.13];
 const NOTIZEN = [
   { von: 1871, bis: 1899, kopf: '1871–1900 · Coal and steel',
     kurz: 'The Ruhr fills, the farming east empties.',
-    mehr: 'Gelsenkirchen grows from 23,794 people in 1871 to 219,501 by 1910, on today’s boundaries.' },
+    mehr: 'Gelsenkirchen goes from 23,794 people to 219,501.' },
   { von: 1899, bis: 1913, kopf: '1900–1910 · The metropolis',
     kurz: 'Berlin passes three and a half million.',
-    mehr: '931,984 in 1871, 3,734,258 by 1910. Almost all of the country’s growth is now urban.' },
+    mehr: '931,984 in 1871, 3,734,258 by 1910.' },
   { von: 1913, bis: 1927, kopf: '1914–1918 · The First World War',
     kurz: 'Two million soldiers dead, no census until 1939.',
-    mehr: 'The map glides over the war years because nothing was counted in them. The loss is real; the dip is not drawn.' },
+    mehr: 'The loss is real; nothing was counted, so the map glides.' },
   { von: 1927, bis: 1937, kopf: '1933–1939 · Rearmament',
     kurz: 'Whole towns rise for the arms industry.',
-    mehr: 'Wolfsburg for the Volkswagen works, Salzgitter for ore and steel — open country until then, 94,026 and 111,510 people by 1961.' },
+    mehr: 'Wolfsburg and Salzgitter are open country until now.' },
   { von: 1937, bis: 1945, kopf: '1939–1945 · The Second World War',
     kurz: 'Bombing empties the cities; Berlin loses 1.2 million.',
-    mehr: 'Hamburg is down 308,577. The count of October 1946 is taken in a country whose cities are rubble.' },
+    mehr: 'October 1946 counts a country of rubble.' },
   { von: 1945, bis: 1952, kopf: '1945–1950 · Flight and expulsion',
     kurz: 'Twelve million Germans expelled from the east.',
-    mehr: 'The rural north takes the worst of it: Ostholstein doubles from 103,951 to 213,916 people, with nowhere to house them.' },
+    mehr: 'Ostholstein doubles, with nowhere to house them.' },
   { von: 1952, bis: 1962, kopf: '1950–1961 · Wirtschaftswunder',
     kurz: 'The west rebuilds, 2.7 million leave the GDR.',
-    mehr: 'Essen holds 750,501 people in 1961 and never as many again. The Wall goes up in August of that year.' },
+    mehr: 'Essen peaks at 750,501 people in 1961 and never again.' },
   { von: 1962, bis: 1973, kopf: '1961–1973 · Guest workers',
     kurz: 'The factories recruit in Italy, Turkey, Yugoslavia.',
-    mehr: 'From 1972 onward more people die in West Germany than are born there — every year since, growth has depended on who arrives.' },
+    mehr: 'From 1972 more die in the west than are born there.' },
   { von: 1973, bis: 1988, kopf: '1973–1987 · The pits close',
     kurz: 'Coal and steel close; the Ruhr turns red.',
-    mehr: 'It has stayed red ever since. The growth moves south and out to the districts around the cities.' },
+    mehr: 'It has stayed red ever since; the growth moves south.' },
   { von: 1988, bis: 1996, kopf: '1989–1996 · Reunification',
     kurz: 'The east goes west; its birth rate halves.',
-    mehr: 'One of the sharpest peacetime falls ever recorded. Berlin is the exception and grows again.' },
+    mehr: 'One of the sharpest peacetime falls on record.' },
   { von: 1996, bis: 2011, kopf: '1996–2011 · Shrinking, and recounting',
     kurz: 'The 2011 census finds 1.5 million fewer.',
-    mehr: 'The registers carried 81.8 million, the census counted 80.2. That correction sits on this stretch, on top of the real losses in the east.' },
+    mehr: 'The registers carried 81.8 million, the census counted 80.2.' },
   { von: 2011, bis: 2019, kopf: '2011–2019 · The cities fill again',
     kurz: 'Free movement and 2015 outweigh the deaths.',
-    mehr: 'Leipzig, down a third between 1939 and 2011, climbs back above 600,000 people.' },
+    mehr: 'Leipzig, down a third since 1939, is back above 600,000.' },
   { von: 2019, bis: 2025, kopf: '2020–2024 · Covid, then Ukraine',
     kurz: 'A million arrive from Ukraine in 2022.',
-    mehr: 'Germany reaches 83.6 million, and nearly all of the gain sits in the cities and the districts around them.' },
+    mehr: 'Germany reaches 83.6 million, nearly all of it in the cities.' },
 ];
 
 // Die grössten Städte tragen ihren Namen auf der Karte — und zwar die, die
@@ -593,6 +593,40 @@ let reihe = REIHEN[0];
 
    Zurückgegeben werden die beiden Steigungen bereits mit h multipliziert, also
    auf den Abschnitt normiert — dann rechnet hermite auf [0,1]. */
+/* Wie stark geglättet wird. 1 ist die volle Fritsch–Carlson-Kurve, 0 ist die
+   Gerade — denn eine Hermite-Kurve, deren beide Steigungen gleich der Sehne
+   sind, **ist** die Gerade. Dazwischen wird jede Steigung anteilig zur Sehne
+   hin gezogen.
+
+   Der Regler steht hier, weil die Frage berechtigt ist: die Kurve war für die
+   Knoten des Kartogramms gedacht, und der Boden steht seit einer Weile still.
+   Also nachgemessen, über alle Kreise und neunhundert Stellen der Achse —
+   Abweichung von der Geraden gegen den Knick der Höhe an einer Zählung
+   (Median über die Kreise, die in allen zehn Bildern Zahlen haben):
+
+     straff   grösste Abweichung   im Mittel   Knick im Median
+       0                       0       0,00 %            74 %
+       0,25              58 305 M       0,19 %            65 %
+       0,5              116 611 M       0,38 %            53 %
+       0,75             174 916 M       0,57 %            35 %
+       1                233 221 M       0,75 %             5 %
+
+   Die Mitte ist also das Schlechteste von beidem: den halben Preis für ein
+   Viertel des Nutzens. Entweder ganz oder gar nicht — und ganz, weil ein
+   Knick von 74 Prozent bedeutet, dass sich die Wachstumsgeschwindigkeit des
+   mittleren Kreises an jeder Zählung fast verdoppelt oder halbiert. Neunmal
+   im Lauf, über vierhundert Kreise zugleich: ein Zucken, und genau dagegen
+   ist die Kurve gebaut.
+
+   Der Preis ist im Mittel 0,75 Prozent, steht aber nicht gleichmässig: fast
+   alles davon liegt in der einen 39-Jahre-Lücke zwischen 1871 und 1910, wo
+   Berlin um bis zu 233 221 Menschen über der Geraden läuft. Die Kurve zieht
+   das Wachstum dort nach vorn, weil der folgende Abschnitt flach ist und die
+   Monotonie diese Flachheit rückwärts in die Anfahrt trägt — für eine Stadt,
+   deren Wachstum sich in der Gründerzeit beschleunigte, die falsche Richtung.
+   Gezählt ist zwischen 1871 und 1910 nichts; beide Annahmen sind Annahmen,
+   und die gerade wäre dort die vorsichtigere. */
+const STRAFF = 1;
 function steigungen(y, h, f, n) {
   const d1 = (y[f + 1] - y[f]) / h[f];
   const d0 = f > 0 ? (y[f] - y[f - 1]) / h[f - 1] : d1;
@@ -606,7 +640,7 @@ function steigungen(y, h, f, n) {
   if (f + 2 >= n) m2 = d1;
   else if (d1 * d2 <= 0) m2 = 0;
   else { const w1 = 2 * h[f + 1] + h[f], w2 = h[f + 1] + 2 * h[f]; m2 = (w1 + w2) / (w1 / d1 + w2 / d2); }
-  return [m1 * h[f], m2 * h[f]];
+  return [(d1 + STRAFF * (m1 - d1)) * h[f], (d1 + STRAFF * (m2 - d1)) * h[f]];
 }
 // Hermite auf [0,1] mit den beiden Steigungen
 function hermite(y1, y2, m1, m2, t) {
@@ -1937,15 +1971,27 @@ function schreibe(a, b, u, w, deck) {
    Schrift fällt weg, ein Name breiter als sein Fleck fällt weg, und wer sich
    mit einem schon gesetzten Namen überschneidet, fällt auch weg — die
    grösseren zuerst, damit im Ruhrgebiet nicht die kleinste Stadt gewinnt. */
-/* Der Vorrat, nicht die Auswahl: Kreis, kurzer Name und der Ort auf der
-   **Landkarte** in Kilometern. Die Landkarte, nicht der feste Boden, weil der
-   Ort hier nur für einen Zweck gebraucht wird — den Mindestabstand zwischen
-   zwei Namen —, und sechzig Kilometer sind sechzig Kilometer, gleich wie weit
-   der Boden an dieser Stelle auseinandergezogen ist. */
-const STADT = ${JSON.stringify(staedte.map(k =>
-  [k.i, k.kurz, Math.round(k.m[0] / 1000), Math.round(k.m[1] / 1000)]))};
+/* Der Vorrat, nicht die Auswahl: Kreis und kurzer Name. */
+const STADT = ${JSON.stringify(staedte.map(k => [k.i, k.kurz]))};
 const ZEIGE = 17;      // so viele Namen zur selben Zeit
-const ABSTAND = ${ABSTAND_KM};   // Kilometer, die zwei Namen auseinanderliegen müssen
+/* Wie weit zwei Namen auseinanderliegen müssen — und zwar **auf dem Bild**,
+   nicht auf der Landkarte. Das war vorher ein fester Abstand von sechzig
+   Kilometern, und daran ging das Ruhrgebiet zugrunde: Köln liegt 55 Kilometer
+   von Essen entfernt, warf es also aus der Liste, obwohl Essen 1910 mit
+   477 611 Menschen die neuntgrösste Stadt des Landes war. Übrig blieb ein
+   einziger Name für eine Region, in der sechs Städte unter den zwanzig
+   grössten lagen.
+
+   Gedrängt wird aber nicht auf der Landkarte, sondern auf dem Bild — und der
+   feste Boden ist ein halb eingemischtes Kartogramm, zieht das Ruhrgebiet
+   also auseinander: dort sind es rund zwei Bildpunkte je Kilometer, im Land
+   im Mittel 0,9. Derselbe Abstand auf dem Bild lässt dem Revier damit gut die
+   doppelte Zahl an Namen, und genau da braucht man sie.
+
+   Gemessen wird in Bodenmass, als Bruchteil der Kartenbreite. Damit hängt die
+   Auswahl an nichts als der Karte: dieselben Städte auf dem Telefon wie auf
+   dem Schirm, gleich wie hoch oder breit das Fenster gerade steht. */
+const ABSTANDTEILER = 12;   // Mindestabstand = Kartenbreite / 12
 const SAUM = 0.06;     // wie weit unter der Schwelle ein Name ausblendet, im Logarithmus
 const STUFUNG = 14;    // um diesen Faktor über der Schwelle ist die Schrift am grössten
 /* Hier stand ein feiner dunkler Strich um jede der hundertsieben kreisfreien
@@ -1974,27 +2020,56 @@ const MINSCHRIFT = 7;       // kleinste Schrift; auf einem Telefon knapp, aber l
    sind beide gleich gross, also ist die Blende dort gerade offen — niemand
    erscheint oder verschwindet plötzlich, die Namen werden blass und dicht wie
    die Berge unter ihnen. */
+/* Fläche und Schwerpunkt jeder Stadt auf dem festen Boden, einmal gerechnet.
+   Der Boden steht still, also ändern sie sich nie; mal mass ergibt beides den
+   Wert auf dem Schirm. Vorher lief diese Schleife in jedem Bild über die
+   Ringe jeder beschrifteten Stadt. */
+let ORTE = null;
+function orte() {
+  if (ORTE) return ORTE;
+  ORTE = STADT.map(([g]) => {
+    let bestA = 0, mx = 0, my = 0;
+    for (const r of GEBIETE[g]) {
+      let A2 = 0, sx = 0, sy = 0;
+      for (let i = 0, n = r.length; i < n; i++) {
+        const a = r[i], b = r[(i + 1) % n];
+        const xa = px[a], ya = py[a], xb = px[b], yb = py[b];
+        const f = xa * yb - xb * ya;
+        A2 += f; sx += (xa + xb) * f; sy += (ya + yb) * f;
+      }
+      const A = Math.abs(A2 / 2);
+      if (A > bestA) { bestA = A; mx = sx / (3 * A2); my = sy / (3 * A2); }
+    }
+    return [mx, my, bestA];
+  });
+  return ORTE;
+}
 function auswahl(deck, w) {
+  const O = orte(), eng = reihe.rahmen.w / ABSTANDTEILER;
   const kand = [];
-  for (const s of STADT) if (deck[s[0]] > 0.5 && w[s[0]] > 0) kand.push(s);
-  kand.sort((a, b) => w[b[0]] - w[a[0]]);
+  for (let i = 0; i < STADT.length; i++) {
+    const g = STADT[i][0];
+    if (deck[g] > 0.5 && w[g] > 0 && O[i][2] > 0) kand.push(i);
+  }
+  kand.sort((a, b) => w[STADT[b][0]] - w[STADT[a][0]]);
   const durch = [];
-  for (const s of kand) {
+  for (const i of kand) {
     let nah = false;
-    for (const t of durch) if (Math.hypot(t[2] - s[2], t[3] - s[3]) < ABSTAND) { nah = true; break; }
+    for (const j of durch) if (Math.hypot(O[j][0] - O[i][0], O[j][1] - O[i][1]) < eng) { nah = true; break; }
     if (nah) continue;
-    durch.push(s);
+    durch.push(i);
     // Ein paar über der Grenze mitnehmen: das sind die, die gerade ausblenden.
     if (durch.length >= ZEIGE + 5) break;
   }
-  const schwelle = durch.length >= ZEIGE ? w[durch[ZEIGE - 1][0]] : 0;
+  const schwelle = durch.length >= ZEIGE ? w[STADT[durch[ZEIGE - 1]][0]] : 0;
   return { durch, schwelle };
 }
 function beschrifte(deck, w) {
   const liste = [];
+  const O = orte();
   const { durch, schwelle } = auswahl(deck, w);
   for (let r = 0; r < durch.length; r++) {
-    const [g, name] = durch[r];
+    const [g, name] = STADT[durch[r]];
     /* Sichtbarkeit und Schriftgrösse kommen beide aus dem Verhältnis zur
        Schwelle, nicht aus der Einwohnerzahl selbst. Das ist Absicht: der Berg
        sagt, wie viele Menschen da sind — absolut, über hundertfünfzig Jahre
@@ -2006,19 +2081,8 @@ function beschrifte(deck, w) {
     // Unter einem Zwölftel Deckkraft ist ein Name nicht mehr zu sehen, kostet
     // aber Schwerpunkt, Punkt und Strich. Dort endet die Blende.
     if (sicht < 0.08) continue;
-    let bestA = 0, mx = 0, my = 0;
-    for (const r of GEBIETE[g]) {
-      let A2 = 0, sx = 0, sy = 0;
-      for (let i = 0, n = r.length; i < n; i++) {
-        const a = r[i], b = r[(i + 1) % n];
-        const xa = px[a] * mass + verX, ya = py[a] * mass + verY;
-        const xb = px[b] * mass + verX, yb = py[b] * mass + verY;
-        const f = xa * yb - xb * ya;
-        A2 += f; sx += (xa + xb) * f; sy += (ya + yb) * f;
-      }
-      const A = Math.abs(A2 / 2);
-      if (A > bestA) { bestA = A; mx = sx / (3 * A2); my = sy / (3 * A2); }
-    }
+    const o = O[durch[r]];
+    const bestA = o[2] * mass * mass, mx = o[0] * mass + verX, my = o[1] * mass + verY;
     /* Nicht auf den Gipfel. Der Berg eines Kreises sitzt in seiner Mitte —
        das weite Weichzeichnen macht aus der Fläche eine Kuppe, und ihr höchster
        Punkt ist der Schwerpunkt. Genau dort stand bisher der Name, und bei
@@ -2030,7 +2094,7 @@ function beschrifte(deck, w) {
        bleibt, wo er hingehört. Nach unten, weil das Licht von oben links
        kommt: der Südhang liegt im Schatten, dort stört die Schrift am
        wenigsten. */
-    if (bestA > 0) {
+    {
       /* Der Versatz hat zwei Teile. Der eine hängt am Fleck — bei einem grossen
          rückt der Name weiter herunter, damit der Gipfel frei bleibt. Der
          andere ist ein fester Abstand zur Kartenbreite: ohne ihn klebt die
@@ -2082,8 +2146,11 @@ function beschrifte(deck, w) {
     for (let i = 0; i < liste.length; i++) for (let j = i + 1; j < liste.length; j++) {
       const a = liste[i], b = liste[j];
       const dx = b.x - a.x, dy = b.y - a.y;
-      const ux = (a.br + b.br) / 2 + 4 - Math.abs(dx);
-      const uy = (a.hoch + b.hoch) / 2 + 3 - Math.abs(dy);
+      // Der Luftspalt hängt an der Schrift, nicht an einer festen Zahl: vier
+      // Bildpunkte sind bei einer 24-Punkt-Schrift ein Haar und sahen aus wie
+      // ein zusammengewachsenes Wort („HannoverBraunschweig").
+      const ux = (a.br + b.br) / 2 + (a.hoch + b.hoch) * 0.28 - Math.abs(dx);
+      const uy = (a.hoch + b.hoch) / 2 + (a.hoch + b.hoch) * 0.18 - Math.abs(dy);
       if (ux <= 0 || uy <= 0) continue;
       /* Jeder weicht so weit aus, wie der andere **da** ist. Ein Name, der
          gerade ausblendet, schiebt darum kaum noch — sonst rückte die halbe
@@ -2091,12 +2158,16 @@ function beschrifte(deck, w) {
          die Schwelle rutscht, und das wäre ein Sprung an einer Stelle, an der
          nichts springen soll. Weggeschoben wird er trotzdem voll. */
       if (uy / (a.hoch + b.hoch) < ux / (a.br + b.br)) {
-        const v = (dy >= 0 ? 1 : -1) * uy * 0.3; a.y -= v * b.sicht; b.y += v * a.sicht;
+        const v = (dy >= 0 ? 1 : -1) * uy * 0.45; a.y -= v * b.sicht; b.y += v * a.sicht;
       } else {
-        const v = (dx >= 0 ? 1 : -1) * ux * 0.3; a.x -= v * b.sicht; b.x += v * a.sicht;
+        const v = (dx >= 0 ? 1 : -1) * ux * 0.45; a.x -= v * b.sicht; b.x += v * a.sicht;
       }
     }
-    for (const s of liste) { s.x += (s.mx - s.x) * 0.08; s.y += (s.my - s.y) * 0.08; }
+    /* Abstossen und Feder stehen im Gleichgewicht, und das heisst: die
+       Überlappung wird nie ganz aufgelöst, sondern nur bis auf Feder/(Feder +
+       Abstossung). Bei 0,08 gegen 0,3 blieb ein Fünftel stehen — genug, dass
+       aus zwei Namen ein Wort wurde. Bei 0,05 gegen 0,45 ist es ein Zehntel. */
+    for (const s of liste) { s.x += (s.mx - s.x) * 0.05; s.y += (s.my - s.y) * 0.05; }
   }
 
   for (const s of liste) {
@@ -2198,10 +2269,17 @@ function notizen() {
 }
 
 /* ---------- Legende ---------- */
-// Ein Wort zur gezeichneten Form. Es steht in der Legende, weil es sonst
-// nirgends mehr steht: ohne Umschalter sieht man der Karte nicht an, dass sie
-// überhaupt verzogen ist.
-const FORMWORT = 'fixed ground';
+/* Hier stand „fixed ground" mitten in der Zeile, zwischen zwei Jahreszahlen:
+   „× the 2024 average density · fixed ground · 1871-12-01". Drei Sachen,
+   durch Mittelpunkte aneinandergereiht, und die mittlere las sich wie eine
+   Eigenschaft der Jahreszahl daneben. Das Wort stand da, solange man zwischen
+   Landkarte und Kartogramm umschalten konnte und die Legende sagen musste,
+   was gerade eingestellt ist. Es gibt nur noch eine Form; wie sie gemacht
+   ist, steht in der Methodik.
+
+   Übrig bleiben zwei Angaben, jede mit einem Wort davor, das sagt, was sie
+   ist: wofür das Kreuz an den Enden der Leiter steht, und wann gezählt
+   wurde. */
 function legende() {
   document.getElementById('rampe').style.background =
     'linear-gradient(90deg,' + HYPSO.join(',') + ')';
@@ -2224,9 +2302,9 @@ function legText() {
   // Eine Zeile: was die Zahlen an der Leiter sind, welche Form eingestellt ist,
   // und welcher Stichtag gilt. Der Rest steht in der Methodik, nicht hier.
   document.getElementById('legText').textContent =
-    '× the 2024 average density · ' + FORMWORT + ' · '
-    + (zwischen ? D.B[a].jahr + ' → ' + D.B[b].jahr
-                : D.B[u < 0.5 ? a : b].stichtage.join(', '));
+    'height: × the average density of Germany in 2024 · '
+    + (zwischen ? 'between the counts of ' + D.B[a].jahr + ' and ' + D.B[b].jahr
+                : 'counted ' + D.B[u < 0.5 ? a : b].stichtage.join(', '));
 }
 
 /* ---------- Tippen ---------- */

@@ -105,7 +105,9 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   5,4 Sekunden, also bekommt 1939→1946 acht Sekunden statt vier und
   2019→2024 5,4 statt zwei. Zwischen den Zählungen wird mit einer monotonen
   kubischen Kurve gerechnet, nicht geradlinig: kein Knick, kein Überschiessen.
-  Grösster Geschwindigkeitssprung von 125 auf 19 Prozent.
+  Der Knick der Höhe an einer Zählung fällt im Median über die 400 Kreise von
+  74 auf 5 Prozent; der Preis dafür sind 0,75 Prozent Abweichung von der
+  Geraden im Mittel, fast alles davon in der 39-Jahre-Lücke 1871–1910.
 - **Eine Form, die halbe Verzerrung** (a = 0,5), auf den Mittelwert aller zehn
   Kartogramme. Jeder Knoten liegt bei `Landkarte + a · (Mittelkartogramm −
   Landkarte)`; die Landkarte steht ohnehin als Anfang der Differenzkette in der
@@ -364,6 +366,27 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   hundertsieben winzigen kreisfreien Städte das obere Quantil, und die halbe
   Palette blieb leer; jetzt sind 2024 zweiundzwanzig der vierundzwanzig Bänder
   belegt.
+- **Das Ruhrgebiet trägt endlich mehr als einen Namen.** Der Mindestabstand
+  zwischen zwei Beschriftungen war ein fester Wert auf der **Landkarte**
+  (sechzig Kilometer), und daran ging genau diese Region zugrunde: Köln liegt
+  55 Kilometer von Essen entfernt und warf es aus der Liste — Essen war 1910
+  mit 477 611 Menschen die neuntgrösste Stadt des Landes. Gemessen wird jetzt
+  **auf dem Bild**, als Zwölftel der Kartenbreite in Bodenmass. Der feste
+  Boden ist ein halb eingemischtes Kartogramm und zieht das Revier
+  auseinander (zwei Bildpunkte je Kilometer statt 0,9 im Landesmittel), dort
+  stehen also doppelt so viele Namen wie anderswo. Seither: Essen, Dortmund
+  und Köln nebeneinander; 2024 dazu Münster und Karlsruhe, beide grösser als
+  Chemnitz und vorher von einem Nachbarn verdeckt. Und weil das Mass am
+  Boden hängt und nicht am Fenster, zeigt das Telefon dieselben Städte wie
+  der Schirm.
+- **Die Legende nennt nicht mehr die Form.** Da stand „× the 2024 average
+  density · fixed ground · 1871-12-01" — drei Sachen an Mittelpunkten
+  aufgereiht, und die mittlere las sich wie eine Eigenschaft der Jahreszahl
+  daneben. Das Wort stammte aus der Zeit mit drei umschaltbaren Formen. Jetzt:
+  „height: × the average density of Germany in 2024 · counted 1871-12-01",
+  jede Angabe mit einem Wort davor, das sagt, was sie ist.
+- **Die dreizehn Notizen sind auf 64 Prozent gekürzt** (1 922 → 1 228 Zeichen).
+  Je Notiz bleibt eine Aussage und eine Zahl.
 - **Welche Städte einen Namen tragen, entscheidet das Jahr.** Nicht mehr die
   siebzehn grössten von heute, ein für alle Mal beim Bauen gewählt, sondern die
   siebzehn grössten **jetzt** — die Auswahl läuft in jedem Bild neu über die
@@ -431,9 +454,9 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   die Legende unten. Die Leinwand bekommt allen Platz, der nach dem Text und der
   Bedienung übrig bleibt.
 - Siebzehn Städte tragen ihren Namen: die grössten des gerade gezeigten
-  Jahres, um sechzig Kilometer voneinander ausgedünnt. Die Schrift wächst mit
-  dem Abstand zur Schwelle, fällt aber nie unter sieben Pixel; wo zwei Namen
-  einander berühren, weichen sie aus.
+  Jahres, um ein Zwölftel der Kartenbreite voneinander ausgedünnt. Die Schrift
+  wächst mit dem Abstand zur Schwelle, fällt aber nie unter sieben Pixel; wo
+  zwei Namen einander berühren, weichen sie aus.
 - Der Bauvorgang kann auch mit Reihen umgehen, die nur einen Teil des Landes
   abdecken — beim Pilotgebiet Berlin und Brandenburg war das nötig. Siehe
   METHODIK.md, Abschnitt 4.
