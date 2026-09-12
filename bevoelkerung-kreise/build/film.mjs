@@ -60,8 +60,13 @@ const DAUER = await seite.evaluate(() => { laeuft = false; masse(); reliefFrisch
 const N = NUR || Math.round(DAUER / 1000 * FPS);
 console.error(`${DAUER / 1000} s · ${FPS} Bilder/s · ${N} Bilder · ${CSSB * DSF}×${CSSH * DSF}`);
 
+/* CRF mit Deckel: die Höhenlinien sind feines Rauschen und treiben die Bitrate,
+   ein Lauf kam auf 3,5 Mbit/s und 38 MB. Mit maxrate 2,6 Mbit/s bleiben 86
+   Sekunden unter 28 MB — unter jeder Uploadgrenze, die einem begegnet, und
+   sichtbar ist der Deckel bei diesem Stoff nicht. */
 const ff = spawn(ffmpeg, ['-y', '-f', 'image2pipe', '-framerate', String(FPS), '-i', '-',
-  '-c:v', 'libx264', '-preset', 'slow', '-crf', '23', '-pix_fmt', 'yuv420p',
+  '-c:v', 'libx264', '-preset', 'slow', '-crf', '23',
+  '-maxrate', '2600k', '-bufsize', '5200k', '-pix_fmt', 'yuv420p',
   '-movflags', '+faststart', ZIEL], { stdio: ['pipe', 'ignore', 'pipe'] });
 let klage = '';
 ff.stderr.on('data', d => { klage += d; });
