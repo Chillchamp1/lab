@@ -1144,7 +1144,7 @@ Leiter zeigt jetzt dieselben fünfundzwanzig Bänder wie die Karte.
 
 Darunter steht ein Satz:
 
-> people per area relative to Germany's average in 2024
+> People per area relative to Germany's average in 2024
 
 Diese Zeile hat fünf Fassungen gebraucht, und die ersten vier scheiterten an
 derselben Stelle: **an der Eins**.

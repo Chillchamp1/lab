@@ -379,7 +379,7 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   (4 844 E/km²), Berlin ×2,36 gegen ×17,7, die Prignitz ×0,25 gegen ×0,15. Der
   Verzerrungsfaktor läuft von 0,57 bis 7,5, im Median 0,99 — für einen
   gewöhnlichen Landkreis stimmte der Satz, für Städte nicht. Jetzt steht dort
-  **„people per area relative to Germany's average in 2024"**. Das Wort, das
+  **„People per area relative to Germany's average in 2024"**. Das Wort, das
   vier Fassungen lang gefehlt hat, ist „relative to": es sagt in zwei Silben,
   dass die Zahlen an der Leiter ein Verhältnis sind und wozu. Bezahlt mit einer
   benannten Ungenauigkeit — „per area" lässt offen, welche Fläche gemeint ist,
