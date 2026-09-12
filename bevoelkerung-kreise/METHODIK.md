@@ -1312,6 +1312,17 @@ des Weichzeichners"). Gezeichnet wird auf einer zweiten, durchsichtigen Leinwand
 Boden stillsteht, bleibt ein einmal gezogener Umriss über alle
 hundertfünfzig Jahre richtig.
 
+**Der Tipp ist dabei ein Schalter**: einmal auf, einmal zu — und das zweite Mal
+gilt auch dann, wenn er einen anderen Kreis trifft. Eine Geste, eine Wirkung.
+Dass der Zettel überhaupt stehenbleibt, war zuvor kaputt und niemandem
+aufgefallen: der Browser schickt für eine **Berührung** nach dem Loslassen ein
+`pointerleave` hinterher, und darauf lag das Ausblenden, das der Maus gilt. Auf
+dem Telefon blitzte der Zettel deshalb nur auf, solange der Finger lag. Das
+Ausblenden beim Verlassen gilt jetzt nur noch für die Maus; dort folgt der
+Zettel weiter dem Zeiger, ein Klick nimmt ihn weg, und ein Gedächtnis für den
+eben weggeklickten Kreis verhindert, dass die nächste Mausbewegung ihn im selben
+Augenblick zurückholt.
+
 Damit entfielen auch die 3 334 Knotenpaare der Landesgrenzen aus der Nutzlast.
 
 ### Ein roter Punkt auf dem Ort
