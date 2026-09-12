@@ -538,6 +538,12 @@ canvas{position:absolute;left:0;top:0;width:100%;height:100%;touch-action:manipu
 .stufen .a::before{left:0}
 .stufen .z{transform:translateX(-100%)}
 .stufen .z::before{left:100%}
+/* Die Eins ist der Anker der ganzen Leiter und sah aus wie jede andere Marke.
+   Ein längerer, hellerer Strich und eine hellere Zahl sagen, dass hier der
+   Bezugspunkt steht — und das kostet keinen einzigen Bildpunkt Breite, anders
+   als jedes Wort, das man dorthin setzen könnte. */
+.stufen .eins{color:var(--ink)}
+.stufen .eins::before{top:-7px;height:7px;background:var(--ink)}
 
 /* Die Bedienung, so wenig wie möglich: ein Knopf und ein Regler. */
 .regler{display:flex;align-items:center;gap:9px;flex:0 0 auto;margin-top:6px}
@@ -2468,6 +2474,7 @@ function stufen() {
   for (const m of MARKEN) {
     const s = document.createElement('span');
     s.textContent = MARKENWORT[m] || (m === 0 ? '0' : '×' + zeig(m));
+    if (m === 1) s.className = 'eins';
     // Feldwert, nicht Leiterwert: die Reserve über dem Quantil zählt mit.
     s.style.left = (100 * aufLeiter(m) / (1 + RESERVE)).toFixed(2) + '%';
     if (m === 0) s.className = 'a';
@@ -2496,12 +2503,30 @@ function stufen() {
    Gleichung mehr erklärt zu werden:
 
        less crowded  [ Leiter ]  more crowded
-       Compared with Germany in 2024
+       Compared with Germany’s average in 2024
 
    Der Satz steht seit den beiden Wörtern über der Leiter auf zwei Zeilen
    verteilt, und jede tut eine Sache: oben, **was** gemessen wird, unten,
    **wogegen**. „How crowded, compared with Germany in 2024" stand eine Fassung
    lang ganz unten und sagte „crowded" dann dreimal im selben Block.
+
+   Und dann fehlte in „Compared with Germany in 2024" ein einziges Wort, an dem
+   die gefährlichste Fehllesart von allen hing: **als Ortsvergleich**. Jede
+   Stelle verglichen mit *derselben* Stelle im Jahr 2024 — bei einer Karte, die
+   durch die Zeit läuft, ist das sogar die naheliegende Vermutung. Gemeint ist
+   aber ein einziger Bezugswert für die ganze Karte.
+
+   Das führt zu Aussagen, die konkret falsch sind. Berlin hatte 1910 rund 3,7
+   Millionen Einwohner und hat heute 3,69; unter der falschen Lesart müsste es
+   1910 tief unten stehen und sich hocharbeiten. Tatsächlich steht Berlin 1910
+   fast genauso hoch wie 2024, weil beide gegen **denselben** Landesdurchschnitt
+   gehalten werden. Wer die Legende so liest, liest den Kern des Films falsch.
+
+   Ein Ort kann kein Durchschnitt sein: mit **„average"** ist die Fehllesart
+   tot. Nachgemessen 251 von 322 Bildpunkten bei 360 Bildpunkten
+   Fensterbreite, einzeilig auch bei 320. Verworfen, weil gemessen zu breit:
+   „Compared with the average for all of Germany in 2024" (316 von 322 — sechs
+   Bildpunkte Luft sind keine).
 
    „Crowded" statt „people per area", und das ist nicht nur kürzer. „People
    per area" klingt nach einer Zahl, die man ausrechnen kann — und genau diese
@@ -2518,7 +2543,7 @@ function stufen() {
    wert als eine genauere, die keiner versteht. */
 function legText() {
   document.getElementById('legText').textContent =
-    'Compared with Germany in 2024';
+    'Compared with Germany\u2019s average in 2024';
 }
 
 /* ---------- Tippen ---------- */

@@ -197,8 +197,8 @@ Kartogramm — München steht auf ×3,2 und ist wirklich ×20,7 (4 844 E/km²), 
 auf ×2,4 und ist ×17,7. Der Verzerrungsfaktor läuft von 0,57 bis 7,5, im Median
 0,99: für einen gewöhnlichen Landkreis stimmen die beiden fast überein, für
 Städte nicht. Deshalb trägt die Leiter „less crowded" und „more
-crowded" an ihren Enden und darunter „Compared with Germany in 2024", und das
-Wort Dichte fällt nicht mehr: gemeint ist die Dichte auf
+crowded" an ihren Enden und darunter „Compared with Germany's average in 2024",
+und das Wort Dichte fällt nicht mehr: gemeint ist die Dichte auf
 der **gezeichneten** Fläche, und für das Land als Ganzes stimmt der Satz genau,
 für einen einzelnen Kreis untertreibt er. Wer die wirkliche Dichte will, tippt
 einen Kreis an — im Zettel stehen beide Zahlen nebeneinander, und der Kreis

@@ -106,8 +106,8 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Loch über der Legende. Die Zweispaltigkeit im
   Querformat ist damit hinfällig und wieder draussen.
 - Die **Legende** ist die Leiter mit sechs Zahlen darauf (0, ×0,5, ×1, ×1,5,
-  ×2, ×3), darüber „less crowded" und „more crowded" an ihren Enden und darunter
-  „Compared with Germany in 2024". Ein angetippter Kreis bekommt dazu seinen
+  ×2, ×3, die ×1 hervorgehoben), darüber „less crowded" und „more crowded" an
+  ihren Enden und darunter „Compared with Germany's average in 2024". Ein angetippter Kreis bekommt dazu seinen
   Umriss. Umbruch
   unterbunden, sonst schöbe er die Karte.
 - Die Uhr läuft 84 Sekunden für 153 Jahre. Die Spielzeit je Abschnitt mischt
@@ -400,8 +400,15 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Verzerrungsfaktor läuft von 0,57 bis 7,5, im Median 0,99 — für einen
   gewöhnlichen Landkreis stimmte der Satz, für Städte nicht. Jetzt trägt die Leiter
   **„less crowded" und „more crowded" an ihren Enden** und darunter
-  **„Compared with Germany in 2024"** — oben, was gemessen wird und in welche
-  Richtung, unten, wogegen. Zwei Wörter tragen das:
+  **„Compared with Germany's average in 2024"** — oben, was gemessen wird und in
+  welche Richtung, unten, wogegen. Das Wort „average" ist dabei kein Füllsel:
+  ohne es liest sich die Zeile als **Ortsvergleich**, jede Stelle gegen dieselbe
+  Stelle 2024. Berlin hatte 1910 rund 3,7 Mio und hat heute 3,69 — unter dieser
+  Lesart müsste es 1910 tief unten stehen; tatsächlich steht es fast genauso
+  hoch, weil beide gegen denselben Landesdurchschnitt gehalten werden. Ein Ort
+  kann kein Durchschnitt sein. Dazu trägt die **×1 einen längeren, helleren
+  Strich** als die übrigen Marken: sie ist der Anker und sah aus wie jede
+  andere. Zwei Wörter tragen das:
   „compared with" sagt, dass die Zahlen an der Leiter ein Verhältnis sind und
   wozu; „how crowded" statt „people per area" ist nicht nur kürzer, sondern
   robuster — „people per area" klingt nach einer Zahl, die man ausrechnen kann,

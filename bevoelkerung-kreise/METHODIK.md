@@ -1145,7 +1145,7 @@ Leiter zeigt jetzt dieselben fünfundzwanzig Bänder wie die Karte.
 Darunter steht ein Satz:
 
 > less crowded &nbsp;·&nbsp; [ Leiter ] &nbsp;·&nbsp; more crowded
-> Compared with Germany in 2024
+> Compared with Germany's average in 2024
 
 Diese Zeile hat fünf Fassungen gebraucht, und die ersten vier scheiterten an
 derselben Stelle: **an der Eins**.
@@ -1158,11 +1158,12 @@ derselben Stelle: **an der Eins**.
 | `×1 is Germany's average in 2024. ×2 means twice as many people in the same space.` | verständlich, brauchte aber zwei Zeilen |
 | `People per area relative to Germany's average in 2024` | einzeilig und richtig — aber „people per area" klingt nach einer Zahl, die man ausrechnen kann |
 | `How crowded, compared with Germany in 2024` | richtig und lesbar — sagte „crowded" aber dreimal im selben Block, seit die Leiter ihre beiden Pole trägt |
+| `Compared with Germany in 2024` | liest sich als **Ortsvergleich**: jede Stelle gegen dieselbe Stelle 2024 |
 
 Der Satz steht auf zwei Zeilen verteilt, und jede tut eine Sache: **über** der
 Leiter, an ihre Enden gesetzt, steht „less crowded" und „more crowded" — was
-gemessen wird und in welche Richtung; **unter** ihr „Compared with Germany in
-2024" — wogegen. Die Farben sagen die Richtung ohnehin, aber erst die beiden
+gemessen wird und in welche Richtung; **unter** ihr „Compared with Germany's
+average in 2024" — wogegen. Die Farben sagen die Richtung ohnehin, aber erst die beiden
 Wörter sagen, wovon die Richtung handelt, und zwar bevor man die Zahlen liest.
 Sie stehen blasser als die Zahlen, denn sie sind Beschriftung und keine Daten.
 
@@ -1173,6 +1174,23 @@ kürzer. „People per area" klingt nach einer Zahl, die man ausrechnen kann —
 und genau diese Rechnung ist die falsche: ×2,4 mal 234 wären 561 Einwohner je
 km², Berlin hat 4 136. Ein qualitatives Wort lädt nicht dazu ein. Die Zeile ist
 damit zugleich verständlicher und an der einen wunden Stelle robuster.
+
+**Das Wort „average" ist dabei kein Füllsel.** Ohne es liest sich „Compared with
+Germany in 2024" als **Ortsvergleich**: jede Stelle verglichen mit *derselben*
+Stelle im Jahr 2024. Bei einer Karte, die durch die Zeit läuft, ist das sogar die
+naheliegende Vermutung — und sie führt zu Aussagen, die konkret falsch sind.
+Berlin hatte 1910 rund 3,7 Millionen Einwohner und hat heute 3,69; unter dieser
+Lesart müsste es 1910 tief unten stehen und sich hocharbeiten. Tatsächlich steht
+Berlin 1910 fast genauso hoch wie 2024, weil beide gegen **denselben**
+Landesdurchschnitt gehalten werden. Ein Ort kann kein Durchschnitt sein: das eine
+Wort schliesst die Lesart.
+
+Dazu trägt die **×1 einen längeren, helleren Strich** als die übrigen Marken und
+eine hellere Zahl. Sie ist der Anker der ganzen Leiter und sah aus wie jede
+andere Marke. Das Wort „average" direkt auf die Marke zu setzen wurde geprüft und
+verworfen: es misst 47 Bildpunkte, die Marken stehen bei 360 Bildpunkten
+Fensterbreite aber nur 52 auseinander — bei 320 kollidierte es mit der ×0,5, und
+das ist die Uferkante.
 
 **Die Ungenauigkeit bleibt und sei hier benannt.** Gemeint ist die Dichte auf der
 **gezeichneten** Fläche. Für das Land als Ganzes stimmt der Satz genau — die
