@@ -184,10 +184,11 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Schattierung aus dem Gefälle, Höhenlinien auf den Bandgrenzen. Die Silhouette
   darunter in **einer** Farbe — nicht als Farbe der Karte, sondern als scharfe
   Kante, weil der Rand des hochgerechneten Feldes weich ist.
-- **Jede Höhenlinie ist eine Farbgrenze.** Die zwanzig Bandgrenzen und die
-  zwanzig Niveaus liegen auf denselben k/20 des Feldwerts. Die beiden obersten
-  Bänder, Fels und Schnee, liegen dabei **über** dem gemessenen Quantil: die
-  Reserve trägt jetzt selbst Farbe, statt farblos Platz zu halten.
+- **Jede Höhenlinie ist eine Farbgrenze.** Bandgrenzen und Niveaus liegen auf
+  denselben k/NBAND des Feldwerts; die Zahl der Niveaus hängt an der Zahl der
+  Bänder. Die beiden obersten Bänder, Fels und Schnee, liegen dabei **über** dem
+  gemessenen Quantil: die Reserve trägt selbst Farbe, statt farblos Platz zu
+  halten.
 - **Der Bezug der Höhe ist absolut**: die Dichte Deutschlands 2024, für jedes
   Bild dieselbe. ×2 heisst damit in jedem Jahr dasselbe, und das Wachstum steht
   in der Farbe — 1871 liegt das Land fast einfarbig im Tiefgrün, 2024 im Orange.
@@ -212,15 +213,46 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   `min-width:0`, einer reservierten Zeilenhöhe und einem **ResizeObserver** auf
   dem Kartenfeld, der neu misst, wenn sich das Auslegen ändert — wer immer es
   ändert.
-- **Nur noch eine Form: halbe Verzerrung.** Real map und Cartogram sind als
-  Knöpfe weg, die Karte zeigt den Schritt dazwischen und nur ihn. Der Platz der
-  Knopfleiste geht an die Karte. Was dranhängt: die Leiter wurde bisher über
-  **alle drei** Formen gemessen, damit ×1 in jeder Knopfstellung dasselbe heisst
-  — und die Landkarte streut am weitesten, setzte also das obere Ende für alle.
-  Jetzt misst sie genau die gezeichnete Form. Die Maschinerie bleibt: `FORMEN`
-  ist eine Liste, alles, was zwischen ihren Einträgen überblendet, rechnet
-  weiterhin allgemein, und die Nutzlast enthält ohnehin beide Enden — wer die
-  zwei zurückholen will, trägt sie dort wieder ein.
+- **Unten Wasser.** Die untersten vier der vierundzwanzig Bänder sind ein See:
+  tief dunkelblau, zum Ufer hin heller. Wo auf die Fläche am wenigsten Menschen
+  kommen, liegt jetzt Wasser, und die Uferlinie ist die schärfste Grenze, die
+  eine Geländekarte kennt. Zwei Gewinne: die Landbänder verteilen sich über
+  einen engeren Bereich des Feldes, **lösen also feiner auf**, und die frühen
+  Bilder bekommen ihre Zeichnung zurück — die lineare Leiter legt sie fast alle
+  in die untersten Bänder, und genau dort liegt jetzt die Abstufung. Die
+  Wasserlinie steht auf dem Feldwert ⅙, also ×0,45 der heutigen mittleren
+  Dichte; sie deckt 2024 **6,6 %** der Karte (Brandenburg, Mecklenburg,
+  Altmark, Eifel), 1939 noch 26 % und 1871 **83 %**. Dass 1871 vier Fünftel unter Wasser
+  liegen, ist kein Fehler: die Leiter ist absolut, und nach heutigem Massstab
+  war das Land damals fast leer. Die Karte wird dadurch zur Inselgruppe, und
+  der Lauf der Jahre zeigt, wie das Land aus dem Wasser steigt. Unter Wasser
+  wird weiter schattiert und weiter Höhenlinie gezogen — es sind Tiefenlinien,
+  aus derselben Zahl wie alles andere.
+- **Die Gipfel hatten einen Krater, jetzt laufen sie in einer flachen Spitze
+  aus.** Die Schärfung zog das weite Feld ab, und das **wölbt** sich über einem
+  breiten Plateau zur Mitte auf: Berlins enges Feld steht quer durch den Kreis
+  konstant auf 0,929, das weite steigt von 0,761 am Rand auf 0,839 in der Mitte,
+  und heraus kam 0,955 am Rand gegen 0,943 in der Mitte. Zwölf Tausendstel, und
+  die Schattierung machte daraus eine sichtbare Mulde. Der Bezug der Schärfung
+  ist jetzt ein **drittes, dreimal weiteres Feld**, über einem Plateau fast
+  konstant; die Form der Kuppe macht wieder das Gemisch aus engem und weitem
+  Feld, mit dem engen unter eins. Gipfel Berlin 0,988 statt 0,972, keine Kuhle,
+  Volumen Ruhr : Berlin unverändert 1,45 : 1. Gerechnet wird das sehr weite Feld
+  **in Zahlen** statt auf der Leinwand — ein Kastenfilter mit laufender Summe
+  kostet je Bildpunkt dasselbe, egal wie breit er ist, und spart das teure
+  dritte Auslesen der Bildpunkte.
+- **Die Farbleiter wird beim Bauen gerechnet**, nicht mehr als Liste von
+  Zeichenketten gepflegt: je Band eine Helligkeit, ein Farbton und der Anteil
+  der grössten Buntheit, die sRGB dort hergibt, gesucht per Halbierung in
+  OKLCh. `NBAND` und `WASSER` sind damit Stellschrauben statt Handarbeit.
+- **Real map und Cartogram sind gelöscht**, nicht nur versteckt: kein
+  Überblenden zwischen Formen, keine Leiter je Form, keine Mindestbreite der
+  Leiter, kein Ausblenden des Reliefs. Das waren alles Vorkehrungen für das
+  volle Kartogramm, in dem jeder Kreis dieselbe Dichte hat; bei halber
+  Verzerrung stand die Binnenspanne bei 1,76 gegen die 0,96, ab denen die Bremse
+  überhaupt gegriffen hätte. Die Nutzlast enthält beide Enden weiterhin — die
+  Landkarte ist der Anfang der Differenzkette —, wer die Knöpfe zurückwill,
+  braucht keine neuen Daten, nur wieder Code.
 - **Berlin ist der höchste Berg, und jetzt sieht man es auch.** Es ist 2024 der
   zweitdichteste Kreis (×2,51; nur München steht mit ×2,58 darüber), dichter als
   jede einzelne Ruhrstadt — auf der Karte sah es umgekehrt aus. Drei Ursachen,
@@ -246,12 +278,12 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Der Preis: eine Unscharfmaskierung überschiesst, Berlins höchster Punkt liest
   sich knapp ein Zehntel über der Dichte seines Kreises. Der Gipfel ist eine
   Schätzung, das Volumen ist die Bevölkerung.
-- **Zwanzig Bänder statt sechzehn, und oben echter Schnee.** Die Leiter ist
-  gerechnet statt gegriffen: je Band eine Helligkeit, ein Farbton und die
-  grösste Buntheit, die der Bildschirm dort hergibt — mittlere Buntheit der
-  achtzehn Datenbänder 0,17 (OKLab) gegen 0,15 der vorigen Fassung. Das oberste
-  Band ist **weiss**, nicht hellbraun; darunter ein fast entsättigtes Grau als
-  Übergang von Fels zu Schnee. 2024 sind achtzehn der zwanzig Bänder belegt.
+- **Mehr Bänder, und oben echter Schnee.** Erst zwanzig statt sechzehn, jetzt
+  vierundzwanzig mit dem Wasser. Die Leiter ist gerechnet statt gegriffen:
+  mittlere Buntheit der Landbänder 0,17 (OKLab) gegen 0,15 der vorigen Fassung.
+  Das oberste Band ist **weiss**, nicht hellbraun; darunter ein fast
+  entsättigtes Grau als Übergang von Fels zu Schnee. 2024 sind zweiundzwanzig
+  der vierundzwanzig Bänder belegt.
 - **Die Höhenlinien werden ausgedünnt, nicht fallengelassen.** Wo zwei Niveaus
   auf der Leinwand zusammenrückten, blendeten bisher *alle* aus — was genau den
   steilsten Hang traf. Berlins Flanke fällt in wenigen Bildpunkten durch fünf
@@ -293,7 +325,8 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Kartogramm ×0,35 … ×1,17). Flächengewichtet,
   weil Fläche gefärbt wird und nicht Kreise — ungewichtet setzten die
   hundertsieben winzigen kreisfreien Städte das obere Quantil, und die halbe
-  Palette blieb leer; jetzt sind 2024 achtzehn der zwanzig Bänder belegt.
+  Palette blieb leer; jetzt sind 2024 zweiundzwanzig der vierundzwanzig Bänder
+  belegt.
 - **Die kreisfreien Städte tragen doch einen Umriss**, einen feinen dunklen über
   dem Relief. Ein Landkreis braucht keinen, er wird kaum verzerrt; eine
   kreisfreie Stadt ist auf dem Boden winzig und in der Karte gross, und ihr Berg
@@ -307,9 +340,9 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   aus derselben gemessenen Spanne: die Leiter bekommt eine Mindestbreite (Faktor
   2,6, danach um ein halbes Band verschoben, sonst kippen die Rundungsreste über
   die Bandgrenze und sprenkeln die Fläche), und das Relief wird im selben
-  Verhältnis ausgeblendet. Bei halber Verzerrung greift keine von beiden
-  (Binnenspanne 1,76 gegen 0,96 Mindestbreite, Relief also voll); der
-  Mechanismus bleibt, weil er an den Formen hängt und nicht an der Seite.
+  Verhältnis ausgeblendet. Beides ist mit dem Kartogramm **gelöscht**: bei
+  halber Verzerrung stand die Binnenspanne bei 1,76 gegen die 0,96, ab denen die
+  Bremse überhaupt gegriffen hätte — sie hat nie etwas getan.
 - Die **Städtenamen** stehen nicht mehr auf dem Gipfel: jeder rückt um die
   Hälfte des Radius nach unten, den ein Kreis seiner Fläche hätte. „Berlin"
   und „Hamburg" deckten sonst genau den Berg zu, den sie benennen.

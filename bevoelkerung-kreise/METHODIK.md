@@ -339,12 +339,17 @@ Der Tausch ist exakt: 1,75 × 2,5 = 4,4 = 0,25 × 17,8. **Volumen bleibt
 Bevölkerung**, in jeder Stellung — die halbe ist nur die, in der beide Hälften
 des Tauschs noch zu sehen sind.
 
-Die anderen beiden waren eine Fassung lang als Knöpfe erreichbar und sind es
-nicht mehr. Was sie tragen, steht unverändert im Skript: `FORMEN` ist eine
-Liste, alles, was zwischen ihren Einträgen überblendet, rechnet weiterhin
-allgemein, und die Nutzlast enthält ohnehin beide Enden. Wer sie zurückholen
-will, trägt sie dort wieder ein und stellt die drei Knöpfe in die Seite
-zurück.
+Die anderen beiden waren als Knöpfe erreichbar, dann nur noch als Liste im
+Skript, und jetzt sind sie **weg** — samt allem, was nur ihretwegen dastand:
+kein Überblenden zwischen Formen, keine Leiter je Form, keine Mindestbreite,
+kein Ausblenden des Reliefs. Das waren Vorkehrungen für das volle Kartogramm,
+in dem jeder Kreis dieselbe Dichte hat und nichts mehr zu modellieren ist.
+
+Was bleibt, ist die Zahl: jeder Knoten liegt auf halbem Weg zwischen seinem Ort
+auf der Landkarte und seinem Ort im Kartogramm. **Beide Enden stehen weiterhin
+in der Nutzlast** — die Landkarte ist der Anfang der Differenzkette —, die
+Zwischenform kostet also nichts, und wer die Knöpfe zurückwill, braucht dafür
+keine neuen Daten, nur wieder Code.
 
 ### Wie die Zwischenform entsteht
 
@@ -724,17 +729,60 @@ Vielfaches grösser.
 
 ## 4b. Die Farbskala der Karte
 
-Die Karte wird gemalt, wie ein Atlas ein Gebirge malt: Tiefland in tiefem
-Waldgrün, dann Grasgrün, Gelbgrün, Gelb, Ocker, Orange, Rot — oben Fels und
-Schnee. **Zwanzig Bänder**, und sie sind gerechnet statt gegriffen: je Band eine
-Helligkeit und ein Farbton, und dazu die grösste Buntheit, die der Bildschirm
-an dieser Stelle noch hergibt.
+Die Karte wird gemalt, wie ein Atlas ein Gebirge malt: unten Wasser, dann
+Tiefland in tiefem Waldgrün, Grasgrün, Gelbgrün, Gelb, Ocker, Orange, Rot —
+oben Fels und Schnee. **Vierundzwanzig Bänder**, und sie werden beim Bauen aus
+ihrer Beschreibung gerechnet statt von Hand gesetzt: je Band eine Helligkeit,
+ein Farbton und die grösste Buntheit, die sRGB an dieser Stelle noch hergibt,
+gesucht per Halbierung in OKLCh.
 
 Die ersten Fassungen waren blasser — gedämpftes Oliv und Graubraun, aus Sorge um
 das Relief, das darüber liegt. Die Sorge war unbegründet, und auf schwarzem
 Grund braucht eine Karte Farbe, sonst wird sie zu Schlamm. Gemessen in OKLab
-liegt die mittlere Buntheit der achtzehn Datenbänder jetzt bei 0,17, gegen 0,15
-der vorigen und 0,13 der ersten Fassung.
+liegt die mittlere Buntheit der Landbänder jetzt bei 0,17, gegen 0,15 der
+vorigen und 0,13 der ersten Fassung.
+
+### Unten Wasser
+
+**Die untersten vier Bänder sind ein See.** Wo auf die Fläche am wenigsten
+Menschen kommen, liegt Wasser: tief dunkelblau, zum Ufer hin heller. Die Grenze
+zwischen Wasser und Land ist die schärfste, die eine Geländekarte kennt — man
+sieht auf einen Blick, welcher Teil des Landes leer ist.
+
+Sie kostet nichts und bringt zweierlei. Erstens verteilen sich die Landbänder
+über einen engeren Bereich des Feldes, **dieselbe Farbzahl löst also feiner
+auf**, und zwar dort, wo die Menschen wohnen. Zweitens bekommen die frühen
+Bilder ihre Zeichnung zurück: die lineare Leiter legt sie fast alle in die
+untersten Bänder (siehe „Volumen ist Bevölkerung"), und genau dort liegt jetzt
+die Abstufung.
+
+Wo die Wasserlinie liegt, ist gemessen. Bei vier von vierundzwanzig Bändern
+liegt sie auf dem Feldwert ⅙, also bei ×0,45 der heutigen mittleren Dichte —
+und sie deckt:
+
+| Jahr | Wasserfläche |
+|---|---|
+| 1871 | 82,6 % |
+| 1900–1910 | 41,7 % |
+| 1939 | 26,2 % |
+| 1946–1950 | 8,3 % |
+| 1961–1964 | 8,9 % |
+| 1996 | 6,1 % |
+| 2024 | **6,6 %** |
+
+2024 sind das Brandenburg, Mecklenburg, die Altmark und die Eifel — die Kreise,
+in denen tatsächlich am wenigsten Menschen auf den Quadratkilometer kommen. Dass
+1871 vier Fünftel des Landes unter Wasser liegen, ist **kein Fehler und keine
+Übertreibung**: die Leiter ist absolut, und nach heutigem Massstab war das Land
+damals fast leer. Aus der Karte wird dadurch eine Inselgruppe — Ruhr und Köln
+als grosse Insel, Berlin, Hamburg, Sachsen, Frankfurt, Stuttgart und München als
+kleinere —, und der Lauf der Jahre zeigt, wie das Land aus dem Wasser steigt.
+
+Unter Wasser wird weiter schattiert und weiter Höhenlinie gezogen. Das ist
+Absicht: es sind Tiefenlinien, wie sie ein Atlas auch zeichnet, und sie kommen
+aus derselben Zahl wie alles andere. Ein glatter blauer Spiegel sähe ruhiger
+aus, wäre aber eine zweite Geschichte neben der einen, die diese Karte
+erzählt.
 
 **Oben endet die Leiter in Weiss**, nicht in einem hellen Braun — das ist der
 Unterschied zwischen Schnee und altem Schnee, und auf einer Karte, deren Gipfel
@@ -743,10 +791,10 @@ vorletzte Band ist ein sehr helles, fast entsättigtes Grau: der Übergang von
 Fels zu Schnee, und zugleich die Stelle, an der die Farbe die Sättigung ablegt,
 damit das Weiss darüber als Weiss ankommt.
 
-Die Helligkeit steigt vom ersten bis zum zwölften Band durchgehend und fällt
-dann mit den Rot-Tönen wieder. Das ist die Konvention eines Schulatlas und nicht
-zu umgehen, wenn Gelb der hellste Farbton sein soll; die beiden obersten Bänder
-steigen wieder bis ins Weiss.
+Die Helligkeit steigt im Wasser durchgehend bis zum Ufer, fällt dort scharf ins
+Waldgrün, steigt wieder bis zum Gelb und fällt mit den Rot-Tönen. Das ist die
+Konvention eines Schulatlas und nicht zu umgehen, wenn Gelb der hellste Farbton
+sein soll; die beiden obersten Bänder steigen wieder bis ins Weiss.
 
 Gefärbt wird die **Höhe**: Bevölkerung geteilt durch gezeichnete Fläche,
 bezogen auf die mittlere Dichte des Bildes. Grün heisst wenige Menschen auf viel
@@ -929,17 +977,13 @@ Prozent Schneegrenze, siehe unten), einmal gemessen und dann behalten. Das geht,
 ohne zu zeichnen, weil die Höhe ein Verhältnis ist und sich beim Skalieren der
 ganzen Karte nicht ändert.
 
-Gemessen wird je Eintrag in `FORMEN`; steht dort nur die halbe Verzerrung, ist
-es diese eine Zeile:
-
-| Form | gemessene Spanne |
-|---|---|
-| **Half and half (a = 0,5)** | **×0,28 … ×2,39** |
-| Real map (a = 0), nicht gezeichnet | ×0,18 … ×2,68 |
-| Cartogram (a = 1), nicht gezeichnet | ×0,35 … ×1,17 |
+Gemessen wird an der gezeichneten Form, der halben Verzerrung: **×0,28 … ×2,39**.
+Zum Vergleich, damals mitgemessen: die Landkarte streute ×0,18 … ×2,68, das
+volle Kartogramm ×0,35 … ×1,17 — die Landkarte setzte also das obere Ende für
+alle drei.
 
 Nach oben läuft die Leiter als Knie weiter bis ×2,68 am Ende der Farbrampe;
-linear fängt sie bei null an.
+unten fängt sie bei null an, und die untersten vier Bänder sind Wasser.
 
 ### Das Ruhrgebiet und Berlin
 
@@ -971,27 +1015,60 @@ dort nichts zurück, Essen verliert an Bochum und bekommt von Bochum dasselbe
 wieder. Der Weichzeichner bevorzugt damit systematisch das Plateau vor der
 Spitze.
 
-Dagegen steht eine **Unscharfmaskierung**: `ENGANTEIL` ist 1,15, also 1,15 mal
-das enge Feld minus 0,15 mal das weite. Die Differenz der beiden ist genau das
-Mass für „steht dieser Berg allein" — gross bei einem einzelnen Gipfel, null
-über einem Plateau, und über die ganze Karte mittelwertfrei, sodass das Volumen
-die Bevölkerung bleibt.
+Dagegen steht eine **Unscharfmaskierung**: zum engen Feld wird ein Anteil der
+Differenz „enges Feld minus sehr weites Feld" hinzugeschlagen. Diese Differenz
+ist genau das Mass für „steht dieser Berg allein" — gross bei einem einzelnen
+Gipfel, klein über einem Plateau, und über die ganze Karte mittelwertfrei,
+sodass das Volumen die Bevölkerung bleibt.
 
-| | ohne Schärfung | mit 1,15 |
+**Der Bezug muss dabei sehr weit sein, und das war zuerst nicht so.** Eine
+Fassung lang wurde gegen das ohnehin vorhandene weite Feld geschärft
+(`ENGANTEIL` 1,15 statt 0,55 — dieselbe Rechnung, anders geschrieben). Das
+zieht aber eine **Wölbung** ab: über einem breiten Plateau wie Berlin ist das
+enge Feld flach, das weite wölbt sich zur Mitte auf, und was übrig bleibt, hat
+in der Mitte eine Kuhle. Gemessen quer durch Berlin, im Feldwert:
+
+| | Rand | Mitte |
 |---|---|---|
-| Gipfel Berlin | 0,949 | 0,972 |
-| Gipfel Ruhrgebiet | 0,910 | 0,889 |
-| Band Berlin : Ruhr | 18 : 18 | **19 : 17** |
-| Volumen Ruhr : Berlin | 1,52 | **1,44** |
+| enges Feld | 0,929 | 0,929 |
+| weites Feld | 0,761 | 0,839 |
+| Ergebnis, alte Schärfung | 0,955 | **0,943** |
+
+Zwölf Tausendstel Kuhle, und die Schattierung macht daraus eine sichtbare
+Mulde im Gipfel — Berlin und Hamburg trugen einen Krater.
+
+Der Bezug ist deshalb jetzt ein **drittes, sehr viel weiteres Feld**, rund
+dreimal so weit wie das bisherige. Über einem Plateau ist es fast konstant, die
+Schärfung hebt es also als Ganzes statt es auszuhöhlen; der Anteil ist dafür
+klein (0,13 statt 0,15). Die Form der Kuppe macht danach wieder das gewohnte
+Gemisch aus engem und weitem Feld, und weil das enge mit 0,85 unter eins liegt,
+**läuft der Gipfel in einer flachen Spitze aus** statt flach zu enden.
+
+(Höchster Punkt im Kreis, nicht der Wert auf dieser einen Zeile:)
+
+| | ohne Schärfung | alte, enge | neue, sehr weite |
+|---|---|---|---|
+| Gipfel Berlin | 0,937 | 0,972 | **0,988** |
+| Gipfel Ruhrgebiet | 0,875 | 0,887 | 0,901 |
+| Kuhle in Berlins Mitte | keine | −0,012 | **keine** |
+| Volumen Ruhr : Berlin | 1,51 | 1,45 | **1,45** |
 
 Berlin steht damit als einziges grosses Gebiet im Schnee, das Ruhrgebiet bleibt
 im Rot — und das ist die Reihenfolge, die auch in den Zahlen steht.
 
+Das sehr weite Feld wird nicht auf der Leinwand gerechnet, sondern **in
+Zahlen**: ein Kastenfilter mit laufender Summe kostet je Bildpunkt dasselbe,
+egal wie breit er ist, und zweimal quer angewendet ist er glatt genug für einen
+Bezugswert. Das spart die teure dritte Weichzeichnung und vor allem das dritte
+Auslesen der Bildpunkte. Normalisiert wird er mit derselben Deckung wie die
+anderen Felder, sonst zöge das Meer die Küste herunter und eine Hafenstadt sähe
+weniger allein aus, als sie ist.
+
 **Der Preis steht im Gipfel.** Eine Unscharfmaskierung überschiesst: Berlins
-höchster Punkt liest sich um knapp ein Zehntel über der Dichte seines eigenen
+höchster Punkt liest sich um gut ein Zehntel über der Dichte seines eigenen
 Kreises. Das ist der Tausch — der Gipfel ist eine Schätzung, das Volumen ist
-die Bevölkerung. Mehr als 1,15 klemmt den Gipfel oben wieder an, dann ist nichts
-gewonnen.
+die Bevölkerung. Mehr Schärfung klemmt den Gipfel oben wieder an, dann ist
+nichts gewonnen.
 
 Wo die Leiter oben endet, bleibt eine eigene Stellschraube — die
 **Schneegrenze**. Seit das Knie nichts mehr kappt, entscheidet sie nicht mehr
@@ -1024,12 +1101,12 @@ die Hälfte der Bänder auf der Landkarte. Aus demselben Grund fünf Prozent an
 den Enden statt eines halben: das Weichzeichnen zieht die Verteilung ohnehin zur
 Mitte.
 
-### Wenn keine Höhe mehr übrig ist
+### Wenn keine Höhe mehr übrig ist — und warum das jetzt niemanden mehr angeht
 
-*Seit die Seite nur noch die halbe Verzerrung zeigt, greift das Folgende nicht
-mehr — dort steht das Relief voll. Der Mechanismus bleibt, weil er an den
-Formen hängt und nicht an der Seite; wer das volle Kartogramm zurückholt,
-braucht ihn sofort wieder.*
+*Das Folgende ist **aus dem Skript entfernt**, zusammen mit dem vollen
+Kartogramm. Es steht hier, weil es erklärt, was an dieser Karte hängt, sobald
+jemand das Kartogramm zurückholt — und weil es eine der wenigen Stellen war, an
+denen die Karte etwas über sich selbst wusste.*
 
 Im vollen Kartogramm steckt die ganze Bevölkerung in der Fläche; **innerhalb**
 eines Jahres hat dort jeder Kreis dieselbe Dichte, es gibt also keine Höhe. Was
@@ -1061,11 +1138,12 @@ wandern** — und die Farben gleichen sich an, während sie sinken. Den Weg kann
 man auf der Seite gerade nicht gehen; die Mechanik dafür steht noch.
 
 Auch die **Mindestbreite** der Leiter (Faktor 2,6, um ein halbes Band
-verschoben) greift nicht: die gemessene Spanne der halben Verzerrung ist mit
-1,76 weit über den 0,96, ab denen sie eingreifen würde. Beide sind die
-Sicherung für den Fall, dass jemand die anderen Formen oder den relativen Bezug
-zurückholt — dort schnurrt die Kartogramm-Spanne wieder auf ein Prozent
-zusammen.
+verschoben) ist weg. Bei halber Verzerrung stand die gemessene Binnenspanne bei
+1,76 gegen die 0,96, ab denen sie überhaupt eingegriffen hätte — sie hat nie
+etwas getan, solange nur diese eine Form gezeichnet wurde. Wer das Kartogramm
+zurückholt, braucht beide wieder: dort schnurrt die Spanne auf ein Prozent
+zusammen, und ohne Bremse wird aus den Rundungsresten des Diffusionsverfahrens
+ein Gebirge.
 
 ### Was die Karte nicht mehr zeigt
 

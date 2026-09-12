@@ -103,8 +103,8 @@ Prozent der Fläche, und die fehlenden 2,5 stecken in der Höhe: 1,75 × 2,5 = 4
 wird dafür an der wirklich gezeichneten Fläche gemessen, nicht geschätzt. Die
 Zwischenform kostet kein Byte: die Landkarte steht ohnehin in der Datei, jeder
 Knoten liegt einfach zwischen seinen beiden Orten. Die beiden Enden waren eine
-Fassung lang als Knöpfe erreichbar; die Maschinerie dafür steht noch im
-Skript.
+Fassung lang als Knöpfe erreichbar; der Code dafür ist entfernt, die Daten
+stehen weiter in der Datei.
 
 Die Karte trägt **keine Grenzen** — bis auf einen feinen Umriss um jede
 kreisfreie Stadt. Für einen Landkreis wäre er überflüssig, er wird kaum
@@ -147,12 +147,23 @@ deshalb ein kleiner Farbfleck, während sein Berg weit darüber hinausreichte un
 die Linien sich darin drängten — die Karte sagte an derselben Stelle zweierlei.
 
 Jetzt steht im Höhenfeld die Dichte auf der gemessenen Leiter,
-und daraus kommt alles: die Farbe als eines von zwanzig gleich breiten Bändern,
-die Schattierung aus dem Gefälle, die Höhenlinien auf den Bandgrenzen. Bänder
-und Niveaus liegen auf denselben zwanzig Stellen, also **ist jede Höhenlinie
-eine Farbgrenze, und jede Farbgrenze trägt ihre Linie.** So macht es ein
-Schulatlas. Oben endet die Leiter in Weiss: die beiden hellsten Bänder, Fels und
-Schnee, liegen über dem gemessenen Quantil und gehören der Spitze allein.
+und daraus kommt alles: die Farbe als eines von vierundzwanzig gleich breiten
+Bändern, die Schattierung aus dem Gefälle, die Höhenlinien auf den Bandgrenzen.
+Bänder und Niveaus liegen auf denselben Stellen, also **ist jede Höhenlinie eine
+Farbgrenze, und jede Farbgrenze trägt ihre Linie.** So macht es ein Schulatlas.
+Oben endet die Leiter in Weiss: die beiden hellsten Bänder, Fels und Schnee,
+liegen über dem gemessenen Quantil und gehören der Spitze allein.
+
+**Unten liegt Wasser.** Die untersten vier Bänder sind ein See, tief dunkelblau
+und zum Ufer hin heller — dort, wo auf die Fläche am wenigsten Menschen kommen.
+Das schärft zweierlei: die Uferlinie zeigt auf einen Blick, welcher Teil des
+Landes leer ist, und weil das untere Ende der Leiter ans Wasser geht, lösen die
+Landbänder feiner auf. Die Wasserlinie liegt bei ×0,45 der heutigen mittleren
+Dichte und deckt 2024 knapp 7 Prozent der Karte — Brandenburg, Mecklenburg,
+Altmark, Eifel. 1871 sind es vier Fünftel, und das ist kein Fehler: die Leiter
+ist absolut, und nach heutigem Massstab war das Land damals fast leer. Die Karte
+ist dann eine Inselgruppe, und der Lauf der Jahre zeigt, wie das Land aus dem
+Wasser steigt.
 
 Wo die Leiter anfängt und aufhört, wird **aus den Daten gemessen** — alle Kreise
 in allen Zählungen, fünf bis fünfundneunzig Prozent, **gewichtet mit der
@@ -173,9 +184,12 @@ Weichzeichnen erhält das Integral allerdings nur über die **ganze** Karte, nic
 entscheidet die Nachbarschaft. Berlin verliert an das leere Brandenburg und
 bekommt nichts zurück, Essen verliert an Bochum und bekommt von Bochum dasselbe
 wieder. Dagegen steht eine **Unscharfmaskierung** — die Differenz aus engem und
-weitem Feld wieder aufgeschlagen, gross bei einem einzelnen Gipfel, null über
-einem Plateau. Damit steht das Ruhrgebiet 2024 bei 1,44 mal Berlin, wo die
-Menschen 1,36 stehen; vorher waren es 1,76.
+einem sehr weiten Feld wieder aufgeschlagen, gross bei einem einzelnen Gipfel,
+klein über einem Plateau. Damit steht das Ruhrgebiet 2024 bei 1,45 mal Berlin,
+wo die Menschen 1,36 stehen; vorher waren es 1,76. Der Bezug muss sehr weit
+sein: gegen das gewöhnliche weite Feld geschärft, zog die Rechnung dessen
+Wölbung ab und grub den Gipfeln eine Kuhle in die Mitte — Berlin und Hamburg
+trugen einen Krater.
 
 Wo die Leiter oben endet, ist die **Schneegrenze**, und sie wandert mit den
 Jahren: 2024 liegt knapp ein Prozent der Fläche im weissen Band — Berlin,
@@ -189,10 +203,10 @@ halbe Palette blieb ungenutzt.
 Im vollen Kartogramm gäbe es keine Spanne mehr: dort hat jeder Kreis dieselbe
 Dichte, weil die ganze Bevölkerung in der Fläche steckt. Eine Leiter, die über
 die verbliebenen anderthalb Prozent gespannt würde, machte aus Rundungsresten
-ein Gebirge — also bekommt sie eine Mindestbreite, und das Relief wird im selben
-Verhältnis ausgeblendet. Bei halber Verzerrung greift das nicht (die Binnenspanne
-steht bei 1,76 gegen 0,96 Mindestbreite, das Relief also voll); der Mechanismus
-bleibt, weil er an den Formen hängt und nicht an der Seite.
+ein Gebirge — also bekam sie eine Mindestbreite, und das Relief wurde im selben
+Verhältnis ausgeblendet. Beides ist mit dem Kartogramm entfernt: bei halber
+Verzerrung stand die Binnenspanne bei 1,76 gegen die 0,96, ab denen die Bremse
+überhaupt gegriffen hätte.
 
 Diffusionskartogramm nach Gastner und Newman (2004), wie bei den
 [Wahlkreisen](../wahlkreise-2025/): die Dichte wird als Wärme aufgefasst und
