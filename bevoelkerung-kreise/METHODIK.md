@@ -1144,7 +1144,8 @@ Leiter zeigt jetzt dieselben fünfundzwanzig Bänder wie die Karte.
 
 Darunter steht ein Satz:
 
-> How crowded, compared with Germany in 2024
+> less crowded &nbsp;·&nbsp; [ Leiter ] &nbsp;·&nbsp; more crowded
+> Compared with Germany in 2024
 
 Diese Zeile hat fünf Fassungen gebraucht, und die ersten vier scheiterten an
 derselben Stelle: **an der Eins**.
@@ -1156,12 +1157,19 @@ derselben Stelle: **an der Eins**.
 | `people per patch of map · Germany 2024 sits at ×1` | ehrlich, aber „patch of map" ist genau der Fachbegriff, den zu vermeiden die Übung war |
 | `×1 is Germany's average in 2024. ×2 means twice as many people in the same space.` | verständlich, brauchte aber zwei Zeilen |
 | `People per area relative to Germany's average in 2024` | einzeilig und richtig — aber „people per area" klingt nach einer Zahl, die man ausrechnen kann |
+| `How crowded, compared with Germany in 2024` | richtig und lesbar — sagte „crowded" aber dreimal im selben Block, seit die Leiter ihre beiden Pole trägt |
+
+Der Satz steht auf zwei Zeilen verteilt, und jede tut eine Sache: **über** der
+Leiter, an ihre Enden gesetzt, steht „less crowded" und „more crowded" — was
+gemessen wird und in welche Richtung; **unter** ihr „Compared with Germany in
+2024" — wogegen. Die Farben sagen die Richtung ohnehin, aber erst die beiden
+Wörter sagen, wovon die Richtung handelt, und zwar bevor man die Zahlen liest.
+Sie stehen blasser als die Zahlen, denn sie sind Beschriftung und keine Daten.
 
 Das Wort, das gefehlt hat, ist **„compared with"**: es sagt, dass die Zahlen an
 der Leiter ein Verhältnis sind und wozu, und danach braucht keine Gleichung mehr
-erklärt zu werden. Und **„how crowded" statt „people per area"** ist nicht nur
-kürzer (274 statt 316 Bildpunkte, einzeilig bis 360 Bildpunkte Fensterbreite
-hinunter). „People per area" klingt nach einer Zahl, die man ausrechnen kann —
+erklärt zu werden. Und **„crowded" statt „people per area"** ist nicht nur
+kürzer. „People per area" klingt nach einer Zahl, die man ausrechnen kann —
 und genau diese Rechnung ist die falsche: ×2,4 mal 234 wären 561 Einwohner je
 km², Berlin hat 4 136. Ein qualitatives Wort lädt nicht dazu ein. Die Zeile ist
 damit zugleich verständlicher und an der einen wunden Stelle robuster.
