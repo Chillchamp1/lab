@@ -62,7 +62,7 @@ Dreizehn Notizen sind es insgesamt, jede mit ihrem Zeitfenster. Was darin eine
 Kreiszahl nennt, ist aus der Tabelle dieser Seite genommen, der Rest ist
 Schulwissen und als solches gekennzeichnet.
 
-Die Uhr läuft siebzig Sekunden für 153 Jahre — langsam genug, um die
+Die Uhr läuft vierundachtzig Sekunden für 153 Jahre — langsam genug, um die
 Überschriften zu lesen.
 
 ## Gebietsstand
@@ -231,7 +231,7 @@ Vorher sprang die Geschwindigkeit an jeder Zählung um bis zu 74 Prozent, jetzt
 um höchstens 12,8.
 
 Die Uhr läuft nicht gleichmässig durch die Jahre. Jeder Abschnitt bekommt einen
-Anteil an den 70 Sekunden, der Dauer und Umschichtung mischt — der Bruch von
+Anteil an den 84 Sekunden, der Dauer und Umschichtung mischt — der Bruch von
 1939 auf 1946 also fünf Sekunden statt drei, während die langen ruhigen Strecken
 trotzdem den grössten Teil behalten, weil sie am längsten sind. Keiner bekommt
 weniger als viereinhalb Sekunden; sonst wäre er vorbei, ehe die Notiz gelesen

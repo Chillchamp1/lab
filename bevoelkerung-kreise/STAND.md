@@ -100,7 +100,7 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Querformat ist damit hinfällig und wieder draussen.
 - Die **Legende** ist eine Zeile: die Zahlen an den Enden der Leiter, ein Wort
   zur Form, der Stichtag. Umbruch unterbunden, sonst schöbe auch sie die Karte.
-- Die Uhr läuft 70 Sekunden für 153 Jahre. Die Spielzeit je Abschnitt mischt
+- Die Uhr läuft 84 Sekunden für 153 Jahre. Die Spielzeit je Abschnitt mischt
   Dauer und Umschichtung (geometrisches Mittel) und liegt nie unter
   viereinhalb Sekunden, also bekommt 1939→1946 fünf Sekunden statt drei und
   2019→2024 viereinhalb statt eineinhalb. Zwischen den Zählungen wird mit einer monotonen
@@ -373,9 +373,10 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   der Stadt statt aus der gezeichneten Fläche, in vier Stufen als Teiler der
   Kartenbreite (38, 42, 46, 52) — die Fläche steht seit dem festen Boden still
   und sagte ohnehin mehr über den Zuschnitt des Kreises als über die Stadt.
-- **Der beschreibende Text ist halb so gross** (13,5 → 7 px, Überschrift
-  14,5 → 7,5, der Faden im selben Verhältnis). Er stand als Block über der Karte
-  und zog den Blick, bevor die Karte ihn bekam.
+- **Der beschreibende Text ist deutlich kleiner** (13,5 → 9 px, Überschrift
+  14,5 → 9,8, der Faden im selben Verhältnis). Er stand als Block über der Karte
+  und zog den Blick, bevor die Karte ihn bekam. Zwischendurch stand er bei 7 und
+  war zu klein; das hier ist die Mitte.
 - **Auch die Städte tragen keinen Umriss mehr.** Die hundertsieben kreisfreien
   Städte waren die letzte Ausnahme von „keine Grenzen"; der Strich sagte, wie
   weit eine Stadt reicht, solange sie mit ihrer Bevölkerung wuchs. Bei festem
