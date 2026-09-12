@@ -2050,12 +2050,27 @@ function stufen() {
    ×0,15. Der Verzerrungsfaktor läuft von 0,57 bis 7,5, im Median 0,99: für
    einen gewöhnlichen Landkreis stimmte der Satz, für Städte nicht.
 
-   Jetzt steht dort, was die Karte wirklich zusichert — das Volumen —, und die
-   Zahl an der Leiter ohne das Wort, das sie nicht halten kann. Wer die
-   wirkliche Dichte will, tippt einen Kreis an: dort stehen beide Zahlen. */
+   Der erste Versuch dagegen war „volume = people · ×1 = the German average of
+   2024", und der war ehrlich, aber nicht lesbar: zwei Gleichungen nebeneinander,
+   und keine sagt, wovon das Mittel eigentlich das Mittel ist.
+
+   Jetzt zwei Halbsätze statt zweier Gleichungen — **was gemessen wird**, und
+   **wo die Eins liegt**:
+
+       people per patch of map · ×1 = Germany in 2024
+
+   „per patch of map" ist die ganze Ehrlichkeit in vier Wörtern: nicht je
+   Quadratkilometer, sondern je Stück gezeichneter Karte, und die ist verzerrt.
+   Wer daraufhin fragt, wie viele es denn je km² sind, tippt einen Kreis an —
+   im Zettel stehen beide Zahlen nebeneinander. Dass das Volumen die
+   Bevölkerung ist, steht nicht mehr hier: das ist ein Bauprinzip und kein
+   Schlüssel zur Farbleiter, und es steht in der Methodik.
+
+   Gemessen passt die Zeile bis auf 360 Bildpunkte Fensterbreite hinunter (287
+   von 322 verfügbaren); die alte brauchte 310. */
 function legText() {
   document.getElementById('legText').textContent =
-    'volume = people · ×1 = the German average of 2024';
+    'people per patch of map · ×1 = Germany in 2024';
 }
 
 /* ---------- Tippen ---------- */

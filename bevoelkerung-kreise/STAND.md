@@ -106,7 +106,8 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Loch über der Legende. Die Zweispaltigkeit im
   Querformat ist damit hinfällig und wieder draussen.
 - Die **Legende** ist die Leiter mit sechs Zahlen darauf (0, ×0,5, ×1, ×1,5,
-  ×2, ×3) und darunter ein Satz, was die Höhe misst. Umbruch unterbunden, sonst schöbe
+  ×2, ×3) und darunter ein Satz, was die Höhe misst: „people per patch of map ·
+  ×1 = Germany in 2024". Umbruch unterbunden, sonst schöbe
   er die Karte.
 - Die Uhr läuft 84 Sekunden für 153 Jahre. Die Spielzeit je Abschnitt mischt
   Dauer und Umschichtung (geometrisches Mittel) und liegt nie unter
@@ -378,8 +379,11 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   (4 844 E/km²), Berlin ×2,36 gegen ×17,7, die Prignitz ×0,25 gegen ×0,15. Der
   Verzerrungsfaktor läuft von 0,57 bis 7,5, im Median 0,99 — für einen
   gewöhnlichen Landkreis stimmte der Satz, für Städte nicht. Jetzt steht dort,
-  was die Karte wirklich zusichert: „volume = people · ×1 = the German average
-  of 2024". Und der Zettel beim Antippen stellt die beiden Zahlen nebeneinander
+  was gemessen wird und wo die Eins liegt: **„people per patch of map · ×1 =
+  Germany in 2024"**. (Dazwischen lag eine Fassung „volume = people · ×1 = the
+  German average of 2024" — ehrlich, aber nicht lesbar: zwei Gleichungen
+  nebeneinander, und keine sagt, wovon das Mittel das Mittel ist. „per patch of
+  map" trägt dieselbe Ehrlichkeit in vier Wörtern, die jeder versteht.) Und der Zettel beim Antippen stellt die beiden Zahlen nebeneinander
   — „Per km² 4 136 · ×17,7" gegen „Height here ×2,4" —, das ist der einzige
   Ort, an dem sich der Unterschied zeigen lässt, ohne die Karte zuzudecken.
 - **Vier Stellen in der Methodik nachgemessen und richtiggestellt.** „Volumen =
