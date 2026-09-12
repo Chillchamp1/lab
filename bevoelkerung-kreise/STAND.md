@@ -181,7 +181,7 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Verwaltung), die Höhenlinien kamen aus dem weichgezeichneten Feld, das
   darüber hinwegläuft. Berlin war deshalb ein kleiner Farbfleck, während sein
   Berg weit darüber hinausreichte und die Linien sich darin drängten. Jetzt
-  steht im Höhenfeld die logarithmische Dichte auf der gemessenen Leiter, und
+  steht im Höhenfeld die Dichte auf der gemessenen Leiter, und
   daraus kommt alles: Farbe als eines von sechzehn gleich breiten Bändern,
   Schattierung aus dem Gefälle, Höhenlinien auf den Bandgrenzen. Die Silhouette
   darunter in **einer** Farbe — nicht als Farbe der Karte, sondern als scharfe
@@ -194,6 +194,25 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   in der Farbe — 1871 liegt das Land fast einfarbig im Tiefgrün, 2024 im Orange.
   Der relative Bezug (mittlere Dichte desselben Bildes) steckt als Schalter im
   Skript, `bezugAbsolut(false)`, ohne Knopf.
+- **Volumen ist Bevölkerung.** Die Leiter teilt linear auf, nicht logarithmisch:
+  Weichzeichnen erhält das Integral, also ist das Volumen unter der
+  Geländeoberfläche die Bevölkerung, über jeden Ausschnitt. Gemessen für 2024,
+  Berlin gegen Ruhrgebiet: logarithmisch standen beide gleich hoch (0,88 : 0,88),
+  obwohl Berlin dichter ist; linear steht Berlin elf Prozent höher
+  (0,83 : 0,75), und das Volumenverhältnis geht von 1,94 auf 1,74 zurück, bei
+  1,35 Menschen. Der Rest ist das Weichzeichnen, das Berlins Berg über die
+  eigene Kreisgrenze trägt. Preis: die frühen Bilder verlieren an Zeichnung.
+  Schalter im Skript, `LINEAR = false`.
+- **Ein Layoutfehler, zwei Symptome.** `#legText` darf nicht umbrechen, und die
+  min-content-Breite eines Flex-Kindes ist voreingestellt die seines Inhalts —
+  eine lange Zeile („1946–1950 → 1961–1964") dehnte damit die ganze Bühne über
+  ihren Rahmen hinaus, und die Karte sprang um siebzehn Bildpunkte in die Breite
+  und zurück, je nach Notiz. Dazu mass die Massfunktion die Leinwand, bevor die
+  Legendenzeile gefüllt war: gezeichnet wurde für 808 Bildpunkte Höhe, ausgelegt
+  waren 784, also lag die Karte drei Prozent gestaucht da. Behoben mit
+  `min-width:0`, einer reservierten Zeilenhöhe und einem **ResizeObserver** auf
+  dem Kartenfeld, der neu misst, wenn sich das Auslegen ändert — wer immer es
+  ändert.
 - **Die hellste Stufe ist wieder eine Spitze.** Berlin ist 2024 der dichteste
   Kreis (×2,51 gegen Oberhausen ×2,39), sah aber kleiner aus als das
   Ruhrgebiet: die Leiter endete bei q0,95 = ×2,29, alles darüber lag im
@@ -201,15 +220,18 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   diesem einen Ton — keine Gipfel, sondern eine Hochebene. Kehrseite des
   absoluten Bezugs: die Leiter ist über alle zehn Zählungen gemessen, 2024
   klemmt oben an. Jetzt reicht sie **acht Prozent über q0,95** hinaus — die
-  Schneegrenze, gemessen: 2,0 % der Fläche in der hellsten Stufe 2024, 0,3 %
-  1982, davor nichts. Dazu enger geglättet
+  Schneegrenze. Sie ist ein Abwägen, weil sie abschneidet, und geklemmt wird
+  zuerst die Spitze: bei 0,90 × q0,95 deckt sie 2,4 % der Fläche, Berlins
+  Vorsprung schmilzt auf 5 %; bei 1,08 nur 0,2 %, Vorsprung 18 %. Eins ist der
+  Kompromiss — 0,9 % Gipfelfläche 2024, 11 % Vorsprung, 1943 nichts. Dazu enger
+  geglättet
   (weiter Radius `breite/28` statt `/22`, enges Feld 0,55 statt 0,40 Gewicht):
   das weite Feld bevorzugt Plateaus vor Spitzen, und das Ruhrgebiet ist ein
   Plateau, Berlin eine Spitze. Nebenbei zerfällt das Ruhrgebiet wieder in die
   Städte, aus denen es besteht. Zeitkonstante des engen Feldes dafür von 0,30 s
   auf 0,55 s; gemessen ist die Bewegung danach ruhiger als vorher (0,77 statt
   0,81 Promille Änderung je Bild).
-- **Eine Leiter für alle drei Formen**, ×0,18 … ×2,48 — sonst hiesse ×1 je nach
+- **Eine Leiter für alle drei Formen**, bis ×2,29 (linear ab null) — sonst hiesse ×1 je nach
   Knopfstellung etwas anderes. Möglich geworden, weil das Wachstum jetzt in
   jeder Form steckt, auch im Kartogramm: dessen Fläche ist fest, seine
   Bevölkerung wächst, also steigt seine Dichte von ×0,35 auf ×1,00. Das
@@ -223,8 +245,8 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   sichtbare Farbbänder (1943 ein Ost-West-Verlauf über dem Kartogramm, der wie
   ein Befund aussah und keiner war).
 - **Die Leiter wird je Form aus den Daten gemessen**, einmal, über alle Kreise in
-  allen Zählungen, **flächengewichtet**: q0,05 bis q0,95 + 8 %. Landkarte
-  ×0,18 … ×2,48, Half and half ×0,28 … ×2,2, Kartogramm ×0,35 … ×1,08. Flächengewichtet,
+  allen Zählungen, **flächengewichtet**: q0,05 bis q0,95. Landkarte
+  ×0,18 … ×2,29, Half and half ×0,28 … ×2,0, Kartogramm ×0,35 … ×1,00. Flächengewichtet,
   weil Fläche gefärbt wird und nicht Kreise — ungewichtet setzten die
   hundertsieben winzigen kreisfreien Städte das obere Quantil, und acht von
   sechzehn Bändern blieben leer; jetzt sind zwölf bis dreizehn belegt.

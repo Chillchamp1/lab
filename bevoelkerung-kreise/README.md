@@ -142,7 +142,7 @@ aus dem weichgezeichneten Feld kamen, das darüber hinwegläuft. Berlin war
 deshalb ein kleiner Farbfleck, während sein Berg weit darüber hinausreichte und
 die Linien sich darin drängten — die Karte sagte an derselben Stelle zweierlei.
 
-Jetzt steht im Höhenfeld die logarithmische Dichte auf der gemessenen Leiter,
+Jetzt steht im Höhenfeld die Dichte auf der gemessenen Leiter,
 und daraus kommt alles: die Farbe als eines von sechzehn gleich breiten Bändern,
 die Schattierung aus dem Gefälle, die Höhenlinien auf den Bandgrenzen. Ein
 Achtel Luft über und unter der Leiter sorgt dafür, dass die Zahlen zusammen­
@@ -154,13 +154,17 @@ Leiter **je Form einmal aus den Daten gemessen** — alle Kreise in allen
 Zählungen, fünf bis fünfundneunzig Prozent, **gewichtet mit der Fläche**; die
 drei zusammen ergeben eine Leiter für alle, ×0,18 bis ×2,48.
 
-Oben reicht sie acht Prozent über das gemessene Quantil hinaus, und das ist die
-**Schneegrenze**. Endet die Leiter genau am Quantil, deckt die hellste Stufe
-2024 reichlich vier Prozent der Karte — keine Gipfel, sondern eine Hochebene,
-und das Ruhrgebiet lag darin als eine grosse weisse Fläche, obwohl Berlin der
-dichtere Kreis ist. Acht Prozent darüber deckt sie zwei Prozent (Ruhrgebiet und
-Berlin), 1982 ein Drittel Prozent, davor nichts: die Gipfel entstehen erst im
-Lauf der Zeit.
+Die Leiter teilt dabei **linear** auf, nicht logarithmisch, und das ist eine
+inhaltliche Entscheidung: Weichzeichnen erhält das Integral, also ist das
+Volumen unter der Geländeoberfläche die Bevölkerung — über jeden Ausschnitt, den
+man herausgreift. Logarithmisch standen Berlin und das Ruhrgebiet gleich hoch,
+obwohl Berlin dichter ist; linear steht Berlin elf Prozent höher. Der Preis
+steht unten: die frühen Bilder verlieren an Zeichnung, dort trägt das Relief,
+was die Farbe nicht mehr trägt.
+
+Wo die Leiter oben endet, ist die **Schneegrenze**, und sie wandert mit den
+Jahren: 2024 liegt knapp ein Prozent der Fläche in der hellsten Stufe — Berlin,
+das Ruhrzentrum, München —, 1943 nichts. Die Gipfel entstehen erst.
 Flächengewichtet, weil Fläche gefärbt wird und nicht Kreise — ungewichtet
 setzten die hundertsieben winzigen kreisfreien Städte das obere Quantil, und die
 halbe Palette blieb ungenutzt.

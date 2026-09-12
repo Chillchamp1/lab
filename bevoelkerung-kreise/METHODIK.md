@@ -377,11 +377,14 @@ zehn Bilder: **0 gefaltete Ringe von 4650**.
 
 Zwischen dem leersten Landkreis und Berlin liegt auf der Landkarte der Faktor
 134. Ein Relief mit Faktor 134 ist eine senkrechte Wand neben einer Ebene, in
-der nichts mehr zu unterscheiden ist. Gestaucht wird deshalb **logarithmisch**,
+der nichts mehr zu unterscheiden ist. Gestaucht wird deshalb — aber **linear**,
 auf die gemessene Spanne der Farbleiter (4b):
 
-    Feldwert = (ln Höhe − unteres Leiterende) / Spanne,
+    Feldwert = Höhe / oberes Leiterende,
                auf −⅛ … 1+⅛ geklemmt und auf 0 … 1 gelegt
+
+Linear und nicht logarithmisch, und das ist eine inhaltliche Entscheidung, kein
+Geschmack: siehe „Volumen ist Bevölkerung" in 4b.
 
 Damit steht im Höhenfeld dieselbe Zahl, die auch die Farbe zeigt — und das ist
 der ganze Punkt (4b, „Eine Zahl, drei Darstellungen"). Die **Reihenfolge bleibt
@@ -760,6 +763,47 @@ Stadt, der Rest ist ihr Schatten.** Im vollen Kartogramm, wo die Fläche einfarb
 ist, sind diese Umrisse das Einzige, was man noch sieht — und genau dort sind sie
 am meisten wert, weil sie zeigen, wie gross eine Stadt geworden ist.
 
+### Volumen ist Bevölkerung
+
+Die Leiter kann auf zwei Weisen zwischen ihren Enden aufteilen, und sie sind
+nicht gleichwertig.
+
+**Logarithmisch** — gleiche Vielfache liegen gleich weit auseinander: von ×0,5
+auf ×1 ist derselbe Weg wie von ×1 auf ×2. Das löst unten gut auf, wo die
+meisten Kreise liegen, und staucht oben. Die Farbe ist damit eine brauchbare
+Rangfolge, aber die **Fläche unter ihr bedeutet nichts**.
+
+**Linear** — der Feldwert *ist* die Dichte. Und Weichzeichnen erhält das
+Integral, also gilt
+
+> Volumen unter der Geländeoberfläche = Bevölkerung
+
+nicht nur je Kreis, sondern über jeden Ausschnitt, den man herausgreift. Zwei
+gleich grosse Flecken gleicher Farbe haben dann gleich viele Menschen, und ein
+doppelt so hoher Berg auf halber Fläche ebenso.
+
+Das entscheidet den Fall Ruhrgebiet gegen Berlin, der weiter unten steht.
+Gemessen für 2024, innerhalb der jeweiligen Kreisgrenzen:
+
+| | logarithmisch | linear |
+|---|---|---|
+| mittlere Höhe Berlin | 0,88 | 0,83 |
+| mittlere Höhe Ruhrgebiet | 0,88 | 0,75 |
+| Volumen Ruhr : Berlin | 1,94 : 1 | 1,74 : 1 |
+| Menschen Ruhr : Berlin | 1,35 : 1 | 1,35 : 1 |
+
+Logarithmisch stehen die beiden **gleich hoch**, obwohl Berlin dichter ist;
+linear steht Berlin elf Prozent höher, und das Volumen rückt in die richtige
+Richtung. Dass es nicht ganz bei 1,35 ankommt, ist das Weichzeichnen: Berlins
+Berg trägt einen Teil seines Volumens über die eigene Kreisgrenze hinaus, das
+Ruhrgebiet behält als grosses Gebiet mehr im Inneren. Wer weiter aussen misst,
+kommt näher heran.
+
+Der Preis steht unten: die Hälfte der Fläche liegt in den untersten zwei, drei
+Bändern, und die frühen Bilder verlieren an Zeichnung — 1900 liegen ein Viertel
+der Fläche in den untersten drei Bändern. Das Relief trägt dort, was die Farbe
+nicht mehr trägt. Der Schalter steht im Skript (`LINEAR = false`), ohne Knopf.
+
 ### Bezogen worauf? Absolut
 
 Die Höhe ist ein Verhältnis, und die Frage ist, wozu. Bezug ist die Dichte
@@ -820,12 +864,12 @@ Verhältnis ist und sich beim Skalieren der ganzen Karte nicht ändert.
 
 | Form | gemessene Spanne |
 |---|---|
-| Real map (a = 0) | ×0,18 … ×2,48 |
-| Half and half (a = 0,5) | ×0,28 … ×2,2 |
+| Real map (a = 0) | ×0,18 … ×2,29 |
+| Half and half (a = 0,5) | ×0,28 … ×2,0 |
 | Cartogram (a = 1) | ×0,35 … ×1,00 |
 
-Die drei zusammen ergeben die eine Leiter, die alle umschliesst — ×0,18 bis
-×2,48. Dieselbe Farbe heisst damit über die ganzen hundertdreiundfünfzig Jahre
+Die drei zusammen ergeben die eine Leiter, die alle umschliesst — bis ×2,29;
+linear fängt sie bei null an. Dieselbe Farbe heisst damit über die ganzen hundertdreiundfünfzig Jahre
 dasselbe **und** über alle drei Knopfstellungen.
 
 ### Das Ruhrgebiet und Berlin
@@ -844,21 +888,19 @@ Oberhausen, ununterscheidbar. Reichlich **vier Prozent der Kartenfläche** lagen
 Kehrseite des absoluten Bezugs: die Leiter ist über alle zehn Zählungen
 gemessen, und 2024 ist die dichteste; sie klemmt dort oben an, wie 1871 unten.
 
-Die Leiter reicht deshalb jetzt **acht Prozent über das gemessene Quantil**
-hinaus — das ist die Schneegrenze, und sie ist gemessen, nicht geraten. Ein
-Zwischenversuch legte das obere Ende auf das 97. Prozent der Kreiswerte; das
-war zu weit, weil die Kreiswerte einen langen Schwanz haben, den das
-weichgezeichnete Feld nie erreicht: die drei hellsten Töne kamen dann in keinem
-Bild mehr vor. Acht Prozent über dem 95. Prozent trifft es:
+Wo die Leiter oben endet, ist deshalb eine eigene Stellschraube — die
+**Schneegrenze** —, und sie ist ein Abwägen, weil sie abschneidet: was über die
+Leiter ragt, wird geklemmt, und geklemmt wird zuerst die Spitze, also genau das,
+was Berlin vom Ruhrgebiet unterscheidet. Gemessen für 2024:
 
-| Bild | Fläche in der hellsten Stufe |
-|---|---|
-| 2024 | 2,0 % — Ruhrgebiet und Berlin |
-| 1982 | 0,3 % |
-| 1943 und früher | 0 % |
+| Schneegrenze | Gipfelfläche | Höhe Berlin : Ruhr | Volumen |
+|---|---|---|---|
+| 0,90 × q0,95 | 2,4 % | 0,84 : 0,80 (+5 %) | 1,82 |
+| **1,00 × q0,95** | **0,9 %** | **0,83 : 0,75 (+11 %)** | **1,74** |
+| 1,08 × q0,95 | 0,2 % | 0,83 : 0,70 (+18 %) | 1,63 |
 
-Die Schneegrenze wandert also mit den Jahren, und das ist genau richtig: die
-Gipfel entstehen erst.
+Eins ist der Kompromiss. Und die Schneegrenze wandert mit den Jahren: 1943
+liegt nichts darüber, die Gipfel entstehen erst.
 
 **Und zu weit geglättet.** Das weite Feld bevorzugt Plateaus vor Spitzen. Das
 Ruhrgebiet ist ein fünfzig Kilometer breites Band dichter Städte — dort mittelt
