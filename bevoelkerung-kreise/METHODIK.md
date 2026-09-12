@@ -814,18 +814,18 @@ Orange — und das ist genau die mittlere Dichte des Landes.
 
 Gesetzt ist an der Leiter nur, dass sie sechzehn Bänder hat; wo sie anfängt und
 aufhört, kommt **aus den Daten**: alle vierhundert Kreise in allen zehn
-Zählungen, das fünfte und das fünfundneunzigste Prozent, je Form einmal
-gemessen und dann behalten. Das geht, ohne zu zeichnen, weil die Höhe ein
+Zählungen, das fünfte und das fünfundneunzigste Prozent (oben plus acht Prozent
+Schneegrenze, siehe unten), je Form einmal gemessen und dann behalten. Das geht, ohne zu zeichnen, weil die Höhe ein
 Verhältnis ist und sich beim Skalieren der ganzen Karte nicht ändert.
 
 | Form | gemessene Spanne |
 |---|---|
-| Real map (a = 0) | ×0,18 … ×3,62 |
-| Half and half (a = 0,5) | ×0,28 … ×2,6 |
+| Real map (a = 0) | ×0,18 … ×2,48 |
+| Half and half (a = 0,5) | ×0,28 … ×2,2 |
 | Cartogram (a = 1) | ×0,35 … ×1,00 |
 
 Die drei zusammen ergeben die eine Leiter, die alle umschliesst — ×0,18 bis
-×3,62. Dieselbe Farbe heisst damit über die ganzen hundertdreiundfünfzig Jahre
+×2,48. Dieselbe Farbe heisst damit über die ganzen hundertdreiundfünfzig Jahre
 dasselbe **und** über alle drei Knopfstellungen.
 
 ### Das Ruhrgebiet und Berlin
@@ -839,12 +839,26 @@ Darstellung, nicht Befund.
 
 **Die Leiter war oben zu.** Sie endete beim fünfundneunzigsten Prozent, also bei
 ×2,29, und alles darüber landete im hellsten Band: Berlin, München, Essen,
-Oberhausen, ununterscheidbar. **Über zehn Prozent der Kartenfläche** lagen 2024
-in diesem einen Ton. Das ist die Kehrseite des absoluten Bezugs — die Leiter ist
-über alle zehn Zählungen gemessen, und 2024 ist die dichteste; sie klemmt dort
-oben an, wie 1871 unten. Das obere Quantil steht deshalb jetzt auf 0,97: die
-hellsten Töne bleiben einer Spitze vorbehalten, die es in keinem Bild gibt, und
-die gesättigte Fläche ist verschwunden.
+Oberhausen, ununterscheidbar. Reichlich **vier Prozent der Kartenfläche** lagen
+2024 in diesem einen Ton — keine Gipfel, sondern eine Hochebene. Das ist die
+Kehrseite des absoluten Bezugs: die Leiter ist über alle zehn Zählungen
+gemessen, und 2024 ist die dichteste; sie klemmt dort oben an, wie 1871 unten.
+
+Die Leiter reicht deshalb jetzt **acht Prozent über das gemessene Quantil**
+hinaus — das ist die Schneegrenze, und sie ist gemessen, nicht geraten. Ein
+Zwischenversuch legte das obere Ende auf das 97. Prozent der Kreiswerte; das
+war zu weit, weil die Kreiswerte einen langen Schwanz haben, den das
+weichgezeichnete Feld nie erreicht: die drei hellsten Töne kamen dann in keinem
+Bild mehr vor. Acht Prozent über dem 95. Prozent trifft es:
+
+| Bild | Fläche in der hellsten Stufe |
+|---|---|
+| 2024 | 2,0 % — Ruhrgebiet und Berlin |
+| 1982 | 0,3 % |
+| 1943 und früher | 0 % |
+
+Die Schneegrenze wandert also mit den Jahren, und das ist genau richtig: die
+Gipfel entstehen erst.
 
 **Und zu weit geglättet.** Das weite Feld bevorzugt Plateaus vor Spitzen. Das
 Ruhrgebiet ist ein fünfzig Kilometer breites Band dichter Städte — dort mittelt
@@ -930,6 +944,19 @@ brauchte die Fläche, die jetzt das Gelände trägt — beides zugleich ging nic
 eine Schattierung, die stark genug für ein Gebirge ist, macht aus Rot und Blau
 Grau. Und eine Seite, die eine Sache gut zeigt, ist mehr wert als eine mit vier
 Knöpfen.
+
+### Eine Falle beim Nachmessen
+
+Alle diese Zahlen sind im Prüfbrowser gemessen, und dabei ist zweimal dasselbe
+schiefgegangen: nach einem Sprung am Zeitregler braucht das weite Feld seine
+Zeitkonstante, 1,2 Sekunden, um dort anzukommen. Wer nach 700 Millisekunden
+misst oder ein Bild macht, sieht erst vierundvierzig Prozent des Weges — die
+Karte ist dann zu kalt und die gemessene Gipfelfläche zu gross. So kamen die
+„über zehn Prozent" zustande, die hier eine Fassung lang standen; richtig sind
+reichlich vier.
+
+Die Proben leeren den Tiefpass deshalb jetzt nach jedem Sprung
+(`reliefFrisch(); zeichne();`) und messen das exakte Feld.
 
 ## 5. Was geprüft ist
 

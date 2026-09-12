@@ -449,7 +449,7 @@ function hoehenSpanne(fi) {
      das Weichzeichnen zieht die Verteilung ohnehin zur Mitte, die Leiter darf
      also enger stehen als die rohen Kreiswerte. */
   const q = gewichtet(alle);
-  const lo = Math.max(1e-3, q(0.05)), hi = Math.max(lo * 1.02, q(OBEN));
+  const lo = Math.max(1e-3, q(0.05)), hi = Math.max(lo * 1.02, q(0.95) * KOPF);
   FORM = merkF; reihe = merkR; tangenteFuer = -1;
   return (SPANNEJE[fi] = [Math.log(lo), Math.log(hi), binnen]);
 }
@@ -795,7 +795,18 @@ function hoehen(w, deck) {
    grösser, weil dort auf grösserer Fläche ähnlich dicht gewohnt wird. Und
    Berlin und Essen trennen fünf Prozent, ein Band ist siebzehn breit — sie
    müssen dieselbe Farbe haben. */
-const FEINTEILER = 95, GROBTEILER = 28, ENGANTEIL = 0.55, OBEN = 0.97;
+const FEINTEILER = 95, GROBTEILER = 28, ENGANTEIL = 0.55;
+/* Wie weit die Leiter über das gemessene Quantil hinausreicht — die
+   Schneegrenze. Steht sie auf 1, endet die Leiter genau dort, und die hellste
+   Stufe deckt 2024 reichlich vier Prozent der Karte: keine Gipfel, sondern
+   Hochebenen. Steht sie zu hoch, bleiben die hellsten Töne für immer leer, wie
+   ein Atlas ohne Schnee.
+
+   Acht Prozent darüber: die hellste Stufe deckt 2024 gut zwei Prozent —
+   Ruhrgebiet und Berlin —, 1982 ein Drittel Prozent, davor nichts. Die
+   Schneegrenze wandert damit mit den Jahren, und das ist genau richtig: die
+   Gipfel entstehen erst. */
+let KOPF = 1.08;
 const RAUF = 0.55;                // Auflösung des Höhenfelds, Anteil der Bildpunkte
 const hkA = document.createElement('canvas'), hcA = hkA.getContext('2d');
 const hkB = document.createElement('canvas'), hcB = hkB.getContext('2d', { willReadFrequently: true });
