@@ -290,26 +290,29 @@ in ihm umschichtete**. Genommen wird das geometrische Mittel aus beiden
 Anteilen — dem an der Summe der Jahre und dem an der Summe aller Veränderungen
 je Kreis (Σ|Bevölkerung(b) − Bevölkerung(a)|).
 
-Dazu eine **Untergrenze von viereinhalb Sekunden** (Anteil 4,5/70): darunter ist ein Abschnitt
-vorbei, ehe seine Notiz gelesen ist. Das betrifft das Ende der Reihe, wo die
-Zählungen dicht liegen — 2011 bis 2019 und 2019 bis 2024 bekämen sonst zwei
-Sekunden und weniger. Wer über der Grenze liegt, gibt anteilig ab.
+Dazu eine **Untergrenze von 5,4 Sekunden** (Anteil 5,4/84): darunter ist ein
+Abschnitt vorbei, ehe seine Notiz gelesen ist. Das betrifft das Ende der Reihe,
+wo die Zählungen dicht liegen — 2019 bis 2024 bekäme sonst zwei Sekunden. Wer
+über der Grenze liegt, gibt anteilig ab.
 
 | Abschnitt | Jahre | Umschichtung | Spielzeit |
 |---|---|---|---|
-| 1871 → 1900–1910 | 34,0 | 18,6 Mio | 11,5 s |
-| 1900–1910 → 1939 | 33,5 | 11,9 Mio | 8,6 s |
-| 1939 → 1946–1950 | 9,4 | 14,5 Mio | 4,9 s |
-| 1946–1950 → 1961–1964 | 14,5 | 12,0 Mio | 5,8 s |
-| 1961–1964 → 1985–1987 | 23,5 | 10,4 Mio | 7,1 s |
-| 1985–1987 → 1996 | 10,3 | 7,1 Mio | 4,5 s |
-| 1996 → 2011 | 14,4 | 4,7 Mio | 4,5 s |
-| 2011 → 2019 | 8,6 | 4,0 Mio | 4,5 s |
-| 2019 → 2024 | 5,0 | 1,6 Mio | 4,5 s |
+| 1871 → 1900–1910 | 36,2 | 18,6 Mio | 18,6 s |
+| 1900–1910 → 1939 | 31,3 | 11,9 Mio | 13,8 s |
+| 1939 → 1946–1950 | 8,5 | 14,5 Mio | 8,0 s |
+| 1946–1950 → 1961–1964 | 14,5 | 12,0 Mio | 9,4 s |
+| 1961–1964 → 1985–1987 | 24,7 | 10,4 Mio | 11,5 s |
+| 1985–1987 → 1996 | 9,9 | 7,1 Mio | 6,0 s |
+| 1996 → 2011 | 14,4 | 4,7 Mio | 5,9 s |
+| 2011 → 2019 | 8,6 | 4,0 Mio | 5,4 s |
+| 2019 → 2024 | 5,0 | 1,6 Mio | 5,4 s |
 
-Rein nach Jahren bekäme der Bruch von 1939 auf 1946 drei Sekunden — die
+Die Jahre sind die Abstände der **Zähltage**, nicht der Jahreszahlen; wo eine
+Zählung als Spanne geführt wird (1900–1910), steht ihre Mitte.
+
+Rein nach Jahren bekäme der Bruch von 1939 auf 1946 vier Sekunden — die
 gewaltigste Umwälzung der ganzen Reihe, vorbei, ehe man hinsieht. Rein nach
-Umschichtung wäre die Zeitachse keine mehr. So bekommt er fünf, und die langen
+Umschichtung wäre die Zeitachse keine mehr. So bekommt er acht, und die langen
 ruhigen Strecken behalten trotzdem den grössten Teil, weil sie am längsten sind.
 
 Der Regler misst entsprechend **Spielzeit**, und die Marken der Zählungen sitzen
@@ -718,14 +721,44 @@ vierhundert Vielecken, sondern mit derselben Vorlage als Schablone
 
 ## 4h. Die Städtenamen
 
-Die grössten Städte tragen ihren Namen: die kreisfreien Städte und Stadtkreise,
-die in irgendeinem Bild über 400 000 Menschen haben, dazu die Region Hannover,
-in der die Stadt 2001 aufgegangen ist. Achtzehn Namen sind es insgesamt; zu
-sehen sind je nach Bild weniger.
+Die grössten Städte tragen ihren Namen — und zwar die, die **im gerade
+gezeigten Jahr** die grössten sind, nicht die von heute. Der Vorrat steht in
+der Seite: alle kreisfreien Städte und Stadtkreise, die je über 100 000
+Menschen hatten, dazu die Region Hannover, in der die Stadt 2001 aufgegangen
+ist — fünfundsiebzig Einträge. Ausgewählt werden daraus siebzehn, in jedem
+Bild neu, nach der laufenden Einwohnerzahl.
 
-**Alle Namen stehen von Anfang an da**, auch 1871, wo die Flecken winzig sind.
-Ein Name, der im Lauf der Zeit erscheint oder verschwindet, ist ein Sprung im
-Bild, und davon hat die Karte genug.
+Das ändert weniger, als man denkt, und genau das Richtige. Die ersten zwölf
+Namen stehen in jedem Bild: Berlin, Hamburg, München, Köln, Leipzig, Dresden,
+Hannover, Frankfurt, Dortmund, Stuttgart, Bremen, Nürnberg. Gewechselt wird am
+unteren Ende der Liste:
+
+| | dazu | weg |
+|---|---|---|
+| 1871 | Karlsruhe, Kassel, Erfurt | — |
+| 1900–1910 | Mannheim, Kiel | Karlsruhe, Erfurt |
+| 1946–1950 | Lübeck, Bielefeld | Kiel, Kassel |
+| 1961–1964 | Kiel | Lübeck |
+| 1985–1987 | Rostock | Kiel |
+| 1996 | Kiel | Rostock |
+| 2019 | Karlsruhe | Mannheim |
+| 2024 | Mannheim | Karlsruhe |
+
+Insgesamt kommen zweiundzwanzig Städte vor. Chemnitz und Magdeburg stehen 1871
+unter den zwölf grössten und heute als letzte in der Liste — dieselbe
+Geschichte, die der Berg daneben erzählt, noch einmal in Schrift.
+
+**Der Übergang darf nicht springen.** Die Schwelle ist der Wert des
+siebzehnten Namens. Wer darüber liegt, steht voll da; wer darunter rutscht,
+blendet über einen Saum von sechs Prozent aus. Im Augenblick des Wechsels sind
+der siebzehnte und der achtzehnte gleich gross, die Blende ist dort also gerade
+offen — niemand erscheint oder verschwindet plötzlich. Zu sehen sind damit
+siebzehn Namen und gelegentlich ein achtzehnter, der gerade geht.
+
+Beim Auseinanderschieben zählt ein ausblendender Name entsprechend weniger: er
+wird voll weggeschoben, schiebt aber selbst nur nach Massgabe seiner
+Deckkraft. Sonst rückte die halbe Karte in dem Augenblick zur Seite, in dem ein
+Name unter die Schwelle fällt.
 
 **Und keiner steht auf seinem Gipfel.** Der Berg eines Kreises sitzt in seiner
 Mitte — das weite Weichzeichnen macht aus der Fläche eine Kuppe, und deren
@@ -736,18 +769,28 @@ grossen Fleck sind das viele Bildpunkte und der Gipfel wird frei, bei einem
 kleinen wenige. Nach unten, weil das Licht von oben links kommt — der Südhang
 liegt ohnehin im Schatten.
 
-Damit das geht, sind zwei Dinge nötig. Erstens eine **Untergrenze**: die
-Schrifthöhe folgt der Wurzel aus der gezeichneten Fläche — wächst also mit dem
-Fleck, nicht mit der Einwohnerzahl —, fällt aber nie unter sieben Pixel. Und
-eine **Obergrenze**, die an der Kartenbreite hängt (`breite/38`) statt an einer
-festen Zahl: Berlin und Hamburg liefen sonst in jeder Grösse gegen dieselben
-dreissig Pixel und standen als Überschrift über der Karte statt als
-Beschriftung darin. Das ist
-knapp, auf einem Telefon mit dreifacher Pixeldichte aber gut zu lesen, und es
-hält die Namen 1871 so klein, dass sie die Karte nicht zudecken. Zweitens **Abstand**: aus jedem Bündel
-eng benachbarter Städte bleibt die grösste, gemessen mit sechzig Kilometern auf
-dem Boden. Sonst trügen Rhein und Ruhr auf einem daumengrossen Bild sieben
-Namen. Übrig bleiben dreizehn.
+**Die Schriftgrösse** kommt aus dem Logarithmus des Verhältnisses zur
+Schwelle, stufenlos: der letzte Name der Auswahl bekommt `breite/56`, wer
+vierzehnmal so gross ist wie er, `breite/33`. Angegeben als Teiler der
+Kartenbreite, damit dieselbe Ordnung auf dem Telefon und auf dem Schirm gilt —
+Berlin lief sonst in jeder Grösse gegen dieselben dreissig Pixel und stand als
+Überschrift über der Karte statt als Beschriftung darin. Nach unten begrenzen
+sieben Pixel; darunter ist nichts mehr zu lesen.
+
+Dass die Schrift am **Verhältnis** hängt und nicht an der Einwohnerzahl, ist
+Absicht. Der Berg sagt, wie viele Menschen da sind, absolut und über
+hundertfünfzig Jahre vergleichbar; der Name sagt, wer hier gerade zu den
+grössten gehört. Eine absolute Skala hätte 1871 siebzehn gleich kleine Namen
+gezeigt, weil ausser Berlin keine Stadt 500 000 Menschen hatte — und Chemnitz
+heute grösser geschrieben als 1871, obwohl es damals die elftgrösste Stadt war
+und heute die sechzehnte. Der Abstand zwischen der grössten Stadt und der
+siebzehnten liegt übrigens in jedem Bild zwischen zwölf und zweiundzwanzig,
+1871 wie 2024: dieselbe Spreizung, dieselbe Schrift.
+
+Dazu **Abstand**: aus jedem Bündel eng benachbarter Städte bleibt die grösste,
+gemessen mit sechzig Kilometern auf der Landkarte — nicht auf dem gezogenen
+Boden, denn sechzig Kilometer sind sechzig Kilometer. Sonst trügen Rhein und
+Ruhr auf einem daumengrossen Bild sieben Namen.
 
 Wo zwei Namen einander trotzdem berühren, weichen beide aus: ein paar Runden
 Abstossen entlang der kleineren Überlappung, dazu eine schwache Feder, die
@@ -952,23 +995,17 @@ einem grossen rückt der Name weiter herunter, damit der Gipfel frei bleibt. Der
 andere ist ein fester Abstand zur Kartenbreite; ohne ihn klebt die Schrift einer
 kleinen Stadt am Punkt, weil deren Fleck kaum Versatz hergibt.
 
-**Siebzehn Städte statt dreizehn**, dazu Magdeburg, Bielefeld, Mannheim und
-Kiel — die Schwelle liegt bei 250 000 statt 400 000 Einwohnern, gemessen am
-höchsten Stand, den die Stadt je hatte. Zwei Namen bleiben mindestens sechzig
-Kilometer voneinander entfernt, sonst stünde das halbe Ruhrgebiet als Liste da.
+**Siebzehn Städte, und welche, entscheidet das Jahr** — siehe
+[4h](#4h-die-städtenamen). Die Auswahl lief zuerst einmalig beim Bauen, nach
+dem höchsten Stand, den eine Stadt je hatte; sie stand damit still, während die
+Karte lief. Jetzt läuft sie in jedem Bild mit.
 
-Die **Schriftgrösse** kommt jetzt aus der Stadt, in vier Stufen nach der
-höchsten Einwohnerzahl: Berlin, Hamburg und München oben, darunter Köln,
-Hannover, Leipzig, Frankfurt und Dresden, dann Dortmund, Stuttgart, Bremen und
-Nürnberg, unten die übrigen fünf. Angegeben als Teiler der Kartenbreite
-(38, 42, 46, 52), damit dieselbe Ordnung auf dem Telefon und auf dem Schirm
-gilt.
-
-Vorher kam die Grösse aus der Wurzel der **gezeichneten Fläche**. Das hatte
-seinen Sinn, solange die Fläche mit der Bevölkerung wuchs; seit der Boden
-stillsteht, ist sie über alle Jahre dieselbe — und sie sagt ohnehin mehr über
-den Zuschnitt des Kreises als über die Stadt darin: Leipzig hat ein weites
-Stadtgebiet, Nürnberg ein enges.
+Auch die **Schriftgrösse** hing erst an diesem höchsten Stand, in vier festen
+Stufen, und davor an der gezeichneten **Fläche**. Die Fläche hatte ihren Sinn,
+solange sie mit der Bevölkerung wuchs; seit der Boden stillsteht, ist sie über
+alle Jahre dieselbe — und sie sagt ohnehin mehr über den Zuschnitt des Kreises
+als über die Stadt darin: Leipzig hat ein weites Stadtgebiet, Nürnberg ein
+enges.
 
 ### Die Ausnahme ist auch weg
 

@@ -102,8 +102,8 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   zur Form, der Stichtag. Umbruch unterbunden, sonst schöbe auch sie die Karte.
 - Die Uhr läuft 84 Sekunden für 153 Jahre. Die Spielzeit je Abschnitt mischt
   Dauer und Umschichtung (geometrisches Mittel) und liegt nie unter
-  viereinhalb Sekunden, also bekommt 1939→1946 fünf Sekunden statt drei und
-  2019→2024 viereinhalb statt eineinhalb. Zwischen den Zählungen wird mit einer monotonen
+  5,4 Sekunden, also bekommt 1939→1946 acht Sekunden statt vier und
+  2019→2024 5,4 statt zwei. Zwischen den Zählungen wird mit einer monotonen
   kubischen Kurve gerechnet, nicht geradlinig: kein Knick, kein Überschiessen.
   Grösster Geschwindigkeitssprung von 125 auf 19 Prozent.
 - **Eine Form, die halbe Verzerrung** (a = 0,5), auf den Mittelwert aller zehn
@@ -364,19 +364,43 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   hundertsieben winzigen kreisfreien Städte das obere Quantil, und die halbe
   Palette blieb leer; jetzt sind 2024 zweiundzwanzig der vierundzwanzig Bänder
   belegt.
+- **Welche Städte einen Namen tragen, entscheidet das Jahr.** Nicht mehr die
+  siebzehn grössten von heute, ein für alle Mal beim Bauen gewählt, sondern die
+  siebzehn grössten **jetzt** — die Auswahl läuft in jedem Bild neu über die
+  laufende Einwohnerzahl, aus einem Vorrat von fünfundsiebzig Städten (je über
+  100 000 Einwohner). 1871 stehen damit Karlsruhe, Kassel und Erfurt auf der
+  Karte und Bielefeld, Mannheim und Kiel nicht; heute ist es umgekehrt.
+  Insgesamt kommen zweiundzwanzig Namen vor, die ersten zwölf stehen immer.
+  Der Wechsel springt nicht: die Schwelle ist der Wert des siebzehnten Namens,
+  wer darunter rutscht, blendet über sechs Prozent aus, und im Augenblick des
+  Wechsels sind beide gleich gross — die Blende ist dort gerade offen.
+- **Die Schriftgrösse folgt derselben Uhr**, stufenlos statt in vier festen
+  Stufen: aus dem Logarithmus des Verhältnisses zur Schwelle, `breite/56` für
+  den letzten Namen der Auswahl bis `breite/33` für den vierzehnfachen. Sie
+  hängt am Verhältnis, nicht an der Einwohnerzahl — der Berg sagt, wie viele
+  Menschen da sind, der Name sagt, wer gerade zu den grössten gehört. Absolut
+  gerechnet wäre Chemnitz heute grösser geschrieben als 1871, obwohl es damals
+  die elftgrösste Stadt war und heute die sechzehnte.
+- **Der beschreibende Text hängt an der Breite der Bühne** statt an einer festen
+  Pixelzahl: `clamp(9px, 1,36cqw, 11,6px)`, die Überschrift und der Faden im
+  selben Verhältnis. Auf dem Telefon bleibt alles wie zuvor — die neun Pixel
+  sind der Boden —, auf einem breiten Schirm wächst der Text mit der Karte mit
+  (11,2 px bei 1280 Pixeln Fenster). Er stand dort sonst als immer kleiner
+  werdender Fleck neben einer Karte, deren eigene Schrift sich nach genau dieser
+  Breite richtet.
 - **Ein roter Punkt auf dem Ort, und siebzehn Städte statt dreizehn.** Seit die
   Umrisse weg sind, sagt kein Strich mehr, wo eine Stadt genau liegt — der Name
   steht ja bewusst unter dem Gipfel. Also ein kleiner roter Punkt mit dunklem
   Ring, Name darunter. Rot, weil es die einzige Farbe ist, die auf dieser Leiter
   nichts bedeutet. Schwelle 250 000 statt 400 000 Einwohner (höchster Stand),
-  dazu Magdeburg, Bielefeld, Mannheim und Kiel. Die **Schriftgrösse** kommt aus
-  der Stadt statt aus der gezeichneten Fläche, in vier Stufen als Teiler der
-  Kartenbreite (38, 42, 46, 52) — die Fläche steht seit dem festen Boden still
-  und sagte ohnehin mehr über den Zuschnitt des Kreises als über die Stadt.
+  dazu Magdeburg, Bielefeld, Mannheim und Kiel. Die **Schriftgrösse** kam
+  damit aus der Stadt statt aus der gezeichneten Fläche (die Fläche steht seit
+  dem festen Boden still und sagte ohnehin mehr über den Zuschnitt des Kreises
+  als über die Stadt) — inzwischen kommt sie aus dem Jahr, siehe oben.
 - **Der beschreibende Text ist deutlich kleiner** (13,5 → 9 px, Überschrift
   14,5 → 9,8, der Faden im selben Verhältnis). Er stand als Block über der Karte
   und zog den Blick, bevor die Karte ihn bekam. Zwischendurch stand er bei 7 und
-  war zu klein; das hier ist die Mitte.
+  war zu klein; die neun sind die Mitte und heute die Untergrenze, siehe oben.
 - **Auch die Städte tragen keinen Umriss mehr.** Die hundertsieben kreisfreien
   Städte waren die letzte Ausnahme von „keine Grenzen"; der Strich sagte, wie
   weit eine Stadt reicht, solange sie mit ihrer Bevölkerung wuchs. Bei festem
@@ -406,9 +430,9 @@ Freigabe, aus Bildvorlagen abzuschreiben.
 - Der Rahmen füllt den Schirm; Jahr, Einwohnerzahl und Notiz stehen darin oben,
   die Legende unten. Die Leinwand bekommt allen Platz, der nach dem Text und der
   Bedienung übrig bleibt.
-- Dreizehn Städte tragen ihren Namen, von Anfang an: die grössten, um
-  sechzig Kilometer voneinander ausgedünnt. Die Schrift wächst mit der
-  gezeichneten Fläche, fällt aber nie unter sieben Pixel; wo zwei Namen
+- Siebzehn Städte tragen ihren Namen: die grössten des gerade gezeigten
+  Jahres, um sechzig Kilometer voneinander ausgedünnt. Die Schrift wächst mit
+  dem Abstand zur Schwelle, fällt aber nie unter sieben Pixel; wo zwei Namen
   einander berühren, weichen sie aus.
 - Der Bauvorgang kann auch mit Reihen umgehen, die nur einen Teil des Landes
   abdecken — beim Pilotgebiet Berlin und Brandenburg war das nötig. Siehe

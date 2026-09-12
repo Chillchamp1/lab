@@ -234,17 +234,24 @@ Die Uhr läuft nicht gleichmässig durch die Jahre. Jeder Abschnitt bekommt eine
 Anteil an den 84 Sekunden, der Dauer und Umschichtung mischt — der Bruch von
 1939 auf 1946 also fünf Sekunden statt drei, während die langen ruhigen Strecken
 trotzdem den grössten Teil behalten, weil sie am längsten sind. Keiner bekommt
-weniger als viereinhalb Sekunden; sonst wäre er vorbei, ehe die Notiz gelesen
+weniger als fünfeinhalb Sekunden; sonst wäre er vorbei, ehe die Notiz gelesen
 ist.
 
-Dreizehn Städte tragen ihren Namen, von Anfang an und durchgehend. Die Schrift
-wächst mit dem Fleck, fällt aber nie unter das, was auf einem Telefon noch zu
-lesen ist, und steigt nie über ein Achtunddreissigstel der Kartenbreite; wo zwei
-Namen einander berühren, weichen sie aus. Und keiner steht auf seinem Gipfel —
-jeder rückt um einen halben Fleckradius nach unten, sonst deckte „Berlin" genau
-den Berg zu, den es benennt. Städte im Umkreis
-von sechzig Kilometern um eine grössere sind nicht beschriftet — sonst trügen
-Rhein und Ruhr allein sieben Namen.
+Siebzehn Städte tragen ihren Namen — und zwar die siebzehn grössten **des
+gerade gezeigten Jahres**, nicht die von heute. 1871 stehen Karlsruhe, Kassel
+und Erfurt auf der Karte und Bielefeld, Mannheim und Kiel nicht; Chemnitz und
+Magdeburg sind damals unter den zwölf grössten und heute die letzten der Liste.
+Der Wechsel springt nicht: wer unter die Schwelle rutscht, blendet aus, und im
+Augenblick des Wechsels sind der siebzehnte und der achtzehnte gleich gross.
+
+Die Schrift wächst mit dem Abstand zu dieser Schwelle, vom
+Sechsundfünfzigstel der Kartenbreite bis zum Dreiunddreissigstel — der Berg
+sagt, wie viele Menschen da sind, der Name sagt, wer gerade zu den grössten
+gehört. Wo zwei Namen einander berühren, weichen sie aus. Und keiner steht auf
+seinem Gipfel: jeder rückt um einen halben Fleckradius nach unten, sonst deckte
+„Berlin" genau den Berg zu, den es benennt. Städte im Umkreis von sechzig
+Kilometern um eine grössere sind nicht beschriftet — sonst trügen Rhein und
+Ruhr allein sieben Namen.
 
 ## Was geprüft ist
 
