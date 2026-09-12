@@ -170,7 +170,21 @@ const REIHEN = D.R.map((r, ri) => {
     for (let k = 0; k < NK; k++) jetzt[k] = vor[k] + d[f * NK + k];
     BEV.push(jetzt); vor = jetzt;
   }
-  return { id: r.id, name: r.name, ZX, ZY, BEV, SKALA: r.zustaende.map(z => z.skala) };
+  /* ---------- Ein fester Massstab ----------
+     Die Karte wuchs eine lange Zeit flächenproportional mit der Bevölkerung:
+     1871 war sie kleiner als 2024, weil weniger Menschen darin wohnten. Das
+     war das Besondere an ihr — und es ist weg, weil das Wachstum jetzt die
+     **Farbe** trägt (siehe 4b). Zweimal dasselbe zu zeigen, kostet nur die
+     Aufmerksamkeit für das, was sonst noch da ist.
+
+     Also ein Massstab für alle Bilder, der des letzten. Die Aussengrenze bleibt
+     damit über hundertfünfzig Jahre ungefähr, wo sie ist — ein Diffusions-
+     kartogramm verteilt nur um, seine Gesamtfläche ist erhalten. Was sich noch
+     bewegt, bewegt sich, weil sich die Kreise **gegeneinander** verschieben,
+     und das ist genau das, was man sehen soll. */
+  const sk = r.zustaende.map(z => z.skala);
+  const fest = sk[sk.length - 1];
+  return { id: r.id, name: r.name, ZX, ZY, BEV, SKALA: sk.map(() => fest) };
 });
 const ANTEIL = entpacke(D.ai);
 let reihe = REIHEN[0];
@@ -366,14 +380,25 @@ const SPANNEJE = [];
 // und werden verworfen.
 function bezugAbsolut(an) {
   if (ABSOLUT === an) return;
-  ABSOLUT = an; SPANNEJE.length = 0;
+  ABSOLUT = an; SPANNEJE.length = 0; SPANNE_ALLE = null;
   masse(); reliefFrisch(); zeichne();
+}
+// Flächengewichtetes Quantil über eine sortierte Liste von [Wert, Fläche].
+function gewichtet(liste) {
+  liste.sort((a, b) => a[0] - b[0]);
+  let ges = 0; for (const [, fa] of liste) ges += fa;
+  return t => {
+    let ziel = t * ges, lauf = 0;
+    for (const [v, fa] of liste) { lauf += fa; if (lauf >= ziel) return v; }
+    return liste[liste.length - 1][0];
+  };
 }
 function hoehenSpanne(fi) {
   if (SPANNEJE[fi]) return SPANNEJE[fi];
   const merkR = reihe, merkF = FORM;
   FORM = FORMEN[fi];
   const alle = [];
+  let binnen = 0;            // grösste Spanne **innerhalb** eines Bildes
   const fl = new Float64Array(NK);
   for (let f = 0; f < NF; f++) {
     setzePunkte(f, f, 0);
@@ -389,10 +414,28 @@ function hoehenSpanne(fi) {
       if (w > 0 && fl[g] > 0) { sP += w; sA += fl[g]; }
     }
     const mittel = (sA > 0 ? sP / sA : 1) * (ABSOLUT && sP > 0 ? bezugsBev() / sP : 1);
+    const jeBild = [];
     for (let g = 0; g < NK; g++) {
       const w = reihe.BEV[f][g];
-      if (w > 0 && fl[g] > 0) alle.push([(w / fl[g]) / mittel, fl[g]]);
+      if (w > 0 && fl[g] > 0) jeBild.push([(w / fl[g]) / mittel, fl[g]]);
     }
+    /* Zwei Spannen, und sie beantworten zwei verschiedene Fragen.
+
+       Die **Gesamtspanne** über alle Bilder trägt die Farbleiter: dieselbe
+       Farbe soll über hundertfünfzig Jahre dasselbe heissen.
+
+       Die **Binnenspanne** eines einzelnen Bildes sagt, ob es überhaupt etwas
+       zu modellieren gibt. Im vollen Kartogramm sind beide grundverschieden:
+       innerhalb eines Jahres hat dort jeder Kreis dieselbe Dichte (keine
+       Höhe), über die Jahre aber steigt sie, weil die Fläche fest ist und die
+       Bevölkerung wächst (volle Farbspanne). Vorher fielen die zwei zusammen,
+       und aus der einen Zahl liess sich beides ablesen; seit die Karte nicht
+       mehr mitwächst, nicht mehr. */
+    if (jeBild.length) {
+      const qB = gewichtet(jeBild.slice());
+      binnen = Math.max(binnen, Math.log(Math.max(1e-6, qB(0.95)) / Math.max(1e-6, qB(0.05))));
+    }
+    for (const e of jeBild) alle.push(e);
   }
   /* Gewichtet mit der **Fläche**, nicht je Kreis gleich. Das ist der
      Unterschied zwischen „wie dicht wohnt ein Kreis" und „wie dicht ist das
@@ -405,25 +448,45 @@ function hoehenSpanne(fi) {
      Aus demselben Grund ein Fünftelprozent statt eines halben an den Enden:
      das Weichzeichnen zieht die Verteilung ohnehin zur Mitte, die Leiter darf
      also enger stehen als die rohen Kreiswerte. */
-  alle.sort((a, b) => a[0] - b[0]);
-  let ges = 0; for (const [, fa] of alle) ges += fa;
-  const q = t => {
-    let ziel = t * ges, lauf = 0;
-    for (const [v, fa] of alle) { lauf += fa; if (lauf >= ziel) return v; }
-    return alle[alle.length - 1][0];
-  };
-  // Im vollen Kartogramm liegen alle Werte auf 1; eine Spanne gibt es dort
-  // nicht, und die Karte ist zu Recht einfarbig.
+  const q = gewichtet(alle);
   const lo = Math.max(1e-3, q(0.05)), hi = Math.max(lo * 1.02, q(0.95));
   FORM = merkF; reihe = merkR; tangenteFuer = -1;
-  return (SPANNEJE[fi] = [Math.log(lo), Math.log(hi)]);
+  return (SPANNEJE[fi] = [Math.log(lo), Math.log(hi), binnen]);
 }
+/* ---------- Eine Leiter für alles ----------
+   Gemessen wurde die Spanne eine Fassung lang **je Form**, und zwischen zwei
+   Formen wurde übergeblendet. Der Grund war gut: die Formen streuten sehr
+   verschieden — auf der Landkarte vom Fünftel bis zum Fünfzehnfachen, im
+   vollen Kartogramm gar nicht —, und eine feste Leiter läge in zweien davon in
+   einem einzigen Gelb.
+
+   Mit festem Bezug und festem Massstab gilt das nicht mehr. Das Wachstum,
+   Faktor 2,85 über hundertfünfzig Jahre, steckt jetzt in **jeder** Form, auch
+   im Kartogramm: dessen Fläche ist fest, seine Bevölkerung wächst, also steigt
+   seine Dichte. Die drei Spannen liegen dadurch nah beieinander.
+
+   Also eine Leiter, die alle drei umschliesst. Erst damit heisst ×1 überall
+   dasselbe — auf der Landkarte, bei halber Verzerrung und im Kartogramm. Sonst
+   bekäme derselbe Wert je nach Knopfstellung eine andere Farbe, und die Skala
+   wäre nur innerhalb einer Form absolut. */
+let SPANNE_ALLE = null;
 function hoehenSkala() {
+  if (!SPANNE_ALLE) {
+    let lo = Infinity, hi = -Infinity;
+    for (let i = 0; i < FORMEN.length; i++) {
+      const sp = hoehenSpanne(i);
+      if (sp[0] < lo) lo = sp[0];
+      if (sp[1] > hi) hi = sp[1];
+    }
+    SPANNE_ALLE = [lo, Math.max(lo + 1e-4, hi)];
+  }
+  return SPANNE_ALLE;
+}
+// Die Binnenspanne zur eingestellten Form, gleich übergeblendet.
+function binnenSpanne() {
   let k = 0; while (k < FORMEN.length - 2 && FORMEN[k + 1] < FORM) k++;
   const t = Math.max(0, Math.min(1, (FORM - FORMEN[k]) / (FORMEN[k + 1] - FORMEN[k])));
-  const a = hoehenSpanne(k), b = hoehenSpanne(k + 1);
-  const von = a[0] + (b[0] - a[0]) * t, bis = a[1] + (b[1] - a[1]) * t;
-  return [von, Math.max(von + 1e-4, bis)];
+  return hoehenSpanne(k)[2] + (hoehenSpanne(k + 1)[2] - hoehenSpanne(k)[2]) * t;
 }
 /* ---------- Wenn keine Höhe mehr übrig ist ----------
    Im vollen Kartogramm steckt die ganze Bevölkerung in der Fläche; jeder Kreis
@@ -460,12 +523,16 @@ function skalaBreit(von, bis) {
   const halbesBand = (b - a) / 32;
   return [a - halbesBand, b - halbesBand];
 }
-function reliefAnteil(von, bis) {
-  return Math.max(0, Math.min(1, (bis - von) / SPANNE_MIN));
+// Aus der **Binnenspanne**: ob es in diesem Bild Höhenunterschiede gibt.
+function reliefAnteil(binnen) {
+  return Math.max(0, Math.min(1, binnen / SPANNE_MIN));
 }
 
 
 let skalaVon = -1, skalaBis = 1, RELIEF_ANTEIL = 1;
+// Wo das Mittel dieses Bildes auf der Leiter liegt, von 0 bis 1.
+const mitteAufLeiter = () =>
+  Math.max(0, Math.min(1, (Math.log(MITTELHOCH) - skalaVon) / (skalaBis - skalaVon)));
 
 /* ---------- Zustand ---------- */
 // Die Uhr läuft über die Spielzeit, nicht über die Jahre. Wie viel Spielzeit
@@ -617,6 +684,7 @@ function werteBei(a, b, u) {
    sich beleuchten. Die Reihenfolge bleibt dabei richtig, der Abstand nicht —
    die Zahl selbst steht beim Antippen. */
 const GEZEICHNET = new Float64Array(NK), HOCH = new Float64Array(NK);
+let MITTELHOCH = 1;
 // Je Farbstufe ein Eimer, dazu einer für die Kreise ohne Zahl.
 // Die Stauchung und der Sockel, auf dem das Relief steht. Ohne Sockel läge auf
 // der Landkarte das halbe Land im Dunkeln, weil eine einzige Stadt die Skala
@@ -653,22 +721,23 @@ const ausFeld = v => v * (1 + 2 * RESERVE) - RESERVE;
 /* ---------- Bezogen worauf? ----------
    Die Höhe ist ein Verhältnis, und die Frage ist, wozu.
 
-   **Relativ** (bisher, und weiterhin die Voreinstellung): zur mittleren Dichte
-   **desselben Bildes**. Ein Kreis steht auf ×2, wenn dort doppelt so dicht
-   gewohnt wird wie im Landesdurchschnitt jenes Jahres. Wächst das ganze Land,
-   wächst der Bezug mit — ein Kreis, der mit dem Land Schritt hält, behält seine
-   Farbe über hundertfünfzig Jahre. Das zeigt die **Verteilung**: wo sich die
-   Menschen ballen, und wie sich das verschiebt.
+   **Absolut** (so steht die Seite): zu einer festen Dichte, der von Deutschland
+   2024. Dann heisst ×2 in jedem Jahr dasselbe — doppelt so dicht wie das Land
+   heute. Das ganze Land steigt im Lauf der Zeit aus dem Grün heraus, weil es
+   sich fast verdreifacht; 1871 liegt fast einfarbig im Tiefgrün, und das ist
+   keine Untertreibung, sondern der Befund. Seit die Karte nicht mehr mitwächst,
+   ist die Farbe der einzige Ort, an dem das Wachstum steht — und dort steht es
+   richtig.
 
-   **Absolut**: zu einer festen Dichte, der des letzten Bildes. Dann heisst ×2
-   in jedem Jahr dasselbe — doppelt so dicht wie Deutschland 2024. Das ganze
-   Land steigt im Lauf der Zeit aus dem Grün heraus, weil es sich fast
-   verdreifacht. Das zeigt das **Wachstum**, aber die Verteilung der frühen
-   Jahre versinkt dabei im Tiefland.
+   **Relativ** (der Schalter, früher die Voreinstellung): zur mittleren Dichte
+   **desselben Bildes**. Ein Kreis steht dann auf ×2, wenn dort doppelt so dicht
+   gewohnt wird wie im Landesdurchschnitt jenes Jahres, und wer mit dem Land
+   Schritt hält, behält seine Farbe über hundertfünfzig Jahre. Das zeigt die
+   Verteilung schärfer, verschweigt aber das Wachstum.
 
    Gerechnet ist der Unterschied ein Faktor: die Bevölkerung dieses Bildes,
    geteilt durch die des letzten. */
-let ABSOLUT = false;
+let ABSOLUT = true;
 // Die Bevölkerung des letzten Bildes, einmal gerechnet und behalten.
 let bevRef = 0;
 function bezugsBev() {
@@ -687,6 +756,10 @@ function hoehen(w, deck) {
     if (deck[g] > 0.5 && w[g] > 0 && GEZEICHNET[g] > 0) { sP += w[g]; sA += GEZEICHNET[g]; }
   }
   const mittel = (sA > 0 ? sP / sA : 1) * (ABSOLUT && sP > 0 ? bezugsBev() / sP : 1);
+  // Die Höhe, die ein Kreis von durchschnittlicher Dichte in diesem Bild hätte.
+  // Relativ ist das immer 1; absolut ist es die Dichte des Jahres, bezogen auf
+  // die von 2024 — also 0,35 im Jahr 1871.
+  MITTELHOCH = ABSOLUT && sP > 0 ? sP / bezugsBev() : 1;
   for (let g = 0; g < NK; g++)
     HOCH[g] = (deck[g] > 0.5 && GEZEICHNET[g] > 0 && w[g] > 0) ? (w[g] / GEZEICHNET[g]) / mittel : 0;
 }
@@ -941,9 +1014,19 @@ function reliefUeber(sil, deck) {
      Hochrechnen bilinear geglättet: die Bandgrenze wird dadurch ein weicher
      Übergang von ein, zwei Bildpunkten, und die Höhenlinie liegt in seiner
      Mitte. Scharf gerastert sähe dieselbe Grenze treppig aus. */
-  const fo = fBild.data;
+  /* Die Farbe läuft mit dem Relief gegen die Mitte. Im vollen Kartogramm hat
+     jeder Kreis dieselbe Dichte, es gibt also keine Höhe — und was das Feld
+     dort noch an Unterschieden zeigt, ist der Rest, den das Diffusionsverfahren
+     nicht ganz wegbekommen hat. Auf einer Leiter, deren Band einen Faktor 1,17
+     breit ist, wurden daraus sichtbare Farbbänder: 1943 lag ein Ost-West-
+     Verlauf über dem Kartogramm, der wie ein Befund aussah und keiner war.
+
+     Also derselbe Anteil wie beim Relief: bei voller Binnenspanne die Farbe des
+     Feldes, bei keiner die Farbe des Bildmittels, dazwischen anteilig. Die
+     Farben gleichen sich an, während die Berge sinken — beides sagt dasselbe. */
+  const fo = fBild.data, uM = mitteAufLeiter(), a = RELIEF_ANTEIL;
   for (let i = 0; i < n3; i++) {
-    const k = bandIdx(ausFeld(farbF[i]));
+    const k = bandIdx(uM + (ausFeld(farbF[i]) - uM) * a);
     const j = i << 2;
     fo[j] = HYPSO_R[k]; fo[j + 1] = HYPSO_G[k]; fo[j + 2] = HYPSO_B[k]; fo[j + 3] = 255;
   }
@@ -1281,7 +1364,7 @@ function zeichne() {
   const sil = new Path2D();
   hoehen(w, deck);
   const roh = hoehenSkala();
-  RELIEF_ANTEIL = reliefAnteil(roh[0], roh[1]);
+  RELIEF_ANTEIL = reliefAnteil(binnenSpanne());
   [skalaVon, skalaBis] = skalaBreit(roh[0], roh[1]);
   for (let g = 0; g < NK; g++) {
     if (!(deck[g] > 0.5)) continue;
@@ -1311,7 +1394,7 @@ function zeichne() {
      Eine Farbe und nicht vierhundert, weil das Durchscheinende sonst als
      Flecken sichtbar wird — im Kartogramm, wo das Feld einfarbig ist, lagen an
      jeder schmalen Stelle Reste der alten Kreisfärbung. */
-  ctx.fillStyle = HYPSO[bandIdx((0 - skalaVon) / (skalaBis - skalaVon))];
+  ctx.fillStyle = HYPSO[bandIdx(mitteAufLeiter())];
   ctx.fill(sil, 'evenodd');
 
   /* Keine Grenzen mehr, weder um die Kreise noch um die Länder. Eine
@@ -1558,14 +1641,14 @@ function legText() {
   const zwischen = u > 0.001 && u < 0.999;
   // Die Zahlen an den Enden der Leiter stehen je Bild neu: beim Überblenden von
   // einer Form zur anderen wandert die Spanne mit.
-  const [von, bis] = skalaBreit(...hoehenSkala());
+  const [von, bis] = skalaBreit(hoehenSkala()[0], hoehenSkala()[1]);
   const zeig = x => (x >= 10 ? x.toFixed(0) : x >= 1 ? x.toFixed(1) : x.toFixed(2));
   document.getElementById('legLinks').textContent = '×' + zeig(Math.exp(von));
   document.getElementById('legRechts').textContent = '×' + zeig(Math.exp(bis));
   // Eine Zeile: was die Zahlen an der Leiter sind, welche Form eingestellt ist,
   // und welcher Stichtag gilt. Der Rest steht in der Methodik, nicht hier.
   document.getElementById('legText').textContent =
-    '× the average density · ' + formWort() + ' · '
+    '× the 2024 average density · ' + formWort() + ' · '
     + (zwischen ? D.B[a].jahr + ' → ' + D.B[b].jahr
                 : D.B[u < 0.5 ? a : b].stichtage.join(', '));
 }
