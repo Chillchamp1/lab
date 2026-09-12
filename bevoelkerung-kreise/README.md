@@ -157,35 +157,44 @@ deshalb ein kleiner Farbfleck, während sein Berg weit darüber hinausreichte un
 die Linien sich darin drängten — die Karte sagte an derselben Stelle zweierlei.
 
 Jetzt steht im Höhenfeld die Dichte auf der gemessenen Leiter,
-und daraus kommt alles: die Farbe als eines von zweiundzwanzig gleich breiten
+und daraus kommt alles: die Farbe als eines von sechsundzwanzig gleich breiten
 Bändern, die Schattierung aus dem Gefälle, die Höhenlinien auf den Bandgrenzen.
 Bänder und Niveaus liegen auf denselben Stellen, also **ist jede Höhenlinie eine
 Farbgrenze, und jede Farbgrenze trägt ihre Linie.** So macht es ein Schulatlas.
 Oben endet die Leiter in Weiss: die beiden hellsten Bänder, Fels und Schnee,
 liegen über dem gemessenen Quantil und gehören der Spitze allein.
 
-**Unten liegt Wasser.** Die untersten drei Bänder sind ein See, tief dunkelblau
+**Unten liegt Wasser.** Die untersten fünf Bänder sind ein See, tief dunkelblau
 und zum Ufer hin heller — dort, wo auf die Fläche am wenigsten Menschen kommen.
 Das schärft zweierlei: die Uferlinie zeigt auf einen Blick, welcher Teil des
 Landes leer ist, und weil das untere Ende der Leiter ans Wasser geht, lösen die
 Landbänder feiner auf.
 
-Und der Meeresspiegel ist eine Zahl, die etwas heisst: er liegt bei **×0,35 der
-heutigen mittleren Dichte, und das ist die mittlere Dichte Deutschlands im Jahr
-1871** — 29,3 Millionen auf den 357 677 km² von heute, also 82 Menschen je
-Quadratkilometer. Unter Wasser steht damit genau das Land, in dem heute dünner
-gewohnt wird als im ganzen Kaiserreich am Anfang des Films. 1871 ist das die
-Hälfte der Fläche, die Karte ist eine Inselgruppe; um 1950 ist die See fast
-verschwunden (0,1 Prozent), weil nie so viel Deutschland in der Fläche wohnte
-wie nach der Vertreibung; seither steigt sie wieder und steht 2024 bei 4,3
-Prozent, fast ganz im Nordosten.
+Und der Meeresspiegel ist eine Zahl, die etwas heisst: er liegt bei **×0,50 —
+der halben mittleren Dichte Deutschlands von 2024**, in der Wirklichkeit rund
+95 Einwohner je km² und damit ungefähr die Linie, unterhalb derer die EU eine
+Gegend „dünn besiedelt" nennt. Unter Wasser steht also, was man strukturschwach
+nennt, wenn man es an der Dichte misst. „Ungefähr", weil gezeichnete Dichte
+gefärbt wird und der feste Boden leere Kreise schrumpft: die Kreise am Spiegel
+haben real zwischen 78 und 126 Einwohner je km², im Median 95. 1871 liegen neun
+Zehntel des Landes unter Wasser und die Karte ist eine Inselgruppe; um 1950
+steht die See mit 11,6 Prozent am tiefsten, weil nie so viel Deutschland in der
+Fläche wohnte wie nach der Vertreibung; seither steigt sie wieder auf 12,4
+Prozent (2024), fast nur im Nordosten.
 
 Wo die Leiter aufhört, wird **aus den Daten gemessen** — alle Kreise in allen
 Zählungen, fünf bis fünfundneunzig Prozent, **gewichtet mit der Fläche**, und
-zwar an genau der Form, die gezeichnet wird: ×2,305. Genommen wird dann ×2,281,
-und zwar deshalb, weil dort die Küste auf ×0,35 fällt; ein Prozent Unterschied.
-Darüber läuft die Leiter als weiches Knie weiter, bis ×2,57 am Ende der
-Farbrampe, ohne je zu kappen.
+zwar an genau der Form, die gezeichnet wird: ×2,305. Genommen wird ×2,311, weil
+die Küste dann auf ×0,50 fällt; ein Viertelprozent Unterschied. Darüber läuft
+die Leiter als weiches Knie weiter, bis ×2,60 am Ende der Farbrampe, ohne je zu
+kappen.
+
+**Die Zahlen stehen auf der Leiter**, nicht daneben: vier Marken bei 0, ×0,5,
+×1 und ×2,3, jede an ihrer wirklichen Stelle. Weil die Leiter linear teilt,
+sagt schon ihr Abstand etwas — bis zur heutigen mittleren Dichte ist es das
+erste Drittel, der ganze Rest liegt darüber. Die ×0,5 fällt auf die Uferkante.
+Darunter steht ein einziger Satz: „× the average population density of Germany
+2024".
 
 Die Leiter teilt dabei **linear** auf, nicht logarithmisch, und das ist eine
 inhaltliche Entscheidung: Weichzeichnen erhält das Integral, also ist das

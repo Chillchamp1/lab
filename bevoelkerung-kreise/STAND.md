@@ -98,9 +98,9 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Breite sie, und der übrige Platz gehört ganz dem Text statt zur Hälfte einem
   Loch über der Legende. Die Zweispaltigkeit im
   Querformat ist damit hinfällig und wieder draussen.
-- Die **Legende** ist eine Zeile: die Zahlen an den Enden der Leiter, was die
-  Höhe misst, wo der Meeresspiegel liegt, der Stichtag. Umbruch unterbunden,
-  sonst schöbe sie die Karte; auf dem Telefon zwei feste Zeilen.
+- Die **Legende** ist die Leiter mit vier Zahlen darauf (0, ×0,5, ×1, ×2,3)
+  und darunter ein Satz, was die Höhe misst. Umbruch unterbunden, sonst schöbe
+  er die Karte.
 - Die Uhr läuft 84 Sekunden für 153 Jahre. Die Spielzeit je Abschnitt mischt
   Dauer und Umschichtung (geometrisches Mittel) und liegt nie unter
   5,4 Sekunden, also bekommt 1939→1946 acht Sekunden statt vier und
@@ -253,7 +253,7 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   einmal gerechnet. Nachgezählt, dass die Mischung aus elf Formen nichts
   umstülpt: **0 gefaltete Ringe von 465**. Schneegrenze dafür von 1,17 auf 1,10,
   Wasser 2024 9,2 % statt 6,6 %.
-- **Unten Wasser.** Die untersten drei der zweiundzwanzig Bänder sind ein See:
+- **Unten Wasser.** Die untersten fünf der sechsundzwanzig Bänder sind ein See:
   tief dunkelblau, zum Ufer hin heller. Wo auf die Fläche am wenigsten Menschen
   kommen, liegt jetzt Wasser, und die Uferlinie ist die schärfste Grenze, die
   eine Geländekarte kennt. Zwei Gewinne: die Landbänder verteilen sich über
@@ -318,7 +318,8 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   mittlere Buntheit der Landbänder 0,17 (OKLab) gegen 0,15 der vorigen Fassung.
   Das oberste Band ist **weiss**, nicht hellbraun; darunter ein fast
   entsättigtes Grau als Übergang von Fels zu Schnee. 2024 sind zweiundzwanzig
-  der vierundzwanzig Bänder belegt.
+  der vierundzwanzig Bänder belegt. (Heute sind es sechsundzwanzig Bänder,
+  siehe „Der Meeresspiegel".)
 - **Die Höhenlinien werden ausgedünnt, nicht fallengelassen.** Wo zwei Niveaus
   auf der Leinwand zusammenrückten, blendeten bisher *alle* aus — was genau den
   steilsten Hang traf. Berlins Flanke fällt in wenigen Bildpunkten durch fünf
@@ -360,32 +361,43 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Kartogramm ×0,35 … ×1,17). Flächengewichtet,
   weil Fläche gefärbt wird und nicht Kreise — ungewichtet setzten die
   hundertsieben winzigen kreisfreien Städte das obere Quantil, und die halbe
-  Palette blieb leer; jetzt sind 2024 einundzwanzig der zweiundzwanzig Bänder
+  Palette blieb leer; jetzt sind 2024 vierundzwanzig der sechsundzwanzig Bänder
   belegt.
 - **Der Meeresspiegel ist jetzt eine Zahl, die etwas heisst.** Er lag bei ×0,43
   der heutigen mittleren Dichte, und das war kein Schwellenwert, sondern das
   Nebenprodukt zweier anderer Entscheidungen: vier von vierundzwanzig Bändern
   blau, Leiterende beim gemessenen Quantil. Blau hiess „unten", weiter nichts.
-  Jetzt liegt er bei **×0,35 — der mittleren Dichte Deutschlands im Jahr 1871**
-  (29,3 Millionen auf den 357 677 km² von heute, also 82 Menschen je km²).
-  Unter Wasser steht damit genau das Land, in dem heute dünner gewohnt wird als
-  im ganzen Kaiserreich am Anfang des Films. Der Wert ist exakt, nicht
-  ungefähr: die Höhe ist auf 2024 bezogen, das Mittel des ersten Bildes ist
-  daher von sich aus ×0,35. Bezahlt ist das mit **22 Bändern statt 24 und drei
-  blauen statt vier** — dann fällt das Leiterende auf ×2,281 und damit auf ein
-  Prozent an das gemessene Quantil (×2,305) heran; oben ändert sich nichts,
-  Berlin bleibt mit ×0,974 im Feld über dem Ruhrgebiet mit ×0,889. Verworfen:
-  ×1,00 (die heutige mittlere Dichte) setzt 58 Prozent der Fläche unter Wasser
-  und 1871 das ganze Land; ×0,50 (rund 100 Einwohner je km², die EU-Linie für
-  „dünn besiedelt") gibt 2024 das schärfste Bild, ersäuft 1871 aber zu neun
-  Zehnteln. Der Lauf der Küste ist selbst ein Befund: 1871 **52,9 %** der
-  Fläche unter Wasser, 1900 25,3 %, 1939 6,6 %, um 1950 **0,1 %** — nie wohnte
-  in der Fläche so viel Deutschland wie nach der Vertreibung —, dann wieder
-  1,2 % 1987, 3,6 % 2011, **4,3 % 2024**, und fast nur im Nordosten.
-- **Die Legende sagt, was das Blau bedeutet:** „height: × the average density of
-  Germany in 2024 · sea level ×0.35, Germany in 1871 · counted 2024-12-31". Auf
-  dem Telefon steht die Zeile jetzt zweizeilig statt abgeschnitten — feste zwei
-  Zeilen, damit die Leiste so hoch bleibt wie beim ersten Messen.
+  Jetzt liegt er bei **×0,50 — der halben mittleren Dichte Deutschlands von
+  2024**, in der Wirklichkeit rund 95 Einwohner je km² und damit ungefähr die
+  EU-Linie für „dünn besiedelt" (100 E/km²). Unter Wasser steht also, was man
+  strukturschwach nennt, wenn man es an der Dichte misst. Das „ungefähr" ist
+  der einzige Haken: gefärbt wird **gezeichnete** Dichte, und der feste Boden
+  schrumpft leere Kreise — die 27 Kreise zwischen ×0,48 und ×0,52 haben real
+  zwischen 78 und 126 Einwohner je km², im Median 95; unter Wasser stehen
+  12,4 Prozent der Karte, während real 31,9 Prozent der Landesfläche unter
+  100 E/km² liegen. Bezahlt ist der Spiegel mit **26 Bändern statt 24 und fünf
+  blauen statt vier**: das Leiterende fällt damit auf ×2,311 und liegt ein
+  Viertelprozent neben dem gemessenen Quantil (×2,305); oben ändert sich
+  nichts, Berlin bleibt mit ×0,965 im Feld über dem Ruhrgebiet mit ×0,884, und
+  24 der 26 Bänder sind 2024 belegt. Geprüft und verworfen: ×1,00 (die heutige
+  mittlere Dichte) setzt 58 Prozent der Fläche unter Wasser und 1871 das ganze
+  Land; ×0,35 (die mittlere Dichte von 1871, 82 E/km²) ist die schönere
+  Erzählung, zeigt 2024 aber nur 4 Prozent Blau. Der Lauf der Küste: 1871
+  **90,5 %** der Fläche unter Wasser — die Karte ist eine Inselgruppe —, 1900
+  55,8 %, 1939 34,6 %, um 1950 **11,6 %** (nie wohnte in der Fläche so viel
+  Deutschland wie nach der Vertreibung), dann wieder 9,1 % 1996, 11,3 % 2011,
+  **12,4 % 2024**, fast nur im Nordosten.
+- **Die Zahlen stehen auf der Leiter statt daneben.** Links und rechts standen
+  Anfang und Ende, dazwischen nichts — bei einer linearen Leiter die
+  ungünstigste aller Auskünfte, weil sich der bewohnte Bereich ins linke
+  Drittel drängt. Jetzt vier Marken an ihrer wirklichen Stelle: **0, ×0,5, ×1,
+  ×2,3**. Die ×0,5 fällt auf die Uferkante, die ×2,3 auf das gemessene
+  Quantil. Damit das stimmt, zeigt die Rampe **harte Stufen** statt eines
+  weichen Verlaufs: ein CSS-Verlauf setzt seine Stützstellen auf k/(N−1) und
+  mischt, die Bänder liegen aber auf k/N — das Ufer lag im Verlauf drei Prozent
+  neben seiner Zahl. Und die Legendenzeile sagt nur noch einen Satz:
+  „× the average population density of Germany 2024". Der Stichtag steht im
+  Tippen, wo ohnehin Zahl, Rate und Methode des Kreises stehen.
 - **Das Ruhrgebiet trägt endlich mehr als einen Namen.** Der Mindestabstand
   zwischen zwei Beschriftungen war ein fester Wert auf der **Landkarte**
   (sechzig Kilometer), und daran ging genau diese Region zugrunde: Köln liegt
@@ -403,9 +415,10 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   density · fixed ground · 1871-12-01" — drei Sachen an Mittelpunkten
   aufgereiht, und die mittlere las sich wie eine Eigenschaft der Jahreszahl
   daneben. Das Wort stammte aus der Zeit mit drei umschaltbaren Formen. Jetzt:
-  „height: × the average density of Germany in 2024 · counted 1871-12-01"
-  (heute steht der Meeresspiegel mit darin),
-  jede Angabe mit einem Wort davor, das sagt, was sie ist.
+  „height: × the average density of Germany in 2024 · counted 1871-12-01",
+  jede Angabe mit einem Wort davor, das sagt, was sie ist. (Heute steht dort
+  nur noch der eine Satz; die Zahlen sind auf die Leiter gewandert, der
+  Stichtag ins Tippen.)
 - **Die dreizehn Notizen sind auf 64 Prozent gekürzt** (1 922 → 1 228 Zeichen).
   Je Notiz bleibt eine Aussage und eine Zahl.
 - **Welche Städte einen Namen tragen, entscheidet das Jahr.** Nicht mehr die

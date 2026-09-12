@@ -905,7 +905,7 @@ Vielfaches grösser.
 
 Die Karte wird gemalt, wie ein Atlas ein Gebirge malt: unten Wasser, dann
 Tiefland in tiefem Waldgrün, Grasgrün, Gelbgrün, Gelb, Ocker, Orange, Rot —
-oben Fels und Schnee. **Zweiundzwanzig Bänder**, und sie werden beim Bauen aus
+oben Fels und Schnee. **Sechsundzwanzig Bänder**, und sie werden beim Bauen aus
 ihrer Beschreibung gerechnet statt von Hand gesetzt: je Band eine Helligkeit,
 ein Farbton und die grösste Buntheit, die sRGB an dieser Stelle noch hergibt,
 gesucht per Halbierung in OKLCh.
@@ -918,7 +918,7 @@ vorigen und 0,13 der ersten Fassung.
 
 ### Unten Wasser
 
-**Die untersten drei Bänder sind ein See.** Wo auf die Fläche am wenigsten
+**Die untersten fünf Bänder sind ein See.** Wo auf die Fläche am wenigsten
 Menschen kommen, liegt Wasser: tief dunkelblau, zum Ufer hin heller. Die Grenze
 zwischen Wasser und Land ist die schärfste, die eine Geländekarte kennt — man
 sieht auf einen Blick, welcher Teil des Landes leer ist.
@@ -937,60 +937,92 @@ der Leiter lag beim gemessenen Quantil ×2,31, und daraus fiel eine Küste bei
 **×0,43** heraus. Das war kein Schwellenwert, den irgendwer kennt, sondern das
 Nebenprodukt zweier anderer Entscheidungen. Blau hiess „unten", weiter nichts.
 
-Jetzt liegt der Meeresspiegel bei **×0,35, und das ist die mittlere Dichte
-Deutschlands im Jahr 1871**: 29,3 Millionen Menschen auf den 357 677 km² von
-heute, also 82 Einwohner je Quadratkilometer. Unter Wasser steht damit genau
-das Land, in dem heute **dünner gewohnt wird als im ganzen Kaiserreich am
-Anfang dieses Films**.
+Jetzt liegt der Meeresspiegel bei **×0,50 — der halben mittleren Dichte
+Deutschlands von 2024**. In der Wirklichkeit sind das **rund 95 Einwohner je
+Quadratkilometer** und damit ungefähr die Linie, unterhalb derer die EU eine
+Gegend „dünn besiedelt" nennt (100 E/km²). Unter Wasser steht also das, was man
+strukturschwach nennt, wenn man es an der Dichte misst.
 
-Der Wert ist exakt und nicht ungefähr. Die Höhe ist auf die mittlere Dichte von
-2024 bezogen; das Mittel des ersten Bildes ist damit von sich aus ×0,35, ohne
-dass irgendwo eine zweite Zahl nachgeführt werden müsste.
+Das „ungefähr" ist ernst gemeint und der einzige Haken an der Sache. Gefärbt
+wird **gezeichnete** Dichte — Menschen je Fläche auf dem festen Boden, und der
+ist ein halb eingemischtes Kartogramm, das leere Kreise schrumpft und volle
+streckt. ×0,50 ist damit in der Karte exakt, in Einwohnern je km² aber nur im
+Mittel: die 27 Kreise, die 2024 zwischen ×0,48 und ×0,52 liegen, haben real
+zwischen 78 und 126 Einwohner je km², im Median 95. Und weil der Boden die
+leeren Kreise kleiner zeichnet, als sie sind, steht unter Wasser **12,4 Prozent
+der Karte**, während real 31,9 Prozent der Landesfläche unter 100 E/km² liegen.
+Die Karte ist an dieser Stelle strenger als die Wirklichkeit — 47 Kreise liegen
+im Bild unter dem Spiegel, 43 davon auch in der Wirklichkeit unter 100.
 
 Dass die Küste genau dort liegt, ist eine Kopplung dreier Zahlen — der Zahl der
 Bänder, der Zahl der blauen darunter und dem oberen Ende der Leiter:
 
     Ufer = WASSER / NBAND · (1 + RESERVE) · Leiterende
 
-Zwei davon sind frei, die dritte folgt. Gewählt sind **22 Bänder und 3 blaue**,
-weil das Leiterende dann bei ×2,281 liegt — und damit fast genau dort, wo das
-gemessene Quantil es ohnehin hinlegt (×2,305, ein Prozent daneben). Die Küste
-bekommt ihre Bedeutung also praktisch umsonst: oben ändert sich nichts, die
-Höhenlinien werden nur um ein Zehntel gröber (22 Niveaus statt 24), und Berlins
-Gipfel bleibt mit ×0,974 im Feld über dem des Ruhrgebiets mit ×0,889.
+Zwei davon sind frei, die dritte folgt. Gewählt sind **26 Bänder und 5 blaue**,
+weil das Leiterende dann bei ×2,311 liegt — und damit fast genau dort, wo das
+gemessene Quantil es ohnehin hinlegt (×2,305, ein Viertelprozent daneben). Die
+Küste bekommt ihre Bedeutung also umsonst: oben ändert sich nichts, die
+Höhenlinien werden um ein Zwölftel feiner (26 Niveaus statt 24), und Berlins
+Gipfel bleibt mit ×0,965 im Feld über dem des Ruhrgebiets mit ×0,884. 2024 sind
+24 der 26 Bänder belegt.
 
 Andere Schwellen wurden geprüft und verworfen. Die **mittlere Dichte von heute**
 (×1,00) setzt 58 Prozent der Fläche unter Wasser und 1871 das ganze Land — sie
-sagt etwas, aber nichts mehr, was man noch sehen könnte. Die **Hälfte davon**
-(×0,50, in der Wirklichkeit rund 100 Einwohner je km² und damit die Linie, ab
-der die EU eine Gegend „dünn besiedelt" nennt) ist für 2024 das schärfste Bild —
-ein Binnenmeer über Mecklenburg, der Uckermark, der Lausitz, der Altmark —,
-ersäuft aber 1871 zu neun Zehnteln. ×0,35 ist der Wert, der beide Enden des
-Films trägt.
+sagt etwas, aber nichts mehr, was man noch sehen könnte. Die **mittlere Dichte
+von 1871** (×0,35, also 82 E/km²: „dünner als das ganze Kaiserreich am Anfang
+des Films") ist die schönere Erzählung und lässt 1871 halb über Wasser, zeigt
+aber 2024 nur noch 4 Prozent Blau — zu wenig, um das Leerlaufen des Nordostens
+noch zu sehen.
 
-Was die Küste über die Zeit zeigt, ist selbst ein Befund:
+Was die Küste über die Zeit zeigt:
 
 | Jahr | Wasserfläche |
 |---|---|
-| 1871 | 52,9 % |
-| 1900–1910 | 25,3 % |
-| 1939 | 6,6 % |
-| 1946–1950 | **0,1 %** |
-| 1961–1964 | 0,2 % |
-| 1985–1987 | 1,2 % |
-| 1996 | 1,8 % |
-| 2011 | 3,6 % |
-| 2024 | 4,3 % |
+| 1871 | 90,5 % |
+| 1900–1910 | 55,8 % |
+| 1939 | 34,6 % |
+| 1946–1950 | **11,6 %** |
+| 1961–1964 | 13,2 % |
+| 1985–1987 | 10,2 % |
+| 1996 | 9,1 % |
+| 2011 | 11,3 % |
+| 2024 | 12,4 % |
 
-1871 liegt die Hälfte des Landes unter Wasser — die Hälfte, die unter dem
-eigenen Durchschnitt jener Zeit blieb. Aus der Karte wird eine Inselgruppe:
-Ruhr und Köln als grosse Insel, Berlin, Hamburg, Sachsen, Frankfurt, Stuttgart
-und München als kleinere. Dann steigt das Land, und **um 1950 ist die See fast
-verschwunden**: nie wohnte in der Fläche so viel Deutschland wie nach
-Vertreibung und Ausbombung, als die Städte leer und die Dörfer voll waren.
-Seither steigt sie wieder, und sie steigt fast nur im Nordosten — 1,2 Prozent
-1987, 3,6 Prozent 2011, 4,3 Prozent 2024. Die Landkreise, die dort wieder unter
-den Spiegel sinken, sind heute dünner besiedelt als das Kaiserreich von 1871.
+1871 ist Deutschland eine Inselgruppe: neun Zehntel des Landes liegen unter der
+Marke, über Wasser stehen Ruhr und Köln als grosse Insel, dazu Berlin, Hamburg,
+Sachsen, Frankfurt, Stuttgart und München. Das ist kein Fehler und keine
+Übertreibung — nach heutigem Massstab war das Land damals fast leer. Dann steigt
+es, und **um 1950 ist der Tiefstand erreicht**: nie wohnte in der Fläche so viel
+Deutschland wie nach der Vertreibung. Seither steigt die See wieder, langsam und
+fast nur im Nordosten — 9,1 Prozent 1996, 11,3 Prozent 2011, 12,4 Prozent 2024.
+Das Binnenmeer über Mecklenburg, der Uckermark, der Altmark und der Lausitz ist
+der sichtbarste Befund der ganzen Karte.
+
+### Die Zahlen stehen auf der Leiter
+
+Sie standen links und rechts daneben — der Anfang und das Ende, dazwischen
+nichts. Bei einer **linearen** Leiter ist das die ungünstigste aller Auskünfte:
+der ganze bewohnte Bereich drängt sich ins linke Drittel, und wo darin ×1 liegt,
+war nicht zu erraten.
+
+Jetzt trägt die Leiter vier Marken an ihrer wirklichen Stelle: **0, ×0,5, ×1 und
+×2,3**. Der Abstand sagt damit selbst etwas — von null bis zur heutigen
+mittleren Dichte ist es das erste Drittel, der ganze Rest liegt darüber. Die
+×0,5 fällt genau auf die Uferkante, die ×2,3 auf das gemessene Quantil; was
+dahinter liegt, sind Fels und Schnee, und dorthin trägt das Knie alles, was über
+dem Quantil steht.
+
+Damit die ×0,5 wirklich auf der Kante sitzt, zeigt die Farbrampe jetzt **harte
+Stufen** statt eines weichen Verlaufs: ein CSS-Verlauf setzt seine Stützstellen
+auf k/(N−1) und mischt dazwischen, die Bänder der Karte liegen aber auf k/N und
+mischen nicht — das Ufer lag im Verlauf drei Prozent links von seiner Zahl. Die
+Leiter zeigt jetzt dieselben sechsundzwanzig Bänder wie die Karte.
+
+Darunter steht ein einziger Satz: **„× the average population density of Germany
+2024"**. Was dort früher noch stand — der Meeresspiegel, der Stichtag — steht
+jetzt woanders besser: die Zahlen auf der Leiter selbst, der Stichtag im
+Tippen, wo ohnehin Zahl, Rate und Methode des Kreises stehen.
 
 Unter Wasser wird weiter schattiert und weiter Höhenlinie gezogen. Das ist
 Absicht: es sind Tiefenlinien, wie sie ein Atlas auch zeichnet, und sie kommen
@@ -1146,10 +1178,10 @@ Gemessen für 2024, innerhalb der jeweiligen Kreisgrenzen:
 
 | | logarithmisch | linear | linear, mit Knie und Schärfung |
 |---|---|---|---|
-| mittlere Höhe Berlin | 0,88 | 0,83 | 0,89 |
-| mittlere Höhe Ruhrgebiet | 0,88 | 0,75 | 0,67 |
-| Gipfel Berlin : Ruhr | — | 0,87 : 0,88 | 0,97 : 0,89 |
-| Volumen Ruhr : Berlin | 1,94 : 1 | 1,74 : 1 | **1,44 : 1** |
+| mittlere Höhe Berlin | 0,88 | 0,83 | 0,88 |
+| mittlere Höhe Ruhrgebiet | 0,88 | 0,75 | 0,68 |
+| Gipfel Berlin : Ruhr | — | 0,87 : 0,88 | 0,97 : 0,88 |
+| Volumen Ruhr : Berlin | 1,94 : 1 | 1,74 : 1 | **1,42 : 1** |
 | Menschen Ruhr : Berlin | 1,36 : 1 | 1,36 : 1 | 1,36 : 1 |
 
 Logarithmisch stehen die beiden **gleich hoch**, obwohl Berlin dichter ist.
@@ -1161,7 +1193,7 @@ hinausträgt; wer weiter aussen misst, kommt näher heran.
 
 Der Preis steht unten: die Hälfte der Fläche liegt in den untersten zwei, drei
 Bändern, und die frühen Bilder verlieren an Zeichnung — 1900 liegen ein Viertel
-der Fläche in den untersten drei Bändern. Das Relief trägt dort, was die Farbe
+der Fläche in den untersten fünf Bändern. Das Relief trägt dort, was die Farbe
 nicht mehr trägt. Der Schalter steht im Skript (`LINEAR = false`), ohne Knopf.
 
 ### Bezogen worauf? Absolut
@@ -1212,7 +1244,7 @@ der Formen.
 
 ### Die Leiter wird gemessen, nicht gesetzt
 
-Gesetzt ist an der Leiter nur, dass sie zweiundzwanzig Bänder hat; wo sie
+Gesetzt ist an der Leiter nur, dass sie sechsundzwanzig Bänder hat; wo sie
 anfängt und aufhört, kommt **aus den Daten**: alle vierhundert Kreise in allen zehn
 Zählungen, das fünfte und das fünfundneunzigste Prozent (oben plus siebzehn
 Prozent Schneegrenze, siehe unten), einmal gemessen und dann behalten. Das geht,
@@ -1224,11 +1256,11 @@ Zum Vergleich, damals mitgemessen: die Landkarte streute ×0,18 … ×2,68, das
 volle Kartogramm ×0,35 … ×1,17 — die Landkarte setzte also das obere Ende für
 alle drei.
 
-Nach oben läuft die Leiter als Knie weiter bis ×2,57 am Ende der Farbrampe;
-unten fängt sie bei null an, und die untersten drei Bänder sind Wasser. Das
+Nach oben läuft die Leiter als Knie weiter bis ×2,60 am Ende der Farbrampe;
+unten fängt sie bei null an, und die untersten fünf Bänder sind Wasser. Das
 obere Ende steht seit dem gesetzten Meeresspiegel nicht mehr auf dem gemessenen
-Quantil, sondern auf ×2,281 — ein Prozent darunter (siehe „Der Meeresspiegel
-ist eine Zahl, die etwas heisst").
+Quantil, sondern auf ×2,311 — ein Viertelprozent darüber (siehe „Der
+Meeresspiegel ist eine Zahl, die etwas heisst").
 
 ### Das Ruhrgebiet und Berlin
 

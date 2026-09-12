@@ -35,32 +35,37 @@ const CACHE = process.env.CACHE ? '-' + process.env.CACHE : '';
    heraus — kein Schwellenwert, den irgendwer kennt, sondern ein Nebenprodukt
    zweier anderer Entscheidungen. Blau hiess „unten", weiter nichts.
 
-   Jetzt heisst es etwas. **Der Meeresspiegel liegt bei ×0,35, und das ist die
-   mittlere Dichte Deutschlands im Jahr 1871** — 29,3 Millionen auf den
-   357 677 km² von heute, also 82 Menschen je Quadratkilometer. Unter Wasser
-   steht damit genau das Land, in dem heute dünner gewohnt wird als im ganzen
-   Kaiserreich am Anfang dieses Films.
+   Jetzt heisst es etwas. **Der Meeresspiegel liegt bei ×0,50, der halben
+   mittleren Dichte Deutschlands von 2024** — in der Wirklichkeit rund 95
+   Einwohner je Quadratkilometer und damit ungefähr die Linie, unterhalb derer
+   die EU eine Gegend „dünn besiedelt" nennt. Unter Wasser steht also das, was
+   man strukturschwach nennt, wenn man es an der Dichte misst.
 
-   Der Wert ist exakt, nicht ungefähr: die Höhe ist auf die Dichte von 2024
-   bezogen, und das Mittel des ersten Bildes ist damit von sich aus ×0,35.
+   Das „ungefähr" ist ernst gemeint. Gefärbt wird **gezeichnete** Dichte, und
+   der feste Boden ist ein halb eingemischtes Kartogramm: er schrumpft leere
+   Kreise und streckt volle. ×0,50 ist in der Karte exakt, in Einwohnern je km²
+   aber nur im Mittel — die 27 Kreise, die 2024 zwischen ×0,48 und ×0,52
+   liegen, haben real zwischen 78 und 126, im Median 95. Und weil der Boden die
+   leeren Kreise kleiner zeichnet, als sie sind, liegen 12,4 % der Karte unter
+   Wasser, während real 31,9 % der Landesfläche unter 100 E/km² liegen.
 
    Damit die Küste genau dort liegt, hängen drei Zahlen zusammen — die Zahl der
    Bänder, die Zahl der blauen darunter und das obere Ende der Leiter:
 
        Ufer = WASSER / NBAND · (1 + RESERVE) · Leiterende
 
-   Zwei davon sind frei, die dritte folgt. Gewählt sind 22 Bänder und 3 blaue,
-   weil das Leiterende dann bei ×2,281 herauskommt und damit fast genau dort,
+   Zwei davon sind frei, die dritte folgt. Gewählt sind 26 Bänder und 5 blaue,
+   weil das Leiterende dann bei ×2,311 herauskommt und damit fast genau dort,
    wo es das gemessene Quantil ohnehin hinlegt (×2,305). Die Küste bekommt ihre
-   Bedeutung also praktisch umsonst; oben ändert sich nichts.
+   Bedeutung also umsonst; oben ändert sich nichts.
 
-   Was das über die Zeit zeigt: 1871 liegt 53 % der Fläche unter Wasser, 1900
-   noch 25 %, 1939 7 %. Um 1950 ist die See fast verschwunden (0,1 %) — nie
-   wohnte in der Fläche so viel Deutschland wie nach der Vertreibung. Seither
-   steigt sie wieder: 1,2 % 1987, 3,6 % 2011, 4,3 % 2024, und sie steht fast
-   ganz im Nordosten. */
-const NBAND = Number(process.env.NBAND ?? 22), WASSER = Number(process.env.WASSER ?? 3);
-const UFER = Number(process.env.UFER ?? 0.35);   // Meeresspiegel, Vielfache von 2024
+   Was das über die Zeit zeigt: 1871 liegen 90 % der Fläche unter Wasser, die
+   Karte ist eine Inselgruppe. 1900 sind es 56 %, 1939 35 %, um 1950 nur noch
+   11,6 % — nie wohnte in der Fläche so viel Deutschland wie nach der
+   Vertreibung. Seither steigt die See wieder: 9,1 % 1996, 11,3 % 2011, 12,4 %
+   2024, und sie steht fast ganz im Nordosten. */
+const NBAND = Number(process.env.NBAND ?? 26), WASSER = Number(process.env.WASSER ?? 5);
+const UFER = Number(process.env.UFER ?? 0.50);   // Meeresspiegel, Vielfache von 2024
 const svg = t => t > 0.0031308 ? 1.055 * Math.pow(t, 1 / 2.4) - 0.055 : 12.92 * t;
 function oklab(L, a, b) {
   const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
@@ -485,17 +490,19 @@ canvas{position:absolute;left:0;top:0;width:100%;height:100%;touch-action:manipu
    Höhe gezeichnet, die es nicht mehr gibt. */
 .fuss .klein{margin:4px 0 0;font-size:11.5px;line-height:1.35;color:var(--ink2);
   min-height:1.35em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* Auf dem Telefon passt die Zeile nicht mehr, und seit der Meeresspiegel darin
-   steht, ist das Abgeschnittene nicht mehr entbehrlich. Dort also zwei Zeilen
-   — feste zwei, damit die Leiste weiterhin genauso hoch ist wie beim ersten
-   Messen und die Karte nicht für eine Höhe gezeichnet wird, die es nicht mehr
-   gibt. */
-@media(max-width:540px){
-  .fuss .klein{white-space:normal;min-height:2.7em;max-height:2.7em}
-}
-.legende{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink2);
-  font-variant-numeric:tabular-nums}
-.rampe{flex:1;height:9px;border-radius:5px;border:1px solid var(--ring)}
+/* Die Leiter trug ihre beiden Zahlen links und rechts daneben — den Anfang und
+   das Ende, und dazwischen nichts. Bei einer linearen Leiter ist das die
+   ungünstigste aller Auskünfte: der ganze bewohnte Bereich drängt sich im
+   linken Drittel, und wo darin ×1 liegt, war nicht zu erraten. Jetzt stehen
+   die Zahlen **auf der Leiter**, jede an ihrer Stelle. */
+.legende{font-size:11.5px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.rampe{height:9px;border-radius:5px;border:1px solid var(--ring)}
+.stufen{position:relative;height:1.2em;margin-top:3px}
+.stufen span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.stufen span::before{content:'';position:absolute;left:50%;top:-4px;width:1px;
+  height:4px;background:var(--axis)}
+.stufen .a{transform:none}
+.stufen .a::before{left:0}
 
 /* Die Bedienung, so wenig wie möglich: ein Knopf und ein Regler. */
 .regler{display:flex;align-items:center;gap:9px;flex:0 0 auto;margin-top:6px}
@@ -525,7 +532,7 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
     <div class="tip" id="tip"></div>
   </div>
   <div class="fuss">
-    <div class="legende"><span id="legLinks"></span><div class="rampe" id="rampe"></div><span id="legRechts"></span></div>
+    <div class="legende"><div class="rampe" id="rampe"></div><div class="stufen" id="legStufen"></div></div>
     <p class="klein" id="legText"></p>
   </div>
   <div class="regler">
@@ -778,11 +785,11 @@ for (const r of REIHEN) r.rahmen = rahmenFuer(r);
    Gesetzt ist sie auf schwarzen Grund; die Seite kennt kein zweites Klima
    mehr. Das spart nicht nur Code, es ist auch der Grund, warum das Tiefgrün
    so tief sein darf. */
-/* Zweiundzwanzig Bänder, beim Bauen aus ihrer Beschreibung gerechnet (siehe
+/* Sechsundzwanzig Bänder, beim Bauen aus ihrer Beschreibung gerechnet (siehe
    oben im Bauskript): je Band eine Helligkeit, ein Farbton und die grösste
    Buntheit, die sRGB an dieser Stelle noch hergibt.
 
-   Die untersten drei sind **Wasser**. Wo auf die Fläche am wenigsten Menschen
+   Die untersten fünf sind **Wasser**. Wo auf die Fläche am wenigsten Menschen
    kommen, liegt jetzt ein See: tief dunkelblau, zum Ufer hin heller. Das ist
    nicht nur hübsch, es räumt zwei Dinge zugleich auf. Die Grenze zwischen
    Wasser und Land ist die schärfste, die eine Geländekarte kennt — man sieht
@@ -910,9 +917,9 @@ function hoehenSkala() {
   let hi = Math.max(lo * 1.02, q(0.95) * KOPF);
   /* Und dann wird das obere Ende nicht genommen, sondern gesetzt — damit die
      Küste auf UFER fällt. Der gemessene Wert bleibt trotzdem die Richtschnur:
-     22 Bänder und 3 blaue sind gerade so gewählt, dass beide Zahlen auf ein
-     Prozent zusammenfallen (gemessen ×2,305, gesetzt ×2,281). Steht UFER auf
-     null, gilt wieder das Quantil. */
+     26 Bänder und 5 blaue sind gerade so gewählt, dass beide Zahlen auf ein
+     Viertelprozent zusammenfallen (gemessen ×2,305, gesetzt ×2,311). Steht
+     UFER auf null, gilt wieder das Quantil. */
   if (UFER > 0) hi = UFER * NBAND / (WASSER * (1 + RESERVE));
   reihe = merkR; punkteFuer = null;
   return (SPANNE = [Math.log(lo), Math.log(hi)]);
@@ -2003,7 +2010,8 @@ function schreibe(a, b, u, w, deck) {
   let summe = 0; for (let k = 0; k < NK; k++) summe += w[k] * deck[k];
   document.getElementById('jahrZahl').textContent = zwischen ? Math.round(jahr) : D.B[u < 0.5 ? a : b].jahr;
   document.getElementById('jahrBev').textContent = (summe / 1e6).toFixed(1) + ' million people';
-  legText();
+  // Die Legende hängt nicht mehr am Jahr: sie sagt einen Satz, und die Zahlen
+  // auf der Leiter stehen fest. Einmal gesetzt, nicht je Bild.
   document.getElementById('zeit').value = Math.round(spiel * 1000);
 }
 
@@ -2328,35 +2336,49 @@ function notizen() {
    ist: wofür das Kreuz an den Enden der Leiter steht, und wann gezählt
    wurde. */
 function legende() {
-  document.getElementById('rampe').style.background =
-    'linear-gradient(90deg,' + HYPSO.join(',') + ')';
+  /* Harte Stufen statt eines weichen Verlaufs. Ein Verlauf setzt seine
+     Stützstellen auf k/(N−1) und mischt dazwischen; die Bänder der Karte
+     liegen aber auf k/N und mischen nicht. Der Unterschied ist klein und
+     ausgerechnet an der einen Stelle sichtbar, auf die es hier ankommt: das
+     Ufer lag im Verlauf drei Prozent links von der Zahl, die darunter steht.
+     Jetzt zeigt die Leiter dieselben sechsundzwanzig Bänder wie die Karte,
+     und die Uferkante fällt genau auf die ×0,5. */
+  const n = HYPSO.length, halt = [];
+  for (let i = 0; i < n; i++)
+    halt.push(HYPSO[i] + ' ' + (100 * i / n).toFixed(3) + '% ' + (100 * (i + 1) / n).toFixed(3) + '%');
+  document.getElementById('rampe').style.background = 'linear-gradient(90deg,' + halt.join(',') + ')';
+  stufen();
   legText();
 }
-// Was unter der Leiter steht. Die Zahlen an den Enden sind Vielfache der
-// mittleren Dichte des Bildes, also dessen, was ein Kreis an Höhe hätte, wenn
-// alle gleich dicht wohnten.
+/* ---------- Die Zahlen auf der Leiter ----------
+   Vier Marken: null, der Meeresspiegel, die heutige mittlere Dichte und das
+   gemessene Quantil. Sie stehen dort, wo der Wert wirklich liegt, und weil die
+   Leiter linear teilt, sagt schon ihr Abstand etwas — zwischen ×0 und ×1 liegt
+   das erste Drittel der Leiter, darüber der ganze Rest. Die ×0,5 fällt auf die
+   Uferkante, die ×2,3 lässt Fels und Schnee hinter sich; was dahinter liegt,
+   trägt das Knie. */
+const MARKEN = [0, 0.5, 1, 2.3];
+function stufen() {
+  const [, bis] = hoehenSkala(), hi = Math.exp(bis), e = document.getElementById('legStufen');
+  const zeig = x => (x >= 10 ? x.toFixed(0) : x >= 1 ? x.toFixed(1) : x.toFixed(1));
+  e.textContent = '';
+  for (const m of MARKEN) {
+    const s = document.createElement('span');
+    s.textContent = m === 0 ? '0' : '×' + zeig(m);
+    // Feldwert, nicht Leiterwert: die Reserve über dem Quantil zählt mit.
+    s.style.left = (100 * aufLeiter(m) / (1 + RESERVE)).toFixed(2) + '%';
+    if (m === 0) s.className = 'a';
+    e.appendChild(s);
+  }
+}
+/* ---------- Und darunter ein einziger Satz ----------
+   Da standen einmal drei Angaben nebeneinander — wofür das Kreuz steht, wo der
+   Meeresspiegel liegt, wann gezählt wurde —, und jede davon steht jetzt
+   woanders besser: die Zahlen auf der Leiter selbst, der Stichtag im Tippen.
+   Übrig bleibt der eine Satz, der sagt, was die Karte misst. */
 function legText() {
-  const [a, b, u] = bildBei(jahr);
-  const zwischen = u > 0.001 && u < 0.999;
-  const [von, bis] = hoehenSkala();
-  const zeig = x => (x >= 10 ? x.toFixed(0) : x >= 1 ? x.toFixed(1) : x.toFixed(2));
-  // Linear fängt die Leiter bei null an, nicht beim unteren Quantil.
-  document.getElementById('legLinks').textContent = LINEAR ? '0' : '×' + zeig(Math.exp(von));
-  /* Rechts das gemessene Quantil, und dahinter ein Pluszeichen. Die Leiter
-     endet seit dem Knie nicht mehr dort: das letzte Stück, Fels und Schnee,
-     trägt alles, was darüber liegt, und läuft erst im Unendlichen aus. */
-  document.getElementById('legRechts').textContent = '×' + zeig(Math.exp(bis)) + '+';
-  // Eine Zeile: was die Zahlen an der Leiter sind, welche Form eingestellt ist,
-  // und welcher Stichtag gilt. Der Rest steht in der Methodik, nicht hier.
-  /* Drei Angaben: was die Zahlen an der Leiter sind, was das Blau bedeutet,
-     und welcher Stichtag gilt. Der Meeresspiegel steht hier, weil er sonst
-     nirgends steht — er ist eine gewählte Schwelle und keine Eigenschaft der
-     Daten. */
   document.getElementById('legText').textContent =
-    'height: × the average density of Germany in 2024 · sea level ×0.35, '
-    + 'Germany in 1871 · '
-    + (zwischen ? 'between the counts of ' + D.B[a].jahr + ' and ' + D.B[b].jahr
-                : 'counted ' + D.B[u < 0.5 ? a : b].stichtage.join(', '));
+    '× the average population density of Germany 2024';
 }
 
 /* ---------- Tippen ---------- */
