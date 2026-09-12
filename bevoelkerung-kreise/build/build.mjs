@@ -2602,6 +2602,23 @@ function imGebiet(g, x, y) {
   return drin;
 }
 const tip = document.getElementById('tip');
+/* ---------- Der Zettel bleibt stehen, bis man ihn wegtippt ----------
+   Auf dem Telefon gibt es kein Zeigen ohne Drücken: ein Tipp musste den Zettel
+   öffnen, und weggehen konnte er nur, indem man neben die Karte tippte. Jetzt
+   ist der Tipp ein Schalter — einmal auf, einmal zu, und das zweite Mal gilt
+   auch dann, wenn man einen anderen Kreis erwischt. Eine Geste, eine Wirkung.
+
+   ZETTELAN sagt, ob gerade einer steht. STUMM merkt sich den Kreis, der eben
+   weggetippt wurde, und ist nur für die Maus da: sie zeigt den Zettel beim
+   Darüberfahren, und ohne dieses Gedächtnis käme er im selben Augenblick
+   zurück, in dem man ihn weggeklickt hat. Sobald der Zeiger einen anderen
+   Kreis erreicht, ist das Gedächtnis wieder leer. */
+let zettelAn = false, stumm = -1;
+function versteckeTip() {
+  tip.style.opacity = 0;
+  zettelAn = false;
+  if (letzterTip !== -1) { letzterTip = -1; zeigeUmriss(-1); }
+}
 function zeigeTip(x, y) {
   const [a, b, u] = bildBei(jahr);
   const { w, deck, rate } = werteBei(a, b, u);
@@ -2611,11 +2628,10 @@ function zeigeTip(x, y) {
      gelesen. Jetzt ist sie der Zustand — und der Umriss wird nur dann neu
      gezogen, wenn sich der getroffene Kreis wirklich geändert hat. Beim Fahren
      über die Karte sind das ein paar Male in der Sekunde statt sechzig. */
-  if (treffer < 0) {
-    tip.style.opacity = 0;
-    if (letzterTip !== -1) { letzterTip = -1; zeigeUmriss(-1); }
-    return;
-  }
+  if (treffer < 0) { versteckeTip(); stumm = -1; return; }
+  // Eben weggetippt und die Maus steht noch darauf: dann bleibt er weg.
+  if (treffer === stumm) return;
+  stumm = -1;
   if (treffer !== letzterTip) { letzterTip = treffer; zeigeUmriss(treffer); }
   const k = D.k[treffer], v = w[treffer];
   const abschnitt = rateIm(a, treffer);
@@ -2646,6 +2662,7 @@ function zeigeTip(x, y) {
       : '<span class="warn">' + f.stichtage.join(', ') + ' · method ' + (methode === '-' ? '–' : methode)
         + (anteil ? ', ' + anteil + ' % interpolated' : '') + '</span>');
   tip.style.opacity = 1;
+  zettelAn = true;
   // Der Zettel liegt jetzt im selben Kasten wie die Leinwand, also sind seine
   // Koordinaten dieselben wie die des Zeigers — der alte Versatz um den Rahmen
   // fällt weg.
@@ -2653,6 +2670,9 @@ function zeigeTip(x, y) {
   tip.style.top = Math.max(2, y - tip.offsetHeight - 14) + 'px';
 }
 cv.addEventListener('pointerdown', e => {
+  // Steht schon einer, nimmt dieser Tipp ihn weg — ganz gleich, wo er hinfällt.
+  if (zettelAn) { stumm = letzterTip; versteckeTip(); return; }
+  stumm = -1;
   const r = cv.getBoundingClientRect();
   zeigeTip(e.clientX - r.left, e.clientY - r.top);
 });
@@ -2661,9 +2681,14 @@ cv.addEventListener('pointermove', e => {
   const r = cv.getBoundingClientRect();
   zeigeTip(e.clientX - r.left, e.clientY - r.top);
 });
-cv.addEventListener('pointerleave', () => {
-  tip.style.opacity = 0;
-  if (letzterTip !== -1) { letzterTip = -1; zeigeUmriss(-1); }
+/* Und dieses Verlassen gilt nur für die Maus. Ein Finger „verlässt" die Karte
+   in dem Augenblick, in dem er sie loslässt — der Browser schickt für eine
+   Berührung nach dem Loslassen ein pointerleave hinterher. Der Zettel war auf
+   dem Telefon deshalb nur so lange zu sehen, wie der Finger lag: antippen,
+   aufblitzen, weg. Das war der eigentliche Grund, warum er nicht stehenblieb. */
+cv.addEventListener('pointerleave', e => {
+  if (e.pointerType !== 'mouse') return;
+  versteckeTip(); stumm = -1;
 });
 
 /* ---------- Ablauf ---------- */

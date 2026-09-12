@@ -79,7 +79,9 @@ Freigabe, aus Bildvorlagen abzuschreiben.
 - `index.html`: eine einzelne Datei, Englisch, **eine einzige Ansicht** — die
   Geländekarte auf schwarzem Grund bei halber Verzerrung. Zeitschieberegler mit
   Marken auf den Zählungen, sonst nichts; Antippen zeigt Zahlen, Rate,
-  Stichtag und Methode. Die früheren Ansichten (Wachstum, Einwohner, Nadelrelief)
+  Stichtag, Methode und den Umriss des Kreises. Der Tipp ist ein **Schalter**:
+  einmal auf, einmal zu, und das zweite Mal gilt auch dann, wenn man einen
+  anderen Kreis erwischt. Mit der Maus folgt der Zettel weiter dem Zeiger. Die früheren Ansichten (Wachstum, Einwohner, Nadelrelief)
   und die Notizenliste unter der Karte sind entfallen, ebenso der Umschalter
   zwischen hellem und dunklem Grund: 818 kB → **259 kB**.
 - Über der Karte stehen Jahr und Einwohnerzahl — zwischen zwei Zählungen mit
@@ -372,6 +374,21 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   hundertsieben winzigen kreisfreien Städte das obere Quantil, und die halbe
   Palette blieb leer; jetzt sind 2024 dreiundzwanzig der fünfundzwanzig Bänder
   belegt.
+- **Auf dem Telefon blieb der Zettel gar nicht stehen.** Er blitzte auf und war
+  weg, sobald der Finger sich hob — und das war kein Bedienkonzept, sondern ein
+  Fehler: der Browser schickt für eine **Berührung** nach dem Loslassen ein
+  `pointerleave` hinterher, und darauf lag das Ausblenden, das für die Maus
+  gedacht war. Jetzt gilt es nur noch für die Maus.
+
+  Und der Tipp ist ein **Schalter**: einmal auf, einmal zu — das zweite Mal auch
+  dann, wenn er einen anderen Kreis trifft. Eine Geste, eine Wirkung. Für die
+  Maus bleibt alles beim Alten (der Zettel folgt dem Zeiger); ein Klick nimmt
+  ihn weg, und ein Gedächtnis für den eben weggeklickten Kreis verhindert, dass
+  die nächste Mausbewegung ihn im selben Augenblick zurückholt. Nachgemessen mit
+  echten Berührungen: Tipp auf Berlin zeigt, zweiter Tipp nimmt weg, dritter
+  zeigt wieder, Tipp auf München nimmt weg, nächster zeigt München, Tipp neben
+  die Karte nimmt weg. Mit der Maus: Zeigen zeigt, Klicken nimmt weg, drei
+  Bildpunkte weiter bleibt er weg, ein anderer Kreis holt ihn zurück.
 - **Ein angetippter Kreis bekommt seinen Umriss.** Die Buckel sind keine Städte:
   der, den man „Nürnberg" nennt, sind gemessen für 2024 **acht Kreise mit 1,37
   Mio Menschen**, und die Stadt macht davon **38,6 %** aus (Nürnberger Land
