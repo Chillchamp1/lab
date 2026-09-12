@@ -1144,7 +1144,7 @@ Leiter zeigt jetzt dieselben fünfundzwanzig Bänder wie die Karte.
 
 Darunter steht ein Satz:
 
-> People per area relative to Germany's average in 2024
+> How crowded, compared with Germany in 2024
 
 Diese Zeile hat fünf Fassungen gebraucht, und die ersten vier scheiterten an
 derselben Stelle: **an der Eins**.
@@ -1155,20 +1155,24 @@ derselben Stelle: **an der Eins**.
 | `volume = people · ×1 = the German average of 2024` | ehrlich, aber zwei Gleichungen nebeneinander, und keine sagt, wovon das Mittel das Mittel ist |
 | `people per patch of map · Germany 2024 sits at ×1` | ehrlich, aber „patch of map" ist genau der Fachbegriff, den zu vermeiden die Übung war |
 | `×1 is Germany's average in 2024. ×2 means twice as many people in the same space.` | verständlich, brauchte aber zwei Zeilen |
+| `People per area relative to Germany's average in 2024` | einzeilig und richtig — aber „people per area" klingt nach einer Zahl, die man ausrechnen kann |
 
-Das Wort, das gefehlt hat, ist **„relative to"**. Es sagt in zwei Silben, dass
-die Zahlen an der Leiter ein Verhältnis sind und wozu — und danach braucht keine
-Gleichung mehr erklärt zu werden. Die Zeile passt mit fünf Bildpunkten Luft auf
-eine Zeile bis 360 Bildpunkte Fensterbreite hinunter; darunter bricht sie um.
+Das Wort, das gefehlt hat, ist **„compared with"**: es sagt, dass die Zahlen an
+der Leiter ein Verhältnis sind und wozu, und danach braucht keine Gleichung mehr
+erklärt zu werden. Und **„how crowded" statt „people per area"** ist nicht nur
+kürzer (274 statt 316 Bildpunkte, einzeilig bis 360 Bildpunkte Fensterbreite
+hinunter). „People per area" klingt nach einer Zahl, die man ausrechnen kann —
+und genau diese Rechnung ist die falsche: ×2,4 mal 234 wären 561 Einwohner je
+km², Berlin hat 4 136. Ein qualitatives Wort lädt nicht dazu ein. Die Zeile ist
+damit zugleich verständlicher und an der einen wunden Stelle robuster.
 
-**Bezahlt ist das mit einer Ungenauigkeit, und sie sei hier benannt.** „Per area"
-lässt offen, welche Fläche gemeint ist, und gemeint ist die **gezeichnete**. Für
-das Land als Ganzes stimmt der Satz genau — die Leiter ist ja darauf geeicht.
-Für einen einzelnen Kreis untertreibt er, weil das Kartogramm die Städte schon
-breiter gezogen hat: Berlin steht auf ×2,4 und ist wirklich ×17,7. Wer das genau
-wissen will, tippt den Kreis an; im Zettel stehen beide Zahlen nebeneinander.
-Eine Legende, die gelesen wird, ist mehr wert als eine genauere, die keiner
-versteht — und falsch ist der Satz nicht, nur ungefähr.
+**Die Ungenauigkeit bleibt und sei hier benannt.** Gemeint ist die Dichte auf der
+**gezeichneten** Fläche. Für das Land als Ganzes stimmt der Satz genau — die
+Leiter ist ja darauf geeicht. Für einen einzelnen Kreis untertreibt er, weil das
+Kartogramm die Städte schon breiter gezogen hat: Berlin steht auf ×2,4 und ist
+wirklich ×17,7. Wer das genau wissen will, tippt den Kreis an — der Zettel nennt
+beide Zahlen, und der Umriss zeigt dazu, wovon überhaupt die Rede ist. Eine
+Legende, die gelesen wird, ist mehr wert als eine genauere, die keiner versteht.
 
 Was dort früher noch stand — der Meeresspiegel, der Stichtag — steht woanders
 besser: die Zahlen auf der Leiter selbst, der Stichtag im Schild über der Karte.
@@ -1270,6 +1274,17 @@ Was bleibt, ist Farbe, Hang und Höhenlinie — und die zeigen die Grenze dort, 
 sie etwas bedeutet: wo sich die Dichte ändert. Wo zwei Nachbarn gleich dicht
 wohnen, war der Strich ohnehin nur Verwaltung. Eine Geländekarte hat keine
 Grenzen; sie hat Gelände.
+
+**Eine Ausnahme gibt es, und sie ist keine Grenze, sondern eine Marke.** Wer
+einen Kreis antippt, bekommt dessen Umriss gezeichnet — dieselbe Sorte
+Zeichen wie der rote Punkt auf einer Stadt: er steht nicht im Bild, sondern in
+der Antwort auf eine Frage, und verschwindet mit ihr. Die Frage ist *wovon ist
+hier eigentlich die Rede?*, und sie ist berechtigt, weil das Weichzeichnen
+Nachbarn zu einem Buckel verschmilzt (siehe „Die Form eines Berges ist die Form
+des Weichzeichners"). Gezeichnet wird auf einer zweiten, durchsichtigen Leinwand
+über der Karte: das Bild selbst wird dafür nicht neu gerechnet, und weil der
+Boden stillsteht, bleibt ein einmal gezogener Umriss über alle
+hundertfünfzig Jahre richtig.
 
 Damit entfielen auch die 3 334 Knotenpaare der Landesgrenzen aus der Nutzlast.
 
@@ -1376,6 +1391,16 @@ Die Auflösung ist damit der Kreis: 400 Zellen, die kleinste Schweinfurt mit
 35,7 km², die grösste die Mecklenburgische Seenplatte mit 5 495 km², im Median
 800. Zweiundvierzig kreisfreie Städte liegen unter 100 km² — dort ist die Karte
 am feinsten, und genau dort stehen die Gipfel.
+
+**Und ein Buckel ist selten ein Kreis.** Das Weichzeichnen erfindet nicht nur die
+Form, es **verschmilzt Nachbarn**. Der Buckel, den man „Nürnberg" nennt, sind
+gemessen für 2024 **acht Kreise mit 1,37 Millionen Menschen**, und die Stadt
+Nürnberg macht davon **38,6 Prozent** aus — Nürnberger Land 12,3 %,
+Erlangen-Höchstadt 10,1 %, Fürth Stadt und Land zusammen 18,2 %, Roth 9,4 %,
+Erlangen 8,5 %, Schwabach 3,0 %. Wer den Buckel als die Stadt liest, überschätzt
+sie um das Zweieinhalbfache. Im Ruhrgebiet sind es zehn Kreise mit 3,31
+Millionen; München ist der gutmütige Fall, dort trägt die Stadt 80,9 Prozent
+ihres Buckels. Deshalb der Umriss beim Antippen (siehe „Keine Grenzen").
 
 Das entscheidet den Fall Ruhrgebiet gegen Berlin, der weiter unten steht.
 Gemessen für 2024, innerhalb der jeweiligen Kreisgrenzen:
