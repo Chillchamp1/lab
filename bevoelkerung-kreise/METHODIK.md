@@ -1327,9 +1327,61 @@ kartographische Übereinkunft, die auch die flache Karte befolgt, und es ist das
 einzig Bezahlbare: eine am Bildschirm festgenagelte Sonne hiesse, das ganze
 Relief bei jedem Grad Drehung neu zu rechnen.
 
-Was bleibt also: scharfe Bandfarbe, Wandverlauf, Kantenstrich — und darüber das
-weiche Licht. Die flache Karte behält ihre Schattierung und ihre beleuchteten
-Höhenlinien unverändert; geändert hat sich nur, was beim Kippen geschieht.
+Was bleibt also: scharfe Bandfarbe, gedunkelte Wand, zwei Kantensicheln — und
+darüber das weiche Licht. Die flache Karte behält ihre Schattierung und ihre
+beleuchteten Höhenlinien unverändert; geändert hat sich nur, was beim Kippen
+geschieht.
+
+### Drei billige Griffe, und einer, der verworfen ist
+
+Nach der Kante blieb die Frage, was Licht und Schatten sonst noch hergeben,
+ohne dass es etwas kostet. Vier Kandidaten, jeder als Schalter eingebaut und
+auf dem Telefon gemessen; drei sind drin, einer nicht.
+
+**Der Kontaktschatten.** An einem wirklichen Modell wird es dunkel, wo eine
+Wand auf die Terrasse darunter trifft — dorthin kommt am wenigsten Himmel. Die
+Wandschraffur läuft ohnehin von unten nach oben, Streifen für Streifen; der
+unterste Streifen wird jetzt dunkler gefüllt (55 statt 80 Prozent der
+Bandfarbe), und weil alles darüber ihn zudeckt bis auf seinen Fuss, bleibt
+genau ein dunkler Saum am Boden jeder Wand stehen. Kosten: ein Farbwechsel je
+Wand, gemessen nichts.
+
+**Der Sockel.** Die Ringe fangen bei Niveau 1 an; die Grundplatte — das
+tiefste Wasser — hatte darum keine Wand, und die Karte endete unten wie ein
+Blatt Papier, während jede Stufe darüber eine Kante hatte. Jetzt bekommt sie
+die Wand des untersten Wasserrings, eine Stufe tiefer gezogen. Genauer wäre der
+Landesumriss selbst, der als Silhouette schon vorliegt — aber der besteht aus
+vierhundert Kreisumrissen und ist damit ein ganz anderer Pfad: gemessen 159
+statt 115 ms, viermal so teuer wie die drei Griffe zusammen. Der Wasserring
+liegt ein paar Feldpunkte innerhalb der Küste, kostet nichts, weil er ohnehin
+gerechnet wird, und von der Seite ist der Unterschied nicht zu sehen. Die
+Lücken im Seitenriss (siehe oben) fallen damit bei 62 Grad von 314 auf 294 und
+bei 80 Grad von 143 auf 101.
+
+**Der Schlagschatten.** Die flache Karte wirft mit `WURF = 0,32` einen Schatten
+hinter jeden Berg, absichtlich zurückhaltend, weil dort die Farbe die Aussage
+trägt. In der Lichtebene wird er jetzt noch einmal abgezogen, mit 0,6 — die
+Schrägsicht zeigt ein Modell, kein Blatt, und ein Modell wirft Schatten. Der
+Schatten liegt im selben Feld wie das Licht; in der Schleife ist das eine
+Subtraktion je Punkt.
+
+**Verworfen: der Tiefenverlauf.** Ein Modell, das nach hinten dunkler wird,
+wirkt tiefer. Der erste Versuch, ein senkrechter Verlauf mit `multiply` über
+die fertige Leinwand, färbte den durchsichtigen Hintergrund grau — multiply
+weiss nichts von Alpha. Richtig gerechnet, in der Lichtebene, hätte er die
+fernen Gipfel gedämpft, und die sind Daten: ein Berg im Norden wäre dunkler als
+derselbe Berg, nach Süden gedreht. Kein Griff für eine Karte.
+
+| voll gekippt, Telefon | |
+|---|---|
+| ohne alle drei | 120 ms |
+| Sockel allein | 114 ms |
+| alle drei | **115 ms** |
+| Sockel aus dem Landesumriss statt aus dem Wasserring | 159 ms |
+
+Nachgemessen am fertigen Bau gegen den Stand davor: 117 gegen 120 ms voll,
+123 gegen 124 halb auf dem Telefon, 205 gegen 206 auf dem Schirm — im
+Rauschen.
 
 ### Was der Stapel besser kann als ein Spaltenlauf
 

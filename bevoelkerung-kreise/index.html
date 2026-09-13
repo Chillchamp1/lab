@@ -1207,6 +1207,37 @@ const WANDSCHRITT = 2;
    Verlauf auch auf die Wand, auf die die Sonne voll scheint. Jetzt trägt die
    Wand ihr Band, nur gedunkelt, und woher das Licht kommt, sagt das Licht. */
 const WANDDUNKEL = 0.80;
+/* ---------- Drei billige Griffe fürs Licht ----------
+   Alle drei zusammen gemessen im Rauschen (115 gegen 120 ms auf dem Telefon).
+
+   **Der Kontaktschatten.** Wo eine Wand auf die Terrasse darunter trifft,
+   wird es an einem wirklichen Modell dunkel — dort kommt am wenigsten Himmel
+   hin. Der unterste Streifen der Wandschraffur wird deshalb dunkler gefüllt
+   als der Rest; die Schraffur läuft ohnehin von unten nach oben, also bleibt
+   von ihm genau der Fuss stehen. Kostet nichts: ein Farbwechsel.
+
+   **Der Sockel.** Die Grundplatte hatte keine Wand — die Ringe fangen bei
+   Niveau 1 an —, also endete die Karte unten wie ein Blatt Papier. Jetzt
+   bekommt sie die Wand des untersten Wasserrings, eine Stufe tiefer. Der
+   Länderumriss selbst (vierhundert Kreise) wäre der genauere Rand und ist
+   gemessen viermal so teuer: 159 statt 115 ms. Der Wasserring liegt ein paar
+   Punkte innerhalb der Küste und kostet nichts, weil er schon da ist.
+
+   **Der Schlagschatten.** In der Lichtebene wird der Schatten, den ein Berg
+   auf das Land dahinter wirft, noch einmal zusätzlich abgezogen. Die flache
+   Karte zeigt ihn mit WURF = 0,32 und bleibt dabei; die Schrägsicht darf mehr,
+   weil sie ein Modell zeigt und kein Blatt. 0,6 statt 1,0 — Knete, nicht
+   übertrieben.
+
+   Geprüft und verworfen: ein Tiefenverlauf, der die Ferne abdunkelt. Mit
+   multiply auf die Leinwand färbte er den durchsichtigen Hintergrund grau;
+   richtig in die Lichtebene gerechnet hätte er die fernen Gipfel gedämpft, und
+   die sind Daten. */
+let WANDFUSS = 0.55;        // Ton des Kontaktschattens, Anteil der Bandfarbe
+let SOCKEL = true;          // Wand unter der Grundplatte
+let SCHATTENHUB = 0.6;      // Schlagschatten in der Lichtebene, zusätzlich
+const WANDFUSSFARBE = HYPSO.map((h, i) => 'rgb(' + Math.round(HYPSO_R[i] * WANDFUSS)
+  + ',' + Math.round(HYPSO_G[i] * WANDFUSS) + ',' + Math.round(HYPSO_B[i] * WANDFUSS) + ')');
 const WANDFARBE = HYPSO.map((h, i) => 'rgb(' + Math.round(HYPSO_R[i] * WANDDUNKEL)
   + ',' + Math.round(HYPSO_G[i] * WANDDUNKEL) + ',' + Math.round(HYPSO_B[i] * WANDDUNKEL) + ')');
 
@@ -1410,11 +1441,13 @@ function scheibenMalen(s) {
   const eX = D * ozX - a2 * cx - c2 * cy;
   for (let k = 0; k < N; k++) {
     if (k > 0 && !ringe[k]) continue;
+    // Der Sockel: die Grundplatte bekommt die Wand des untersten Wasserrings.
+    const ring = k > 0 ? ringe[k] : (SOCKEL ? ringe[1] : null);
     /* Erst die Wand: derselbe Ring, eine Stufe tiefer, gefüllt. Die eigene
        Deckfläche deckt ihn gleich wieder zu, bis auf den südlichen Saum — und
        der ist die Schnittkante. Weil von unten nach oben gemalt wird, steht
        die Wand vor der Terrasse der Scheibe darunter, wie es sein soll. */
-    if (k > 0) {
+    if (ring) {
       const kb = Math.min(NBAND - 1, k);
       /* **Ein Schritt je Bildpunkt, nicht je Plattendicke.** Daran hing alles:
          ein einzelner Abzug eine Stufe tiefer lässt nur den unteren Saum der
@@ -1423,11 +1456,12 @@ function scheibenMalen(s) {
          Gipfelring ist dann ein paar Punkte hoch, die Platte aber neun. Der
          Rest blieb schwarz, und die Kuppen schwebten. */
       const schritte = Math.max(1, Math.ceil(D * dz / WANDSCHRITT));
-      ctx.fillStyle = WANDFARBE[kb];
       for (let w = 0; w < schritte; w++) {
+        // Der unterste Streifen ist der Kontaktschatten.
+        ctx.fillStyle = (w === 0 && schritte > 1) ? WANDFUSSFARBE[kb] : WANDFARBE[kb];
         ctx.setTransform(a2, b2, c2, d2, eX,
           D * (ozY - (k - 1 + w / schritte) * dz) - b2 * cx - d2 * cy);
-        ctx.fill(ringe[k], 'evenodd');
+        ctx.fill(ring, 'evenodd');
       }
     }
     /* ---------- Die Deckfläche: **eine Farbe, fertig** ----------
@@ -1886,6 +1920,9 @@ function reliefUeber(sil, deck) {
     const j = i << 2;
     fo[j] = r; fo[j + 1] = g; fo[j + 2] = b; fo[j + 3] = 255;
     let L = 128 + (a > 0 ? 127 * a * AUFHELLEN : 128 * a * ABDUNKELN) * LICHTHUB;
+    // Der Schlagschatten noch einmal obendrauf, nur für die Schrägsicht.
+    if (schatten[i] > 0)
+      L -= 60 * SCHATTENHUB * (schatten[i] < 0.05 ? schatten[i] / 0.05 : 1);
     if (L < 0) L = 0; else if (L > 255) L = 255;
     lo[j] = lo[j + 1] = lo[j + 2] = L; lo[j + 3] = 255;
   }

@@ -142,6 +142,17 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   abgesetzten Stücke unter dem Südrand sind **kein Fehler**, sondern Lörrach,
   der Alpenrand und die Inseln: die Schrägsicht macht aus dem Breitengrad die
   Tiefe, dazwischen liegt Frankreich. Der Film zeigt weiter die flache Karte.
+- **Drei billige Griffe fürs Licht**, alle als Schalter gebaut und einzeln
+  gemessen: der **Kontaktschatten** (der unterste Streifen jeder Wandschraffur
+  wird dunkler gefüllt, 55 statt 80 % der Bandfarbe — ein Farbwechsel), der
+  **Sockel** (die Grundplatte bekommt die Wand des untersten Wasserrings; der
+  Landesumriss wäre genauer und kostet 159 statt 115 ms, der Ring ist schon
+  da) und der **Schlagschatten** in der Lichtebene (0,6 zusätzlich zu den
+  0,32 der flachen Karte — ein Modell wirft Schatten). Zusammen 115 gegen 120
+  ms ohne, im Rauschen; die Lücken im Seitenriss fallen bei 80 Grad von 143 auf
+  101. **Verworfen: ein Tiefenverlauf**, der die Ferne abdunkelt — mit
+  `multiply` färbte er den durchsichtigen Hintergrund grau, und in die
+  Lichtebene gerechnet hätte er die fernen Gipfel gedämpft, die sind Daten.
 - **Zwei Finger auf der Karte.** Auseinanderziehen vergrössert (bis achtfach,
   um den Punkt zwischen den Fingern), verdrehen dreht, beide Finger zusammen
   nach oben schieben richtet auf; ein Finger schiebt den Ausschnitt, zweimal
