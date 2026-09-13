@@ -1116,19 +1116,30 @@ const KIPPMAX = 62 * Math.PI / 180;
 // Volle Höhe, in Punkten des Höhenfelds. Das Relief rechnet mit UEBERHOEHT=30
 // für seine Normalen; fürs Ansehen braucht es ein Vielfaches davon, sonst ist
 // die gekippte Karte ein Blatt Papier statt einer Landschaft.
-/* Auf 60 Prozent heruntergesetzt (von 0,30): die Berge ragten zu hoch, die
+/* Zweimal heruntergesetzt: 0,30 auf 0,18 auf 0,126, also auf zweiundvierzig
+   Prozent des ursprünglichen. Die Berge ragten zu hoch, die
    Karte stand darunter wie ein Sockel. Es ist **eine** Schraube für beides,
    denn die Scheibendicke ist dz = hoch·sin(Neigung)·Massstab / 25 — mit der
    Gesamthöhe sinkt die Plattendicke im selben Verhältnis, und der Stapel
    bleibt derselbe Stapel, nur flacher geschichtet. Nebenbei wird die Karte
    grösser, weil die Einpassung weniger Platz nach oben braucht. */
-const HOCH3D = 0.18;              // Anteil der Feldhöhe, den ein Wert 1 aufragt
+const HOCH3D = 0.126;             // Anteil der Feldhöhe, den ein Wert 1 aufragt
 const schraeg = () => NEIGUNG > 0.001 || Math.abs(DREHUNG) > 1e-4;
 
 
-// Der Versatz der beleuchteten Kante, in Bildpunkten, und wie kräftig ihre
-// beiden Sicheln sind. Siehe scheibenMalen.
-let KANTENVERSATZ = 1.1, KANTENHELL = 0.85, KANTENDUNKEL = 0.75;
+/* Der Versatz der beleuchteten Kante in Bildpunkten — **bei Zoom eins**, und
+   von da an wächst er mit dem Zoom mit, gedeckelt.
+
+   Das ist der Unterschied, der zählt. Vorher stand er fest auf dem Schirm, und
+   damit war er beim weitesten Blick am schädlichsten: dort liegen die
+   Terrassen an einer steilen Flanke nur wenige Bildpunkte auseinander, und
+   zwei feste Sicheln von je gut zwei Punkten decken sie zu. Übrig blieben
+   weisse und schwarze Flächen, und die Farbe der Fläche — die Aussage der
+   Karte — war überblendet. Heranziehen machte es besser, statt schlechter.
+
+   Jetzt hängt er am Massstab: weit weg dünn, herangezogen kräftiger, und der
+   Deckel verhindert, dass er bei acht­fachem Zoom zum Balken wird. */
+let KANTENVERSATZ = 0.55, KANTENZOOM = 4, KANTENHELL = 0.85, KANTENDUNKEL = 0.75;
 
 /* ---------- Die Wand einer Scheibe ----------
    Bisher zeigte der Stapel nur Deckflächen: fünfundzwanzig Platten, jede eine
@@ -1468,7 +1479,7 @@ function scheibenMalen(s) {
          Füllungen eines verwickelten Pfades kosten weniger als ein Strich
          desselben Pfades, weil der Strich seine Verbindungen mitrechnen muss.
          Telefon 133 auf 122 ms, Schirm 231 auf 204. */
-      const lv = (KANTENVERSATZ / zz) * Math.SQRT1_2;
+      const lv = KANTENVERSATZ * Math.min(ZOOM, KANTENZOOM) / (D * zz) * Math.SQRT1_2;
       ctx.translate(-lv, -lv);
       ctx.fillStyle = '#fff'; ctx.globalAlpha = KANTENHELL;
       ctx.fill(ringe[k], 'evenodd');

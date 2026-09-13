@@ -1288,6 +1288,23 @@ Versetzt wird in **Grundriss-Koordinaten**, nicht auf dem Schirm: die Abbildung
 dreht und staucht den Versatz dann mit, also wandert die Sonne beim Drehen
 richtig mit der Karte.
 
+**Und der Versatz hängt am Zoom.** Stand er fest auf dem Schirm, war er beim
+weitesten Blick am schädlichsten: an einer steilen Flanke liegen die Terrassen
+dort nur wenige Bildpunkte auseinander, und zwei feste Sicheln von je gut zwei
+Punkten decken sie zu. Übrig blieben weisse und schwarze Flächen, und die Farbe
+der Fläche — die Aussage der Karte — war überblendet; Heranziehen machte es
+besser statt schlechter, also genau verkehrt herum. Jetzt wächst er mit dem
+Massstab mit, gedeckelt beim Vierfachen: weit weg ein halber Bildpunkt,
+herangezogen kräftiger, und bei achtfachem Zoom kein Balken.
+
+**Zur Durchsichtigkeit**, weil sie auffällt: die Platten und Wände sind voll
+deckend. Nachgezählt auf einem gekippten Bild — 454 758 Bildpunkte mit vollem
+Alpha, 6 209 teildurchsichtige, also 1,3 Prozent, und das sind der
+kantengeglättete Umriss und eben die beiden Sicheln. Die sind mit Absicht nicht
+ganz deckend: gerade das lässt die Bandfarbe durchscheinen, statt sie zu
+überblenden. Kosten tut es nichts — Alphamischen ist beim Füllen dieselbe
+Rechnung.
+
 **Und es ist billiger als der eine graue Strich, den es ersetzt.** Zwei
 Füllungen eines verwickelten Pfades kosten weniger als ein Strich desselben
 Pfades, weil der Strich seine Verbindungen mitrechnen muss. Nachgemessen, und
@@ -1349,8 +1366,8 @@ stehen hier, damit niemand sie noch einmal unternimmt.
 ### Wie hoch die Berge stehen
 
 Eine Schraube, `HOCH3D`, und sie stand zu hoch: bei 0,30 ragten die Städte als
-Türme auf und das Land lag darunter wie ein Sockel. Jetzt **0,18**, also
-60 Prozent davon. Gemessen wird das in Anteilen der Bildhöhe, nicht in
+Türme auf und das Land lag darunter wie ein Sockel. Zweimal heruntergesetzt,
+auf 0,18 und dann auf **0,126** — zweiundvierzig Prozent des ursprünglichen. Gemessen wird das in Anteilen der Bildhöhe, nicht in
 Einwohnern je Quadratkilometer — die Höhe *im Verhältnis* steckt in der
 Farbleiter und in der Reihenfolge der Gipfel, nicht in diesem Faktor; er sagt
 nur, wie steil man dieselbe Landschaft ansieht.
