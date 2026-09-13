@@ -1001,49 +1001,46 @@ die mindestens so hoch liegt, und die Flächen werden versetzt
 **jede Scheibe ist genau ein Band, jede Stufenkante genau eine Höhenlinie.**
 Dieselbe Konstruktion, die die flache Karte schon hat, nur aufgestellt.
 
-**Geschnitten wird aus einer eigenen Vorlage, nicht aus dem Höhenfeld.** Das war
-der Fehler der ersten Fassung, und sie sah verwaschen aus: das Feld ist 0,55 der
-Leinwand, es darf grob sein, weil es weichgezeichnet ist. Die Höhenlinien und
-der Rand der Karte dürfen das nicht — flach sind sie gestochen scharf, weil sie
-dort als **Striche in voller Auflösung** gezogen werden. Aus dem Feld
-geschnitten kam beides hochgerechnet heraus. Jetzt wird die Vorlage in der
-Auflösung der Leinwand gebaut (bis zum 1,4fachen, gedeckelt auf 0,9 Millionen
-Punkte), die Farbe einmal daraufgerechnet, die Höhenlinien **darin** gezogen,
-und das Höhenfeld für die Scheibengrenzen zwischen vier Nachbarn hochgerechnet.
+### Eine Scheibe ist ein Umriss, keine Maske
 
-**Der Rand einer Scheibe ist hart.** Die erste Fassung blendete ihn über ein
-ganzes Band aus, also über die ganze Höhe einer Scheibe — der zweite Grund für
-den Eindruck von Unschärfe. Eine Platte aus Sperrholz hat eine Kante, keinen
-Verlauf. Jetzt fällt die Deckung über ein Achtel Band, gerade weich genug, um
-nicht zu treppen.
+Das ist die Stelle, an der zwei Fassungen vorher Zeit verbrannt haben. Sie
+bauten je Scheibe eine **Rastermaske**: ein halbes Megabyte Alphakanal,
+fünfundzwanzigmal je Bild, dazu zweihundert Lagen zum Auflegen. Eine Scheibe
+braucht aber gar keine Fläche — sie braucht einen **Umriss**, und der wird zur
+Schablone: beschneiden, die fertige Karte hineinzeichnen, fertig.
 
-**Zwischenlagen.** Jede Scheibe wird nicht einmal aufgelegt, sondern in acht
-Lagen bis hinunter zur Scheibe darunter. Ohne das klaffen Lücken: der Abstand
-zweier Scheiben ist rund acht Bildpunkte, und eine schmale Insel wie Helgoland
-ist auf dem Bild keinen ganzen Punkt tief — sie zerfiel in einen Kamm aus
-Plättchen. Nebenbei werden die Flanken dadurch glatt statt gestuft.
+Nachgemessen, und der Unterschied ist keine Feinheit:
 
-**Gestapelt wird in einer eigenen Leinwand**, in der Grösse der Vorlage, und
-erst das fertige Bild kommt einmal auf die Karte. Direkt auf die Karte zu
-stapeln hiess, jede der zweihundert Lagen in Gerätepunkten aufzulegen — auf
-einem Telefon mit dichten Punkten das Sechsfache der Fläche, gemessen 301 ms je
-Bild gegen 157 jetzt. Gewonnen war dabei nichts: die Vorlage ist ohnehin nur das
-1,4fache der Leinwand.
-
-### Drei Versuche, die gemessen nichts brachten
-
-| probiert | Ergebnis |
+| | |
 |---|---|
-| Zählsortierung nach Bändern durch Reihe-für-Reihe ersetzen | **langsamer**, 222 gegen 194 ms — die Gipfel liegen weit auseinander, also umfasst schon der Kasten der oberen Scheiben fast die ganze Karte |
-| Glättung beim Auflegen anlassen | 567 statt 201 ms, und unschärfer: die Vorlage steht schon in der Auflösung der Leinwand |
-| jede Scheibe nur in ihrem Kasten auflegen | 201 → 194 ms, also im Rauschen; wieder draussen |
+| fünfundzwanzig Pfade beschneiden und das Bild hineinzeichnen | **0,1 ms** |
+| derselbe Stapel als Rastermasken | **242 ms** |
 
-Die Zählsortierung selbst bleibt, denn sie ist der Kniff, der den Stapel billig
-macht: von einer Scheibe zur nächsten ändert sich die Deckung nur in **zwei
-Bändern**, alles darüber bleibt voll und alles darunter leer. Ein Durchgang
-sortiert die Punkte nach Bändern, danach fasst jede Scheibe ein
-Fünfundzwanzigstel der Fläche an statt der ganzen.
+Die Umrisse kommen aus demselben Marching-Squares-Verfahren wie die
+Höhenlinien und auf denselben Niveaus — eine Scheibenkante *ist* eine
+Höhenlinie. Zwei Dinge sind anders: das Gitter bekommt einen Rand aus Nullen,
+damit jeder Ring sich schliesst (offene Linien lassen sich nicht als Fläche
+beschneiden), und das Feld wird mit dem Rand der Karte multipliziert, damit die
+Ringe an der Küste enden statt im Weichzeichnerhof darüber hinaus.
 
+**Die Kante wird gestrichen.** Die Vorlage bringt an dieser Stelle zwar schon
+ihre Höhenlinie mit, aber der Beschnitt schneidet davon die äussere Hälfte weg.
+Ein dünner Strich gibt sie zurück — und erst damit sieht der Stapel aus wie
+geschnittene Platten statt wie ein Verlauf. Fünfundzwanzig Striche, gemessen
+rund fünfzehn Millisekunden.
+
+### Geschnitten wird aus einer eigenen Vorlage
+
+Nicht aus dem Höhenfeld. Das ist 0,55 der Leinwand, und es darf grob sein, weil
+es weichgezeichnet ist. Die Höhenlinien und der Rand der Karte dürfen das
+nicht: flach sind sie gestochen scharf, weil sie dort als **Striche in voller
+Auflösung** gezogen werden. Aus dem Feld geschnitten kam beides hochgerechnet
+heraus, und die ganze Schrägsicht wirkte verwaschen. Die Vorlage steht deshalb
+in der Auflösung der Leinwand (bis zum 1,4fachen, gedeckelt auf 0,9 Millionen
+Punkte), die Farbe wird einmal daraufgerechnet, die Höhenlinien werden darin
+gezogen.
+
+### Was der Stapel besser kann als ein Spaltenlauf
 ### Was der Stapel besser kann als ein Spaltenlauf
 ### Was der Stapel besser kann als ein Spaltenlauf
 
@@ -1053,19 +1050,29 @@ in jeder Hinsicht der bessere Weg:
 
 | | Spaltenlauf | Stapel |
 |---|---|---|
-| Kosten je Bild (Prüfbrowser, Schirm) | 128 ms fein, 96 ms grob | 221 ms |
-| dasselbe auf dem Telefon | — | 157 ms |
-| flache Karte zum Vergleich | 76 ms | 76 ms |
+| Kosten je Bild (Prüfbrowser, Schirm) | 128 ms fein, 96 ms grob | **125 ms** |
+| dasselbe auf dem Telefon | — | **79 ms** |
+| flache Karte zum Vergleich | 80 ms | 80 ms |
 | Schärfe | fein nur im Standbild | **immer**, so scharf wie die flache Karte |
 | Rand unten | franste aus (siehe unten) | geschlossene Wand |
 | Griff auf einen Kreis | Merkzettel je Bildpunkt beim Malen | fünfundzwanzig umkehrbare Abbildungen, von oben nach unten geprüft |
 | verdeckte Kreise antippbar | nein | ja, soweit überhaupt sichtbar |
 
-Der Stapel ist also **nicht billiger**, sondern teurer — und dafür immer scharf.
-Die Maschinerie aus grober und feiner Stufe fällt trotzdem weg, samt der
-Messung, die im Lauf entschied, ob das Gerät die feine trägt: es gibt nur noch
-eine Stufe. Der Prüfbrowser läuft ohne Grafikkarte; auf wirklicher Hardware
-liegt das Vielfache dazwischen.
+Die Maschinerie aus grober und feiner Stufe fällt damit weg, samt der Messung,
+die im Lauf entschied, ob das Gerät die feine trägt: es gibt nur noch eine
+Stufe. Der Prüfbrowser läuft ohne Grafikkarte; auf wirklicher Hardware liegt
+das Vielfache dazwischen.
+
+### Drei Versuche, die gemessen nichts brachten
+
+Alle drei stammen aus der Rasterfassung und sind mit ihr verschwunden; sie
+stehen hier, damit niemand sie noch einmal unternimmt.
+
+| probiert | Ergebnis |
+|---|---|
+| Zählsortierung nach Bändern durch Reihe-für-Reihe ersetzen | **langsamer**, 222 gegen 194 ms — die Gipfel liegen weit auseinander, also umfasst schon der Kasten der oberen Scheiben fast die ganze Karte |
+| jede Scheibe nur in ihrem Kasten auflegen | 201 → 194 ms, im Rauschen |
+| Glättung beim Auflegen anlassen | 567 statt 201 ms, und unschärfer |
 
 **Der Rahmen steht fest**, nämlich auf dem oberen Ende der Farbleiter. Nach dem
 höchsten Berg zu rechnen, der gerade dasteht, wäre verlockend — 1871 gäbe es
