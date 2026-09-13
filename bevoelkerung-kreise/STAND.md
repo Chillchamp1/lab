@@ -78,10 +78,15 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   fertigen, schattierten Bild, versetzt übereinandergelegt und in acht
   Zwischenlagen aufgefüllt. Billig wird das durch eine Zählsortierung nach
   Bändern: von Scheibe zu Scheibe ändern sich nur zwei Bänder, also zwei
-  Durchgänge statt fünfundzwanzig. **102 ms je Bild** gegen 77 flach, und
-  **unabhängig von der Schirmauflösung** — der frühere Spaltenlauf brauchte
-  dafür zwei Stufen und eine Messung im Lauf (128 ms fein, 96 grob) und franste
-  unten aus. Der Griff auf einen Kreis geht jetzt über fünfundzwanzig
+  Durchgänge statt fünfundzwanzig. Geschnitten wird aus einer
+  **eigenen Vorlage in Leinwandauflösung** (bis zum 1,4fachen, gedeckelt auf
+  0,9 Mio Punkte) mit darin frisch gezogenen Höhenlinien, nicht aus dem 0,55
+  groben Höhenfeld — sonst sieht die Schrägsicht verwaschen aus. Die
+  Scheibenränder sind hart (ein Achtel Band), gestapelt wird in einer eigenen
+  Leinwand und erst das Ergebnis einmal aufgelegt. **221 ms je Bild auf dem
+  Schirm, 157 auf dem Telefon**, gegen 76 flach: teurer als der frühere
+  Spaltenlauf (128 fein / 96 grob), dafür **immer** so scharf wie die flache
+  Karte, ohne zwei Stufen und ohne Messung im Lauf. Der Griff auf einen Kreis geht jetzt über fünfundzwanzig
   umkehrbare Abbildungen, von oben nach unten geprüft; bei 62 Grad treffen
   Hamburg, Kiel, Berlin, Rostock und Flensburg alle sich selbst, der
   Spaltenlauf verlor Kiel und Flensburg. Die abgesetzten Stücke unter dem

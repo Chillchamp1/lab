@@ -1095,18 +1095,69 @@ const KIPPMAX = 62 * Math.PI / 180;
 const HOCH3D = 0.30;              // Anteil der Feldhöhe, den ein Wert 1 aufragt
 const schraeg = () => NEIGUNG > 0.001 || Math.abs(DREHUNG) > 1e-4;
 
+const hkT = document.createElement('canvas'), hcT = hkT.getContext('2d', { willReadFrequently: true });
 const mkK = document.createElement('canvas'), mkC = mkK.getContext('2d');
-let mBild = null, mW = 0, mH = 0, bandP = null, sortP = null;
+const skK = document.createElement('canvas'), skC = skK.getContext('2d');
+let urAlpha = null, mW = 0, mH = 0, feinF = null, bandP = null, sortP = null;
 
-function scheibenMalen() {
-  const N = NBAND, W = rW, H = rH;
+/* Wie fein geschnitten wird. Das Höhenfeld ist nur 0,55 der Leinwand — es darf
+   grob sein, es ist ja weichgezeichnet. Die **Vorlage** darf das nicht: an ihr
+   hängen die Höhenlinien und der Rand der Karte, und die sind flach gestochen
+   scharf, weil sie dort als Striche in voller Auflösung gezogen werden. Wird
+   aus dem Feld geschnitten, kommt beides hochgerechnet heraus, und die ganze
+   Schrägsicht wirkt verwaschen.
+
+   Also eigene Auflösung für den Schnitt: bis zum 1,4fachen der Leinwand,
+   gedeckelt auf eine Punktzahl, damit ein grosser Schirm nicht kriecht. Die
+   Farbe wird einmal daraufgerechnet, die Höhenlinien werden **darin** gezogen. */
+const PFEIN = 1.4, PMAX = 0.9e6;
+
+function scheibenMalen(s) {
+  const N = NBAND;
+  const dprA = Math.min(2.5, devicePixelRatio || 1);
+  let faktor = Math.min(PFEIN, Math.max(1, dprA));
+  const punkte = Math.max(1, breite * hoehe);
+  if (punkte * faktor * faktor > PMAX) faktor = Math.sqrt(PMAX / punkte);
+  if (faktor < 1) faktor = 1;
+  const W = Math.max(8, Math.round(breite * faktor)), H = Math.max(8, Math.round(hoehe * faktor));
+  const pS = W / breite;                 // Punkte der Vorlage je Punkt der Leinwand
   if (mW !== W || mH !== H) {
     mW = W; mH = H;
+    hkT.width = W; hkT.height = H;
     mkK.width = W; mkK.height = H;
-    mBild = mkC.createImageData(W, H);
+    skK.width = W; skK.height = H;
+    urAlpha = new Uint8Array(W * H);
     bandP = new Uint8Array(W * H);
     sortP = new Int32Array(W * H);
+    feinF = new Float32Array(W * H);
   }
+
+  /* Die Vorlage: die fertige Karte in dieser Auflösung, mit frisch gezogenen
+     Höhenlinien statt hochgerechneten. */
+  hcT.setTransform(1, 0, 0, 1, 0, 0);
+  hcT.globalCompositeOperation = 'source-over';
+  hcT.globalAlpha = 1;
+  hcT.clearRect(0, 0, W, H);
+  hcT.imageSmoothingEnabled = true;
+  hcT.imageSmoothingQuality = 'high';
+  hcT.drawImage(hkF, 0, 0, W, H);
+  hoehenLinien(s, hcT, pS);
+
+  /* Und das Höhenfeld auf dieselbe Auflösung, zwischen vier Nachbarn. Es
+     entscheidet, welcher Punkt zu welcher Scheibe gehört; grob abgetastet
+     bekämen die Scheibenränder Treppen. */
+  const fs = rW / W, fsy = rH / H, fWm = rW - 1.001, fHm = rH - 1.001;
+  for (let yy = 0, i = 0; yy < H; yy++) {
+    let gy = yy * fsy; if (gy > fHm) gy = fHm;
+    const y0 = gy | 0, uy = gy - y0, o0 = y0 * rW, o1 = o0 + rW;
+    for (let xx = 0; xx < W; xx++, i++) {
+      let gx = xx * fs; if (gx > fWm) gx = fWm;
+      const x0 = gx | 0, ux = gx - x0;
+      feinF[i] = (farbF[o0 + x0] * (1 - ux) + farbF[o0 + x0 + 1] * ux) * (1 - uy)
+               + (farbF[o1 + x0] * (1 - ux) + farbF[o1 + x0 + 1] * ux) * uy;
+    }
+  }
+
   const phi = NEIGUNG * KIPPMAX, co = Math.cos(phi), si = Math.sin(phi);
   const ct = Math.cos(DREHUNG), st = Math.sin(DREHUNG);
   const cx = W / 2, cy = H / 2, hoch = H * HOCH3D;
@@ -1124,13 +1175,19 @@ function scheibenMalen() {
     const y0 = b * co, y1 = b * co - hoch * si;
     if (y1 < yMin) yMin = y1; if (y0 > yMax) yMax = y0;
   }
-  const rand = 2;
-  const z = Math.min((breite - 2 * rand) / Math.max(1e-6, aMax - aMin),
-                     (hoehe - 2 * rand) / Math.max(1e-6, yMax - yMin));
-  const oX = rand + (breite - 2 * rand - (aMax - aMin) * z) / 2 - aMin * z;
-  const oY = rand + (hoehe - 2 * rand - (yMax - yMin) * z) / 2 - yMin * z;
+  // Massstab und Versatz in Punkten der Leinwand, damit Namen, Umriss und Griff
+  // damit rechnen können; die Vorlage ist um pS feiner.
+  const rand = 2 * pS;
+  const z = Math.min((W - 2 * rand) / Math.max(1e-6, aMax - aMin),
+                     (H - 2 * rand) / Math.max(1e-6, yMax - yMin)) / pS;
+  const oX = (rand + (W - 2 * rand - (aMax - aMin) * z * pS) / 2) / pS - aMin * z;
+  const oY = (rand + (H - 2 * rand - (yMax - yMin) * z * pS) / 2) / pS - yMin * z;
   const dz = hoch * si * z / N;
-  SICHT = { co, si, ct, st, cx, cy, hoch, z, oX, oY, N, dz };
+  /* Was SICHT trägt, rechnet in Punkten der **Leinwand** — daran hängen Namen,
+     Umriss und der Griff. Die Vorlage ist um pS feiner, also bekommt der
+     Massstab diesen Faktor mit; das Auflegen weiter unten rechnet dagegen in
+     Punkten der Vorlage und nimmt z, wie es ist. */
+  SICHT = { co, si, ct, st, cx: cx / pS, cy: cy / pS, hoch, z: z * pS, oX, oY, N, dz, pS };
 
   /* Der Kniff, der den Stapel billig macht.
 
@@ -1142,9 +1199,29 @@ function scheibenMalen() {
      sortiert vorhält, fasst je Scheibe ein Fünfundzwanzigstel der Fläche an —
      über alle Scheiben zusammen zwei Durchgänge statt fünfundzwanzig. Die Farbe
      bleibt unangetastet, nur der Alphakanal wandert. */
+  /* Das ausgelesene Bild **ist** der Arbeitsspeicher: verändert wird nur sein
+     Alphakanal, und zurückgeschrieben wird dasselbe Bild. Gemerkt werden muss
+     nur die ursprüngliche Deckung, ein Byte je Punkt. */
+  const bild = hcT.getImageData(0, 0, W, H), md = bild.data;
+
+  /* Der Kniff, der den Stapel billig macht.
+
+     Naiv baut man je Scheibe ein ganzes Bild — bei fünfundzwanzig Scheiben also
+     fünfundzwanzig Durchgänge über die Vorlage. Fast alles davon ist
+     überflüssig: von einer Scheibe zur nächsten ändert sich die Deckung nur in
+     **zwei Bändern**. Das eine fällt weg, das nächste wird zum weichen Rand;
+     alles darüber bleibt voll, alles darunter leer. Die Punkte werden deshalb
+     einmal je Bild nach Bändern zählsortiert, und dann fasst jede Scheibe ein
+     Fünfundzwanzigstel der Fläche an statt der ganzen.
+
+     Der naheliegende Gegenversuch — je Scheibe der Reihe nach über ihren
+     Kasten — ist nachgemessen **langsamer** (222 gegen 194 ms): die Gipfel
+     liegen weit auseinander, also umfasst schon der Kasten der oberen Scheiben
+     fast die ganze Karte, und es bleiben fünfundzwanzig volle Durchgänge. */
   const zahl = new Int32Array(N + 1);
   for (let i = 0, n = W * H; i < n; i++) {
-    let k = (farbF[i] * N) | 0;
+    urAlpha[i] = md[(i << 2) + 3];
+    let k = (feinF[i] * N) | 0;
     if (k < 0) k = 0; else if (k > N - 1) k = N - 1;
     bandP[i] = k; zahl[k + 1]++;
   }
@@ -1152,15 +1229,20 @@ function scheibenMalen() {
   const lauf = zahl.slice(0, N);
   for (let i = 0, n = W * H; i < n; i++) sortP[lauf[bandP[i]]++] = i;
 
-  const hd = hcF.getImageData(0, 0, W, H).data;
-  const md = mBild.data;
-  md.set(hd);
+  /* Der Rand einer Scheibe ist **hart**, nicht weich.
+
+     Die erste Fassung blendete ihn über ein ganzes Band aus — und damit über
+     die ganze Höhe einer Scheibe. Das war ein Grund, warum die Schrägsicht
+     verwaschen aussah und nicht wie ein Schnittmodell: eine Platte aus
+     Sperrholz hat eine Kante, keinen Verlauf. Jetzt fällt die Deckung über ein
+     Achtel Band, gerade weich genug, um nicht zu treppen. */
+  const KANTE = 8;
   const weich = k => {
     for (let q = zahl[k], e = zahl[k + 1]; q < e; q++) {
-      const i = sortP[q], j = (i << 2) + 3;
-      let v = farbF[i] * N - k;
+      const i = sortP[q];
+      let v = (feinF[i] * N - k) * KANTE;
       if (v <= 0) v = 0; else if (v > 1) v = 1;
-      md[j] = v * hd[j];
+      md[(i << 2) + 3] = v * urAlpha[i];
     }
   };
   const leer = k => {
@@ -1168,10 +1250,20 @@ function scheibenMalen() {
   };
   weich(0);
 
-  // Die Leinwand steht auf der Punktdichte des Geräts; setTransform ersetzt
-  // sie, also muss sie in die Matrix hinein.
-  const D = Math.min(2.5, devicePixelRatio || 1);
-  const a2 = D * z * ct, c2 = D * z * st, b2 = -D * co * z * st, d2 = D * co * z * ct;
+  /* Gestapelt wird in einer eigenen Leinwand, in der Grösse der Vorlage, und
+     erst das fertige Bild kommt **einmal** auf die Karte.
+
+     Direkt auf die Karte zu stapeln hiess, jede der zweihundert Lagen in
+     Gerätepunkten aufzulegen — auf einem Telefon mit dichten Punkten das
+     Sechsfache der Fläche, gemessen 301 ms je Bild. Gewonnen war dabei nichts:
+     die Vorlage ist ohnehin nur das 1,4fache der Leinwand, feiner wird das
+     Bild durch das Stapeln in Gerätepunkten also nicht. */
+  // Dieselben Grössen in Punkten der Vorlage, denn dort wird gestapelt.
+  const zt = z * pS, oXt = oX * pS, oYt = oY * pS, dzt = dz * pS;
+  const a2 = zt * ct, c2 = zt * st, b2 = -co * zt * st, d2 = co * zt * ct;
+  skC.setTransform(1, 0, 0, 1, 0, 0);
+  skC.globalCompositeOperation = 'source-over';
+  skC.clearRect(0, 0, W, H);
   /* Jede Scheibe wird nicht einmal aufgelegt, sondern in Zwischenlagen bis
      hinunter zur Scheibe darunter. Ohne das klaffen zwischen den Scheiben
      Lücken — dz ist rund acht Bildpunkte, und eine schmale Insel wie Helgoland
@@ -1182,20 +1274,26 @@ function scheibenMalen() {
      104 ms, eine Lage 104. Teuer ist nur das Herstellen einer Scheibe, und das
      geschieht weiterhin einmal. Nebenbei werden dadurch die Flanken glatt
      statt gestapelt — die Stufen füllen sich gegenseitig auf. */
-  const lagen = Math.max(1, Math.min(16, Math.ceil(dz)));
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
+  const lagen = Math.max(1, Math.min(16, Math.ceil(dzt)));
+  /* Keine Glättung beim Auflegen. Die Vorlage steht schon in der Auflösung der
+     Leinwand; geglättet würde sie nur ein zweites Mal verrechnet — unscharf,
+     und gemessen um ein Vielfaches teurer. */
+  skC.imageSmoothingEnabled = false;
   for (let k = 0; k < N; k++) {
     if (k > 0) { leer(k - 1); weich(k); }
-    mkC.putImageData(mBild, 0, 0);
+    mkC.putImageData(bild, 0, 0);
     for (let t = lagen - 1; t >= 0; t--) {
-      ctx.setTransform(a2, b2, c2, d2,
-        D * oX - a2 * cx - c2 * cy,
-        D * (oY - (k - t / lagen) * dz) - b2 * cx - d2 * cy);
-      ctx.drawImage(mkK, 0, 0);
+      skC.setTransform(a2, b2, c2, d2,
+        oXt - a2 * cx - c2 * cy,
+        oYt - (k - t / lagen) * dzt - b2 * cx - d2 * cy);
+      skC.drawImage(mkK, 0, 0);
     }
   }
+  const D = Math.min(2.5, devicePixelRatio || 1);
   ctx.setTransform(D, 0, 0, D, 0, 0);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(skK, 0, 0, breite, hoehe);
 }
 
 /* Ein Punkt der flachen Karte, in der Schrägsicht. Gebraucht für die Namen und
@@ -1206,16 +1304,15 @@ function scheibenMalen() {
 function projPunkt(X, Y) {
   if (!SICHT || !(rW > 0)) return [X, Y];
   const s = rW / breite, N = SICHT.N;
-  const fx = X * s, fy = Y * s;
-  const ix = fx | 0, iy = fy | 0;
+  // Die Höhe kommt aus dem Feld, die Lage aus der Leinwand — beides muss
+  // getrennt bleiben, sonst wandern die Namen quer über die Karte.
+  const ix = (X * s) | 0, iy = (Y * s) | 0;
   let k = 0;
   if (ix >= 0 && iy >= 0 && ix < rW && iy < rH) {
     k = (farbF[iy * rW + ix] * N) | 0;
     if (k < 0) k = 0; else if (k > N - 1) k = N - 1;
   }
-  // Massstab und Versatz des Stapels stehen bereits in Punkten der Leinwand;
-  // umzurechnen ist nur der Weg vom Feld in die Ansicht, nicht zurück.
-  const dx = fx - SICHT.cx, dy = fy - SICHT.cy;
+  const dx = X - SICHT.cx, dy = Y - SICHT.cy;
   const a = dx * SICHT.ct + dy * SICHT.st, b = -dx * SICHT.st + dy * SICHT.ct;
   return [a * SICHT.z + SICHT.oX,
           b * SICHT.co * SICHT.z + SICHT.oY - k * SICHT.dz];
@@ -1225,21 +1322,21 @@ function projPunkt(X, Y) {
 
    Ein Punkt auf dem schrägen Bild lässt sich nicht in einem Schritt
    zurückrechnen — er kann von einem nahen Tal oder einem fernen Gipfel kommen.
-   Beim Stapel ist es aber einfach: es sind nur fünfundzwanzig Scheiben, jede
-   mit einer bekannten, umkehrbaren Abbildung. Also von oben nach unten
-   durchgehen und die erste nehmen, deren Fläche den Punkt wirklich enthält —
-   die oberste gewinnt, denn sie wurde zuletzt gemalt. */
+   Beim Stapel ist es aber einfach: es sind fünfundzwanzig Scheiben, jede mit
+   einer bekannten, umkehrbaren Abbildung. Also von oben nach unten durchgehen
+   und die erste nehmen, deren Fläche den Punkt wirklich enthält — die oberste
+   gewinnt, denn sie wurde zuletzt gemalt. Zurück kommen Punkte der Leinwand. */
 function feldUnter(X, Y) {
   if (!SICHT || !(rW > 0)) return null;
-  const S = SICHT, N = S.N;
+  const S = SICHT, N = S.N, s = rW / breite;
   for (let k = N - 1; k >= 0; k--) {
     const u = (X - S.oX) / S.z, v = (Y - S.oY + k * S.dz) / (S.co * S.z);
-    const fx = S.cx + S.ct * u - S.st * v, fy = S.cy + S.st * u + S.ct * v;
-    const ix = fx | 0, iy = fy | 0;
+    const cxx = S.cx + S.ct * u - S.st * v, cyy = S.cy + S.st * u + S.ct * v;
+    const ix = (cxx * s) | 0, iy = (cyy * s) | 0;
     if (ix < 0 || iy < 0 || ix >= rW || iy >= rH) continue;
     const i = iy * rW + ix;
     if (!(maskeH[i] > 0.5)) continue;
-    if (farbF[i] * N >= k) return [fx, fy];
+    if (farbF[i] * N >= k) return [cxx, cyy];
   }
   return null;
 }
@@ -1549,8 +1646,7 @@ function reliefUeber(sil, deck) {
   if (schraeg()) {
     // Schräg gehen die Höhenlinien in die Vorlage, nicht über das fertige
     // Bild: sie gehören auf das Gelände, nicht davor. Danach der Stapel.
-    hoehenLinien(s, hcF, s);
-    scheibenMalen();
+    scheibenMalen(s);
   } else {
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
@@ -2483,8 +2579,7 @@ function zeigeTip(x, y) {
   if (schraeg()) {
     const f = feldUnter(x, y);
     if (!f) { versteckeTip(); stumm = -1; return; }
-    const s = rW / breite;
-    x = f[0] / s; y = f[1] / s;
+    x = f[0]; y = f[1];
   }
   let treffer = -1;
   for (let g = 0; g < NK; g++) if (deck[g] > 0.001 && imGebiet(g, x, y)) { treffer = g; break; }
