@@ -56,6 +56,14 @@ Umriss wird zur Schablone, die fertige Karte hineingezeichnet, die Kante als
 Strich darüber. Das ist nicht nur schärfer, sondern gemessen um drei
 Grössenordnungen billiger als der Weg über Rastermasken.
 
+Und die Platten haben **Wände**: eine Platte ist genau eine Stufe dick, ihre
+Unterseite hat also denselben Umriss eine Stufe tiefer. Derselbe Ring wird
+zweimal gemalt, erst gefüllt an der Unterseite, dann die Deckfläche darüber —
+was stehen bleibt, ist der nach Süden gewandte Saum, und mehr sieht man von
+einer Wand im Parallelriss nicht. Kostet gemessen nichts. Gedunkelt wird sie
+nur wenig: an einem steilen Kegel ist die Wand breiter als die Terrasse
+darüber, und stärker gedunkelt fraß sie Berlin und Hamburg zu Oliv zusammen.
+
 Gekippt hängen unter dem Südrand ein paar abgesetzte Stücke. Das ist kein
 Fehler: es sind Lörrach, der Alpenrand und die Inseln. Die Schrägsicht macht
 aus dem Breitengrad die Tiefe, und zwischen Lörrach und dem Rest der Karte
@@ -71,7 +79,13 @@ Bedienungen.
 Der Kniff dabei ist, jede der drei Grössen gegen das **vorige** Ereignis zu
 messen statt gegen den Anfang der Geste. Dann trennen sie sich von selbst: eine
 reine Drehung bewegt die Mitte nicht, ein reines Auseinanderziehen ändert den
-Winkel nicht. Es braucht keine Schwellen und keine Sperren.
+Winkel nicht. Es braucht keine Schwellen und keine Sperren. Die Karte folgt
+den Fingern — anfangs drehte sie sich ihnen entgegen, weil die Leinwand y nach
+unten zählt.
+
+Alle drei Regler fangen **links** an: die Zeitleiste bei 1871, der Kippregler
+bei flach, der Drehregler bei Norden oben. Er läuft dafür von 0 bis 360 statt
+von −180 bis 180.
 
 Das Vergrössern ist ausdrücklich ein **Vergrösserungsglas** und kein neues
 Rechnen. Die Weichzeichner, die aus Dichte ein Gebirge machen, messen in
