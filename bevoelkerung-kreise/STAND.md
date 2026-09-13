@@ -74,25 +74,20 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   die Städtenamen ab. Beim Laden liegt sie flach.
   Gerechnet wird die Schrägsicht als **Laserschnittmodell**: das Höhenfeld in
   fünfundzwanzig Scheiben geschnitten — so viele wie Farbbänder, jede
-  Stufenkante also eine Höhenlinie —, jede Scheibe ein Ausschnitt aus dem
-  fertigen, schattierten Bild, versetzt übereinandergelegt und in acht
-  Zwischenlagen aufgefüllt. Billig wird das durch eine Zählsortierung nach
-  Bändern: von Scheibe zu Scheibe ändern sich nur zwei Bänder, also zwei
-  Durchgänge statt fünfundzwanzig. Geschnitten wird aus einer
-  **eigenen Vorlage in Leinwandauflösung** (bis zum 1,4fachen, gedeckelt auf
+  Stufenkante also eine Höhenlinie —, versetzt übereinandergelegt. Eine Scheibe
+  ist dabei ein **Umriss, keine Rastermaske**: beschneiden, die fertige Karte
+  hineinzeichnen, Kante als Strich darüber. Gemessen kosten fünfundzwanzig
+  Pfade 0,1 ms, dieselben Scheiben als Rastermasken 242. Geschnitten wird aus
+  einer eigenen Vorlage in Leinwandauflösung (bis zum 1,4fachen, gedeckelt auf
   0,9 Mio Punkte) mit darin frisch gezogenen Höhenlinien, nicht aus dem 0,55
-  groben Höhenfeld — sonst sieht die Schrägsicht verwaschen aus. Die
-  Scheibenränder sind hart (ein Achtel Band), gestapelt wird in einer eigenen
-  Leinwand und erst das Ergebnis einmal aufgelegt. **221 ms je Bild auf dem
-  Schirm, 157 auf dem Telefon**, gegen 76 flach: teurer als der frühere
-  Spaltenlauf (128 fein / 96 grob), dafür **immer** so scharf wie die flache
-  Karte, ohne zwei Stufen und ohne Messung im Lauf. Der Griff auf einen Kreis geht jetzt über fünfundzwanzig
+  groben Höhenfeld — sonst sieht die Schrägsicht verwaschen aus. **125 ms je
+  Bild auf dem Schirm, 79 auf dem Telefon**, gegen 80 flach; eine Stufe, ohne
+  Messung im Lauf. Der Griff auf einen Kreis geht über fünfundzwanzig
   umkehrbare Abbildungen, von oben nach unten geprüft; bei 62 Grad treffen
-  Hamburg, Kiel, Berlin, Rostock und Flensburg alle sich selbst, der
-  Spaltenlauf verlor Kiel und Flensburg. Die abgesetzten Stücke unter dem
-  Südrand sind **kein Fehler**, sondern Lörrach, der Alpenrand und die Inseln:
-  die Schrägsicht macht aus dem Breitengrad die Tiefe, dazwischen liegt
-  Frankreich. Der Film zeigt weiter die flache Karte.
+  Hamburg, Kiel, Berlin, Rostock und Flensburg alle sich selbst. Die
+  abgesetzten Stücke unter dem Südrand sind **kein Fehler**, sondern Lörrach,
+  der Alpenrand und die Inseln: die Schrägsicht macht aus dem Breitengrad die
+  Tiefe, dazwischen liegt Frankreich. Der Film zeigt weiter die flache Karte.
 - Ein Diffusionskartogramm je Zeitpunkt, warm vom vorigen gestartet;
   gemeinsamer Massstab, und zwar **für alle Bilder derselbe**. Die Aussengrenze
   bleibt damit über hundertfünfzig Jahre ungefähr, wo sie ist; was sich bewegt,

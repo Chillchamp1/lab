@@ -1495,45 +1495,155 @@ const KIPPMAX = 62 * Math.PI / 180;
 const HOCH3D = 0.30;              // Anteil der Feldhöhe, den ein Wert 1 aufragt
 const schraeg = () => NEIGUNG > 0.001 || Math.abs(DREHUNG) > 1e-4;
 
-const hkT = document.createElement('canvas'), hcT = hkT.getContext('2d', { willReadFrequently: true });
-const mkK = document.createElement('canvas'), mkC = mkK.getContext('2d');
-const skK = document.createElement('canvas'), skC = skK.getContext('2d');
-let urAlpha = null, mW = 0, mH = 0, feinF = null, bandP = null, sortP = null;
+const hkT = document.createElement('canvas'), hcT = hkT.getContext('2d');
+let mW = 0, mH = 0;
 
-/* Wie fein geschnitten wird. Das Höhenfeld ist nur 0,55 der Leinwand — es darf
-   grob sein, es ist ja weichgezeichnet. Die **Vorlage** darf das nicht: an ihr
-   hängen die Höhenlinien und der Rand der Karte, und die sind flach gestochen
-   scharf, weil sie dort als Striche in voller Auflösung gezogen werden. Wird
-   aus dem Feld geschnitten, kommt beides hochgerechnet heraus, und die ganze
-   Schrägsicht wirkt verwaschen.
-
-   Also eigene Auflösung für den Schnitt: bis zum 1,4fachen der Leinwand,
-   gedeckelt auf eine Punktzahl, damit ein grosser Schirm nicht kriecht. Die
-   Farbe wird einmal daraufgerechnet, die Höhenlinien werden **darin** gezogen. */
+/* Wie fein die Vorlage ist, aus der geschnitten wird. Das Höhenfeld ist nur
+   0,55 der Leinwand — es darf grob sein, es ist ja weichgezeichnet. Die
+   Höhenlinien und der Rand der Karte dürfen das nicht: flach werden sie als
+   Striche in voller Auflösung gezogen, und genau davon lebt ihre Schärfe. */
 const PFEIN = 1.4, PMAX = 0.9e6;
+let KANTENSTRICH = 0.8, KANTENDECK = 0.3;   // die Kante einer Scheibe
+
+/* ---------- Die Umrisse der Scheiben ----------
+   Eine Scheibe ist die Fläche, die mindestens so hoch liegt wie ihr Niveau.
+   Gebraucht wird davon nur der **Umriss**, als Linienzug — denn gemalt wird
+   sie nicht als Fläche, sondern als Schablone: beschneiden, fertige Karte
+   hineinzeichnen, fertig.
+
+   Das ist der ganze Unterschied zur ersten Fassung, und er ist gross. Dort
+   wurde je Scheibe eine Rastermaske gebaut, ein halbes Megabyte Alphakanal,
+   fünfundzwanzigmal je Bild. Gemessen: fünfundzwanzig Pfade beschneiden und
+   das Bild hineinzeichnen kostet **0,1 ms**, der Rasterstapel 242.
+
+   Gezogen wird wie die Höhenlinien, mit demselben Marching-Squares-Verfahren
+   und denselben Niveaus — eine Scheibenkante **ist** eine Höhenlinie. Nur
+   zwei Dinge sind anders: das Gitter bekommt einen Rand aus Nullen, damit
+   jeder Ring sich schliesst und die Fläche füllbar ist; und der Rand der
+   Karte wird nicht abgefragt, weil ihn die Vorlage selbst mitbringt — was
+   draussen liegt, ist dort durchsichtig. */
+let rnx = 0, rny = 0, rX = null, rY = null, rA = null, rB = null,
+    rStempel = null, rBesucht = null, rListe = null, rZellen = null, rStamm = 0;
+let rZaehler = 0;
+
+function ringFeld() {
+  const nx = Math.floor((rW - 1) / LSCHRITT), ny = Math.floor((rH - 1) / LSCHRITT);
+  if (nx === rnx && ny === rny && rZellen && rZellen.length === NBAND) return;
+  rnx = nx; rny = ny;
+  rStamm = 2 * (nx + 3);
+  const n = rStamm * (ny + 3);
+  rX = new Float32Array(n); rY = new Float32Array(n);
+  rA = new Int32Array(n); rB = new Int32Array(n);
+  rStempel = new Int32Array(n); rBesucht = new Int32Array(n);
+  rListe = new Int32Array(n);
+  rZellen = Array.from({ length: NBAND }, () => []);
+}
+
+function scheibenRinge(N) {
+  ringFeld();
+  const S = LSCHRITT, je = breite / rW, nx = rnx, ny = rny, F = farbF, M = maskeH;
+  /* Ausserhalb des Gitters null: so schliesst sich jeder Ring, und erst ein
+     geschlossener Ring lässt sich als Fläche beschneiden.
+
+     Und **mit dem Rand der Karte multipliziert**. Für die Schablone wäre das
+     gleichgültig — was draussen liegt, ist in der Vorlage ohnehin durchsichtig
+     —, aber die Kante wird ja auch gestrichen, und ohne den Rand liefen die
+     Striche über die Küste hinaus ins Schwarze: der Weichzeichner trägt die
+     Dichte einer Küstenstadt ein Stück aufs Meer hinaus. */
+  const ecke = (px, py) => (px < 0 || py < 0 || px >= rW || py >= rH)
+    ? 0 : F[py * rW + px] * M[py * rW + px];
+  for (const z of rZellen) z.length = 0;
+
+  for (let cy = -1; cy <= ny; cy++) {
+    const py0 = cy * S, py1 = py0 + S;
+    for (let cx = -1; cx <= nx; cx++) {
+      const px0 = cx * S, px1 = px0 + S;
+      const a = ecke(px0, py0), b = ecke(px1, py0), c = ecke(px1, py1), d = ecke(px0, py1);
+      let lo = a, hi = a;
+      if (b < lo) lo = b; if (b > hi) hi = b;
+      if (c < lo) lo = c; if (c > hi) hi = c;
+      if (d < lo) lo = d; if (d > hi) hi = d;
+      let n0 = Math.ceil(lo * N), n1 = Math.floor(hi * N);
+      if (n0 < 1) n0 = 1; if (n1 > N - 1) n1 = N - 1;
+      if (n1 < n0) continue;
+      const zelle = (cy + 1) * (nx + 2) + (cx + 1);
+      for (let n = n0; n <= n1; n++) rZellen[n].push(zelle);
+    }
+  }
+
+  const pfade = new Array(N).fill(null);
+  for (let n = 1; n < N; n++) {
+    const zellen = rZellen[n];
+    if (zellen.length < 2) continue;
+    const t = n / N;
+    const stempel = ++rZaehler;
+    let nk = 0;
+    const setze = (k, x, y) => {
+      if (rStempel[k] !== stempel) {
+        rStempel[k] = stempel; rX[k] = x; rY[k] = y;
+        rA[k] = -1; rB[k] = -1; rBesucht[k] = 0; rListe[nk++] = k;
+      }
+    };
+    const binde = (p, q) => { if (rA[p] < 0) rA[p] = q; else if (rB[p] < 0) rB[p] = q; };
+    for (let z = 0; z < zellen.length; z++) {
+      const zelle = zellen[z], cy = ((zelle / (nx + 2)) | 0) - 1, cx = zelle - (cy + 1) * (nx + 2) - 1;
+      const px0 = cx * S, px1 = px0 + S, py0 = cy * S, py1 = py0 + S;
+      const a = ecke(px0, py0), b = ecke(px1, py0), c = ecke(px1, py1), d = ecke(px0, py1);
+      const A = a > t, B = b > t, C = c > t, D2 = d > t;
+      const ka = (A ? 1 : 0) | (B ? 2 : 0) | (C ? 4 : 0) | (D2 ? 8 : 0);
+      if (ka === 0 || ka === 15) continue;
+      const X0 = px0 * je, Y0 = py0 * je, SS = S * je;
+      const h0 = (cy + 1) * rStamm + 2 * (cx + 1), h2 = (cy + 2) * rStamm + 2 * (cx + 1);
+      const v3 = h0 + 1, v1 = (cy + 1) * rStamm + 2 * (cx + 2) + 1;
+      if (A !== B) setze(h0, X0 + SS * (t - a) / (b - a), Y0);
+      if (B !== C) setze(v1, X0 + SS, Y0 + SS * (t - b) / (c - b));
+      if (D2 !== C) setze(h2, X0 + SS * (t - d) / (c - d), Y0 + SS);
+      if (A !== D2) setze(v3, X0, Y0 + SS * (t - a) / (d - a));
+      switch (ka) {
+        case 1: case 14: binde(v3, h0); binde(h0, v3); break;
+        case 2: case 13: binde(h0, v1); binde(v1, h0); break;
+        case 3: case 12: binde(v3, v1); binde(v1, v3); break;
+        case 4: case 11: binde(v1, h2); binde(h2, v1); break;
+        case 6: case 9:  binde(h0, h2); binde(h2, h0); break;
+        case 7: case 8:  binde(h2, v3); binde(v3, h2); break;
+        default:         binde(v3, h0); binde(h0, v3); binde(v1, h2); binde(h2, v1);
+      }
+    }
+
+    const pfad = new Path2D();
+    let etwas = false;
+    for (let q = 0; q < nk; q++) {
+      const start = rListe[q];
+      if (rBesucht[start] === stempel) continue;
+      let cur = start, vor = -1, m = 0;
+      while (cur >= 0) {
+        rBesucht[cur] = stempel;
+        if (m === 0) pfad.moveTo(rX[cur], rY[cur]); else pfad.lineTo(rX[cur], rY[cur]);
+        m++;
+        const na = rA[cur], nb = rB[cur];
+        const weiter = (na >= 0 && na !== vor && rBesucht[na] !== stempel) ? na
+                     : (nb >= 0 && nb !== vor && rBesucht[nb] !== stempel) ? nb : -1;
+        vor = cur; cur = weiter;
+      }
+      if (m > 2) { pfad.closePath(); etwas = true; }
+    }
+    if (etwas) pfade[n] = pfad;
+  }
+  return pfade;
+}
 
 function scheibenMalen(s) {
   const N = NBAND;
-  const dprA = Math.min(2.5, devicePixelRatio || 1);
-  let faktor = Math.min(PFEIN, Math.max(1, dprA));
+  const D = Math.min(2.5, devicePixelRatio || 1);
+
+  /* Die Vorlage: die fertige Karte in eigener Auflösung, mit frisch gezogenen
+     Höhenlinien statt hochgerechneten. */
+  let faktor = Math.min(PFEIN, Math.max(1, D));
   const punkte = Math.max(1, breite * hoehe);
   if (punkte * faktor * faktor > PMAX) faktor = Math.sqrt(PMAX / punkte);
   if (faktor < 1) faktor = 1;
   const W = Math.max(8, Math.round(breite * faktor)), H = Math.max(8, Math.round(hoehe * faktor));
-  const pS = W / breite;                 // Punkte der Vorlage je Punkt der Leinwand
-  if (mW !== W || mH !== H) {
-    mW = W; mH = H;
-    hkT.width = W; hkT.height = H;
-    mkK.width = W; mkK.height = H;
-    skK.width = W; skK.height = H;
-    urAlpha = new Uint8Array(W * H);
-    bandP = new Uint8Array(W * H);
-    sortP = new Int32Array(W * H);
-    feinF = new Float32Array(W * H);
-  }
-
-  /* Die Vorlage: die fertige Karte in dieser Auflösung, mit frisch gezogenen
-     Höhenlinien statt hochgerechneten. */
+  if (mW !== W || mH !== H) { mW = W; mH = H; hkT.width = W; hkT.height = H; }
   hcT.setTransform(1, 0, 0, 1, 0, 0);
   hcT.globalCompositeOperation = 'source-over';
   hcT.globalAlpha = 1;
@@ -1541,26 +1651,11 @@ function scheibenMalen(s) {
   hcT.imageSmoothingEnabled = true;
   hcT.imageSmoothingQuality = 'high';
   hcT.drawImage(hkF, 0, 0, W, H);
-  hoehenLinien(s, hcT, pS);
-
-  /* Und das Höhenfeld auf dieselbe Auflösung, zwischen vier Nachbarn. Es
-     entscheidet, welcher Punkt zu welcher Scheibe gehört; grob abgetastet
-     bekämen die Scheibenränder Treppen. */
-  const fs = rW / W, fsy = rH / H, fWm = rW - 1.001, fHm = rH - 1.001;
-  for (let yy = 0, i = 0; yy < H; yy++) {
-    let gy = yy * fsy; if (gy > fHm) gy = fHm;
-    const y0 = gy | 0, uy = gy - y0, o0 = y0 * rW, o1 = o0 + rW;
-    for (let xx = 0; xx < W; xx++, i++) {
-      let gx = xx * fs; if (gx > fWm) gx = fWm;
-      const x0 = gx | 0, ux = gx - x0;
-      feinF[i] = (farbF[o0 + x0] * (1 - ux) + farbF[o0 + x0 + 1] * ux) * (1 - uy)
-               + (farbF[o1 + x0] * (1 - ux) + farbF[o1 + x0 + 1] * ux) * uy;
-    }
-  }
+  hoehenLinien(s, hcT, W / breite);
 
   const phi = NEIGUNG * KIPPMAX, co = Math.cos(phi), si = Math.sin(phi);
   const ct = Math.cos(DREHUNG), st = Math.sin(DREHUNG);
-  const cx = W / 2, cy = H / 2, hoch = H * HOCH3D;
+  const cx = breite / 2, cy = hoehe / 2, hoch = hoehe * HOCH3D;
 
   /* Der Rahmen steht **fest**, nämlich auf dem oberen Ende der Farbleiter.
      Nach dem höchsten Berg zu rechnen, der gerade dasteht, wäre verlockend —
@@ -1568,139 +1663,55 @@ function scheibenMalen(s) {
      sie dann in dem Mass, in dem die Städte wachsen, und zwei Bilder wären
      nicht mehr zu vergleichen: genau das, wofür die ganze Karte gebaut ist. */
   let aMin = 1e9, aMax = -1e9, yMin = 1e9, yMax = -1e9;
-  for (const e of [[0, 0], [W, 0], [0, H], [W, H]]) {
+  for (const e of [[0, 0], [breite, 0], [0, hoehe], [breite, hoehe]]) {
     const dx = e[0] - cx, dy = e[1] - cy;
     const a = dx * ct + dy * st, b = -dx * st + dy * ct;
     if (a < aMin) aMin = a; if (a > aMax) aMax = a;
     const y0 = b * co, y1 = b * co - hoch * si;
     if (y1 < yMin) yMin = y1; if (y0 > yMax) yMax = y0;
   }
-  // Massstab und Versatz in Punkten der Leinwand, damit Namen, Umriss und Griff
-  // damit rechnen können; die Vorlage ist um pS feiner.
-  const rand = 2 * pS;
-  const z = Math.min((W - 2 * rand) / Math.max(1e-6, aMax - aMin),
-                     (H - 2 * rand) / Math.max(1e-6, yMax - yMin)) / pS;
-  const oX = (rand + (W - 2 * rand - (aMax - aMin) * z * pS) / 2) / pS - aMin * z;
-  const oY = (rand + (H - 2 * rand - (yMax - yMin) * z * pS) / 2) / pS - yMin * z;
+  const rand = 2;
+  const z = Math.min((breite - 2 * rand) / Math.max(1e-6, aMax - aMin),
+                     (hoehe - 2 * rand) / Math.max(1e-6, yMax - yMin));
+  const oX = rand + (breite - 2 * rand - (aMax - aMin) * z) / 2 - aMin * z;
+  const oY = rand + (hoehe - 2 * rand - (yMax - yMin) * z) / 2 - yMin * z;
   const dz = hoch * si * z / N;
-  /* Was SICHT trägt, rechnet in Punkten der **Leinwand** — daran hängen Namen,
-     Umriss und der Griff. Die Vorlage ist um pS feiner, also bekommt der
-     Massstab diesen Faktor mit; das Auflegen weiter unten rechnet dagegen in
-     Punkten der Vorlage und nimmt z, wie es ist. */
-  SICHT = { co, si, ct, st, cx: cx / pS, cy: cy / pS, hoch, z: z * pS, oX, oY, N, dz, pS };
+  SICHT = { co, si, ct, st, cx, cy, hoch, z, oX, oY, N, dz };
 
-  /* Der Kniff, der den Stapel billig macht.
-
-     Naiv baut man je Scheibe ein ganzes Bild — gemessen 1,5 ms, fünfundzwanzig
-     mal, also der ganze Aufwand des Verfahrens. Fast alles davon ist
-     überflüssig: von einer Scheibe zur nächsten ändert sich die Deckung nur in
-     **zwei Bändern**. Das eine fällt weg, das nächste wird zum weichen Rand;
-     alles darüber bleibt voll, alles darunter leer. Wer die Punkte nach Bändern
-     sortiert vorhält, fasst je Scheibe ein Fünfundzwanzigstel der Fläche an —
-     über alle Scheiben zusammen zwei Durchgänge statt fünfundzwanzig. Die Farbe
-     bleibt unangetastet, nur der Alphakanal wandert. */
-  /* Das ausgelesene Bild **ist** der Arbeitsspeicher: verändert wird nur sein
-     Alphakanal, und zurückgeschrieben wird dasselbe Bild. Gemerkt werden muss
-     nur die ursprüngliche Deckung, ein Byte je Punkt. */
-  const bild = hcT.getImageData(0, 0, W, H), md = bild.data;
-
-  /* Der Kniff, der den Stapel billig macht.
-
-     Naiv baut man je Scheibe ein ganzes Bild — bei fünfundzwanzig Scheiben also
-     fünfundzwanzig Durchgänge über die Vorlage. Fast alles davon ist
-     überflüssig: von einer Scheibe zur nächsten ändert sich die Deckung nur in
-     **zwei Bändern**. Das eine fällt weg, das nächste wird zum weichen Rand;
-     alles darüber bleibt voll, alles darunter leer. Die Punkte werden deshalb
-     einmal je Bild nach Bändern zählsortiert, und dann fasst jede Scheibe ein
-     Fünfundzwanzigstel der Fläche an statt der ganzen.
-
-     Der naheliegende Gegenversuch — je Scheibe der Reihe nach über ihren
-     Kasten — ist nachgemessen **langsamer** (222 gegen 194 ms): die Gipfel
-     liegen weit auseinander, also umfasst schon der Kasten der oberen Scheiben
-     fast die ganze Karte, und es bleiben fünfundzwanzig volle Durchgänge. */
-  const zahl = new Int32Array(N + 1);
-  for (let i = 0, n = W * H; i < n; i++) {
-    urAlpha[i] = md[(i << 2) + 3];
-    let k = (feinF[i] * N) | 0;
-    if (k < 0) k = 0; else if (k > N - 1) k = N - 1;
-    bandP[i] = k; zahl[k + 1]++;
-  }
-  for (let k = 0; k < N; k++) zahl[k + 1] += zahl[k];
-  const lauf = zahl.slice(0, N);
-  for (let i = 0, n = W * H; i < n; i++) sortP[lauf[bandP[i]]++] = i;
-
-  /* Der Rand einer Scheibe ist **hart**, nicht weich.
-
-     Die erste Fassung blendete ihn über ein ganzes Band aus — und damit über
-     die ganze Höhe einer Scheibe. Das war ein Grund, warum die Schrägsicht
-     verwaschen aussah und nicht wie ein Schnittmodell: eine Platte aus
-     Sperrholz hat eine Kante, keinen Verlauf. Jetzt fällt die Deckung über ein
-     Achtel Band, gerade weich genug, um nicht zu treppen. */
-  const KANTE = 8;
-  const weich = k => {
-    for (let q = zahl[k], e = zahl[k + 1]; q < e; q++) {
-      const i = sortP[q];
-      let v = (feinF[i] * N - k) * KANTE;
-      if (v <= 0) v = 0; else if (v > 1) v = 1;
-      md[(i << 2) + 3] = v * urAlpha[i];
-    }
-  };
-  const leer = k => {
-    for (let q = zahl[k], e = zahl[k + 1]; q < e; q++) md[(sortP[q] << 2) + 3] = 0;
-  };
-  weich(0);
-
-  /* Gestapelt wird in einer eigenen Leinwand, in der Grösse der Vorlage, und
-     erst das fertige Bild kommt **einmal** auf die Karte.
-
-     Direkt auf die Karte zu stapeln hiess, jede der zweihundert Lagen in
-     Gerätepunkten aufzulegen — auf einem Telefon mit dichten Punkten das
-     Sechsfache der Fläche, gemessen 301 ms je Bild. Gewonnen war dabei nichts:
-     die Vorlage ist ohnehin nur das 1,4fache der Leinwand, feiner wird das
-     Bild durch das Stapeln in Gerätepunkten also nicht. */
-  // Dieselben Grössen in Punkten der Vorlage, denn dort wird gestapelt.
-  const zt = z * pS, oXt = oX * pS, oYt = oY * pS, dzt = dz * pS;
-  const a2 = zt * ct, c2 = zt * st, b2 = -co * zt * st, d2 = co * zt * ct;
-  skC.setTransform(1, 0, 0, 1, 0, 0);
-  skC.globalCompositeOperation = 'source-over';
-  skC.clearRect(0, 0, W, H);
-  /* Jede Scheibe wird nicht einmal aufgelegt, sondern in Zwischenlagen bis
-     hinunter zur Scheibe darunter. Ohne das klaffen zwischen den Scheiben
-     Lücken — dz ist rund acht Bildpunkte, und eine schmale Insel wie Helgoland
-     ist auf dem Bild keinen ganzen Punkt tief. Sie zerfiel dann in einen Kamm
-     aus einzelnen Plättchen.
-
-     Das Auflegen selbst ist gemessen umsonst: acht Lagen je Scheibe kosten
-     104 ms, eine Lage 104. Teuer ist nur das Herstellen einer Scheibe, und das
-     geschieht weiterhin einmal. Nebenbei werden dadurch die Flanken glatt
-     statt gestapelt — die Stufen füllen sich gegenseitig auf. */
-  const lagen = Math.max(1, Math.min(16, Math.ceil(dzt)));
-  /* Keine Glättung beim Auflegen. Die Vorlage steht schon in der Auflösung der
-     Leinwand; geglättet würde sie nur ein zweites Mal verrechnet — unscharf,
-     und gemessen um ein Vielfaches teurer. */
-  skC.imageSmoothingEnabled = false;
+  const ringe = scheibenRinge(N);
+  const a2 = D * z * ct, c2 = D * z * st, b2 = -D * co * z * st, d2 = D * co * z * ct;
+  const eX = D * oX - a2 * cx - c2 * cy;
   for (let k = 0; k < N; k++) {
-    if (k > 0) { leer(k - 1); weich(k); }
-    mkC.putImageData(bild, 0, 0);
-    for (let t = lagen - 1; t >= 0; t--) {
-      skC.setTransform(a2, b2, c2, d2,
-        oXt - a2 * cx - c2 * cy,
-        oYt - (k - t / lagen) * dzt - b2 * cx - d2 * cy);
-      skC.drawImage(mkK, 0, 0);
+    if (k > 0 && !ringe[k]) continue;
+    ctx.save();
+    ctx.setTransform(a2, b2, c2, d2, eX, D * (oY - k * dz) - b2 * cx - d2 * cy);
+    // Die unterste Scheibe ist die ganze Karte; ihren Rand bringt die Vorlage
+    // selbst mit, denn was draussen liegt, ist dort durchsichtig.
+    if (k > 0) ctx.clip(ringe[k], 'evenodd');
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(hkT, 0, 0, breite, hoehe);
+    ctx.restore();
+    /* Und die Kante als Linienzug darüber. Die Vorlage bringt an dieser Stelle
+       zwar schon ihre Höhenlinie mit — Scheibenkante und Höhenlinie sind
+       dasselbe Niveau —, aber der Beschnitt schneidet davon die äussere Hälfte
+       weg. Der Strich gibt sie zurück, und erst damit sieht der Stapel aus wie
+       geschnittene Platten statt wie ein Verlauf. Er kostet nichts: es sind
+       fünfundzwanzig Striche. */
+    if (k > 0) {
+      ctx.save();
+      ctx.setTransform(a2, b2, c2, d2, eX, D * (oY - k * dz) - b2 * cx - d2 * cy);
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = KANTENSTRICH / z;
+      ctx.strokeStyle = '#000';
+      ctx.globalAlpha = KANTENDECK;
+      ctx.stroke(ringe[k]);
+      ctx.restore();
     }
   }
-  const D = Math.min(2.5, devicePixelRatio || 1);
+  ctx.globalAlpha = 1;
   ctx.setTransform(D, 0, 0, D, 0, 0);
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(skK, 0, 0, breite, hoehe);
 }
 
-/* Ein Punkt der flachen Karte, in der Schrägsicht. Gebraucht für die Namen und
-   für den Umriss eines angetippten Kreises: beide sind Striche, keine Fläche,
-   und müssen denselben Weg gehen wie das Gelände unter ihnen. Die Höhe wird
-   dabei auf die Scheibe gerundet, auf der der Punkt wirklich liegt — sonst
-   schwebte ein Name über seiner Terrasse. */
 function projPunkt(X, Y) {
   if (!SICHT || !(rW > 0)) return [X, Y];
   const s = rW / breite, N = SICHT.N;
