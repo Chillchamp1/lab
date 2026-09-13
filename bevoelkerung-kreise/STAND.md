@@ -133,20 +133,29 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Gefärbt mit der eigenen Bandfarbe auf **0,80** gedunkelt — bei 0,40 war die
   Wand am steilen Kegel breiter als die Terrasse darüber und verschluckte
   Berlin und Hamburg zu Oliv, die Karte sah gut aus und sagte nichts mehr.
-  Die Wand ist **in drei gleich hohen Stufen von unten nach oben heller**
-  (0,38 / 0,55 / 0,74 der Bandfarbe): dunkler Fuss, helle Oberkante, wie eine
-  senkrechte Fläche unter einem Überhang. Mit einer einzigen Farbe las das Auge
-  jede Platte als beleuchtete Scheibe statt als Kante, und der Stapel sah aus
-  wie schwebende Platten. Kostet auf dem Telefon 74–76 → 78–79 ms, gut fünf
-  Prozent — messbar, anders als die erste Wand, und den Preis wert.
-- **Keiner Scheibe fehlt die Wand.** Eine Plattendicke genügt beweisbar, weil
-  die Scheiben ineinander liegen: was die Wand von k eine Stufe tiefer deckt,
-  liegt schon auf der Deckfläche von k−1. Nachgemessen mit Wandtiefen von 1, 2,
-  8 Plattendicken und bis zum Boden: **120 Lücken, 3054 px, längste 75 px —
-  viermal auf den Bildpunkt gleich.** Die Lücken sind keine fehlenden Wände,
-  sondern die Stellen, an denen die Karte selbst nicht da ist: Lörrach mit
+  Die Wand wird **Punkt für Punkt gestrichen**: der Ring wird von der
+  Unterkante bis unter die Deckfläche in Schritten von einem Bildpunkt gefüllt,
+  nicht in einem Sprung von einer Plattendicke. Das war der eigentliche Fehler
+  — ein einzelner Abzug lässt nur den unteren Saum der Form stehen, und der ist
+  so hoch wie die Form auf dem Schirm, nicht wie die Platte. Gekippt staucht
+  cos(Neigung) sie zusammen: bei 80 Grad ist ein Gipfelring zwei, drei Punkte
+  hoch, die Platte aber neun; die restlichen sechs blieben schwarz, und die
+  Kuppen schwebten. Bei 80 Grad gemessen: **343 Lücken / 1484 px mit dem Sprung
+  gegen 95 / 1138 px mit dem Schritt.** Der Rest ist nachgesehen und keine
+  fehlende Wand, sondern wo die Karte selbst nicht da ist — Lörrach mit
   Frankreich dazwischen, die Inseln, der Aussenrand von schräg unten.
-  Was trotzdem schweben lässt, ist der **Schlagschatten** in der Vorlage jeder
+  Kosten: 106 → 226 Füllungen je Bild, auf dem Schirm 134 → 144 ms, auf dem
+  Telefon 74–75 gegen 73–74, dort im Rauschen.
+  Die Wand ist dabei **von unten nach oben heller**, acht Töne von 0,38 auf
+  0,78 der Bandfarbe: dunkler Fuss, helle Oberkante, wie eine senkrechte Fläche
+  unter einem Überhang. Mit einer einzigen Farbe las das Auge jede Platte als
+  beleuchtete Scheibe statt als Kante.
+- **Eine frühere Messung hier war falsch angelegt** und stand eine Fassung lang
+  als Beweis, dass nichts fehlt. Sie zog die Wände 1, 2, 4, 8 Plattendicken
+  tief und fand fünfmal dieselbe Zahl Lücken — aber die Abzüge lagen je eine
+  Plattendicke auseinander, also genau im Abstand, der die Lücke erzeugt. Sie
+  hat nur bewiesen, dass Tiefe nicht hilft; was hilft, ist der Schritt.
+  Was ausserdem schweben lässt, ist der **Schlagschatten** in der Vorlage jeder
   Platte, der auf der Platte darunter landet. Ihn loszuwerden hiesse eine
   zweite Reliefstufe zu rechnen — ein Vielfaches der ganzen Schrägsicht.
   Die **unterste** Wand fehlt wirklich, weil die Ringe ab Niveau 1 gerechnet

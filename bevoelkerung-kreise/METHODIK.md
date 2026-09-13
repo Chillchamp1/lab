@@ -1051,43 +1051,60 @@ Zahlen ruhig liegen, über drei Läufe: 73/74/74 ms ohne die Wände gegen
 Wunder: eine Füllung ist das Billigste in dieser Schleife, verglichen mit
 fünfundzwanzig Beschnitten und fünfundzwanzig ganzen Bildern.
 
-**Fehlt einer Scheibe die Wand? Nein — nachgemessen.** Eine Wand von einer
-Plattendicke genügt beweisbar, und zwar weil die Scheiben ineinander liegen:
-die Fläche R_k eines hohen Niveaus ist immer Teil der Fläche R_j jedes
-tieferen. Was die Wand von Scheibe k eine Stufe tiefer überdeckt, liegt damit
-schon auf der Deckfläche von Scheibe k−1. Tiefer zu greifen kann nichts
-schliessen, was nicht ohnehin geschlossen wäre.
+### Die Wand war zu kurz, und die Messung, die das verbarg
 
-Der Beweis ist das eine, die Messung das andere. Derselbe Blick, die Wände
-verschieden tief gezogen, und danach spaltenweise gezählt, wie viele
-Bildpunkte zwischen dem obersten und dem untersten bemalten Punkt einer Spalte
-leer bleiben:
+Ein einzelner Abzug des Rings eine Stufe tiefer ist **keine Wand**. Er lässt
+nur den unteren Saum der Form stehen, und dessen Höhe ist nicht die
+Plattendicke, sondern die **Höhe der Form selbst auf dem Schirm**. Gekippt
+staucht cos(Neigung) sie zusammen: bei 80 Grad ist ein Gipfelring zwei, drei
+Bildpunkte hoch — die Platte aber neun. Die restlichen sechs blieben schwarz,
+und die Kuppen schwebten in der Luft. Von vorn sah man es kaum, von der Seite
+sofort.
 
-| Wandtiefe | Lücken | zusammen | längste |
-|---|---|---|---|
-| 1 Plattendicke | 120 | 3054 px | 75 px |
-| 2 Plattendicken | 120 | 3054 px | 75 px |
-| 8 Plattendicken | 120 | 3054 px | 75 px |
-| bis zum Boden | 120 | 3054 px | 75 px |
+**Eine frühere Messung hat das verdeckt, und sie war falsch angelegt.** Sie
+zog die Wände 1, 2, 4, 8 Plattendicken tief und fand fünfmal dieselbe Zahl
+Lücken — woraus hier zuerst geschlossen wurde, die Wand sei vollständig. Der
+Schluss war verkehrt: die Abzüge lagen **je eine Plattendicke auseinander**,
+also genau in dem Abstand, der die Lücke erzeugt. Mehr Abzüge in demselben
+Abstand lassen dieselben Lücken stehen. Die Messung hat nicht bewiesen, dass
+nichts fehlt, sondern nur, dass Tiefe nicht hilft. Was hilft, ist der
+**Schritt**.
 
-**Auf den Bildpunkt gleich.** Die Lücken, die bleiben, sind keine fehlenden
-Wände: es sind die Stellen, an denen die Karte selbst nicht da ist — Lörrach
-mit Frankreich dazwischen, die Inseln, und der Aussenrand, den man von schräg
-unten sieht. Dafür gibt es keine Wand, weil es dort kein Gebiet gibt.
+Die Wand wird deshalb jetzt **Punkt für Punkt gestrichen**: der Ring wird von
+der Unterkante bis unter die Deckfläche in Schritten von einem Bildpunkt
+gefüllt, nicht in einem Sprung von einer Plattendicke. Die Zahl der Schritte
+ist ceil(Plattendicke), sie wächst also mit der Neigung und ist flach genau
+eins — die Kosten entstehen nur da, wo es sie braucht.
 
-**Was trotzdem schwebte, und woran es lag.** Die Wand war nur ein Fünftel
-dunkler als die Deckfläche — und die Deckfläche trägt die Schattierung des
+Gemessen bei 80 Grad, wo der Fehler gross ist, und spaltenweise gezählt, wie
+viele Bildpunkte zwischen dem obersten und dem untersten bemalten Punkt einer
+Spalte leer bleiben:
+
+| | Lücken | zusammen |
+|---|---|---|
+| ein Abzug je Plattendicke | 343 | 1484 px |
+| ein Abzug je Bildpunkt | **95** | **1138 px** |
+
+Was übrig bleibt, ist nachgesehen und keine fehlende Wand: es sind die Stellen,
+an denen die Karte selbst nicht da ist — Lörrach mit Frankreich dazwischen, die
+Inseln, der Aussenrand von schräg unten. Dafür gibt es keine Wand, weil es dort
+kein Gebiet gibt.
+
+Kosten: 106 auf 226 Füllungen je Bild. Im Prüfbrowser auf dem Schirm 134 auf
+144 ms, auf dem Telefonprofil 74–75 gegen 73–74 ms — dort im Rauschen. Eine
+Füllung desselben, schon gebauten Pfades mit anderem Versatz ist eben fast
+umsonst.
+
+**Und die Farbe.** Vorher war die Wand nur ein Fünftel dunkler als die
+Deckfläche — und die Deckfläche trägt die Schattierung des
 glatten Geländes, hell nach Nordwesten. Damit las das Auge jede Platte als
 beleuchtete Scheibe statt als geschnittene Kante, und der Stapel sah aus wie
-Platten, die übereinander schweben. Die Wand geht deshalb jetzt **in drei
-gleich hohen Stufen von unten nach oben heller** (0,38 / 0,55 / 0,74 der
-Bandfarbe): dunkler Fuss, helle Oberkante — genau das, was eine senkrechte
-Fläche unter einem Überhang zeigt, unten weniger Himmel, oben mehr. Damit
-steht der Stapel als Körper da.
-
-Gemessen kostet das zwei Füllungen je Scheibe: auf dem Telefon **74–76 auf
-78–79 ms**, also gut fünf Prozent. Anders als die erste Wand, die im Rauschen
-lag, ist das messbar — und den Preis wert.
+Platten, die übereinander schweben. Die Wand wird deshalb **von unten nach oben
+heller**, in acht Tönen von 0,38 auf 0,78 der Bandfarbe: dunkler Fuss, helle
+Oberkante — genau das, was eine senkrechte Fläche unter einem Überhang zeigt,
+unten weniger Himmel, oben mehr. Seit die Wand Punkt für Punkt gestrichen wird,
+ist daraus ein stufenloser Verlauf geworden, und er kostet nichts extra: der
+Ton hängt nur davon ab, auf welcher Höhe der Abzug gerade sitzt.
 
 Zwei Dinge bleiben, wie sie sind. Die **Deckflächen** behalten ihre
 Schattierung, obwohl eine wirkliche Platte waagerecht und gleichmässig
@@ -1110,7 +1127,7 @@ Terrasse darüber**. Ein erster Versuch mit einer einzigen Farbe auf 0,40
 verschluckte Berlin und Hamburg: aus Weiss, Rot und Orange wurde Oliv, und die
 Karte hatte ihre Aussage verloren, um schön auszusehen.
 
-Die drei Stufen lösen genau diesen Streit. Sie sind im Mittel dunkler als die
+Der Verlauf löst genau diesen Streit. Er ist im Mittel dunkler als die
 eine Farbe auf 0,80, die vorher nötig war — und die Karte bleibt trotzdem
 lesbar, weil der dunkle Teil nur das untere Drittel der Wand ist und die
 Oberkante hell an die Deckfläche anschliesst. Dass die Platten seit `HOCH3D

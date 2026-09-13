@@ -1171,10 +1171,12 @@ let KANTENSTRICH = 0.8, KANTENDECK = 0.3;   // die Kante einer Scheibe
    Kostet zwei Füllungen je Scheibe mehr, und das ist gemessen nichts: der
    ganze Stapel braucht mit drei Stufen 6 ms, mit einer 14 — beides Rauschen
    neben dem, was die fünfundzwanzig Beschnitte und Bilder kosten. */
-const WANDSTUFEN = [[0, 0.38], [0.34, 0.55], [0.67, 0.74]];
-const WANDFARBE = WANDSTUFEN.map(([, f]) => HYPSO.map((h, i) =>
-  'rgb(' + Math.round(HYPSO_R[i] * f) + ',' + Math.round(HYPSO_G[i] * f)
-  + ',' + Math.round(HYPSO_B[i] * f) + ')'));
+const TONSTUFEN = 8, WANDVON = 0.38, WANDBIS = 0.78;
+const WANDFARBE = Array.from({ length: TONSTUFEN }, (unbenutzt, w) => {
+  const f = WANDVON + (WANDBIS - WANDVON) * w / (TONSTUFEN - 1);
+  return HYPSO.map((h, i) => 'rgb(' + Math.round(HYPSO_R[i] * f)
+    + ',' + Math.round(HYPSO_G[i] * f) + ',' + Math.round(HYPSO_B[i] * f) + ')');
+});
 
 /* ---------- Die Umrisse der Scheiben ----------
    Eine Scheibe ist die Fläche, die mindestens so hoch liegt wie ihr Niveau.
@@ -1399,10 +1401,18 @@ function scheibenMalen(s) {
        die Wand vor der Terrasse der Scheibe darunter, wie es sein soll. */
     if (k > 0) {
       const kb = Math.min(NBAND - 1, k);
-      for (let w = 0; w < WANDSTUFEN.length; w++) {
+      /* **Ein Schritt je Bildpunkt, nicht je Plattendicke.** Daran hing alles:
+         ein einzelner Abzug eine Stufe tiefer lässt nur den unteren Saum der
+         Form stehen, und der ist höchstens so hoch, wie die Form selbst auf
+         dem Schirm hoch ist. Gekippt staucht cos(Neigung) sie zusammen — ein
+         Gipfelring ist dann ein paar Punkte hoch, die Platte aber neun. Der
+         Rest blieb schwarz, und die Kuppen schwebten. */
+      const schritte = Math.max(1, Math.ceil(D * dz));
+      for (let w = 0; w < schritte; w++) {
+        const t = w / schritte;          // 0 ist der Fuss, 1 die Oberkante
         ctx.setTransform(a2, b2, c2, d2, eX,
-          D * (ozY - (k - 1 + WANDSTUFEN[w][0]) * dz) - b2 * cx - d2 * cy);
-        ctx.fillStyle = WANDFARBE[w][kb];
+          D * (ozY - (k - 1 + t) * dz) - b2 * cx - d2 * cy);
+        ctx.fillStyle = WANDFARBE[Math.min(TONSTUFEN - 1, (t * TONSTUFEN) | 0)][kb];
         ctx.fill(ringe[k], 'evenodd');
       }
     }

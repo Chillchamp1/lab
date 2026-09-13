@@ -64,17 +64,20 @@ einer Wand im Parallelriss nicht. Kostet gemessen nichts. Gedunkelt wird sie
 nur wenig: an einem steilen Kegel ist die Wand breiter als die Terrasse
 darüber, und stärker gedunkelt fraß sie Berlin und Hamburg zu Oliv zusammen.
 
-Die Wand wird dabei **in drei Stufen von unten nach oben heller**: dunkler
-Fuss, helle Oberkante, wie eine senkrechte Fläche unter einem Überhang. Mit
-einer einzigen Farbe las das Auge jede Platte als beleuchtete Scheibe statt als
-Kante, und der Stapel sah aus wie schwebende Platten.
+Gestrichen wird sie **Punkt für Punkt**, nicht in einem Sprung von einer
+Plattendicke — daran hing alles. Ein einzelner Abzug des Rings eine Stufe
+tiefer lässt nur den unteren Saum der Form stehen, und der ist so hoch wie die
+Form auf dem Schirm, nicht wie die Platte. Gekippt staucht der Kosinus sie
+zusammen: von der Seite ist ein Gipfelring ein paar Punkte hoch, die Platte
+aber neun, und der Rest blieb schwarz — die Kuppen schwebten. Bei 80 Grad
+gemessen fallen die Lücken von 343 auf 95.
 
-Fehlen tut keiner Scheibe die Wand — eine Plattendicke genügt beweisbar, weil
-die Scheiben ineinander liegen. Nachgemessen mit Wandtiefen von einer bis zum
-Boden: viermal auf den Bildpunkt dasselbe Bild. Was an Lücken bleibt, sind die
-Stellen, an denen die Karte selbst nicht da ist: Lörrach mit Frankreich
-dazwischen, die Inseln, der Aussenrand. Nur die unterste Wand fehlt wirklich,
-weil die Ringe erst ab dem ersten Niveau gerechnet werden.
+Die Wand wird dabei von unten nach oben heller: dunkler Fuss, helle Oberkante,
+wie eine senkrechte Fläche unter einem Überhang. Was an Lücken bleibt, ist
+nachgesehen und keine fehlende Wand, sondern wo die Karte selbst nicht da ist:
+Lörrach mit Frankreich dazwischen, die Inseln, der Aussenrand. Nur die unterste
+Wand fehlt wirklich, weil die Ringe erst ab dem ersten Niveau gerechnet
+werden.
 
 Wie hoch die Berge stehen, ist eine einzige Schraube, und sie steht jetzt auf
 60 Prozent des früheren Werts: vorher ragten die Städte als Türme auf und das
