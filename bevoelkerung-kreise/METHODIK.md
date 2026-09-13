@@ -1070,11 +1070,11 @@ Abstand lassen dieselben Lücken stehen. Die Messung hat nicht bewiesen, dass
 nichts fehlt, sondern nur, dass Tiefe nicht hilft. Was hilft, ist der
 **Schritt**.
 
-Die Wand wird deshalb jetzt **Punkt für Punkt gestrichen**: der Ring wird von
-der Unterkante bis unter die Deckfläche in Schritten von einem Bildpunkt
+Die Wand wird deshalb jetzt **gestrichen statt gesprungen**: der Ring wird von
+der Unterkante bis unter die Deckfläche in Schritten von **zwei Bildpunkten**
 gefüllt, nicht in einem Sprung von einer Plattendicke. Die Zahl der Schritte
-ist ceil(Plattendicke), sie wächst also mit der Neigung und ist flach genau
-eins — die Kosten entstehen nur da, wo es sie braucht.
+wächst mit der Neigung und ist flach genau eins — die Kosten entstehen nur da,
+wo es sie braucht.
 
 Gemessen bei 80 Grad, wo der Fehler gross ist, und spaltenweise gezählt, wie
 viele Bildpunkte zwischen dem obersten und dem untersten bemalten Punkt einer
@@ -1090,10 +1090,49 @@ an denen die Karte selbst nicht da ist — Lörrach mit Frankreich dazwischen, d
 Inseln, der Aussenrand von schräg unten. Dafür gibt es keine Wand, weil es dort
 kein Gebiet gibt.
 
-Kosten: 106 auf 226 Füllungen je Bild. Im Prüfbrowser auf dem Schirm 134 auf
-144 ms, auf dem Telefonprofil 74–75 gegen 73–74 ms — dort im Rauschen. Eine
-Füllung desselben, schon gebauten Pfades mit anderem Versatz ist eben fast
-umsonst.
+### Wie fein gestrichen wird, und was das kostet
+
+Ein Bildpunkt je Füllung wäre die reine Lehre und war gemessen die Hälfte zu
+teuer. Die erste Fassung nahm ihn, und die Schrägsicht wurde spürbar zäh.
+
+Zuerst die Messung, die zeigt, wo die Zeit wirklich liegt — mit einem
+erzwungenen Rastern nach jedem Bild, denn ohne das misst man nur, wie schnell
+die Zeichenbefehle in die Warteschlange fallen, und bekommt lauter
+Zehntelmillisekunden zu sehen, die nichts bedeuten:
+
+| Bildpunkte je Füllung | Füllungen je Bild | schräg, Telefon | leere Bildpunkte |
+|---|---|---|---|
+| ein Sprung je Platte | 24 | 137 ms | 5861 |
+| 4 | 48 | 146 ms | 5328 |
+| 3 | 72 | 153 ms | 5160 |
+| **2** | **96** | **158 ms** | **5076** |
+| 1 | 192 | 180 ms | 4980 |
+
+Von einem auf zwei Punkte fallen die leeren Bildpunkte nur um **zwei Prozent**
+— die zusätzlichen Lücken sind Haarrisse, keine Löcher, und im Bild bei 62 Grad
+ist zwischen einem und drei Punkten nichts zu sehen. Zwei Punkte sind deshalb
+der gemessene Tausch, nicht der geschätzte.
+
+Am ganzen Bild, gegen die feine Fassung: **Schirm 338 auf 297 ms, Telefon 211
+auf 183 ms**, bei 274 auf 154 beziehungsweise 226 auf 130 Füllungen. Damit
+kostet die gestrichene Wand ungefähr so viel wie die drei Farbstufen vorher —
+und hält die Platten trotzdem geschlossen.
+
+**Die Töne kosten nichts.** Es sind fertige Zeichenketten, einmal gerechnet.
+Teuer ist die Zahl der Füllungen; die Zahl der sichtbaren Abstufungen folgt ihr
+nur. Wer weniger füllt, sieht von selbst weniger Stufen — das ist Wirkung, nicht
+Ursache.
+
+**Geprüft und verworfen:** von oben nach unten malen und nur ins noch Leere
+(`destination-over`), damit jede Füllung bloss den freien Saum trifft. Ergibt
+dasselbe Bild auf den Bildpunkt und ist **langsamer** — 412 statt 312 ms auf
+dem Schirm, 236 statt 191 auf dem Telefon. Das Mischen kostet mehr, als das
+Sparen bringt.
+
+**Und die ehrliche Grenze:** die flache Karte braucht auf demselben
+Telefonprofil schon 145 ms. Der Stapel samt Wänden legt darauf rund vierzig
+drauf. Was die Schrägsicht zäh macht, ist zum grösseren Teil nicht der Stapel,
+sondern das Relief, das für jedes Bild neu gerechnet wird.
 
 **Und die Farbe.** Vorher war die Wand nur ein Fünftel dunkler als die
 Deckfläche — und die Deckfläche trägt die Schattierung des
