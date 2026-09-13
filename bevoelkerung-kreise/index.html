@@ -196,7 +196,7 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
   </div>
   <div class="sicht">
     <label><span>Tilt</span><input type="range" id="kipp" min="0" max="100" value="0" step="1" aria-label="Tilt the map"></label>
-    <label><span>Turn</span><input type="range" id="dreh" min="-180" max="180" value="0" step="1" aria-label="Turn the map"></label>
+    <label><span>Turn</span><input type="range" id="dreh" min="0" max="360" value="0" step="1" aria-label="Turn the map"></label>
     <button id="namen" aria-pressed="true">Names</button>
   </div>
   <div class="schild"><b id="jahrZahl">–</b><span id="jahrBev"></span></div>
@@ -1124,6 +1124,37 @@ let mW = 0, mH = 0;
 const PFEIN = 1.4, PMAX = 0.9e6;
 let KANTENSTRICH = 0.8, KANTENDECK = 0.3;   // die Kante einer Scheibe
 
+/* ---------- Die Wand einer Scheibe ----------
+   Bisher zeigte der Stapel nur Deckflächen: fünfundzwanzig Platten, jede eine
+   Stufe höher, und zwischen ihnen sah man die darunterliegende Deckfläche.
+   Das las sich wie Terrassen, nicht wie geschnittene Platten — einer Platte
+   fehlte ihre **Schnittkante**, die Wand, die ihre Dicke zeigt.
+
+   Sie ist erstaunlich billig zu bekommen, ohne einen einzigen neuen Umriss:
+   derselbe Ring wird **zweimal** gemalt, einmal eine Stufe tiefer (das ist die
+   Unterseite der Platte, denn sie ist genau dz dick) und einmal an seinem
+   Platz. Was von der tieferen Füllung stehen bleibt, nachdem die Deckfläche
+   darüberkommt, ist genau der nach Süden gewandte Teil der Wand — und mehr
+   ist von einer Wand im Parallelriss nicht zu sehen. Die nach Norden gewandte
+   Hälfte deckt die eigene Platte zu, ganz von selbst, ohne Prüfung.
+
+   Kostet eine Füllung je Scheibe, also fünfundzwanzig je Bild. Gemessen:
+   siehe METHODIK.md.
+
+   Gefärbt wird sie mit der Farbe des eigenen Bandes, gedunkelt. Das ist auch
+   physikalisch die richtige Seite: das Licht steht im Nordwesten, eine nach
+   Süden gewandte Wand liegt im Schatten.
+
+   Nur **wenig** gedunkelt, und das ist der ganze Streit an dieser Stelle. An
+   einem steilen Kegel ist die Wand breiter als die Terrasse darüber: bei
+   0,40 verschluckte sie Berlin und Hamburg, aus Rot und Weiss wurde Oliv, und
+   die Karte hatte ihre Aussage verloren, um schön auszusehen. Bei 0,80 ist
+   jede Platte sichtbar dick und die Farbleiter trotzdem so zu lesen wie
+   vorher. Ein dünner schwarzer Strich auf der Oberkante trennt beides. */
+const WANDDUNKEL = 0.80;            // so viel bleibt von der Bandfarbe stehen
+const WANDFARBE = HYPSO.map((h, i) => 'rgb(' + Math.round(HYPSO_R[i] * WANDDUNKEL)
+  + ',' + Math.round(HYPSO_G[i] * WANDDUNKEL) + ',' + Math.round(HYPSO_B[i] * WANDDUNKEL) + ')');
+
 /* ---------- Die Umrisse der Scheiben ----------
    Eine Scheibe ist die Fläche, die mindestens so hoch liegt wie ihr Niveau.
    Gebraucht wird davon nur der **Umriss**, als Linienzug — denn gemalt wird
@@ -1273,7 +1304,10 @@ function scheibenMalen(s) {
   hoehenLinien(s, hcT, W / breite);
 
   const phi = NEIGUNG * KIPPMAX, co = Math.cos(phi), si = Math.sin(phi);
-  const ct = Math.cos(DREHUNG), st = Math.sin(DREHUNG);
+  /* Positives DREHUNG dreht die Karte **im Uhrzeigersinn**. Das Minus steht
+     hier, weil die Leinwand y nach unten zählt: ohne es lief die Karte den
+     Fingern entgegen — im Uhrzeigersinn verdreht, drehte sie sich dagegen. */
+  const ct = Math.cos(DREHUNG), st = -Math.sin(DREHUNG);
   const cx = breite / 2, cy = hoehe / 2, hoch = hoehe * HOCH3D;
 
   /* Der Rahmen steht **fest**, nämlich auf dem oberen Ende der Farbleiter.
@@ -1305,6 +1339,15 @@ function scheibenMalen(s) {
   const eX = D * ozX - a2 * cx - c2 * cy;
   for (let k = 0; k < N; k++) {
     if (k > 0 && !ringe[k]) continue;
+    /* Erst die Wand: derselbe Ring, eine Stufe tiefer, gefüllt. Die eigene
+       Deckfläche deckt ihn gleich wieder zu, bis auf den südlichen Saum — und
+       der ist die Schnittkante. Weil von unten nach oben gemalt wird, steht
+       die Wand vor der Terrasse der Scheibe darunter, wie es sein soll. */
+    if (k > 0) {
+      ctx.setTransform(a2, b2, c2, d2, eX, D * (ozY - (k - 1) * dz) - b2 * cx - d2 * cy);
+      ctx.fillStyle = WANDFARBE[Math.min(WANDFARBE.length - 1, k)];
+      ctx.fill(ringe[k], 'evenodd');
+    }
     ctx.save();
     ctx.setTransform(a2, b2, c2, d2, eX, D * (ozY - k * dz) - b2 * cx - d2 * cy);
     // Die unterste Scheibe ist die ganze Karte; ihren Rand bringt die Vorlage
@@ -2727,11 +2770,13 @@ function zoomeUm(faktor, px, py) {
 
 function reglerNach() {
   document.getElementById('kipp').value = String(Math.round(NEIGUNG * 100));
+  /* Der Regler läuft von 0 bis 360 und fängt damit **links** an, wie die
+     Zeitleiste und der Kippregler: links steht immer der Anfangszustand.
+     Deshalb wird hier nach [0, 360) gefaltet und nicht nach ±180. */
   let g = DREHUNG * 180 / Math.PI;
-  while (g > 180) g -= 360;
-  while (g < -180) g += 360;
+  g = ((g % 360) + 360) % 360;
   DREHUNG = g * Math.PI / 180;
-  document.getElementById('dreh').value = String(Math.round(g));
+  document.getElementById('dreh').value = String(Math.round(g) % 360);
 }
 
 const ortVon = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };

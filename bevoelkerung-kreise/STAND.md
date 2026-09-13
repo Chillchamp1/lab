@@ -101,7 +101,24 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   ausgenommen, der Scheibenstapel wird wirklich neu geschnitten. Nachgemessen
   im Prüfbrowser mit zwei Fingern (420×800, dpr 2): Zoom 1,00 → 3,00, Drehung
   29 Grad, Neigung 0,55, Regler folgen, Doppeltipp stellt zurück; der Griff auf
-  einen Kreis trifft bei Zoom 2,5 flach und bei 60 Grad.
+  einen Kreis trifft bei Zoom 2,5 flach und bei 60 Grad. Die Karte folgt dabei
+  den Fingern: anfangs drehte sie sich ihnen entgegen, weil die Leinwand y nach
+  unten zählt — ein Vorzeichen beim Bau der Drehmatrix richtet es, für Finger
+  und Regler zugleich.
+- **Alle drei Regler fangen links an.** Zeitleiste bei 1871, Kippregler bei
+  flach, und der Drehregler jetzt auch: er läuft von 0 bis 360 statt von −180
+  bis 180, die Drehung wird nach [0, 360) gefaltet. Dreht man von 0 aus gegen
+  den Uhrzeigersinn, springt der Knopf ans rechte Ende — die Karte läuft ruhig
+  weiter, es ist ein Kreis auf einer Strecke.
+- **Die Scheiben haben Wände.** Eine Platte ist `dz` dick, ihre Unterseite hat
+  denselben Umriss eine Stufe tiefer; also wird derselbe Ring zweimal gemalt,
+  erst gefüllt an der Unterseite, dann die Deckfläche darüber. Was stehen
+  bleibt, ist genau der nach Süden gewandte Saum — die Rückseite deckt die
+  eigene Platte zu, ohne Prüfung. Gemessen auf dem Telefonprofil über drei
+  Läufe 73/74/74 ms ohne gegen 76/72/77 ms mit den Wänden: **im Rauschen**.
+  Gefärbt mit der eigenen Bandfarbe auf **0,80** gedunkelt — bei 0,40 war die
+  Wand am steilen Kegel breiter als die Terrasse darüber und verschluckte
+  Berlin und Hamburg zu Oliv, die Karte sah gut aus und sagte nichts mehr.
 - Ein Diffusionskartogramm je Zeitpunkt, warm vom vorigen gestartet;
   gemeinsamer Massstab, und zwar **für alle Bilder derselbe**. Die Aussengrenze
   bleibt damit über hundertfünfzig Jahre ungefähr, wo sie ist; was sich bewegt,

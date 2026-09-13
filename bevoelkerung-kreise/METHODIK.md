@@ -1029,6 +1029,38 @@ Ein dünner Strich gibt sie zurück — und erst damit sieht der Stapel aus wie
 geschnittene Platten statt wie ein Verlauf. Fünfundzwanzig Striche, gemessen
 rund fünfzehn Millisekunden.
 
+### Die Wand einer Scheibe, fast umsonst
+
+Lange zeigte der Stapel nur **Deckflächen**: fünfundzwanzig Platten, jede eine
+Stufe höher, und dazwischen sah man die darunterliegende Deckfläche. Das las
+sich wie Terrassen, nicht wie geschnittene Platten — einer Platte fehlte ihre
+Schnittkante, die Wand, die ihre Dicke zeigt.
+
+Sie ist zu haben, ohne einen einzigen neuen Umriss zu rechnen. Eine Platte ist
+genau `dz` dick; ihre Unterseite hat also **denselben Umriss**, nur eine Stufe
+tiefer. Also wird derselbe Ring zweimal gemalt: erst gefüllt an der Stelle der
+Unterseite, dann darüber die Deckfläche wie bisher. Was von der Füllung
+stehen bleibt, ist genau der nach Süden gewandte Saum — und mehr ist von einer
+Wand im Parallelriss ohnehin nicht zu sehen. Die nach Norden gewandte Hälfte
+deckt die eigene Platte zu, von selbst, ohne dass irgendwo geprüft werden
+müsste, welche Seite man sieht.
+
+Kostet eine Füllung je Scheibe. Nachgemessen auf dem Telefonprofil, wo die
+Zahlen ruhig liegen, über drei Läufe: 73/74/74 ms ohne die Wände gegen
+76/72/77 ms mit ihnen — **der Unterschied liegt im Rauschen**. Das ist kein
+Wunder: eine Füllung ist das Billigste in dieser Schleife, verglichen mit
+fünfundzwanzig Beschnitten und fünfundzwanzig ganzen Bildern.
+
+**Wie stark gedunkelt — daran hing die ganze Sache.** Die Wand bekommt die
+Farbe ihres eigenen Bandes, gedunkelt; das ist auch physikalisch die richtige
+Seite, denn das Licht steht im Nordwesten und eine nach Süden gewandte Wand
+liegt im Schatten. Nur ist an einem steilen Kegel die Wand **breiter als die
+Terrasse darüber**. Beim ersten Versuch, 0,40, verschluckte sie Berlin und
+Hamburg: aus Weiss, Rot und Orange wurde Oliv, und die Karte hatte ihre
+Aussage verloren, um schön auszusehen. Bei **0,80** ist jede Platte sichtbar
+dick und die Farbleiter so zu lesen wie vorher; der dünne schwarze Strich auf
+der Oberkante trennt beides.
+
 ### Geschnitten wird aus einer eigenen Vorlage
 
 Nicht aus dem Höhenfeld. Das ist 0,55 der Leinwand, und es darf grob sein, weil
@@ -1174,6 +1206,24 @@ den Anteil, den sie wirklich enthält.
 Die beiden Regler laufen mit: was die Finger einstellen, steht sofort in den
 Schiebern, und was die Schieber einstellen, gilt für die Finger weiter. Es gibt
 nur einen Zustand, zwei Bedienungen.
+
+**Die Karte folgt den Fingern.** Anfangs tat sie das Gegenteil: im
+Uhrzeigersinn verdreht, drehte sie sich dagegen. Der Grund ist das Vorzeichen,
+das die Leinwand mitbringt — sie zählt y nach unten, und damit läuft der
+Winkel, den zwei Finger aufspannen, im Uhrzeigersinn *aufwärts*, während die
+Drehmatrix ihn im Gegenuhrzeigersinn liest. Ein Minus an der einen Stelle, an
+der die Matrix gebaut wird, richtet beides: positives `DREHUNG` dreht die Karte
+jetzt im Uhrzeigersinn, für die Finger wie für den Regler. `projPunkt` und der
+Griff auf einen Kreis lesen dieselben Werte aus `SICHT` und ziehen von selbst
+mit.
+
+**Links steht der Anfang, bei allen dreien.** Die Zeitleiste beginnt links bei
+1871, der Kippregler links bei flach — der Drehregler stand mit −180 bis 180
+als einziger in der Mitte. Er läuft jetzt von 0 bis 360, und die Drehung wird
+nach [0, 360) gefaltet statt nach ±180. Der Preis ist sichtbar und
+hinzunehmen: dreht man von 0 aus gegen den Uhrzeigersinn, springt der Knopf an
+das rechte Ende. Die Karte dreht sich dabei ruhig weiter — nur der Knopf
+springt, weil ein Kreis auf einer Strecke abgebildet wird.
 
 ### Zoom ist ein Vergrösserungsglas, kein neues Rendern
 
