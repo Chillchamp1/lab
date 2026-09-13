@@ -996,18 +996,52 @@ einen Horizont mit. Wer hinten steht und nicht über diesen Horizont ragt, ist
 verdeckt und wird gar nicht erst gemalt. Jeder Bildpunkt wird damit genau
 einmal beschrieben, und die Verdeckung ist nicht geschätzt, sondern richtig.
 
-Gemalt wird in der Auflösung des Höhenfelds (0,55 der Leinwand), nicht in der
-der Leinwand; das Hochrechnen am Ende ist dasselbe, das die flache Karte auch
-bekommt. Die Rechnung bleibt dadurch bei rund einer Viertelmillion Abtastungen
-je Bild.
+### Zwei Auflösungen, und warum
 
-**Und sie kostet nichts.** Gemessen im Prüfbrowser, je 25 Bilder, viermal
-abwechselnd: flach 73 bis 91 ms je Bild (Median 86), gekippt 82,1 bis 82,5
-(Median 82). Der Spaltenlauf ist nicht umsonst — er wird nur bezahlt, indem
-die Schrägsicht drei Dinge wegfallen lässt, die flach teuer sind: den
-Schlagschatten, der als Weichzeichner über einen Pfad aus vierhundert
-Vielecken läuft, die 3D-Kante und das Hochrechnen der Farbfläche auf die
-grosse Leinwand. Das hebt sich ungefähr auf.
+Die erste Fassung malte in der Auflösung des Höhenfelds — 0,55 der Leinwand —
+und rechnete das Ergebnis hoch. Das war ein Fehlschluss: flach ist die Karte
+an zwei Stellen schärfer als ihr Feld, nämlich dort, wo **Striche** über das
+hochgerechnete Feld gezogen werden, an den Höhenlinien und an der Küste. Legt
+man die ins Feld und kippt erst danach, ist alles so grob wie das Feld und
+danach noch einmal vergrössert.
+
+Die Schrägsicht hat deshalb ihre **eigene** Auflösung, unabhängig vom Feld. Die
+Farbe wird einmal darauf hochgerechnet — feiner ist sie nicht zu haben, sie ist
+ja weichgezeichnet —, die **Höhenlinien werden darin frisch gezogen** und sind
+damit so scharf wie flach, und der Spaltenlauf malt Punkt für Punkt in dieser
+Auflösung. Nur die Höhe bleibt am Feld und wird zwischen vier Nachbarn
+abgetastet; das nimmt die treppigen Flanken, die vorher jeder Hang hatte.
+
+Zwei Stufen, weil die feine kostet:
+
+| | Auflösung | gemessen |
+|---|---|---|
+| **grob** — beim Abspielen und solange jemand zieht | 0,55 der Leinwand | 95 ms je Bild |
+| **fein** — sobald das Bild steht | bis zum 1,4fachen, gedeckelt | 124 ms je Bild |
+| flache Karte, zum Vergleich | — | 75 ms je Bild |
+
+Der Wechsel ist ein Nachzeichnen eine Fünftelsekunde nach dem letzten Ruck am
+Regler. Wer zieht, sieht also die schnelle Fassung und danach die scharfe; wer
+abspielt, sieht durchweg die schnelle.
+
+**Der Deckel hängt an der Punktzahl, nicht am Gerät**, und das ist gemessen und
+nicht geschätzt: 0,60 Millionen Punkte kosten 130 ms, 0,75 schon 215, 1,70 dann
+304 — die Rechnung wird überproportional teurer. Auf einem grossen Schirm mit
+dichten Bildpunkten kostete das 1,4fache 85 ms mehr für zwölf Prozent mehr
+Auflösung; dort bleibt es deshalb bei der Leinwandgrösse. Auf einem Telefon, wo
+die Leinwand klein ist, passt das 1,4fache bequem unter den Deckel — und dort
+ist es auch wirklich zu sehen (gemessen 88 ms bei 507 × 853 Punkten).
+
+**Die Drehung kostet nichts.** Im Rechenkern stehen für jede Abtastung dieselben
+zwei Multiplikationen, ob gedreht oder nicht; die Winkel stecken in zwei
+Konstanten vor der Schleife. Es gibt also keinen Grund, die feine Auflösung auf
+die ungedrehte Ansicht zu beschränken — sie gilt für jeden Winkel.
+
+**Und der Spaltenlauf selbst ist fast umsonst.** Er wird bezahlt, indem die
+Schrägsicht drei Dinge wegfallen lässt, die flach teuer sind: den
+Schlagschatten, der als Weichzeichner über einen Pfad aus vierhundert Vielecken
+läuft, die 3D-Kante und das Hochrechnen der Farbfläche auf die grosse Leinwand.
+In der groben Stufe hebt sich das ungefähr auf.
 
 ### Vier Entscheidungen, die nicht selbstverständlich sind
 
@@ -1023,9 +1057,16 @@ Nachkommastellen dieselben.
 **Die Höhenlinien gehen ins Gelände, nicht auf das Bild davon.** Flach werden
 sie über die fertige Karte gezogen. Schräg werden sie in die Vorlage gemalt,
 bevor sie gekippt wird — sonst lägen sie wie ein Gitter vor der Landschaft und
-liefen quer durch Berge hindurch, die sie verdecken müssten. Weil die Vorlage
-gröber ist und die Schrägsicht sie noch einmal staucht, bekommt der Strich
-dabei ein Viertel mehr Breite; darunter wird er zu Staub.
+liefen quer durch Berge hindurch, die sie verdecken müssten. In der groben
+Stufe, wo die Vorlage gröber ist als die Leinwand, bekommt der Strich dabei
+siebzig Prozent mehr Breite; darunter wird er zu Staub.
+
+Sie werden schräg ausserdem **leichter** gezeichnet, auf 62 Prozent der
+Deckkraft. Die Blende gegen zu enge Niveaus misst deren Abstand auf der
+*flachen* Karte; gekippt staucht die Schrägsicht denselben Hang auf einen
+Bruchteil, und die Blende weiss davon nichts — auf einem Südhang liegen dann
+acht Linien, wo flach zwei lägen. Eine Höhenlinie darf dichter liegen, sie darf
+nur die Farbe darunter nicht zudecken.
 
 **Die Flanke blendet ein.** Ein Hang, der je Tiefenschritt einen Punkt fällt,
 bestünde sonst aus einer hellen und einer dunklen Zeile im Wechsel und sähe

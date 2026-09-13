@@ -74,10 +74,16 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   daneben schaltet die Städtenamen ab. Beim Laden liegt sie flach, und dann
   läuft alles wie zuvor — der schräge Weg beginnt erst ab der ersten Rastung.
   Gerechnet wird spaltenweise von vorn nach hinten mit einem Horizont je
-  Spalte, in der Auflösung des Höhenfelds, und **das kostet nichts**: gemessen
-  je 25 Bilder, viermal abwechselnd, flach Median 86 ms, gekippt Median 82 ms
-  — der Spaltenlauf wird davon bezahlt, dass Schlagschatten, 3D-Kante und das
-  Hochrechnen auf die grosse Leinwand wegfallen. Der Rahmen steht dabei über alle Jahre fest (Massstab und Versatz
+  Spalte. **Zwei Auflösungen**: grob (0,55 der Leinwand, 95 ms je Bild) beim
+  Abspielen und solange jemand zieht, fein (bis zum 1,4fachen der Leinwand,
+  124 ms) sobald das Bild steht, mit einem Nachzeichnen eine Fünftelsekunde
+  nach dem letzten Ruck. Die Höhenlinien werden in der feinen Stufe frisch
+  gezogen statt aus dem Feld vergrössert und sind damit so scharf wie flach;
+  die Höhe wird zwischen vier Feldnachbarn abgetastet, was die treppigen
+  Flanken nimmt. Der Deckel hängt an der Punktzahl, nicht am Gerät — gemessen
+  kosten 0,60 Mio Punkte 130 ms, 0,75 Mio 215, 1,70 Mio 304. Die Drehung
+  kostet im Rechenkern nichts, die feine Auflösung gilt deshalb für jeden
+  Winkel. Zum Vergleich: die flache Karte 75 ms je Bild. Der Rahmen steht dabei über alle Jahre fest (Massstab und Versatz
   1871, 1939 und 2024 auf vier Nachkommastellen gleich), sonst schrumpfte die
   Karte genau in dem Mass, in dem die Städte wachsen. Beim Antippen merkt sich
   jeder Bildpunkt beim Malen, aus welchem Punkt des Feldes er stammt — damit
