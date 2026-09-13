@@ -1206,14 +1206,52 @@ Halb gekippt war der teuerste Fall und ist jetzt der billigste Schnitt: die
 Schrägsicht ist **schneller als die flache Karte**, weil sie deren Schattierung
 gar nicht mehr anfasst.
 
-**Was dabei verloren geht, und warum es kein Verlust ist.** Die Deckflächen
-tragen nicht mehr die Schattierung des glatten Geländes. Genau die hat schräg
-aber gegen das wirkliche Relief gearbeitet: sie machte aus flachen Platten
-gewölbte Scheiben und war der Grund, warum der Stapel so lange nach schwebenden
-Platten aussah. Was bleibt, sind Bandfarbe, Wandverlauf und Kantenstrich — und
-damit sieht es aus wie das Modell, das es darstellt. Die flache Karte behält
-ihre Schattierung und ihre beleuchteten Höhenlinien unverändert; geändert hat
-sich nur, was beim Kippen geschieht.
+**Was dabei zunächst verloren ging.** Mit der Farbe fielen auch Schattierung
+und Schlagschatten weg — sie steckten ja in ihr. Die Platten waren scharf, aber
+tot; die Oberfläche hatte vorher etwas von Knete, und das war weg.
+
+### Das Licht, eine Stufe kleiner
+
+Beides kommt zurück, ohne die Farbe wieder anzufassen: als **reine Lichtebene**,
+dieselbe Beleuchtung noch einmal gerechnet, aber als Grau statt als Farbe — 128
+tut nichts, heller hellt auf, dunkler dunkelt ab. Über die fertigen Platten
+gelegt mit `soft-light`, bringt sie Modellierung und Schlagschatten mit und
+lässt die Bandfarben, wo sie sind.
+
+Der erste Versuch legte sie **je Scheibe** auf, gleich nach der Füllung. Das
+kostete genau so viel wie früher die Vorlage:
+
+| | voll gekippt | halb gekippt |
+|---|---|---|
+| ohne Licht, Telefon | 112 ms | 116 ms |
+| Licht je Scheibe, Telefon | 164 ms | 214 ms |
+| ohne Licht, Schirm | 180 ms | 181 ms |
+| Licht je Scheibe, Schirm | 266 ms | 350 ms |
+
+Damit war klar, wo die Kosten wirklich sitzen: **nicht im Bild, sondern in den
+fünfundzwanzig Blits über die ganze Leinwand.** Dieselbe Zahl Blits, dieselbe
+Rechnung, ob da nun Farbe oder Grau drübergeht.
+
+Also wird derselbe Stapel im **Feldgitter** gebaut — 0,55 der Leinwand, ein
+Vierzehntel der Fläche je Blit — und erst das fertige Ergebnis einmal
+hochgelegt:
+
+| | voll gekippt | halb gekippt |
+|---|---|---|
+| Telefon | 132 ms | 139 ms |
+| Schirm | 213 ms | 221 ms |
+
+Rund ein Fünftel über der lichtlosen Fassung, und immer noch schneller als die
+flache Karte mit ihren 137 ms.
+
+**Unscharf wird dabei nur das Licht.** Farbe, Kanten und Wände bleiben, wo sie
+sind — und genau so herum ist es richtig: weiches Licht auf harten Flächen ist
+ein Modell, hartes Licht auf weichen Flächen war der Fehler, an dem die
+Deckflächen jahrelang geblutet haben.
+
+Was bleibt also: scharfe Bandfarbe, Wandverlauf, Kantenstrich — und darüber das
+weiche Licht. Die flache Karte behält ihre Schattierung und ihre beleuchteten
+Höhenlinien unverändert; geändert hat sich nur, was beim Kippen geschieht.
 
 ### Was der Stapel besser kann als ein Spaltenlauf
 

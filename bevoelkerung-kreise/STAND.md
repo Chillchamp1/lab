@@ -92,7 +92,19 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   als die flache Karte (137 ms), weil sie deren Schattierung nicht mehr
   anfasst. Die Deckflächen tragen dafür keine Schattierung mehr — genau die
   hatte schräg gegen das wirkliche Relief gearbeitet und die Platten gewölbt
-  aussehen lassen. Die flache Karte ist unverändert. Der Griff auf einen Kreis geht über fünfundzwanzig
+  aussehen lassen. Die flache Karte ist unverändert.
+- **Das Licht kommt als eigene Ebene zurück.** Mit der Farbe fielen auch
+  Schattierung und Schlagschatten weg; die Platten waren scharf, aber tot.
+  Jetzt wird dieselbe Beleuchtung ein zweites Mal gerechnet, als **Grau statt
+  Farbe** (128 tut nichts), und mit `soft-light` über die fertigen Platten
+  gelegt. Je Scheibe aufgelegt kostete das genau so viel wie früher die
+  Vorlage (112 → 164 ms voll, 116 → 214 halb auf dem Telefon) — die Kosten
+  sitzen in den 25 Blits über die ganze Leinwand, nicht im Bild. Also wird der
+  Lichtstapel im **Feldgitter** gebaut (0,55 der Leinwand, ein Vierzehntel der
+  Fläche je Blit) und einmal fertig hochgelegt: **132 ms voll, 139 halb** auf
+  dem Telefon, 213/221 auf dem Schirm. Unscharf wird dabei nur das Licht;
+  Farbe, Kanten und Wände bleiben scharf — weiches Licht auf harten Flächen
+  ist ein Modell, hartes Licht auf weichen Flächen war der alte Fehler. Der Griff auf einen Kreis geht über fünfundzwanzig
   umkehrbare Abbildungen, von oben nach unten geprüft; bei 62 Grad treffen
   Hamburg, Kiel, Berlin, Rostock und Flensburg alle sich selbst. Die
   abgesetzten Stücke unter dem Südrand sind **kein Fehler**, sondern Lörrach,
