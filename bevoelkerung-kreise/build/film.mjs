@@ -63,7 +63,7 @@ await seite.waitForTimeout(400);
    sieht, soll wenigstens dastehen. masse() kommt danach, weil das Ausblenden
    der beiden Bedienzeilen der Karte Höhe zurückgibt. */
 const DAUER = await seite.evaluate(() => {
-  NEIGUNG = 0; DREHUNG = 0; NAMEN = true;
+  NEIGUNG = 0; DREHUNG = 0; NAMEN = true; ZOOM = 1; vX = 0; vY = 0;
   laeuft = false; masse(); reliefFrisch(); return DAUER;
 });
 const N = NUR || Math.round(DAUER / 1000 * FPS);

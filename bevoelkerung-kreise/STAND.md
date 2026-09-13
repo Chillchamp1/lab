@@ -88,6 +88,20 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   abgesetzten Stücke unter dem Südrand sind **kein Fehler**, sondern Lörrach,
   der Alpenrand und die Inseln: die Schrägsicht macht aus dem Breitengrad die
   Tiefe, dazwischen liegt Frankreich. Der Film zeigt weiter die flache Karte.
+- **Zwei Finger auf der Karte.** Auseinanderziehen vergrössert (bis achtfach,
+  um den Punkt zwischen den Fingern), verdrehen dreht, beide Finger zusammen
+  nach oben schieben richtet auf; ein Finger schiebt den Ausschnitt, zweimal
+  tippen setzt Zoom und Verschiebung zurück, das Mausrad zoomt am Rechner. Die
+  Regler laufen mit — ein Zustand, zwei Bedienungen. Gerechnet wird jede der
+  drei Grössen gegen das **vorige Ereignis**, nicht gegen den Anfang der Geste;
+  damit trennen sich Zoom, Drehung und Neigung von selbst, ohne Schwellen und
+  ohne Sperren. Zoom ist ausdrücklich ein **Vergrösserungsglas und kein neues
+  Rechnen**: die Weichzeichner messen in Bildpunkten der Leinwand, also änderte
+  Neurechnen mit dem Massstab die Form der Berge. Die Schrägsicht ist davon
+  ausgenommen, der Scheibenstapel wird wirklich neu geschnitten. Nachgemessen
+  im Prüfbrowser mit zwei Fingern (420×800, dpr 2): Zoom 1,00 → 3,00, Drehung
+  29 Grad, Neigung 0,55, Regler folgen, Doppeltipp stellt zurück; der Griff auf
+  einen Kreis trifft bei Zoom 2,5 flach und bei 60 Grad.
 - Ein Diffusionskartogramm je Zeitpunkt, warm vom vorigen gestartet;
   gemeinsamer Massstab, und zwar **für alle Bilder derselbe**. Die Aussengrenze
   bleibt damit über hundertfünfzig Jahre ungefähr, wo sie ist; was sich bewegt,
