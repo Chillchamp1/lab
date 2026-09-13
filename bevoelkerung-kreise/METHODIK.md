@@ -1145,14 +1145,9 @@ unten weniger Himmel, oben mehr. Seit die Wand Punkt für Punkt gestrichen wird,
 ist daraus ein stufenloser Verlauf geworden, und er kostet nichts extra: der
 Ton hängt nur davon ab, auf welcher Höhe der Abzug gerade sitzt.
 
-Zwei Dinge bleiben, wie sie sind. Die **Deckflächen** behalten ihre
-Schattierung, obwohl eine wirkliche Platte waagerecht und gleichmässig
-beleuchtet wäre; sie ist die Lesehilfe der Karte, und ohne sie wären
-fünfundzwanzig Stufen fünfundzwanzig flache Farbflächen. Und jede Platte trägt
-in ihrer Vorlage den **Schlagschatten** des glatten Berges mit, der auf der
-Platte darunter landet — das lässt sie ein wenig schweben. Ihn loszuwerden
-hiesse, eine zweite Reliefstufe ohne Schlagschatten zu rechnen, und die kostet
-ein Vielfaches der ganzen Schrägsicht.
+Beides ist inzwischen erledigt, und zwar nicht durch eine zweite Reliefstufe,
+sondern indem die Deckflächen flach gefüllt werden (siehe oben): weder
+Schattierung noch Schlagschatten liegen noch auf den Platten.
 
 Eine Wand fehlt wirklich: die **unterste**. Die Ringe werden ab Niveau 1
 gerechnet, die Grundplatte hat also keine Seite — was man unten am Rand als
@@ -1172,16 +1167,53 @@ lesbar, weil der dunkle Teil nur das untere Drittel der Wand ist und die
 Oberkante hell an die Deckfläche anschliesst. Dass die Platten seit `HOCH3D
 = 0,18` vierzig Prozent dünner sind, hilft dabei mit.
 
-### Geschnitten wird aus einer eigenen Vorlage
+### Eine Platte hat eine Farbe, fertig
 
-Nicht aus dem Höhenfeld. Das ist 0,55 der Leinwand, und es darf grob sein, weil
-es weichgezeichnet ist. Die Höhenlinien und der Rand der Karte dürfen das
-nicht: flach sind sie gestochen scharf, weil sie dort als **Striche in voller
-Auflösung** gezogen werden. Aus dem Feld geschnitten kam beides hochgerechnet
-heraus, und die ganze Schrägsicht wirkte verwaschen. Die Vorlage steht deshalb
-in der Auflösung der Leinwand (bis zum 1,4fachen, gedeckelt auf 0,9 Millionen
-Punkte), die Farbe wird einmal daraufgerechnet, die Höhenlinien werden darin
-gezogen.
+Lange wurde in jede Scheibe die fertige Karte hineinbeschnitten — samt Licht,
+Schlagschatten und Höhenlinien, aus einer eigenen Vorlage in Leinwandauflösung.
+Das war ein Umweg, und er kostete doppelt.
+
+**Es blutete.** Die Farbe entsteht auf dem Reliefgitter, `RAUF = 0,55` der
+Leinwand; jede Bandkante ist dort von Geburt an vier, fünf Gerätepunkte weich.
+Die Schnittkante einer Platte ist dagegen gestochen scharf. Also stand auf
+jeder Platte ein Saum der Nachbarfarbe: das Weiss einer Kuppe noch auf der
+roten Platte darunter.
+
+Drei Auswege wurden gemessen und alle drei taugten nichts:
+
+| probiert | Kosten | Wirkung |
+|---|---|---|
+| Vorlage 1:1 statt 1,6fach hochgerechnet | +19 % Telefon, +33 % Schirm | **fast nichts** — mehr Zwischenstufe fügt keine Information hinzu, die im Feld nie war |
+| kräftigerer Kantenstrich | nichts | hilft nicht: der falschfarbige Saum liegt *innerhalb* der Platte, nicht über ihrer Kante |
+| Glättung beim Auflegen aus | nichts | enger, aber alles wird stufig |
+
+Der vierte Weg war, die Frage anders zu stellen. **Eine Platte hat nur einen
+Wert.** Sie ist genau ein Farbband — dafür ist sie geschnitten. Sie flach zu
+füllen verliert deshalb nichts: die Höhe ist in fünfundzwanzig Stufen schon
+zerlegt, und der Verlauf innerhalb einer Stufe wiederholte nur, was die Stufe
+selbst sagt. Kein Beschnitt, kein ganzes Bild je Scheibe, keine Vorlage, keine
+Höhenlinien darin — eine Füllung.
+
+| | vorher | nachher |
+|---|---|---|
+| voll gekippt, Schirm | 267 ms | **178 ms** |
+| halb gekippt, Schirm | 361 ms | **181 ms** |
+| voll gekippt, Telefon | 158 ms | **111 ms** |
+| halb gekippt, Telefon | 217 ms | **116 ms** |
+| flache Karte, Telefon | 137 ms | 137 ms |
+
+Halb gekippt war der teuerste Fall und ist jetzt der billigste Schnitt: die
+Schrägsicht ist **schneller als die flache Karte**, weil sie deren Schattierung
+gar nicht mehr anfasst.
+
+**Was dabei verloren geht, und warum es kein Verlust ist.** Die Deckflächen
+tragen nicht mehr die Schattierung des glatten Geländes. Genau die hat schräg
+aber gegen das wirkliche Relief gearbeitet: sie machte aus flachen Platten
+gewölbte Scheiben und war der Grund, warum der Stapel so lange nach schwebenden
+Platten aussah. Was bleibt, sind Bandfarbe, Wandverlauf und Kantenstrich — und
+damit sieht es aus wie das Modell, das es darstellt. Die flache Karte behält
+ihre Schattierung und ihre beleuchteten Höhenlinien unverändert; geändert hat
+sich nur, was beim Kippen geschieht.
 
 ### Was der Stapel besser kann als ein Spaltenlauf
 

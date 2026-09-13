@@ -75,14 +75,24 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Gerechnet wird die Schrägsicht als **Laserschnittmodell**: das Höhenfeld in
   fünfundzwanzig Scheiben geschnitten — so viele wie Farbbänder, jede
   Stufenkante also eine Höhenlinie —, versetzt übereinandergelegt. Eine Scheibe
-  ist dabei ein **Umriss, keine Rastermaske**: beschneiden, die fertige Karte
-  hineinzeichnen, Kante als Strich darüber. Gemessen kosten fünfundzwanzig
-  Pfade 0,1 ms, dieselben Scheiben als Rastermasken 242. Geschnitten wird aus
-  einer eigenen Vorlage in Leinwandauflösung (bis zum 1,4fachen, gedeckelt auf
-  0,9 Mio Punkte) mit darin frisch gezogenen Höhenlinien, nicht aus dem 0,55
-  groben Höhenfeld — sonst sieht die Schrägsicht verwaschen aus. **125 ms je
-  Bild auf dem Schirm, 79 auf dem Telefon**, gegen 80 flach; eine Stufe, ohne
-  Messung im Lauf. Der Griff auf einen Kreis geht über fünfundzwanzig
+  ist dabei ein **Umriss, keine Rastermaske**: Umriss füllen, Kante als Strich
+  darüber. Gemessen kosten fünfundzwanzig Pfade 0,1 ms, dieselben Scheiben als
+  Rastermasken 242.
+- **Eine Platte hat eine Farbe, fertig.** Lange wurde in jede Scheibe die
+  fertige Karte hineinbeschnitten, samt Licht und Höhenlinien. Das blutete: die
+  Farbe entsteht auf dem Reliefgitter (0,55 der Leinwand), jede Bandkante ist
+  dort vier, fünf Gerätepunkte weich, die Schnittkante dagegen scharf — also
+  stand auf jeder Platte ein Saum der Nachbarfarbe. Gemessen und verworfen:
+  Vorlage 1:1 (+19 % Telefon, fast keine Wirkung), kräftigerer Kantenstrich
+  (wirkungslos, der Saum liegt *innerhalb* der Platte), Glättung aus (stufig).
+  Der Ausweg war die andere Frage: eine Platte **ist** genau ein Farbband, also
+  wird sie flach gefüllt. Verloren geht nichts — die Höhe ist in 25 Stufen
+  schon zerlegt. **Voll gekippt 267 → 178 ms Schirm und 158 → 111 Telefon,
+  halb gekippt 361 → 181 und 217 → 116**; die Schrägsicht ist damit schneller
+  als die flache Karte (137 ms), weil sie deren Schattierung nicht mehr
+  anfasst. Die Deckflächen tragen dafür keine Schattierung mehr — genau die
+  hatte schräg gegen das wirkliche Relief gearbeitet und die Platten gewölbt
+  aussehen lassen. Die flache Karte ist unverändert. Der Griff auf einen Kreis geht über fünfundzwanzig
   umkehrbare Abbildungen, von oben nach unten geprüft; bei 62 Grad treffen
   Hamburg, Kiel, Berlin, Rostock und Flensburg alle sich selbst. Die
   abgesetzten Stücke unter dem Südrand sind **kein Fehler**, sondern Lörrach,
