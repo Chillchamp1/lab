@@ -144,8 +144,19 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   gegen 95 / 1138 px mit dem Schritt.** Der Rest ist nachgesehen und keine
   fehlende Wand, sondern wo die Karte selbst nicht da ist — Lörrach mit
   Frankreich dazwischen, die Inseln, der Aussenrand von schräg unten.
-  Kosten: 106 → 226 Füllungen je Bild, auf dem Schirm 134 → 144 ms, auf dem
-  Telefon 74–75 gegen 73–74, dort im Rauschen.
+  Gestrichen wird in Schritten von **zwei Bildpunkten**: einer wäre die reine
+  Lehre und gemessen die Hälfte zu teuer. Von einem auf zwei Punkte fallen die
+  leeren Bildpunkte nur um zwei Prozent (4980 → 5076 von rund fünftausend), im
+  Bild bei 62 Grad ist zwischen einem und drei Punkten nichts zu sehen. Am
+  ganzen Bild: **Schirm 338 → 297 ms, Telefon 211 → 183 ms**, 274 → 154 bzw.
+  226 → 130 Füllungen. Die Töne der Wand kosten nichts — fertige Zeichenketten;
+  teuer ist die Zahl der Füllungen, die Zahl der Stufen folgt ihr nur.
+  Geprüft und verworfen: von oben nach unten mit destination-over, damit jede
+  Füllung nur den freien Saum trifft — dasselbe Bild, aber langsamer (412 statt
+  312 ms Schirm, 236 statt 191 Telefon).
+  Ehrliche Grenze: die flache Karte braucht auf demselben Telefonprofil schon
+  145 ms; der Stapel samt Wänden legt rund vierzig drauf. Zäh macht die
+  Schrägsicht zum grösseren Teil das Relief, nicht der Stapel.
   Die Wand ist dabei **von unten nach oben heller**, acht Töne von 0,38 auf
   0,78 der Bandfarbe: dunkler Fuss, helle Oberkante, wie eine senkrechte Fläche
   unter einem Überhang. Mit einer einzigen Farbe las das Auge jede Platte als

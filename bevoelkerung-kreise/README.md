@@ -70,7 +70,14 @@ tiefer lässt nur den unteren Saum der Form stehen, und der ist so hoch wie die
 Form auf dem Schirm, nicht wie die Platte. Gekippt staucht der Kosinus sie
 zusammen: von der Seite ist ein Gipfelring ein paar Punkte hoch, die Platte
 aber neun, und der Rest blieb schwarz — die Kuppen schwebten. Bei 80 Grad
-gemessen fallen die Lücken von 343 auf 95.
+gemessen fallen die Lücken von 343 auf rund hundert.
+
+Gestrichen wird in Schritten von zwei Bildpunkten. Einer wäre die reine Lehre
+und gemessen die Hälfte zu teuer: von einem auf zwei Punkte fallen die leeren
+Bildpunkte nur um zwei Prozent, und im Bild ist nichts davon zu sehen. Die
+Farbtöne der Wand kosten dabei nichts — es sind fertige Zeichenketten; teuer
+ist die Zahl der Füllungen, und die Zahl der sichtbaren Abstufungen folgt ihr
+nur.
 
 Die Wand wird dabei von unten nach oben heller: dunkler Fuss, helle Oberkante,
 wie eine senkrechte Fläche unter einem Überhang. Was an Lücken bleibt, ist
