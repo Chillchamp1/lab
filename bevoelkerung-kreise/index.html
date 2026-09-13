@@ -693,7 +693,6 @@ function masse() {
   // Der Umriss hängt an mass/verX/verY und wird sonst nie ungültig — der Boden
   // steht still. Eine Grössenänderung ist der einzige Fall.
   zeigeUmriss(letzterTip);
-  kostenFrisch();
 }
 
 function bildBei(t) {
@@ -966,32 +965,11 @@ const hkA = document.createElement('canvas'), hcA = hkA.getContext('2d');
 const hkB = document.createElement('canvas'), hcB = hkB.getContext('2d', { willReadFrequently: true });
 const hkC = document.createElement('canvas'), hcC = hkC.getContext('2d', { willReadFrequently: true });
 const hkF = document.createElement('canvas'), hcF = hkF.getContext('2d');
-const hkP = document.createElement('canvas'), hcP = hkP.getContext('2d', { willReadFrequently: true });
-const hkQ = document.createElement('canvas'), hcQ = hkQ.getContext('2d');
 let rW = 0, rH = 0, fBild = null;
 let feinH = null, grobH = null, grobM = null, grobAuf = null, feldH = null,
     farbF = null, maskeH = null, schatten = null, licht = null, weitH = null,
     kastenA = null, kastenB = null;
-let fLesen = null, pBild = null, pQuelle = null, yPuffer = null, pLeer = null;
 
-/* ---------- Der Blickwinkel ----------
-   Die Karte lag bisher flach. Sie darf sich jetzt aufrichten und drehen, und
-   das ist kein neues Bild, sondern dasselbe: das Höhenfeld, aus dem Farbe,
-   Schattierung und Höhenlinien schon kommen, wird nicht mehr platt
-   hingelegt, sondern schräg angesehen.
-
-   NEIGUNG 0 heisst senkrecht von oben — dann läuft alles wie bisher, Zeile
-   für Zeile derselbe Weg, und der Film bleibt der alte. Erst ab der ersten
-   Rastung gilt der andere Weg. */
-let NEIGUNG = 0;                  // 0 bis 1, entspricht 0 bis KIPPMAX Grad
-let DREHUNG = 0;                  // Bogenmass, 0 ist Norden oben
-let NAMEN = true;                 // Städtenamen an
-const KIPPMAX = 62 * Math.PI / 180;
-// Volle Höhe, in Punkten des Höhenfelds. Das Relief rechnet mit UEBERHOEHT=30
-// für seine Normalen; fürs Ansehen braucht es ein Vielfaches davon, sonst ist
-// die gekippte Karte ein Blatt Papier statt einer Landschaft.
-const HOCH3D = 0.30;              // Anteil der Feldhöhe, den ein Wert 1 aufragt
-const schraeg = () => NEIGUNG > 0.001 || Math.abs(DREHUNG) > 1e-4;
 // Die Farbleiter als drei Zahlenreihen — je Bildpunkt ein Nachschlagen statt
 // eines Zerlegens von '#rrggbb'.
 const HYPSO_R = HYPSO.map(h => parseInt(h.slice(1, 3), 16));
@@ -1085,296 +1063,187 @@ function reliefFeld() {
   kastenA = new Float32Array(w * h); kastenB = new Float32Array(w * h);
 }
 
-/* ---------- Die Schrägsicht ----------
-   Gerechnet wird wie in den alten Geländespielen: das Bild entsteht Spalte für
-   Spalte, von vorn nach hinten, mit einem Horizont je Spalte. Wer hinten steht
-   und nicht über diesen Horizont ragt, ist verdeckt und wird gar nicht erst
-   gemalt. Jeder Bildpunkt wird genau einmal beschrieben, und die Verdeckung
-   ist damit nicht geschätzt, sondern richtig.
+/* ---------- Die Schrägsicht: ein Stapel Scheiben ----------
+   Die Karte lag hundertfünfzig Jahre lang flach. Zwei Regler unter der
+   Zeitleiste richten sie auf und drehen sie.
 
-   Die Vorlage ist die fertige Karte selbst — Farbe, Licht und Höhenlinien
-   liegen schon darin. Nur die Höhe kommt getrennt dazu, aus feldH, demselben
-   Feld, aus dem das Licht gerechnet wurde. Hochkant gestellt wird also nicht
-   ein zweites Bild, sondern dieses.
+   Gerechnet wird sie als **Laserschnittmodell**: das Höhenfeld wird in
+   fünfundzwanzig gleiche Höhen geschnitten, von jeder die Fläche genommen, die
+   mindestens so hoch liegt, und die Flächen werden versetzt übereinandergelegt.
+   Fünfundzwanzig, weil das die Zahl der Farbbänder ist — **jede Scheibe ist
+   genau ein Band, jede Stufenkante genau eine Höhenlinie.** Dieselbe
+   Konstruktion, die die flache Karte schon hat, nur aufgestellt.
 
-   Gemalt wird in der Auflösung des Höhenfelds, nicht der Leinwand; das
-   Hochrechnen am Ende macht dieselbe Glättung, die die flache Karte auch
-   bekommt, und die Rechnung bleibt bei rund einer Viertelmillion Punkten. */
+   Eine erste Fassung lief stattdessen Spalte für Spalte in die Tiefe, wie die
+   Geländespiele der neunziger Jahre. Das war teurer, hing an der Auflösung des
+   Schirms, und es franste unten aus: wo die Umrisslinie in Blickrichtung
+   verläuft, traf der Lauf den Rand mal und mal nicht. Der Stapel hat keine
+   Tiefenabtastung und deshalb auch keine Fransen; er kostet immer dasselbe,
+   ganz gleich wie gross der Schirm ist.
+
+   Gefärbt wird nicht flach, sondern mit der **fertigen Karte**: jede Scheibe
+   ist ein Ausschnitt aus hkF, also samt Licht, Schlagschatten und
+   Höhenlinien. */
 let SICHT = null;
-let pW = 0, pH = 0;
+let NEIGUNG = 0;                  // 0 bis 1, entspricht 0 bis KIPPMAX Grad
+let DREHUNG = 0;                  // Bogenmass, 0 ist Norden oben
+let NAMEN = true;                 // Städtenamen an
+const KIPPMAX = 62 * Math.PI / 180;
+// Volle Höhe, in Punkten des Höhenfelds. Das Relief rechnet mit UEBERHOEHT=30
+// für seine Normalen; fürs Ansehen braucht es ein Vielfaches davon, sonst ist
+// die gekippte Karte ein Blatt Papier statt einer Landschaft.
+const HOCH3D = 0.30;              // Anteil der Feldhöhe, den ein Wert 1 aufragt
+const schraeg = () => NEIGUNG > 0.001 || Math.abs(DREHUNG) > 1e-4;
 
-/* ---------- Wie fein die Schrägsicht gemalt wird ----------
-   Flach ist die Karte an zwei Stellen scharf, die das Höhenfeld nicht sind:
-   die Höhenlinien und die Küste werden als Striche über das hochgerechnete
-   Feld gezogen, in voller Auflösung der Leinwand. Die erste Fassung der
-   Schrägsicht hat beides ins Feld gelegt und dann erst gekippt — damit war
-   alles so grob wie das Feld, also 0,55 der Leinwand, und danach noch einmal
-   vergrössert.
+const mkK = document.createElement('canvas'), mkC = mkK.getContext('2d');
+let mBild = null, mW = 0, mH = 0, bandP = null, sortP = null;
 
-   Jetzt hat die Schrägsicht ihre **eigene** Auflösung, unabhängig vom Feld:
-   die Farbe wird einmal auf diese Auflösung hochgerechnet, die Höhenlinien
-   werden **darin** gezogen statt im Feld, und der Spaltenlauf malt Punkt für
-   Punkt in dieser Auflösung. Nur die Höhe bleibt am Feld — die ist ohnehin
-   weichgezeichnet und wird zwischen vier Nachbarn abgetastet, was die
-   treppigen Flanken nimmt.
-
-   Zwei Stufen, weil die feine kostet: **grob** (0,55 wie das Feld) beim
-   Abspielen und solange jemand an einem Regler zieht, **fein** (bis zur
-   Punktdichte des Geräts) sobald das Bild steht. Der Wechsel ist ein
-   Nachzeichnen nach einer Fünftelsekunde. */
-/* Zwei Bremsen, beide gemessen. Der grosse Sprung liegt zwischen 0,55 und 1,0
-   der Leinwand — dort hört das Vergrössern auf. Darüber gewinnt nur noch ein
-   Gerät mit dichten Bildpunkten etwas, und zwar wenig, während die Rechnung
-   überproportional teurer wird: 0,60 Mio Punkte kosteten 130 ms, 0,75 Mio
-   schon 215, 1,70 Mio dann 304.
-
-   Der Deckel hängt deshalb an der **Punktzahl**, nicht am Gerät. Auf einem
-   grossen Schirm mit dichten Punkten kostete das 1,4fache 85 ms mehr für
-   zwölf Prozent mehr Auflösung; dort bleibt es bei der Leinwandgrösse. Auf
-   einem Telefon, wo die Leinwand klein ist, passt das 1,4fache bequem unter
-   den Deckel — und dort ist es auch zu sehen. */
-const PFEIN = 1.4;
-const PMAX = 0.62e6;
-let grobBis = 0, feinUhr = 0;
-
-/* Auch im Lauf so fein wie möglich — aber **gemessen**, nicht geraten.
-
-   Vorrechnen und abspielen geht nicht: der Film hat bei dreissig Bildern in
-   der Sekunde rund zweitausendfünfhundert Bilder, jedes ein paar Megabyte, und
-   sie auszurechnen dauert genau so lange wie sie anzusehen. Gewonnen wäre
-   nichts.
-
-   Was geht, ist die Entscheidung dem Gerät zu überlassen. Die Karte zeichnet
-   beim Anlaufen fein, misst dabei, was ein Bild wirklich kostet, und bleibt
-   fein, solange es unter der Schwelle bleibt. Ein schneller Rechner sieht den
-   Lauf also scharf; ein langsamer fällt nach ein paar Bildern auf die grobe
-   Stufe zurück, statt zu ruckeln. Gemessen wird die Zeit in zeichne() selbst,
-   mit einem gleitenden Mittel, damit ein einzelner Ausreisser nichts umwirft.
-
-   Einmal zurückgefallen, bleibt es grob: hin und her zu springen sähe
-   schlimmer aus als die gröbere Stufe. Beim Anhalten wird ohnehin scharf
-   nachgezeichnet, und eine Grössenänderung setzt die Messung zurück. */
-const BILDZIEL = 1000 / 25;       // so viel darf ein Bild im Lauf kosten
-let kostenFein = 0, feinGemalt = false;
-const kostenFrisch = () => { kostenFein = 0; };
-function projFein() {
-  if (performance.now() < grobBis) return false;   // es wird gerade gezogen
-  if (!laeuft) return true;                        // das Bild steht
-  return !(kostenFein > BILDZIEL);                 // noch ungemessen oder schnell genug
-}
-function sichtGrob() {
-  // Grob jetzt, fein gleich: wer zieht, soll keine halbe Sekunde warten.
-  grobBis = performance.now() + 200;
-  clearTimeout(feinUhr);
-  feinUhr = setTimeout(() => {
-    if (!laeuft && schraeg()) { zeichne(); zeigeUmriss(letzterTip); }
-  }, 230);
-}
-
-function projFeld(w, h) {
-  if (w === pW && h === pH) return;
-  pW = w; pH = h;
-  hkP.width = w; hkP.height = h;
-  hkQ.width = w; hkQ.height = h;
-  pBild = hcQ.createImageData(w, h);
-  pQuelle = new Int32Array(w * h);
-  yPuffer = new Float32Array(w);
-  pLeer = new Uint8Array(w);
-}
-
-function schraegMalen(s) {
-  /* Die Auflösung der Schrägsicht. Fein heisst: so fein wie die Leinwand
-     wirklich ist, also samt Punktdichte des Geräts — dann trifft das Bild die
-     Bildpunkte eins zu eins und wird beim Hinlegen nicht noch einmal
-     verrechnet. */
-  const dpr = Math.min(2.5, devicePixelRatio || 1);
-  let faktor = RAUF;
-  feinGemalt = projFein();
-  if (feinGemalt) {
-    faktor = Math.min(PFEIN, Math.max(1, dpr));
-    const punkte = Math.max(1, breite * hoehe);
-    if (punkte * faktor * faktor > PMAX) faktor = Math.sqrt(PMAX / punkte);
-    if (faktor < RAUF) faktor = RAUF;   // nie gröber als das Feld selbst
+function scheibenMalen() {
+  const N = NBAND, W = rW, H = rH;
+  if (mW !== W || mH !== H) {
+    mW = W; mH = H;
+    mkK.width = W; mkK.height = H;
+    mBild = mkC.createImageData(W, H);
+    bandP = new Uint8Array(W * H);
+    sortP = new Int32Array(W * H);
   }
-  const w = Math.max(8, Math.round(breite * faktor)), h = Math.max(8, Math.round(hoehe * faktor));
-  projFeld(w, h);
-  const pS = pW / breite;            // Punkte der Schrägsicht je Punkt der Leinwand
-
-  /* Die Vorlage, in **dieser** Auflösung. Die Farbe kommt hochgerechnet aus
-     dem Feld — feiner ist sie nicht zu haben, sie ist ja weichgezeichnet —,
-     die Höhenlinien dagegen werden hier frisch gezogen und sind damit so
-     scharf wie auf der flachen Karte. Der Rand der Karte steckt schon im
-     Alphakanal von hkF; die Schwelle weiter unten macht daraus wieder eine
-     scharfe Küste, jetzt in der feinen Auflösung. */
-  hcP.setTransform(1, 0, 0, 1, 0, 0);
-  hcP.globalCompositeOperation = 'source-over';
-  hcP.globalAlpha = 1;
-  hcP.clearRect(0, 0, pW, pH);
-  hcP.imageSmoothingEnabled = true;
-  hcP.imageSmoothingQuality = 'high';
-  hcP.drawImage(hkF, 0, 0, pW, pH);
-  hoehenLinien(s, hcP, pS);
-  const td = hcP.getImageData(0, 0, pW, pH).data;
-
-  const po = pBild.data;
-  po.fill(0);
-  pQuelle.fill(-1);
-
-  const fW = rW, fH = rH;
   const phi = NEIGUNG * KIPPMAX, co = Math.cos(phi), si = Math.sin(phi);
   const ct = Math.cos(DREHUNG), st = Math.sin(DREHUNG);
-  const cx = fW / 2, cy = fH / 2, hoch = fH * HOCH3D;
-  const m = pS / s;                  // Punkte der Vorlage je Punkt des Feldes
+  const cx = W / 2, cy = H / 2, hoch = H * HOCH3D;
 
-  /* Der Kopfraum ist **fest**, nämlich das obere Ende der Farbleiter. Nach dem
-     höchsten Berg zu rechnen, der gerade dasteht, wäre verlockend — 1871 gäbe
-     es kaum einen, und die Karte stünde grösser da. Nur schrumpfte sie dann in
-     dem Mass, in dem die Städte wachsen, und zwei Bilder wären nicht mehr
-     zu vergleichen: genau das, wofür die ganze Karte gebaut ist. Also bleibt
-     der Rahmen stehen und ein Teil davon 1871 eben leer. */
-  const kopfraum = hoch;
-  let aMin = 1e9, aMax = -1e9, bMin = 1e9, bMax = -1e9, yMin = 1e9, yMax = -1e9;
-  for (const e of [[0, 0], [fW, 0], [0, fH], [fW, fH]]) {
+  /* Der Rahmen steht **fest**, nämlich auf dem oberen Ende der Farbleiter.
+     Nach dem höchsten Berg zu rechnen, der gerade dasteht, wäre verlockend —
+     1871 gäbe es kaum einen, und die Karte stünde grösser da. Nur schrumpfte
+     sie dann in dem Mass, in dem die Städte wachsen, und zwei Bilder wären
+     nicht mehr zu vergleichen: genau das, wofür die ganze Karte gebaut ist. */
+  let aMin = 1e9, aMax = -1e9, yMin = 1e9, yMax = -1e9;
+  for (const e of [[0, 0], [W, 0], [0, H], [W, H]]) {
     const dx = e[0] - cx, dy = e[1] - cy;
     const a = dx * ct + dy * st, b = -dx * st + dy * ct;
     if (a < aMin) aMin = a; if (a > aMax) aMax = a;
-    if (b < bMin) bMin = b; if (b > bMax) bMax = b;
-    const y0 = b * co, y1 = b * co - kopfraum * si;
+    const y0 = b * co, y1 = b * co - hoch * si;
     if (y1 < yMin) yMin = y1; if (y0 > yMax) yMax = y0;
   }
-  const rand = 2 * pS;
-  const z = Math.min((pW - 2 * rand) / Math.max(1e-6, aMax - aMin),
-                     (pH - 2 * rand) / Math.max(1e-6, yMax - yMin));
-  const oX = rand + (pW - 2 * rand - (aMax - aMin) * z) / 2 - aMin * z;
-  const oY = rand + (pH - 2 * rand - (yMax - yMin) * z) / 2 - yMin * z;
-  SICHT = { co, si, ct, st, cx, cy, hoch, z, oX, oY, pS };
+  const rand = 2;
+  const z = Math.min((breite - 2 * rand) / Math.max(1e-6, aMax - aMin),
+                     (hoehe - 2 * rand) / Math.max(1e-6, yMax - yMin));
+  const oX = rand + (breite - 2 * rand - (aMax - aMin) * z) / 2 - aMin * z;
+  const oY = rand + (hoehe - 2 * rand - (yMax - yMin) * z) / 2 - yMin * z;
+  const dz = hoch * si * z / N;
+  SICHT = { co, si, ct, st, cx, cy, hoch, z, oX, oY, N, dz };
 
-  /* Ein Schritt in die Tiefe soll auf dem Bild rund einen Punkt weit sein.
+  /* Der Kniff, der den Stapel billig macht.
 
-     Feiner zu laufen ist nachgemessen **kein** Mittel gegen die abgesetzten
-     Zipfel unten am Rand: bei 0,15 statt 0,5 stehen sie unverändert da und das
-     Bild kostet 200 statt 130 ms. Sie sind auch kein Fehler — siehe unten. */
-  const db = Math.max(0.15, Math.min(2, 0.85 / Math.max(0.05, co * z)));
-  const rock = Math.max(2, pW / 130);    // dieselbe Kante wie flach, als Sockel
-  /* Die Flanke wird nicht sofort dunkel, sondern über ein paar Punkte hinweg.
-     Das ist kein Schönheitsgrund: ein Hang, der je Tiefenschritt einen Punkt
-     fällt, bestünde sonst aus einer hellen und einer dunklen Zeile im Wechsel
-     und sähe gesprenkelt aus. Erst eine wirkliche Wand — viele Punkte auf
-     einen Schritt — soll als Wand erscheinen. */
-  const DUNKEL = 0.5, kR = 6, kG = 6, kB = 5;   // KANTE3D, für die Flanken
-  const BLENDE = Math.max(3, pW / 90);
-  const fWmax = fW - 1.001, fHmax = fH - 1.001;
-  const hochsiz = hoch * si * z;                 // volle Höhe, in Bildpunkten
-  /* Die Blende der Flanke hängt nur an der Tiefe unter dem Grat, also an einer
-     ganzen Zahl zwischen null und BLENDE. Einmal ausgerechnet und
-     nachgeschlagen ist billiger als eine Division je Bildpunkt — und es sind
-     eine halbe Million Bildpunkte. */
-  const nBl = Math.ceil(BLENDE) + 1;
-  const blende = new Float32Array(nBl);
-  for (let t = 0; t < nBl; t++) blende[t] = 1 - (1 - DUNKEL) * Math.min(1, t / BLENDE);
-
-  for (let x = 0; x < pW; x++) { yPuffer[x] = pH; pLeer[x] = 1; }
-
-  for (let b = bMax; b >= bMin; b -= db) {
-    const yb = b * co * z + oY;
-    const bx = -b * st, by = b * ct;
-    // Höher als das kann in dieser Tiefe nichts stehen. Liegt schon das über
-    // dem Horizont der Spalte, ist dort nichts mehr zu holen — dann muss die
-    // Höhe gar nicht erst abgetastet werden.
-    const hoechstens = yb - hochsiz;
-    for (let x = 0; x < pW; x++) {
-      const horizont = yPuffer[x];
-      if (horizont <= 0) continue;                 // Spalte ist bis oben voll
-      const a = (x - oX) / z;
-      const fx = cx + a * ct + bx, fy = cy + a * st + by;
-      if (fx < 0 || fy < 0 || fx >= fW || fy >= fH) { pLeer[x] = 1; continue; }
-      // Die Farbe aus der Vorlage, in ihrer eigenen, feinen Auflösung.
-      const tx = (fx * m) | 0, ty = (fy * m) | 0;
-      if (tx < 0 || ty < 0 || tx >= pW || ty >= pH) { pLeer[x] = 1; continue; }
-      const j = (ty * pW + tx) << 2;
-      if (td[j + 3] < 128) { pLeer[x] = 1; continue; }   // draussen, kein Gelände
-      // Ab hier steht Gelände. Es kann verdeckt sein — das ist keine Lücke.
-      if (hoechstens >= horizont) { pLeer[x] = 0; continue; }
-
-      /* Die Höhe zwischen vier Nachbarn. Rundete man sie auf den nächsten
-         Feldpunkt, bestünde jeder Hang aus Stufen in der Grösse eines
-         Feldpunktes — und die sind in der feinen Auflösung zwei- bis viermal
-         so gross wie ein Bildpunkt, also gut zu sehen. */
-      const gx = fx > fWmax ? fWmax : fx, gy = fy > fHmax ? fHmax : fy;
-      const x0 = gx | 0, y0 = gy | 0, ux = gx - x0, uy = gy - y0;
-      const o0 = y0 * fW + x0, o1 = o0 + fW;
-      const hoehenWert = (feldH[o0] * (1 - ux) + feldH[o0 + 1] * ux) * (1 - uy)
-                       + (feldH[o1] * (1 - ux) + feldH[o1 + 1] * ux) * uy;
-      const y = Math.round(yb - hoehenWert * hochsiz);
-      if (y >= horizont) { pLeer[x] = 0; continue; }    // verdeckt
-      let unten = horizont;
-      if (pLeer[x]) {
-        /* Der vorderste Treffer einer Spalte bekommt eine **feste Lippe**, kein
-           Fundament bis zur Grundfläche.
-
-           Vorher lief die Flanke hinunter bis zum Boden an *dieser* Tiefe. Für
-           einen massiven Block wäre das richtig, und genau deshalb sah es
-           falsch aus: der Grundriss ist Deutschland, und wo seine Umrisslinie
-           in Blickrichtung verläuft — an der Westgrenze, unten an den Alpen —
-           betritt jede Bildspalte die Karte in einer anderen Tiefe. Der Boden
-           sprang dann von Spalte zu Spalte, und unter dem Rand hingen Tropfen.
-
-           Die Karte ist kein Block, sondern ein Tuch über dem Gelände. Es
-           bekommt eine Kante, so dick wie die flache Karte ihre 3D-Kante hat,
-           und darunter ist Hintergrund.
-
-           Dasselbe gilt **nach jeder Lücke**, nicht nur am ersten Treffer, und
-           das war der zweite Teil des Fehlers: verschwand das Gelände in einer
-           Spalte — die Umrisslinie läuft an der Westgrenze und unten an den
-           Alpen streckenweise in Blickrichtung — und tauchte dahinter wieder
-           auf, so füllte die Rückseite bis zum Grat des *vorderen* Stücks
-           herunter und zog damit einen Vorhang über die Lücke. Sichtbar war
-           das als Tropfen unter dem Rand. */
-        const lippe = y + rock;
-        if (lippe < unten) unten = lippe;
-        if (unten <= y) unten = y + 1;
-      }
-      if (unten > pH) unten = pH;
-      const oben = y < 0 ? 0 : y;
-      const i = y0 * fW + x0;
-      const r = td[j], g = td[j + 1], bl = td[j + 2];
-      for (let yy = oben; yy < unten; yy++) {
-        const tief = yy - y;
-        const f = tief <= 0 ? 1 : (tief < nBl ? blende[tief] : DUNKEL);
-        const q = yy * pW + x, p = q << 2;
-        po[p] = r * f + kR * (1 - f);
-        po[p + 1] = g * f + kG * (1 - f);
-        po[p + 2] = bl * f + kB * (1 - f);
-        po[p + 3] = 255;
-        pQuelle[q] = i;
-      }
-      yPuffer[x] = y;
-      pLeer[x] = 0;
-    }
+     Naiv baut man je Scheibe ein ganzes Bild — gemessen 1,5 ms, fünfundzwanzig
+     mal, also der ganze Aufwand des Verfahrens. Fast alles davon ist
+     überflüssig: von einer Scheibe zur nächsten ändert sich die Deckung nur in
+     **zwei Bändern**. Das eine fällt weg, das nächste wird zum weichen Rand;
+     alles darüber bleibt voll, alles darunter leer. Wer die Punkte nach Bändern
+     sortiert vorhält, fasst je Scheibe ein Fünfundzwanzigstel der Fläche an —
+     über alle Scheiben zusammen zwei Durchgänge statt fünfundzwanzig. Die Farbe
+     bleibt unangetastet, nur der Alphakanal wandert. */
+  const zahl = new Int32Array(N + 1);
+  for (let i = 0, n = W * H; i < n; i++) {
+    let k = (farbF[i] * N) | 0;
+    if (k < 0) k = 0; else if (k > N - 1) k = N - 1;
+    bandP[i] = k; zahl[k + 1]++;
   }
+  for (let k = 0; k < N; k++) zahl[k + 1] += zahl[k];
+  const lauf = zahl.slice(0, N);
+  for (let i = 0, n = W * H; i < n; i++) sortP[lauf[bandP[i]]++] = i;
 
-  hcQ.setTransform(1, 0, 0, 1, 0, 0);
-  hcQ.globalCompositeOperation = 'source-over';
-  hcQ.putImageData(pBild, 0, 0);
+  const hd = hcF.getImageData(0, 0, W, H).data;
+  const md = mBild.data;
+  md.set(hd);
+  const weich = k => {
+    for (let q = zahl[k], e = zahl[k + 1]; q < e; q++) {
+      const i = sortP[q], j = (i << 2) + 3;
+      let v = farbF[i] * N - k;
+      if (v <= 0) v = 0; else if (v > 1) v = 1;
+      md[j] = v * hd[j];
+    }
+  };
+  const leer = k => {
+    for (let q = zahl[k], e = zahl[k + 1]; q < e; q++) md[(sortP[q] << 2) + 3] = 0;
+  };
+  weich(0);
+
+  // Die Leinwand steht auf der Punktdichte des Geräts; setTransform ersetzt
+  // sie, also muss sie in die Matrix hinein.
+  const D = Math.min(2.5, devicePixelRatio || 1);
+  const a2 = D * z * ct, c2 = D * z * st, b2 = -D * co * z * st, d2 = D * co * z * ct;
+  /* Jede Scheibe wird nicht einmal aufgelegt, sondern in Zwischenlagen bis
+     hinunter zur Scheibe darunter. Ohne das klaffen zwischen den Scheiben
+     Lücken — dz ist rund acht Bildpunkte, und eine schmale Insel wie Helgoland
+     ist auf dem Bild keinen ganzen Punkt tief. Sie zerfiel dann in einen Kamm
+     aus einzelnen Plättchen.
+
+     Das Auflegen selbst ist gemessen umsonst: acht Lagen je Scheibe kosten
+     104 ms, eine Lage 104. Teuer ist nur das Herstellen einer Scheibe, und das
+     geschieht weiterhin einmal. Nebenbei werden dadurch die Flanken glatt
+     statt gestapelt — die Stufen füllen sich gegenseitig auf. */
+  const lagen = Math.max(1, Math.min(16, Math.ceil(dz)));
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(hkQ, 0, 0, breite, hoehe);
+  for (let k = 0; k < N; k++) {
+    if (k > 0) { leer(k - 1); weich(k); }
+    mkC.putImageData(mBild, 0, 0);
+    for (let t = lagen - 1; t >= 0; t--) {
+      ctx.setTransform(a2, b2, c2, d2,
+        D * oX - a2 * cx - c2 * cy,
+        D * (oY - (k - t / lagen) * dz) - b2 * cx - d2 * cy);
+      ctx.drawImage(mkK, 0, 0);
+    }
+  }
+  ctx.setTransform(D, 0, 0, D, 0, 0);
 }
 
 /* Ein Punkt der flachen Karte, in der Schrägsicht. Gebraucht für die Namen und
    für den Umriss eines angetippten Kreises: beide sind Striche, keine Fläche,
-   und müssen denselben Weg gehen wie das Gelände unter ihnen. */
+   und müssen denselben Weg gehen wie das Gelände unter ihnen. Die Höhe wird
+   dabei auf die Scheibe gerundet, auf der der Punkt wirklich liegt — sonst
+   schwebte ein Name über seiner Terrasse. */
 function projPunkt(X, Y) {
   if (!SICHT || !(rW > 0)) return [X, Y];
-  const s = rW / breite, pS = SICHT.pS;
+  const s = rW / breite, N = SICHT.N;
   const fx = X * s, fy = Y * s;
   const ix = fx | 0, iy = fy | 0;
-  const h = (ix >= 0 && iy >= 0 && ix < rW && iy < rH) ? feldH[iy * rW + ix] : 0;
+  let k = 0;
+  if (ix >= 0 && iy >= 0 && ix < rW && iy < rH) {
+    k = (farbF[iy * rW + ix] * N) | 0;
+    if (k < 0) k = 0; else if (k > N - 1) k = N - 1;
+  }
+  // Massstab und Versatz des Stapels stehen bereits in Punkten der Leinwand;
+  // umzurechnen ist nur der Weg vom Feld in die Ansicht, nicht zurück.
   const dx = fx - SICHT.cx, dy = fy - SICHT.cy;
   const a = dx * SICHT.ct + dy * SICHT.st, b = -dx * SICHT.st + dy * SICHT.ct;
-  return [(a * SICHT.z + SICHT.oX) / pS,
-          ((b * SICHT.co - h * SICHT.hoch * SICHT.si) * SICHT.z + SICHT.oY) / pS];
+  return [a * SICHT.z + SICHT.oX,
+          b * SICHT.co * SICHT.z + SICHT.oY - k * SICHT.dz];
 }
+
+/* Und zurück: welcher Punkt der flachen Karte liegt unter dem Zeiger?
+
+   Ein Punkt auf dem schrägen Bild lässt sich nicht in einem Schritt
+   zurückrechnen — er kann von einem nahen Tal oder einem fernen Gipfel kommen.
+   Beim Stapel ist es aber einfach: es sind nur fünfundzwanzig Scheiben, jede
+   mit einer bekannten, umkehrbaren Abbildung. Also von oben nach unten
+   durchgehen und die erste nehmen, deren Fläche den Punkt wirklich enthält —
+   die oberste gewinnt, denn sie wurde zuletzt gemalt. */
+function feldUnter(X, Y) {
+  if (!SICHT || !(rW > 0)) return null;
+  const S = SICHT, N = S.N;
+  for (let k = N - 1; k >= 0; k--) {
+    const u = (X - S.oX) / S.z, v = (Y - S.oY + k * S.dz) / (S.co * S.z);
+    const fx = S.cx + S.ct * u - S.st * v, fy = S.cy + S.st * u + S.ct * v;
+    const ix = fx | 0, iy = fy | 0;
+    if (ix < 0 || iy < 0 || ix >= rW || iy >= rH) continue;
+    const i = iy * rW + ix;
+    if (!(maskeH[i] > 0.5)) continue;
+    if (farbF[i] * N >= k) return [fx, fy];
+  }
+  return null;
+}
+
 // Die Stellschrauben des Reliefs.
 // Zwei Sonnen, und das ist Absicht. Die Modellierung braucht ein Licht, das
 // hoch genug steht, damit die Hänge noch Zeichnung haben; der Schlagschatten
@@ -1678,9 +1547,10 @@ function reliefUeber(sil, deck) {
   hcF.drawImage(hkA, 0, 0);
   hcF.globalCompositeOperation = 'source-over';
   if (schraeg()) {
-    // Schräg wird die Farbe erst in der Auflösung der Schrägsicht
-    // zusammengesetzt; die Höhenlinien kommen dort hinein, nicht hierher.
-    schraegMalen(s);
+    // Schräg gehen die Höhenlinien in die Vorlage, nicht über das fertige
+    // Bild: sie gehören auf das Gelände, nicht davor. Danach der Stapel.
+    hoehenLinien(s, hcF, s);
+    scheibenMalen();
   } else {
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
@@ -1964,7 +1834,6 @@ function hoehenLinien(s, zc, zm) {
 }
 
 function zeichne() {
-  const gemessen = schraeg() ? performance.now() : 0;
   const [a, b, u] = bildBei(jahr);
   setzePunkte(a, b, u);
   const { w, deck, rate } = werteBei(a, b, u);
@@ -2030,13 +1899,6 @@ function zeichne() {
   if (NAMEN) beschrifte(deck, w);
   schreibe(a, b, u, w, deck);
   notizen();
-
-  // Was das Bild gekostet hat, im gleitenden Mittel — daraus entscheidet sich,
-  // ob der Lauf die feine Stufe trägt.
-  if (gemessen && feinGemalt) {
-    const dt = performance.now() - gemessen;
-    kostenFein = kostenFein ? kostenFein + (dt - kostenFein) * 0.3 : dt;
-  }
 }
 
 const nf = new Intl.NumberFormat('en-GB');
@@ -2618,13 +2480,11 @@ function zeigeTip(x, y) {
      gemerkt, aus welchem Punkt des Feldes er stammt. Das ist die Antwort, und
      sie ist die richtige, auch auf einer Flanke. Von dort geht es zurück auf
      die flache Karte, und dann sucht wieder dieselbe Schleife wie immer. */
-  if (schraeg() && pQuelle && SICHT && rW > 0) {
-    const s = rW / breite, pS = SICHT.pS;
-    const ix = Math.round(x * pS), iy = Math.round(y * pS);
-    if (ix < 0 || iy < 0 || ix >= pW || iy >= pH) { versteckeTip(); stumm = -1; return; }
-    const i = pQuelle[iy * pW + ix];
-    if (i < 0) { versteckeTip(); stumm = -1; return; }
-    x = (i % rW) / s; y = ((i / rW) | 0) / s;
+  if (schraeg()) {
+    const f = feldUnter(x, y);
+    if (!f) { versteckeTip(); stumm = -1; return; }
+    const s = rW / breite;
+    x = f[0] / s; y = f[1] / s;
   }
   let treffer = -1;
   for (let g = 0; g < NK; g++) if (deck[g] > 0.001 && imGebiet(g, x, y)) { treffer = g; break; }
@@ -2716,13 +2576,10 @@ function starte() {
 function halte() {
   laeuft = false;
   document.getElementById('spiel').textContent = '▶';
-  // Steht das Bild, wird es scharf nachgezeichnet — beim Anhalten von Hand
-  // ebenso wie am Ende des Durchlaufs.
-  sichtGrob();
 }
 document.getElementById('spiel').onclick = () => laeuft ? halte() : starte();
 document.getElementById('zeit').addEventListener('input', e => {
-  halte(); sichtGrob(); setzeZeit(e.target.value / 1000); reliefFrisch(); zeichne();
+  halte(); setzeZeit(e.target.value / 1000); reliefFrisch(); zeichne();
 });
 
 /* Blickwinkel und Namen. Kein reliefFrisch: das Höhenfeld ändert sich dabei
@@ -2736,10 +2593,10 @@ function sichtNeu() {
   zeigeUmriss(letzterTip);
 }
 document.getElementById('kipp').addEventListener('input', e => {
-  NEIGUNG = e.target.value / 100; sichtGrob(); sichtNeu();
+  NEIGUNG = e.target.value / 100; sichtNeu();
 });
 document.getElementById('dreh').addEventListener('input', e => {
-  DREHUNG = e.target.value * Math.PI / 180; sichtGrob(); sichtNeu();
+  DREHUNG = e.target.value * Math.PI / 180; sichtNeu();
 });
 document.getElementById('namen').addEventListener('click', e => {
   NAMEN = !NAMEN;

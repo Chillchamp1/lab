@@ -70,35 +70,24 @@ Freigabe, aus Bildvorlagen abzuschreiben.
 ### Karte
 
 - **Aufrichten und Drehen.** Zwei Regler unter der Zeitleiste kippen die Karte
-  aus der Senkrechten (bis 62 Grad) und drehen sie (volle Runde); ein Knopf
-  daneben schaltet die Städtenamen ab. Beim Laden liegt sie flach, und dann
-  läuft alles wie zuvor — der schräge Weg beginnt erst ab der ersten Rastung.
-  Gerechnet wird spaltenweise von vorn nach hinten mit einem Horizont je
-  Spalte. **Zwei Auflösungen**: grob (0,55 der Leinwand, 95 ms je Bild)
-  solange jemand zieht, fein (bis zum 1,4fachen der Leinwand, 124 ms) sobald
-  das Bild steht, mit einem Nachzeichnen eine Fünftelsekunde nach dem letzten
-  Ruck. **Im Lauf entscheidet das Gerät**: die Karte beginnt fein, misst in
-  `zeichne()` selbst, was ein Bild kostet, und fällt auf grob zurück, wenn das
-  gleitende Mittel über 40 ms steigt. Vorrechnen und abspielen geht nicht —
-  zweitausendfünfhundert Bilder, und das Rechnen dauert so lange wie das
-  Ansehen. Die abgesetzten Stücke unter dem Südrand sind **kein Fehler**,
-  sondern Lörrach, der Alpenrand und die Inseln: die Schrägsicht macht aus dem
-  Breitengrad die Tiefe, dazwischen liegt Frankreich. Behoben ist dagegen ein
-  echter Fehler daneben — hinter einer Lücke in einer Spalte zog die Füllung
-  einen Vorhang über die Lücke. Die Höhenlinien werden in der feinen Stufe frisch
-  gezogen statt aus dem Feld vergrössert und sind damit so scharf wie flach;
-  die Höhe wird zwischen vier Feldnachbarn abgetastet, was die treppigen
-  Flanken nimmt. Der Deckel hängt an der Punktzahl, nicht am Gerät — gemessen
-  kosten 0,60 Mio Punkte 130 ms, 0,75 Mio 215, 1,70 Mio 304. Die Drehung
-  kostet im Rechenkern nichts, die feine Auflösung gilt deshalb für jeden
-  Winkel. Zum Vergleich: die flache Karte 75 ms je Bild. Der Rahmen steht dabei über alle Jahre fest (Massstab und Versatz
-  1871, 1939 und 2024 auf vier Nachkommastellen gleich), sonst schrumpfte die
-  Karte genau in dem Mass, in dem die Städte wachsen. Beim Antippen merkt sich
-  jeder Bildpunkt beim Malen, aus welchem Punkt des Feldes er stammt — damit
-  trifft der Griff auch auf einer Flanke. Verdeckte Kreise sind nicht
-  antippbar; bei 62 Grad steht Kiel wirklich hinter Hamburg, und dafür ist der
-  Drehregler da. Der Film zeigt weiter die flache Karte, die beiden
-  Bedienzeilen sind darin ausgeblendet.
+  aus der Senkrechten (bis 62 Grad) und drehen sie; ein Knopf daneben schaltet
+  die Städtenamen ab. Beim Laden liegt sie flach.
+  Gerechnet wird die Schrägsicht als **Laserschnittmodell**: das Höhenfeld in
+  fünfundzwanzig Scheiben geschnitten — so viele wie Farbbänder, jede
+  Stufenkante also eine Höhenlinie —, jede Scheibe ein Ausschnitt aus dem
+  fertigen, schattierten Bild, versetzt übereinandergelegt und in acht
+  Zwischenlagen aufgefüllt. Billig wird das durch eine Zählsortierung nach
+  Bändern: von Scheibe zu Scheibe ändern sich nur zwei Bänder, also zwei
+  Durchgänge statt fünfundzwanzig. **102 ms je Bild** gegen 77 flach, und
+  **unabhängig von der Schirmauflösung** — der frühere Spaltenlauf brauchte
+  dafür zwei Stufen und eine Messung im Lauf (128 ms fein, 96 grob) und franste
+  unten aus. Der Griff auf einen Kreis geht jetzt über fünfundzwanzig
+  umkehrbare Abbildungen, von oben nach unten geprüft; bei 62 Grad treffen
+  Hamburg, Kiel, Berlin, Rostock und Flensburg alle sich selbst, der
+  Spaltenlauf verlor Kiel und Flensburg. Die abgesetzten Stücke unter dem
+  Südrand sind **kein Fehler**, sondern Lörrach, der Alpenrand und die Inseln:
+  die Schrägsicht macht aus dem Breitengrad die Tiefe, dazwischen liegt
+  Frankreich. Der Film zeigt weiter die flache Karte.
 - Ein Diffusionskartogramm je Zeitpunkt, warm vom vorigen gestartet;
   gemeinsamer Massstab, und zwar **für alle Bilder derselbe**. Die Aussengrenze
   bleibt damit über hundertfünfzig Jahre ungefähr, wo sie ist; was sich bewegt,

@@ -988,122 +988,84 @@ Vielfaches grösser.
 Die Karte lag hundertfünfzig Jahre lang flach. Zwei Regler unter der Zeitleiste
 richten sie auf und drehen sie, ein Knopf daneben schaltet die Städtenamen weg.
 
-**Es ist kein zweites Bild.** Das Höhenfeld, aus dem schon Farbe, Schattierung
-und Höhenlinien kommen, wird nicht mehr platt hingelegt, sondern schräg
-angesehen. Gerechnet wird wie in den Geländespielen der neunziger Jahre: das
-Bild entsteht Spalte für Spalte, **von vorn nach hinten**, und jede Spalte führt
-einen Horizont mit. Wer hinten steht und nicht über diesen Horizont ragt, ist
-verdeckt und wird gar nicht erst gemalt. Jeder Bildpunkt wird damit genau
-einmal beschrieben, und die Verdeckung ist nicht geschätzt, sondern richtig.
+**Es ist kein zweites Bild.** Dasselbe Höhenfeld, aus dem schon Farbe,
+Schattierung und Höhenlinien kommen, wird nicht mehr platt hingelegt, sondern
+schräg angesehen.
 
-### Zwei Auflösungen, und warum
+### Ein Stapel Scheiben
 
-Die erste Fassung malte in der Auflösung des Höhenfelds — 0,55 der Leinwand —
-und rechnete das Ergebnis hoch. Das war ein Fehlschluss: flach ist die Karte
-an zwei Stellen schärfer als ihr Feld, nämlich dort, wo **Striche** über das
-hochgerechnete Feld gezogen werden, an den Höhenlinien und an der Küste. Legt
-man die ins Feld und kippt erst danach, ist alles so grob wie das Feld und
-danach noch einmal vergrössert.
+Gerechnet wird die Schrägsicht als **Laserschnittmodell**: das Höhenfeld wird in
+fünfundzwanzig gleiche Höhen geschnitten, von jeder wird die Fläche genommen,
+die mindestens so hoch liegt, und die Flächen werden versetzt
+übereinandergelegt. Fünfundzwanzig, weil das die Zahl der Farbbänder ist —
+**jede Scheibe ist genau ein Band, jede Stufenkante genau eine Höhenlinie.**
+Das ist dieselbe Konstruktion, die die flache Karte schon hat, nur aufgestellt.
 
-Die Schrägsicht hat deshalb ihre **eigene** Auflösung, unabhängig vom Feld. Die
-Farbe wird einmal darauf hochgerechnet — feiner ist sie nicht zu haben, sie ist
-ja weichgezeichnet —, die **Höhenlinien werden darin frisch gezogen** und sind
-damit so scharf wie flach, und der Spaltenlauf malt Punkt für Punkt in dieser
-Auflösung. Nur die Höhe bleibt am Feld und wird zwischen vier Nachbarn
-abgetastet; das nimmt die treppigen Flanken, die vorher jeder Hang hatte.
+Gefärbt wird nicht flach, sondern mit der fertigen Karte: jede Scheibe ist ein
+Ausschnitt aus dem bereits schattierten Bild, samt Licht, Schlagschatten und
+Höhenlinien.
 
-Zwei Stufen, weil die feine kostet:
+**Der Kniff, der den Stapel billig macht.** Naiv baut man je Scheibe ein ganzes
+Bild — gemessen 1,5 ms, fünfundzwanzigmal, also der ganze Aufwand des
+Verfahrens. Fast alles davon ist überflüssig: von einer Scheibe zur nächsten
+ändert sich die Deckung nur in **zwei Bändern**. Das eine fällt weg, das
+nächste wird zum weichen Rand; alles darüber bleibt voll, alles darunter leer.
+Die Punkte werden deshalb einmal je Bild nach Bändern sortiert (Zählsortierung,
+zwei Durchgänge), und dann fasst jede Scheibe ein Fünfundzwanzigstel der Fläche
+an statt der ganzen. Die Farbe bleibt unangetastet, nur der Alphakanal wandert.
 
-| | Auflösung | gemessen |
+**Zwischenlagen.** Jede Scheibe wird nicht einmal aufgelegt, sondern in acht
+Lagen bis hinunter zur Scheibe darunter. Ohne das klaffen Lücken: der Abstand
+zweier Scheiben ist rund acht Bildpunkte, und eine schmale Insel wie Helgoland
+ist auf dem Bild keinen ganzen Punkt tief — sie zerfiel in einen Kamm aus
+Plättchen. Das Auflegen ist gemessen umsonst (acht Lagen 104 ms, eine Lage
+104), teuer ist nur das Herstellen einer Scheibe, und das geschieht weiterhin
+einmal. Nebenbei werden die Flanken dadurch glatt statt gestuft.
+
+### Was der Stapel besser kann als ein Spaltenlauf
+
+Die erste Fassung lief stattdessen Spalte für Spalte in die Tiefe, mit einem
+Horizont je Spalte, wie die Geländespiele der neunziger Jahre. Der Stapel ist
+in jeder Hinsicht der bessere Weg:
+
+| | Spaltenlauf | Stapel |
 |---|---|---|
-| **grob** | 0,55 der Leinwand | 95 ms je Bild |
-| **fein** | bis zum 1,4fachen, gedeckelt | 124 ms je Bild |
-| flache Karte, zum Vergleich | — | 75 ms je Bild |
+| Kosten je Bild (Prüfbrowser) | 128 ms fein, 96 ms grob | **102 ms** |
+| hängt an der Schirmauflösung | ja — daher zwei Stufen und eine Messung im Lauf | **nein** |
+| Rand unten | franste aus (siehe unten) | geschlossene Wand |
+| Griff auf einen Kreis | Merkzettel je Bildpunkt beim Malen | fünfundzwanzig umkehrbare Abbildungen, von oben nach unten geprüft |
+| verdeckte Kreise antippbar | nein | ja, soweit überhaupt sichtbar |
 
-Welche gilt, hängt an drei Fällen:
+Mit dem Stapel fällt die ganze Maschinerie aus grober und feiner Stufe weg,
+samt der Messung, die im Lauf entschied, ob das Gerät die feine trägt. Es gibt
+nur noch eine Stufe, und sie kostet immer dasselbe.
 
-- **Solange jemand zieht**, grob — und eine Fünftelsekunde nach dem letzten Ruck
-  am Regler wird scharf nachgezeichnet.
-- **Steht das Bild**, fein.
-- **Im Lauf**: das entscheidet das Gerät, nicht die Karte. Sie beginnt fein,
-  misst dabei in `zeichne()` selbst, was ein Bild wirklich kostet, und bleibt
-  fein, solange das gleitende Mittel unter 40 ms bleibt — sonst fällt sie nach
-  ein paar Bildern auf grob zurück. Ein schneller Rechner sieht den Lauf also
-  scharf, ein langsamer flüssig statt scharf. Einmal zurückgefallen bleibt es
-  grob, weil ein Hin und Her schlimmer aussähe als die gröbere Stufe; beim
-  Anhalten wird ohnehin nachgezeichnet, eine Grössenänderung setzt die Messung
-  zurück.
-
-**Vorrechnen und abspielen geht nicht**, und das ist keine Bequemlichkeit: der
-Lauf hat bei dreissig Bildern in der Sekunde rund zweitausendfünfhundert
-Bilder, jedes ein paar Megabyte, und sie auszurechnen dauert genau so lange wie
-sie anzusehen. Gewonnen wäre nichts, nur Speicher verloren.
-
-**Der Deckel hängt an der Punktzahl, nicht am Gerät**, und das ist gemessen und
-nicht geschätzt: 0,60 Millionen Punkte kosten 130 ms, 0,75 schon 215, 1,70 dann
-304 — die Rechnung wird überproportional teurer. Auf einem grossen Schirm mit
-dichten Bildpunkten kostete das 1,4fache 85 ms mehr für zwölf Prozent mehr
-Auflösung; dort bleibt es deshalb bei der Leinwandgrösse. Auf einem Telefon, wo
-die Leinwand klein ist, passt das 1,4fache bequem unter den Deckel — und dort
-ist es auch wirklich zu sehen (gemessen 88 ms bei 507 × 853 Punkten).
-
-**Die Drehung kostet nichts.** Im Rechenkern stehen für jede Abtastung dieselben
-zwei Multiplikationen, ob gedreht oder nicht; die Winkel stecken in zwei
-Konstanten vor der Schleife. Es gibt also keinen Grund, die feine Auflösung auf
-die ungedrehte Ansicht zu beschränken — sie gilt für jeden Winkel.
-
-**Und der Spaltenlauf selbst ist fast umsonst.** Er wird bezahlt, indem die
-Schrägsicht drei Dinge wegfallen lässt, die flach teuer sind: den
-Schlagschatten, der als Weichzeichner über einen Pfad aus vierhundert Vielecken
-läuft, die 3D-Kante und das Hochrechnen der Farbfläche auf die grosse Leinwand.
-In der groben Stufe hebt sich das ungefähr auf.
-
-### Vier Entscheidungen, die nicht selbstverständlich sind
-
-**Der Rahmen steht fest.** Verlockend wäre, den Kopfraum nach dem höchsten Berg
-zu bemessen, der gerade dasteht — 1871 gäbe es kaum einen, und die Karte stünde
-grösser da. Nur schrumpfte sie dann genau in dem Mass, in dem die Städte
-wachsen, und zwei Bilder wären nicht mehr zu vergleichen. Das ist aber der
-ganze Zweck der Karte. Also bleibt der Rahmen stehen, das obere Ende der
-Farbleiter ist der Kopfraum, und 1871 bleibt ein Teil davon eben leer.
-Nachgemessen: Massstab und Versatz sind 1871, 1939 und 2024 auf vier
-Nachkommastellen dieselben.
+**Der Rahmen steht fest**, nämlich auf dem oberen Ende der Farbleiter. Nach dem
+höchsten Berg zu rechnen, der gerade dasteht, wäre verlockend — 1871 gäbe es
+kaum einen, und die Karte stünde grösser da. Nur schrumpfte sie dann genau in
+dem Mass, in dem die Städte wachsen, und zwei Bilder wären nicht mehr zu
+vergleichen: genau das, wofür die ganze Karte gebaut ist.
 
 **Die Höhenlinien gehen ins Gelände, nicht auf das Bild davon.** Flach werden
-sie über die fertige Karte gezogen. Schräg werden sie in die Vorlage gemalt,
-bevor sie gekippt wird — sonst lägen sie wie ein Gitter vor der Landschaft und
-liefen quer durch Berge hindurch, die sie verdecken müssten. In der groben
-Stufe, wo die Vorlage gröber ist als die Leinwand, bekommt der Strich dabei
-siebzig Prozent mehr Breite; darunter wird er zu Staub.
-
-Sie werden schräg ausserdem **leichter** gezeichnet, auf 62 Prozent der
-Deckkraft. Die Blende gegen zu enge Niveaus misst deren Abstand auf der
-*flachen* Karte; gekippt staucht die Schrägsicht denselben Hang auf einen
-Bruchteil, und die Blende weiss davon nichts — auf einem Südhang liegen dann
-acht Linien, wo flach zwei lägen. Eine Höhenlinie darf dichter liegen, sie darf
-nur die Farbe darunter nicht zudecken.
-
-**Die Flanke blendet ein.** Ein Hang, der je Tiefenschritt einen Punkt fällt,
-bestünde sonst aus einer hellen und einer dunklen Zeile im Wechsel und sähe
-gesprenkelt aus. Die Flanke wird deshalb erst über mehrere Punkte hinweg dunkel
-— erst eine wirkliche Wand erscheint als Wand.
-
-**Schatten, Kante und Grundfläche bleiben weg.** Sie sind die Möbel der flachen
-Karte: ein Blatt, das auf einem Tisch liegt. In der Schrägsicht baut das
-Gelände seine Flanken selbst, aus seiner eigenen Höhe.
+sie über die fertige Karte gezogen, schräg in die Vorlage, bevor geschnitten
+wird — sonst lägen sie wie ein Gitter vor der Landschaft und liefen quer durch
+Berge hindurch, die sie verdecken müssten. Schräg werden sie ausserdem
+**leichter** gezeichnet, auf 62 Prozent der Deckkraft: die Blende gegen zu enge
+Niveaus misst deren Abstand auf der flachen Karte, und die Schrägsicht staucht
+denselben Hang auf einen Bruchteil.
 
 ### Was beim Antippen passiert
 
-Ein Punkt auf dem schrägen Bild lässt sich nicht zurückrechnen — er kann von
-einem nahen Tal oder einem fernen Gipfel kommen. Also wird nicht gerechnet:
-beim Malen merkt sich jeder Bildpunkt, aus welchem Punkt des Feldes er stammt.
-Das ist die Antwort, und sie stimmt auch auf einer Flanke. Von dort geht es
-zurück auf die flache Karte, und dann sucht dieselbe Schleife wie immer.
+Ein Punkt auf dem schrägen Bild lässt sich nicht in einem Schritt
+zurückrechnen — er kann von einem nahen Tal oder einem fernen Gipfel kommen.
+Beim Stapel ist es aber einfach: es sind fünfundzwanzig Scheiben, jede mit einer
+bekannten, umkehrbaren Abbildung. Also von oben nach unten durchgehen und die
+erste nehmen, deren Fläche den Punkt wirklich enthält — die oberste gewinnt,
+denn sie wurde zuletzt gemalt.
 
-Nachgemessen bei 62 Grad: von acht Städten treffen sich sechs selbst; **Kiel und
-Flensburg nicht — sie stehen bei diesem Winkel wirklich hinter Hamburg.** Das
-ist kein Fehler, sondern die Auskunft der Karte, und der Drehregler ist die
-Antwort darauf.
+Nachgemessen bei 62 Grad: Hamburg, Kiel, Berlin, Rostock und Flensburg treffen
+alle sich selbst. Der Spaltenlauf verlor Kiel und Flensburg, weil sie hinter
+Hamburg standen.
 
 ### Was unten am Rand hängt, und warum es bleibt
 
@@ -1121,20 +1083,9 @@ landet damit weit unterhalb des Hauptkörpers, und was zwischen ihm und dem Rest
 liegt, ist kein Teil der Karte und bleibt schwarz. Das ist keine falsche
 Zeichnung, sondern der Grundriss des Landes von der Seite gesehen.
 
-Drei Mittel dagegen wurden probiert und **alle drei verworfen**, weil sie
-gemessen nichts geändert haben:
-
-| probiert | Ergebnis |
-|---|---|
-| feste Lippe statt Fundament am vordersten Treffer | unverändert — der Boden lag ohnehin fast auf gleicher Höhe |
-| Tiefenschritt an die Vorlage statt ans Feld gekoppelt | unverändert, kostet ein Fünftel mehr |
-| Tiefenschritt dreifach feiner (0,15 statt 0,5) | unverändert, kostet 200 statt 130 ms |
-| Eintritt der Spalte in die Karte viermal halbiert | unverändert |
-
-Ein Fehler war dabei: nach einer **Lücke** in einer Spalte füllte die Rückseite
-bis zum Grat des vorderen Stücks herunter und zog damit einen Vorhang über die
-Lücke. Das ist behoben — jedes Stück hinter einer Lücke beginnt neu, mit seiner
-eigenen Kante.
+Der Stapel macht daraus allerdings etwas viel Ruhigeres als der Spaltenlauf:
+dort war so ein Zipfel eine einzelne dünne Flocke, hier steht er als Wand aus
+fünfundzwanzig Scheiben und gehört sichtbar zum selben Körper.
 
 ### Was die Schrägsicht nicht kann
 
@@ -1149,6 +1100,10 @@ eigenen Kante.
 - **Kein Blickpunkt, keine Perspektive.** Parallelriss, wie ein Blockbild im
   Schulatlas. Zwei gleich hohe Berge sind damit gleich hoch gezeichnet, auch
   wenn einer weiter weg steht — was für eine Karte der richtige Tausch ist.
+- **Vorrechnen und abspielen ginge nicht**, falls der Stapel doch einmal zu
+  teuer würde: der Lauf hat bei dreissig Bildern in der Sekunde rund
+  zweitausendfünfhundert Bilder, jedes ein paar Megabyte, und sie auszurechnen
+  dauert genau so lange wie sie anzusehen.
 
 Der Film zeigt die flache Karte. Die beiden Bedienzeilen sind darin
 ausgeblendet, und der Blickwinkel wird beim Start ausdrücklich auf null
