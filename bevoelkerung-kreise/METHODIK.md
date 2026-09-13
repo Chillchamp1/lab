@@ -1249,6 +1249,52 @@ sind — und genau so herum ist es richtig: weiches Licht auf harten Flächen is
 ein Modell, hartes Licht auf weichen Flächen war der Fehler, an dem die
 Deckflächen jahrelang geblutet haben.
 
+### Das Licht geht auch auf die Wände, und dann fällt der Verlauf weg
+
+Zuerst lag es nur auf den Deckflächen, und das war zu wenig: die Wände trugen
+weiter ihren senkrechten Verlauf von dunklem Fuss zu heller Oberkante — auch
+die Wand, auf die die Sonne voll scheint. Der Verlauf war eine Krücke aus der
+Zeit ohne eigenes Licht. Er liess die Wand als senkrechte Fläche lesen, aber
+**immer gleich, ganz gleich wohin sie zeigt.**
+
+Der Lichtstapel bekommt deshalb je Scheibe einen **zweiten Blit, eine Stufe
+tiefer**. Der deckt die Wand. Damit trägt auch sie die Schattierung des
+Geländes an ihrer Stelle — und weil das Gelände an einer Höhenlinie steil ist,
+ist die Schattierung dort stark gerichtet: die Wand nach Nordwesten wird hell,
+die nach Südosten dunkel. Das ist die Antwort auf beides: die Lichtrichtung
+stimmt, und der Verlauf ist nicht nur überflüssig, sondern war falsch. Die Wand
+trägt jetzt ihr Band, nur gedunkelt; woher das Licht kommt, sagt das Licht.
+
+### Beleuchtete Kanten, als Nebenwirkung
+
+Die flache Karte hat ihre weissen Kanten zur Sonne hin — Tanakas beleuchtete
+Höhenlinien. Schräg fehlten sie, denn der Kantenstrich war gleichmässig
+schwarz.
+
+Er ist jetzt **grau**, und das ist der ganze Trick: Schwarz bliebe schwarz,
+`soft-light` hebt es kaum an. Ein mittleres Grau dagegen wird von der
+Lichtebene nach beiden Seiten gezogen — weiss, wo die Sonne auf die Kante
+trifft, dunkel, wo sie wegfällt. Dieselbe Auskunft wie Tanakas Linie, ohne eine
+einzige zusätzliche Linie zu zeichnen: der Strich war ohnehin da, die
+Lichtebene auch.
+
+| | voll gekippt | halb gekippt |
+|---|---|---|
+| nur Deckflächen beleuchtet, Telefon | 130 ms | 139 ms |
+| dazu Wände und Kanten, Telefon | **133 ms** | **145 ms** |
+| nur Deckflächen, Schirm | 213 ms | 221 ms |
+| dazu Wände und Kanten, Schirm | **231 ms** | **233 ms** |
+
+Ein zweiter kleiner Blit je Scheibe, sonst nichts: der Kantenstrich kostete
+schon vorher nichts, und die Farbe der Wand ist jetzt sogar eine Tabelle
+weniger.
+
+**Die Sonne hängt an der Karte, nicht am Bildschirm.** Dreht man die Karte,
+dreht sich die Beleuchtung mit — Nordwest bleibt Nordwest. Das ist die
+kartographische Übereinkunft, die auch die flache Karte befolgt, und es ist das
+einzig Bezahlbare: eine am Bildschirm festgenagelte Sonne hiesse, das ganze
+Relief bei jedem Grad Drehung neu zu rechnen.
+
 Was bleibt also: scharfe Bandfarbe, Wandverlauf, Kantenstrich — und darüber das
 weiche Licht. Die flache Karte behält ihre Schattierung und ihre beleuchteten
 Höhenlinien unverändert; geändert hat sich nur, was beim Kippen geschieht.

@@ -104,7 +104,23 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Fläche je Blit) und einmal fertig hochgelegt: **132 ms voll, 139 halb** auf
   dem Telefon, 213/221 auf dem Schirm. Unscharf wird dabei nur das Licht;
   Farbe, Kanten und Wände bleiben scharf — weiches Licht auf harten Flächen
-  ist ein Modell, hartes Licht auf weichen Flächen war der alte Fehler. Der Griff auf einen Kreis geht über fünfundzwanzig
+  ist ein Modell, hartes Licht auf weichen Flächen war der alte Fehler.
+- **Das Licht geht auch auf die Wände**, über einen zweiten Blit je Scheibe
+  eine Stufe tiefer. Weil das Gelände an einer Höhenlinie steil ist, ist die
+  Schattierung dort stark gerichtet: die Wand nach Nordwesten wird hell, die
+  nach Südosten dunkel. Damit fällt der senkrechte Verlauf auf der Wand weg —
+  er war eine Krücke aus der Zeit ohne eigenes Licht und lag gleichmässig auch
+  auf der Wand, auf die die Sonne voll scheint. Die Wand trägt jetzt ihr Band,
+  nur gedunkelt.
+- **Beleuchtete Kanten wie flach**, ohne eine zusätzliche Linie: der
+  Kantenstrich ist **grau statt schwarz**, und die Lichtebene zieht ihn weiss,
+  wo die Sonne auf die Kante trifft, und dunkel, wo sie wegfällt. Schwarz
+  bliebe schwarz — `soft-light` hebt es kaum an. Kosten für beides zusammen:
+  Telefon 130 → 133 ms voll und 139 → 145 halb, Schirm 213 → 231 und
+  221 → 233.
+  Die Sonne hängt dabei an der Karte, nicht am Bildschirm: Nordwest bleibt
+  Nordwest, wie flach auch. Eine am Bildschirm festgenagelte Sonne hiesse, das
+  Relief bei jedem Grad Drehung neu zu rechnen. Der Griff auf einen Kreis geht über fünfundzwanzig
   umkehrbare Abbildungen, von oben nach unten geprüft; bei 62 Grad treffen
   Hamburg, Kiel, Berlin, Rostock und Flensburg alle sich selbst. Die
   abgesetzten Stücke unter dem Südrand sind **kein Fehler**, sondern Lörrach,
