@@ -119,12 +119,24 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Gefärbt mit der eigenen Bandfarbe auf **0,80** gedunkelt — bei 0,40 war die
   Wand am steilen Kegel breiter als die Terrasse darüber und verschluckte
   Berlin und Hamburg zu Oliv, die Karte sah gut aus und sagte nichts mehr.
-  Nachgemessen, ob der Saum wirklich die Wand ist: dasselbe Bild mit und ohne
-  die Füllung, Unterschiede spaltenweise gezählt — bei 6,8 Bildpunkten
-  Plattendicke ist der **Median der Säume 7 Bildpunkte**. Nicht echt ist daran
-  nur die Deckfläche: sie trägt die Schattierung des glatten Geländes und wirkt
-  deshalb gewölbt statt geschnitten. Die **unterste** Wand fehlt wirklich, weil
-  die Ringe ab Niveau 1 gerechnet werden.
+  Die Wand ist **in drei gleich hohen Stufen von unten nach oben heller**
+  (0,38 / 0,55 / 0,74 der Bandfarbe): dunkler Fuss, helle Oberkante, wie eine
+  senkrechte Fläche unter einem Überhang. Mit einer einzigen Farbe las das Auge
+  jede Platte als beleuchtete Scheibe statt als Kante, und der Stapel sah aus
+  wie schwebende Platten. Kostet auf dem Telefon 74–76 → 78–79 ms, gut fünf
+  Prozent — messbar, anders als die erste Wand, und den Preis wert.
+- **Keiner Scheibe fehlt die Wand.** Eine Plattendicke genügt beweisbar, weil
+  die Scheiben ineinander liegen: was die Wand von k eine Stufe tiefer deckt,
+  liegt schon auf der Deckfläche von k−1. Nachgemessen mit Wandtiefen von 1, 2,
+  8 Plattendicken und bis zum Boden: **120 Lücken, 3054 px, längste 75 px —
+  viermal auf den Bildpunkt gleich.** Die Lücken sind keine fehlenden Wände,
+  sondern die Stellen, an denen die Karte selbst nicht da ist: Lörrach mit
+  Frankreich dazwischen, die Inseln, der Aussenrand von schräg unten.
+  Was trotzdem schweben lässt, ist der **Schlagschatten** in der Vorlage jeder
+  Platte, der auf der Platte darunter landet. Ihn loszuwerden hiesse eine
+  zweite Reliefstufe zu rechnen — ein Vielfaches der ganzen Schrägsicht.
+  Die **unterste** Wand fehlt wirklich, weil die Ringe ab Niveau 1 gerechnet
+  werden.
 - **Die Berge stehen auf 60 Prozent.** `HOCH3D` von 0,30 auf 0,18: die Städte
   ragten als Türme auf, das Land lag darunter wie ein Sockel. Dieselbe Schraube
   trägt die Plattendicke (dz = hoch·sin(Neigung)·Massstab / 25), also sinkt

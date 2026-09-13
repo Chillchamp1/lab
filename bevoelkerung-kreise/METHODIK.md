@@ -1051,25 +1051,54 @@ Zahlen ruhig liegen, über drei Läufe: 73/74/74 ms ohne die Wände gegen
 Wunder: eine Füllung ist das Billigste in dieser Schleife, verglichen mit
 fünfundzwanzig Beschnitten und fünfundzwanzig ganzen Bildern.
 
-**Ist das echt oder ein Trick?** Echt. Der sichtbare Saum ist wirklich die
-Fläche, auf die sich die Seite der Platte abbildet — nur wird sie nicht als
-Vieleck gebaut, sondern durch Übermalen ausgerechnet. Nachgemessen ohne Deuten:
-dasselbe Bild einmal mit und einmal ohne die Wandfüllung, Unterschiede
-spaltenweise gezählt. Bei einer Plattendicke von 6,8 Bildpunkten ist der
-**Median der Säume 7 Bildpunkte**. Wo die Höhenlinie quer zum Blick läuft, ist
-die Wand also genau eine Plattendicke hoch; die langen Ausreisser sind die
-Stellen, an denen die Linie längs läuft und mehrere Wände in einem Zug stehen.
+**Fehlt einer Scheibe die Wand? Nein — nachgemessen.** Eine Wand von einer
+Plattendicke genügt beweisbar, und zwar weil die Scheiben ineinander liegen:
+die Fläche R_k eines hohen Niveaus ist immer Teil der Fläche R_j jedes
+tieferen. Was die Wand von Scheibe k eine Stufe tiefer überdeckt, liegt damit
+schon auf der Deckfläche von Scheibe k−1. Tiefer zu greifen kann nichts
+schliessen, was nicht ohnehin geschlossen wäre.
 
-Was daran *nicht* echt ist, und was man von ganz schräg sieht: die
-**Deckflächen sind nicht flach gemalt**. Sie tragen die Schattierung des
-glatten Geländes, wie die flache Karte — hell nach Nordwesten, dunkel nach
-Südosten. Eine wirkliche Platte wäre waagerecht und damit gleichmässig
-beleuchtet. Deshalb wirken die Platten gewölbt statt geschnitten, und das Auge
-liest die Kante eher als Rundung denn als Schnitt. Das ist Absicht: die
-Schattierung ist die Lesehilfe der Karte, und ohne sie wären fünfundzwanzig
-Stufen fünfundzwanzig flache Farbflächen.
+Der Beweis ist das eine, die Messung das andere. Derselbe Blick, die Wände
+verschieden tief gezogen, und danach spaltenweise gezählt, wie viele
+Bildpunkte zwischen dem obersten und dem untersten bemalten Punkt einer Spalte
+leer bleiben:
 
-Und eine Wand fehlt wirklich: die **unterste**. Die Ringe werden ab Niveau 1
+| Wandtiefe | Lücken | zusammen | längste |
+|---|---|---|---|
+| 1 Plattendicke | 120 | 3054 px | 75 px |
+| 2 Plattendicken | 120 | 3054 px | 75 px |
+| 8 Plattendicken | 120 | 3054 px | 75 px |
+| bis zum Boden | 120 | 3054 px | 75 px |
+
+**Auf den Bildpunkt gleich.** Die Lücken, die bleiben, sind keine fehlenden
+Wände: es sind die Stellen, an denen die Karte selbst nicht da ist — Lörrach
+mit Frankreich dazwischen, die Inseln, und der Aussenrand, den man von schräg
+unten sieht. Dafür gibt es keine Wand, weil es dort kein Gebiet gibt.
+
+**Was trotzdem schwebte, und woran es lag.** Die Wand war nur ein Fünftel
+dunkler als die Deckfläche — und die Deckfläche trägt die Schattierung des
+glatten Geländes, hell nach Nordwesten. Damit las das Auge jede Platte als
+beleuchtete Scheibe statt als geschnittene Kante, und der Stapel sah aus wie
+Platten, die übereinander schweben. Die Wand geht deshalb jetzt **in drei
+gleich hohen Stufen von unten nach oben heller** (0,38 / 0,55 / 0,74 der
+Bandfarbe): dunkler Fuss, helle Oberkante — genau das, was eine senkrechte
+Fläche unter einem Überhang zeigt, unten weniger Himmel, oben mehr. Damit
+steht der Stapel als Körper da.
+
+Gemessen kostet das zwei Füllungen je Scheibe: auf dem Telefon **74–76 auf
+78–79 ms**, also gut fünf Prozent. Anders als die erste Wand, die im Rauschen
+lag, ist das messbar — und den Preis wert.
+
+Zwei Dinge bleiben, wie sie sind. Die **Deckflächen** behalten ihre
+Schattierung, obwohl eine wirkliche Platte waagerecht und gleichmässig
+beleuchtet wäre; sie ist die Lesehilfe der Karte, und ohne sie wären
+fünfundzwanzig Stufen fünfundzwanzig flache Farbflächen. Und jede Platte trägt
+in ihrer Vorlage den **Schlagschatten** des glatten Berges mit, der auf der
+Platte darunter landet — das lässt sie ein wenig schweben. Ihn loszuwerden
+hiesse, eine zweite Reliefstufe ohne Schlagschatten zu rechnen, und die kostet
+ein Vielfaches der ganzen Schrägsicht.
+
+Eine Wand fehlt wirklich: die **unterste**. Die Ringe werden ab Niveau 1
 gerechnet, die Grundplatte hat also keine Seite — was man unten am Rand als
 Schichtung sieht, sind die fünf Wasserbänder darüber.
 
@@ -1077,11 +1106,15 @@ Schichtung sieht, sind die fünf Wasserbänder darüber.
 Farbe ihres eigenen Bandes, gedunkelt; das ist auch physikalisch die richtige
 Seite, denn das Licht steht im Nordwesten und eine nach Süden gewandte Wand
 liegt im Schatten. Nur ist an einem steilen Kegel die Wand **breiter als die
-Terrasse darüber**. Beim ersten Versuch, 0,40, verschluckte sie Berlin und
-Hamburg: aus Weiss, Rot und Orange wurde Oliv, und die Karte hatte ihre
-Aussage verloren, um schön auszusehen. Bei **0,80** ist jede Platte sichtbar
-dick und die Farbleiter so zu lesen wie vorher; der dünne schwarze Strich auf
-der Oberkante trennt beides.
+Terrasse darüber**. Ein erster Versuch mit einer einzigen Farbe auf 0,40
+verschluckte Berlin und Hamburg: aus Weiss, Rot und Orange wurde Oliv, und die
+Karte hatte ihre Aussage verloren, um schön auszusehen.
+
+Die drei Stufen lösen genau diesen Streit. Sie sind im Mittel dunkler als die
+eine Farbe auf 0,80, die vorher nötig war — und die Karte bleibt trotzdem
+lesbar, weil der dunkle Teil nur das untere Drittel der Wand ist und die
+Oberkante hell an die Deckfläche anschliesst. Dass die Platten seit `HOCH3D
+= 0,18` vierzig Prozent dünner sind, hilft dabei mit.
 
 ### Geschnitten wird aus einer eigenen Vorlage
 

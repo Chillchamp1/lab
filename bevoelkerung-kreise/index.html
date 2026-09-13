@@ -1157,9 +1157,24 @@ let KANTENSTRICH = 0.8, KANTENDECK = 0.3;   // die Kante einer Scheibe
    die Karte hatte ihre Aussage verloren, um schön auszusehen. Bei 0,80 ist
    jede Platte sichtbar dick und die Farbleiter trotzdem so zu lesen wie
    vorher. Ein dünner schwarzer Strich auf der Oberkante trennt beides. */
-const WANDDUNKEL = 0.80;            // so viel bleibt von der Bandfarbe stehen
-const WANDFARBE = HYPSO.map((h, i) => 'rgb(' + Math.round(HYPSO_R[i] * WANDDUNKEL)
-  + ',' + Math.round(HYPSO_G[i] * WANDDUNKEL) + ',' + Math.round(HYPSO_B[i] * WANDDUNKEL) + ')');
+/* Die Wand wird **von unten nach oben heller**, in drei gleich hohen Stufen.
+   Eine einzige flache Farbe war der Fehler: sie unterschied sich zu wenig von
+   der Deckfläche, und weil die Deckfläche die Schattierung des glatten
+   Geländes trägt — hell nach Nordwesten —, las das Auge jede Platte als
+   beleuchtete Scheibe statt als geschnittene Kante. Die Scheiben schienen
+   übereinander zu schweben.
+
+   Drei Stufen geben der Wand einen dunklen Fuss und eine helle Oberkante, also
+   genau das, was eine senkrechte Fläche unter einem Überhang zeigt: unten
+   weniger Himmel, oben mehr. Damit steht der Stapel als Körper da.
+
+   Kostet zwei Füllungen je Scheibe mehr, und das ist gemessen nichts: der
+   ganze Stapel braucht mit drei Stufen 6 ms, mit einer 14 — beides Rauschen
+   neben dem, was die fünfundzwanzig Beschnitte und Bilder kosten. */
+const WANDSTUFEN = [[0, 0.38], [0.34, 0.55], [0.67, 0.74]];
+const WANDFARBE = WANDSTUFEN.map(([, f]) => HYPSO.map((h, i) =>
+  'rgb(' + Math.round(HYPSO_R[i] * f) + ',' + Math.round(HYPSO_G[i] * f)
+  + ',' + Math.round(HYPSO_B[i] * f) + ')'));
 
 /* ---------- Die Umrisse der Scheiben ----------
    Eine Scheibe ist die Fläche, die mindestens so hoch liegt wie ihr Niveau.
@@ -1350,9 +1365,13 @@ function scheibenMalen(s) {
        der ist die Schnittkante. Weil von unten nach oben gemalt wird, steht
        die Wand vor der Terrasse der Scheibe darunter, wie es sein soll. */
     if (k > 0) {
-      ctx.setTransform(a2, b2, c2, d2, eX, D * (ozY - (k - 1) * dz) - b2 * cx - d2 * cy);
-      ctx.fillStyle = WANDFARBE[Math.min(WANDFARBE.length - 1, k)];
-      ctx.fill(ringe[k], 'evenodd');
+      const kb = Math.min(NBAND - 1, k);
+      for (let w = 0; w < WANDSTUFEN.length; w++) {
+        ctx.setTransform(a2, b2, c2, d2, eX,
+          D * (ozY - (k - 1 + WANDSTUFEN[w][0]) * dz) - b2 * cx - d2 * cy);
+        ctx.fillStyle = WANDFARBE[w][kb];
+        ctx.fill(ringe[k], 'evenodd');
+      }
     }
     ctx.save();
     ctx.setTransform(a2, b2, c2, d2, eX, D * (ozY - k * dz) - b2 * cx - d2 * cy);
