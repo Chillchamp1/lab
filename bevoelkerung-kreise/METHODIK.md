@@ -1296,6 +1296,56 @@ hinzunehmen: dreht man von 0 aus gegen den Uhrzeigersinn, springt der Knopf an
 das rechte Ende. Die Karte dreht sich dabei ruhig weiter — nur der Knopf
 springt, weil ein Kreis auf einer Strecke abgebildet wird.
 
+### Alles dreht sich um die Finger
+
+Wie in einer Strassenkarte: der Punkt, den man anfasst, bleibt liegen — beim
+Aufziehen, beim Drehen und beim Kippen gleichermassen. Vorher blieb er nur
+beim Zoom stehen; Drehung und Neigung liefen um die **Mitte der Karte**, und
+der angefasste Ort wanderte davon.
+
+Das Verfahren ist in drei Zeilen gesagt und gilt für alle drei Gesten
+zugleich, auch wenn sie in einem Schritt zusammenkommen:
+
+1. merken, welcher **Bodenpunkt** gerade unter der Fingermitte liegt,
+2. ändern, was die Geste ändert, und neu einpassen,
+3. so weit verschieben, dass derselbe Bodenpunkt wieder dort liegt.
+
+Schritt 3 ist ein einziger Sprung und kein Nachlaufen: die Verschiebung geht
+**additiv** in die Abbildung ein, also trifft man in einem Zug genau.
+
+Dafür musste die Einpassung vom Malen getrennt werden. Wohin ein Bodenpunkt
+nach der Änderung fällt, steht erst fest, wenn Massstab und Versatz neu
+gerechnet sind — und die steckten mitten im Zeichnen der Scheiben. Jetzt
+rechnet eine eigene Funktion nur, und der Stapel nimmt ihr Ergebnis.
+
+Bezug ist der **Boden**, nicht die Geländeoberfläche: man fasst die Karte an,
+nicht die Flanke eines Berges. Sonst spränge der Anker beim Kippen auf die
+Höhe des Berges, der gerade unter dem Finger steht.
+
+Nachgemessen, mit echten Berührungsereignissen im Prüfbrowser und einem
+Mitschnitt bei jedem gehaltenen Schritt — wie weit wandert der angefasste
+Bodenpunkt zwischen vorher und nachher?
+
+| Geste | gehaltene Schritte | grösste Abweichung |
+|---|---|---|
+| aufziehen | 16 | **0,00 px** |
+| verdrehen | 20 | **0,00 px** |
+| kippen | 20 | **0,00 px** |
+| alles zugleich | 20 | **0,00 px** |
+
+**Die Klemme musste weichen.** Sie hing an Breite·(ZOOM−1) — bei ZOOM 1 also
+null, die Karte stand fest. Das geht nicht mehr, sobald Drehen und Kippen um
+die Finger laufen: dabei *muss* sich die Karte verschieben, sonst bleibt der
+Punkt unter dem Finger nicht stehen. Geklemmt wird deshalb jetzt der wirkliche
+Kasten der eingepassten Karte: von jeder Seite muss sie ein Viertel des
+Rahmens erreichen. Drei Viertel darf man sie hinausschieben, das vierte hält
+sie fest. Als Nebenwirkung schiebt ein Finger die Karte jetzt auch bei ZOOM 1
+— was man gedreht hat, lässt sich auch wieder zurechtrücken.
+
+**Die Regler haben keinen Finger auf der Karte.** Sie halten deshalb die Mitte
+des Rahmens fest: dasselbe Verfahren, anderer Ankerpunkt. Ohne das sprang eine
+verschobene Karte beim Ziehen am Drehregler davon.
+
 ### Zoom ist ein Vergrösserungsglas, kein neues Rendern
 
 Das ist eine Entscheidung und kein Versäumnis. Das Höhenfeld ist in

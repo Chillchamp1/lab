@@ -104,6 +104,14 @@ Alle drei Regler fangen **links** an: die Zeitleiste bei 1871, der Kippregler
 bei flach, der Drehregler bei Norden oben. Er läuft dafür von 0 bis 360 statt
 von −180 bis 180.
 
+**Alles dreht sich um die Finger**, wie in einer Strassenkarte: der Punkt, den
+man anfasst, bleibt liegen — beim Aufziehen, beim Drehen und beim Kippen
+gleichermassen. Das Verfahren ist in drei Zeilen gesagt: merken, welcher
+Bodenpunkt unter der Fingermitte liegt; ändern und neu einpassen; um die
+Differenz verschieben. Weil die Verschiebung additiv in die Abbildung eingeht,
+trifft man in einem Zug genau — gemessen mit echten Berührungsereignissen
+wandert der angefasste Punkt bei allen vier Gesten um 0,00 Bildpunkte.
+
 Das Vergrössern ist ausdrücklich ein **Vergrösserungsglas** und kein neues
 Rechnen. Die Weichzeichner, die aus Dichte ein Gebirge machen, messen in
 Bildpunkten der Leinwand; würde beim Heranziehen neu gerechnet, änderte sich

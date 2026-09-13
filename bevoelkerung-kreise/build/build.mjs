@@ -1703,6 +1703,66 @@ function scheibenRinge(N) {
   return pfade;
 }
 
+/* ---------- Die Einpassung, getrennt vom Malen ----------
+   Die Gesten brauchen sie, ohne ein Bild zu erzeugen. Um die Karte unter den
+   Fingern festzuhalten, muss man wissen, wohin ein Bodenpunkt **nach** der
+   Änderung fällt — und das steht erst fest, wenn neu eingepasst ist. Also
+   rechnet diese Funktion nur, und das Malen nimmt ihr Ergebnis.
+
+   Der Rahmen steht dabei **fest**, nämlich auf dem oberen Ende der Farbleiter.
+   Nach dem höchsten Berg zu rechnen, der gerade dasteht, wäre verlockend —
+   1871 gäbe es kaum einen, und die Karte stünde grösser da. Nur schrumpfte
+   sie dann in dem Mass, in dem die Städte wachsen, und zwei Bilder wären
+   nicht mehr zu vergleichen: genau das, wofür die ganze Karte gebaut ist. */
+function sichtRechnen() {
+  const N = NBAND;
+  const phi = NEIGUNG * KIPPMAX, co = Math.cos(phi), si = Math.sin(phi);
+  /* Positives DREHUNG dreht die Karte **im Uhrzeigersinn**. Das Minus steht
+     hier, weil die Leinwand y nach unten zählt: ohne es lief die Karte den
+     Fingern entgegen — im Uhrzeigersinn verdreht, drehte sie sich dagegen. */
+  const ct = Math.cos(DREHUNG), st = -Math.sin(DREHUNG);
+  const cx = breite / 2, cy = hoehe / 2, hoch = hoehe * HOCH3D;
+  let aMin = 1e9, aMax = -1e9, yMin = 1e9, yMax = -1e9;
+  for (const e of [[0, 0], [breite, 0], [0, hoehe], [breite, hoehe]]) {
+    const dx = e[0] - cx, dy = e[1] - cy;
+    const a = dx * ct + dy * st, b = -dx * st + dy * ct;
+    if (a < aMin) aMin = a; if (a > aMax) aMax = a;
+    const y0 = b * co, y1 = b * co - hoch * si;
+    if (y1 < yMin) yMin = y1; if (y0 > yMax) yMax = y0;
+  }
+  const rand = 2;
+  const z = Math.min((breite - 2 * rand) / Math.max(1e-6, aMax - aMin),
+                     (hoehe - 2 * rand) / Math.max(1e-6, yMax - yMin));
+  const oX = rand + (breite - 2 * rand - (aMax - aMin) * z) / 2 - aMin * z;
+  const oY = rand + (hoehe - 2 * rand - (yMax - yMin) * z) / 2 - yMin * z;
+  // Zoom und Verschiebung kommen **nach** dem Einpassen: sie sind eine
+  // Abbildung auf dem fertigen Bild, kein Teil der Geometrie.
+  const zz = z * ZOOM, ozX = oX * ZOOM + vX, ozY = oY * ZOOM + vY;
+  SICHT = { co, si, ct, st, cx, cy, hoch, z: zz, oX: ozX, oY: ozY, N,
+            dz: hoch * si * zz / N,
+            links: ozX + aMin * zz, rechts: ozX + aMax * zz,
+            oben: ozY + yMin * zz, unten: ozY + yMax * zz };
+  return SICHT;
+}
+
+/* Der **Boden** unter einem Bildpunkt und zurück — dieselbe Umkehrung wie
+   beim Griff auf einen Kreis, nur auf Höhe null statt auf der Oberfläche des
+   Geländes. Das ist der richtige Bezug für eine Geste: man fasst die Karte an,
+   nicht die Flanke eines Berges. */
+function bodenUnter(sx, sy) {
+  if (!schraeg()) return [(sx - vX) / ZOOM, (sy - vY) / ZOOM];
+  const S = SICHT || sichtRechnen();
+  const u = (sx - S.oX) / S.z, v = (sy - S.oY) / (S.co * S.z);
+  return [S.cx + S.ct * u - S.st * v, S.cy + S.st * u + S.ct * v];
+}
+function bodenAuf(X, Y) {
+  if (!schraeg()) return [X * ZOOM + vX, Y * ZOOM + vY];
+  const S = SICHT || sichtRechnen();
+  const dx = X - S.cx, dy = Y - S.cy;
+  const a = dx * S.ct + dy * S.st, b = -dx * S.st + dy * S.ct;
+  return [a * S.z + S.oX, b * S.co * S.z + S.oY];
+}
+
 function scheibenMalen(s) {
   const N = NBAND;
   const D = Math.min(2.5, devicePixelRatio || 1);
@@ -1724,36 +1784,9 @@ function scheibenMalen(s) {
   hcT.drawImage(hkF, 0, 0, W, H);
   hoehenLinien(s, hcT, W / breite);
 
-  const phi = NEIGUNG * KIPPMAX, co = Math.cos(phi), si = Math.sin(phi);
-  /* Positives DREHUNG dreht die Karte **im Uhrzeigersinn**. Das Minus steht
-     hier, weil die Leinwand y nach unten zählt: ohne es lief die Karte den
-     Fingern entgegen — im Uhrzeigersinn verdreht, drehte sie sich dagegen. */
-  const ct = Math.cos(DREHUNG), st = -Math.sin(DREHUNG);
-  const cx = breite / 2, cy = hoehe / 2, hoch = hoehe * HOCH3D;
-
-  /* Der Rahmen steht **fest**, nämlich auf dem oberen Ende der Farbleiter.
-     Nach dem höchsten Berg zu rechnen, der gerade dasteht, wäre verlockend —
-     1871 gäbe es kaum einen, und die Karte stünde grösser da. Nur schrumpfte
-     sie dann in dem Mass, in dem die Städte wachsen, und zwei Bilder wären
-     nicht mehr zu vergleichen: genau das, wofür die ganze Karte gebaut ist. */
-  let aMin = 1e9, aMax = -1e9, yMin = 1e9, yMax = -1e9;
-  for (const e of [[0, 0], [breite, 0], [0, hoehe], [breite, hoehe]]) {
-    const dx = e[0] - cx, dy = e[1] - cy;
-    const a = dx * ct + dy * st, b = -dx * st + dy * ct;
-    if (a < aMin) aMin = a; if (a > aMax) aMax = a;
-    const y0 = b * co, y1 = b * co - hoch * si;
-    if (y1 < yMin) yMin = y1; if (y0 > yMax) yMax = y0;
-  }
-  const rand = 2;
-  const z = Math.min((breite - 2 * rand) / Math.max(1e-6, aMax - aMin),
-                     (hoehe - 2 * rand) / Math.max(1e-6, yMax - yMin));
-  const oX = rand + (breite - 2 * rand - (aMax - aMin) * z) / 2 - aMin * z;
-  const oY = rand + (hoehe - 2 * rand - (yMax - yMin) * z) / 2 - yMin * z;
-  // Zoom und Verschiebung kommen **nach** dem Einpassen: sie sind eine
-  // Abbildung auf dem fertigen Bild, kein Teil der Geometrie.
-  const zz = z * ZOOM, ozX = oX * ZOOM + vX, ozY = oY * ZOOM + vY;
-  const dz = hoch * si * zz / N;
-  SICHT = { co, si, ct, st, cx, cy, hoch, z: zz, oX: ozX, oY: ozY, N, dz };
+  const S = sichtRechnen();
+  const co = S.co, si = S.si, ct = S.ct, st = S.st, cx = S.cx, cy = S.cy;
+  const zz = S.z, ozX = S.oX, ozY = S.oY, dz = S.dz;
 
   const ringe = scheibenRinge(N);
   const a2 = D * zz * ct, c2 = D * zz * st, b2 = -D * co * zz * st, d2 = D * co * zz * ct;
@@ -3170,27 +3203,54 @@ function baldMalen() {
   requestAnimationFrame(() => { malBald = false; zeichne(); zeigeUmriss(letzterTip); });
 }
 
+/* Die Karte darf wandern, aber nicht verschwinden. Früher war der Anschlag
+   an Breite·(ZOOM−1) gebunden — bei ZOOM 1 also null, die Karte stand fest.
+   Das ging nicht mehr, sobald Drehen und Kippen um die Finger laufen: dabei
+   **muss** sich die Karte verschieben, sonst bleibt der Punkt unter dem Finger
+   nicht stehen.
+
+   Also wird jetzt der wirkliche Kasten der eingepassten Karte geklemmt: von
+   jeder Seite muss sie mindestens KLEMMREST des Rahmens erreichen. Drei
+   Viertel darf man sie hinausschieben, das vierte hält sie fest. */
+const KLEMMREST = 0.25;
 function ansichtKlemmen() {
   if (ZOOM < 1) ZOOM = 1; else if (ZOOM > ZOOMMAX) ZOOM = ZOOMMAX;
-  /* So weit schieben, dass die Karte den Rahmen gerade noch füllt, nicht
-     weiter. Das Bild reicht von vX bis vX + breite·ZOOM; damit es den Rahmen
-     deckt, muss vX zwischen −breite·(ZOOM−1) und 0 liegen — **nicht**
-     symmetrisch um null. Symmetrisch stand ein mittig vergrössertes Bild
-     schon am Anschlag, und man konnte nur in eine Richtung schieben. */
-  const gX = breite * (ZOOM - 1), gY = hoehe * (ZOOM - 1);
-  if (vX > 0) vX = 0; else if (vX < -gX) vX = -gX;
-  if (vY > 0) vY = 0; else if (vY < -gY) vY = -gY;
+  const S = sichtRechnen();
+  const rX = breite * KLEMMREST, rY = hoehe * KLEMMREST;
+  if (S.rechts < rX) vX += rX - S.rechts;
+  else if (S.links > breite - rX) vX -= S.links - (breite - rX);
+  if (S.unten < rY) vY += rY - S.unten;
+  else if (S.oben > hoehe - rY) vY -= S.oben - (hoehe - rY);
+  sichtRechnen();
+}
+
+/* ---------- Alles dreht sich um die Finger ----------
+   Wie in einer Strassenkarte: der Punkt, den man anfasst, bleibt liegen —
+   beim Aufziehen, beim Drehen und beim Kippen gleichermassen. Vorher drehte
+   und kippte die Karte um ihre eigene Mitte, und der angefasste Ort lief
+   davon.
+
+   Das Verfahren ist in drei Zeilen gesagt und gilt für alle drei Gesten
+   zugleich, auch wenn sie in einem Schritt zusammenkommen:
+
+     1. merken, welcher **Bodenpunkt** gerade unter dem Finger liegt,
+     2. ändern, was die Geste ändert, und neu einpassen,
+     3. so weit verschieben, dass derselbe Bodenpunkt wieder dort liegt.
+
+   Schritt 3 ist ein einziger Sprung und kein Nachlaufen: die Verschiebung
+   geht additiv in die Abbildung ein, also trifft man genau. */
+function haltePunkt(px, py, aendern) {
+  const g = bodenUnter(px, py);
+  aendern();
+  if (ZOOM < 1) ZOOM = 1; else if (ZOOM > ZOOMMAX) ZOOM = ZOOMMAX;
+  sichtRechnen();
+  const s = bodenAuf(g[0], g[1]);
+  vX += px - s[0]; vY += py - s[1];
+  ansichtKlemmen();
 }
 
 function zoomeUm(faktor, px, py) {
-  const vorher = ZOOM;
-  ZOOM *= faktor;
-  if (ZOOM < 1) ZOOM = 1; else if (ZOOM > ZOOMMAX) ZOOM = ZOOMMAX;
-  // Um den Punkt herum, den die Finger halten: der bleibt stehen.
-  const w = ZOOM / vorher;
-  vX = px - (px - vX) * w;
-  vY = py - (py - vY) * w;
-  ansichtKlemmen();
+  haltePunkt(px, py, () => { ZOOM *= faktor; });
 }
 
 function reglerNach() {
@@ -3231,7 +3291,7 @@ cv.addEventListener('pointermove', e => {
   if (zeiger.size === 1) {
     if (!einStart) return;
     if (!einStart.gezogen && Math.hypot(x - einStart.x, y - einStart.y) > 8) einStart.gezogen = true;
-    if (einStart.gezogen && ZOOM > 1) { vX += dx; vY += dy; ansichtKlemmen(); baldMalen(); }
+    if (einStart.gezogen) { vX += dx; vY += dy; ansichtKlemmen(); baldMalen(); }
     return;
   }
   if (zeiger.size !== 2) return;
@@ -3239,13 +3299,17 @@ cv.addEventListener('pointermove', e => {
   const abst = Math.hypot(f[1].x - f[0].x, f[1].y - f[0].y);
   const wink = Math.atan2(f[1].y - f[0].y, f[1].x - f[0].x);
   const mx = (f[0].x + f[1].x) / 2, my = (f[0].y + f[1].y) / 2;
-  if (zweiAbstand > 12 && abst > 12) zoomeUm(abst / zweiAbstand, mx, my);
   let dw = wink - zweiWinkel;
   while (dw > Math.PI) dw -= 2 * Math.PI;
   while (dw < -Math.PI) dw += 2 * Math.PI;
-  DREHUNG += dw;
-  // Nach oben schieben richtet die Karte auf, wie in einer Straßenkarte.
-  NEIGUNG = Math.max(0, Math.min(1, NEIGUNG - (my - zweiMitte) / KIPPWEG));
+  // Zoom, Drehung und Neigung in **einem** gehaltenen Schritt: der Bodenpunkt
+  // wird einmal vorher gemerkt und einmal nachher zurechtgeschoben.
+  haltePunkt(mx, my, () => {
+    if (zweiAbstand > 12 && abst > 12) ZOOM *= abst / zweiAbstand;
+    DREHUNG += dw;
+    // Nach oben schieben richtet die Karte auf, wie in einer Straßenkarte.
+    NEIGUNG = Math.max(0, Math.min(1, NEIGUNG - (my - zweiMitte) / KIPPWEG));
+  });
   zweiAbstand = abst; zweiWinkel = wink; zweiMitte = my;
   reglerNach();
   baldMalen();
@@ -3327,11 +3391,18 @@ function sichtNeu() {
   zeichne();
   zeigeUmriss(letzterTip);
 }
+/* Die Regler haben keinen Finger auf der Karte. Sie halten deshalb die
+   **Mitte des Rahmens** fest — dasselbe Verfahren, anderer Ankerpunkt. Ohne
+   das sprang eine verschobene Karte beim Drehen am Regler davon. */
 document.getElementById('kipp').addEventListener('input', e => {
-  NEIGUNG = e.target.value / 100; sichtNeu();
+  const v = e.target.value / 100;
+  haltePunkt(breite / 2, hoehe / 2, () => { NEIGUNG = v; });
+  sichtNeu();
 });
 document.getElementById('dreh').addEventListener('input', e => {
-  DREHUNG = e.target.value * Math.PI / 180; sichtNeu();
+  const g = e.target.value * Math.PI / 180;
+  haltePunkt(breite / 2, hoehe / 2, () => { DREHUNG = g; });
+  sichtNeu();
 });
 document.getElementById('namen').addEventListener('click', e => {
   NAMEN = !NAMEN;

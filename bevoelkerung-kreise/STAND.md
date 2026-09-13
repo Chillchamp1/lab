@@ -101,7 +101,21 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   ausgenommen, der Scheibenstapel wird wirklich neu geschnitten. Nachgemessen
   im Prüfbrowser mit zwei Fingern (420×800, dpr 2): Zoom 1,00 → 3,00, Drehung
   29 Grad, Neigung 0,55, Regler folgen, Doppeltipp stellt zurück; der Griff auf
-  einen Kreis trifft bei Zoom 2,5 flach und bei 60 Grad. Die Karte folgt dabei
+  einen Kreis trifft bei Zoom 2,5 flach und bei 60 Grad.
+- **Alles dreht sich um die Finger**, wie in einer Strassenkarte: der
+  angefasste Punkt bleibt liegen, beim Aufziehen, Drehen und Kippen
+  gleichermassen. Vorher blieb nur der Zoom stehen; Drehung und Neigung liefen
+  um die Kartenmitte. Verfahren: Bodenpunkt unter der Fingermitte merken,
+  ändern, neu einpassen, um die Differenz verschieben — additiv, also in einem
+  Zug genau. Dafür ist die Einpassung vom Malen getrennt (`sichtRechnen`).
+  Bezug ist der **Boden**, nicht die Geländeoberfläche: man fasst die Karte an,
+  nicht die Flanke eines Berges. Nachgemessen mit echten Berührungsereignissen,
+  Mitschnitt je gehaltenem Schritt: aufziehen, verdrehen, kippen und alles
+  zugleich je **0,00 px** Abweichung. Die Klemme hängt dafür nicht mehr an
+  Breite·(ZOOM−1), sondern am wirklichen Kasten der Karte — von jeder Seite muss
+  sie ein Viertel des Rahmens erreichen; ein Finger schiebt deshalb auch bei
+  Zoom 1. Die Regler halten die Mitte des Rahmens fest.
+  Die Karte folgt dabei
   den Fingern: anfangs drehte sie sich ihnen entgegen, weil die Leinwand y nach
   unten zählt — ein Vorzeichen beim Bau der Drehmatrix richtet es, für Finger
   und Regler zugleich.
