@@ -38,6 +38,16 @@ Gelände — und dazu ein Nadelrelief. Sie sind weg. Die Geländekarte trägt
 dieselben Zahlen, und eine Seite, die eine Sache gut zeigt, ist mehr wert als
 eine mit vier Knöpfen.
 
+**Aufrichten und Drehen.** Unter der Zeitleiste stehen trotzdem zwei Regler und
+ein Knopf: *Tilt* kippt die Karte aus der Senkrechten in die Schrägsicht, *Turn*
+dreht sie, *Names* schaltet die Städtenamen weg. Das ist kein vierter Knopf für
+eine vierte Ansicht — es ist dieselbe Karte, dieselben Zahlen, nur von der
+Seite angesehen. Wer eine Bevölkerung als Gebirge zeichnet, sollte sie auch als
+Gebirge zeigen dürfen; und 1871, wenn fast das ganze Land unter dem
+Meeresspiegel liegt, sagt der schräge Blick in einem Augenblick, wofür die
+flache Karte einen Absatz braucht. Beim Laden liegt die Karte flach, und der
+Film zeigt weiterhin nur diese flache Karte.
+
 ## Was jeweils geschah
 
 Über der Karte steht, was gerade geschieht: Ostflucht, Weltkrieg, Vertreibung,

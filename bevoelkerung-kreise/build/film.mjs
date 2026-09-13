@@ -50,13 +50,22 @@ await seite.waitForTimeout(2500);
 // Regler weg, Rahmen weg: die Bühne füllt das Bild bis an den Rand.
 await seite.addStyleTag({ content: `
   .regler{display:none!important}
+  .sicht{display:none!important}
   .wrap{padding:0!important;max-width:none!important}
   .buehne{border:none!important;border-radius:0!important;padding:10px 12px 6px!important}
   body{background:var(--surface)!important}
 ` });
 await seite.waitForTimeout(400);
 
-const DAUER = await seite.evaluate(() => { laeuft = false; masse(); reliefFrisch(); return DAUER; });
+/* Der Film zeigt die flache Karte, senkrecht von oben und mit Namen — also
+   den Stand der Regler, wie die Seite ihn beim Laden hat. Gesetzt wird er
+   trotzdem ausdrücklich: die Regler sind im Film unsichtbar, und was man nicht
+   sieht, soll wenigstens dastehen. masse() kommt danach, weil das Ausblenden
+   der beiden Bedienzeilen der Karte Höhe zurückgibt. */
+const DAUER = await seite.evaluate(() => {
+  NEIGUNG = 0; DREHUNG = 0; NAMEN = true;
+  laeuft = false; masse(); reliefFrisch(); return DAUER;
+});
 const N = NUR || Math.round(DAUER / 1000 * FPS);
 console.error(`${DAUER / 1000} s · ${FPS} Bilder/s · ${N} Bilder · ${CSSB * DSF}×${CSSH * DSF}`);
 
