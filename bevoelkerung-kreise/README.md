@@ -73,6 +73,15 @@ hochgelegt. Unscharf wird dabei nur das Licht; Farbe, Kanten und Wände bleiben
 scharf. Weiches Licht auf harten Flächen ist ein Modell — hartes Licht auf
 weichen Flächen war der alte Fehler.
 
+Ein zweiter Blit je Scheibe, eine Stufe tiefer, legt das Licht auch auf die
+**Wände**. Weil das Gelände an einer Höhenlinie steil ist, ist die Schattierung
+dort stark gerichtet: die Wand nach Nordwesten wird hell, die nach Südosten
+dunkel. Damit fällt der senkrechte Verlauf weg, den die Wände vorher trugen —
+er lag gleichmässig auch auf der Wand, auf die die Sonne voll scheint. Und weil
+der Kantenstrich jetzt grau statt schwarz ist, zieht die Lichtebene ihn weiss
+zur Sonne hin und dunkel von ihr weg: Tanakas beleuchtete Höhenlinie, ohne eine
+einzige zusätzliche Linie.
+
 Und die Platten haben **Wände**: eine Platte ist genau eine Stufe dick, ihre
 Unterseite hat also denselben Umriss eine Stufe tiefer. Derselbe Ring wird
 zweimal gemalt, erst gefüllt an der Unterseite, dann die Deckfläche darüber —
