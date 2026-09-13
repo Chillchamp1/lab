@@ -63,6 +63,16 @@ verliert nichts — die Höhe ist in fünfundzwanzig Stufen ohnehin zerlegt —,
 scharf, und halbiert obendrein die Zeit je Bild: gekippt ist die Karte jetzt
 schneller als flach.
 
+Schattierung und Schlagschatten steckten allerdings in der Farbe und fielen mit
+ihr weg. Sie kommen als **eigene Lichtebene** zurück: dieselbe Beleuchtung noch
+einmal, aber als Grau statt als Farbe, mit `soft-light` über die fertigen
+Platten gelegt. Je Scheibe aufgelegt wäre das so teuer wie vorher die ganze
+Textur — die Kosten sitzen in den fünfundzwanzig Blits, nicht im Bild. Also
+wird der Lichtstapel im gröberen Feldgitter gebaut und einmal fertig
+hochgelegt. Unscharf wird dabei nur das Licht; Farbe, Kanten und Wände bleiben
+scharf. Weiches Licht auf harten Flächen ist ein Modell — hartes Licht auf
+weichen Flächen war der alte Fehler.
+
 Und die Platten haben **Wände**: eine Platte ist genau eine Stufe dick, ihre
 Unterseite hat also denselben Umriss eine Stufe tiefer. Derselbe Ring wird
 zweimal gemalt, erst gefüllt an der Unterseite, dann die Deckfläche darüber —

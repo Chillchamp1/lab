@@ -1369,7 +1369,11 @@ const hkA = document.createElement('canvas'), hcA = hkA.getContext('2d');
 const hkB = document.createElement('canvas'), hcB = hkB.getContext('2d', { willReadFrequently: true });
 const hkC = document.createElement('canvas'), hcC = hkC.getContext('2d', { willReadFrequently: true });
 const hkF = document.createElement('canvas'), hcF = hkF.getContext('2d');
-let rW = 0, rH = 0, fBild = null;
+/* Zwei Leinwände nur fürs Licht: hkL trägt die Beleuchtung ohne Farbe,
+   hkS den daraus gebauten Stapel. Siehe METHODIK.md, Abschnitt 4k. */
+const hkL = document.createElement('canvas'), hcL = hkL.getContext('2d');
+const hkS = document.createElement('canvas'), hcS = hkS.getContext('2d');
+let rW = 0, rH = 0, fBild = null, lBild = null;
 let feinH = null, grobH = null, grobM = null, grobAuf = null, feldH = null,
     farbF = null, maskeH = null, schatten = null, licht = null, weitH = null,
     kastenA = null, kastenB = null;
@@ -1457,8 +1461,9 @@ function reliefFeld() {
   const w = Math.max(8, Math.round(breite * RAUF)), h = Math.max(8, Math.round(hoehe * RAUF));
   if (w === rW && h === rH) return;
   rW = w; rH = h;
-  for (const k of [hkA, hkB, hkC, hkF]) { k.width = w; k.height = h; }
+  for (const k of [hkA, hkB, hkC, hkF, hkL, hkS]) { k.width = w; k.height = h; }
   fBild = hcF.createImageData(w, h);
+  lBild = hcL.createImageData(w, h);
   feinH = new Float32Array(w * h); feldH = new Float32Array(w * h);
   grobH = new Float32Array(w * h); grobM = new Float32Array(w * h);
   grobAuf = new Float32Array(w * h); farbF = new Float32Array(w * h);
@@ -1860,6 +1865,41 @@ function scheibenMalen(s) {
     }
   }
   ctx.globalAlpha = 1;
+
+  /* ---------- Das Licht, eine Stufe kleiner ----------
+     Die flachen Platten sind scharf, aber tot: Schattierung und Schlagschatten
+     lagen in der Farbe, und die ist mit ihr weggefallen. Beides kommt hier
+     zurück, ohne die Farbe wieder anzufassen — als **reine Lichtebene**, die
+     über die fertigen Platten gelegt wird.
+
+     Je Scheibe ein Bild auf die Leinwand zu legen kostet aber genau so viel
+     wie früher die Vorlage: gemessen 112 auf 164 ms. Es sind die
+     fünfundzwanzig Blits über die ganze Leinwand, nicht das Bild selbst.
+
+     Also wird derselbe Stapel im **Feldgitter** gebaut — 0,55 der Leinwand,
+     ein Vierzehntel der Fläche je Blit — und einmal fertig hochgelegt. Das
+     kostet 113 auf 132 ms statt auf 164. Unscharf wird dabei nur das Licht;
+     Farbe, Kanten und Wände bleiben, wo sie sind. Genau so herum ist es
+     richtig: weiches Licht auf harten Flächen ist ein Modell, hartes Licht
+     auf weichen Flächen war der Fehler. */
+  const sL = rW / (D * breite);
+  hcS.setTransform(1, 0, 0, 1, 0, 0);
+  hcS.clearRect(0, 0, rW, rH);
+  hcS.imageSmoothingEnabled = true;
+  for (let k = 1; k < N; k++) {
+    if (!ringe[k]) continue;
+    hcS.save();
+    hcS.setTransform(a2 * sL, b2 * sL, c2 * sL, d2 * sL, eX * sL,
+      (D * (ozY - k * dz) - b2 * cx - d2 * cy) * sL);
+    hcS.clip(ringe[k], 'evenodd');
+    hcS.drawImage(hkL, 0, 0, breite, hoehe);
+    hcS.restore();
+  }
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalCompositeOperation = 'soft-light';
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(hkS, 0, 0, cv.width, cv.height);
+  ctx.globalCompositeOperation = 'source-over';
   ctx.setTransform(D, 0, 0, D, 0, 0);
 }
 
@@ -1920,6 +1960,7 @@ function feldUnter(X, Y) {
    Aufhellen wiegt weniger als Abdunkeln: eine Leiter, die oben in Weiss
    endet, hat nach oben kaum noch Weg, nach unten aber viel. */
 let STAERKE = 1.6, AUFHELLEN = 0.55, ABDUNKELN = 0.70;
+let LICHTHUB = 1.7;      // Verstärkung fürs Licht der Schrägsicht
 let SONNE = 40;                 // Grad über der Fläche, Licht von oben links
 let WURFSONNE = 16;             // dasselbe Licht, flach, nur für den Schlagschatten
 let UEBERHOEHT = 30;            // volle Höhe in Bildpunkten des Höhenfelds
@@ -2187,7 +2228,11 @@ function reliefUeber(sil, deck) {
      im vollen Kartogramm wurden aus den Rundungsresten des
      Diffusionsverfahrens sichtbare Farbbänder. Mit dem Kartogramm ist auch
      sie weg; das Feld färbt jetzt unvermittelt. */
-  const fo = fBild.data;
+  /* Dieselbe Beleuchtung ein zweites Mal, aber **ohne Farbe**: ein Grau, in dem
+     128 nichts tut, heller aufhellt und dunkler abdunkelt. Damit kann die
+     Schrägsicht ihr Licht bekommen, ohne die Farbe mitzuschleppen, an der sie
+     sich verschluckt hat. LICHTHUB gleicht aus, dass soft-light sanft ist. */
+  const fo = fBild.data, lo = lBild.data;
   for (let i = 0; i < n3; i++) {
     const k = bandIdx(farbF[i]);
     let r = HYPSO_R[k], g = HYPSO_G[k], b = HYPSO_B[k];
@@ -2196,7 +2241,16 @@ function reliefUeber(sil, deck) {
     else if (a < 0) { const f = 1 + a * ABDUNKELN; r *= f; g *= f; b *= f; }
     const j = i << 2;
     fo[j] = r; fo[j + 1] = g; fo[j + 2] = b; fo[j + 3] = 255;
+    let L = 128 + (a > 0 ? 127 * a * AUFHELLEN : 128 * a * ABDUNKELN) * LICHTHUB;
+    if (L < 0) L = 0; else if (L > 255) L = 255;
+    lo[j] = lo[j + 1] = lo[j + 2] = L; lo[j + 3] = 255;
   }
+  hcL.setTransform(1, 0, 0, 1, 0, 0);
+  hcL.globalCompositeOperation = 'source-over';
+  hcL.putImageData(lBild, 0, 0);
+  hcL.globalCompositeOperation = 'destination-in';   // nur, was auf der Karte liegt
+  hcL.drawImage(hkA, 0, 0);
+  hcL.globalCompositeOperation = 'source-over';
   /* Flach geht die fertige Farbe unmittelbar auf die Leinwand und die
      Höhenlinien darüber. Schräg wird dieselbe Farbe auf die Vorlagenleinwand
      gelegt, die Linien kommen **hinein** statt darüber — sie gehören ja auf
