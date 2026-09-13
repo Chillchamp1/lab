@@ -74,10 +74,18 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   daneben schaltet die Städtenamen ab. Beim Laden liegt sie flach, und dann
   läuft alles wie zuvor — der schräge Weg beginnt erst ab der ersten Rastung.
   Gerechnet wird spaltenweise von vorn nach hinten mit einem Horizont je
-  Spalte. **Zwei Auflösungen**: grob (0,55 der Leinwand, 95 ms je Bild) beim
-  Abspielen und solange jemand zieht, fein (bis zum 1,4fachen der Leinwand,
-  124 ms) sobald das Bild steht, mit einem Nachzeichnen eine Fünftelsekunde
-  nach dem letzten Ruck. Die Höhenlinien werden in der feinen Stufe frisch
+  Spalte. **Zwei Auflösungen**: grob (0,55 der Leinwand, 95 ms je Bild)
+  solange jemand zieht, fein (bis zum 1,4fachen der Leinwand, 124 ms) sobald
+  das Bild steht, mit einem Nachzeichnen eine Fünftelsekunde nach dem letzten
+  Ruck. **Im Lauf entscheidet das Gerät**: die Karte beginnt fein, misst in
+  `zeichne()` selbst, was ein Bild kostet, und fällt auf grob zurück, wenn das
+  gleitende Mittel über 40 ms steigt. Vorrechnen und abspielen geht nicht —
+  zweitausendfünfhundert Bilder, und das Rechnen dauert so lange wie das
+  Ansehen. Die abgesetzten Stücke unter dem Südrand sind **kein Fehler**,
+  sondern Lörrach, der Alpenrand und die Inseln: die Schrägsicht macht aus dem
+  Breitengrad die Tiefe, dazwischen liegt Frankreich. Behoben ist dagegen ein
+  echter Fehler daneben — hinter einer Lücke in einer Spalte zog die Füllung
+  einen Vorhang über die Lücke. Die Höhenlinien werden in der feinen Stufe frisch
   gezogen statt aus dem Feld vergrössert und sind damit so scharf wie flach;
   die Höhe wird zwischen vier Feldnachbarn abgetastet, was die treppigen
   Flanken nimmt. Der Deckel hängt an der Punktzahl, nicht am Gerät — gemessen

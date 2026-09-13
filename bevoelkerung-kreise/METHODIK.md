@@ -1016,13 +1016,28 @@ Zwei Stufen, weil die feine kostet:
 
 | | Auflösung | gemessen |
 |---|---|---|
-| **grob** — beim Abspielen und solange jemand zieht | 0,55 der Leinwand | 95 ms je Bild |
-| **fein** — sobald das Bild steht | bis zum 1,4fachen, gedeckelt | 124 ms je Bild |
+| **grob** | 0,55 der Leinwand | 95 ms je Bild |
+| **fein** | bis zum 1,4fachen, gedeckelt | 124 ms je Bild |
 | flache Karte, zum Vergleich | — | 75 ms je Bild |
 
-Der Wechsel ist ein Nachzeichnen eine Fünftelsekunde nach dem letzten Ruck am
-Regler. Wer zieht, sieht also die schnelle Fassung und danach die scharfe; wer
-abspielt, sieht durchweg die schnelle.
+Welche gilt, hängt an drei Fällen:
+
+- **Solange jemand zieht**, grob — und eine Fünftelsekunde nach dem letzten Ruck
+  am Regler wird scharf nachgezeichnet.
+- **Steht das Bild**, fein.
+- **Im Lauf**: das entscheidet das Gerät, nicht die Karte. Sie beginnt fein,
+  misst dabei in `zeichne()` selbst, was ein Bild wirklich kostet, und bleibt
+  fein, solange das gleitende Mittel unter 40 ms bleibt — sonst fällt sie nach
+  ein paar Bildern auf grob zurück. Ein schneller Rechner sieht den Lauf also
+  scharf, ein langsamer flüssig statt scharf. Einmal zurückgefallen bleibt es
+  grob, weil ein Hin und Her schlimmer aussähe als die gröbere Stufe; beim
+  Anhalten wird ohnehin nachgezeichnet, eine Grössenänderung setzt die Messung
+  zurück.
+
+**Vorrechnen und abspielen geht nicht**, und das ist keine Bequemlichkeit: der
+Lauf hat bei dreissig Bildern in der Sekunde rund zweitausendfünfhundert
+Bilder, jedes ein paar Megabyte, und sie auszurechnen dauert genau so lange wie
+sie anzusehen. Gewonnen wäre nichts, nur Speicher verloren.
 
 **Der Deckel hängt an der Punktzahl, nicht am Gerät**, und das ist gemessen und
 nicht geschätzt: 0,60 Millionen Punkte kosten 130 ms, 0,75 schon 215, 1,70 dann
@@ -1089,6 +1104,37 @@ Nachgemessen bei 62 Grad: von acht Städten treffen sich sechs selbst; **Kiel un
 Flensburg nicht — sie stehen bei diesem Winkel wirklich hinter Hamburg.** Das
 ist kein Fehler, sondern die Auskunft der Karte, und der Drehregler ist die
 Antwort darauf.
+
+### Was unten am Rand hängt, und warum es bleibt
+
+Gekippt hängen unter dem Südrand kleine Stücke Karte, abgesetzt, mit Schwarz
+darüber. Sie sehen aus wie Schmutz, und sie sind **echtes Gebiet**.
+
+Nachgemessen an einer Bildspalte quer durch den Westen: Land liegt dort bei den
+Feldpunkten 112 bis 307 — und dann noch einmal bei 382 bis 384. Der Griff auf
+den Kreis sagt, was das ist: **Lörrach**, die Südwestspitze am Hochrhein.
+Dazwischen, fünfundsiebzig Feldpunkte weit, liegt Frankreich. Dasselbe gilt für
+den Alpenrand und für die Inseln vor der Nordseeküste.
+
+Die Schrägsicht macht aus dem Breitengrad die Tiefe. Ein weit südlicher Zipfel
+landet damit weit unterhalb des Hauptkörpers, und was zwischen ihm und dem Rest
+liegt, ist kein Teil der Karte und bleibt schwarz. Das ist keine falsche
+Zeichnung, sondern der Grundriss des Landes von der Seite gesehen.
+
+Drei Mittel dagegen wurden probiert und **alle drei verworfen**, weil sie
+gemessen nichts geändert haben:
+
+| probiert | Ergebnis |
+|---|---|
+| feste Lippe statt Fundament am vordersten Treffer | unverändert — der Boden lag ohnehin fast auf gleicher Höhe |
+| Tiefenschritt an die Vorlage statt ans Feld gekoppelt | unverändert, kostet ein Fünftel mehr |
+| Tiefenschritt dreifach feiner (0,15 statt 0,5) | unverändert, kostet 200 statt 130 ms |
+| Eintritt der Spalte in die Karte viermal halbiert | unverändert |
+
+Ein Fehler war dabei: nach einer **Lücke** in einer Spalte füllte die Rückseite
+bis zum Grat des vorderen Stücks herunter und zog damit einen Vorhang über die
+Lücke. Das ist behoben — jedes Stück hinter einer Lücke beginnt neu, mit seiner
+eigenen Kante.
 
 ### Was die Schrägsicht nicht kann
 

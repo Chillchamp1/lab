@@ -1093,6 +1093,7 @@ function masse() {
   // Der Umriss hängt an mass/verX/verY und wird sonst nie ungültig — der Boden
   // steht still. Eine Grössenänderung ist der einzige Fall.
   zeigeUmriss(letzterTip);
+  kostenFrisch();
 }
 
 function bildBei(t) {
@@ -1371,7 +1372,7 @@ let rW = 0, rH = 0, fBild = null;
 let feinH = null, grobH = null, grobM = null, grobAuf = null, feldH = null,
     farbF = null, maskeH = null, schatten = null, licht = null, weitH = null,
     kastenA = null, kastenB = null;
-let fLesen = null, pBild = null, pQuelle = null, yPuffer = null, pAngefangen = null;
+let fLesen = null, pBild = null, pQuelle = null, yPuffer = null, pLeer = null;
 
 /* ---------- Der Blickwinkel ----------
    Die Karte lag bisher flach. Sie darf sich jetzt aufrichten und drehen, und
@@ -1535,7 +1536,32 @@ let pW = 0, pH = 0;
 const PFEIN = 1.4;
 const PMAX = 0.62e6;
 let grobBis = 0, feinUhr = 0;
-const projFein = () => !laeuft && performance.now() >= grobBis;
+
+/* Auch im Lauf so fein wie möglich — aber **gemessen**, nicht geraten.
+
+   Vorrechnen und abspielen geht nicht: der Film hat bei dreissig Bildern in
+   der Sekunde rund zweitausendfünfhundert Bilder, jedes ein paar Megabyte, und
+   sie auszurechnen dauert genau so lange wie sie anzusehen. Gewonnen wäre
+   nichts.
+
+   Was geht, ist die Entscheidung dem Gerät zu überlassen. Die Karte zeichnet
+   beim Anlaufen fein, misst dabei, was ein Bild wirklich kostet, und bleibt
+   fein, solange es unter der Schwelle bleibt. Ein schneller Rechner sieht den
+   Lauf also scharf; ein langsamer fällt nach ein paar Bildern auf die grobe
+   Stufe zurück, statt zu ruckeln. Gemessen wird die Zeit in zeichne() selbst,
+   mit einem gleitenden Mittel, damit ein einzelner Ausreisser nichts umwirft.
+
+   Einmal zurückgefallen, bleibt es grob: hin und her zu springen sähe
+   schlimmer aus als die gröbere Stufe. Beim Anhalten wird ohnehin scharf
+   nachgezeichnet, und eine Grössenänderung setzt die Messung zurück. */
+const BILDZIEL = 1000 / 25;       // so viel darf ein Bild im Lauf kosten
+let kostenFein = 0, feinGemalt = false;
+const kostenFrisch = () => { kostenFein = 0; };
+function projFein() {
+  if (performance.now() < grobBis) return false;   // es wird gerade gezogen
+  if (!laeuft) return true;                        // das Bild steht
+  return !(kostenFein > BILDZIEL);                 // noch ungemessen oder schnell genug
+}
 function sichtGrob() {
   // Grob jetzt, fein gleich: wer zieht, soll keine halbe Sekunde warten.
   grobBis = performance.now() + 200;
@@ -1553,7 +1579,7 @@ function projFeld(w, h) {
   pBild = hcQ.createImageData(w, h);
   pQuelle = new Int32Array(w * h);
   yPuffer = new Float32Array(w);
-  pAngefangen = new Uint8Array(w);
+  pLeer = new Uint8Array(w);
 }
 
 function schraegMalen(s) {
@@ -1563,7 +1589,8 @@ function schraegMalen(s) {
      verrechnet. */
   const dpr = Math.min(2.5, devicePixelRatio || 1);
   let faktor = RAUF;
-  if (projFein()) {
+  feinGemalt = projFein();
+  if (feinGemalt) {
     faktor = Math.min(PFEIN, Math.max(1, dpr));
     const punkte = Math.max(1, breite * hoehe);
     if (punkte * faktor * faktor > PMAX) faktor = Math.sqrt(PMAX / punkte);
@@ -1622,7 +1649,11 @@ function schraegMalen(s) {
   const oY = rand + (pH - 2 * rand - (yMax - yMin) * z) / 2 - yMin * z;
   SICHT = { co, si, ct, st, cx, cy, hoch, z, oX, oY, pS };
 
-  // Ein Schritt in die Tiefe soll auf dem Bild rund einen Punkt weit sein.
+  /* Ein Schritt in die Tiefe soll auf dem Bild rund einen Punkt weit sein.
+
+     Feiner zu laufen ist nachgemessen **kein** Mittel gegen die abgesetzten
+     Zipfel unten am Rand: bei 0,15 statt 0,5 stehen sie unverändert da und das
+     Bild kostet 200 statt 130 ms. Sie sind auch kein Fehler — siehe unten. */
   const db = Math.max(0.15, Math.min(2, 0.85 / Math.max(0.05, co * z)));
   const rock = Math.max(2, pW / 130);    // dieselbe Kante wie flach, als Sockel
   /* Die Flanke wird nicht sofort dunkel, sondern über ein paar Punkte hinweg.
@@ -1633,23 +1664,38 @@ function schraegMalen(s) {
   const DUNKEL = 0.5, kR = 6, kG = 6, kB = 5;   // KANTE3D, für die Flanken
   const BLENDE = Math.max(3, pW / 90);
   const fWmax = fW - 1.001, fHmax = fH - 1.001;
+  const hochsiz = hoch * si * z;                 // volle Höhe, in Bildpunkten
+  /* Die Blende der Flanke hängt nur an der Tiefe unter dem Grat, also an einer
+     ganzen Zahl zwischen null und BLENDE. Einmal ausgerechnet und
+     nachgeschlagen ist billiger als eine Division je Bildpunkt — und es sind
+     eine halbe Million Bildpunkte. */
+  const nBl = Math.ceil(BLENDE) + 1;
+  const blende = new Float32Array(nBl);
+  for (let t = 0; t < nBl; t++) blende[t] = 1 - (1 - DUNKEL) * Math.min(1, t / BLENDE);
 
-  for (let x = 0; x < pW; x++) { yPuffer[x] = pH; pAngefangen[x] = 0; }
+  for (let x = 0; x < pW; x++) { yPuffer[x] = pH; pLeer[x] = 1; }
 
   for (let b = bMax; b >= bMin; b -= db) {
     const yb = b * co * z + oY;
     const bx = -b * st, by = b * ct;
+    // Höher als das kann in dieser Tiefe nichts stehen. Liegt schon das über
+    // dem Horizont der Spalte, ist dort nichts mehr zu holen — dann muss die
+    // Höhe gar nicht erst abgetastet werden.
+    const hoechstens = yb - hochsiz;
     for (let x = 0; x < pW; x++) {
       const horizont = yPuffer[x];
       if (horizont <= 0) continue;                 // Spalte ist bis oben voll
       const a = (x - oX) / z;
       const fx = cx + a * ct + bx, fy = cy + a * st + by;
-      if (fx < 0 || fy < 0 || fx >= fW || fy >= fH) continue;
+      if (fx < 0 || fy < 0 || fx >= fW || fy >= fH) { pLeer[x] = 1; continue; }
       // Die Farbe aus der Vorlage, in ihrer eigenen, feinen Auflösung.
       const tx = (fx * m) | 0, ty = (fy * m) | 0;
-      if (tx < 0 || ty < 0 || tx >= pW || ty >= pH) continue;
+      if (tx < 0 || ty < 0 || tx >= pW || ty >= pH) { pLeer[x] = 1; continue; }
       const j = (ty * pW + tx) << 2;
-      if (td[j + 3] < 128) continue;               // draussen, kein Gelände
+      if (td[j + 3] < 128) { pLeer[x] = 1; continue; }   // draussen, kein Gelände
+      // Ab hier steht Gelände. Es kann verdeckt sein — das ist keine Lücke.
+      if (hoechstens >= horizont) { pLeer[x] = 0; continue; }
+
       /* Die Höhe zwischen vier Nachbarn. Rundete man sie auf den nächsten
          Feldpunkt, bestünde jeder Hang aus Stufen in der Grösse eines
          Feldpunktes — und die sind in der feinen Auflösung zwei- bis viermal
@@ -1659,15 +1705,33 @@ function schraegMalen(s) {
       const o0 = y0 * fW + x0, o1 = o0 + fW;
       const hoehenWert = (feldH[o0] * (1 - ux) + feldH[o0 + 1] * ux) * (1 - uy)
                        + (feldH[o1] * (1 - ux) + feldH[o1 + 1] * ux) * uy;
-      const y = Math.round(yb - hoehenWert * hoch * si * z);
-      if (y >= horizont) continue;                 // verdeckt
+      const y = Math.round(yb - hoehenWert * hochsiz);
+      if (y >= horizont) { pLeer[x] = 0; continue; }    // verdeckt
       let unten = horizont;
-      if (!pAngefangen[x]) {
-        // Der vorderste Treffer einer Spalte bekommt einen Boden, sonst liefe
-        // die Flanke bis an den unteren Bildrand.
-        pAngefangen[x] = 1;
-        const grund = Math.round(yb) + rock;
-        if (grund < unten) unten = grund;
+      if (pLeer[x]) {
+        /* Der vorderste Treffer einer Spalte bekommt eine **feste Lippe**, kein
+           Fundament bis zur Grundfläche.
+
+           Vorher lief die Flanke hinunter bis zum Boden an *dieser* Tiefe. Für
+           einen massiven Block wäre das richtig, und genau deshalb sah es
+           falsch aus: der Grundriss ist Deutschland, und wo seine Umrisslinie
+           in Blickrichtung verläuft — an der Westgrenze, unten an den Alpen —
+           betritt jede Bildspalte die Karte in einer anderen Tiefe. Der Boden
+           sprang dann von Spalte zu Spalte, und unter dem Rand hingen Tropfen.
+
+           Die Karte ist kein Block, sondern ein Tuch über dem Gelände. Es
+           bekommt eine Kante, so dick wie die flache Karte ihre 3D-Kante hat,
+           und darunter ist Hintergrund.
+
+           Dasselbe gilt **nach jeder Lücke**, nicht nur am ersten Treffer, und
+           das war der zweite Teil des Fehlers: verschwand das Gelände in einer
+           Spalte — die Umrisslinie läuft an der Westgrenze und unten an den
+           Alpen streckenweise in Blickrichtung — und tauchte dahinter wieder
+           auf, so füllte die Rückseite bis zum Grat des *vorderen* Stücks
+           herunter und zog damit einen Vorhang über die Lücke. Sichtbar war
+           das als Tropfen unter dem Rand. */
+        const lippe = y + rock;
+        if (lippe < unten) unten = lippe;
         if (unten <= y) unten = y + 1;
       }
       if (unten > pH) unten = pH;
@@ -1676,8 +1740,7 @@ function schraegMalen(s) {
       const r = td[j], g = td[j + 1], bl = td[j + 2];
       for (let yy = oben; yy < unten; yy++) {
         const tief = yy - y;
-        const f = tief <= 0 ? 1
-                : 1 - (1 - DUNKEL) * (tief > BLENDE ? 1 : tief / BLENDE);
+        const f = tief <= 0 ? 1 : (tief < nBl ? blende[tief] : DUNKEL);
         const q = yy * pW + x, p = q << 2;
         po[p] = r * f + kR * (1 - f);
         po[p + 1] = g * f + kG * (1 - f);
@@ -1686,6 +1749,7 @@ function schraegMalen(s) {
         pQuelle[q] = i;
       }
       yPuffer[x] = y;
+      pLeer[x] = 0;
     }
   }
 
@@ -2300,6 +2364,7 @@ function hoehenLinien(s, zc, zm) {
 }
 
 function zeichne() {
+  const gemessen = schraeg() ? performance.now() : 0;
   const [a, b, u] = bildBei(jahr);
   setzePunkte(a, b, u);
   const { w, deck, rate } = werteBei(a, b, u);
@@ -2365,6 +2430,13 @@ function zeichne() {
   if (NAMEN) beschrifte(deck, w);
   schreibe(a, b, u, w, deck);
   notizen();
+
+  // Was das Bild gekostet hat, im gleitenden Mittel — daraus entscheidet sich,
+  // ob der Lauf die feine Stufe trägt.
+  if (gemessen && feinGemalt) {
+    const dt = performance.now() - gemessen;
+    kostenFein = kostenFein ? kostenFein + (dt - kostenFein) * 0.3 : dt;
+  }
 }
 
 const nf = new Intl.NumberFormat('en-GB');
