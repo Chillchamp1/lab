@@ -52,9 +52,16 @@ Gerechnet wird die Schrägsicht als **Laserschnittmodell**: das Höhenfeld wird 
 fünfundzwanzig Scheiben geschnitten — so viele, wie es Farbbänder gibt, jede
 Stufenkante ist also eine Höhenlinie —, und die Scheiben werden versetzt
 übereinandergelegt. Eine Scheibe ist dabei ein **Umriss**, keine Fläche: der
-Umriss wird zur Schablone, die fertige Karte hineingezeichnet, die Kante als
-Strich darüber. Das ist nicht nur schärfer, sondern gemessen um drei
+Umriss wird gefüllt, die Kante als Strich darüber. Das ist gemessen um drei
 Grössenordnungen billiger als der Weg über Rastermasken.
+
+Gefüllt wird mit **einer Farbe** — eine Platte ist genau ein Farbband, dafür
+ist sie geschnitten. Vorher wurde die fertige, schattierte Karte
+hineinbeschnitten, und weil die Farbe auf dem gröberen Reliefgitter entsteht,
+blutete auf jeder Platte ein Saum der Nachbarfarbe über den Rand. Flach gefüllt
+verliert nichts — die Höhe ist in fünfundzwanzig Stufen ohnehin zerlegt —, ist
+scharf, und halbiert obendrein die Zeit je Bild: gekippt ist die Karte jetzt
+schneller als flach.
 
 Und die Platten haben **Wände**: eine Platte ist genau eine Stufe dick, ihre
 Unterseite hat also denselben Umriss eine Stufe tiefer. Derselbe Ring wird

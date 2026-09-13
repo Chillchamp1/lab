@@ -1120,14 +1120,7 @@ const KIPPMAX = 62 * Math.PI / 180;
 const HOCH3D = 0.18;              // Anteil der Feldhöhe, den ein Wert 1 aufragt
 const schraeg = () => NEIGUNG > 0.001 || Math.abs(DREHUNG) > 1e-4;
 
-const hkT = document.createElement('canvas'), hcT = hkT.getContext('2d');
-let mW = 0, mH = 0;
 
-/* Wie fein die Vorlage ist, aus der geschnitten wird. Das Höhenfeld ist nur
-   0,55 der Leinwand — es darf grob sein, es ist ja weichgezeichnet. Die
-   Höhenlinien und der Rand der Karte dürfen das nicht: flach werden sie als
-   Striche in voller Auflösung gezogen, und genau davon lebt ihre Schärfe. */
-const PFEIN = 1.4, PMAX = 0.9e6;
 let KANTENSTRICH = 0.8, KANTENDECK = 0.3;   // die Kante einer Scheibe
 
 /* ---------- Die Wand einer Scheibe ----------
@@ -1386,23 +1379,6 @@ function scheibenMalen(s) {
   const N = NBAND;
   const D = Math.min(2.5, devicePixelRatio || 1);
 
-  /* Die Vorlage: die fertige Karte in eigener Auflösung, mit frisch gezogenen
-     Höhenlinien statt hochgerechneten. */
-  let faktor = Math.min(PFEIN, Math.max(1, D));
-  const punkte = Math.max(1, breite * hoehe);
-  if (punkte * faktor * faktor > PMAX) faktor = Math.sqrt(PMAX / punkte);
-  if (faktor < 1) faktor = 1;
-  const W = Math.max(8, Math.round(breite * faktor)), H = Math.max(8, Math.round(hoehe * faktor));
-  if (mW !== W || mH !== H) { mW = W; mH = H; hkT.width = W; hkT.height = H; }
-  hcT.setTransform(1, 0, 0, 1, 0, 0);
-  hcT.globalCompositeOperation = 'source-over';
-  hcT.globalAlpha = 1;
-  hcT.clearRect(0, 0, W, H);
-  hcT.imageSmoothingEnabled = true;
-  hcT.imageSmoothingQuality = 'high';
-  hcT.drawImage(hkF, 0, 0, W, H);
-  hoehenLinien(s, hcT, W / breite);
-
   const S = sichtRechnen();
   const co = S.co, si = S.si, ct = S.ct, st = S.st, cx = S.cx, cy = S.cy;
   const zz = S.z, ozX = S.oX, ozY = S.oY, dz = S.dz;
@@ -1433,20 +1409,45 @@ function scheibenMalen(s) {
         ctx.fill(ringe[k], 'evenodd');
       }
     }
+    /* ---------- Die Deckfläche: **eine Farbe, fertig** ----------
+       Lange wurde hier die fertige Karte hineinbeschnitten, samt Licht,
+       Schlagschatten und Höhenlinien. Das war der Fehler, und er kostete
+       doppelt.
+
+       Die Farbe entsteht auf dem Reliefgitter, 0,55 der Leinwand — jede
+       Bandkante ist dort von Geburt an vier, fünf Gerätepunkte weich. Die
+       Schnittkante ist dagegen gestochen scharf. Also blutete auf jeder Platte
+       die Nachbarfarbe über den Rand: das Weiss der Kuppe stand noch auf der
+       roten Platte darunter.
+
+       Eine Platte **hat** aber nur einen Wert. Sie ist genau ein Farbband —
+       dafür ist sie geschnitten. Sie flach zu füllen verliert deshalb nichts:
+       die Höhe ist in fünfundzwanzig Stufen schon zerlegt, der Verlauf
+       innerhalb einer Stufe wiederholte nur, was die Stufe selbst sagt. Was
+       wegfällt, ist die Schattierung des *glatten* Geländes — und die hat
+       schräg ohnehin gegen das wirkliche Relief gearbeitet und die Platten
+       gewölbt aussehen lassen.
+
+       Gewonnen wird an beiden Enden: kein Beschnitt, kein ganzes Bild je
+       Scheibe, keine Vorlage, keine Höhenlinien darin. Gemessen halb gekippt
+       361 auf 182 ms auf dem Schirm und 217 auf 117 auf dem Telefon — die
+       Schrägsicht ist damit **schneller als die flache Karte**. */
     ctx.save();
     ctx.setTransform(a2, b2, c2, d2, eX, D * (ozY - k * dz) - b2 * cx - d2 * cy);
-    // Die unterste Scheibe ist die ganze Karte; ihren Rand bringt die Vorlage
-    // selbst mit, denn was draussen liegt, ist dort durchsichtig.
-    if (k > 0) ctx.clip(ringe[k], 'evenodd');
-    ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(hkT, 0, 0, breite, hoehe);
+    if (k > 0) {
+      ctx.fillStyle = HYPSO[Math.min(NBAND - 1, k)];
+      ctx.fill(ringe[k], 'evenodd');
+    } else {
+      // Die unterste Scheibe ist die ganze Karte: sie bringt den Rand und das
+      // tiefste Wasserband mit, und was draussen liegt, ist durchsichtig.
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(hkF, 0, 0, breite, hoehe);
+    }
     ctx.restore();
-    /* Und die Kante als Linienzug darüber. Die Vorlage bringt an dieser Stelle
-       zwar schon ihre Höhenlinie mit — Scheibenkante und Höhenlinie sind
-       dasselbe Niveau —, aber der Beschnitt schneidet davon die äussere Hälfte
-       weg. Der Strich gibt sie zurück, und erst damit sieht der Stapel aus wie
-       geschnittene Platten statt wie ein Verlauf. Er kostet nichts: es sind
-       fünfundzwanzig Striche. */
+    /* Und die Kante als Linienzug darüber. Seit die Platten flach gefüllt
+       werden, ist er die einzige Höhenlinie, die die Schrägsicht noch hat —
+       Scheibenkante und Höhenlinie sind dasselbe Niveau. Er kostet nichts: es
+       sind fünfundzwanzig Striche. */
     if (k > 0) {
       ctx.save();
       ctx.setTransform(a2, b2, c2, d2, eX, D * (ozY - k * dz) - b2 * cx - d2 * cy);
