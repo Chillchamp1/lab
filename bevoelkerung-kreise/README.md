@@ -110,12 +110,19 @@ Farbtöne der Wand kosten dabei nichts — es sind fertige Zeichenketten; teuer
 ist die Zahl der Füllungen, und die Zahl der sichtbaren Abstufungen folgt ihr
 nur.
 
-Die Wand wird dabei von unten nach oben heller: dunkler Fuss, helle Oberkante,
-wie eine senkrechte Fläche unter einem Überhang. Was an Lücken bleibt, ist
-nachgesehen und keine fehlende Wand, sondern wo die Karte selbst nicht da ist:
-Lörrach mit Frankreich dazwischen, die Inseln, der Aussenrand. Nur die unterste
-Wand fehlt wirklich, weil die Ringe erst ab dem ersten Niveau gerechnet
-werden.
+Am Fuss jeder Wand steht ein **Kontaktschatten**: der unterste Streifen der
+Schraffur wird dunkler gefüllt, wie an einem Modell, wo Wand und Terrasse sich
+treffen und am wenigsten Himmel hinkommt. Ein Farbwechsel, kostet nichts. Was
+an Lücken bleibt, ist nachgesehen und keine fehlende Wand, sondern wo die Karte
+selbst nicht da ist: Lörrach mit Frankreich dazwischen, die Inseln, der
+Aussenrand. Auch die Grundplatte hat inzwischen eine Wand, den **Sockel**: die
+Ringe fangen erst beim ersten Niveau an, also endete die Karte unten wie ein
+Blatt Papier; jetzt bekommt sie die Wand des untersten Wasserrings, eine Stufe
+tiefer. Der Landesumriss selbst wäre genauer und ist gemessen viermal so teuer.
+Und in der Lichtebene wird der **Schlagschatten** noch einmal abgezogen,
+kräftiger als flach — ein Modell wirft Schatten, ein Blatt nicht. Alle drei
+zusammen: im Rauschen der Messung. Verworfen ist ein Tiefenverlauf, der die
+Ferne abdunkelt: er hätte die fernen Gipfel gedämpft, und die sind Daten.
 
 Wie hoch die Berge stehen, ist eine einzige Schraube, und sie steht jetzt auf
 42 Prozent des ursprünglichen Werts: vorher ragten die Städte als Türme auf und das
