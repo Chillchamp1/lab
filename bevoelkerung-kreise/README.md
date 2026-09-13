@@ -48,12 +48,11 @@ Meeresspiegel liegt, sagt der schräge Blick in einem Augenblick, wofür die
 flache Karte einen Absatz braucht. Beim Laden liegt die Karte flach, und der
 Film zeigt weiterhin nur diese flache Karte.
 
-Die Schrägsicht hat dafür **zwei Auflösungen**: solange man zieht, die schnelle;
-sobald das Bild steht, zeichnet sie sich eine Fünftelsekunde später scharf nach
-— mit frisch gezogenen Höhenlinien statt vergrösserten. Im Lauf entscheidet das
-Gerät: die Karte beginnt scharf, misst mit, was ein Bild kostet, und schaltet
-nur zurück, wenn es sonst ruckeln würde. Das Drehen kostet nichts, die scharfe
-Fassung gilt für jeden Winkel.
+Gerechnet wird die Schrägsicht als **Laserschnittmodell**: das Höhenfeld wird in
+fünfundzwanzig Scheiben geschnitten — so viele, wie es Farbbänder gibt, jede
+Stufenkante ist also eine Höhenlinie —, und die Scheiben werden versetzt
+übereinandergelegt. Das kostet immer gleich viel, ganz gleich wie gross der
+Schirm ist, und es franst nicht aus.
 
 Gekippt hängen unter dem Südrand ein paar abgesetzte Stücke. Das ist kein
 Fehler: es sind Lörrach, der Alpenrand und die Inseln. Die Schrägsicht macht
