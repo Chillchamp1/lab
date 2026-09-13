@@ -51,8 +51,10 @@ Film zeigt weiterhin nur diese flache Karte.
 Gerechnet wird die Schrägsicht als **Laserschnittmodell**: das Höhenfeld wird in
 fünfundzwanzig Scheiben geschnitten — so viele, wie es Farbbänder gibt, jede
 Stufenkante ist also eine Höhenlinie —, und die Scheiben werden versetzt
-übereinandergelegt. Das kostet immer gleich viel, ganz gleich wie gross der
-Schirm ist, und es franst nicht aus.
+übereinandergelegt. Geschnitten wird dabei aus einer Vorlage in der Auflösung
+der Leinwand, mit darin frisch gezogenen Höhenlinien, und die Scheibenränder
+sind hart — sonst sähe die Schrägsicht verwaschen aus statt wie ein
+Schnittmodell.
 
 Gekippt hängen unter dem Südrand ein paar abgesetzte Stücke. Das ist kein
 Fehler: es sind Lörrach, der Alpenrand und die Inseln. Die Schrägsicht macht

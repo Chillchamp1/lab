@@ -999,29 +999,52 @@ fünfundzwanzig gleiche Höhen geschnitten, von jeder wird die Fläche genommen,
 die mindestens so hoch liegt, und die Flächen werden versetzt
 übereinandergelegt. Fünfundzwanzig, weil das die Zahl der Farbbänder ist —
 **jede Scheibe ist genau ein Band, jede Stufenkante genau eine Höhenlinie.**
-Das ist dieselbe Konstruktion, die die flache Karte schon hat, nur aufgestellt.
+Dieselbe Konstruktion, die die flache Karte schon hat, nur aufgestellt.
 
-Gefärbt wird nicht flach, sondern mit der fertigen Karte: jede Scheibe ist ein
-Ausschnitt aus dem bereits schattierten Bild, samt Licht, Schlagschatten und
-Höhenlinien.
+**Geschnitten wird aus einer eigenen Vorlage, nicht aus dem Höhenfeld.** Das war
+der Fehler der ersten Fassung, und sie sah verwaschen aus: das Feld ist 0,55 der
+Leinwand, es darf grob sein, weil es weichgezeichnet ist. Die Höhenlinien und
+der Rand der Karte dürfen das nicht — flach sind sie gestochen scharf, weil sie
+dort als **Striche in voller Auflösung** gezogen werden. Aus dem Feld
+geschnitten kam beides hochgerechnet heraus. Jetzt wird die Vorlage in der
+Auflösung der Leinwand gebaut (bis zum 1,4fachen, gedeckelt auf 0,9 Millionen
+Punkte), die Farbe einmal daraufgerechnet, die Höhenlinien **darin** gezogen,
+und das Höhenfeld für die Scheibengrenzen zwischen vier Nachbarn hochgerechnet.
 
-**Der Kniff, der den Stapel billig macht.** Naiv baut man je Scheibe ein ganzes
-Bild — gemessen 1,5 ms, fünfundzwanzigmal, also der ganze Aufwand des
-Verfahrens. Fast alles davon ist überflüssig: von einer Scheibe zur nächsten
-ändert sich die Deckung nur in **zwei Bändern**. Das eine fällt weg, das
-nächste wird zum weichen Rand; alles darüber bleibt voll, alles darunter leer.
-Die Punkte werden deshalb einmal je Bild nach Bändern sortiert (Zählsortierung,
-zwei Durchgänge), und dann fasst jede Scheibe ein Fünfundzwanzigstel der Fläche
-an statt der ganzen. Die Farbe bleibt unangetastet, nur der Alphakanal wandert.
+**Der Rand einer Scheibe ist hart.** Die erste Fassung blendete ihn über ein
+ganzes Band aus, also über die ganze Höhe einer Scheibe — der zweite Grund für
+den Eindruck von Unschärfe. Eine Platte aus Sperrholz hat eine Kante, keinen
+Verlauf. Jetzt fällt die Deckung über ein Achtel Band, gerade weich genug, um
+nicht zu treppen.
 
 **Zwischenlagen.** Jede Scheibe wird nicht einmal aufgelegt, sondern in acht
 Lagen bis hinunter zur Scheibe darunter. Ohne das klaffen Lücken: der Abstand
 zweier Scheiben ist rund acht Bildpunkte, und eine schmale Insel wie Helgoland
 ist auf dem Bild keinen ganzen Punkt tief — sie zerfiel in einen Kamm aus
-Plättchen. Das Auflegen ist gemessen umsonst (acht Lagen 104 ms, eine Lage
-104), teuer ist nur das Herstellen einer Scheibe, und das geschieht weiterhin
-einmal. Nebenbei werden die Flanken dadurch glatt statt gestuft.
+Plättchen. Nebenbei werden die Flanken dadurch glatt statt gestuft.
 
+**Gestapelt wird in einer eigenen Leinwand**, in der Grösse der Vorlage, und
+erst das fertige Bild kommt einmal auf die Karte. Direkt auf die Karte zu
+stapeln hiess, jede der zweihundert Lagen in Gerätepunkten aufzulegen — auf
+einem Telefon mit dichten Punkten das Sechsfache der Fläche, gemessen 301 ms je
+Bild gegen 157 jetzt. Gewonnen war dabei nichts: die Vorlage ist ohnehin nur das
+1,4fache der Leinwand.
+
+### Drei Versuche, die gemessen nichts brachten
+
+| probiert | Ergebnis |
+|---|---|
+| Zählsortierung nach Bändern durch Reihe-für-Reihe ersetzen | **langsamer**, 222 gegen 194 ms — die Gipfel liegen weit auseinander, also umfasst schon der Kasten der oberen Scheiben fast die ganze Karte |
+| Glättung beim Auflegen anlassen | 567 statt 201 ms, und unschärfer: die Vorlage steht schon in der Auflösung der Leinwand |
+| jede Scheibe nur in ihrem Kasten auflegen | 201 → 194 ms, also im Rauschen; wieder draussen |
+
+Die Zählsortierung selbst bleibt, denn sie ist der Kniff, der den Stapel billig
+macht: von einer Scheibe zur nächsten ändert sich die Deckung nur in **zwei
+Bändern**, alles darüber bleibt voll und alles darunter leer. Ein Durchgang
+sortiert die Punkte nach Bändern, danach fasst jede Scheibe ein
+Fünfundzwanzigstel der Fläche an statt der ganzen.
+
+### Was der Stapel besser kann als ein Spaltenlauf
 ### Was der Stapel besser kann als ein Spaltenlauf
 
 Die erste Fassung lief stattdessen Spalte für Spalte in die Tiefe, mit einem
@@ -1030,15 +1053,19 @@ in jeder Hinsicht der bessere Weg:
 
 | | Spaltenlauf | Stapel |
 |---|---|---|
-| Kosten je Bild (Prüfbrowser) | 128 ms fein, 96 ms grob | **102 ms** |
-| hängt an der Schirmauflösung | ja — daher zwei Stufen und eine Messung im Lauf | **nein** |
+| Kosten je Bild (Prüfbrowser, Schirm) | 128 ms fein, 96 ms grob | 221 ms |
+| dasselbe auf dem Telefon | — | 157 ms |
+| flache Karte zum Vergleich | 76 ms | 76 ms |
+| Schärfe | fein nur im Standbild | **immer**, so scharf wie die flache Karte |
 | Rand unten | franste aus (siehe unten) | geschlossene Wand |
 | Griff auf einen Kreis | Merkzettel je Bildpunkt beim Malen | fünfundzwanzig umkehrbare Abbildungen, von oben nach unten geprüft |
 | verdeckte Kreise antippbar | nein | ja, soweit überhaupt sichtbar |
 
-Mit dem Stapel fällt die ganze Maschinerie aus grober und feiner Stufe weg,
-samt der Messung, die im Lauf entschied, ob das Gerät die feine trägt. Es gibt
-nur noch eine Stufe, und sie kostet immer dasselbe.
+Der Stapel ist also **nicht billiger**, sondern teurer — und dafür immer scharf.
+Die Maschinerie aus grober und feiner Stufe fällt trotzdem weg, samt der
+Messung, die im Lauf entschied, ob das Gerät die feine trägt: es gibt nur noch
+eine Stufe. Der Prüfbrowser läuft ohne Grafikkarte; auf wirklicher Hardware
+liegt das Vielfache dazwischen.
 
 **Der Rahmen steht fest**, nämlich auf dem oberen Ende der Farbleiter. Nach dem
 höchsten Berg zu rechnen, der gerade dasteht, wäre verlockend — 1871 gäbe es
