@@ -83,7 +83,9 @@ Abstufungen ihre Dynamik gibt. Gemacht mit dem alten Prägetrick: derselbe Ring
 zweimal versetzt gefüllt, weiss zum Licht und schwarz von ihm weg, dann die
 Bandfarbe darüber, die von beiden die innere Hälfte zudeckt. Wo die Kante längs
 zum Licht läuft, verschwinden beide von selbst — genau wie bei Tanaka. Das ist
-sogar billiger als der eine Strich, den es ersetzt.
+sogar billiger als der eine Strich, den es ersetzt. Der Versatz wächst mit dem
+Zoom mit: fest auf dem Schirm war er beim weitesten Blick am schädlichsten, weil
+er an steilen Flanken die schmalen Terrassen zudeckte und die Farbe überblendete.
 
 Und die Platten haben **Wände**: eine Platte ist genau eine Stufe dick, ihre
 Unterseite hat also denselben Umriss eine Stufe tiefer. Derselbe Ring wird
@@ -116,7 +118,7 @@ Wand fehlt wirklich, weil die Ringe erst ab dem ersten Niveau gerechnet
 werden.
 
 Wie hoch die Berge stehen, ist eine einzige Schraube, und sie steht jetzt auf
-60 Prozent des früheren Werts: vorher ragten die Städte als Türme auf und das
+42 Prozent des ursprünglichen Werts: vorher ragten die Städte als Türme auf und das
 Land lag darunter wie ein Sockel. Dieselbe Schraube trägt die Plattendicke,
 also wird derselbe Stapel nur flacher geschichtet.
 

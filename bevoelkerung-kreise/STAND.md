@@ -117,7 +117,16 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Bandfarbe an ihrem Platz darüber — die deckt von beiden die innere Hälfte zu,
   stehen bleibt je eine Sichel. Wo die Kante längs zum Licht läuft, liegen
   beide unter der Füllung und verschwinden von selbst, wie bei Tanaka. Versetzt
-  wird in Grundriss-Koordinaten, also dreht die Sonne richtig mit.
+  wird in Grundriss-Koordinaten, also dreht die Sonne richtig mit — und der
+  Versatz **wächst mit dem Zoom**, gedeckelt beim Vierfachen. Fest auf dem
+  Schirm war er beim weitesten Blick am schädlichsten: an einer steilen Flanke
+  liegen die Terrassen dort nur wenige Punkte auseinander, zwei feste Sicheln
+  deckten sie zu, und die Farbe war überblendet.
+  Durchsichtig sind dabei nur die Sicheln und der kantengeglättete Umriss:
+  nachgezählt 454 758 voll deckende gegen 6 209 teildurchsichtige Bildpunkte,
+  also 1,3 %. Platten und Wände sind voll deckend, und das Alphamischen der
+  Sicheln kostet nichts — es lässt die Bandfarbe durchscheinen, statt sie zu
+  überblenden.
   Ein erster Versuch mit einem **grauen Strich**, den die Lichtebene anheben
   sollte, taugte nicht: die Lichtebene ist weich und grob, die Kante dünn und
   scharf — sie wurde nur getönt. Und die Füllung ist **billiger als der Strich,
@@ -216,7 +225,7 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   zweite Reliefstufe zu rechnen — ein Vielfaches der ganzen Schrägsicht.
   Die **unterste** Wand fehlt wirklich, weil die Ringe ab Niveau 1 gerechnet
   werden.
-- **Die Berge stehen auf 60 Prozent.** `HOCH3D` von 0,30 auf 0,18: die Städte
+- **Die Berge stehen auf 42 Prozent.** `HOCH3D` von 0,30 über 0,18 auf 0,126: die Städte
   ragten als Türme auf, das Land lag darunter wie ein Sockel. Dieselbe Schraube
   trägt die Plattendicke (dz = hoch·sin(Neigung)·Massstab / 25), also sinkt
   beides im selben Verhältnis — 219 auf 131 Punkte Gesamthöhe, bei voller
