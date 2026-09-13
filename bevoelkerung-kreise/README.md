@@ -77,10 +77,13 @@ Ein zweiter Blit je Scheibe, eine Stufe tiefer, legt das Licht auch auf die
 **Wände**. Weil das Gelände an einer Höhenlinie steil ist, ist die Schattierung
 dort stark gerichtet: die Wand nach Nordwesten wird hell, die nach Südosten
 dunkel. Damit fällt der senkrechte Verlauf weg, den die Wände vorher trugen —
-er lag gleichmässig auch auf der Wand, auf die die Sonne voll scheint. Und weil
-der Kantenstrich jetzt grau statt schwarz ist, zieht die Lichtebene ihn weiss
-zur Sonne hin und dunkel von ihr weg: Tanakas beleuchtete Höhenlinie, ohne eine
-einzige zusätzliche Linie.
+er lag gleichmässig auch auf der Wand, auf die die Sonne voll scheint. Und die Kanten sind
+**beleuchtet wie flach** — weiss zur Sonne hin, schwarz von ihr weg, was den
+Abstufungen ihre Dynamik gibt. Gemacht mit dem alten Prägetrick: derselbe Ring
+zweimal versetzt gefüllt, weiss zum Licht und schwarz von ihm weg, dann die
+Bandfarbe darüber, die von beiden die innere Hälfte zudeckt. Wo die Kante längs
+zum Licht läuft, verschwinden beide von selbst — genau wie bei Tanaka. Das ist
+sogar billiger als der eine Strich, den es ersetzt.
 
 Und die Platten haben **Wände**: eine Platte ist genau eine Stufe dick, ihre
 Unterseite hat also denselben Umriss eine Stufe tiefer. Derselbe Ring wird
