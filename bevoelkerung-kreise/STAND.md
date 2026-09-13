@@ -112,12 +112,19 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   er war eine Krücke aus der Zeit ohne eigenes Licht und lag gleichmässig auch
   auf der Wand, auf die die Sonne voll scheint. Die Wand trägt jetzt ihr Band,
   nur gedunkelt.
-- **Beleuchtete Kanten wie flach**, ohne eine zusätzliche Linie: der
-  Kantenstrich ist **grau statt schwarz**, und die Lichtebene zieht ihn weiss,
-  wo die Sonne auf die Kante trifft, und dunkel, wo sie wegfällt. Schwarz
-  bliebe schwarz — `soft-light` hebt es kaum an. Kosten für beides zusammen:
-  Telefon 130 → 133 ms voll und 139 → 145 halb, Schirm 213 → 231 und
-  221 → 233.
+- **Beleuchtete Kanten wie flach**, per Prägetrick: derselbe Ring zweimal
+  versetzt **gefüllt**, weiss zum Licht hin und schwarz von ihm weg, dann die
+  Bandfarbe an ihrem Platz darüber — die deckt von beiden die innere Hälfte zu,
+  stehen bleibt je eine Sichel. Wo die Kante längs zum Licht läuft, liegen
+  beide unter der Füllung und verschwinden von selbst, wie bei Tanaka. Versetzt
+  wird in Grundriss-Koordinaten, also dreht die Sonne richtig mit.
+  Ein erster Versuch mit einem **grauen Strich**, den die Lichtebene anheben
+  sollte, taugte nicht: die Lichtebene ist weich und grob, die Kante dünn und
+  scharf — sie wurde nur getönt. Und die Füllung ist **billiger als der Strich,
+  den sie ersetzt**: zwei versetzte Füllungen kosten weniger als ein Strich
+  desselben Pfades (die Strichbreite war dabei gleichgültig, 161 gegen 162 ms).
+  Telefon 133 → **127 ms** voll und 145 → **131** halb, Schirm 231 → **216**
+  und 233 → **223**.
   Die Sonne hängt dabei an der Karte, nicht am Bildschirm: Nordwest bleibt
   Nordwest, wie flach auch. Eine am Bildschirm festgenagelte Sonne hiesse, das
   Relief bei jedem Grad Drehung neu zu rechnen. Der Griff auf einen Kreis geht über fünfundzwanzig

@@ -1265,29 +1265,44 @@ die nach Südosten dunkel. Das ist die Antwort auf beides: die Lichtrichtung
 stimmt, und der Verlauf ist nicht nur überflüssig, sondern war falsch. Die Wand
 trägt jetzt ihr Band, nur gedunkelt; woher das Licht kommt, sagt das Licht.
 
-### Beleuchtete Kanten, als Nebenwirkung
+### Die beleuchtete Kante, und warum sie eine Füllung ist
 
-Die flache Karte hat ihre weissen Kanten zur Sonne hin — Tanakas beleuchtete
-Höhenlinien. Schräg fehlten sie, denn der Kantenstrich war gleichmässig
-schwarz.
+Was der flachen Karte ihre Dynamik gibt, sind Tanakas Höhenlinien: **weiss, wo
+die Kante der Sonne zugewandt ist, schwarz, wo sie wegfällt.** Erst das macht
+die Abstufungen richtig sichtbar.
 
-Er ist jetzt **grau**, und das ist der ganze Trick: Schwarz bliebe schwarz,
-`soft-light` hebt es kaum an. Ein mittleres Grau dagegen wird von der
-Lichtebene nach beiden Seiten gezogen — weiss, wo die Sonne auf die Kante
-trifft, dunkel, wo sie wegfällt. Dieselbe Auskunft wie Tanakas Linie, ohne eine
-einzige zusätzliche Linie zu zeichnen: der Strich war ohnehin da, die
-Lichtebene auch.
+Ein Versuch mit einem **grauen** Kantenstrich, den die Lichtebene anheben
+sollte, brachte das nicht: die Lichtebene ist weich und im Feldgitter gerechnet,
+die Kante ist dünn und scharf — sie wurde eben nur leicht getönt, nicht weiss
+und schwarz.
+
+Es geht mit dem alten Prägetrick, und zwar mit **Füllungen statt Strichen**:
+derselbe Ring zweimal versetzt gefüllt, einmal weiss zum Licht hin, einmal
+schwarz von ihm weg, und dann die Bandfarbe an ihrem Platz darüber. Die deckt
+von beiden die innere Hälfte zu; stehen bleibt je eine Sichel — weiss auf der
+Sonnenseite, schwarz auf der anderen. Wo die Kante längs zum Licht läuft,
+liegen beide unter der Füllung und verschwinden von selbst, genau wie bei
+Tanaka.
+
+Versetzt wird in **Grundriss-Koordinaten**, nicht auf dem Schirm: die Abbildung
+dreht und staucht den Versatz dann mit, also wandert die Sonne beim Drehen
+richtig mit der Karte.
+
+**Und es ist billiger als der eine graue Strich, den es ersetzt.** Zwei
+Füllungen eines verwickelten Pfades kosten weniger als ein Strich desselben
+Pfades, weil der Strich seine Verbindungen mitrechnen muss. Nachgemessen, und
+die Strichbreite war dabei gleichgültig (161 gegen 162 ms bei 1,0 und 1,5):
 
 | | voll gekippt | halb gekippt |
 |---|---|---|
-| nur Deckflächen beleuchtet, Telefon | 130 ms | 139 ms |
-| dazu Wände und Kanten, Telefon | **133 ms** | **145 ms** |
-| nur Deckflächen, Schirm | 213 ms | 221 ms |
-| dazu Wände und Kanten, Schirm | **231 ms** | **233 ms** |
+| grauer Strich, Telefon | 133 ms | 145 ms |
+| zwei versetzte **Striche**, Telefon | 161 ms | 176 ms |
+| zwei versetzte **Füllungen**, Telefon | **127 ms** | **131 ms** |
+| grauer Strich, Schirm | 231 ms | 233 ms |
+| zwei versetzte Füllungen, Schirm | **216 ms** | **223 ms** |
 
-Ein zweiter kleiner Blit je Scheibe, sonst nichts: der Kantenstrich kostete
-schon vorher nichts, und die Farbe der Wand ist jetzt sogar eine Tabelle
-weniger.
+Die Schrägsicht ist damit wieder schneller als die flache Karte — und hat die
+Dynamik, die ihr fehlte.
 
 **Die Sonne hängt an der Karte, nicht am Bildschirm.** Dreht man die Karte,
 dreht sich die Beleuchtung mit — Nordwest bleibt Nordwest. Das ist die
