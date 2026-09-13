@@ -1051,6 +1051,28 @@ Zahlen ruhig liegen, über drei Läufe: 73/74/74 ms ohne die Wände gegen
 Wunder: eine Füllung ist das Billigste in dieser Schleife, verglichen mit
 fünfundzwanzig Beschnitten und fünfundzwanzig ganzen Bildern.
 
+**Ist das echt oder ein Trick?** Echt. Der sichtbare Saum ist wirklich die
+Fläche, auf die sich die Seite der Platte abbildet — nur wird sie nicht als
+Vieleck gebaut, sondern durch Übermalen ausgerechnet. Nachgemessen ohne Deuten:
+dasselbe Bild einmal mit und einmal ohne die Wandfüllung, Unterschiede
+spaltenweise gezählt. Bei einer Plattendicke von 6,8 Bildpunkten ist der
+**Median der Säume 7 Bildpunkte**. Wo die Höhenlinie quer zum Blick läuft, ist
+die Wand also genau eine Plattendicke hoch; die langen Ausreisser sind die
+Stellen, an denen die Linie längs läuft und mehrere Wände in einem Zug stehen.
+
+Was daran *nicht* echt ist, und was man von ganz schräg sieht: die
+**Deckflächen sind nicht flach gemalt**. Sie tragen die Schattierung des
+glatten Geländes, wie die flache Karte — hell nach Nordwesten, dunkel nach
+Südosten. Eine wirkliche Platte wäre waagerecht und damit gleichmässig
+beleuchtet. Deshalb wirken die Platten gewölbt statt geschnitten, und das Auge
+liest die Kante eher als Rundung denn als Schnitt. Das ist Absicht: die
+Schattierung ist die Lesehilfe der Karte, und ohne sie wären fünfundzwanzig
+Stufen fünfundzwanzig flache Farbflächen.
+
+Und eine Wand fehlt wirklich: die **unterste**. Die Ringe werden ab Niveau 1
+gerechnet, die Grundplatte hat also keine Seite — was man unten am Rand als
+Schichtung sieht, sind die fünf Wasserbänder darüber.
+
 **Wie stark gedunkelt — daran hing die ganze Sache.** Die Wand bekommt die
 Farbe ihres eigenen Bandes, gedunkelt; das ist auch physikalisch die richtige
 Seite, denn das Licht steht im Nordwesten und eine nach Süden gewandte Wand
@@ -1103,6 +1125,22 @@ stehen hier, damit niemand sie noch einmal unternimmt.
 | Zählsortierung nach Bändern durch Reihe-für-Reihe ersetzen | **langsamer**, 222 gegen 194 ms — die Gipfel liegen weit auseinander, also umfasst schon der Kasten der oberen Scheiben fast die ganze Karte |
 | jede Scheibe nur in ihrem Kasten auflegen | 201 → 194 ms, im Rauschen |
 | Glättung beim Auflegen anlassen | 567 statt 201 ms, und unschärfer |
+
+### Wie hoch die Berge stehen
+
+Eine Schraube, `HOCH3D`, und sie stand zu hoch: bei 0,30 ragten die Städte als
+Türme auf und das Land lag darunter wie ein Sockel. Jetzt **0,18**, also
+60 Prozent davon. Gemessen wird das in Anteilen der Bildhöhe, nicht in
+Einwohnern je Quadratkilometer — die Höhe *im Verhältnis* steckt in der
+Farbleiter und in der Reihenfolge der Gipfel, nicht in diesem Faktor; er sagt
+nur, wie steil man dieselbe Landschaft ansieht.
+
+Es ist zugleich die Schraube für die Plattendicke, denn dz = hoch·sin(Neigung)
+·Massstab / 25. Mit der Gesamthöhe sinkt die Dicke im selben Verhältnis: 219
+auf 131 Punkte, und bei voller Neigung 7,7 auf 4,6 Bildpunkte je Platte. Es
+bleibt derselbe Stapel aus fünfundzwanzig Scheiben, nur flacher geschichtet —
+und die Karte darf breiter stehen, weil die Einpassung weniger Platz nach oben
+braucht.
 
 **Der Rahmen steht fest**, nämlich auf dem oberen Ende der Farbleiter. Nach dem
 höchsten Berg zu rechnen, der gerade dasteht, wäre verlockend — 1871 gäbe es

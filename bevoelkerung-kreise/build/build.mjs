@@ -1511,7 +1511,13 @@ const KIPPMAX = 62 * Math.PI / 180;
 // Volle Höhe, in Punkten des Höhenfelds. Das Relief rechnet mit UEBERHOEHT=30
 // für seine Normalen; fürs Ansehen braucht es ein Vielfaches davon, sonst ist
 // die gekippte Karte ein Blatt Papier statt einer Landschaft.
-const HOCH3D = 0.30;              // Anteil der Feldhöhe, den ein Wert 1 aufragt
+/* Auf 60 Prozent heruntergesetzt (von 0,30): die Berge ragten zu hoch, die
+   Karte stand darunter wie ein Sockel. Es ist **eine** Schraube für beides,
+   denn die Scheibendicke ist dz = hoch·sin(Neigung)·Massstab / 25 — mit der
+   Gesamthöhe sinkt die Plattendicke im selben Verhältnis, und der Stapel
+   bleibt derselbe Stapel, nur flacher geschichtet. Nebenbei wird die Karte
+   grösser, weil die Einpassung weniger Platz nach oben braucht. */
+const HOCH3D = 0.18;              // Anteil der Feldhöhe, den ein Wert 1 aufragt
 const schraeg = () => NEIGUNG > 0.001 || Math.abs(DREHUNG) > 1e-4;
 
 const hkT = document.createElement('canvas'), hcT = hkT.getContext('2d');

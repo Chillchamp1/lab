@@ -64,6 +64,17 @@ einer Wand im Parallelriss nicht. Kostet gemessen nichts. Gedunkelt wird sie
 nur wenig: an einem steilen Kegel ist die Wand breiter als die Terrasse
 darüber, und stärker gedunkelt fraß sie Berlin und Hamburg zu Oliv zusammen.
 
+Das ist kein gemalter Hinweis auf eine Wand, sondern die Wand: bei 6,8
+Bildpunkten Plattendicke misst der Saum im Median 7. Nicht echt ist die
+**Deckfläche** — sie trägt die Schattierung des glatten Geländes und wirkt
+deshalb gewölbt statt geschnitten. Und die unterste Wand fehlt, weil die Ringe
+erst ab dem ersten Niveau gerechnet werden.
+
+Wie hoch die Berge stehen, ist eine einzige Schraube, und sie steht jetzt auf
+60 Prozent des früheren Werts: vorher ragten die Städte als Türme auf und das
+Land lag darunter wie ein Sockel. Dieselbe Schraube trägt die Plattendicke,
+also wird derselbe Stapel nur flacher geschichtet.
+
 Gekippt hängen unter dem Südrand ein paar abgesetzte Stücke. Das ist kein
 Fehler: es sind Lörrach, der Alpenrand und die Inseln. Die Schrägsicht macht
 aus dem Breitengrad die Tiefe, und zwischen Lörrach und dem Rest der Karte

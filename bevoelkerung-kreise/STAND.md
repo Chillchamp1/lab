@@ -119,6 +119,18 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   Gefärbt mit der eigenen Bandfarbe auf **0,80** gedunkelt — bei 0,40 war die
   Wand am steilen Kegel breiter als die Terrasse darüber und verschluckte
   Berlin und Hamburg zu Oliv, die Karte sah gut aus und sagte nichts mehr.
+  Nachgemessen, ob der Saum wirklich die Wand ist: dasselbe Bild mit und ohne
+  die Füllung, Unterschiede spaltenweise gezählt — bei 6,8 Bildpunkten
+  Plattendicke ist der **Median der Säume 7 Bildpunkte**. Nicht echt ist daran
+  nur die Deckfläche: sie trägt die Schattierung des glatten Geländes und wirkt
+  deshalb gewölbt statt geschnitten. Die **unterste** Wand fehlt wirklich, weil
+  die Ringe ab Niveau 1 gerechnet werden.
+- **Die Berge stehen auf 60 Prozent.** `HOCH3D` von 0,30 auf 0,18: die Städte
+  ragten als Türme auf, das Land lag darunter wie ein Sockel. Dieselbe Schraube
+  trägt die Plattendicke (dz = hoch·sin(Neigung)·Massstab / 25), also sinkt
+  beides im selben Verhältnis — 219 auf 131 Punkte Gesamthöhe, bei voller
+  Neigung 7,7 auf 4,6 Bildpunkte je Platte. Derselbe Stapel, flacher
+  geschichtet.
 - Ein Diffusionskartogramm je Zeitpunkt, warm vom vorigen gestartet;
   gemeinsamer Massstab, und zwar **für alle Bilder derselbe**. Die Aussengrenze
   bleibt damit über hundertfünfzig Jahre ungefähr, wo sie ist; was sich bewegt,
