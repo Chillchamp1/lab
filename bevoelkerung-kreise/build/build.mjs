@@ -501,6 +501,9 @@ canvas{position:absolute;left:0;top:0;width:100%;height:100%;touch-action:manipu
    misst auch die Fassung ohne die zweite Leinwand. Es bleibt trotzdem so: was
    nichts zeigt, soll auch nicht da sein. */
 #umriss{pointer-events:none;display:none}
+/* Die Karte nimmt die Gesten selbst entgegen; ohne das scrollt und zoomt der
+   Browser die Seite, statt die Karte zu drehen. */
+#karte{touch-action:none}
 
 .fuss{flex:0 0 auto;min-width:0;padding:6px 0 0}
 /* Eine Zeile, und zwar auch dann, wenn sie noch leer ist: sonst ist die Leiste
@@ -1092,6 +1095,7 @@ function masse() {
   verY = rest * 0.875 - V.y * mass;
   // Der Umriss hängt an mass/verX/verY und wird sonst nie ungültig — der Boden
   // steht still. Eine Grössenänderung ist der einzige Fall.
+  ansichtKlemmen();
   zeigeUmriss(letzterTip);
 }
 
@@ -1485,6 +1489,21 @@ function reliefFeld() {
    ist ein Ausschnitt aus hkF, also samt Licht, Schlagschatten und
    Höhenlinien. */
 let SICHT = null;
+/* ---------- Zoom und Verschiebung ----------
+   Die Karte füllte bisher immer den Rahmen. Jetzt lässt sie sich heranziehen
+   und verschieben, und weil beides nach der ganzen Rechnung kommt, ist es eine
+   einzige Abbildung auf dem fertigen Bild: X' = X·ZOOM + vX.
+
+   Ein **Vergrösserungsglas**, kein neues Rendern. Das ist Absicht: das
+   Höhenfeld ist in Bildpunkten der Leinwand gerastert, und der Weichzeichner,
+   der aus Dichte ein Gebirge macht, misst in denselben Bildpunkten. Würde man
+   für das Heranziehen neu rechnen, änderte sich mit dem Massstab die Form der
+   Berge — und dann zeigte die Karte bei jedem Zoom etwas anderes. Lieber
+   unscharf als unwahr. */
+let ZOOM = 1, vX = 0, vY = 0;
+const ZOOMMAX = 8;
+const ansichtFrei = () => ZOOM !== 1 || vX !== 0 || vY !== 0;
+
 let NEIGUNG = 0;                  // 0 bis 1, entspricht 0 bis KIPPMAX Grad
 let DREHUNG = 0;                  // Bogenmass, 0 ist Norden oben
 let NAMEN = true;                 // Städtenamen an
@@ -1675,16 +1694,19 @@ function scheibenMalen(s) {
                      (hoehe - 2 * rand) / Math.max(1e-6, yMax - yMin));
   const oX = rand + (breite - 2 * rand - (aMax - aMin) * z) / 2 - aMin * z;
   const oY = rand + (hoehe - 2 * rand - (yMax - yMin) * z) / 2 - yMin * z;
-  const dz = hoch * si * z / N;
-  SICHT = { co, si, ct, st, cx, cy, hoch, z, oX, oY, N, dz };
+  // Zoom und Verschiebung kommen **nach** dem Einpassen: sie sind eine
+  // Abbildung auf dem fertigen Bild, kein Teil der Geometrie.
+  const zz = z * ZOOM, ozX = oX * ZOOM + vX, ozY = oY * ZOOM + vY;
+  const dz = hoch * si * zz / N;
+  SICHT = { co, si, ct, st, cx, cy, hoch, z: zz, oX: ozX, oY: ozY, N, dz };
 
   const ringe = scheibenRinge(N);
-  const a2 = D * z * ct, c2 = D * z * st, b2 = -D * co * z * st, d2 = D * co * z * ct;
-  const eX = D * oX - a2 * cx - c2 * cy;
+  const a2 = D * zz * ct, c2 = D * zz * st, b2 = -D * co * zz * st, d2 = D * co * zz * ct;
+  const eX = D * ozX - a2 * cx - c2 * cy;
   for (let k = 0; k < N; k++) {
     if (k > 0 && !ringe[k]) continue;
     ctx.save();
-    ctx.setTransform(a2, b2, c2, d2, eX, D * (oY - k * dz) - b2 * cx - d2 * cy);
+    ctx.setTransform(a2, b2, c2, d2, eX, D * (ozY - k * dz) - b2 * cx - d2 * cy);
     // Die unterste Scheibe ist die ganze Karte; ihren Rand bringt die Vorlage
     // selbst mit, denn was draussen liegt, ist dort durchsichtig.
     if (k > 0) ctx.clip(ringe[k], 'evenodd');
@@ -1699,9 +1721,9 @@ function scheibenMalen(s) {
        fünfundzwanzig Striche. */
     if (k > 0) {
       ctx.save();
-      ctx.setTransform(a2, b2, c2, d2, eX, D * (oY - k * dz) - b2 * cx - d2 * cy);
+      ctx.setTransform(a2, b2, c2, d2, eX, D * (ozY - k * dz) - b2 * cx - d2 * cy);
       ctx.lineJoin = 'round';
-      ctx.lineWidth = KANTENSTRICH / z;
+      ctx.lineWidth = KANTENSTRICH / zz;
       ctx.strokeStyle = '#000';
       ctx.globalAlpha = KANTENDECK;
       ctx.stroke(ringe[k]);
@@ -1713,6 +1735,9 @@ function scheibenMalen(s) {
 }
 
 function projPunkt(X, Y) {
+  // Flach ist die Ansicht nur Zoom und Verschiebung; schräg steckt beides
+  // schon im Massstab des Stapels.
+  if (!schraeg()) return [X * ZOOM + vX, Y * ZOOM + vY];
   if (!SICHT || !(rW > 0)) return [X, Y];
   const s = rW / breite, N = SICHT.N;
   // Die Höhe kommt aus dem Feld, die Lage aus der Leinwand — beides muss
@@ -2368,6 +2393,17 @@ function zeichne() {
      der Schrägsicht stimmt keines davon mehr — dort baut das Gelände seine
      Flanken selbst, aus seiner eigenen Höhe. Also bleiben sie dann weg. */
   const flach = !schraeg();
+  /* Flach wird die Karte unter die Ansicht gestellt — Zoom und Verschiebung
+     als Leinwandabbildung über alles, was jetzt kommt. Schräg steckt beides
+     schon im Massstab des Scheibenstapels, dort wäre es doppelt.
+
+     Die Namen kommen **danach** und bleiben deshalb bei ihrer Grösse: ein
+     Vergrösserungsglas soll das Gelände vergrössern, nicht die Schrift. */
+  const dprZ = Math.min(2.5, devicePixelRatio || 1);
+  if (flach && ansichtFrei()) {
+    ctx.save();
+    ctx.setTransform(dprZ * ZOOM, 0, 0, dprZ * ZOOM, dprZ * vX, dprZ * vY);
+  }
   if (flach) {
     ctx.save();
     ctx.translate(0, TIEFE * 1.9); ctx.filter = 'blur(' + (TIEFE * 1.2).toFixed(1) + 'px)';
@@ -2402,6 +2438,7 @@ function zeichne() {
      Verwaltung. */
 
   reliefUeber(sil, deck);
+  if (flach && ansichtFrei()) ctx.restore();
 
   if (NAMEN) beschrifte(deck, w);
   schreibe(a, b, u, w, deck);
@@ -2581,7 +2618,7 @@ function beschrifte(deck, w) {
          unten kommt **danach**, denn er ist ein Abstand auf dem Bild, keiner
          im Gelände — der Name soll unter dem Gipfel stehen, wo immer der
          gerade zu sehen ist. */
-      const q = schraeg() ? projPunkt(mx, my) : [mx, my];
+      const q = projPunkt(mx, my);
       // ox/oy ist der Ort selbst, mx/my der Ankerpunkt der Schrift darunter.
       liste.push({ name, A: bestA, sicht, gross: w[g] / schwelle,
         ox: q[0], oy: q[1], mx: q[0], my: q[1] + versatz });
@@ -2928,14 +2965,11 @@ function zeigeUmriss(g) {
   // geht jeder Stützpunkt denselben Weg wie das Gelände unter ihm. Verdeckt
   // wird dabei nichts — die Marke soll ganz zu sehen sein, auch hinter einem
   // Berg; sie ist ja keine Grenze, sondern eine Antwort auf einen Tipp.
-  const kipp = schraeg();
   for (const r of GEBIETE[g]) {
-    const erst = kipp ? projPunkt(px[r[0]] * mass + verX, py[r[0]] * mass + verY)
-                      : [px[r[0]] * mass + verX, py[r[0]] * mass + verY];
+    const erst = projPunkt(px[r[0]] * mass + verX, py[r[0]] * mass + verY);
     pfad.moveTo(erst[0], erst[1]);
     for (let i = 1; i < r.length; i++) {
-      const q = kipp ? projPunkt(px[r[i]] * mass + verX, py[r[i]] * mass + verY)
-                     : [px[r[i]] * mass + verX, py[r[i]] * mass + verY];
+      const q = projPunkt(px[r[i]] * mass + verX, py[r[i]] * mass + verY);
       pfad.lineTo(q[0], q[1]);
     }
     pfad.closePath();
@@ -2991,6 +3025,8 @@ function zeigeTip(x, y) {
     const f = feldUnter(x, y);
     if (!f) { versteckeTip(); stumm = -1; return; }
     x = f[0]; y = f[1];
+  } else if (ansichtFrei()) {
+    x = (x - vX) / ZOOM; y = (y - vY) / ZOOM;
   }
   let treffer = -1;
   for (let g = 0; g < NK; g++) if (deck[g] > 0.001 && imGebiet(g, x, y)) { treffer = g; break; }
@@ -3039,25 +3075,148 @@ function zeigeTip(x, y) {
   tip.style.left = Math.max(0, Math.min(breite - 224, x - 100)) + 'px';
   tip.style.top = Math.max(2, y - tip.offsetHeight - 14) + 'px';
 }
+/* ---------- Gesten auf der Karte ----------
+   Ein Finger zieht die Karte (wenn herangezogen ist), zwei Finger machen
+   dreierlei zugleich: auseinander und zusammen ist Zoom, verdrehen ist Drehen,
+   und beide zusammen nach oben schieben ist Kippen.
+
+   Gerechnet wird alles aus dem **Schritt zum vorigen Ereignis**, nicht aus dem
+   Anfang der Geste. Das ist der Kniff, der die drei auseinanderhält: eine reine
+   Drehung bewegt die Mitte nicht, ein reines Auseinanderziehen ändert den
+   Winkel nicht. Man muss also nichts sperren und nichts erraten — jede Geste
+   bekommt genau den Anteil, den sie wirklich enthält.
+
+   Ein Tipp bleibt ein Tipp: bewegt sich der Finger weniger als acht Punkte,
+   ist es kein Ziehen, sondern der Zettel. Zweimal tippen stellt die Ansicht
+   zurück. */
+const KIPPWEG = 220;               // Bildpunkte für den ganzen Kippbereich
+const zeiger = new Map();
+let zweiAbstand = 0, zweiWinkel = 0, zweiMitte = 0;
+let einStart = null, letzterTipp = 0, malBald = false;
+
+function baldMalen() {
+  // Ein Finger schickt hundertzwanzig Ereignisse in der Sekunde, ein Bild
+  // kostet hundert Millisekunden. Also höchstens eines je Bildtakt.
+  if (malBald) return;
+  malBald = true;
+  requestAnimationFrame(() => { malBald = false; zeichne(); zeigeUmriss(letzterTip); });
+}
+
+function ansichtKlemmen() {
+  if (ZOOM < 1) ZOOM = 1; else if (ZOOM > ZOOMMAX) ZOOM = ZOOMMAX;
+  /* So weit schieben, dass die Karte den Rahmen gerade noch füllt, nicht
+     weiter. Das Bild reicht von vX bis vX + breite·ZOOM; damit es den Rahmen
+     deckt, muss vX zwischen −breite·(ZOOM−1) und 0 liegen — **nicht**
+     symmetrisch um null. Symmetrisch stand ein mittig vergrössertes Bild
+     schon am Anschlag, und man konnte nur in eine Richtung schieben. */
+  const gX = breite * (ZOOM - 1), gY = hoehe * (ZOOM - 1);
+  if (vX > 0) vX = 0; else if (vX < -gX) vX = -gX;
+  if (vY > 0) vY = 0; else if (vY < -gY) vY = -gY;
+}
+
+function zoomeUm(faktor, px, py) {
+  const vorher = ZOOM;
+  ZOOM *= faktor;
+  if (ZOOM < 1) ZOOM = 1; else if (ZOOM > ZOOMMAX) ZOOM = ZOOMMAX;
+  // Um den Punkt herum, den die Finger halten: der bleibt stehen.
+  const w = ZOOM / vorher;
+  vX = px - (px - vX) * w;
+  vY = py - (py - vY) * w;
+  ansichtKlemmen();
+}
+
+function reglerNach() {
+  document.getElementById('kipp').value = String(Math.round(NEIGUNG * 100));
+  let g = DREHUNG * 180 / Math.PI;
+  while (g > 180) g -= 360;
+  while (g < -180) g += 360;
+  DREHUNG = g * Math.PI / 180;
+  document.getElementById('dreh').value = String(Math.round(g));
+}
+
+const ortVon = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+
+function zweiMerken() {
+  const f = [...zeiger.values()];
+  if (f.length < 2) return;
+  zweiAbstand = Math.hypot(f[1].x - f[0].x, f[1].y - f[0].y);
+  zweiWinkel = Math.atan2(f[1].y - f[0].y, f[1].x - f[0].x);
+  zweiMitte = (f[0].y + f[1].y) / 2;
+}
+
 cv.addEventListener('pointerdown', e => {
-  // Steht schon einer, nimmt dieser Tipp ihn weg — ganz gleich, wo er hinfällt.
-  if (zettelAn) { stumm = letzterTip; versteckeTip(); return; }
-  stumm = -1;
-  const r = cv.getBoundingClientRect();
-  zeigeTip(e.clientX - r.left, e.clientY - r.top);
+  cv.setPointerCapture(e.pointerId);
+  const [x, y] = ortVon(e);
+  zeiger.set(e.pointerId, { x, y });
+  if (zeiger.size === 1) einStart = { x, y, gezogen: false };
+  else { zweiMerken(); einStart = null; }
 });
+
 cv.addEventListener('pointermove', e => {
-  if (e.pointerType !== 'mouse') return;
-  const r = cv.getBoundingClientRect();
-  zeigeTip(e.clientX - r.left, e.clientY - r.top);
+  const p = zeiger.get(e.pointerId);
+  const [x, y] = ortVon(e);
+  if (!p) { if (e.pointerType === 'mouse') zeigeTip(x, y); return; }
+  const dx = x - p.x, dy = y - p.y;
+  p.x = x; p.y = y;
+  if (zeiger.size === 1) {
+    if (!einStart) return;
+    if (!einStart.gezogen && Math.hypot(x - einStart.x, y - einStart.y) > 8) einStart.gezogen = true;
+    if (einStart.gezogen && ZOOM > 1) { vX += dx; vY += dy; ansichtKlemmen(); baldMalen(); }
+    return;
+  }
+  if (zeiger.size !== 2) return;
+  const f = [...zeiger.values()];
+  const abst = Math.hypot(f[1].x - f[0].x, f[1].y - f[0].y);
+  const wink = Math.atan2(f[1].y - f[0].y, f[1].x - f[0].x);
+  const mx = (f[0].x + f[1].x) / 2, my = (f[0].y + f[1].y) / 2;
+  if (zweiAbstand > 12 && abst > 12) zoomeUm(abst / zweiAbstand, mx, my);
+  let dw = wink - zweiWinkel;
+  while (dw > Math.PI) dw -= 2 * Math.PI;
+  while (dw < -Math.PI) dw += 2 * Math.PI;
+  DREHUNG += dw;
+  // Nach oben schieben richtet die Karte auf, wie in einer Straßenkarte.
+  NEIGUNG = Math.max(0, Math.min(1, NEIGUNG - (my - zweiMitte) / KIPPWEG));
+  zweiAbstand = abst; zweiWinkel = wink; zweiMitte = my;
+  reglerNach();
+  baldMalen();
 });
+
+function losLassen(e) {
+  const waren = zeiger.size;
+  zeiger.delete(e.pointerId);
+  if (zeiger.size === 2) zweiMerken();
+  if (waren === 1 && einStart && !einStart.gezogen) {
+    const jetzt = performance.now();
+    if (jetzt - letzterTipp < 320) {
+      // Zweimal getippt: Ansicht zurück auf den Rahmen.
+      ZOOM = 1; vX = 0; vY = 0; letzterTipp = 0;
+      versteckeTip(); stumm = -1; baldMalen();
+    } else {
+      letzterTipp = jetzt;
+      if (zettelAn) { stumm = letzterTip; versteckeTip(); }
+      else { stumm = -1; zeigeTip(einStart.x, einStart.y); }
+    }
+  }
+  einStart = null;
+}
+cv.addEventListener('pointerup', losLassen);
+cv.addEventListener('pointercancel', losLassen);
+
+// Am Rechner tut das Rad dasselbe wie zwei Finger, um den Zeiger herum.
+cv.addEventListener('wheel', e => {
+  e.preventDefault();
+  const [x, y] = ortVon(e);
+  zoomeUm(Math.exp(-e.deltaY * 0.0015), x, y);
+  baldMalen();
+}, { passive: false });
+
 /* Und dieses Verlassen gilt nur für die Maus. Ein Finger „verlässt" die Karte
    in dem Augenblick, in dem er sie loslässt — der Browser schickt für eine
    Berührung nach dem Loslassen ein pointerleave hinterher. Der Zettel war auf
    dem Telefon deshalb nur so lange zu sehen, wie der Finger lag: antippen,
    aufblitzen, weg. Das war der eigentliche Grund, warum er nicht stehenblieb. */
 cv.addEventListener('pointerleave', e => {
-  if (e.pointerType !== 'mouse') return;
+  if (e.pointerType !== 'mouse' || zeiger.size) return;
   versteckeTip(); stumm = -1;
 });
 

@@ -1041,8 +1041,6 @@ Punkte), die Farbe wird einmal daraufgerechnet, die Höhenlinien werden darin
 gezogen.
 
 ### Was der Stapel besser kann als ein Spaltenlauf
-### Was der Stapel besser kann als ein Spaltenlauf
-### Was der Stapel besser kann als ein Spaltenlauf
 
 Die erste Fassung lief stattdessen Spalte für Spalte in die Tiefe, mit einem
 Horizont je Spalte, wie die Geländespiele der neunziger Jahre. Der Stapel ist
@@ -1142,6 +1140,82 @@ fünfundzwanzig Scheiben und gehört sichtbar zum selben Körper.
 Der Film zeigt die flache Karte. Die beiden Bedienzeilen sind darin
 ausgeblendet, und der Blickwinkel wird beim Start ausdrücklich auf null
 gesetzt.
+
+## 4l. Zwei Finger auf der Karte
+
+Die Regler unter der Zeitleiste bleiben, aber sie sind nicht mehr der einzige
+Weg. Die Karte selbst nimmt jetzt Gesten an: **auseinanderziehen vergrössert,
+verdrehen dreht, beide Finger zusammen nach oben schieben richtet auf.** Am
+Rechner tut das Mausrad dasselbe wie zwei Finger, um den Zeiger herum.
+
+### Der Kniff: aus dem Schritt rechnen, nicht aus dem Anfang
+
+Zwei Finger tragen drei Grössen zugleich — Abstand, Winkel, Mitte. Wer sie
+gegen den **Anfang** der Geste misst, muss entscheiden, welche der drei gemeint
+ist, und entscheidet fast immer falsch: beim Drehen wandert der Abstand ein
+wenig, beim Ziehen der Winkel. Die üblichen Abhilfen sind Schwellen und
+Sperren, und beide fühlen sich zäh an.
+
+Hier wird jede Grösse gegen das **vorige Ereignis** gemessen und sofort
+weitergeschrieben. Dann trennen sich die drei von selbst: eine reine Drehung
+bewegt die Mitte nicht, ein reines Auseinanderziehen ändert den Winkel nicht.
+Es muss nichts gesperrt und nichts erraten werden — jede Geste bekommt genau
+den Anteil, den sie wirklich enthält.
+
+| Finger | Was passiert |
+|---|---|
+| einer, gezogen (nur vergrössert) | schiebt den Ausschnitt |
+| einer, getippt | der Zettel zum Kreis darunter |
+| einer, zweimal getippt | Ansicht zurück auf den Rahmen |
+| zwei, Abstand | Zoom, bis achtfach, um den Punkt zwischen den Fingern |
+| zwei, Winkel | Drehung |
+| zwei, Mitte hoch/runter | Neigung, 220 Bildpunkte für den ganzen Bereich |
+
+Die beiden Regler laufen mit: was die Finger einstellen, steht sofort in den
+Schiebern, und was die Schieber einstellen, gilt für die Finger weiter. Es gibt
+nur einen Zustand, zwei Bedienungen.
+
+### Zoom ist ein Vergrösserungsglas, kein neues Rendern
+
+Das ist eine Entscheidung und kein Versäumnis. Das Höhenfeld ist in
+**Bildpunkten der Leinwand** gerastert, und die Weichzeichner, die aus Dichte
+ein Gebirge machen, messen in denselben Bildpunkten (`FEINTEILER`,
+`GROBTEILER`, `WEITTEILER` sind Bruchteile der Bildbreite). Würde beim
+Heranziehen neu gerechnet, änderte sich mit dem Massstab die **Form der Berge**
+— dreifach vergrössert wäre der Weichzeichner ein Drittel so weit, und dieselbe
+Stadt stünde als anderer Gipfel da. Zwei Zoomstufen zeigten dann zwei
+verschiedene Karten. Lieber unscharf als unwahr.
+
+Technisch ist es deshalb eine einzige Abbildung ganz am Ende: X′ = X·ZOOM + vX.
+Flach wird sie vor dem Malen in die Leinwand gesetzt, schräg fällt sie in die
+Anpassung des Scheibenstapels hinein (`z·ZOOM`, `oX·ZOOM + vX`) — die
+Schrägsicht wird also wirklich neu geschnitten und bleibt gestochen scharf,
+während die flache Karte vergrössert wird. Die Städtenamen stehen in beiden
+Fällen ausserhalb und behalten ihre Grösse.
+
+**Der Anschlag ist einseitig.** Das Bild reicht von vX bis vX + Breite·ZOOM;
+damit es den Rahmen deckt, muss vX zwischen −Breite·(ZOOM−1) und 0 liegen —
+nicht symmetrisch um null. Symmetrisch gerechnet stand ein mittig
+vergrössertes Bild schon am Anschlag, und Schieben ging nur in eine Richtung.
+
+### Was sonst noch daran hängt
+
+- **Der Griff auf einen Kreis** rechnet die Ansicht mit zurück: flach durch
+  Umkehrung derselben Abbildung, schräg durch die fünfundzwanzig Abbildungen
+  des Stapels, die den Zoom bereits enthalten. Nachgemessen bei Zoom 2,5 flach
+  und bei 60 Grad: Berlin trifft Berlin.
+- **Ein Bild je Bildtakt.** Ein Finger schickt bis zu hundertzwanzig Ereignisse
+  in der Sekunde, ein schräges Bild kostet um hundert Millisekunden. Die
+  Ereignisse ändern deshalb nur den Zustand; gemalt wird einmal je
+  `requestAnimationFrame`.
+- **`touch-action: none`** auf der Leinwand. Ohne das nimmt der Browser die
+  Geste vorweg und scrollt die Seite, statt die Karte zu drehen.
+- **Ein Tipp bleibt ein Tipp**: unter acht Bildpunkten Bewegung ist es kein
+  Ziehen. Zwei Tipps binnen 320 Millisekunden setzen Zoom und Verschiebung
+  zurück, Neigung und Drehung bleiben stehen — die hat man mit der Hand
+  eingestellt und will sie nicht verlieren.
+- **Der Film** setzt beim Start ausdrücklich `ZOOM = 1` und die Verschiebung
+  auf null, wie er schon Neigung und Drehung auf null setzt.
 
 ## 4b. Die Farbskala der Karte
 

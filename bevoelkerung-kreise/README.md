@@ -61,6 +61,26 @@ Fehler: es sind Lörrach, der Alpenrand und die Inseln. Die Schrägsicht macht
 aus dem Breitengrad die Tiefe, und zwischen Lörrach und dem Rest der Karte
 liegt in derselben Blickrichtung Frankreich.
 
+**Zwei Finger auf der Karte.** Die Regler sind nicht der einzige Weg:
+auseinanderziehen vergrössert (bis achtfach), verdrehen dreht, beide Finger
+zusammen nach oben schieben richtet auf; ein Finger schiebt den Ausschnitt,
+zweimal tippen setzt ihn zurück. Am Rechner tut das Mausrad dasselbe. Was die
+Finger einstellen, steht sofort in den Reglern — es gibt einen Zustand und zwei
+Bedienungen.
+
+Der Kniff dabei ist, jede der drei Grössen gegen das **vorige** Ereignis zu
+messen statt gegen den Anfang der Geste. Dann trennen sie sich von selbst: eine
+reine Drehung bewegt die Mitte nicht, ein reines Auseinanderziehen ändert den
+Winkel nicht. Es braucht keine Schwellen und keine Sperren.
+
+Das Vergrössern ist ausdrücklich ein **Vergrösserungsglas** und kein neues
+Rechnen. Die Weichzeichner, die aus Dichte ein Gebirge machen, messen in
+Bildpunkten der Leinwand; würde beim Heranziehen neu gerechnet, änderte sich
+mit dem Massstab die Form der Berge, und zwei Zoomstufen zeigten zwei
+verschiedene Karten. Lieber unscharf als unwahr. Die Schrägsicht ist davon
+ausgenommen — der Scheibenstapel wird wirklich neu geschnitten und bleibt
+scharf.
+
 ## Was jeweils geschah
 
 Über der Karte steht, was gerade geschieht: Ostflucht, Weltkrieg, Vertreibung,
