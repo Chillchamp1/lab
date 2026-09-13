@@ -48,6 +48,12 @@ Meeresspiegel liegt, sagt der schräge Blick in einem Augenblick, wofür die
 flache Karte einen Absatz braucht. Beim Laden liegt die Karte flach, und der
 Film zeigt weiterhin nur diese flache Karte.
 
+Die Schrägsicht hat dafür **zwei Auflösungen**: solange man zieht oder der Film
+läuft, die schnelle; sobald das Bild steht, zeichnet sie sich eine
+Fünftelsekunde später scharf nach — mit frisch gezogenen Höhenlinien statt
+vergrösserten. Das Drehen kostet dabei nichts, die scharfe Fassung gilt also für
+jeden Winkel.
+
 ## Was jeweils geschah
 
 Über der Karte steht, was gerade geschieht: Ostflucht, Weltkrieg, Vertreibung,
