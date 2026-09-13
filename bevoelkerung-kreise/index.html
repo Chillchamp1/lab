@@ -154,6 +154,15 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
 .marken{position:relative;height:9px;margin-top:1px}
 .marken i{position:absolute;top:0;width:1px;height:4px;background:var(--axis)}
 .marken i.voll{height:7px;background:var(--muted)}
+
+/* Die zweite Reihe: Blickwinkel und Namen. Sie steht unter der Zeitleiste,
+   weil sie seltener angefasst wird, und nimmt der Karte rund zwanzig Pixel
+   Höhe — das rechnet der Umbruch von selbst, masse() misst ja das Feld. */
+.sicht{display:flex;align-items:center;gap:10px;flex:0 0 auto;margin-top:5px}
+.sicht label{display:flex;align-items:center;gap:6px;flex:1 1 0;min-width:0}
+.sicht label span{flex:0 0 auto;color:var(--muted);font-size:11.5px}
+#namen{flex:0 0 auto;padding:3px 9px;font-size:11.5px;border-radius:7px}
+#namen[aria-pressed=false]{color:var(--muted);border-style:dashed}
 .tip{position:absolute;pointer-events:none;background:#141412;border:1px solid var(--axis);
   border-radius:9px;padding:7px 9px;font-size:12.5px;box-shadow:0 6px 20px rgba(0,0,0,.5);
   max-width:210px;opacity:0;transition:opacity .12s}
@@ -181,6 +190,11 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
       <input type="range" id="zeit" min="0" max="1000" value="0" step="1" aria-label="Year">
       <div class="marken" id="marken"></div>
     </div>
+  </div>
+  <div class="sicht">
+    <label><span>Tilt</span><input type="range" id="kipp" min="0" max="100" value="0" step="1" aria-label="Tilt the map"></label>
+    <label><span>Turn</span><input type="range" id="dreh" min="-180" max="180" value="0" step="1" aria-label="Turn the map"></label>
+    <button id="namen" aria-pressed="true">Names</button>
   </div>
   <div class="schild"><b id="jahrZahl">–</b><span id="jahrBev"></span></div>
   <div class="text">
@@ -951,10 +965,31 @@ const hkA = document.createElement('canvas'), hcA = hkA.getContext('2d');
 const hkB = document.createElement('canvas'), hcB = hkB.getContext('2d', { willReadFrequently: true });
 const hkC = document.createElement('canvas'), hcC = hkC.getContext('2d', { willReadFrequently: true });
 const hkF = document.createElement('canvas'), hcF = hkF.getContext('2d');
+const hkP = document.createElement('canvas'), hcP = hkP.getContext('2d', { willReadFrequently: true });
 let rW = 0, rH = 0, fBild = null;
 let feinH = null, grobH = null, grobM = null, grobAuf = null, feldH = null,
     farbF = null, maskeH = null, schatten = null, licht = null, weitH = null,
     kastenA = null, kastenB = null;
+let fLesen = null, pBild = null, pQuelle = null, yPuffer = null, pAngefangen = null;
+
+/* ---------- Der Blickwinkel ----------
+   Die Karte lag bisher flach. Sie darf sich jetzt aufrichten und drehen, und
+   das ist kein neues Bild, sondern dasselbe: das Höhenfeld, aus dem Farbe,
+   Schattierung und Höhenlinien schon kommen, wird nicht mehr platt
+   hingelegt, sondern schräg angesehen.
+
+   NEIGUNG 0 heisst senkrecht von oben — dann läuft alles wie bisher, Zeile
+   für Zeile derselbe Weg, und der Film bleibt der alte. Erst ab der ersten
+   Rastung gilt der andere Weg. */
+let NEIGUNG = 0;                  // 0 bis 1, entspricht 0 bis KIPPMAX Grad
+let DREHUNG = 0;                  // Bogenmass, 0 ist Norden oben
+let NAMEN = true;                 // Städtenamen an
+const KIPPMAX = 62 * Math.PI / 180;
+// Volle Höhe, in Punkten des Höhenfelds. Das Relief rechnet mit UEBERHOEHT=30
+// für seine Normalen; fürs Ansehen braucht es ein Vielfaches davon, sonst ist
+// die gekippte Karte ein Blatt Papier statt einer Landschaft.
+const HOCH3D = 0.30;              // Anteil der Feldhöhe, den ein Wert 1 aufragt
+const schraeg = () => NEIGUNG > 0.001 || Math.abs(DREHUNG) > 1e-4;
 // Die Farbleiter als drei Zahlenreihen — je Bildpunkt ein Nachschlagen statt
 // eines Zerlegens von '#rrggbb'.
 const HYPSO_R = HYPSO.map(h => parseInt(h.slice(1, 3), 16));
@@ -1038,14 +1073,148 @@ function reliefFeld() {
   const w = Math.max(8, Math.round(breite * RAUF)), h = Math.max(8, Math.round(hoehe * RAUF));
   if (w === rW && h === rH) return;
   rW = w; rH = h;
-  for (const k of [hkA, hkB, hkC, hkF]) { k.width = w; k.height = h; }
+  for (const k of [hkA, hkB, hkC, hkF, hkP]) { k.width = w; k.height = h; }
   fBild = hcF.createImageData(w, h);
+  pBild = hcP.createImageData(w, h);
+  pQuelle = new Int32Array(w * h);
+  yPuffer = new Float32Array(w);
+  pAngefangen = new Uint8Array(w);
   feinH = new Float32Array(w * h); feldH = new Float32Array(w * h);
   grobH = new Float32Array(w * h); grobM = new Float32Array(w * h);
   grobAuf = new Float32Array(w * h); farbF = new Float32Array(w * h);
   maskeH = new Float32Array(w * h); schatten = new Float32Array(w * h);
   licht = new Float32Array(w * h); weitH = new Float32Array(w * h);
   kastenA = new Float32Array(w * h); kastenB = new Float32Array(w * h);
+}
+
+/* ---------- Die Schrägsicht ----------
+   Gerechnet wird wie in den alten Geländespielen: das Bild entsteht Spalte für
+   Spalte, von vorn nach hinten, mit einem Horizont je Spalte. Wer hinten steht
+   und nicht über diesen Horizont ragt, ist verdeckt und wird gar nicht erst
+   gemalt. Jeder Bildpunkt wird genau einmal beschrieben, und die Verdeckung
+   ist damit nicht geschätzt, sondern richtig.
+
+   Die Vorlage ist die fertige Karte selbst — Farbe, Licht und Höhenlinien
+   liegen schon darin. Nur die Höhe kommt getrennt dazu, aus feldH, demselben
+   Feld, aus dem das Licht gerechnet wurde. Hochkant gestellt wird also nicht
+   ein zweites Bild, sondern dieses.
+
+   Gemalt wird in der Auflösung des Höhenfelds, nicht der Leinwand; das
+   Hochrechnen am Ende macht dieselbe Glättung, die die flache Karte auch
+   bekommt, und die Rechnung bleibt bei rund einer Viertelmillion Punkten. */
+let SICHT = null;
+
+function schraegMalen() {
+  const W = rW, H = rH;
+  const td = hcP.getImageData(0, 0, W, H).data;
+  const po = pBild.data;
+  po.fill(0);
+  pQuelle.fill(-1);
+
+  const phi = NEIGUNG * KIPPMAX, co = Math.cos(phi), si = Math.sin(phi);
+  const ct = Math.cos(DREHUNG), st = Math.sin(DREHUNG);
+  const cx = W / 2, cy = H / 2, hoch = H * HOCH3D;
+
+  // Der Rahmen: die vier Ecken des Feldes, einmal flach und einmal in voller
+  // Höhe. Daraus Massstab und Verschiebung, damit die Karte bei jedem Winkel
+  // das Bild ausfüllt statt zu wandern.
+  /* Der Kopfraum ist **fest**, nämlich das obere Ende der Farbleiter. Nach dem
+     höchsten Berg zu rechnen, der gerade dasteht, wäre verlockend — 1871 gäbe
+     es kaum einen, und die Karte stünde grösser da. Nur schrumpfte sie dann in
+     dem Mass, in dem die Städte wachsen, und zwei Bilder wären nicht mehr
+     zu vergleichen: genau das, wofür die ganze Karte gebaut ist. Also bleibt
+     der Rahmen stehen und ein Teil davon 1871 eben leer. */
+  const kopfraum = hoch;
+  let aMin = 1e9, aMax = -1e9, bMin = 1e9, bMax = -1e9, yMin = 1e9, yMax = -1e9;
+  for (const e of [[0, 0], [W, 0], [0, H], [W, H]]) {
+    const dx = e[0] - cx, dy = e[1] - cy;
+    const a = dx * ct + dy * st, b = -dx * st + dy * ct;
+    if (a < aMin) aMin = a; if (a > aMax) aMax = a;
+    if (b < bMin) bMin = b; if (b > bMax) bMax = b;
+    const y0 = b * co, y1 = b * co - kopfraum * si;
+    if (y1 < yMin) yMin = y1; if (y0 > yMax) yMax = y0;
+  }
+  const rand = 2;
+  const z = Math.min((W - 2 * rand) / Math.max(1e-6, aMax - aMin),
+                     (H - 2 * rand) / Math.max(1e-6, yMax - yMin));
+  const oX = rand + (W - 2 * rand - (aMax - aMin) * z) / 2 - aMin * z;
+  const oY = rand + (H - 2 * rand - (yMax - yMin) * z) / 2 - yMin * z;
+  SICHT = { co, si, ct, st, cx, cy, hoch, z, oX, oY };
+
+  // Ein Schritt in die Tiefe soll auf dem Bild rund einen Punkt weit sein.
+  const db = Math.max(0.35, Math.min(2, 0.85 / Math.max(0.05, co * z)));
+  const rock = Math.max(2, W / 130);     // dieselbe Kante wie flach, als Sockel
+  /* Die Flanke wird nicht sofort dunkel, sondern über ein paar Punkte hinweg.
+     Das ist kein Schönheitsgrund: ein Hang, der je Tiefenschritt einen Punkt
+     fällt, bestünde sonst aus einer hellen und einer dunklen Zeile im Wechsel
+     und sähe gesprenkelt aus. Erst eine wirkliche Wand — viele Punkte auf
+     einen Schritt — soll als Wand erscheinen. */
+  const DUNKEL = 0.5, kR = 6, kG = 6, kB = 5;   // KANTE3D, für die Flanken
+  const BLENDE = Math.max(3, W / 90);
+
+  for (let x = 0; x < W; x++) { yPuffer[x] = H; pAngefangen[x] = 0; }
+
+  for (let b = bMax; b >= bMin; b -= db) {
+    const yb = b * co * z + oY;
+    const bx = -b * st, by = b * ct;
+    for (let x = 0; x < W; x++) {
+      const horizont = yPuffer[x];
+      if (horizont <= 0) continue;                 // Spalte ist bis oben voll
+      const a = (x - oX) / z;
+      const ix = (cx + a * ct + bx) | 0, iy = (cy + a * st + by) | 0;
+      if (ix < 0 || iy < 0 || ix >= W || iy >= H) continue;
+      const i = iy * W + ix, j = i << 2;
+      if (td[j + 3] < 128) continue;               // draussen, kein Gelände
+      const y = Math.round(yb - feldH[i] * hoch * si * z);
+      if (y >= horizont) continue;                 // verdeckt
+      let unten = horizont;
+      if (!pAngefangen[x]) {
+        // Der vorderste Treffer einer Spalte bekommt einen Boden, sonst liefe
+        // die Flanke bis an den unteren Bildrand.
+        pAngefangen[x] = 1;
+        const grund = Math.round(yb) + rock;
+        if (grund < unten) unten = grund;
+        if (unten <= y) unten = y + 1;
+      }
+      if (unten > H) unten = H;
+      const oben = y < 0 ? 0 : y;
+      const r = td[j], g = td[j + 1], bl = td[j + 2];
+      for (let yy = oben; yy < unten; yy++) {
+        const tief = yy - y;
+        const f = tief <= 0 ? 1
+                : 1 - (1 - DUNKEL) * (tief > BLENDE ? 1 : tief / BLENDE);
+        const q = yy * W + x, p = q << 2;
+        po[p] = r * f + kR * (1 - f);
+        po[p + 1] = g * f + kG * (1 - f);
+        po[p + 2] = bl * f + kB * (1 - f);
+        po[p + 3] = 255;
+        pQuelle[q] = i;
+      }
+      yPuffer[x] = y;
+    }
+  }
+
+  hcP.setTransform(1, 0, 0, 1, 0, 0);
+  hcP.globalCompositeOperation = 'source-over';
+  hcP.putImageData(pBild, 0, 0);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(hkP, 0, 0, breite, hoehe);
+}
+
+/* Ein Punkt der flachen Karte, in der Schrägsicht. Gebraucht für die Namen und
+   für den Umriss eines angetippten Kreises: beide sind Striche, keine Fläche,
+   und müssen denselben Weg gehen wie das Gelände unter ihnen. */
+function projPunkt(X, Y) {
+  if (!SICHT || !(rW > 0)) return [X, Y];
+  const s = rW / breite;
+  const fx = X * s, fy = Y * s;
+  const ix = fx | 0, iy = fy | 0;
+  const h = (ix >= 0 && iy >= 0 && ix < rW && iy < rH) ? feldH[iy * rW + ix] : 0;
+  const dx = fx - SICHT.cx, dy = fy - SICHT.cy;
+  const a = dx * SICHT.ct + dy * SICHT.st, b = -dx * SICHT.st + dy * SICHT.ct;
+  return [(a * SICHT.z + SICHT.oX) / s,
+          ((b * SICHT.co - h * SICHT.hoch * SICHT.si) * SICHT.z + SICHT.oY) / s];
 }
 // Die Stellschrauben des Reliefs.
 // Zwei Sonnen, und das ist Absicht. Die Modellierung braucht ein Licht, das
@@ -1338,17 +1507,27 @@ function reliefUeber(sil, deck) {
     const j = i << 2;
     fo[j] = r; fo[j + 1] = g; fo[j + 2] = b; fo[j + 3] = 255;
   }
-  hcF.setTransform(1, 0, 0, 1, 0, 0);
-  hcF.globalCompositeOperation = 'source-over';
-  hcF.putImageData(fBild, 0, 0);
-  hcF.globalCompositeOperation = 'destination-in';   // nur, was auf der Karte liegt
-  hcF.drawImage(hkA, 0, 0);
-  hcF.globalCompositeOperation = 'source-over';
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(hkF, 0, 0, breite, hoehe);
-
-  hoehenLinien(s);
+  /* Flach geht die fertige Farbe unmittelbar auf die Leinwand und die
+     Höhenlinien darüber. Schräg wird dieselbe Farbe auf die Vorlagenleinwand
+     gelegt, die Linien kommen **hinein** statt darüber — sie gehören ja auf
+     das Gelände, nicht auf das Bild davon — und erst das Ganze wird gekippt. */
+  const ziel = schraeg() ? hcP : hcF;
+  ziel.setTransform(1, 0, 0, 1, 0, 0);
+  ziel.globalCompositeOperation = 'source-over';
+  ziel.globalAlpha = 1;
+  ziel.putImageData(fBild, 0, 0);
+  ziel.globalCompositeOperation = 'destination-in';   // nur, was auf der Karte liegt
+  ziel.drawImage(hkA, 0, 0);
+  ziel.globalCompositeOperation = 'source-over';
+  if (schraeg()) {
+    hoehenLinien(s, hcP, s);
+    schraegMalen();
+  } else {
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(hkF, 0, 0, breite, hoehe);
+    hoehenLinien(s, ctx, 1);
+  }
 }
 
 /* ---------- Beleuchtete Höhenlinien, nach Tanaka Kitiro (1950) ----------
@@ -1454,40 +1633,49 @@ function bahnAblegen(m, geschlossen) {
 
 // Und am Ende: je Eimer ein Pfad, als weiche Kurve durch die Mittelpunkte der
 // Stützstellen. Vierundzwanzig Züge für die ganze Karte.
-function linienMalen(strichBreite) {
-  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+function linienMalen(strichBreite, zc, zm) {
+  // Die Stützstellen stehen in Bildpunkten der Leinwand. Geht die Linie in die
+  // Vorlage statt auf die Leinwand, rechnet der Massstab sie um — samt
+  // Strichstaerke, die damit nach dem Hochrechnen wieder dieselbe ist.
+  zc.save();
+  if (zm !== 1) zc.setTransform(zm, 0, 0, zm, 0, 0);
+  zc.lineCap = 'round'; zc.lineJoin = 'round';
   for (let e = 0; e < LINIENEIMER.length; e++) {
     const p = LINIENEIMER[e];
     if (!p.length) continue;
     const hell = e < NSTUFE, k = e - (hell ? 0 : NSTUFE);
     const st = (k + 0.5) / NSTUFE;
-    ctx.beginPath();
+    zc.beginPath();
     for (let q = 0; q < p.length;) {
       const anz = p[q]; q++;
       const erst = q;
-      ctx.moveTo(p[erst], p[erst + 1]);
+      zc.moveTo(p[erst], p[erst + 1]);
       for (let i = 1; i < anz - 1; i++) {
         const a = erst + 2 * i;
-        ctx.quadraticCurveTo(p[a], p[a + 1], (p[a] + p[a + 2]) / 2, (p[a + 1] + p[a + 3]) / 2);
+        zc.quadraticCurveTo(p[a], p[a + 1], (p[a] + p[a + 2]) / 2, (p[a + 1] + p[a + 3]) / 2);
       }
       const letzt = erst + 2 * (anz - 1);
-      ctx.lineTo(p[letzt], p[letzt + 1]);
+      zc.lineTo(p[letzt], p[letzt + 1]);
       q += 2 * anz;
     }
     p.length = 0;
-    ctx.lineWidth = (0.40 + 0.95 * st) * strichBreite;
-    ctx.strokeStyle = hell ? '#fff' : '#000';
-    ctx.globalAlpha = Math.min(1, LINIE * st * (hell ? 1 : DUNKELLINIE));
-    ctx.stroke();
+    zc.lineWidth = (0.40 + 0.95 * st) * strichBreite;
+    zc.strokeStyle = hell ? '#fff' : '#000';
+    zc.globalAlpha = Math.min(1, LINIE * st * (hell ? 1 : DUNKELLINIE));
+    zc.stroke();
   }
-  ctx.globalAlpha = 1;
+  zc.globalAlpha = 1;
+  zc.restore();
 }
 
-function hoehenLinien(s) {
+function hoehenLinien(s, zc, zm) {
   linienFeld();
   const S = LSCHRITT, je = 1 / s, nx = lnx, ny = lny;
   const F = farbF, M = maskeH;   // dasselbe Feld, aus dem die Farbe kommt
-  const strichBreite = Math.max(0.7, breite / 760);
+  // Schräg wird die Linie in die Vorlage gemalt, also in ein gröberes Raster,
+  // und die Schrägsicht staucht sie danach noch einmal. Ein Strich unter einem
+  // Punkt Breite wird dabei zu Staub; er bekommt deshalb etwas mehr.
+  const strichBreite = Math.max(0.7, breite / 760) * (zm !== 1 ? 1.25 : 1);
   const lang = bahnX.length;
   for (const z of zellenJe) z.length = 0;
 
@@ -1604,7 +1792,7 @@ function hoehenLinien(s) {
       }
     }
   }
-  linienMalen(strichBreite);
+  linienMalen(strichBreite, zc, zm);
 }
 
 function zeichne() {
@@ -1630,14 +1818,21 @@ function zeichne() {
       sil.closePath();
     }
   }
-  ctx.save();
-  ctx.translate(0, TIEFE * 1.9); ctx.filter = 'blur(' + (TIEFE * 1.2).toFixed(1) + 'px)';
-  ctx.fillStyle = SCHATTEN; ctx.fill(sil);
-  ctx.restore();
-  ctx.save();
-  ctx.translate(0, TIEFE);
-  ctx.fillStyle = KANTE3D; ctx.fill(sil);
-  ctx.restore();
+  /* Schatten, Kante und Grundfläche sind die Möbel der **flachen** Karte: ein
+     Blatt, das auf einem Tisch liegt und einen Schatten nach unten wirft. In
+     der Schrägsicht stimmt keines davon mehr — dort baut das Gelände seine
+     Flanken selbst, aus seiner eigenen Höhe. Also bleiben sie dann weg. */
+  const flach = !schraeg();
+  if (flach) {
+    ctx.save();
+    ctx.translate(0, TIEFE * 1.9); ctx.filter = 'blur(' + (TIEFE * 1.2).toFixed(1) + 'px)';
+    ctx.fillStyle = SCHATTEN; ctx.fill(sil);
+    ctx.restore();
+    ctx.save();
+    ctx.translate(0, TIEFE);
+    ctx.fillStyle = KANTE3D; ctx.fill(sil);
+    ctx.restore();
+  }
 
   /* Die Grundfläche, in **einer** Farbe: der Mitte der Leiter, also dem Ton,
      den ein Kreis von durchschnittlicher Dichte hat.
@@ -1650,8 +1845,10 @@ function zeichne() {
      Eine Farbe und nicht vierhundert, weil das Durchscheinende sonst als
      Flecken sichtbar wird — im Kartogramm, wo das Feld einfarbig ist, lagen an
      jeder schmalen Stelle Reste der alten Kreisfärbung. */
-  ctx.fillStyle = HYPSO[bandIdx(mitteImFeld())];
-  ctx.fill(sil, 'evenodd');
+  if (flach) {
+    ctx.fillStyle = HYPSO[bandIdx(mitteImFeld())];
+    ctx.fill(sil, 'evenodd');
+  }
 
   /* Keine Grenzen mehr, weder um die Kreise noch um die Länder. Eine
      Geländekarte hat keine; sie hat Farbe, Hang und Höhenlinie, und die
@@ -1661,7 +1858,7 @@ function zeichne() {
 
   reliefUeber(sil, deck);
 
-  beschrifte(deck, w);
+  if (NAMEN) beschrifte(deck, w);
   schreibe(a, b, u, w, deck);
   notizen();
 }
@@ -1834,9 +2031,15 @@ function beschrifte(deck, w) {
          Schrift einer kleinen Stadt am Punkt, weil deren Fleck kaum Versatz
          hergibt. */
       const versatz = Math.sqrt(bestA / Math.PI) * 0.5 + breite / 90;
+      /* In der Schrägsicht wandert der Ort mit seinem Berg: projiziert wird
+         der Punkt selbst, samt der Höhe, auf der er steht. Der Versatz nach
+         unten kommt **danach**, denn er ist ein Abstand auf dem Bild, keiner
+         im Gelände — der Name soll unter dem Gipfel stehen, wo immer der
+         gerade zu sehen ist. */
+      const q = schraeg() ? projPunkt(mx, my) : [mx, my];
       // ox/oy ist der Ort selbst, mx/my der Ankerpunkt der Schrift darunter.
       liste.push({ name, A: bestA, sicht, gross: w[g] / schwelle,
-        ox: mx, oy: my, mx, my: my + versatz });
+        ox: q[0], oy: q[1], mx: q[0], my: q[1] + versatz });
     }
   }
   liste.sort((a, b) => b.A - a.A);
@@ -2176,9 +2379,20 @@ function zeigeUmriss(g) {
   if (!(g >= 0) || !GEBIETE[g]) { uv.style.display = 'none'; return; }
   uv.style.display = 'block';
   const pfad = new Path2D();
+  // Flach ist der Umriss der Umriss. Schräg liegt er auf dem Gelände, also
+  // geht jeder Stützpunkt denselben Weg wie das Gelände unter ihm. Verdeckt
+  // wird dabei nichts — die Marke soll ganz zu sehen sein, auch hinter einem
+  // Berg; sie ist ja keine Grenze, sondern eine Antwort auf einen Tipp.
+  const kipp = schraeg();
   for (const r of GEBIETE[g]) {
-    pfad.moveTo(px[r[0]] * mass + verX, py[r[0]] * mass + verY);
-    for (let i = 1; i < r.length; i++) pfad.lineTo(px[r[i]] * mass + verX, py[r[i]] * mass + verY);
+    const erst = kipp ? projPunkt(px[r[0]] * mass + verX, py[r[0]] * mass + verY)
+                      : [px[r[0]] * mass + verX, py[r[0]] * mass + verY];
+    pfad.moveTo(erst[0], erst[1]);
+    for (let i = 1; i < r.length; i++) {
+      const q = kipp ? projPunkt(px[r[i]] * mass + verX, py[r[i]] * mass + verY)
+                     : [px[r[i]] * mass + verX, py[r[i]] * mass + verY];
+      pfad.lineTo(q[0], q[1]);
+    }
     pfad.closePath();
   }
   uctx.lineJoin = 'round';
@@ -2222,6 +2436,20 @@ function versteckeTip() {
 function zeigeTip(x, y) {
   const [a, b, u] = bildBei(jahr);
   const { w, deck, rate } = werteBei(a, b, u);
+  /* In der Schrägsicht lässt sich der Griff nicht zurückrechnen — ein Punkt
+     auf dem Bild kann von einem nahen Tal oder einem fernen Gipfel kommen.
+     Also wird gar nicht gerechnet: beim Malen hat sich jeder Bildpunkt
+     gemerkt, aus welchem Punkt des Feldes er stammt. Das ist die Antwort, und
+     sie ist die richtige, auch auf einer Flanke. Von dort geht es zurück auf
+     die flache Karte, und dann sucht wieder dieselbe Schleife wie immer. */
+  if (schraeg() && pQuelle && rW > 0) {
+    const s = rW / breite;
+    const ix = Math.round(x * s), iy = Math.round(y * s);
+    if (ix < 0 || iy < 0 || ix >= rW || iy >= rH) { versteckeTip(); stumm = -1; return; }
+    const i = pQuelle[iy * rW + ix];
+    if (i < 0) { versteckeTip(); stumm = -1; return; }
+    x = (i % rW) / s; y = ((i / rW) | 0) / s;
+  }
   let treffer = -1;
   for (let g = 0; g < NK; g++) if (deck[g] > 0.001 && imGebiet(g, x, y)) { treffer = g; break; }
   /* letzterTip war bis hierher eine tote Variable: dreimal geschrieben, nie
@@ -2313,6 +2541,28 @@ function halte() { laeuft = false; document.getElementById('spiel').textContent 
 document.getElementById('spiel').onclick = () => laeuft ? halte() : starte();
 document.getElementById('zeit').addEventListener('input', e => {
   halte(); setzeZeit(e.target.value / 1000); reliefFrisch(); zeichne();
+});
+
+/* Blickwinkel und Namen. Kein reliefFrisch: das Höhenfeld ändert sich dabei
+   nicht, nur der Blick darauf — der Tiefpass darf also weiterlaufen, sonst
+   zuckte die Karte bei jedem Ruck am Regler. Neu zu zeichnen ist trotzdem,
+   denn steht die Zeit still, zeichnet von allein niemand. Und der Umriss
+   liegt auf einer eigenen Leinwand und muss hinterher nachgezogen werden,
+   weil er den Winkel nicht von selbst mitbekommt. */
+function sichtNeu() {
+  zeichne();
+  zeigeUmriss(letzterTip);
+}
+document.getElementById('kipp').addEventListener('input', e => {
+  NEIGUNG = e.target.value / 100; sichtNeu();
+});
+document.getElementById('dreh').addEventListener('input', e => {
+  DREHUNG = e.target.value * Math.PI / 180; sichtNeu();
+});
+document.getElementById('namen').addEventListener('click', e => {
+  NAMEN = !NAMEN;
+  e.currentTarget.setAttribute('aria-pressed', NAMEN ? 'true' : 'false');
+  zeichne();
 });
 addEventListener('resize', () => { masse(); reliefFrisch(); zeichne(); });
 /* Und dasselbe, wenn sich das Feld ändert, ohne dass das Fenster es tut.

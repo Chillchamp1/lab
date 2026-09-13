@@ -1,6 +1,6 @@
 # Stand
 
-Stand: 12. September 2026.
+Stand: 13. September 2026.
 
 ## Fertig
 
@@ -69,6 +69,22 @@ Freigabe, aus Bildvorlagen abzuschreiben.
 
 ### Karte
 
+- **Aufrichten und Drehen.** Zwei Regler unter der Zeitleiste kippen die Karte
+  aus der Senkrechten (bis 62 Grad) und drehen sie (volle Runde); ein Knopf
+  daneben schaltet die Städtenamen ab. Beim Laden liegt sie flach, und dann
+  läuft alles wie zuvor — der schräge Weg beginnt erst ab der ersten Rastung.
+  Gerechnet wird spaltenweise von vorn nach hinten mit einem Horizont je
+  Spalte, in der Auflösung des Höhenfelds, und **das kostet nichts**: gemessen
+  je 25 Bilder, viermal abwechselnd, flach Median 86 ms, gekippt Median 82 ms
+  — der Spaltenlauf wird davon bezahlt, dass Schlagschatten, 3D-Kante und das
+  Hochrechnen auf die grosse Leinwand wegfallen. Der Rahmen steht dabei über alle Jahre fest (Massstab und Versatz
+  1871, 1939 und 2024 auf vier Nachkommastellen gleich), sonst schrumpfte die
+  Karte genau in dem Mass, in dem die Städte wachsen. Beim Antippen merkt sich
+  jeder Bildpunkt beim Malen, aus welchem Punkt des Feldes er stammt — damit
+  trifft der Griff auch auf einer Flanke. Verdeckte Kreise sind nicht
+  antippbar; bei 62 Grad steht Kiel wirklich hinter Hamburg, und dafür ist der
+  Drehregler da. Der Film zeigt weiter die flache Karte, die beiden
+  Bedienzeilen sind darin ausgeblendet.
 - Ein Diffusionskartogramm je Zeitpunkt, warm vom vorigen gestartet;
   gemeinsamer Massstab, und zwar **für alle Bilder derselbe**. Die Aussengrenze
   bleibt damit über hundertfünfzig Jahre ungefähr, wo sie ist; was sich bewegt,

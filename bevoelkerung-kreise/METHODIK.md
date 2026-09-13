@@ -983,6 +983,90 @@ am wenigsten ausrichten kann): die Änderung des Feldes je Bild fällt auf
 **48 Prozent**. Auf einem Gerät mit sechzig Bildern ist der Unterschied um ein
 Vielfaches grösser.
 
+## 4k. Aufrichten und Drehen
+
+Die Karte lag hundertfünfzig Jahre lang flach. Zwei Regler unter der Zeitleiste
+richten sie auf und drehen sie, ein Knopf daneben schaltet die Städtenamen weg.
+
+**Es ist kein zweites Bild.** Das Höhenfeld, aus dem schon Farbe, Schattierung
+und Höhenlinien kommen, wird nicht mehr platt hingelegt, sondern schräg
+angesehen. Gerechnet wird wie in den Geländespielen der neunziger Jahre: das
+Bild entsteht Spalte für Spalte, **von vorn nach hinten**, und jede Spalte führt
+einen Horizont mit. Wer hinten steht und nicht über diesen Horizont ragt, ist
+verdeckt und wird gar nicht erst gemalt. Jeder Bildpunkt wird damit genau
+einmal beschrieben, und die Verdeckung ist nicht geschätzt, sondern richtig.
+
+Gemalt wird in der Auflösung des Höhenfelds (0,55 der Leinwand), nicht in der
+der Leinwand; das Hochrechnen am Ende ist dasselbe, das die flache Karte auch
+bekommt. Die Rechnung bleibt dadurch bei rund einer Viertelmillion Abtastungen
+je Bild.
+
+**Und sie kostet nichts.** Gemessen im Prüfbrowser, je 25 Bilder, viermal
+abwechselnd: flach 73 bis 91 ms je Bild (Median 86), gekippt 82,1 bis 82,5
+(Median 82). Der Spaltenlauf ist nicht umsonst — er wird nur bezahlt, indem
+die Schrägsicht drei Dinge wegfallen lässt, die flach teuer sind: den
+Schlagschatten, der als Weichzeichner über einen Pfad aus vierhundert
+Vielecken läuft, die 3D-Kante und das Hochrechnen der Farbfläche auf die
+grosse Leinwand. Das hebt sich ungefähr auf.
+
+### Vier Entscheidungen, die nicht selbstverständlich sind
+
+**Der Rahmen steht fest.** Verlockend wäre, den Kopfraum nach dem höchsten Berg
+zu bemessen, der gerade dasteht — 1871 gäbe es kaum einen, und die Karte stünde
+grösser da. Nur schrumpfte sie dann genau in dem Mass, in dem die Städte
+wachsen, und zwei Bilder wären nicht mehr zu vergleichen. Das ist aber der
+ganze Zweck der Karte. Also bleibt der Rahmen stehen, das obere Ende der
+Farbleiter ist der Kopfraum, und 1871 bleibt ein Teil davon eben leer.
+Nachgemessen: Massstab und Versatz sind 1871, 1939 und 2024 auf vier
+Nachkommastellen dieselben.
+
+**Die Höhenlinien gehen ins Gelände, nicht auf das Bild davon.** Flach werden
+sie über die fertige Karte gezogen. Schräg werden sie in die Vorlage gemalt,
+bevor sie gekippt wird — sonst lägen sie wie ein Gitter vor der Landschaft und
+liefen quer durch Berge hindurch, die sie verdecken müssten. Weil die Vorlage
+gröber ist und die Schrägsicht sie noch einmal staucht, bekommt der Strich
+dabei ein Viertel mehr Breite; darunter wird er zu Staub.
+
+**Die Flanke blendet ein.** Ein Hang, der je Tiefenschritt einen Punkt fällt,
+bestünde sonst aus einer hellen und einer dunklen Zeile im Wechsel und sähe
+gesprenkelt aus. Die Flanke wird deshalb erst über mehrere Punkte hinweg dunkel
+— erst eine wirkliche Wand erscheint als Wand.
+
+**Schatten, Kante und Grundfläche bleiben weg.** Sie sind die Möbel der flachen
+Karte: ein Blatt, das auf einem Tisch liegt. In der Schrägsicht baut das
+Gelände seine Flanken selbst, aus seiner eigenen Höhe.
+
+### Was beim Antippen passiert
+
+Ein Punkt auf dem schrägen Bild lässt sich nicht zurückrechnen — er kann von
+einem nahen Tal oder einem fernen Gipfel kommen. Also wird nicht gerechnet:
+beim Malen merkt sich jeder Bildpunkt, aus welchem Punkt des Feldes er stammt.
+Das ist die Antwort, und sie stimmt auch auf einer Flanke. Von dort geht es
+zurück auf die flache Karte, und dann sucht dieselbe Schleife wie immer.
+
+Nachgemessen bei 62 Grad: von acht Städten treffen sich sechs selbst; **Kiel und
+Flensburg nicht — sie stehen bei diesem Winkel wirklich hinter Hamburg.** Das
+ist kein Fehler, sondern die Auskunft der Karte, und der Drehregler ist die
+Antwort darauf.
+
+### Was die Schrägsicht nicht kann
+
+- **Verdeckte Kreise sind nicht antippbar.** Wer hinter einem Berg liegt, ist
+  nicht zu sehen und nicht zu greifen. Drehen hilft.
+- **Der Umriss eines angetippten Kreises wird nicht verdeckt.** Er liegt über
+  allem, auch über dem Berg davor. Er ist eine Marke, keine Grenze — er soll
+  ganz zu sehen sein.
+- **Das Licht dreht sich nicht mit.** Es kommt weiter von oben links, wie im
+  Atlas. Ein mitgedrehtes Licht wäre physikalisch richtiger und als Karte
+  schlechter: die Hangschraffur wäre bei manchen Winkeln kaum noch zu lesen.
+- **Kein Blickpunkt, keine Perspektive.** Parallelriss, wie ein Blockbild im
+  Schulatlas. Zwei gleich hohe Berge sind damit gleich hoch gezeichnet, auch
+  wenn einer weiter weg steht — was für eine Karte der richtige Tausch ist.
+
+Der Film zeigt die flache Karte. Die beiden Bedienzeilen sind darin
+ausgeblendet, und der Blickwinkel wird beim Start ausdrücklich auf null
+gesetzt.
+
 ## 4b. Die Farbskala der Karte
 
 Die Karte wird gemalt, wie ein Atlas ein Gebirge malt: unten Wasser, dann
