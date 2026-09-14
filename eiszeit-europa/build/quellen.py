@@ -1,0 +1,763 @@
+#!/usr/bin/env python3
+"""Liest die drei Rohdatensaetze und schreibt die Zwischendateien fuer build.mjs.
+
+    pip install numpy netCDF4 pyshp
+    python3 quellen.py
+
+Was hier geschieht, ist Schritt 3 und 4 der Aufgabe, und zwar genau in der
+Reihenfolge, in der es dort steht:
+
+  1. Das moderne DEM (15 Bogensekunden) wird auf das Zielgitter der Seite
+     heruntergerechnet — flaechentreu projiziert, nicht in Laenge und Breite.
+  2. ICE-6G_C liefert nur das **Differenzfeld** Topo_Diff und die
+     Eismaechtigkeit stgit, beide auf ihrem groben 10'-Gitter. Sie werden
+     **nicht** hier hochgerechnet: das tut die Seite, bikubisch, weil sie
+     zwischen den Zeitscheiben ohnehin interpolieren muss.
+  3. Die Paläotopographie ist damit  DEM + Topo_Diff(t),  die Eisoberflaeche
+     Paläotopographie + stgit(t).
+
+Die Kuestenlinie faellt aus der Nulllinie dieser Rechnung, nicht aus sftlf —
+siehe ../QUELLEN.md, Abschnitt 3.
+
+Geschrieben wird nach zwischen/:
+
+    meta.json        Gitter, Zeitscheiben, Meeresspiegel, Kennzahlen
+    dem.i16          Zielgitter, Meter, int16
+    topodiff.i16     48 x (10'-Fensterausschnitt), Meter, int16
+    stgit.u16        dito, Eismaechtigkeit in Metern
+    dated.json       die drei Linien je Zeitscheibe, in Gitterkoordinaten
+"""
+
+import json
+import math
+import os
+import sys
+from pathlib import Path
+
+import numpy as np
+
+HIER = Path(__file__).resolve().parent
+# ROH laesst sich umbiegen — das braucht das Pruefgeruest, das dieselben
+# Dateiformate mit erfundenem Inhalt erzeugt, um die Kette zu pruefen. Es
+# schreibt nach build/pruefgeruest-roh/ und niemals nach data/raw/, damit sich
+# erfundenes Gelaende und echtes nie im selben Ordner treffen koennen.
+ROH = Path(os.environ.get("ROH") or (HIER / ".." / "data" / "raw"))
+ZWISCHEN = Path(os.environ.get("ZWISCHEN") or (HIER / "zwischen"))
+
+# --------------------------------------------------------------- Ausschnitt
+# Die Vorgabe der Aufgabe, unveraendert.
+LON0, LON1 = -12.0, 45.0
+LAT0, LAT1 = 34.0, 72.0
+# Mitte der Projektion. 53 N / 15 O liegt im Schwerpunkt des Ausschnitts und
+# damit dort, wo die Verzerrung am kleinsten ist — mitten im skandinavischen
+# Eisschild, um den es geht.
+MLON, MLAT = 15.0, 53.0
+ERDR = 6371.0088  # km, Radius der flaechengleichen Kugel
+
+# 760 Zellen Breite, und die Zahl ist gemessen, nicht gegriffen: die Buehne ist
+# auf 900 Bildpunkte gedeckelt, das Reliefgitter liegt bei 55 Prozent davon,
+# also bei rund 460. 760 ist damit gut anderthalbfach ueberabgetastet — mehr
+# waere Nutzlast ohne Bild, denn der Zoom ist ein Vergroesserungsglas und kein
+# neues Rechnen. Die Messreihe steht in ../METHODIK.md, Abschnitt 9.
+BREITE = int(os.environ.get("BREITE", "760"))
+
+log = lambda s: print(s, file=sys.stderr)
+
+
+# ============================================================ Projektion
+# Lambert azimutal flaechentreu — dieselbe Familie wie in der Vorlage
+# (build/geometrie.mjs dort), nur auf diesen Ausschnitt gesetzt. Gerechnet auf
+# der Kugel: der Unterschied zum Ellipsoid liegt bei wenigen hundert Metern und
+# damit weit unter einer Gitterzelle.
+def vor(lon, lat):
+    """lon/lat in Grad -> x/y in km. Vektorisiert."""
+    l = np.radians(lon - MLON)
+    p = np.radians(lat)
+    p0 = math.radians(MLAT)
+    nenner = 1.0 + math.sin(p0) * np.sin(p) + math.cos(p0) * np.cos(p) * np.cos(l)
+    nenner = np.maximum(nenner, 1e-12)
+    k = np.sqrt(2.0 / nenner)
+    x = ERDR * k * np.cos(p) * np.sin(l)
+    y = ERDR * k * (math.cos(p0) * np.sin(p) - math.sin(p0) * np.cos(p) * np.cos(l))
+    return x, y
+
+
+def zurueck(x, y):
+    """x/y in km -> lon/lat in Grad. Vektorisiert."""
+    p0 = math.radians(MLAT)
+    rho = np.sqrt(x * x + y * y) / ERDR
+    rho = np.maximum(rho, 1e-12)
+    c = 2.0 * np.arcsin(np.clip(rho / 2.0, -1.0, 1.0))
+    sc, cc = np.sin(c), np.cos(c)
+    lat = np.degrees(np.arcsin(np.clip(cc * math.sin(p0) + (y / ERDR) * sc * math.cos(p0) / rho, -1, 1)))
+    lon = MLON + np.degrees(np.arctan2(
+        (x / ERDR) * sc,
+        rho * math.cos(p0) * cc - (y / ERDR) * math.sin(p0) * sc))
+    return lon, lat
+
+
+def gitter():
+    """Der Rahmen des Ausschnitts im projizierten Mass, und daraus das Gitter.
+
+    Der Rand wird dicht abgetastet statt nur an den vier Ecken: in einer
+    azimutalen Projektion ist die Bildkante eines Laengen-Breiten-Rechtecks
+    gekruemmt, und die Ecken sind nicht die Extrempunkte.
+
+    Dass dabei rund ein Drittel des Rechtecks ausserhalb des Fensters liegt, ist
+    nicht die Schuld dieser Projektion, sondern die Form des Fensters: 38 Grad
+    Breite auf 57 Grad Laenge lassen sich flaechentreu nicht in ein Rechteck
+    legen. Nachgemessen, Anteil des Rechtecks innerhalb des Fensters:
+
+        Lambert azimutal 53 N 15 O        68,8 %
+        Lambert azimutal 52 N 10 O        67,9 %   (EPSG:3035)
+        Albers 43/65                      67,5 %
+        Albers 45/62                      67,8 %
+
+    Also bleibt es bei der azimutalen — derselben Familie wie in der Vorlage —
+    und der Rest wird **maskiert** statt gefuellt. Das ist die Machart des
+    Vorlagenprojekts: draussen ist die Leinwand durchsichtig, und die Karte
+    steht als Form auf schwarzem Grund. Ein Atlasblatt mit gebogenen Breiten-
+    kreisen sieht ohnehin richtiger aus als ein beschnittenes Rechteck.
+
+    Bezahlt wird dafuer nichts: das DEM wird zeilenweise nur ueber seinen
+    gueltigen Abschnitt kodiert (siehe nutzlast.mjs).
+    """
+    rl = np.linspace(LON0, LON1, 400)
+    rb = np.linspace(LAT0, LAT1, 400)
+    lons = np.concatenate([rl, rl, np.full(400, LON0), np.full(400, LON1)])
+    lats = np.concatenate([np.full(400, LAT0), np.full(400, LAT1), rb, rb])
+    x, y = vor(lons, lats)
+    x0, x1, y0, y1 = float(x.min()), float(x.max()), float(y.min()), float(y.max())
+    schritt = (x1 - x0) / BREITE
+    hoehe = int(round((y1 - y0) / schritt))
+    # y1 ist die **Oberkante**, und die Zeilen laufen von dort nach unten:
+    # die Leinwand zaehlt y nach unten, die Projektion nach Norden. Beim ersten
+    # Bau stand Skandinavien deshalb am unteren Bildrand und das Mittelmeer oben.
+    # Der Dreh gehoert hierher und nicht in die Seite — dann stimmen Gitter,
+    # DATED-Linien und Kennzahlen von selbst miteinander ueberein.
+    return dict(x0=x0, y0=y0, y1=y1, schritt=schritt, w=BREITE, h=hoehe)
+
+
+# ====================================================== Bikubisch, Catmull-Rom
+# Von Hand statt per scipy: es sind zwanzig Zeilen, und die Regel des Repos
+# ist, keine Abhaengigkeit zu ziehen, die sich in zwanzig Zeilen schreiben
+# laesst. Catmull-Rom geht durch jeden Stuetzpunkt — das ist hier wichtig,
+# denn auf den Gitterpunkten von ICE-6G_C soll genau der Wert stehen, der dort
+# steht, und nicht ein geglaetteter.
+def _cr(t):
+    t2, t3 = t * t, t * t * t
+    return (
+        -0.5 * t3 + t2 - 0.5 * t,
+        1.5 * t3 - 2.5 * t2 + 1.0,
+        -1.5 * t3 + 2.0 * t2 + 0.5 * t,
+        0.5 * t3 - 0.5 * t2,
+    )
+
+
+def bikubisch(feld, fx, fy):
+    """feld[y,x], gebrochene Indizes fx/fy (gleiche Form) -> Werte."""
+    h, w = feld.shape
+    ix = np.floor(fx).astype(np.int64)
+    iy = np.floor(fy).astype(np.int64)
+    tx, ty = fx - ix, fy - iy
+    wx, wy = _cr(tx), _cr(ty)
+    out = np.zeros(fx.shape, dtype=np.float64)
+    for m in range(4):
+        yy = np.clip(iy - 1 + m, 0, h - 1)
+        reihe = np.zeros(fx.shape, dtype=np.float64)
+        for n in range(4):
+            xx = np.clip(ix - 1 + n, 0, w - 1)
+            reihe += wx[n] * feld[yy, xx]
+        out += wy[m] * reihe
+    return out
+
+
+def bilinear(feld, fx, fy):
+    h, w = feld.shape
+    ix = np.clip(np.floor(fx).astype(np.int64), 0, w - 2)
+    iy = np.clip(np.floor(fy).astype(np.int64), 0, h - 2)
+    tx = np.clip(fx - ix, 0, 1)
+    ty = np.clip(fy - iy, 0, 1)
+    return ((feld[iy, ix] * (1 - tx) + feld[iy, ix + 1] * tx) * (1 - ty)
+            + (feld[iy + 1, ix] * (1 - tx) + feld[iy + 1, ix + 1] * tx) * ty)
+
+
+# ================================================================ NetCDF
+def oeffne(pfad):
+    from netCDF4 import Dataset
+    return Dataset(str(pfad), "r")
+
+
+def erste(ds, *namen):
+    """Die erste Variable, die es gibt. ICE-6G_C und die DEMs sind sich in der
+    Benennung nicht einig, und ein Bau, der an einem Grossbuchstaben scheitert,
+    hilft niemandem."""
+    for n in namen:
+        for k in ds.variables:
+            if k.lower() == n.lower():
+                return ds.variables[k]
+    raise KeyError("keine von " + ", ".join(namen) + " in " + str(list(ds.variables)))
+
+
+def achsen(ds):
+    lon = erste(ds, "lon", "longitude", "x")[:]
+    lat = erste(ds, "lat", "latitude", "y")[:]
+    return np.asarray(lon, dtype=np.float64), np.asarray(lat, dtype=np.float64)
+
+
+# ============================================================= (c) Das DEM
+def dem_datei():
+    kandidaten = sorted(list((ROH / "dem").glob("*.nc")))
+    if not kandidaten:
+        raise SystemExit(
+            "Kein DEM unter data/raw/dem/. Erst build/holen.sh laufen lassen —\n"
+            "und falls das an der Netzpolitik scheitert, siehe ../QUELLEN.md.")
+    return kandidaten
+
+
+def huelle(g):
+    """Die gezeichnete Flaeche, und zwar **vor** dem DEM.
+
+    Erst das Fenster, dann zeilenweise aufgefuellt. Die Reihenfolge ist keine
+    Geschmackssache: das DEM muss ueber der Huelle gelesen werden, nicht ueber
+    dem Fenster, und die Huelle greift oben bis 73,7 N — anderthalb Grad ueber
+    den Fensterrand. Zuerst stand es andersherum, und dann fehlte dem DEM
+    genau dieser Saum: 4 196 Zellen, in denen Meereshoehe gestanden haette,
+    wo nichts gemessen ist.
+    """
+    x = g["x0"] + (np.arange(g["w"]) + 0.5) * g["schritt"]
+    y = g["y1"] - (np.arange(g["h"]) + 0.5) * g["schritt"]
+    X, Y = np.meshgrid(x, y)
+    ZLON, ZLAT = zurueck(X, Y)
+    im_fenster = (ZLON >= LON0) & (ZLON <= LON1) & (ZLAT >= LAT0) & (ZLAT <= LAT1)
+    maske = np.zeros_like(im_fenster)
+    for j in range(im_fenster.shape[0]):
+        r = np.nonzero(im_fenster[j])[0]
+        if r.size:
+            maske[j, r[0]:r[-1] + 1] = True
+    saum = int(maske.sum() - im_fenster.sum())
+    log(f"  Maske {int(maske.sum())} von {maske.size} Zellen ({100*maske.mean():.1f} % "
+        f"des Rechtecks), davon {saum} Saum ausserhalb des Fensters "
+        f"({100*saum/max(1,int(maske.sum())):.1f} %)")
+    if saum:
+        log(f"  Saum reicht bis lat {ZLAT[maske & ~im_fenster].max():.2f}, "
+            f"lon {ZLON[maske & ~im_fenster].min():.2f} … "
+            f"{ZLON[maske & ~im_fenster].max():.2f}")
+    return ZLON, ZLAT, maske, im_fenster
+
+
+def lies_dem(g, ZLON, ZLAT, maske):
+    """Das 15\"-DEM auf das Zielgitter.
+
+    Zwei Schritte, und der erste ist der, ohne den es rauscht: erst wird das
+    Quellgitter **blockweise gemittelt**, bis seine Zelle ungefaehr so gross
+    ist wie eine Zielzelle, dann erst wird abgetastet. Punktweise abgetastet
+    ergaebe ein Zwoelftel der Werte und elf Zwoelftel Rauschen — und genau die
+    Alpen, um die es geht, bestehen aus dem, was dabei wegfiele.
+
+    Gelesen wird in Streifen: der Fensterausschnitt bei 15\" ist ueber 120
+    Millionen Werte und passt nicht als Ganzes in den Speicher.
+    """
+    # Der gebrauchte Bereich ist der der **Maske**, nicht der des Fensters.
+    blo0, blo1 = float(ZLON[maske].min()), float(ZLON[maske].max())
+    bla0, bla1 = float(ZLAT[maske].min()), float(ZLAT[maske].max())
+    log(f"  gebraucht wird lon {blo0:.2f} … {blo1:.2f}, lat {bla0:.2f} … {bla1:.2f}")
+
+    teile = []
+    for pfad in dem_datei():
+        ds = oeffne(pfad)
+        try:
+            lon, lat = achsen(ds)
+            var = erste(ds, "elevation", "z", "Band1", "bed", "topo")
+            dlon = float(abs(lon[1] - lon[0]))
+            dlat = float(abs(lat[1] - lat[0]))
+            umgedreht = lat[1] < lat[0]
+
+            # Fenster im Quellindex, mit Rand fuer die Blockmittelung.
+            ilon = np.where((lon >= blo0 - 0.3) & (lon <= blo1 + 0.3))[0]
+            ilat = np.where((lat >= bla0 - 0.3) & (lat <= bla1 + 0.3))[0]
+            if ilon.size == 0 or ilat.size == 0:
+                log(f"  {pfad.name}: ausserhalb des Ausschnitts, uebersprungen")
+                continue
+            x_a, x_b = int(ilon[0]), int(ilon[-1]) + 1
+            y_a, y_b = int(ilat[0]), int(ilat[-1]) + 1
+
+            # Blockfaktor: so gross, dass eine gemittelte Quellzelle die
+            # Zielzelle nicht ueberschreitet. Die Zielzelle ist in km gegeben,
+            # die Quellzelle in Grad — umgerechnet ueber den Breitengrad der
+            # Fenstermitte, wo die Projektion massstabstreu ist.
+            zielgrad = g["schritt"] / (ERDR * math.pi / 180.0)
+            fx = max(1, int(zielgrad / dlon))
+            fy = max(1, int(zielgrad / dlat))
+            nx = (x_b - x_a) // fx
+            ny = (y_b - y_a) // fy
+            log(f"  {pfad.name}: {x_b-x_a} x {y_b-y_a} Quellwerte, Block {fx}x{fy} -> {nx} x {ny}")
+
+            grob = np.zeros((ny, nx), dtype=np.float64)
+            streifen = max(1, 4_000_000 // max(1, nx * fx))
+            for j0 in range(0, ny, streifen):
+                j1 = min(ny, j0 + streifen)
+                roh = np.asarray(
+                    var[y_a + j0 * fy: y_a + j1 * fy, x_a: x_a + nx * fx], dtype=np.float64)
+                roh = np.ma.filled(roh, np.nan)
+                blk = roh.reshape(j1 - j0, fy, nx, fx)
+                grob[j0:j1] = np.nanmean(np.nanmean(blk, axis=3), axis=1)
+
+            glon0 = lon[x_a] + (fx - 1) * dlon / 2.0
+            glat0 = lat[y_a] + (fy - 1) * (-dlat if umgedreht else dlat) / 2.0
+            gdlon = fx * dlon
+            gdlat = fy * (-dlat if umgedreht else dlat)
+
+            fxi = (ZLON - glon0) / gdlon
+            fyi = (ZLAT - glat0) / gdlat
+            drin = (fxi >= 0) & (fxi <= nx - 1) & (fyi >= 0) & (fyi <= ny - 1)
+            teil = np.full(ZLON.shape, np.nan)
+            if drin.any():
+                teil[drin] = bilinear(grob, fxi[drin], fyi[drin])
+            teile.append(teil)
+        finally:
+            ds.close()
+
+    if not teile:
+        raise SystemExit("Aus den DEM-Dateien kam nichts fuer diesen Ausschnitt.")
+    gestapelt = np.stack(teile)
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        dem = np.nanmean(gestapelt, axis=0)
+
+    ohne = int((maske & ~np.isfinite(dem)).sum())
+    if ohne:
+        log(f"  ACHTUNG: {ohne} Zellen der Maske ohne DEM-Wert "
+            f"({100*ohne/int(maske.sum()):.2f} %). Dort stuende Meereshoehe, wo nichts")
+        log("           gemessen ist. Ein DEM nehmen, das den Ausschnitt ganz deckt.")
+    return np.nan_to_num(dem, nan=0.0)
+
+
+# ========================================================= (a) ICE-6G_C
+def ice6g_scheiben():
+    """26 bis 21 ka in 1-ka-Schritten, danach 0,5 ka. Das ist die Datenlage und
+    wird nicht geglaettet — die Seite macht sie unter der Zeitleiste sichtbar."""
+    t = [float(v) for v in (26, 25, 24, 23, 22, 21)]
+    v = 20.5
+    while v >= -1e-9:
+        t.append(round(v, 1))
+        v -= 0.5
+    return t
+
+
+def ice6g_pfad(t):
+    name = f"{t:g}"
+    p = ROH / "ice6g" / f"I6_C.VM5a_10min.{name}.nc"
+    if p.exists():
+        return p
+    treffer = sorted((ROH / "ice6g").glob(f"*{name}.nc"))
+    if treffer:
+        return treffer[0]
+    raise SystemExit(f"Zeitscheibe {name} ka fehlt: {p}\nErst build/holen.sh laufen lassen.")
+
+
+def lies_ice6g():
+    """Die 48 Scheiben, auf den Fensterausschnitt des 10'-Gitters beschnitten.
+
+    Hochgerechnet wird hier **nicht**. Das grobe Feld geht so, wie es ist, in
+    die Seite; sie rechnet es bikubisch hoch, weil sie zwischen zwei Scheiben
+    ohnehin interpolieren muss und ein einmal hochgerechnetes Feld dabei nichts
+    spart, aber das Fuenfzigfache wiegt.
+    """
+    zeiten = ice6g_scheiben()
+    fenster = None
+    td, st = [], []
+    globalsl = []
+    proben = []
+
+    for i, t in enumerate(zeiten):
+        ds = oeffne(ice6g_pfad(t))
+        try:
+            lon, lat = achsen(ds)
+            # Laenge kann 0..360 oder -180..180 laufen.
+            lonw = np.where(lon > 180.0, lon - 360.0, lon)
+            ordnung = np.argsort(lonw)
+            lonw = lonw[ordnung]
+
+            vdiff = erste(ds, "Topo_Diff", "topo_diff", "TopoDiff")
+            veis = erste(ds, "stgit", "sftgit", "thk", "ice_thickness")
+
+            A = np.asarray(np.ma.filled(vdiff[:], 0.0), dtype=np.float64)[:, ordnung]
+            B = np.asarray(np.ma.filled(veis[:], 0.0), dtype=np.float64)[:, ordnung]
+
+            if fenster is None:
+                rand = 3   # Rand fuer die bikubische Abtastung in der Seite
+                ix = np.where((lonw >= LON0 - 1.0) & (lonw <= LON1 + 1.0))[0]
+                iy = np.where((lat >= LAT0 - 1.0) & (lat <= LAT1 + 1.0))[0]
+                x_a = max(0, int(ix[0]) - rand); x_b = min(len(lonw), int(ix[-1]) + 1 + rand)
+                y_a = max(0, int(iy[0]) - rand); y_b = min(len(lat), int(iy[-1]) + 1 + rand)
+                fenster = (x_a, x_b, y_a, y_b)
+                meta_lon0 = float(lonw[x_a])
+                meta_lat0 = float(lat[y_a])
+                meta_dlon = float(lonw[1] - lonw[0])
+                meta_dlat = float(lat[1] - lat[0])
+                log(f"  10'-Fenster {x_b-x_a} x {y_b-y_a}, "
+                    f"lon0={meta_lon0:.4f} dlon={meta_dlon:.4f} "
+                    f"lat0={meta_lat0:.4f} dlat={meta_dlat:.4f}")
+
+            x_a, x_b, y_a, y_b = fenster
+            td.append(A[y_a:y_b, x_a:x_b])
+            st.append(B[y_a:y_b, x_a:x_b])
+
+            # ---- Meeresspiegel, aus dem Fernfeld ----------------------------
+            # Topo ist die Hoehe ueber dem **damaligen** Meeresspiegel. Ueber
+            # tiefem Ozean ohne nennenswerte Krustenbewegung gilt deshalb
+            #     Topo_Diff = Topo(t) - Topo(0) = -Meeresspiegelaenderung.
+            # Genommen wird der Median ueber den aequatorialen Pazifik, weit weg
+            # von allen Eisschilden und ihren Vorwoelbungen. Das ist die einzige
+            # Stelle, an der diese Karte etwas ausserhalb ihres Ausschnitts
+            # liest — die Zahl steht sonst nirgends in den Dateien.
+            fl = np.where((lat >= -20) & (lat <= 20))[0]
+            fp = np.where((lonw >= -170) & (lonw <= -120))[0]
+            vtopo = erste(ds, "Topo", "topo", "orog")
+            T0 = np.asarray(np.ma.filled(vtopo[:], 0.0), dtype=np.float64)[:, ordnung]
+            tief = T0[np.ix_(fl, fp)] < -3000.0
+            fern = A[np.ix_(fl, fp)][tief]
+            globalsl.append(float(-np.median(fern)) if fern.size else float("nan"))
+
+            proben.append(dict(ka=t, topo=np.asarray(T0[y_a:y_b, x_a:x_b])))
+        finally:
+            ds.close()
+
+    return zeiten, np.stack(td), np.stack(st), globalsl, fenster, proben, \
+        dict(lon0=meta_lon0, lat0=meta_lat0, dlon=meta_dlon, dlat=meta_dlat)
+
+
+# ============================================================ (b) DATED-1
+def lies_dated(g):
+    """Die drei Linien je Zeitscheibe, projiziert und in Gitterkoordinaten.
+
+    Die Zuordnung Datei -> (Zeit, Glaubwuerdigkeit) kommt aus dem Dateinamen
+    und, falls vorhanden, aus den Attributen. PANGAEA liefert das Paket ohne
+    festgeschriebene Namensregel; deshalb wird beides versucht und am Ende
+    gezaehlt, was zugeordnet werden konnte.
+    """
+    import shapefile
+    import re
+
+    wurzel = ROH / "dated1" / "entpackt"
+    if not wurzel.exists():
+        log("  DATED-1 nicht ausgepackt — Unsicherheitsband bleibt leer")
+        return {}
+
+    def sorte(text):
+        t = text.lower()
+        if "max" in t:
+            return "max"
+        if "min" in t:
+            return "min"
+        if "cred" in t or "mc" in t or "most" in t:
+            return "mc"
+        return None
+
+    heraus = {}
+    zugeordnet = ungeordnet = 0
+    for shp in sorted(wurzel.rglob("*.shp")):
+        name = shp.stem
+        # Die Zahl muss ein "ka" hinter sich haben. Ohne diese Fessel greift der
+        # Ausdruck die 1 aus "DATED-1" und ordnet jede Datei dem Jahr 1 zu —
+        # genau so ist es beim ersten Lauf gewesen, und es fiel nur auf, weil
+        # die Zaehlung am Ende "0 zugeordnet, 48 nicht" sagte.
+        # Kein \b hinter dem "ka": auf "10ka_maximum" folgt ein Unterstrich, und
+        # der ist ein Wortzeichen — die Grenze greift dort nicht. Das "k" allein
+        # reicht als Fessel, denn in "DATED-1" folgt der Ziffer keines.
+        m = re.search(r"(\d{1,2})\s*_?k(?:a|yr)", name, re.I)
+        s = sorte(name) or sorte(str(shp.parent))
+        if not m or not s:
+            ungeordnet += 1
+            continue
+        ka = int(m.group(1))
+        if not (10 <= ka <= 25):
+            ungeordnet += 1
+            continue
+        try:
+            sf = shapefile.Reader(str(shp))
+        except Exception as e:
+            log(f"  {shp.name}: {e}")
+            continue
+        linien = []
+        for form in sf.shapes():
+            pts = np.asarray(form.points, dtype=np.float64)
+            if pts.shape[0] < 2:
+                continue
+            teile = list(form.parts) + [len(pts)]
+            for a, b in zip(teile, teile[1:]):
+                st = pts[a:b]
+                if st.shape[0] < 2:
+                    continue
+                x, y = vor(st[:, 0], st[:, 1])
+                gx = (x - g["x0"]) / g["schritt"]
+                gy = (g["y1"] - y) / g["schritt"]
+                linien.append(vereinfache(gx, gy, 0.6))
+        if linien:
+            heraus.setdefault(ka, {})[s] = linien
+            zugeordnet += 1
+    log(f"  DATED-1: {zugeordnet} Shapefiles zugeordnet, {ungeordnet} nicht")
+    return heraus
+
+
+def vereinfache(gx, gy, eps):
+    """Douglas-Peucker, iterativ. Die Raender sind fein digitalisiert; auf dem
+    Zielgitter ist jeder zweite Punkt derselbe Bildpunkt."""
+    n = len(gx)
+    if n < 3:
+        return [[float(a), float(b)] for a, b in zip(gx, gy)]
+    behalten = np.zeros(n, dtype=bool)
+    behalten[0] = behalten[-1] = True
+    stapel = [(0, n - 1)]
+    while stapel:
+        a, b = stapel.pop()
+        if b <= a + 1:
+            continue
+        px, py = gx[a], gy[a]
+        qx, qy = gx[b], gy[b]
+        dx, dy = qx - px, qy - py
+        laenge = math.hypot(dx, dy)
+        idx = np.arange(a + 1, b)
+        if laenge < 1e-12:
+            d = np.hypot(gx[idx] - px, gy[idx] - py)
+        else:
+            d = np.abs(dy * (gx[idx] - px) - dx * (gy[idx] - py)) / laenge
+        if d.size == 0:
+            continue
+        k = int(np.argmax(d))
+        if d[k] > eps:
+            m = idx[k]
+            behalten[m] = True
+            stapel.append((a, m))
+            stapel.append((m, b))
+    return [[float(gx[i]), float(gy[i])] for i in np.nonzero(behalten)[0]]
+
+
+# ================================================================== Takt
+def takt(zeiten, st, flaeche_km2):
+    """Spielzeit je Abschnitt: geometrisches Mittel aus dem Anteil an den
+    Jahren und dem Anteil an der Umschichtung, mit Untergrenze — genau das
+    Verfahren der Vorlage (METHODIK 4e), nur mit Eisvolumen statt Menschen.
+
+    Ohne das liefe der Zusammenbruch des Eisschildes zwischen 16 und 11 ka in
+    einem Fuenftel der Zeit ab, waehrend die ruhigen fuenftausend Jahre vor dem
+    Hochstand ein Viertel bekaemen.
+    """
+    n = len(zeiten)
+    dauer = np.array([abs(zeiten[i] - zeiten[i + 1]) for i in range(n - 1)], dtype=np.float64)
+    um = np.array([float(np.abs(st[i + 1] - st[i]).sum()) * flaeche_km2 for i in range(n - 1)])
+    if um.sum() <= 0:
+        um = dauer.copy()
+    ad = dauer / dauer.sum()
+    au = um / um.sum()
+    roh = np.sqrt(ad * au)
+    roh /= roh.sum()
+
+    UNTEN = 1.0 / (n - 1) * 0.55   # keiner unter gut der Haelfte des Gleichanteils
+    fest = roh < UNTEN
+    for _ in range(50):
+        rest = 1.0 - UNTEN * fest.sum()
+        frei = ~fest
+        if rest <= 0 or not frei.any():
+            break
+        skal = roh.copy()
+        skal[frei] = roh[frei] / roh[frei].sum() * rest
+        skal[fest] = UNTEN
+        neu = skal < UNTEN - 1e-12
+        if not neu.any():
+            roh = skal
+            break
+        fest = fest | neu
+    return (roh / roh.sum()).tolist()
+
+
+# ================================================================== Lauf
+def main():
+    ZWISCHEN.mkdir(exist_ok=True)
+    g = gitter()
+    log(f"Zielgitter {g['w']} x {g['h']}, Zelle {g['schritt']:.3f} km, "
+        f"Lambert azimutal flaechentreu um {MLAT} N {MLON} O")
+
+    ZLON, ZLAT, maske, im_fenster = huelle(g)
+
+    log("(c) DEM")
+    dem = lies_dem(g, ZLON, ZLAT, maske)
+
+    # Traegt eine der Quellen die Marke des Pruefgeruests?
+    geruest = False
+    for pf in list((ROH / "ice6g").glob("*.nc"))[:1] + list((ROH / "dem").glob("*.nc"))[:1]:
+        try:
+            d = oeffne(pf)
+            if hasattr(d, "pruefgeruest"):
+                geruest = True
+            d.close()
+        except Exception:
+            pass
+    if geruest:
+        log("  ! Diese Rohdaten sind das PRUEFGERUEST — erfundener Inhalt.")
+
+    log("(a) ICE-6G_C")
+    zeiten, td, st, sl, fenster, proben, gmeta = lies_ice6g()
+    log(f"  {len(zeiten)} Zeitscheiben, Topo_Diff {td.shape}, stgit {st.shape}")
+
+    # ---- Gegenprobe: DEM grob + Topo_Diff muss Topo treffen -----------------
+    # Sie faengt die beiden Fehler, die man an dieser Stelle wirklich macht:
+    # ein vertauschtes Vorzeichen von Topo_Diff und einen falschen Bezugs-
+    # zeitpunkt. Beides sieht man dem Bild sonst nicht an — es sieht nur falsch
+    # aus, und zwar plausibel falsch.
+    kennzahlen = {}
+
+    # Probe 1 — die scharfe. Topo_Diff ist definiert als Topo(t) − Topo(0),
+    # also muss  Topo(t) − Topo(0) − Topo_Diff(t)  **null** sein, auf dem
+    # 10'-Gitter, ohne jede Interpolation. Diese Probe faengt genau die beiden
+    # Fehler, die man hier wirklich macht: ein vertauschtes Vorzeichen und
+    # einen falschen Bezugszeitpunkt. Beides sieht man dem fertigen Bild nicht
+    # an — es sieht nur falsch aus, und zwar plausibel falsch.
+    topo0 = proben[zeiten.index(0.0)]["topo"] if 0.0 in zeiten else None
+    if topo0 is not None:
+        schlimm = 0.0
+        for p in proben:
+            i = zeiten.index(p["ka"])
+            d = float(np.abs(p["topo"] - topo0 - td[i]).max())
+            schlimm = max(schlimm, d)
+        kennzahlen["topodiff_identitaet_max_m"] = schlimm
+        log(f"  Probe 1  max |Topo(t) − Topo(0) − Topo_Diff(t)| = {schlimm:.3f} m")
+        if schlimm > 1.0:
+            log("  ACHTUNG: Topo_Diff ist nicht Topo(t) − Topo(0). Vorzeichen oder")
+            log("           Bezugszeitpunkt pruefen, bevor irgendetwas gezeichnet wird.")
+
+    # Probe 2 — die weiche. Wie weit liegen das feine DEM und ICE-6G_Cs eigene
+    # heutige Topographie auseinander, wenn man das DEM auf 10' mittelt? Das
+    # ist **kein Fehler**, sondern der Unterschied zweier Datensaetze und der
+    # Preis der Aufloesung. Die Zahl gehoert trotzdem gemessen: laeuft sie aus
+    # dem Ruder, stimmt der Ausschnitt oder die Achsenrichtung nicht.
+    if topo0 is not None:
+        gh, gw = topo0.shape
+        jy = np.clip(((ZLAT - gmeta["lat0"]) / gmeta["dlat"]).round().astype(np.int64), 0, gh - 1)
+        jx = np.clip(((ZLON - gmeta["lon0"]) / gmeta["dlon"]).round().astype(np.int64), 0, gw - 1)
+        summe = np.zeros((gh, gw)); zahl = np.zeros((gh, gw))
+        np.add.at(summe, (jy[im_fenster], jx[im_fenster]), dem[im_fenster])
+        np.add.at(zahl, (jy[im_fenster], jx[im_fenster]), 1.0)
+        hat = zahl > 0
+        d = np.abs(summe[hat] / zahl[hat] - topo0[hat])
+        kennzahlen["dem_gegen_ice6g_topo"] = dict(
+            median_m=float(np.median(d)), p95_m=float(np.percentile(d, 95)),
+            zellen=int(hat.sum()))
+        log(f"  Probe 2  |DEM auf 10' gemittelt − ICE-6G_C Topo(0)|: "
+            f"Median {np.median(d):6.1f} m, 95 % {np.percentile(d, 95):7.1f} m "
+            f"ueber {int(hat.sum())} Zellen")
+
+    log("(b) DATED-1")
+    dated = lies_dated(g)
+
+    zellkm2 = g["schritt"] ** 2
+    tk = takt(zeiten, st, zellkm2)
+
+    # ---- Land, Eis und Meeresspiegel je Scheibe, fuer die Notizen -----------
+    # Gerechnet wird hier mit denselben Schritten wie in der Seite — bikubisch
+    # hochrechnen, addieren, Nulllinie nehmen —, damit die Zahlen in den Notizen
+    # dieselben sind, die jemand am Bildschirm abliest. Die Kuestenlinie kommt
+    # aus paleo > 0, nicht aus sftlf (siehe ../QUELLEN.md, Abschnitt 3).
+    log("Kennzahlen je Zeitscheibe")
+    fx = np.clip((ZLON - gmeta["lon0"]) / gmeta["dlon"], 0, td.shape[2] - 1)
+    fy = np.clip((ZLAT - gmeta["lat0"]) / gmeta["dlat"], 0, td.shape[1] - 1)
+    nm = int(im_fenster.sum())
+    je = []
+    for i, t in enumerate(zeiten):
+        paleo = dem + bikubisch(td[i], fx, fy)
+        eis = bikubisch(st[i], fx, fy)
+        land = (paleo > 0) & im_fenster
+        unter_eis = (eis > 1.0) & im_fenster
+        je.append(dict(
+            ka=t,
+            land_anteil=float(land.sum() / nm),
+            eis_anteil=float(unter_eis.sum() / nm),
+            eis_volumen_km3=float((eis * im_fenster).sum() * zellkm2 / 1000.0),
+            hoechster_m=float(np.nanmax(np.where(im_fenster, paleo, np.nan))),
+            meeresspiegel_m=sl[i],
+        ))
+
+    # Probe 3 — die Kuestenlinie. Die eigene Nulllinie gegen die, die ICE-6G_C
+    # selbst zoege (Topo > 0). Gleich sein muessen sie nicht: die eine hat
+    # 5,8 km Aufloesung, die andere 18 km, und genau dieser Unterschied ist der
+    # Zweck der ganzen Uebung. Aber sie muessen **nah beieinander** liegen —
+    # laufen sie auseinander, stimmt das Vorzeichen oder der Bezug nicht.
+    kp = []
+    for p in proben[:: max(1, len(proben) // 6)]:
+        i = zeiten.index(p["ka"])
+        eigen = (dem + bikubisch(td[i], fx, fy)) > 0
+        ihr = bikubisch(p["topo"], fx, fy) > 0
+        gleich = float((eigen[im_fenster] == ihr[im_fenster]).mean())
+        kp.append(dict(ka=p["ka"], uebereinstimmung=gleich))
+        log(f"  Probe 3  {p['ka']:>5} ka  Land/Wasser stimmt mit ICE-6G_C Topo "
+            f"auf {100*gleich:.1f} % der Zellen ueberein")
+    kennzahlen["kueste_gegen_ice6g"] = kp
+    for e in je[:: max(1, len(je) // 8)]:
+        log(f"  {e['ka']:>5} ka  Land {100*e['land_anteil']:5.1f} %  "
+            f"Eis {100*e['eis_anteil']:5.1f} %  "
+            f"MSp {e['meeresspiegel_m']:7.1f} m")
+
+    # ------------------------------------------- die groben Felder, projiziert
+    # Beide werden hier auf ein **projiziertes** Grobgitter gelegt, nicht als
+    # Laengen-Breiten-Feld durchgereicht. Das nimmt der Seite die Umkehrung der
+    # Projektion je Feldpunkt ab: Grobgitter und Karte liegen dann achsenparallel
+    # uebereinander, und das bikubische Hochrechnen ist eine reine Streckung.
+    #
+    # Die Teiler sind gemessen, nicht geraten (siehe METHODIK.md):
+    #
+    #   Topo_Diff ist die Krustenbewegung plus der Meeresspiegel. Ihre kuerzeste
+    #   wirkliche Wellenlaenge setzt die Biegesteifigkeit der Lithosphaere, und
+    #   die liegt bei ueber hundert Kilometern. Teiler 8 heisst hier rund 55 km
+    #   Abtastung — immer noch feiner als das Feld selbst ist.
+    #
+    #   stgit hat am Eisrand eine Stufe und darf deshalb nicht so weit
+    #   heruntergehen. Teiler 4, rund 27 km — feiner als die 18 km, die
+    #   ICE-6G_C selbst hat, waere gelogen; 27 km ist knapp darunter.
+    tdt = int(os.environ.get("TD_GROB", "8"))
+    est = int(os.environ.get("EIS_GROB", "4"))
+
+    def grobgitter(teiler):
+        w = max(4, g["w"] // teiler)
+        h = max(4, g["h"] // teiler)
+        gx = g["x0"] + (np.arange(w) + 0.5) * (g["schritt"] * g["w"] / w)
+        gy = g["y1"] - (np.arange(h) + 0.5) * (g["schritt"] * g["h"] / h)
+        GX, GY = np.meshgrid(gx, gy)
+        LO, LA = zurueck(GX, GY)
+        return w, h, (np.clip((LO - gmeta["lon0"]) / gmeta["dlon"], 0, td.shape[2] - 1),
+                      np.clip((LA - gmeta["lat0"]) / gmeta["dlat"], 0, td.shape[1] - 1))
+
+    tw, th, (tfx, tfy) = grobgitter(tdt)
+    ew, eh, (efx, efy) = grobgitter(est)
+    log(f"  Topo_Diff auf {tw} x {th} projiziert (Teiler {tdt}, "
+        f"{g['schritt']*tdt:.0f} km), stgit auf {ew} x {eh} (Teiler {est}, "
+        f"{g['schritt']*est:.0f} km)")
+    tdp = np.stack([bikubisch(td[i], tfx, tfy) for i in range(len(zeiten))])
+    esp = np.stack([np.maximum(0.0, bikubisch(st[i], efx, efy)) for i in range(len(zeiten))])
+
+    # ---------------------------------------------------------------- schreiben
+    np.round(dem).astype(np.int16).tofile(ZWISCHEN / "dem.i16")
+    maske.astype(np.uint8).tofile(ZWISCHEN / "maske.u8")
+    np.round(tdp).astype(np.int16).tofile(ZWISCHEN / "topodiff.i16")
+    np.round(np.clip(esp, 0, 65535)).astype(np.uint16).tofile(ZWISCHEN / "stgit.u16")
+    (ZWISCHEN / "dated.json").write_text(json.dumps(
+        {str(k): v for k, v in sorted(dated.items())}), encoding="utf8")
+    (ZWISCHEN / "meta.json").write_text(json.dumps(dict(
+        gitter=g, mitte=[MLON, MLAT], erdradius=ERDR,
+        ausschnitt=[LON0, LON1, LAT0, LAT1],
+        zeiten=zeiten, takt=tk, meeresspiegel=sl,
+        topodiff=dict(w=tw, h=th, teiler=tdt),
+        stgit=dict(w=ew, h=eh, teiler=est),
+        quelle_grob=dict(w=int(td.shape[2]), h=int(td.shape[1]), **gmeta),
+        je_scheibe=je, kennzahlen=kennzahlen,
+        # Woher die Daten stammen. build.mjs weigert sich, aus Geruestdaten
+        # eine Seite ohne Wasserzeichen zu schreiben.
+        pruefgeruest=geruest,
+    ), indent=1), encoding="utf8")
+    log(f"\ngeschrieben nach {ZWISCHEN}")
+    log("weiter mit:  node build.mjs > ../index.html")
+
+
+if __name__ == "__main__":
+    main()

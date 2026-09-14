@@ -25,6 +25,14 @@ bevoelkerungsstand-lange-reihe.xlsx
 gvisys-04-kreise.xlsx
 gpop*
 spike.log
+# Rohdaten der Eiszeitkarte, siehe eiszeit-europa/build/DATEN.md
+eiszeit-europa/data/raw/
+eiszeit-europa/build/PRUEFSUMMEN.eigen
+dem-ausschnitt-*.bin
+eiszeit-europa/build/zwischen/
+eiszeit-europa/build/zwischen-*/
+eiszeit-europa/build/pruefgeruest-roh/
+eiszeit-europa/build/__pycache__/
 # Rohdaten der US-Pruefung, siehe bevoelkerung-kreise/build/pruefung/usa/DATEN.md
 roh-usa/
 nhgis0001_*
