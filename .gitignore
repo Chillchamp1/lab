@@ -33,3 +33,10 @@ eiszeit-europa/build/zwischen/
 eiszeit-europa/build/zwischen-*/
 eiszeit-europa/build/pruefgeruest-roh/
 eiszeit-europa/build/__pycache__/
+# Rohdaten der US-Pruefung, siehe bevoelkerung-kreise/build/pruefung/usa/DATEN.md
+roh-usa/
+nhgis0001_*
+cb_20*_us_county_*.zip
+co-est*-alldata.csv
+sub-est*
+cencounts.csv

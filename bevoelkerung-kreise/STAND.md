@@ -1,6 +1,6 @@
 # Stand
 
-Stand: 13. September 2026.
+Stand: 14. September 2026.
 
 ## Fertig
 
@@ -837,6 +837,59 @@ Freigabe, aus Bildvorlagen abzuschreiben.
 - Der Bauvorgang kann auch mit Reihen umgehen, die nur einen Teil des Landes
   abdecken — beim Pilotgebiet Berlin und Brandenburg war das nötig. Siehe
   METHODIK.md, Abschnitt 4.
+
+## Angefangen: dieselbe Karte für die USA
+
+Erster Schritt ist eine Datenprüfung, kein Kartenbau — die Regel, nach der auch
+Deutschland gebaut wurde. Der Bericht liegt in
+`build/pruefung/usa/bericht.md`, erzeugt von `build/pruefung/usa/pruefe.mjs`.
+
+**Zuschnitt:** 3 108 Gebiete (die Lower 48 und der District of Columbia,
+Gebietsstand 2020), dreizehn Zählungen von 1900 bis 2020 und eine
+Fortschreibung. Alaska und Hawaii bleiben weg: Alaska allein ist ein Fünftel
+der Landfläche bei 0,2 % der Menschen und würde den Bildausschnitt beherrschen.
+
+**Quelle** ist die NHGIS-Zeitreihentabelle A00, dazu CL8 als Eichmass. A00
+reicht als einzige bis 1900 zurück, ist aber **nominal integriert**:
+Grenzänderungen bleiben unkorrigiert, und ein County, das es damals noch nicht
+gab, hat schlicht keine Zeile. CL8 deckt nur 1990 bis 2020 ab, dafür auf
+einheitlichem Gebietsstand — und liefert damit für vier Bilder eine bekannt
+richtige Antwort, gegen die sich A00 halten lässt.
+
+**Was die Prüfung ergeben hat — Urteil gelb:**
+
+- Beide Bilanzen schliessen auf **0**. 1900 ergeben Countys, Territorien und
+  die fehlende DC-Zeile zusammen 75 994 575; 2020 ergeben Karte plus Alaska
+  plus Hawaii 331 449 281. Jeder Mensch ist verbucht.
+- Countysumme gegen Staatszeile: über alle dreizehn Bilder **fünf** Abweichungen
+  von je genau einer Person (New York und Pennsylvania 1920, Kalifornien 1950,
+  Ohio und Texas 1960) — veröffentlichte Rundungsartefakte.
+- Eichprobe A00 gegen CL8: mittlere Abweichung **null**. Über 1 % weichen 14
+  Gebiete ab (1990), 7 (2000), 7 (2020); 2010 ist erwartungsgemäss punktgleich.
+  Die nominale Integration kostet dort, wo sie prüfbar ist, praktisch nichts.
+- Die Lücken sind konzentriert: 353 Gebiete ohne Zeile in 1900, 214 in 1910,
+  dann 57, 24 und ab 1970 einstellig. Ein guter Teil der späten Fälle ist durch
+  **exakte** Umschlüsselung zu erledigen — Umbenennungen (Shannon → Oglala
+  Lakota) und Vereinigungen (Bedford city → Bedford County), also derselbe Fall
+  wie Hanau und Eisenach.
+
+**Zwei Fallen, die dabei aufgefallen sind:**
+
+- NHGIS lässt `COUNTYFP` **leer**, wenn es die Einheit heute nicht mehr gibt —
+  1 369 von 56 088 Zeilen. Wer naiv `STATEFP + COUNTYFP` zusammensetzt, wirft
+  alle verschwundenen Countys eines Staates auf denselben Schlüssel und merkt
+  es nicht. Aufgefallen ist es daran, dass „Campbell, Georgia" unter dem
+  Schlüssel `13` stand.
+- Die Territorien (Arizona, New Mexico, Oklahoma, Indian Territory) haben 1900
+  nicht einmal ein `STATEFP`. Ein Filter auf moderne Codes verliert sie
+  lautlos — und mit ihnen 1,1 Millionen Menschen, die auf dem Gebiet der Karte
+  gelebt haben. Dazu führt die Zählung 1900 eine Kategorie „Persons in the
+  Military" mit 91 219 Menschen ohne jeden Ort.
+
+**Was noch fehlt:** die Geometrie (Schlüsseltest, Dichte), Forstall beim NBER
+als zweite unabhängige Quelle, die Fortschreibung 2025 samt Gemeindezahlen für
+Connecticut, und für die Bilder 1900 und 1910 die historischen Grenzen aus dem
+Atlas of Historical County Boundaries.
 
 ## Offen
 
