@@ -25,3 +25,10 @@ bevoelkerungsstand-lange-reihe.xlsx
 gvisys-04-kreise.xlsx
 gpop*
 spike.log
+# Rohdaten der US-Pruefung, siehe bevoelkerung-kreise/build/pruefung/usa/DATEN.md
+roh-usa/
+nhgis0001_*
+cb_20*_us_county_*.zip
+co-est*-alldata.csv
+sub-est*
+cencounts.csv
