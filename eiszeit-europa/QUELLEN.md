@@ -7,55 +7,53 @@ Arbeitsumgebung, mit Datum und Fehlercode.
 
 ## 1. Der Befund vorweg
 
-**Keine der drei Quellen ist aus dieser Arbeitsumgebung erreichbar.** Die
-Netzpolitik dieser Sitzung lässt Ausgangsverbindungen nur zu GitHub,
-Bitbucket, npm und PyPI zu; jeder wissenschaftliche Datenhalter antwortet mit
-403 auf den CONNECT-Tunnel, also noch bevor eine Anfrage beim Server ankommt.
+Stand nach der Freigabe der Netzpolitik am 14.09.2026. **Zwei der drei Quellen
+sind geladen, die dritte hängt an einem fehlenden Zwischenzertifikat.**
 
-Das ist keine Aussage über die Quellen — die sind offen und frei — sondern
-über diese Umgebung.
-
-| Wirt | gebraucht für | Versuch | Ergebnis |
+| Wirt | für | Stand | |
 |---|---|---|---|
-| `www.atmosp.physics.utoronto.ca` | ICE-6G_C NetCDF | 14.09.2026 | **403**, CONNECT abgelehnt |
-| `pmip4.lsce.ipsl.fr` | ICE-6G_C Verzeichnisseite | 14.09.2026 | **403**, CONNECT abgelehnt |
-| `doi.pangaea.de` | DATED-1 Datensatzseite | 14.09.2026 | **403**, CONNECT abgelehnt |
-| `download.pangaea.de`, `store.pangaea.de`, `pangaea.de` | DATED-1 Dateien | 14.09.2026 | **403** |
-| `www.bodc.ac.uk` | GEBCO 2024 | 14.09.2026 | **403** |
-| `www.ngdc.noaa.gov`, `www.ncei.noaa.gov`, `gis.ngdc.noaa.gov` | ETOPO 2022 | 14.09.2026 | **403** |
-| `doi.org` | Auflösung jeder DOI | 14.09.2026 | **403** |
-| `zenodo.org`, `figshare.com`, `osf.io`, `datadryad.org`, `dataverse.harvard.edu` | mögliche Zweitablagen | 14.09.2026 | **403** |
-| `esgf-node.llnl.gov`, `esgf.nci.org.au`, `thredds.met.no` | mögliche Spiegel | 14.09.2026 | **403** |
-| `naciscdn.org`, `www.naturalearthdata.com` | Küstenlinien zum Gegenlesen | 14.09.2026 | **403** |
+| `www.ngdc.noaa.gov` | ETOPO 2022 | **geladen** | 15 Kacheln, 406 MB |
+| `store.pangaea.de`, `doi.pangaea.de` | DATED-1 | **geladen** | 12 MB, 58 Shapefiles |
+| `www.atmosp.physics.utoronto.ca` | ICE-6G_C | **offen** | CONNECT geht durch, TLS scheitert |
+| `crt.sectigo.com` | das fehlende Zwischenzertifikat | **gesperrt** | 403 auf CONNECT |
+| `pmip4.lsce.ipsl.fr` | Verzeichnisseite ICE-6G_C | **unbrauchbar** | Zertifikat am 4.8.2026 abgelaufen |
+| `www.bodc.ac.uk` | GEBCO | erreichbar, nicht gebraucht | ETOPO tut es |
 
-Erreichbar sind: `github.com`, `raw.githubusercontent.com`, `api.github.com`
-(nur auf dieses Repo beschränkt — die Suche ist abgeschaltet),
-`bitbucket.org`, `registry.npmjs.org`, `pypi.org`.
+### Warum ICE-6G_C noch fehlt, und was genau fehlt
 
-Ein Spiegel auf GitHub wäre technisch erreichbar. **Er wird nicht benutzt**,
-und zwar aus zwei Gründen, die beide in der Machart dieses Repos stehen: die
-GitHub-Suche ist in dieser Sitzung gesperrt, ein Fund wäre also geraten statt
-gefunden; und ein erratenes Ablagefach ist keine zitierfähige Quelle. Die
-Aufgabe verlangt ausdrücklich „Prüfe Checksummen, wo angegeben" — dafür
-braucht es die Quelle, nicht eine Kopie unbekannter Herkunft.
+Der Tunnel zum Toronto-Server steht (CONNECT 200). Das Serverzertifikat ist
+**gültig** — 29.04. bis 13.11.2026 — und deckt `www.atmosp.physics.utoronto.ca`
+in seinen alternativen Namen ab. Der Server sendet nur sein **Zwischen-
+zertifikat nicht mit**:
 
-**Erfundene Daten kommen nicht in Frage.** Diese Karte ist eine Rekonstruktion,
-und eine Rekonstruktion mit ausgedachten Zahlen unter echten Zitaten wäre das
-Gegenteil dessen, wofür das Unsicherheitsband in Schritt 4 da ist.
+```
+Blatt:  CN = mail.atmosp.physics.utoronto.ca   (SAN enthält www.atmosp…)
+fehlt:  CN = Sectigo Public Server Authentication CA OV R36
+Wurzel: CN = Sectigo Public Server Authentication Root R46   ← liegt im Bundle
+```
 
-Das Downloadskript `build/holen.sh` ist trotzdem fertig und läuft: es erzeugt
-die richtige Dateiliste (48 Zeitscheiben), holt, setzt abgebrochene
-Übertragungen fort, rechnet Prüfsummen nach und meldet den Fehlschlag mit
-Wirt und Code. Nachgewiesen ist das an einem echten Lauf — siehe
-`data/raw/.holen.log`. Es fehlen die Bytes, nicht das Verfahren.
+Die Wurzel ist also da, nur das Glied dazwischen nicht. Browser holen es
+stillschweigend über die AIA-Adresse im Zertifikat nach; `curl` tut das nicht.
+Die Adresse steht im Zertifikat:
 
-### Was die Vorlage in derselben Lage getan hat
+    http://crt.sectigo.com/SectigoPublicServerAuthenticationCAOVR36.crt
 
-`bevoelkerung-kreise` kennt den Fall: GPOP „liegt hinter einer Rechenaufgabe
-gegen Maschinen, die diese Arbeitsumgebung nicht lösen darf; sie wurde deshalb
-von Hand heruntergeladen und beigesteuert." Dasselbe ist hier der Weg — die
-Dateien nach `data/raw/` legen, `./holen.sh pruefen` bestätigt die Ablage, und
-`build.mjs` läuft.
+`crt.sectigo.com` ist gesperrt. Geprüft und erfolglos: ob ein anderer
+erreichbarer Wirt dieselbe Zwischenstelle mitliefert (NOAA nutzt DigiCert,
+PANGAEA und NCEI Let's Encrypt, PyPI und npm etwas anderes), und ob die
+Zwischenstelle schon im Bundle liegt (nein — Bundles führen Wurzeln, keine
+Zwischenstellen).
+
+**Die TLS-Prüfung wird dafür nicht abgeschaltet.** Ein Zwischenzertifikat
+nachzuliefern, das der Server hätte senden sollen, ändert am Vertrauensanker
+nichts; die Prüfung auszuschalten schon. Es fehlt also genau ein Wirt in der
+Freigabe: `crt.sectigo.com`.
+
+### Was daraus folgt
+
+`build/holen.sh` trägt jetzt die **geprüften** Adressen: die erratenen von
+vorher waren teils falsch (siehe unten). Ein Lauf meldet 17 Dateien da, 48
+fehlend.
 
 ## 2. Was benutzt wird
 
@@ -124,13 +122,31 @@ kommt getrennt aus `stgit` darauf. Mit dem Standardgitter läge Grönlands und
 Islands heutiges Eis als Fels in der Karte und bekäme darüber noch einmal das
 eiszeitliche.
 
-Ersatz, falls der globale GEBCO-Satz zu gross ist:
-**NOAA NCEI (2022):** *ETOPO 2022 15 Arc-Second Global Relief Model*,
-doi:10.25921/fd45-gt74, Variante **bed elevation**, Kacheln `N90W030` und
-`N90E000`.
+**Benutzt wird der Ersatz:** **NOAA NCEI (2022):** *ETOPO 2022 15 Arc-Second
+Global Relief Model*, doi:10.25921/fd45-gt74, fünfzehn 15-Grad-Kacheln des
+Satzes `15s_surface_elev_netcdf`, zusammen 406 MB.
 
-Für das Gebiet zwischen 12° W und 45° E sind beide gleichwertig; GEBCO ist die
-Vorgabe der Aufgabe.
+Und zwar **surface**, nicht `bed` — das sieht nach einem Widerspruch zum
+Absatz darüber aus und ist keiner. Nachgesehen hat der 15″-`bed`-Satz nur 62
+Kacheln: es gibt ihn **nur dort, wo heute Eis liegt** (Grönland, Antarktis,
+hohe Arktis). Überall sonst ist die Oberfläche der Fels, und für 12° W bis
+45° E deckt keine einzige `bed`-Kachel den Ausschnitt. `surface` ist hier also
+genau das, was `bed` wäre.
+
+GEBCO bleibt die Vorgabe der Aufgabe und ist gleichwertig; ETOPO ist genommen,
+weil sein gekachelter Satz 406 MB statt 7,5 GB überträgt.
+
+## 2b. Was an den erratenen Adressen falsch war
+
+Drei von vier Vermutungen haben nicht gestimmt. Sie stehen hier, weil sie
+zeigen, wie wenig eine plausible URL wert ist:
+
+| vermutet | wirklich |
+|---|---|
+| `download.pangaea.de/dataset/848117/allfiles.zip` | gibt es nicht (404). Der Datensatz ist eine **Liste von Dateiadressen**; `?format=textfile` nennt sie. Gebraucht wird `store.pangaea.de/Publications/HughesA-etal_2015/DATED-1_TimeSlices_shp.zip`. |
+| ETOPO `15s_bed_elev_netcdf`, Kacheln `N90W030`/`N90E000` | Der bed-Satz hat nur 62 Kacheln — es gibt ihn **nur dort, wo heute Eis liegt**. Für Europa ist `15s_surface_elev_netcdf` der Fels, und es braucht 15 Kacheln. |
+| DATED-1 als Linien in Grad, Dateiname `10ka_maximum` | **Polygone** in polaren Lambert-Azimutal-**Metern** auf WGS84, Dateien heissen `TS20_mc`, und die Zeit steht als Attribut `AV_Time` im DBF. |
+| `I6_C.VM5a_10min.<t>.nc` auf dem Toronto-Server | noch ungeprüft — der Wirt ist erreichbar, aber die TLS-Kette bricht ab. |
 
 ## 3. Was ausdrücklich nicht benutzt wird
 

@@ -30,6 +30,7 @@ Geschrieben wird nach zwischen/:
 
 import json
 import math
+import re
 import os
 import sys
 from pathlib import Path
@@ -247,84 +248,108 @@ def huelle(g):
 
 
 def lies_dem(g, ZLON, ZLAT, maske):
-    """Das 15\"-DEM auf das Zielgitter.
+    """Das 15"-DEM auf das Zielgitter.
 
     Zwei Schritte, und der erste ist der, ohne den es rauscht: erst wird das
-    Quellgitter **blockweise gemittelt**, bis seine Zelle ungefaehr so gross
-    ist wie eine Zielzelle, dann erst wird abgetastet. Punktweise abgetastet
-    ergaebe ein Zwoelftel der Werte und elf Zwoelftel Rauschen — und genau die
-    Alpen, um die es geht, bestehen aus dem, was dabei wegfiele.
+    Quellgitter **blockweise gemittelt**, bis seine Zelle ungefaehr so gross ist
+    wie eine Zielzelle, dann erst wird abgetastet. Punktweise abgetastet ergaebe
+    bei 15" auf 6,8 km ein Zweihundertfuenfundzwanzigstel der Werte und der Rest
+    waere Rauschen — und genau die Alpen, um die es geht, bestehen aus dem, was
+    dabei wegfiele.
 
-    Gelesen wird in Streifen: der Fensterausschnitt bei 15\" ist ueber 120
+    **Gemittelt wird ueber alle Kacheln gemeinsam**, auf einem Gitter, das am
+    globalen Quellraster ausgerichtet ist. Das ist der Unterschied, der zaehlt:
+    beim ersten Lauf wurde jede Kachel fuer sich gemittelt und danach abgetastet,
+    und weil der Block einer Kachel nicht an ihrer Kante aufgeht, blieb an jeder
+    Naht eine Zeile ohne Wert stehen — 2 872 Zellen, 0,84 Prozent, als feine
+    Linien quer durch die Karte. Eine Naht, die niemand gezeichnet hat, ist
+    genau das, was diese Karte nicht haben darf.
+
+    Gelesen wird in Streifen: der Fensterausschnitt bei 15" ist ueber 120
     Millionen Werte und passt nicht als Ganzes in den Speicher.
     """
-    # Der gebrauchte Bereich ist der der **Maske**, nicht der des Fensters.
+    dateien = dem_datei()
     blo0, blo1 = float(ZLON[maske].min()), float(ZLON[maske].max())
     bla0, bla1 = float(ZLAT[maske].min()), float(ZLAT[maske].max())
     log(f"  gebraucht wird lon {blo0:.2f} … {blo1:.2f}, lat {bla0:.2f} … {bla1:.2f}")
 
-    teile = []
-    for pfad in dem_datei():
+    # Aufloesung und Blockfaktor aus der ersten Datei; alle Kacheln eines
+    # Datensatzes teilen dasselbe Raster.
+    ds = oeffne(dateien[0])
+    lon0, lat0 = achsen(ds)
+    dlon = abs(float(lon0[1] - lon0[0]))
+    dlat = abs(float(lat0[1] - lat0[0]))
+    ds.close()
+    zielgrad = g["schritt"] / (ERDR * math.pi / 180.0)
+    fx = max(1, int(zielgrad / dlon))
+    fy = max(1, int(zielgrad / dlat))
+
+    # Ein globales Grobgitter, an -180/-90 ausgerichtet. Nur der gebrauchte
+    # Ausschnitt davon wird angelegt.
+    rand = 2
+    cx0 = int(math.floor((blo0 + 180.0) / (dlon * fx))) - rand
+    cx1 = int(math.ceil((blo1 + 180.0) / (dlon * fx))) + rand
+    cy0 = int(math.floor((bla0 + 90.0) / (dlat * fy))) - rand
+    cy1 = int(math.ceil((bla1 + 90.0) / (dlat * fy))) + rand
+    NC, NR = cx1 - cx0, cy1 - cy0
+    log(f"  Quellraster {dlon*3600:.0f}\", Block {fx}x{fy} -> Grobgitter {NC} x {NR}")
+
+    summe = np.zeros(NR * NC, dtype=np.float64)
+    zahl = np.zeros(NR * NC, dtype=np.float64)
+
+    for pfad in dateien:
         ds = oeffne(pfad)
         try:
             lon, lat = achsen(ds)
-            var = erste(ds, "elevation", "z", "Band1", "bed", "topo")
-            dlon = float(abs(lon[1] - lon[0]))
-            dlat = float(abs(lat[1] - lat[0]))
-            umgedreht = lat[1] < lat[0]
-
-            # Fenster im Quellindex, mit Rand fuer die Blockmittelung.
+            var = erste(ds, "elevation", "z", "Band1", "bed", "topo", "elev")
             ilon = np.where((lon >= blo0 - 0.3) & (lon <= blo1 + 0.3))[0]
             ilat = np.where((lat >= bla0 - 0.3) & (lat <= bla1 + 0.3))[0]
             if ilon.size == 0 or ilat.size == 0:
-                log(f"  {pfad.name}: ausserhalb des Ausschnitts, uebersprungen")
-                continue
-            x_a, x_b = int(ilon[0]), int(ilon[-1]) + 1
-            y_a, y_b = int(ilat[0]), int(ilat[-1]) + 1
+                ds.close(); continue
+            xa, xb = int(ilon[0]), int(ilon[-1]) + 1
+            ya, yb = int(ilat[0]), int(ilat[-1]) + 1
 
-            # Blockfaktor: so gross, dass eine gemittelte Quellzelle die
-            # Zielzelle nicht ueberschreitet. Die Zielzelle ist in km gegeben,
-            # die Quellzelle in Grad — umgerechnet ueber den Breitengrad der
-            # Fenstermitte, wo die Projektion massstabstreu ist.
-            zielgrad = g["schritt"] / (ERDR * math.pi / 180.0)
-            fx = max(1, int(zielgrad / dlon))
-            fy = max(1, int(zielgrad / dlat))
-            nx = (x_b - x_a) // fx
-            ny = (y_b - y_a) // fy
-            log(f"  {pfad.name}: {x_b-x_a} x {y_b-y_a} Quellwerte, Block {fx}x{fy} -> {nx} x {ny}")
+            # Grobspalte je Quellspalte, einmal gerechnet.
+            gx = np.floor((lon[xa:xb] + 180.0) / (dlon * fx)).astype(np.int64) - cx0
+            gueltigx = (gx >= 0) & (gx < NC)
+            gx = gx[gueltigx]
 
-            grob = np.zeros((ny, nx), dtype=np.float64)
-            streifen = max(1, 4_000_000 // max(1, nx * fx))
-            for j0 in range(0, ny, streifen):
-                j1 = min(ny, j0 + streifen)
-                roh = np.asarray(
-                    var[y_a + j0 * fy: y_a + j1 * fy, x_a: x_a + nx * fx], dtype=np.float64)
-                roh = np.ma.filled(roh, np.nan)
-                blk = roh.reshape(j1 - j0, fy, nx, fx)
-                grob[j0:j1] = np.nanmean(np.nanmean(blk, axis=3), axis=1)
-
-            glon0 = lon[x_a] + (fx - 1) * dlon / 2.0
-            glat0 = lat[y_a] + (fy - 1) * (-dlat if umgedreht else dlat) / 2.0
-            gdlon = fx * dlon
-            gdlat = fy * (-dlat if umgedreht else dlat)
-
-            fxi = (ZLON - glon0) / gdlon
-            fyi = (ZLAT - glat0) / gdlat
-            drin = (fxi >= 0) & (fxi <= nx - 1) & (fyi >= 0) & (fyi <= ny - 1)
-            teil = np.full(ZLON.shape, np.nan)
-            if drin.any():
-                teil[drin] = bilinear(grob, fxi[drin], fyi[drin])
-            teile.append(teil)
+            streifen = max(1, 3_000_000 // max(1, xb - xa))
+            for j0 in range(ya, yb, streifen):
+                j1 = min(yb, j0 + streifen)
+                gy = np.floor((lat[j0:j1] + 90.0) / (dlat * fy)).astype(np.int64) - cy0
+                gueltigy = (gy >= 0) & (gy < NR)
+                if not gueltigy.any():
+                    continue
+                roh = np.asarray(var[j0:j1, xa:xb], dtype=np.float64)
+                roh = np.ma.filled(roh, np.nan)[np.ix_(gueltigy, gueltigx)]
+                flach = (gy[gueltigy][:, None] * NC + gx[None, :]).ravel()
+                w = roh.ravel()
+                da = np.isfinite(w)
+                summe += np.bincount(flach[da], weights=w[da], minlength=NR * NC)
+                zahl += np.bincount(flach[da], minlength=NR * NC)
+            log(f"  {pfad.name}: {xb-xa} x {yb-ya} Quellwerte eingerechnet")
         finally:
             ds.close()
 
-    if not teile:
-        raise SystemExit("Aus den DEM-Dateien kam nichts fuer diesen Ausschnitt.")
-    gestapelt = np.stack(teile)
-    import warnings
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", RuntimeWarning)
-        dem = np.nanmean(gestapelt, axis=0)
+    hat = zahl > 0
+    grob = np.full(NR * NC, np.nan)
+    grob[hat] = summe[hat] / zahl[hat]
+    grob = grob.reshape(NR, NC)
+    log(f"  Grobgitter belegt zu {100*hat.mean():.1f} %")
+
+    # Und daraus bilinear auf das Zielgitter. Bilinear und nicht bikubisch, weil
+    # **herunter**gerechnet wird: eine kubische Kurve ueberschwingt an der Kueste,
+    # und ein Ueberschwinger an der Nulllinie ist auf dieser Karte eine erfundene
+    # Insel.
+    glon0 = -180.0 + (cx0 + 0.5) * dlon * fx
+    glat0 = -90.0 + (cy0 + 0.5) * dlat * fy
+    fxi = (ZLON - glon0) / (dlon * fx)
+    fyi = (ZLAT - glat0) / (dlat * fy)
+    dem = np.full(ZLON.shape, np.nan)
+    drin = (fxi >= 0) & (fxi <= NC - 1) & (fyi >= 0) & (fyi <= NR - 1)
+    if drin.any():
+        dem[drin] = bilinear(np.nan_to_num(grob, nan=0.0), fxi[drin], fyi[drin])
 
     ohne = int((maske & ~np.isfinite(dem)).sum())
     if ohne:
@@ -430,75 +455,135 @@ def lies_ice6g():
 
 
 # ============================================================ (b) DATED-1
-def lies_dated(g):
-    """Die drei Linien je Zeitscheibe, projiziert und in Gitterkoordinaten.
+# Drei Dinge sind an den echten Dateien anders, als man vermutet — alle drei
+# sind beim ersten Lauf mit echten Daten aufgefallen und stehen in ../STAND.md
+# als die Punkte, die zu pruefen waren:
+#
+#   1. Die Dateien heissen TS20_mc, nicht "20ka_most-credible". Die Zeit steht
+#      ausserdem als Attribut AV_Time im DBF — das ist die verlaessliche
+#      Quelle, der Dateiname nur der Rueckfall.
+#   2. Es sind **Polygone**, keine Linien: die Eisflaeche, nicht ihr Rand. Fuer
+#      die Karte ist das die bessere Form — der Umriss ist der Rand, und zwei
+#      geschachtelte Umrisse lassen sich als Band fuellen.
+#   3. Die Koordinaten sind **Meter** in einer polaren Lambert-Azimutal-
+#      Projektion auf WGS84, nicht Grad. Ohne Ruecktransformation laege der
+#      ganze Eisschild bei 0,00 Grad Nord.
 
-    Die Zuordnung Datei -> (Zeit, Glaubwuerdigkeit) kommt aus dem Dateinamen
-    und, falls vorhanden, aus den Attributen. PANGAEA liefert das Paket ohne
-    festgeschriebene Namensregel; deshalb wird beides versucht und am Ende
-    gezaehlt, was zugeordnet werden konnte.
+_A = 6378137.0
+_F = 1.0 / 298.257223563
+_E2 = _F * (2 - _F)
+_E = math.sqrt(_E2)
+
+
+def _q(phi):
+    s = np.sin(phi)
+    return (1 - _E2) * (s / (1 - _E2 * s * s)
+                        - (1 / (2 * _E)) * np.log((1 - _E * s) / (1 + _E * s)))
+
+
+_QP = _q(np.pi / 2)
+
+
+def polar_laea_zurueck(x, y, lon0=0.0):
+    """Polare Lambert-Azimutal-Projektion (Ellipsoid) -> lon/lat in Grad.
+
+    Snyder, Map Projections — A Working Manual, polare Form, invers ueber die
+    authalische Breite. Die Reihe ist auf weit unter einen Meter genau; das
+    Ellipsoid statt der Kugel zu nehmen ist hier kein Luxus, sondern macht am
+    Eisrand rund zwanzig Kilometer aus.
     """
-    import shapefile
-    import re
+    rho = np.hypot(x, y)
+    q = _QP - (rho * rho) / (_A * _A)
+    beta = np.arcsin(np.clip(q / _QP, -1.0, 1.0))
+    phi = (beta
+           + (_E2 / 3 + 31 * _E2 ** 2 / 180 + 517 * _E2 ** 3 / 5040) * np.sin(2 * beta)
+           + (23 * _E2 ** 2 / 360 + 251 * _E2 ** 3 / 3780) * np.sin(4 * beta)
+           + (761 * _E2 ** 3 / 45360) * np.sin(6 * beta))
+    lam = np.arctan2(x, -y)
+    return lon0 + np.degrees(lam), np.degrees(phi)
 
-    wurzel = ROH / "dated1" / "entpackt"
+
+def lies_dated(g):
+    """Die drei Umrisse je Zeitscheibe, projiziert und in Gitterkoordinaten."""
+    import shapefile
+
+    wurzel = ROH / "dated1"
     if not wurzel.exists():
-        log("  DATED-1 nicht ausgepackt — Unsicherheitsband bleibt leer")
+        log("  DATED-1 fehlt — Unsicherheitsband bleibt leer")
         return {}
 
     def sorte(text):
         t = text.lower()
-        if "max" in t:
+        if t.endswith("_max") or "maximum" in t:
             return "max"
-        if "min" in t:
+        if t.endswith("_min") or "minimum" in t:
             return "min"
-        if "cred" in t or "mc" in t or "most" in t:
+        if t.endswith("_mc") or "cred" in t:
             return "mc"
         return None
 
     heraus = {}
-    zugeordnet = ungeordnet = 0
+    zugeordnet = 0
+    uebergangen = []
     for shp in sorted(wurzel.rglob("*.shp")):
         name = shp.stem
-        # Die Zahl muss ein "ka" hinter sich haben. Ohne diese Fessel greift der
-        # Ausdruck die 1 aus "DATED-1" und ordnet jede Datei dem Jahr 1 zu —
-        # genau so ist es beim ersten Lauf gewesen, und es fiel nur auf, weil
-        # die Zaehlung am Ende "0 zugeordnet, 48 nicht" sagte.
-        # Kein \b hinter dem "ka": auf "10ka_maximum" folgt ein Unterstrich, und
-        # der ist ein Wortzeichen — die Grenze greift dort nicht. Das "k" allein
-        # reicht als Fessel, denn in "DATED-1" folgt der Ziffer keines.
-        m = re.search(r"(\d{1,2})\s*_?k(?:a|yr)", name, re.I)
-        s = sorte(name) or sorte(str(shp.parent))
-        if not m or not s:
-            ungeordnet += 1
-            continue
-        ka = int(m.group(1))
-        if not (10 <= ka <= 25):
-            ungeordnet += 1
+        s = sorte(name)
+        if not s:
+            uebergangen.append(name)
             continue
         try:
             sf = shapefile.Reader(str(shp))
-        except Exception as e:
-            log(f"  {shp.name}: {e}")
+        except Exception as ex:
+            log(f"  {shp.name}: {ex}")
             continue
+
+        # Die Zeit aus dem Attribut, der Dateiname nur als Rueckfall.
+        felder = [x[0] for x in sf.fields[1:]]
+        ka = None
+        if "AV_Time" in felder:
+            i = felder.index("AV_Time")
+            werte = [r[i] for r in sf.records() if r[i] not in (None, "")]
+            if werte:
+                ka = int(round(float(werte[0])))
+        if ka is None:
+            m = re.search(r"TS_?(\d{1,2})(?!\d)", name)
+            ka = int(m.group(1)) if m else None
+        if ka is None or not (10 <= ka <= 25):
+            uebergangen.append(name)
+            continue
+
+        # Grad oder projizierte Meter? Die .prj sagt es; ohne sie entscheidet
+        # die Groessenordnung der Zahlen.
+        prj = shp.with_suffix(".prj")
+        text = prj.read_text(errors="replace") if prj.exists() else ""
+        metrisch = "PROJCS" in text or 'UNIT["Meter' in text
+
         linien = []
         for form in sf.shapes():
             pts = np.asarray(form.points, dtype=np.float64)
             if pts.shape[0] < 2:
                 continue
+            if metrisch:
+                lon, lat = polar_laea_zurueck(pts[:, 0], pts[:, 1])
+            else:
+                lon, lat = pts[:, 0], pts[:, 1]
+            x, y = vor(lon, lat)
+            gx = (x - g["x0"]) / g["schritt"]
+            gy = (g["y1"] - y) / g["schritt"]
             teile = list(form.parts) + [len(pts)]
             for a, b in zip(teile, teile[1:]):
-                st = pts[a:b]
-                if st.shape[0] < 2:
+                if b - a < 3:
                     continue
-                x, y = vor(st[:, 0], st[:, 1])
-                gx = (x - g["x0"]) / g["schritt"]
-                gy = (g["y1"] - y) / g["schritt"]
-                linien.append(vereinfache(gx, gy, 0.6))
+                linien.append(vereinfache(gx[a:b], gy[a:b], 0.5))
         if linien:
             heraus.setdefault(ka, {})[s] = linien
             zugeordnet += 1
-    log(f"  DATED-1: {zugeordnet} Shapefiles zugeordnet, {ungeordnet} nicht")
+
+    voll = sum(1 for k in heraus if len(heraus[k]) == 3)
+    log(f"  DATED-1: {zugeordnet} Shapefiles zugeordnet, {len(uebergangen)} uebergangen, "
+        f"{len(heraus)} Zeitscheiben ({voll} mit allen drei Linien)")
+    if uebergangen:
+        log(f"  uebergangen: {', '.join(sorted(uebergangen))}")
     return heraus
 
 
