@@ -153,6 +153,32 @@ Freigabe, aus Bildvorlagen abzuschreiben.
   101. **Verworfen: ein Tiefenverlauf**, der die Ferne abdunkelt — mit
   `multiply` färbte er den durchsichtigen Hintergrund grau, und in die
   Lichtebene gerechnet hätte er die fernen Gipfel gedämpft, die sind Daten.
+- **Der Frame zerlegt, und die teuren Posten waren andere.** Gekippt war der
+  grösste Einzelposten das `soft-light`-Mischen über die ganze Leinwand
+  (~36 ms Telefon, ~61 Schirm), von der die Karte nur 42 bzw. 33 % belegt;
+  flach waren es die **drei Füllungen der Silhouette** (55 / 100 ms, ein
+  Drittel des Bildes); und das Feld wurde bei jeder Geste neu gerechnet,
+  obwohl das Jahr stand. Sechs Griffe, keiner sichtbar (Möbel und Linien in
+  eigene Leinwände, Licht nur im Kasten, Wandschritt 3, Feld steht bei
+  stehendem Jahr — eingefroren ab einem Viertel Band, nach der Pause viermal
+  schneller gelandet —, bilinear hochrechnen, grob solange der Finger liegt):
+  **Telefon, Jahr steht, voll/halb/flach 141/152/149 → 54/67/5 ms; Geste
+  grob 30/39/2; Lauf 133/145/143 → 85/94/58. Schirm 254/271/299 → 82/99/14,
+  grob 46/52/3, Lauf 252/268/292 → 150/161/123.** Anker weiter 0,00 px,
+  Zwischenspeicher bildpunktgleich (0,000). Siehe METHODIK 4k, „Wohin die
+  Zeit geht".
+- **Fünf Dinge fürs Lesen:** Namen werden gekippt **im Bild** ausgedünnt
+  (Kosinus staucht Nord-Süd auf 47 %), flach wie vorher; ein **Nordpfeil**
+  sobald gedreht ist; ein Knopf **↺** sobald die Ansicht vom Anfang abweicht;
+  **Zählkurven**, jede fünfte Kante kräftiger, sie fallen auf die Zahlen der
+  Legende; und eine **zweite Farbleiter** für Rot-Grün-Schwäche (Wasser
+  dunkel nach hell, Land Braun nach Creme, Helligkeit streng monoton, Knopf
+  *Colours* bei der Legende, gemerkt, `#cvd` im Anker).
+- **Ein Bau ohne `KNOTEN=12000` überschreibt den Zwischenspeicher** mit 9 000
+  Knoten, und die Seite wird unbemerkt gröber (Modellblock 20 % kürzer).
+  Einmal passiert, erkannt, mit der richtigen Variable neu gebaut — der
+  Modellblock ist danach byte-identisch mit dem veröffentlichten. Steht jetzt
+  in `build/DATEN.md`.
 - **Zwei Finger auf der Karte.** Auseinanderziehen vergrössert (bis achtfach,
   um den Punkt zwischen den Fingern), verdrehen dreht, beide Finger zusammen
   nach oben schieben richtet auf; ein Finger schiebt den Ausschnitt, zweimal

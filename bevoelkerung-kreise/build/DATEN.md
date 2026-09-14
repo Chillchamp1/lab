@@ -60,6 +60,13 @@ Voreinstellung 9000 — sie wiegt dadurch etwas mehr und hält die kleinen
 kreisfreien Städte in Form. Wer die Seite neu baut, sollte das mitgeben, sonst
 wird sie unbemerkt gröber.
 
+Und zwar wirklich unbemerkt: der Zwischenspeicher `zeitreihe-alle.json` trägt
+die Bauparameter als Schlüssel, und ein Bau mit anderen Parametern verwirft ihn
+nicht nur, er **überschreibt** ihn. Ein einziger Bau ohne `KNOTEN=12000` kostet
+danach den nächsten richtigen Bau wieder fünf Minuten — und die Seite hat
+inzwischen 9 000 Knoten statt 12 000. Genau das ist einmal passiert; erkannt
+wurde es daran, dass der Modellblock der Seite 20 % kürzer war.
+
 Drei weitere, nur zum Ausprobieren der Farbleiter: `NBAND` (Zahl der Bänder,
 Voreinstellung 25), `WASSER` (wie viele davon blau sind, 5) und `UFER` (wo der
 Meeresspiegel liegen soll, in Vielfachen der mittleren Dichte von 2024, 0,50).

@@ -114,7 +114,26 @@ for (let i = 0; i < NLAND; i++) {
   HYPSO.push(ton(bahn(LANDBAHN, t, 1), bahn(LANDBAHN, t, 3), bahn(LANDBAHN, t, 2)));
 }
 HYPSO.push('#f2ebe6', '#ffffff');            // Fels, Schnee
-log(`Farbleiter: ${NBAND} Bänder, davon ${WASSER} Wasser`);
+/* Eine zweite Leiter für Rot-Grün-Schwäche. Die Höhenschichten sind
+   Atlas-Konvention, aber Grün und Rot fallen für Deuteranope zusammen, und
+   die Helligkeit läuft nicht mit der Höhe (Gelb ist heller als Rot). Hier
+   läuft sie **streng** mit: Wasser dunkel nach hell, das Land von Braun nach
+   Creme, oben Fels und Schnee wie gehabt — heller ist dichter, über die ganze
+   Leiter ohne Rücksprung. Braun gegen Blau liegt auf der Achse, die auch eine
+   Rot-Grün-Schwäche behält. */
+const WASSERBAHN2 = [[0, 0.30, 258, 0.85], [1, 0.44, 242, 0.80]];   // Tiefe wie in der Atlasleiter
+const LANDBAHN2 = [[0, 0.48, 50, 0.85], [0.5, 0.70, 68, 0.75], [1, 0.90, 85, 0.45]];
+const HYPSO2 = [];
+for (let i = 0; i < WASSER; i++) {
+  const t = WASSER > 1 ? i / (WASSER - 1) : 0;
+  HYPSO2.push(ton(bahn(WASSERBAHN2, t, 1), bahn(WASSERBAHN2, t, 3), bahn(WASSERBAHN2, t, 2)));
+}
+for (let i = 0; i < NLAND; i++) {
+  const t = i / (NLAND - 1);
+  HYPSO2.push(ton(bahn(LANDBAHN2, t, 1), bahn(LANDBAHN2, t, 3), bahn(LANDBAHN2, t, 2)));
+}
+HYPSO2.push('#f2ebe6', '#ffffff');
+log(`Farbleiter: ${NBAND} Bänder, davon ${WASSER} Wasser; zweite Leiter für Rot-Grün-Schwäche`);
 
 log('Daten …');
 const zeilen = leseLang();
@@ -568,6 +587,19 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
 .sicht label span{flex:0 0 auto;color:var(--muted);font-size:11.5px}
 #namen{flex:0 0 auto;padding:3px 9px;font-size:11.5px;border-radius:7px}
 #namen[aria-pressed=false]{color:var(--muted);border-style:dashed}
+/* Drei kleine Dinge auf der Karte selbst: Nordpfeil, Ansicht zurück, Farbleiter.
+   Nicht in der Bedienzeile — die ist auf 320 Punkten schon voll. */
+.aufKarte{position:absolute;z-index:2;font-size:11.5px;line-height:1;padding:4px 8px;border-radius:7px;
+  background:rgba(20,20,18,.78)}
+#nord{left:8px;bottom:8px;width:26px;height:26px;padding:0;display:grid;place-items:center;
+  color:var(--ink2);border:1px solid var(--axis);pointer-events:none}
+#nord[hidden]{display:none}
+#nord svg{width:20px;height:20px;display:block}
+#zurueck{right:8px;top:8px;font-size:15px;padding:3px 8px}
+/* Die zweite Leiter sitzt bei der Legende, denn sie ist die Legende. */
+.pole .rechts{display:flex;align-items:center;gap:8px}
+#farben{padding:2px 7px;font-size:11px;line-height:1.2;border-radius:6px;color:var(--muted);border-style:dashed}
+#farben[aria-pressed=true]{color:var(--ink);border-style:solid}
 .tip{position:absolute;pointer-events:none;background:#141412;border:1px solid var(--axis);
   border-radius:9px;padding:7px 9px;font-size:12.5px;box-shadow:0 6px 20px rgba(0,0,0,.5);
   max-width:210px;opacity:0;transition:opacity .12s}
@@ -584,9 +616,11 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
     <canvas id="karte"></canvas>
     <canvas id="umriss"></canvas>
     <div class="tip" id="tip"></div>
+    <div class="aufKarte" id="nord" hidden aria-hidden="true" title="North"><svg viewBox="0 0 20 20"><path d="M10 1.5 L14.2 13.5 L10 11 L5.8 13.5 Z" fill="currentColor"/><text x="10" y="19.2" font-size="6.5" font-weight="700" text-anchor="middle" fill="currentColor">N</text></svg></div>
+    <button class="aufKarte" id="zurueck" hidden aria-label="Reset the view" title="Reset the view">↺</button>
   </div>
   <div class="fuss">
-    <div class="legende"><div class="pole"><span>less crowded</span><span>more crowded</span></div><div class="rampe" id="rampe"></div><div class="stufen" id="legStufen"></div></div>
+    <div class="legende"><div class="pole"><span>less crowded</span><span class="rechts"><span>more crowded</span><button id="farben" aria-pressed="false" title="Colours for red-green colour blindness">Colours</button></span></div><div class="rampe" id="rampe"></div><div class="stufen" id="legStufen"></div></div>
     <p class="klein" id="legText"></p>
   </div>
   <div class="regler">
@@ -867,7 +901,9 @@ for (const r of REIHEN) r.rahmen = rahmenFuer(r);
    — das ist die Konvention eines Schulatlas und nicht zu vermeiden, wenn Gelb
    der hellste Farbton sein soll; die beiden obersten Bänder steigen wieder bis
    ins Weiss. */
-const HYPSO = ${JSON.stringify(HYPSO)};
+const HYPSO_ATLAS = ${JSON.stringify(HYPSO)};
+const HYPSO_CVD = ${JSON.stringify(HYPSO2)};
+let HYPSO = HYPSO_ATLAS;   // die Leiter, mit der gerade gezeichnet wird — siehe leiterSetzen()
 const WASSER = ${WASSER};
 const UFER = ${UFER};
 const stil = n => getComputedStyle(document.body).getPropertyValue(n).trim();
@@ -1066,6 +1102,8 @@ const cv = document.getElementById('karte'), ctx = cv.getContext('2d');
 const uv = document.getElementById('umriss'), uctx = uv.getContext('2d');
 let breite = 0, hoehe = 0, mass = 1, verX = 0, verY = 0;
 
+let DPR = 1;          // Gerätepunkte je CSS-Punkt, mit denen gerade gezeichnet wird
+let GROB = false;     // grob, solange der Finger liegt — siehe grobAn()
 function masse() {
   // Die Leinwand füllt, was der Rahmen ihr lässt — Kopfzeile, laufende Notiz,
   // Legende und Bedienung stehen fest, der Rest gehört der Karte. Gemessen
@@ -1073,7 +1111,11 @@ function masse() {
   const feld = cv.parentElement;
   breite = feld.clientWidth;
   hoehe = Math.max(120, feld.clientHeight);
-  const dpr = Math.min(2.5, devicePixelRatio || 1);
+  /* Grob, solange der Finger liegt: ein Gerätepunkt je CSS-Punkt statt zwei.
+     Der Stapel kostet dann weniger als die Hälfte (Telefon 96 → 44 ms), die
+     Rechnung im Feld bleibt, wie sie ist. Das volle Bild kommt beim Loslassen. */
+  const dpr = GROB ? 1 : Math.min(2.5, devicePixelRatio || 1);
+  DPR = dpr;
   const bw = Math.round(breite * dpr), bh = Math.round(hoehe * dpr);
   if (cv.width !== bw || cv.height !== bh) { cv.width = bw; cv.height = bh; }
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -1380,9 +1422,9 @@ let feinH = null, grobH = null, grobM = null, grobAuf = null, feldH = null,
 
 // Die Farbleiter als drei Zahlenreihen — je Bildpunkt ein Nachschlagen statt
 // eines Zerlegens von '#rrggbb'.
-const HYPSO_R = HYPSO.map(h => parseInt(h.slice(1, 3), 16));
-const HYPSO_G = HYPSO.map(h => parseInt(h.slice(3, 5), 16));
-const HYPSO_B = HYPSO.map(h => parseInt(h.slice(5, 7), 16));
+let HYPSO_R = HYPSO.map(h => parseInt(h.slice(1, 3), 16));
+let HYPSO_G = HYPSO.map(h => parseInt(h.slice(3, 5), 16));
+let HYPSO_B = HYPSO.map(h => parseInt(h.slice(5, 7), 16));
 /* ---------- Ein sehr weites Feld, in Zahlen statt auf der Leinwand ----------
    Gebraucht wird eine dritte, viel weitere Glättung — als Bezug für die
    Schärfung, siehe unten. Über die Leinwand ginge das auch, kostete aber eine
@@ -1540,6 +1582,12 @@ const schraeg = () => NEIGUNG > 0.001 || Math.abs(DREHUNG) > 1e-4;
    Jetzt hängt er am Massstab: weit weg dünn, herangezogen kräftiger, und der
    Deckel verhindert, dass er bei acht­fachem Zoom zum Balken wird. */
 let KANTENVERSATZ = 0.55, KANTENZOOM = 4, KANTENHELL = 0.85, KANTENDUNKEL = 0.75;
+/* Zählkurven: jede fünfte Kante kräftiger, wie auf der topografischen Karte —
+   und die fünfte, zehnte, fünfzehnte und zwanzigste Stufe sind genau die
+   Zahlen der Legende (×0,5, ×1, ×1,5, ×2). Gemessen kostet das nichts: jede
+   zweite Kante wegzulassen sparte keine Millisekunde, also kostet eine
+   kräftigere auch keine. */
+const ZAEHLJEDE = 5, ZAEHLSTARK = 1.6, ZAEHLSTARKFLACH = 1.5;
 
 /* ---------- Die Wand einer Scheibe ----------
    Bisher zeigte der Stapel nur Deckflächen: fünfundzwanzig Platten, jede eine
@@ -1593,8 +1641,13 @@ let KANTENVERSATZ = 0.55, KANTENZOOM = 4, KANTENHELL = 0.85, KANTENDUNKEL = 0.75
    (destination-over), damit jede Füllung bloss den noch freien Saum trifft.
    Dasselbe Bild auf den Bildpunkt, aber **langsamer** — 412 statt 312 ms auf
    dem Schirm, 236 statt 191 auf dem Telefon. Das Mischen kostet mehr, als das
-   Sparen bringt. */
-const WANDSCHRITT = 2;
+   Sparen bringt.
+
+   Und drei statt zwei, nachdem der Frame zerlegt war: noch einmal 16 ms auf
+   dem Telefon (147 → 131), die Lücken bei 62 Grad von 203 auf 219 von rund
+   6 500 Bildpunkten — im Bild nicht zu finden. Vier bringt nichts mehr (132),
+   also drei. */
+const WANDSCHRITT = 3;
 
 /* Die Töne der Wand kosten übrigens **nichts**: es sind fertige Zeichenketten,
    einmal gerechnet. Teuer ist die Zahl der Füllungen, und die Zahl der Töne
@@ -1636,10 +1689,21 @@ const WANDDUNKEL = 0.80;
 let WANDFUSS = 0.55;        // Ton des Kontaktschattens, Anteil der Bandfarbe
 let SOCKEL = true;          // Wand unter der Grundplatte
 let SCHATTENHUB = 0.6;      // Schlagschatten in der Lichtebene, zusätzlich
-const WANDFUSSFARBE = HYPSO.map((h, i) => 'rgb(' + Math.round(HYPSO_R[i] * WANDFUSS)
-  + ',' + Math.round(HYPSO_G[i] * WANDFUSS) + ',' + Math.round(HYPSO_B[i] * WANDFUSS) + ')');
-const WANDFARBE = HYPSO.map((h, i) => 'rgb(' + Math.round(HYPSO_R[i] * WANDDUNKEL)
-  + ',' + Math.round(HYPSO_G[i] * WANDDUNKEL) + ',' + Math.round(HYPSO_B[i] * WANDDUNKEL) + ')');
+let WANDFUSSFARBE, WANDFARBE;
+/* Die Leiter setzen: beim Laden die Atlasleiter, per Knopf die zweite. Alles,
+   was aus HYPSO abgeleitet ist, wird hier neu gerechnet. Feld, Möbel und
+   Linien werden danach frisch gemalt, weil die Farbe in ihnen steckt. */
+function leiterSetzen(liste) {
+  HYPSO = liste;
+  HYPSO_R = liste.map(h => parseInt(h.slice(1, 3), 16));
+  HYPSO_G = liste.map(h => parseInt(h.slice(3, 5), 16));
+  HYPSO_B = liste.map(h => parseInt(h.slice(5, 7), 16));
+  WANDFUSSFARBE = liste.map((h, i) => 'rgb(' + Math.round(HYPSO_R[i] * WANDFUSS)
+    + ',' + Math.round(HYPSO_G[i] * WANDFUSS) + ',' + Math.round(HYPSO_B[i] * WANDFUSS) + ')');
+  WANDFARBE = liste.map((h, i) => 'rgb(' + Math.round(HYPSO_R[i] * WANDDUNKEL)
+    + ',' + Math.round(HYPSO_G[i] * WANDDUNKEL) + ',' + Math.round(HYPSO_B[i] * WANDDUNKEL) + ')');
+}
+leiterSetzen(HYPSO);
 
 /* ---------- Die Umrisse der Scheiben ----------
    Eine Scheibe ist die Fläche, die mindestens so hoch liegt wie ihr Niveau.
@@ -1675,8 +1739,12 @@ function ringFeld() {
   rZellen = Array.from({ length: NBAND }, () => []);
 }
 
+/* Die Ringe hängen nur am Feld. Steht das (siehe feldSteht), stehen auch sie. */
+let ringeStand = -1, ringeCache = null, ringKasten = null;
 function scheibenRinge(N) {
+  if (ringeCache && ringeStand === feldStand) return ringeCache;
   ringFeld();
+  let kx0 = Infinity, ky0 = Infinity, kx1 = -Infinity, ky1 = -Infinity;
   const S = LSCHRITT, je = breite / rW, nx = rnx, ny = rny, F = farbF, M = maskeH;
   /* Ausserhalb des Gitters null: so schliesst sich jeder Ring, und erst ein
      geschlossener Ring lässt sich als Fläche beschneiden.
@@ -1755,6 +1823,8 @@ function scheibenRinge(N) {
       while (cur >= 0) {
         rBesucht[cur] = stempel;
         if (m === 0) pfad.moveTo(rX[cur], rY[cur]); else pfad.lineTo(rX[cur], rY[cur]);
+        if (rX[cur] < kx0) kx0 = rX[cur]; if (rX[cur] > kx1) kx1 = rX[cur];
+        if (rY[cur] < ky0) ky0 = rY[cur]; if (rY[cur] > ky1) ky1 = rY[cur];
         m++;
         const na = rA[cur], nb = rB[cur];
         const weiter = (na >= 0 && na !== vor && rBesucht[na] !== stempel) ? na
@@ -1765,6 +1835,9 @@ function scheibenRinge(N) {
     }
     if (etwas) pfade[n] = pfad;
   }
+  // Der Kasten im Grundriss, in dem der ganze Stapel liegt — fürs Mischen des Lichts.
+  ringKasten = kx1 > kx0 ? [kx0, ky0, kx1, ky1] : null;
+  ringeCache = pfade; ringeStand = feldStand;
   return pfade;
 }
 
@@ -1830,7 +1903,7 @@ function bodenAuf(X, Y) {
 
 function scheibenMalen(s) {
   const N = NBAND;
-  const D = Math.min(2.5, devicePixelRatio || 1);
+  const D = DPR;
 
   const S = sichtRechnen();
   const co = S.co, si = S.si, ct = S.ct, st = S.st, cx = S.cx, cy = S.cy;
@@ -1913,7 +1986,10 @@ function scheibenMalen(s) {
          Füllungen eines verwickelten Pfades kosten weniger als ein Strich
          desselben Pfades, weil der Strich seine Verbindungen mitrechnen muss.
          Telefon 133 auf 122 ms, Schirm 231 auf 204. */
-      const lv = KANTENVERSATZ * Math.min(ZOOM, KANTENZOOM) / (D * zz) * Math.SQRT1_2;
+      // Jede fünfte Kante ist eine Zählkurve: kräftiger, wie auf einer
+      // topografischen Karte. Sie fallen auf die Zahlen der Legende.
+      const lv = KANTENVERSATZ * Math.min(ZOOM, KANTENZOOM) / (D * zz) * Math.SQRT1_2
+        * (k % ZAEHLJEDE === 0 ? ZAEHLSTARK : 1);
       ctx.translate(-lv, -lv);
       ctx.fillStyle = '#fff'; ctx.globalAlpha = KANTENHELL;
       ctx.fill(ringe[k], 'evenodd');
@@ -1973,10 +2049,35 @@ function scheibenMalen(s) {
     }
     hcS.restore();
   }
+  /* Gemischt wird nur dort, wo der Stapel liegt. soft-light über die ganze
+     Leinwand war der grösste Einzelposten des gekippten Bildes — rund 36 ms
+     auf dem Telefon, 61 auf dem Schirm —, und die Karte belegt davon nur 42
+     beziehungsweise 33 Prozent; der Rest war Mischen ins Durchsichtige. Der
+     Kasten kommt aus den Ringen: ihre Hülle im Grundriss, projiziert für den
+     Fuss des Sockels (eine Stufe unter null) und für die oberste Platte. */
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.globalCompositeOperation = 'soft-light';
   ctx.imageSmoothingEnabled = true;
-  ctx.drawImage(hkS, 0, 0, cv.width, cv.height);
+  const K = ringKasten;
+  let bx0 = 0, by0 = 0, bx1 = cv.width, by1 = cv.height;
+  if (K) {
+    bx0 = Infinity; by0 = Infinity; bx1 = -Infinity; by1 = -Infinity;
+    for (const t of [-1, N - 1]) {
+      const eY = D * (ozY - t * dz) - b2 * cx - d2 * cy;
+      for (const [x, y] of [[K[0], K[1]], [K[2], K[1]], [K[2], K[3]], [K[0], K[3]]]) {
+        const X = a2 * x + c2 * y + eX, Y = b2 * x + d2 * y + eY;
+        if (X < bx0) bx0 = X; if (X > bx1) bx1 = X;
+        if (Y < by0) by0 = Y; if (Y > by1) by1 = Y;
+      }
+    }
+    const saum = 4 * D;
+    bx0 = Math.max(0, Math.floor(bx0 - saum)); by0 = Math.max(0, Math.floor(by0 - saum));
+    bx1 = Math.min(cv.width, Math.ceil(bx1 + saum)); by1 = Math.min(cv.height, Math.ceil(by1 + saum));
+  }
+  if (bx1 > bx0 && by1 > by0) {
+    const f = hkS.width / cv.width, g = hkS.height / cv.height;
+    ctx.drawImage(hkS, bx0 * f, by0 * g, (bx1 - bx0) * f, (by1 - by0) * g, bx0, by0, bx1 - bx0, by1 - by0);
+  }
   ctx.globalCompositeOperation = 'source-over';
   ctx.setTransform(D, 0, 0, D, 0, 0);
 }
@@ -2058,10 +2159,23 @@ const LINIENSCHRITT = 2;          // Gitterschritt der Linienverfolgung, in Feld
 // einer Stufe zur nächsten, und die Linien in seiner Umgebung zucken mit.
 const STUFEN = 200;
 const EIMER_H = Array.from({ length: STUFEN }, () => []);
-function reliefUeber(sil, deck) {
+/* ---------- Steht das Feld? ----------
+   Es hängt am Jahr, an der Reihe und an der Grösse des Feldgitters — und am
+   Tiefpass (4j), der es je Bild ein wenig weiterzieht, aber konvergiert. Erst
+   wenn er still steht, wird gespart: bis dahin wurde bei **jeder Geste** das
+   ganze Feld neu gerechnet, obwohl sich nur der Blick bewegt — 33 ms auf dem
+   Telefon, 68 auf dem Schirm, dazu 7 beziehungsweise 10 für die Ringe. Im
+   Lauf ändert sich nichts, dort läuft das Jahr. feldStand zählt die
+   Neuberechnungen; Ringe und Linien hängen ihre Zwischenspeicher daran. */
+let feldStand = 0, feldJahr = NaN, feldReihe = null, feldRW = 0, feldRH = 0, feldRuhig = false;
+function feldSteht() {
+  return glattDa && feldRuhig && feldJahr === jahr && feldReihe === reihe && feldRW === rW && feldRH === rH;
+}
+function reliefUeber(deck) {
   if (!(breite > 60 && hoehe > 60)) return;
   reliefFeld();
   const s = rW / breite;
+  if (feldSteht()) { feldZeichnen(s); return; }
   const fein = Math.max(2.2, breite / FEINTEILER);   // enges Weichzeichnen: der einzelne Kreis
   const grob = Math.max(7, breite / GROBTEILER);     // weites: die Landschaft darüber
 
@@ -2173,16 +2287,27 @@ function reliefUeber(sil, deck) {
   }
   if (!glattDa) {
     glattFein.set(feinH); glattGrob.set(grobH); glattGrobM.set(grobM); glattMaske.set(maskeH);
-    glattDa = true;
+    glattDa = true; feldRuhig = true;
   } else {
-    const dt = Math.max(0.001, Math.min(0.25, dtSek));
+    // Im Stillstand darf ein Bild viel Zeit nachholen: dann steht der Tiefpass
+    // nach ein, zwei Bildern, und das Feld kann stehen bleiben.
+    const dt = Math.max(0.001, Math.min(laeuft ? 0.25 : 4, dtSek));
     const gG = 1 - Math.exp(-dt / TIEFPASS_GROB), gF = 1 - Math.exp(-dt / TIEFPASS_FEIN);
+    let weit = 0;   // der grösste noch offene Abstand: steht der Tiefpass?
     for (let i = 0; i < n3; i++) {
-      glattFein[i] += (feinH[i] - glattFein[i]) * gF;
-      glattGrob[i] += (grobH[i] - glattGrob[i]) * gG;
+      const aF = feinH[i] - glattFein[i], aG = grobH[i] - glattGrob[i];
+      glattFein[i] += aF * gF;
+      glattGrob[i] += aG * gG;
       glattGrobM[i] += (grobM[i] - glattGrobM[i]) * gG;
       glattMaske[i] += (maskeH[i] - glattMaske[i]) * gF;
+      if (aF > weit) weit = aF; else if (-aF > weit) weit = -aF;
+      if (aG > weit) weit = aG; else if (-aG > weit) weit = -aG;
     }
+    /* Still heisst: nirgends mehr als ein Viertel Band vom Ziel entfernt. Das
+       Feld wird dann **eingefroren, nicht gesprungen** — es bleibt also, wo es
+       ist, nur eben nicht mehr ganz am Ziel, und das sieht niemand. Strenger
+       (ein Tausendstel) stand es nach einer Pause erst nach Sekunden. */
+    feldRuhig = weit < 0.25 / NBAND;
   }
   // Der Tiefpass liegt jetzt auf dem **weiten Feld selbst**, nicht mehr auf
   // seinem Produkt mit dem Rand: aus diesem Feld kommt gleich die Farbe der
@@ -2343,16 +2468,51 @@ function reliefUeber(sil, deck) {
   hcF.globalCompositeOperation = 'destination-in';   // nur, was auf der Karte liegt
   hcF.drawImage(hkA, 0, 0);
   hcF.globalCompositeOperation = 'source-over';
+  feldStand++; feldJahr = jahr; feldReihe = reihe; feldRW = rW; feldRH = rH;
+  feldZeichnen(s);
+}
+
+/* Aus dem fertigen Feld das Bild: schräg der Stapel, flach Farbe und Linien. */
+let GLAETTUNG = 'low';
+function feldZeichnen(s) {
   if (schraeg()) {
-    // Schräg gehen die Höhenlinien in die Vorlage, nicht über das fertige
-    // Bild: sie gehören auf das Gelände, nicht davor. Danach der Stapel.
     scheibenMalen(s);
   } else {
     ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
+    /* Bilinear reicht. Das Feld ist weich, und die drei Stufen unterscheiden
+       sich im Bild um rund ein Zweihundertstel (mittlere Abweichung 1,2/255,
+       0,4 Prozent der Punkte über 8) — im Lauf aber um ein Drittel der Zeit:
+       high/medium/low 78/64/56 ms auf dem Telefon, 172/137/118 auf dem
+       Schirm. */
+    ctx.imageSmoothingQuality = GLAETTUNG;
     ctx.drawImage(hkF, 0, 0, breite, hoehe);
-    hoehenLinien(s, ctx, 1);
+    linienUeber(s);
   }
+}
+
+/* ---------- Die Höhenlinien, einmal gezogen ----------
+   Flach kosten die Linien 29 ms auf dem Telefon und 60 auf dem Schirm, und sie
+   hängen nur am Feld und am Blick. Steht beides, kommen sie aus einer eigenen
+   Leinwand und werden nur kopiert. Im Lauf ändert sich das Feld je Bild; dann
+   direkt auf die Leinwand, ohne den Umweg. */
+let hkH = null, hcH = null, linienSchluessel = '';
+function linienUeber(s) {
+  if (laeuft) { hoehenLinien(s, ctx, 1); return; }
+  const schl = cv.width + ',' + cv.height + ',' + ZOOM + ',' + vX + ',' + vY + ',' + feldStand;
+  if (schl !== linienSchluessel) {
+    if (!hkH) { hkH = document.createElement('canvas'); hcH = hkH.getContext('2d'); }
+    if (hkH.width !== cv.width || hkH.height !== cv.height) { hkH.width = cv.width; hkH.height = cv.height; }
+    hcH.setTransform(1, 0, 0, 1, 0, 0);
+    hcH.clearRect(0, 0, hkH.width, hkH.height);
+    hcH.setTransform(ctx.getTransform());
+    hcH.lineJoin = 'round';
+    hoehenLinien(s, hcH, 1);
+    linienSchluessel = schl;
+  }
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.drawImage(hkH, 0, 0);
+  ctx.restore();
 }
 
 /* ---------- Beleuchtete Höhenlinien, nach Tanaka Kitiro (1950) ----------
@@ -2386,7 +2546,9 @@ function reliefUeber(sil, deck) {
    Gebündelt wird nach Beleuchtungsstärke: acht Stufen, hell und dunkel, also
    sechzehn Pfade statt Tausender einzelner Striche. */
 const NSTUFE = 12;
-const LINIENEIMER = Array.from({ length: 2 * NSTUFE }, () => []);
+// Viermal NSTUFE: hell und dunkel, je einmal gewöhnlich und einmal als Zählkurve.
+const LINIENEIMER = Array.from({ length: 4 * NSTUFE }, () => []);
+let zaehlBahn = false;   // die Bahn, die gerade abgelegt wird, ist eine Zählkurve
 const LSCHRITT = 2;               // Gitterschritt der Verfolgung, in Feldpunkten
 
 /* Die Buchhaltung der Verfolgung. Jede Kante des Verfolgungsgitters kann von
@@ -2450,7 +2612,8 @@ function bahnAblegen(m, geschlossen) {
   for (let i = 0; i < m; i++) {
     const st = Math.min(1, Math.abs(bahnF[i]) * bahnG[i]);
     let k = (st * NSTUFE) | 0; if (k > NSTUFE - 1) k = NSTUFE - 1;
-    const e = st < 0.03 ? -1 : (bahnF[i] > 0 ? k : NSTUFE + k);
+    let e = st < 0.03 ? -1 : (bahnF[i] > 0 ? k : NSTUFE + k);
+    if (e >= 0 && zaehlBahn) e += 2 * NSTUFE;
     if (e !== lauf) { lege(lauf, von, i); lauf = e; von = i > 0 ? i - 1 : 0; }
   }
   lege(lauf, von, m - 1);
@@ -2476,7 +2639,8 @@ function linienMalen(strichBreite, zc, zm) {
   for (let e = 0; e < LINIENEIMER.length; e++) {
     const p = LINIENEIMER[e];
     if (!p.length) continue;
-    const hell = e < NSTUFE, k = e - (hell ? 0 : NSTUFE);
+    const zaehl = e >= 2 * NSTUFE, e2 = e - (zaehl ? 2 * NSTUFE : 0);
+    const hell = e2 < NSTUFE, k = e2 - (hell ? 0 : NSTUFE);
     const st = (k + 0.5) / NSTUFE;
     zc.beginPath();
     for (let q = 0; q < p.length;) {
@@ -2492,7 +2656,7 @@ function linienMalen(strichBreite, zc, zm) {
       q += 2 * anz;
     }
     p.length = 0;
-    zc.lineWidth = (0.40 + 0.95 * st) * strichBreite;
+    zc.lineWidth = (0.40 + 0.95 * st) * strichBreite * (zaehl ? ZAEHLSTARKFLACH : 1);
     zc.strokeStyle = hell ? '#fff' : '#000';
     zc.globalAlpha = Math.min(1, LINIE * SCHRAEGLINIE * st * (hell ? 1 : DUNKELLINIE));
     zc.stroke();
@@ -2538,6 +2702,7 @@ function hoehenLinien(s, zc, zm) {
     const zellen = zellenJe[n];
     if (zellen.length < 2) continue;
     const t = n / NIVEAUS;
+    zaehlBahn = n % ZAEHLJEDE === 0;   // jede fünfte Linie ist eine Zählkurve
     /* Wie lange dieses Niveau durchhält, wenn die Linien zusammenrücken.
 
        Vorher blendeten **alle** Linien aus, sobald zwei Niveaus auf der
@@ -2629,7 +2794,90 @@ function hoehenLinien(s, zc, zm) {
   linienMalen(strichBreite, zc, zm);
 }
 
+/* ---------- Die Silhouette und die Möbel der flachen Karte, einmal gemalt ----------
+   Die Silhouette ist ein Pfad aus vierhundert Vielecken — der teuerste Teil
+   des Bildes —, und flach wurde sie **dreimal je Bild** gefüllt: Schatten mit
+   Weichzeichner, Kante, Grundfläche. Zusammen 55 ms auf dem Telefon und 100
+   auf dem Schirm, ein gutes Drittel des flachen Bildes. Das Ergebnis hängt
+   aber nur an Abdeckung, Blick und Grundfarbe. Also wird es in eine eigene
+   Leinwand gemalt und je Bild nur noch kopiert; im Lauf wechselt der Schlüssel
+   an den Jahren mit Teilabdeckung, sonst nie. */
+let silPfad = null, silSchluessel = '';
+function silhouette(deck) {
+  let ab = '';
+  for (let g = 0; g < NK; g++) ab += deck[g] > 0.5 ? '1' : '0';
+  const schl = mass + ',' + verX + ',' + verY + ',' + ab;
+  if (schl === silSchluessel) return silPfad;
+  const sil = new Path2D();
+  for (let g = 0; g < NK; g++) {
+    if (!(deck[g] > 0.5)) continue;
+    for (const r of GEBIETE[g]) {
+      sil.moveTo(px[r[0]] * mass + verX, py[r[0]] * mass + verY);
+      for (let i = 1; i < r.length; i++) sil.lineTo(px[r[i]] * mass + verX, py[r[i]] * mass + verY);
+      sil.closePath();
+    }
+  }
+  silPfad = sil; silSchluessel = schl;
+  return sil;
+}
+let hkM = null, hcM = null, moebelSchluessel = '';
+function moebel(deck, TIEFE) {
+  const sil = silhouette(deck);
+  const grund = HYPSO[bandIdx(mitteImFeld())];
+  const schl = cv.width + ',' + cv.height + ',' + ZOOM + ',' + vX + ',' + vY + ',' + grund + ',' + silSchluessel;
+  if (schl !== moebelSchluessel) {
+    if (!hkM) { hkM = document.createElement('canvas'); hcM = hkM.getContext('2d'); }
+    if (hkM.width !== cv.width || hkM.height !== cv.height) { hkM.width = cv.width; hkM.height = cv.height; }
+    hcM.setTransform(1, 0, 0, 1, 0, 0);
+    hcM.clearRect(0, 0, hkM.width, hkM.height);
+    hcM.setTransform(ctx.getTransform());   // dieselbe Abbildung wie die Leinwand
+    hcM.lineJoin = 'round';
+    hcM.save();
+    hcM.translate(0, TIEFE * 1.9); hcM.filter = 'blur(' + (TIEFE * 1.2).toFixed(1) + 'px)';
+    hcM.fillStyle = SCHATTEN; hcM.fill(sil);
+    hcM.restore();
+    hcM.save();
+    hcM.translate(0, TIEFE);
+    hcM.fillStyle = KANTE3D; hcM.fill(sil);
+    hcM.restore();
+    hcM.fillStyle = grund; hcM.fill(sil, 'evenodd');
+    moebelSchluessel = schl;
+  }
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.drawImage(hkM, 0, 0);
+  ctx.restore();
+}
+/* Nordpfeil und Zurück-Knopf: nur anfassen, wenn sich etwas geändert hat. */
+let nordStand = null, zurueckStand = null;
+function sichtMarken() {
+  if (DREHUNG !== nordStand) {
+    nordStand = DREHUNG;
+    const n = document.getElementById('nord');
+    n.hidden = DREHUNG === 0;
+    n.style.transform = 'rotate(' + DREHUNG + 'rad)';
+  }
+  const weg = ZOOM !== 1 || vX !== 0 || vY !== 0 || NEIGUNG !== 0 || DREHUNG !== 0;
+  if (weg !== zurueckStand) { zurueckStand = weg; document.getElementById('zurueck').hidden = !weg; }
+}
+
+/* Zeit vergeht auch im Stillstand. Nach dem Anhalten läuft der Tiefpass mit
+   der wirklich verstrichenen Zeit weiter und steht nach ein, zwei Bildern —
+   dann kann das Feld stehen bleiben. Der Film setzt dtSek selbst und hält
+   nie an; ihn geht das nichts an. */
+let ruheUhr = 0;
+/* Und nach dem Anhalten landet er vierfach schneller: der Tiefpass ist für den
+   Lauf da, wo er das Zucken zwischen den Bildern glättet. Steht die Zeit, soll
+   das Feld zügig dort ankommen, wo es hingehört — sonst rechnet jede Geste
+   noch anderthalb Sekunden lang das ganze Feld mit (gemessen 42 bis 47
+   Gestenbilder), bevor es stehen darf. */
+const RUHEFAKTOR = 4;
 function zeichne() {
+  if (!laeuft && ruheUhr) {
+    const t = performance.now();
+    dtSek = Math.max(0.001, (t - ruheUhr) / 1000) * RUHEFAKTOR;
+    ruheUhr = t;
+  }
   const [a, b, u] = bildBei(jahr);
   setzePunkte(a, b, u);
   const { w, deck, rate } = werteBei(a, b, u);
@@ -2641,17 +2889,8 @@ function zeichne() {
      seine Teilpfade sind zugleich alle Kreisgrenzen. Schatten, Kante, Netz
      und Relief hängen alle daran. */
   const TIEFE = Math.max(2.5, breite / 130);
-  const sil = new Path2D();
   hoehen(w, deck);
   [skalaVon, skalaBis] = hoehenSkala();
-  for (let g = 0; g < NK; g++) {
-    if (!(deck[g] > 0.5)) continue;
-    for (const r of GEBIETE[g]) {
-      sil.moveTo(px[r[0]] * mass + verX, py[r[0]] * mass + verY);
-      for (let i = 1; i < r.length; i++) sil.lineTo(px[r[i]] * mass + verX, py[r[i]] * mass + verY);
-      sil.closePath();
-    }
-  }
   /* Schatten, Kante und Grundfläche sind die Möbel der **flachen** Karte: ein
      Blatt, das auf einem Tisch liegt und einen Schatten nach unten wirft. In
      der Schrägsicht stimmt keines davon mehr — dort baut das Gelände seine
@@ -2663,20 +2902,10 @@ function zeichne() {
 
      Die Namen kommen **danach** und bleiben deshalb bei ihrer Grösse: ein
      Vergrösserungsglas soll das Gelände vergrössern, nicht die Schrift. */
-  const dprZ = Math.min(2.5, devicePixelRatio || 1);
+  const dprZ = DPR;
   if (flach && ansichtFrei()) {
     ctx.save();
     ctx.setTransform(dprZ * ZOOM, 0, 0, dprZ * ZOOM, dprZ * vX, dprZ * vY);
-  }
-  if (flach) {
-    ctx.save();
-    ctx.translate(0, TIEFE * 1.9); ctx.filter = 'blur(' + (TIEFE * 1.2).toFixed(1) + 'px)';
-    ctx.fillStyle = SCHATTEN; ctx.fill(sil);
-    ctx.restore();
-    ctx.save();
-    ctx.translate(0, TIEFE);
-    ctx.fillStyle = KANTE3D; ctx.fill(sil);
-    ctx.restore();
   }
 
   /* Die Grundfläche, in **einer** Farbe: der Mitte der Leiter, also dem Ton,
@@ -2690,10 +2919,7 @@ function zeichne() {
      Eine Farbe und nicht vierhundert, weil das Durchscheinende sonst als
      Flecken sichtbar wird — im Kartogramm, wo das Feld einfarbig ist, lagen an
      jeder schmalen Stelle Reste der alten Kreisfärbung. */
-  if (flach) {
-    ctx.fillStyle = HYPSO[bandIdx(mitteImFeld())];
-    ctx.fill(sil, 'evenodd');
-  }
+  if (flach) moebel(deck, TIEFE);
 
   /* Keine Grenzen mehr, weder um die Kreise noch um die Länder. Eine
      Geländekarte hat keine; sie hat Farbe, Hang und Höhenlinie, und die
@@ -2701,12 +2927,13 @@ function zeichne() {
      ändert. Wo zwei Nachbarn gleich dicht wohnen, war der Strich ohnehin nur
      Verwaltung. */
 
-  reliefUeber(sil, deck);
+  reliefUeber(deck);
   if (flach && ansichtFrei()) ctx.restore();
 
   if (NAMEN) beschrifte(deck, w);
   schreibe(a, b, u, w, deck);
   notizen();
+  sichtMarken();
 }
 
 const nf = new Intl.NumberFormat('en-GB');
@@ -2822,6 +3049,17 @@ function orte() {
 }
 function auswahl(deck, w) {
   const O = orte(), eng = reihe.rahmen.w / ABSTANDTEILER;
+  /* Gemessen wird der Abstand **im Bild**, nicht auf dem Boden — aber ohne den
+     Zoom, der ist ein Vergrösserungsglas und soll die Auswahl nicht ändern.
+     Flach ist das dasselbe wie vorher. Gekippt staucht der Kosinus die
+     Nord-Süd-Abstände auf 47 Prozent, und ohne diese Rechnung standen
+     Münster, Bielefeld, Dortmund und Essen im Nordblick übereinander. */
+  const S = schraeg() && SICHT ? SICHT : null;
+  const abstandImBild = (p, q) => {
+    let dx = p[0] - q[0], dy = p[1] - q[1];
+    if (S) { const a = dx * S.ct + dy * S.st, b = (-dx * S.st + dy * S.ct) * S.co; dx = a; dy = b; }
+    return Math.hypot(dx, dy);
+  };
   const kand = [];
   for (let i = 0; i < STADT.length; i++) {
     const g = STADT[i][0];
@@ -2831,7 +3069,7 @@ function auswahl(deck, w) {
   const durch = [];
   for (const i of kand) {
     let nah = false;
-    for (const j of durch) if (Math.hypot(O[j][0] - O[i][0], O[j][1] - O[i][1]) < eng) { nah = true; break; }
+    for (const j of durch) if (abstandImBild(O[j], O[i]) < eng) { nah = true; break; }
     if (nah) continue;
     durch.push(i);
     // Ein paar über der Grenze mitnehmen: das sind die, die gerade ausblenden.
@@ -3437,6 +3675,29 @@ function zweiMerken() {
   zweiMitte = (f[0].y + f[1].y) / 2;
 }
 
+/* ---------- Grob, solange der Finger liegt ----------
+   Während einer Geste steht die Leinwand auf einem Gerätepunkt je CSS-Punkt
+   (siehe masse), beim Loslassen wieder auf allen, und das letzte Bild ist das
+   volle. Ein Tipp löst das nicht aus, erst eine wirkliche Bewegung; Rad und
+   Regler laufen mit einem kurzen Nachlauf. Das Umstellen leert die Leinwand,
+   also wird sofort ein Bild gemalt, sonst blitzt sie leer auf. */
+let grobUhr = 0;
+function grobAn() {
+  if (GROB) return;
+  GROB = true; masse(); zeichne();
+}
+function grobAus() {
+  if (grobUhr) { clearTimeout(grobUhr); grobUhr = 0; }
+  if (!GROB) return;
+  GROB = false; masse();
+  zeichne(); zeigeUmriss(letzterTip);
+}
+function grobKurz() {
+  grobAn();
+  if (grobUhr) clearTimeout(grobUhr);
+  grobUhr = setTimeout(grobAus, 220);
+}
+
 cv.addEventListener('pointerdown', e => {
   cv.setPointerCapture(e.pointerId);
   const [x, y] = ortVon(e);
@@ -3454,7 +3715,7 @@ cv.addEventListener('pointermove', e => {
   if (zeiger.size === 1) {
     if (!einStart) return;
     if (!einStart.gezogen && Math.hypot(x - einStart.x, y - einStart.y) > 8) einStart.gezogen = true;
-    if (einStart.gezogen) { vX += dx; vY += dy; ansichtKlemmen(); baldMalen(); }
+    if (einStart.gezogen) { grobAn(); vX += dx; vY += dy; ansichtKlemmen(); baldMalen(); }
     return;
   }
   if (zeiger.size !== 2) return;
@@ -3465,6 +3726,7 @@ cv.addEventListener('pointermove', e => {
   let dw = wink - zweiWinkel;
   while (dw > Math.PI) dw -= 2 * Math.PI;
   while (dw < -Math.PI) dw += 2 * Math.PI;
+  grobAn();
   // Zoom, Drehung und Neigung in **einem** gehaltenen Schritt: der Bodenpunkt
   // wird einmal vorher gemerkt und einmal nachher zurechtgeschoben.
   haltePunkt(mx, my, () => {
@@ -3495,6 +3757,7 @@ function losLassen(e) {
     }
   }
   einStart = null;
+  if (!zeiger.size) grobAus();
 }
 cv.addEventListener('pointerup', losLassen);
 cv.addEventListener('pointercancel', losLassen);
@@ -3503,6 +3766,7 @@ cv.addEventListener('pointercancel', losLassen);
 cv.addEventListener('wheel', e => {
   e.preventDefault();
   const [x, y] = ortVon(e);
+  grobKurz();
   zoomeUm(Math.exp(-e.deltaY * 0.0015), x, y);
   baldMalen();
 }, { passive: false });
@@ -3533,10 +3797,10 @@ function schlag(t) {
 }
 function starte() {
   if (spiel >= 1 - 1e-9) setzeZeit(0);
-  laeuft = true; zuletzt = 0; document.getElementById('spiel').textContent = '❚❚';
+  laeuft = true; zuletzt = 0; ruheUhr = 0; document.getElementById('spiel').textContent = '❚❚';
 }
 function halte() {
-  laeuft = false;
+  laeuft = false; ruheUhr = performance.now();
   document.getElementById('spiel').textContent = '\u25b6';
 }
 document.getElementById('spiel').onclick = () => laeuft ? halte() : starte();
@@ -3559,19 +3823,37 @@ function sichtNeu() {
    das sprang eine verschobene Karte beim Drehen am Regler davon. */
 document.getElementById('kipp').addEventListener('input', e => {
   const v = e.target.value / 100;
+  grobKurz();
   haltePunkt(breite / 2, hoehe / 2, () => { NEIGUNG = v; });
   sichtNeu();
 });
 document.getElementById('dreh').addEventListener('input', e => {
   const g = e.target.value * Math.PI / 180;
+  grobKurz();
   haltePunkt(breite / 2, hoehe / 2, () => { DREHUNG = g; });
   sichtNeu();
 });
+for (const id of ['kipp', 'dreh']) document.getElementById(id).addEventListener('change', grobAus);
 document.getElementById('namen').addEventListener('click', e => {
   NAMEN = !NAMEN;
   e.currentTarget.setAttribute('aria-pressed', NAMEN ? 'true' : 'false');
   zeichne();
 });
+// Ansicht zurück: was das Doppeltippen tut, plus die beiden Regler auf null.
+document.getElementById('zurueck').addEventListener('click', () => {
+  ZOOM = 1; vX = 0; vY = 0; NEIGUNG = 0; DREHUNG = 0;
+  reglerNach(); versteckeTip(); stumm = -1;
+  sichtNeu();
+});
+/* Die zweite Leiter: per Knopf, im Anker (#cvd) und gemerkt. Feld, Möbel und
+   Linien tragen die Farbe in sich und werden frisch gemalt. */
+function leiterWaehlen(cvd, merken) {
+  leiterSetzen(cvd ? HYPSO_CVD : HYPSO_ATLAS);
+  document.getElementById('farben').setAttribute('aria-pressed', cvd ? 'true' : 'false');
+  if (merken) { try { localStorage.setItem('leiter', cvd ? 'cvd' : 'atlas'); } catch (e) {} }
+  legende(); reliefFrisch(); zeichne(); zeigeUmriss(letzterTip);
+}
+document.getElementById('farben').addEventListener('click', () => leiterWaehlen(HYPSO !== HYPSO_CVD, true));
 addEventListener('resize', () => { masse(); reliefFrisch(); zeichne(); });
 /* Und dasselbe, wenn sich das Feld ändert, ohne dass das Fenster es tut.
    Die Massfunktion misst die Leinwand einmal und hält die Zahl; ändert das Auslegen
@@ -3600,6 +3882,13 @@ function marken() {
     (TAKTKUM[i] * 100).toFixed(2) + '%" title="' + b.jahr + '"></i>').join('');
 }
 
+// Die gemerkte oder im Anker verlangte Leiter, bevor das erste Bild entsteht.
+{
+  let cvd = false;
+  try { cvd = localStorage.getItem('leiter') === 'cvd'; } catch (e) {}
+  if (/cvd/.test(location.hash)) cvd = true;
+  if (cvd) { leiterSetzen(HYPSO_CVD); document.getElementById('farben').setAttribute('aria-pressed', 'true'); }
+}
 farbenHolen(); masse(); marken(); legende(); zeichne();
 requestAnimationFrame(schlag);
 setTimeout(starte, 700);
