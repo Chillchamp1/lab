@@ -983,6 +983,13 @@ am wenigsten ausrichten kann): die Änderung des Feldes je Bild fällt auf
 **48 Prozent**. Auf einem Gerät mit sechzig Bildern ist der Unterschied um ein
 Vielfaches grösser.
 
+**Und nach dem Anhalten** läuft der Filter mit der wirklich verstrichenen Zeit
+weiter statt mit dem letzten Bildtakt, und viermal so schnell: er ist für den
+Lauf da, wo er das Zucken zwischen den Bildern glättet. Steht die Zeit, soll
+das Feld zügig dort ankommen, wo es hingehört — und sobald es nirgends mehr
+als ein Viertel Band vom Ziel entfernt ist, wird es eingefroren und bei jeder
+Geste wiederverwendet statt neu gerechnet (4k, „Das Feld steht").
+
 ## 4k. Aufrichten und Drehen
 
 Die Karte lag hundertfünfzig Jahre lang flach. Zwei Regler unter der Zeitleiste
@@ -1382,6 +1389,134 @@ derselbe Berg, nach Süden gedreht. Kein Griff für eine Karte.
 Nachgemessen am fertigen Bau gegen den Stand davor: 117 gegen 120 ms voll,
 123 gegen 124 halb auf dem Telefon, 205 gegen 206 auf dem Schirm — im
 Rauschen.
+
+### Wohin die Zeit geht
+
+Bis hierher wurde je Änderung nur das ganze Bild gemessen. Dann der Frame
+zerlegt — Wrapper um die Stufen, nach jeder ein erzwungenes Rastern —, und
+die teuren Posten waren nicht die, an denen zuletzt gearbeitet worden war.
+Prüfbrowser ohne Grafikkarte, Mittel aus neun Bildern; Telefon 420×800@2,
+Schirm 1100×900@2. Absolut liegen die Zahlen über denen der `tantest`-Messung
+(anderes Messgeschirr), die Anteile sind das, worauf es ankommt.
+
+**Gekippt** (Telefon 147 ms, Schirm 256):
+
+| Posten | Telefon | Schirm | |
+|---|---|---|---|
+| Feld: füllen, weichzeichnen, Licht, Farbe | 33 | 68 | bei **jeder Geste** neu gerechnet, obwohl das Jahr steht |
+| Ringe (Marching Squares) | 7 | 10 | dito |
+| `soft-light` über die **ganze Leinwand** | ~36 | ~61 | grösster Einzelposten; die Karte belegt 42 bzw. 33 % der Leinwand |
+| Wandschraffur | ~15 | ~17 | |
+| Kantensicheln (48 Füllungen) | ~11 | ~26 | jede zweite wegzulassen spart **nichts** |
+| Lichtstapel-Blits | ~7 | ~0 | |
+| Rest: Werte, Silhouette, DOM | 15 | 16 | |
+
+**Flach** (Telefon 149, Schirm 297) — die Standardansicht und der Film:
+
+| Posten | Telefon | Schirm |
+|---|---|---|
+| Feld und Rest | 47 | 77 |
+| Höhenlinien nach Tanaka | 29 | 60 |
+| Farbe hochrechnen mit `imageSmoothingQuality = 'high'` | 18 | 60 |
+| **drei Füllungen der Silhouette** — Schatten mit Blur, Kante, Grundfläche | **55** | **100** |
+
+Die Silhouette ist ein Pfad aus vierhundert Vielecken, und sie wurde flach
+**dreimal je Bild** gefüllt, obwohl sich das Ergebnis nur ändert, wenn sich
+Blick oder Abdeckung ändern. Das war ein gutes Drittel des flachen Bildes.
+
+### Was daraus wurde: sechs Griffe, keiner sichtbar
+
+1. **Die Möbel einmal malen.** Schatten, Kante und Grundfläche gehen in eine
+   eigene Leinwand; Schlüssel sind Leinwandgrösse, Zoom, Verschiebung,
+   Grundfarbe und die Abdeckung (vierhundert Bits als Zeichenkette). Je Bild
+   bleibt ein Kopieren. Bildpunktgleich, nachgezählt: mittlere Abweichung
+   0,000. Im Lauf wechselt der Schlüssel an den Jahren mit Teilabdeckung,
+   sonst nie. Die Silhouette selbst wird ebenso nur noch gebaut, wenn sich
+   ihr Schlüssel ändert — das waren die fünfzehn Millisekunden „Rest".
+2. **Licht nur im Kasten mischen.** Die Ringe merken sich beim Bauen ihre
+   Hülle im Grundriss; die vier Ecken werden für den Fuss des Sockels und die
+   oberste Platte projiziert, vier Bildpunkte Saum, fertig ist der Kasten.
+   Gemischt wird nur dort. Innerhalb gleich, ausserhalb war es durchsichtig:
+   Abweichung 0,000.
+3. **Wandschritt drei statt zwei.** Lücken bei 62 Grad 203 → 219 von rund
+   6 500 Bildpunkten; vier bringt nichts mehr.
+4. **Das Feld steht, solange das Jahr steht.** Es hängt am Jahr, an der Reihe
+   und an der Feldgrösse — und am Tiefpass (4j), der es je Bild weiterzieht,
+   aber konvergiert. Still heisst: nirgends mehr als ein Viertel Band vom
+   Ziel entfernt, und dann wird das Feld **eingefroren, nicht gesprungen**.
+   Strenger (ein Tausendstel) stand es nach einer Pause erst nach Sekunden,
+   weil die Zeitkonstante des weiten Feldes 1,2 s beträgt. Dazu zwei
+   Kleinigkeiten: nach dem Anhalten läuft der Tiefpass mit der **wirklich
+   verstrichenen** Zeit weiter statt mit dem letzten Bildtakt, und viermal
+   so schnell — er ist für den Lauf da, nicht für die Pause. Gemessen: nach
+   einer Pause von 100 ms rechnen noch 13 Gestenbilder das Feld, nach einer
+   Sekunde noch 4; vorher waren es 42 bis 47. Ringe und Höhenlinien hängen
+   ihren Zwischenspeicher an denselben Zähler; die Linien bekommen dafür
+   eine eigene Leinwand wie die Möbel. Der Film ist unberührt: dort läuft
+   das Jahr, und er setzt seinen Bildtakt selbst.
+5. **Bilinear hochrechnen.** `'high'` gegen `'medium'` gegen `'low'`: im
+   Bild ein Zweihundertstel (mittlere Abweichung 1,2/255, 0,4 % der Punkte
+   über 8), im Lauf 78/64/56 ms auf dem Telefon und 172/137/118 auf dem
+   Schirm. Also `'low'`.
+6. **Grob, solange der Finger liegt.** Bei einer wirklichen Bewegung — nicht
+   beim Tipp — geht die Leinwand auf einen Gerätepunkt je CSS-Punkt, beim
+   Loslassen zurück, und das letzte Bild ist das volle; Rad und Regler mit
+   220 ms Nachlauf. Das Umstellen leert die Leinwand, also wird sofort ein
+   Bild gemalt. Weniger als die Hälfte wird es nicht: die Füllungen der
+   Ringe kosten nach Kanten, nicht nach Fläche (Stapel 49 → 31 ms auf dem
+   Telefon). Anker und Griffe rechnen in CSS-Punkten und merken nichts
+   davon — `ankerlive` weiter 0,00 px.
+
+Und **was es gebracht hat**, Median aus elf, gegen den Stand davor:
+
+| Telefon @2 | vorher | nachher |
+|---|---|---|
+| Jahr steht, voll / halb / flach | 141 / 152 / 149 | **54 / 67 / 5** |
+| Geste grob, voll / halb / flach | — | **30 / 39 / 2** |
+| Jahr läuft (Lauf, Film), voll / halb / flach | 133 / 145 / 143 | **85 / 94 / 58** |
+
+| Schirm @2 | vorher | nachher |
+|---|---|---|
+| Jahr steht, voll / halb / flach | 254 / 271 / 299 | **82 / 99 / 14** |
+| Geste grob, voll / halb / flach | — | **46 / 52 / 3** |
+| Jahr läuft, voll / halb / flach | 252 / 268 / 292 | **150 / 161 / 123** |
+
+Flach mit stehendem Jahr sind fünf Millisekunden: die drei Leinwände
+kopieren, die Farbe hochrechnen, die Namen setzen. Der Lauf bleibt der
+teuerste Fall, weil dort das Feld je Bild neu entsteht; er ist trotzdem um
+vierzig Prozent billiger, wegen der Möbel und des Hochrechnens.
+
+### Und fünf Dinge fürs Lesen
+
+- **Namen im Bild ausdünnen.** Der Mindestabstand war Bodenmass, ein
+  Zwölftel der Kartenbreite — mit Absicht, damit dieselben Städte auf dem
+  Telefon wie auf dem Schirm stehen. Gekippt staucht der Kosinus die
+  Nord-Süd-Abstände auf 47 Prozent, und Münster, Bielefeld, Dortmund und
+  Essen standen im Nordblick übereinander. Jetzt wird der Abstand nach
+  Drehung und Neigung gemessen, aber **ohne Zoom** (der ist ein
+  Vergrösserungsglas und soll die Auswahl nicht ändern); flach ist das genau
+  wie vorher.
+- **Ein Nordpfeil, sobald gedreht ist.** Die Sonne hängt an der Karte, also
+  verriet beim Drehen nichts die Richtung. Ein kleines Element unten links,
+  per CSS gedreht, nur gesetzt, wenn sich die Drehung ändert.
+- **Ein Knopf „Ansicht zurück"** (↺, oben rechts), sichtbar sobald Zoom,
+  Verschiebung, Neigung oder Drehung vom Anfang abweichen. Doppeltippen
+  konnte das schon, aber das wusste niemand, und die Regler setzten nur
+  Neigung und Drehung zurück.
+- **Zählkurven.** Jede fünfte Kante kräftiger, gekippt mit 1,6-fachem
+  Versatz der Sicheln, flach mit 1,5-facher Strichbreite — und die fünfte,
+  zehnte, fünfzehnte und zwanzigste Stufe sind genau die Zahlen der Legende:
+  ×0,5, ×1, ×1,5, ×2. Gemessen kostet es nichts.
+- **Eine zweite Leiter für Rot-Grün-Schwäche.** Die Höhenschichten sind
+  Atlas-Konvention, aber Grün und Rot fallen für Deuteranope zusammen, und
+  die Helligkeit läuft nicht mit der Höhe — Gelb ist heller als Rot. Die
+  zweite Leiter läuft **streng** mit: Wasser dunkel nach hell, das Land von
+  Braun nach Creme, oben Fels und Schnee wie gehabt, in OKLab nachgerechnet
+  monoton mit kleinstem Schritt 0,022. Braun gegen Blau liegt auf der
+  Achse, die auch eine Rot-Grün-Schwäche behält. Der Knopf *Colours* steht
+  bei der Legende, denn er ist die Legende; die Wahl bleibt im Browser
+  gemerkt, und `#cvd` in der Adresse gibt sie mit. Beim Wechsel wird alles
+  neu gemalt, was die Farbe in sich trägt — Feld, Möbel, Linien.
 
 ### Was der Stapel besser kann als ein Spaltenlauf
 

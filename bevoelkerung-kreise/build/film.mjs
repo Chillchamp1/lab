@@ -51,6 +51,7 @@ await seite.waitForTimeout(2500);
 await seite.addStyleTag({ content: `
   .regler{display:none!important}
   .sicht{display:none!important}
+  .aufKarte{display:none!important}
   .wrap{padding:0!important;max-width:none!important}
   .buehne{border:none!important;border-radius:0!important;padding:10px 12px 6px!important}
   body{background:var(--surface)!important}

@@ -124,6 +124,30 @@ kräftiger als flach — ein Modell wirft Schatten, ein Blatt nicht. Alle drei
 zusammen: im Rauschen der Messung. Verworfen ist ein Tiefenverlauf, der die
 Ferne abdunkelt: er hätte die fernen Gipfel gedämpft, und die sind Daten.
 
+**Wohin die Zeit geht.** Nachdem der Frame zerlegt war, waren die teuren
+Posten andere als gedacht: gekippt das Mischen des Lichts über die *ganze*
+Leinwand, von der die Karte nur ein gutes Drittel belegt; flach die drei
+Füllungen der Silhouette aus vierhundert Vielecken, ein Drittel des Bildes;
+und das Höhenfeld, das bei jeder Geste neu gerechnet wurde, obwohl das Jahr
+stand. Sechs Griffe, keiner sichtbar: Schatten, Kante und Grundfläche werden
+einmal gemalt und dann kopiert, die Höhenlinien ebenso; gemischt wird nur im
+Kasten des Stapels; das Feld steht, solange das Jahr steht — eingefroren, nicht
+gesprungen, sobald es nirgends mehr als ein Viertel Band vom Ziel entfernt
+ist; hochgerechnet wird bilinear; und solange der Finger liegt, ist die
+Leinwand grob, das volle Bild kommt beim Loslassen. Auf dem Telefon kostet
+ein gekipptes Bild bei stehendem Jahr jetzt 54 statt 141 Millisekunden, in
+der Geste 30, flach 5 statt 149; der Lauf, in dem das Feld je Bild neu
+entsteht, 85 statt 133 gekippt und 58 statt 143 flach.
+
+**Und fürs Lesen:** gekippt werden die Namen im Bild ausgedünnt, nicht auf
+dem Boden (Münster, Bielefeld, Dortmund und Essen standen im Nordblick
+übereinander); ein Nordpfeil erscheint, sobald gedreht ist; ein Knopf ↺,
+sobald die Ansicht vom Anfang abweicht; jede fünfte Stufenkante ist eine
+Zählkurve und fällt auf die Zahlen der Legende; und *Colours* bei der Legende
+schaltet auf eine zweite Leiter für Rot-Grün-Schwäche — Wasser dunkel nach
+hell, Land Braun nach Creme, Helligkeit streng monoton, die Wahl bleibt
+gemerkt und lässt sich mit `#cvd` in der Adresse mitgeben.
+
 Wie hoch die Berge stehen, ist eine einzige Schraube, und sie steht jetzt auf
 42 Prozent des ursprünglichen Werts: vorher ragten die Städte als Türme auf und das
 Land lag darunter wie ein Sockel. Dieselbe Schraube trägt die Plattendicke,
