@@ -1642,3 +1642,147 @@ requestAnimationFrame(schlag);
 setTimeout(starte, 700);
 `;
 }
+
+/* ======================================================================
+   Die Seite, solange die Daten fehlen.
+
+   Sie ist kein Fehlerbild und keine Vorschau: sie zeigt **nichts Erfundenes**,
+   sondern sagt, was gebraucht wird, woher es kommt und was daraus entsteht.
+   Erzeugt wird sie vom selben Bauvorgang wie die richtige Seite und mit
+   denselben Farben und derselben Typografie — damit der Ort schon so aussieht,
+   wie er aussehen wird, wenn die Karte darauf steht.
+
+       node build.mjs --leer > ../index.html
+   ====================================================================== */
+export function baueLeerseite({ zeitscheiben, fenster }) {
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Europe under the ice — waiting for its data</title>
+<meta name="description" content="An animated relief map of Europe through the last ice age. The processing chain is finished; the page is waiting for the three source datasets.">
+<style>
+:root{
+  --plane:#000; --surface:#0c0c0c; --ink:#fff; --ink2:#bfbeb6; --muted:#7f7d77;
+  --axis:#33332f; --ring:rgba(255,255,255,.09);
+  --eis:#cbd4dc; --fels:#c8792e;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--plane);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.5;
+  -webkit-text-size-adjust:100%}
+.wrap{max-width:900px;margin:0 auto;min-height:100dvh;padding:6px;display:flex}
+.buehne{container-type:inline-size;
+  position:relative;flex:1;min-width:0;
+  background:var(--surface);border:1px solid var(--ring);border-radius:14px;
+  padding:26px 22px 20px}
+h1{margin:0;font-size:clamp(23px,3.4cqw,34px);font-weight:650;letter-spacing:-.02em;line-height:1.1}
+.unter{margin:6px 0 0;color:var(--ink2);font-size:clamp(12px,1.5cqw,14px);max-width:60ch}
+.stand{margin:22px 0 0;padding:13px 15px;border:1px solid var(--axis);border-radius:10px;
+  background:#0f0f0e}
+.stand b{display:block;font-size:13px;letter-spacing:.02em;text-transform:uppercase;
+  color:var(--fels);margin-bottom:5px}
+.stand p{margin:0;color:var(--ink2);font-size:13.5px;max-width:66ch}
+h2{margin:26px 0 8px;font-size:15px;font-weight:650;letter-spacing:.01em}
+ol.quellen{margin:0;padding:0;list-style:none;counter-reset:q}
+ol.quellen li{counter-increment:q;position:relative;padding:11px 0 11px 30px;
+  border-top:1px solid #1c1c1a}
+ol.quellen li::before{content:counter(q);position:absolute;left:0;top:11px;
+  width:20px;height:20px;border-radius:50%;border:1px solid var(--axis);
+  display:grid;place-items:center;font-size:11px;color:var(--muted)}
+ol.quellen b{font-weight:650}
+ol.quellen span{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+a{color:var(--ink2);text-decoration-color:var(--axis);text-underline-offset:2px}
+a:hover{color:var(--ink)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;
+  color:var(--ink2);background:#151513;padding:1px 5px;border-radius:4px}
+pre{margin:10px 0 0;padding:11px 13px;background:#141412;border:1px solid var(--axis);
+  border-radius:9px;overflow-x:auto}
+pre code{background:none;padding:0;line-height:1.6;color:var(--ink2)}
+.was{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:8px}
+.was div{padding:11px 13px;border:1px solid #1c1c1a;border-radius:9px}
+.was b{display:block;font-size:12.5px;margin-bottom:3px}
+.was p{margin:0;color:var(--muted);font-size:12.5px}
+footer{margin-top:26px;padding-top:14px;border-top:1px solid #1c1c1a;
+  color:var(--muted);font-size:12px}
+footer a{color:var(--muted)}
+/* Ein schmaler Streifen der beiden Farbleitern, als Vorgriff auf das, was
+   hier stehen wird. Er zeigt keine Daten — er zeigt die Leiter. */
+.leiter{display:flex;gap:7px;margin:18px 0 0}
+.leiter div{height:7px;border-radius:4px;border:1px solid var(--ring)}
+.leiter div:first-child{flex:1}
+.leiter div:last-child{flex:0 0 27%}
+</style>
+</head><body>
+<div class="wrap"><div class="buehne">
+
+  <h1>Europe under the ice</h1>
+  <p class="unter">An animated relief map of Europe through the last ice age:
+  ${fenster}, from ${zeitscheiben[0]} 000 years ago to today. Real mountain
+  terrain from a 15-arcsecond elevation model, the crust pressed down and
+  rebounding underneath it, the Scandinavian ice sheet on top, and the
+  published uncertainty of its margin drawn as a band.</p>
+
+  <div class="leiter">
+    <div style="background:linear-gradient(90deg,#050d1b,#2e4256,#1d5529,#8aa91f,#e0c40b,#de7721,#cf3020,#d4d0cf,#fff)"></div>
+    <div style="background:linear-gradient(90deg,#c3ccd4,#fafafa)"></div>
+  </div>
+
+  <div class="stand">
+    <b>Waiting for its data</b>
+    <p>The processing chain is finished and tested; the three source datasets
+    are not here yet. Rather than show you invented terrain, this page shows
+    nothing. It is a reconstruction — putting a made-up ice sheet under real
+    citations would be the one thing it must not do.</p>
+  </div>
+
+  <h2>What it is built from</h2>
+  <ol class="quellen">
+    <li><b>ICE-6G_C (VM5a), 10 arc-minute</b> — ice thickness, palaeo-topography
+      and the crustal difference field, ${zeitscheiben[1]} time slices from
+      ${zeitscheiben[0]} to 0 ka.
+      <span>Peltier, Argus &amp; Drummond (2015), <i>J. Geophys. Res. Solid Earth</i>
+      120(1), 450–487, doi:10.1002/2014JB011176 &#183;
+      <a href="https://pmip4.lsce.ipsl.fr/doku.php/data:ice_ice6g_c">via PMIP4</a></span></li>
+    <li><b>DATED-1</b> — the ice margin at 25 to 10 ka, three lines per slice:
+      most-credible, maximum and minimum.
+      <span>Hughes, Gyllencreutz, Lohne, Mangerud &amp; Svendsen (2016),
+      <i>Boreas</i> 45(1), 1–45, doi:10.1111/bor.12142 &#183;
+      <a href="https://doi.pangaea.de/10.1594/PANGAEA.848117">doi:10.1594/PANGAEA.848117</a></span></li>
+    <li><b>GEBCO 2024 sub-ice topography, 15&#8243;</b> — the modern elevation model
+      that carries the mountains. ETOPO 2022 bed elevation works as well.
+      <span>GEBCO Compilation Group (2024),
+      doi:10.5285/1c44ce99-0a0d-5f4f-e063-7086abc0ea0f &#183;
+      NOAA NCEI (2022), doi:10.25921/fd45-gt74</span></li>
+  </ol>
+
+  <h2>How the relief is put together</h2>
+  <div class="was">
+    <div><b>Rock</b><p>modern DEM + the interpolated difference field. The fine
+      model carries the mountains; only the coarse field moves the crust.</p></div>
+    <div><b>Coastline</b><p>the zero line of that sum — the same number as the
+      relief, so it is a contour like any other.</p></div>
+    <div><b>Ice</b><p>rock + ice thickness, its own layer and its own ramp.</p></div>
+    <div><b>The band</b><p>maximum against minimum. Where it widens, the
+      reconstruction is weak — that is the point of the map.</p></div>
+  </div>
+
+  <h2>Building it</h2>
+  <pre><code>cd build
+./holen.sh
+pip install numpy netCDF4 pyshp
+python3 quellen.py
+node build.mjs &gt; ../index.html</code></pre>
+
+  <footer>
+    The chain is in <code>build/</code> and documented in
+    <a href="https://github.com/Chillchamp1/lab/tree/main/eiszeit-europa">the repository</a>:
+    what was taken from the sister project in <code>ASTHETIK.md</code>, the method in
+    <code>METHODIK.md</code>, every source-fetch attempt in <code>QUELLEN.md</code>,
+    what is still open in <code>STAND.md</code>.
+    &#183; <a href="../">All projects</a>
+  </footer>
+
+</div></div>
+</body></html>`;
+}
