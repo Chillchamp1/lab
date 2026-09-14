@@ -25,3 +25,7 @@ bevoelkerungsstand-lange-reihe.xlsx
 gvisys-04-kreise.xlsx
 gpop*
 spike.log
+# Rohdaten der Eiszeitkarte, siehe eiszeit-europa/build/DATEN.md
+eiszeit-europa/data/raw/
+eiszeit-europa/build/PRUEFSUMMEN.eigen
+dem-ausschnitt-*.bin
