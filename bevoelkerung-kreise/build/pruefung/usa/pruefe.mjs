@@ -26,7 +26,7 @@
 //
 // Liest nur, schreibt nur nach stdout.
 
-import { lies, fips, imGebiet, istSammelgebiet, zahl } from './nhgis.mjs';
+import { lies, fips, imGebiet, istSammelgebiet, zahl, AUSSEN } from './nhgis.mjs';
 
 // Für die Bilanz: Alaska und Hawaii sind Bundesstaaten und stecken in der
 // amtlichen Gesamtzahl, liegen aber nicht auf dieser Karte. Puerto Rico und die
@@ -126,6 +126,24 @@ for (const r of stdC) {
   if (!B.has(jahr)) B.set(jahr, new Map());
   B.get(jahr).set(k, { wert, spanne: u !== null && o !== null ? o - u : null });
 }
+
+// Forstall (NBER): Weitformat, eine Zeile je County, Spalten pop1900..pop1990.
+// `fips` endet bei Staats- und Landeszeilen auf 000; die fliegen raus.
+const FORST = new Map();
+let forstDa = false;
+try {
+  for (const r of lies('cencounts.csv')) {
+    const f = (r.fips ?? '').trim();
+    if (!f || f.endsWith('000') || AUSSEN.has(f.slice(0, 2))) continue;
+    for (let j = 1900; j < 2000; j += 10) {
+      const v = (r['pop' + j] ?? '').trim();
+      if (!v || v === '.' || v === 'NA') continue;      // fehlend, drei Schreibweisen
+      if (!FORST.has(j)) FORST.set(j, new Map());
+      FORST.get(j).set(f, Number(v));
+    }
+  }
+  forstDa = FORST.size > 0;
+} catch { /* liegt noch nicht da — der Abschnitt sagt das dann */ }
 
 const heute = new Set(A.get(2020).keys());
 
@@ -291,8 +309,68 @@ sag('2010 muss punktgleich sein — CL8 ist *auf* 2010 gerechnet. Dass es das is
 sag('prüft die Probe gleich mit.');
 sag('');
 
-// ---- 6. Die Lücken, benannt
-sag('## 6. Die Lücken, benannt');
+// ---- 6. Gegenprobe gegen eine zweite Quelle
+sag('## 6. Gegenprobe: NHGIS gegen Forstall');
+sag('');
+if (!forstDa) {
+  sag('`cencounts.csv` liegt noch nicht in `build/roh-usa/`. Ohne zweite Quelle');
+  sag('bleibt diese Prüfung offen.');
+  sag('');
+} else {
+  sag('Richard L. Forstalls Zusammenstellung „Population of Counties by Decennial');
+  sag('Census: 1900 to 1990", vom NBER in CSV gegossen. Zwei **unabhängig**');
+  sag('erstellte Zusammenstellungen derselben Zählungen: wo sie auseinandergehen,');
+  sag('ist mindestens eine falsch, und wir erfahren es, statt es zu glauben. Das ist');
+  sag('dieselbe Konstruktion, die bei den deutschen Kreisen am meisten getaugt hat.');
+  sag('');
+  sag('| Bild | beide | gleich | ungleich | nur Forstall | nur NHGIS | grösste Differenz |');
+  sag('|---|---|---|---|---|---|---|');
+  let streitig = 0, verglichen = 0;
+  const faelle = [];
+  for (let j = 1900; j < 2000; j += 10) {
+    const f = FORST.get(j) ?? new Map(), n = A.get(j) ?? new Map();
+    let gl = 0; const un = [];
+    for (const [k, v] of f) {
+      if (!n.has(k)) continue;
+      if (v === n.get(k)) gl++; else un.push({ k, d: Math.abs(v - n.get(k)), f: v, n: n.get(k), j });
+    }
+    un.sort((a, b) => b.d - a.d);
+    faelle.push(...un);
+    const beide = gl + un.length;
+    verglichen += beide; streitig += un.length;
+    const nurF = [...f.keys()].filter(k => !n.has(k)).length;
+    const nurN = [...n.keys()].filter(k => !f.has(k)).length;
+    sag('| ', j, ' | ', z(beide), ' | ', z(gl), ' | ', z(un.length), ' | ', z(nurF), ' | ', z(nurN),
+        ' | ', un.length ? `${z(un[0].d)} (${name.get(un[0].k) ?? un[0].k})` : '—', ' |');
+  }
+  sag('');
+  sag('**', z(streitig), ' Abweichungen in ', z(verglichen), ' Vergleichen.** Jede einzelne:');
+  sag('');
+  sag('| Bild | Gebiet | Forstall | NHGIS | Differenz |');
+  sag('|---|---|---|---|---|');
+  faelle.sort((a, b) => b.d - a.d);
+  for (const c of faelle) sag('| ', c.j, ' | `', c.k, '` ', name.get(c.k) ?? '?', ' | ', z(c.f), ' | ', z(c.n), ' | ', z(c.f - c.n), ' |');
+  sag('');
+  sag('Was Forstall zusätzlich abdeckt, schliesst die Lücken aus Abschnitt 1 nur');
+  sag('teilweise:');
+  sag('');
+  sag('| Bild | Lücke mit NHGIS allein | mit Forstall dazu | geschlossen |');
+  sag('|---|---|---|---|');
+  for (let j = 1900; j < 2000; j += 10) {
+    const f = FORST.get(j) ?? new Map(), n = A.get(j) ?? new Map();
+    const a = [...heute].filter(k => !n.has(k));
+    const b = a.filter(k => !f.has(k));
+    sag('| ', j, ' | ', z(a.length), ' | ', z(b.length), ' | ', z(a.length - b.length), ' |');
+  }
+  sag('');
+  sag('Forstall trägt die Territorien mit heutigen Kennziffern und hat für 1900 auch');
+  sag('den District of Columbia, den NHGIS dort auslässt. Die grosse Lücke bleibt');
+  sag('aber: Countys, die es 1900 noch nicht gab, hat auch Forstall nicht.');
+  sag('');
+}
+
+// ---- 7. Die Lücken, benannt
+sag('## 7. Die Lücken, benannt');
 sag('');
 sag('Ab 1930 sind es wenige genug, um jede einzeln hinzuschreiben. Das ist der');
 sag('Unterschied zwischen „gelb" und „rot": eine benannte Liste lässt sich abarbeiten.');
@@ -322,8 +400,8 @@ for (const j of [1900, 1910, 1920]) {
 }
 sag('');
 
-// ---- 7. Sprungprobe
-sag('## 7. Sprungprobe');
+// ---- 8. Sprungprobe
+sag('## 8. Sprungprobe');
 sag('');
 sag('Je Gebiet das grösste Verhältnis zwischen zwei benachbarten Bildern, über');
 sag('beide Richtungen. Eine Bevölkerung, die sich in zehn Jahren verdreifacht, ist');
@@ -359,8 +437,8 @@ for (const s of spruenge.slice(0, 20)) {
 }
 sag('');
 
-// ---- 8. Urteil
-sag('## 8. Urteil');
+// ---- 9. Urteil
+sag('## 9. Urteil');
 sag('');
 sag('**Gelb.** Die Zahlen stimmen; die Gebietszuordnung ist in zwei Bildern');
 sag('unvollständig. Im Einzelnen:');
@@ -368,9 +446,15 @@ sag('');
 sag('**Was bewiesen ist.** Beide Bilanzen schliessen auf **0** — 1900 wie 2020 geht');
 sag('jeder Mensch auf. Die Gegenprobe Countysumme gegen Staatszeile findet über alle');
 sag('dreizehn Bilder nur fünf Abweichungen von je genau einer Person; das sind');
-sag('veröffentlichte Rundungsartefakte, keine Fehler der Tabelle. Und die Eichprobe');
+sag('veröffentlichte Rundungsartefakte, keine Fehler der Tabelle. Die Eichprobe');
 sag('gegen CL8 zeigt, dass die nominale Integration dort, wo sie prüfbar ist, im');
-sag('Median **null** kostet.');
+sag('Median **null** kostet. Und die zweite Quelle bestätigt die erste: zwischen');
+sag('NHGIS und Forstall stehen zehn Abweichungen in über dreissigtausend');
+sag('Vergleichen, alle zehn benannt und alle zehn an Grenzen, die sich bewegt');
+sag('haben — Virginias Städte, die aus ihren Countys herauswuchsen, und die 209');
+sag('Menschen des Yellowstone-Nationalparks, die beide Quellen verschieden');
+sag('zuordnen. Bei den deutschen Kreisen war dieselbe Konstruktion die');
+sag('aussagekräftigste Prüfung überhaupt.');
 sag('');
 sag('**Was fehlt.** Die Bilder 1900 und 1910 haben für 353 beziehungsweise 214 der');
 sag('3 108 Gebiete keine Zeile, weil es diese Countys damals nicht gab. Die Menschen');
@@ -389,10 +473,17 @@ sag('Cibola 1981, Los Alamos 1949, Menominee 1961, Broomfield 2001, die spät');
 sag('gegründeten Städte Virginias — und vor allem die vier Territorien von 1900');
 sag('und 1910. Für die gibt es Zahlen, nur auf eigenen Grenzen.');
 sag('');
+sag('**Die Entscheidung, die jetzt ansteht.** Forstall schliesst 59 der 353 Lücken');
+sag('von 1900 und 45 der 214 von 1910 — die Territorien und den District of');
+sag('Columbia. Der Rest sind Countys, die es damals schlicht noch nicht gab, und');
+sag('die hat auch Forstall nicht. Für 1900 bleiben **294** der 3 108 Gebiete ohne');
+sag('Zahl, für 1910 **169**, ab 1920 sind es 53 und ab 1930 23. Entweder werden');
+sag('diese beiden Bilder über historische Grenzen umgerechnet (Methode C, braucht');
+sag('den Atlas of Historical County Boundaries), oder die Reihe beginnt später.');
+sag('');
 sag('**Was diese Prüfung noch nicht konnte.** Der Schlüsseltest gegen die Geometrie');
-sag('(fehlt noch), die Dichteverteilung (braucht die Flächen), die Gegenprobe gegen');
-sag('eine zweite Quelle (Forstall, fehlt noch) und das letzte Bild (Fortschreibung');
-sag('2025 und die Gemeindezahlen für Connecticut, fehlen noch).');
+sag('(fehlt noch), die Dichteverteilung (braucht die Flächen) und das letzte Bild');
+sag('(Fortschreibung 2025 samt Gemeindezahlen für Connecticut, fehlen noch).');
 sag('');
 sag('Kein Kartenbau, bevor das steht.');
 sag('');

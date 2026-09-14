@@ -14,6 +14,7 @@ beantwortet der Netzfilter jede Verbindung zu `www2.census.gov`,
 | Datei | Quelle |
 |---|---|
 | `nhgis0001_csv.zip` | IPUMS NHGIS, Data Finder auf `data2.nhgis.org`, Reiter *Time Series Tables*. Auszug mit zwei Tabellen auf zwei Ebenen, Format *Comma delimited*, Layout *Time varies by row*. Das Zip bleibt liegen; es enthält die Codebücher mit der Zitierpflicht. |
+| `cencounts.csv` | NBER, `data.nber.org/census/population/cencounts/cencounts.csv`. Richard L. Forstalls „Population of Counties by Decennial Census: 1900 to 1990", vom NBER aus der Textvorlage in CSV gegossen. Kein Konto nötig. Weitformat: eine Zeile je County, Spalten `pop1900` bis `pop1990`, dazu `fips` und `name`; Zeilen mit einem `fips` auf `000` sind Staats- und Landessummen. Fehlende Werte stehen als `.`. |
 
 Entpackt ergibt das acht Dateien, von denen der Prüfer vier liest:
 
@@ -28,7 +29,13 @@ Dazu je ein `_codebook.txt`, in dem NHGIS die Integrationsmethode und die
 Zitierpflicht beschreibt. Die Zitierpflicht gehört nach `QUELLEN.md`, sobald
 Zahlen daraus in die lange CSV gehen.
 
-**Warum zwei Tabellen.** A00 reicht als einzige bis 1900 zurück, ist aber
+**Warum eine zweite Quelle.** Forstall und NHGIS sind unabhängig voneinander
+aus denselben Zählungen zusammengetragen worden. Über zehn Bilder und gut
+dreissigtausend Vergleiche gehen sie **zehnmal** auseinander — jedes Mal an
+einer Grenze, die sich bewegt hat. Das ist der Beleg, dass die Zahlen stimmen,
+und er ist stärker als jede Plausibilitätsprüfung an einer einzelnen Quelle.
+
+**Warum zwei NHGIS-Tabellen.** A00 reicht als einzige bis 1900 zurück, ist aber
 nominal integriert — Grenzänderungen bleiben unkorrigiert. CL8 deckt nur vier
 Bilder ab, dafür auf einheitlichem Gebietsstand. Das zweite Häkchen im
 Extraktkorb kostet nichts und liefert eine bekannt richtige Antwort, gegen die
@@ -58,7 +65,6 @@ steht, ist gemessen.
 | `cb_2020_us_county_500k.zip` | Geometrie, Schlüsseltest, Dichte | `www2.census.gov/geo/tiger/GENZ2020/shp/` |
 | `co-est2025-alldata.csv` | Fortschreibung, letztes Bild | Seite `2020s-counties-total.html` |
 | `sub-est2025` | Connecticut über die Towns zusammenrechnen | Seite `2020s-total-cities-and-towns.html` |
-| `cencounts.csv` | zweite, unabhängige Quelle 1900–1990 | `data.nber.org/census/population/cencounts/` |
 | Atlas of Historical County Boundaries | Flächeninterpolation für 1900/1910 | Newberry Library, rund 65 MB |
 
 ## Aufruf

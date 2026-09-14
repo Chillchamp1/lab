@@ -135,7 +135,63 @@ der Preis der nominalen Integration — gemessen, nicht geschätzt.
 2010 muss punktgleich sein — CL8 ist *auf* 2010 gerechnet. Dass es das ist,
 prüft die Probe gleich mit.
 
-## 6. Die Lücken, benannt
+## 6. Gegenprobe: NHGIS gegen Forstall
+
+Richard L. Forstalls Zusammenstellung „Population of Counties by Decennial
+Census: 1900 to 1990", vom NBER in CSV gegossen. Zwei **unabhängig**
+erstellte Zusammenstellungen derselben Zählungen: wo sie auseinandergehen,
+ist mindestens eine falsch, und wir erfahren es, statt es zu glauben. Das ist
+dieselbe Konstruktion, die bei den deutschen Kreisen am meisten getaugt hat.
+
+| Bild | beide | gleich | ungleich | nur Forstall | nur NHGIS | grösste Differenz |
+|---|---|---|---|---|---|---|
+| 1900 | 2.763 | 2.761 | 2 | 64 | 1 | 3.827 (Nansemond, Virginia) |
+| 1910 | 2.903 | 2.900 | 3 | 50 | 4 | 7.008 (Nansemond, Virginia) |
+| 1920 | 3.061 | 3.059 | 2 | 6 | 2 | 6.138 (Elizabeth City, Virginia) |
+| 1930 | 3.097 | 3.096 | 1 | 4 | 1 | 1 (Fremont County, Idaho) |
+| 1940 | 3.097 | 3.097 | 0 | 2 | 1 | — |
+| 1950 | 3.100 | 3.100 | 0 | 2 | 1 | — |
+| 1960 | 3.102 | 3.102 | 0 | 2 | 1 | — |
+| 1970 | 3.108 | 3.108 | 0 | 0 | 0 | — |
+| 1980 | 3.109 | 3.107 | 2 | 0 | 0 | 209 (Park County, Montana) |
+| 1990 | 3.111 | 3.111 | 0 | 0 | 0 | — |
+
+**10 Abweichungen in 30.451 Vergleichen.** Jede einzelne:
+
+| Bild | Gebiet | Forstall | NHGIS | Differenz |
+|---|---|---|---|---|
+| 1910 | `51123` Nansemond, Virginia | 19.878 | 26.886 | -7.008 |
+| 1920 | `51055` Elizabeth City, Virginia | 19.111 | 25.249 | -6.138 |
+| 1910 | `51055` Elizabeth City, Virginia | 15.720 | 21.225 | -5.505 |
+| 1900 | `51123` Nansemond, Virginia | 19.251 | 23.078 | -3.827 |
+| 1910 | `51095` James City County, Virginia | 3.624 | 6.338 | -2.714 |
+| 1920 | `51095` James City County, Virginia | 3.676 | 6.138 | -2.462 |
+| 1900 | `38059` Morton County, North Dakota | 10.277 | 8.069 | 2.208 |
+| 1980 | `30067` Park County, Montana | 12.869 | 12.660 | 209 |
+| 1980 | `30113` Yellowstone National Park, Montana | 66 | 275 | -209 |
+| 1930 | `16043` Fremont County, Idaho | 9.924 | 9.925 | -1 |
+
+Was Forstall zusätzlich abdeckt, schliesst die Lücken aus Abschnitt 1 nur
+teilweise:
+
+| Bild | Lücke mit NHGIS allein | mit Forstall dazu | geschlossen |
+|---|---|---|---|
+| 1900 | 353 | 294 | 59 |
+| 1910 | 214 | 169 | 45 |
+| 1920 | 57 | 53 | 4 |
+| 1930 | 24 | 23 | 1 |
+| 1940 | 24 | 23 | 1 |
+| 1950 | 20 | 19 | 1 |
+| 1960 | 16 | 15 | 1 |
+| 1970 | 8 | 8 | 0 |
+| 1980 | 5 | 5 | 0 |
+| 1990 | 3 | 3 | 0 |
+
+Forstall trägt die Territorien mit heutigen Kennziffern und hat für 1900 auch
+den District of Columbia, den NHGIS dort auslässt. Die grosse Lücke bleibt
+aber: Countys, die es 1900 noch nicht gab, hat auch Forstall nicht.
+
+## 7. Die Lücken, benannt
 
 Ab 1930 sind es wenige genug, um jede einzeln hinzuschreiben. Das ist der
 Unterschied zwischen „gelb" und „rot": eine benannte Liste lässt sich abarbeiten.
@@ -224,7 +280,7 @@ Für 1900 und 1910 sind es zu viele; dort nach Bundesstaat:
 | 1910 | New Mexico 33, Montana 28, Virginia 23, Florida 21, Idaho 21, Arizona 15 |
 | 1920 | Virginia 19, Florida 14, Georgia 6, Montana 5, New Mexico 4, Wyoming 2 |
 
-## 7. Sprungprobe
+## 8. Sprungprobe
 
 Je Gebiet das grösste Verhältnis zwischen zwei benachbarten Bildern, über
 beide Richtungen. Eine Bevölkerung, die sich in zehn Jahren verdreifacht, ist
@@ -263,7 +319,7 @@ Gebiete mit mindestens einer Verdopplung oder Halbierung zwischen zwei Bildern: 
 | Forest County, Wisconsin | 1900: 1.396 | 1910: 6.782 | 4.9 |
 | Washington County, Colorado | 1900: 1.241 | 1910: 6.002 | 4.8 |
 
-## 8. Urteil
+## 9. Urteil
 
 **Gelb.** Die Zahlen stimmen; die Gebietszuordnung ist in zwei Bildern
 unvollständig. Im Einzelnen:
@@ -271,9 +327,15 @@ unvollständig. Im Einzelnen:
 **Was bewiesen ist.** Beide Bilanzen schliessen auf **0** — 1900 wie 2020 geht
 jeder Mensch auf. Die Gegenprobe Countysumme gegen Staatszeile findet über alle
 dreizehn Bilder nur fünf Abweichungen von je genau einer Person; das sind
-veröffentlichte Rundungsartefakte, keine Fehler der Tabelle. Und die Eichprobe
+veröffentlichte Rundungsartefakte, keine Fehler der Tabelle. Die Eichprobe
 gegen CL8 zeigt, dass die nominale Integration dort, wo sie prüfbar ist, im
-Median **null** kostet.
+Median **null** kostet. Und die zweite Quelle bestätigt die erste: zwischen
+NHGIS und Forstall stehen zehn Abweichungen in über dreissigtausend
+Vergleichen, alle zehn benannt und alle zehn an Grenzen, die sich bewegt
+haben — Virginias Städte, die aus ihren Countys herauswuchsen, und die 209
+Menschen des Yellowstone-Nationalparks, die beide Quellen verschieden
+zuordnen. Bei den deutschen Kreisen war dieselbe Konstruktion die
+aussagekräftigste Prüfung überhaupt.
 
 **Was fehlt.** Die Bilder 1900 und 1910 haben für 353 beziehungsweise 214 der
 3 108 Gebiete keine Zeile, weil es diese Countys damals nicht gab. Die Menschen
@@ -292,10 +354,17 @@ Cibola 1981, Los Alamos 1949, Menominee 1961, Broomfield 2001, die spät
 gegründeten Städte Virginias — und vor allem die vier Territorien von 1900
 und 1910. Für die gibt es Zahlen, nur auf eigenen Grenzen.
 
+**Die Entscheidung, die jetzt ansteht.** Forstall schliesst 59 der 353 Lücken
+von 1900 und 45 der 214 von 1910 — die Territorien und den District of
+Columbia. Der Rest sind Countys, die es damals schlicht noch nicht gab, und
+die hat auch Forstall nicht. Für 1900 bleiben **294** der 3 108 Gebiete ohne
+Zahl, für 1910 **169**, ab 1920 sind es 53 und ab 1930 23. Entweder werden
+diese beiden Bilder über historische Grenzen umgerechnet (Methode C, braucht
+den Atlas of Historical County Boundaries), oder die Reihe beginnt später.
+
 **Was diese Prüfung noch nicht konnte.** Der Schlüsseltest gegen die Geometrie
-(fehlt noch), die Dichteverteilung (braucht die Flächen), die Gegenprobe gegen
-eine zweite Quelle (Forstall, fehlt noch) und das letzte Bild (Fortschreibung
-2025 und die Gemeindezahlen für Connecticut, fehlen noch).
+(fehlt noch), die Dichteverteilung (braucht die Flächen) und das letzte Bild
+(Fortschreibung 2025 samt Gemeindezahlen für Connecticut, fehlen noch).
 
 Kein Kartenbau, bevor das steht.
 
