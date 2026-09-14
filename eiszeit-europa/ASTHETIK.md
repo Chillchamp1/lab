@@ -54,21 +54,39 @@ eiszeit-europa/
   build/
     holen.sh          lädt die Rohdaten, prüft Prüfsummen
     DATEN.md          welche Rohdaten wohin
+    quellen.py        NetCDF und Shapefiles -> zwischen/
+    pruefgeruest.py   erfundene Rohdaten in echten Formaten, zum Prüfen
+    code.mjs          Kodierung
+    leiter.mjs        die beiden Farbleitern
+    nutzlast.mjs      die Nutzlast
+    seite.mjs         die Seite
     build.mjs         erzeugt die fertige index.html
-    *.mjs             ein Schritt je Datei
+    film.mjs          mp4 aus der fertigen Seite
 ```
 
-**Keine npm-Abhängigkeiten, keine Build-Pipeline im Auslieferungspfad.** Die
-Vorlage schreibt ihren Shapefile-Leser selbst (`build/shp.mjs`, 56 Zeilen) und
-ihre Koordinatenkodierung (`code.mjs`, 19 Zeilen), statt ein Paket zu ziehen.
-Das wird hier für NetCDF genauso gemacht: ein Leser für NetCDF-3 classic ist
-kurz, und die ICE-6G_C-Dateien sind classic.
+Nachträglich gegenüber diesem Befund geändert, und hier notiert, damit es
+nicht als Versehen durchgeht: die Bühne ist **900** statt 860 Bildpunkte
+breit. Die Vorlage zeigt Deutschland, also ein hochkantes Land; diese Karte ist
+mit 760 zu 649 querformatig, und bei 860 blieb unter ihr mehr Luft, als die
+Legende braucht. Alles andere an der Typografie bleibt, `1cqw` misst jetzt nur
+neun statt achteinhalb Bildpunkte.
 
-Gebaut wird in zwei Schritten, wie dort:
+**Keine npm-Abhängigkeiten im Auslieferungspfad.** Die Vorlage schreibt ihren
+Shapefile-Leser selbst (`build/shp.mjs`, 56 Zeilen) und ihre
+Koordinatenkodierung (`code.mjs`, 19 Zeilen), statt ein Paket zu ziehen — zieht
+für ihre Python-Stufe aber `pypdf` und `openpyxl`. Dieselbe Linie hier: die
+Kodierung ist selbst geschrieben, die Bikubische ebenso (zwanzig Zeilen
+Catmull-Rom statt scipy), und für NetCDF und Shapefiles stehen drei Pakete in
+der Python-Stufe. Ein eigener Leser wäre hier der falsche Stolz — GEBCO und
+ETOPO sind NetCDF-4 und damit HDF5.
+
+Gebaut wird deshalb in drei Schritten, nach demselben Muster wie dort
+(`quellen.py`, dann `build.mjs`):
 
 ```
 cd build
 ./holen.sh                     # Rohdaten nach ../data/raw/
+python3 quellen.py             # NetCDF und Shapefiles -> zwischen/
 node build.mjs > ../index.html
 ```
 
@@ -76,14 +94,15 @@ Die Ausgabe geht auf **stdout**, die Kennzahlen auf **stderr** — so macht es
 `build.mjs` der Vorlage, und das ist der Grund, warum sich ein Bau gegen den
 vorigen diffen lässt.
 
-Teure Zwischenergebnisse landen in einer Cache-Datei mit den Bauparametern als
-Schlüssel (`zeitreihe-alle.json` dort). Hier ist das der Ausschnitt aus dem
-DEM: das Herunterrechnen des 15-Bogensekunden-Rasters ist der teure Schritt und
-hängt nur am Ausschnitt und am Zielraster.
+Teure Zwischenergebnisse landen in einer eigenen Stufe mit den Bauparametern
+als Schlüssel (`zeitreihe-alle.json` dort, `zwischen/` hier). Der teure Schritt
+ist das Herunterrechnen des 15-Bogensekunden-Rasters; es hängt nur am
+Ausschnitt und an der Gitterbreite.
 
 Stellschrauben als Umgebungsvariablen, mit Vorgabe im Skript — `KNOTEN`,
-`GITTER`, `NBAND`, `WASSER`, `UFER` dort; hier `RASTER` (Zielauflösung in
-Bogenminuten), `NBAND`, `EISBAND`.
+`GITTER`, `NBAND`, `WASSER`, `UFER` dort; hier `BREITE`, `TD_GROB`, `EIS_GROB`
+für die Datenstufe und `NBAND`, `WASSER`, `EISBAND` samt Stufenweiten für die
+Seite. Vollständig in [build/DATEN.md](build/DATEN.md).
 
 Und `film.mjs`: macht aus der fertigen Seite ein hochkantes mp4, per
 Playwright, mit **gestellter Uhr** (`dtSek = 1/FPS`, `setzeZeit(i/(n−1))`)

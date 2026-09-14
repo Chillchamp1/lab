@@ -29,3 +29,7 @@ spike.log
 eiszeit-europa/data/raw/
 eiszeit-europa/build/PRUEFSUMMEN.eigen
 dem-ausschnitt-*.bin
+eiszeit-europa/build/zwischen/
+eiszeit-europa/build/zwischen-*/
+eiszeit-europa/build/pruefgeruest-roh/
+eiszeit-europa/build/__pycache__/
