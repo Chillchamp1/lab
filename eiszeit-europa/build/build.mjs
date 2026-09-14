@@ -8,7 +8,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import { baueNutzlast } from './nutzlast.mjs';
-import { baueSeite } from './seite.mjs';
+import { baueSeite, baueLeerseite } from './seite.mjs';
 import { gesteinAtlas, gesteinCvd, eisRampe, monoton } from './leiter.mjs';
 
 const log = s => process.stderr.write(s + '\n');
@@ -36,6 +36,21 @@ const NEIS = Number(process.env.EISBAND ?? 12);
 const LANDSTUFE = Number(process.env.LANDSTUFE ?? 250);
 const WASSERSTUFE = Number(process.env.WASSERSTUFE ?? 500);
 const EISSTUFE = Number(process.env.EISSTUFE ?? 300);
+
+/* ---------- Die Seite, solange die Daten fehlen ----------
+   Sie braucht keine Zwischendateien und steht deshalb **vor** der Pruefung
+   darauf. Sie zeigt nichts Erfundenes — sie sagt, was fehlt, woher es kommt
+   und was daraus entsteht. */
+if (process.argv.includes('--leer')) {
+  const zeit = ['26', '48'];
+  const leer = baueLeerseite({
+    zeitscheiben: zeit,
+    fenster: '12&#176;W to 45&#176;E, 34&#176;N to 72&#176;N',
+  });
+  log(`Leerseite ${(leer.length / 1024).toFixed(1)} kB — zeigt keine Daten, weil keine da sind.`);
+  process.stdout.write(leer);
+  process.exit(0);
+}
 
 if (!existsSync(ZWISCHEN + '/meta.json')) {
   log('Keine Zwischendateien unter ' + ZWISCHEN + '/.');

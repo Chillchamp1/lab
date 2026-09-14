@@ -1,9 +1,16 @@
 # Europa unter dem Eis
 
-> **Noch nicht veröffentlicht.** Der Ordner enthält die vollständige
-> Verarbeitungskette und die Seite, die sie erzeugt — aber keine `index.html`
-> und keinen Eintrag in `projects.json`, weil die Rohdaten fehlen. Warum,
-> steht gleich im nächsten Absatz und ausführlich in [QUELLEN.md](QUELLEN.md).
+→ **https://chillchamp1.github.io/lab/eiszeit-europa/**
+>
+> **Dort steht noch keine Karte.** Die Seite ist online und nennt, woraus sie
+> gebaut wird — die Rohdaten fehlen noch. Sie zeigt bewusst **nichts
+> Erfundenes**: eine Rekonstruktion mit ausgedachtem Eisschild unter echten
+> Zitaten wäre das eine, was sie nicht tun darf. Warum die Daten fehlen, steht
+> im nächsten Absatz und ausführlich in [QUELLEN.md](QUELLEN.md).
+>
+> Erzeugt wird dieser Zustand vom selben Bauvorgang wie die richtige Seite:
+> `node build.mjs --leer > ../index.html`. Sobald die Daten da sind, ersetzt
+> `node build.mjs > ../index.html` sie unter derselben Adresse.
 
 Eine animierte Reliefkarte Europas durch die letzte Eiszeit: von 26 000 Jahren
 vor heute bis in die Gegenwart, das Festland als echtes Gebirgsrelief, darüber
