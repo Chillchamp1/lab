@@ -4,27 +4,36 @@ Was fehlt, was offen ist, und was bewusst so bleibt.
 
 ## Das eine, was wirklich fehlt
 
-**Die Daten.** Aus der Arbeitsumgebung, in der dieser Ordner entstanden ist,
-war keiner der drei Datenhalter erreichbar — jeder Versuch mit Wirt, Datum und
-Code steht in [QUELLEN.md](QUELLEN.md). Solange sie fehlen, gibt es keine
-`index.html` und keinen Eintrag in `projects.json`.
+**ICE-6G_C.** DEM und DATED-1 liegen seit dem 14.09.2026 unter `data/raw/`
+(17 Dateien, 418 MB, Prüfsummen in `build/PRUEFSUMMEN.eigen`). Für ICE-6G_C
+fehlt in der Netzfreigabe genau ein Wirt: `crt.sectigo.com`, von dem das
+Zwischenzertifikat des Toronto-Servers kommt. Warum, steht in
+[QUELLEN.md](QUELLEN.md), Abschnitt 1.
 
-Was zu tun ist, wenn sie da sind:
+Solange ICE-6G_C fehlt, steht unter der Adresse die Seite ohne Karte
+(`node build.mjs --leer`). Was zu tun ist, sobald die 48 Zeitscheiben da sind:
 
 ```
 cd build
-./holen.sh                     # oder die Dateien von Hand nach data/raw/
+./holen.sh ice6g               # oder die Dateien von Hand nach data/raw/ice6g/
 python3 quellen.py
 node build.mjs > ../index.html
 ```
 
-Dann `projects.json` ergänzen und `node ../tools/readme.mjs` laufen lassen.
+Der Eintrag in `projects.json` steht schon; seine Beschreibung ist dann
+nachzuziehen, danach `node ../tools/readme.mjs`.
 
 ## Was beim ersten echten Lauf zu prüfen ist
 
 Die Kette ist am Prüfgerüst durchgemessen (METHODIK, Abschnitt 8). Was das
 Gerüst **nicht** prüfen kann, sind die Eigenheiten der echten Dateien. Diese
 fünf Punkte gehören beim ersten Lauf angesehen, nicht überflogen:
+
+> **Drei der fünf Punkte sind inzwischen beantwortet** — und zwei davon waren
+> falsch geraten. Punkt 3 (Achsenrichtung) stimmte; Punkt 4 (Benennung der
+> Shapefiles) stimmte **nicht**, die Dateien heissen `TS20_mc` und tragen die
+> Zeit als Attribut; Punkt 5 (DEM-Abdeckung) hat einen echten Fehler
+> aufgedeckt, siehe METHODIK 8. Offen sind Punkt 1 und 2, beide zu ICE-6G_C.
 
 1. **Heissen die Variablen so?** `quellen.py` sucht fallunabhängig und mit
    Alternativen (`Topo_Diff`/`topo_diff`/`TopoDiff`, `stgit`/`thk`/…). Findet

@@ -145,22 +145,27 @@ hole_ice6g() {
 #  Datei-Schnittstelle des Datensatzes.
 # =====================================================================
 DATED_DOI="${DATED_DOI:-10.1594/PANGAEA.848117}"
-DATED_ZIP="${DATED_ZIP:-https://download.pangaea.de/dataset/848117/allfiles.zip}"
+# Die Datensatzseite ist eine **Liste von Dateiadressen**, keine Datei. Ihre
+# Textfassung (?format=textfile) nennt sie; abgerufen am 14.09.2026 sind es
+# sechs, davon brauchen wir eine. Erraten war vorher ein allfiles.zip, das es
+# nicht gibt.
+DATED_SPEICHER="${DATED_SPEICHER:-https://store.pangaea.de/Publications/HughesA-etal_2015}"
+DATED_ZIP="${DATED_ZIP:-$DATED_SPEICHER/DATED-1_TimeSlices_shp.zip}"
+DATED_LIESMICH="${DATED_LIESMICH:-$DATED_SPEICHER/DATED-1_readme.pdf}"
 
 hole_dated() {
   sagt ""
-  sagt "(b) DATED-1 Eisränder, 25–10 ka (doi:$DATED_DOI)"
-  if hole "$DATED_ZIP" "$ROH/dated1/allfiles.zip" "dated1/allfiles.zip"; then
+  sagt "(b) DATED-1 Eisraender, 25–10 ka (doi:$DATED_DOI)"
+  hole "$DATED_LIESMICH" "$ROH/dated1/DATED-1_readme.pdf" "dated1/DATED-1_readme.pdf"
+  if hole "$DATED_ZIP" "$ROH/dated1/DATED-1_TimeSlices_shp.zip" "dated1/DATED-1_TimeSlices_shp.zip"; then
     if [ "${NURPRUEFEN:-0}" != 1 ] && [ ! -d "$ROH/dated1/entpackt" ]; then
-      sagt "  packe   dated1/allfiles.zip aus"
+      sagt "  packe   die Zeitscheiben aus"
       mkdir -p "$ROH/dated1/entpackt"
-      unzip -q -o "$ROH/dated1/allfiles.zip" -d "$ROH/dated1/entpackt" || {
+      unzip -q -o "$ROH/dated1/DATED-1_TimeSlices_shp.zip" -d "$ROH/dated1/entpackt" || {
         rot "  FEHLER  Auspacken misslungen"; return 1; }
-      # Die Scheiben liegen als Shapefile-Satz vor; ein einzelnes .shp ohne
-      # .dbf und .shx ist wertlos, also wird das gleich nachgesehen.
       local n; n=$(find "$ROH/dated1/entpackt" -iname '*.shp' | wc -l)
-      sagt "  $n Shapefiles ausgepackt"
-      [ "$n" -gt 0 ] || rot "  WARNUNG keine .shp gefunden — Paketaufbau geändert?"
+      sagt "  $n Shapefiles ausgepackt (erwartet 58: 16 Zeitscheiben x 3 plus 10 aeltere)"
+      [ "$n" -ge 48 ] || rot "  WARNUNG weniger als 48 — Paketaufbau geaendert?"
     fi
   fi
 }
@@ -181,13 +186,31 @@ hole_dated() {
 #  Karte ist die Gesteinsoberfläche; das Eis kommt getrennt aus stgit
 #  darauf. Mit „surface" läge Grönlands heutiges Eis als Fels in der Karte.
 # =====================================================================
-DEM="${DEM:-gebco}"
+DEM="${DEM:-etopo}"
 GEBCO_ZIP="${GEBCO_ZIP:-https://www.bodc.ac.uk/data/open_download/gebco/gebco_2024_sub_ice_topo/zip/}"
-ETOPO_BASIS="${ETOPO_BASIS:-https://www.ngdc.noaa.gov/thredds/fileServer/global/ETOPO2022/15s/15s_bed_elev_netcdf}"
+ETOPO_BASIS="${ETOPO_BASIS:-https://www.ngdc.noaa.gov/thredds/fileServer/global/ETOPO2022/15s/15s_surface_elev_netcdf}"
+
+# Die fuenfzehn 15-Grad-Kacheln, die den Ausschnitt samt Saum decken
+# (lon -12,3…45,3, lat 33,6…74,1). Je rund 25 MB, zusammen gut 400 MB — statt
+# der 7,5 GB des globalen GEBCO-Satzes.
+ETOPO_KACHELN="N75W015 N75E000 N75E015 N75E030 N75E045
+N60W015 N60E000 N60E015 N60E030 N60E045
+N45W015 N45E000 N45E015 N45E030 N45E045"
 
 hole_dem() {
   sagt ""
   case "$DEM" in
+    etopo)
+      # **surface**, nicht bed — und das ist kein Fehler. ETOPO fuehrt eigene
+      # bed-Kacheln nur dort, wo heute Eis liegt (Groenland, Antarktis, hohe
+      # Arktis); in Europa ist die Oberflaeche der Fels. Nachgesehen: der
+      # 15"-bed-Satz hat 62 Kacheln, keine davon deckt diesen Ausschnitt.
+      sagt "(c) ETOPO 2022, 15\", 15 Kacheln (surface = Fels in diesem Ausschnitt)"
+      local k datei
+      for k in $ETOPO_KACHELN; do
+        datei="ETOPO_2022_v1_15s_${k}_surface.nc"
+        hole "$ETOPO_BASIS/$datei" "$ROH/dem/$datei" "dem/$datei"
+      done ;;
     gebco)
       sagt "(c) GEBCO 2024 sub-ice topo, 15\", global (gross — mehrere GB)"
       hole "$GEBCO_ZIP" "$ROH/dem/gebco_2024_sub_ice_topo.zip" "dem/gebco_2024_sub_ice_topo.zip" || return 1
@@ -196,14 +219,7 @@ hole_dem() {
         unzip -q -o -j "$ROH/dem/gebco_2024_sub_ice_topo.zip" '*.nc' -d "$ROH/dem" \
           || rot "  FEHLER  Auspacken misslungen"
       fi ;;
-    etopo)
-      sagt "(c) ETOPO 2022 bed elevation, 15\", zwei Kacheln"
-      local k
-      for k in N90W030 N90E000; do
-        hole "$ETOPO_BASIS/ETOPO_2022_v1_15s_${k}_bed.nc" \
-             "$ROH/dem/ETOPO_2022_v1_15s_${k}_bed.nc" "dem/ETOPO_2022_v1_15s_${k}_bed.nc"
-      done ;;
-    *) rot "DEM=$DEM kenne ich nicht — gebco oder etopo"; return 1 ;;
+    *) rot "DEM=$DEM kenne ich nicht — etopo oder gebco"; return 1 ;;
   esac
 }
 
