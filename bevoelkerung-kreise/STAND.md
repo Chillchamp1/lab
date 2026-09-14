@@ -867,11 +867,17 @@ richtige Antwort, gegen die sich A00 halten lässt.
 - Eichprobe A00 gegen CL8: mittlere Abweichung **null**. Über 1 % weichen 14
   Gebiete ab (1990), 7 (2000), 7 (2020); 2010 ist erwartungsgemäss punktgleich.
   Die nominale Integration kostet dort, wo sie prüfbar ist, praktisch nichts.
+- Zweite Quelle bestätigt die erste: zwischen NHGIS und **Forstall** (NBER)
+  stehen **zehn** Abweichungen in **30 451** Vergleichen über zehn Bilder. Alle
+  zehn sind benannt und liegen an Grenzen, die sich bewegt haben — Virginias
+  Städte, die aus ihren Countys herauswuchsen, und die 209 Menschen des
+  Yellowstone-Nationalparks, die beide Quellen verschieden zuordnen.
 - Die Lücken sind konzentriert: 353 Gebiete ohne Zeile in 1900, 214 in 1910,
-  dann 57, 24 und ab 1970 einstellig. Ein guter Teil der späten Fälle ist durch
-  **exakte** Umschlüsselung zu erledigen — Umbenennungen (Shannon → Oglala
-  Lakota) und Vereinigungen (Bedford city → Bedford County), also derselbe Fall
-  wie Hanau und Eisenach.
+  dann 57, 24 und ab 1970 einstellig. Forstall schliesst davon 59 und 45 — die
+  Territorien und den District of Columbia —, es bleiben **294** und **169**.
+  Ein guter Teil der späten Fälle ist durch **exakte** Umschlüsselung zu
+  erledigen — Umbenennungen (Shannon → Oglala Lakota) und Vereinigungen
+  (Bedford city → Bedford County), also derselbe Fall wie Hanau und Eisenach.
 
 **Zwei Fallen, die dabei aufgefallen sind:**
 
@@ -886,10 +892,13 @@ richtige Antwort, gegen die sich A00 halten lässt.
   gelebt haben. Dazu führt die Zählung 1900 eine Kategorie „Persons in the
   Military" mit 91 219 Menschen ohne jeden Ort.
 
-**Was noch fehlt:** die Geometrie (Schlüsseltest, Dichte), Forstall beim NBER
-als zweite unabhängige Quelle, die Fortschreibung 2025 samt Gemeindezahlen für
-Connecticut, und für die Bilder 1900 und 1910 die historischen Grenzen aus dem
-Atlas of Historical County Boundaries.
+**Die Entscheidung, die ansteht:** entweder werden die Bilder 1900 und 1910
+über historische Grenzen umgerechnet (Methode C, braucht den Atlas of
+Historical County Boundaries), oder die Reihe beginnt später — ab 1920 sind es
+53 Lücken statt 294, ab 1930 dreiundzwanzig.
+
+**Was noch fehlt:** die Geometrie (Schlüsseltest, Dichte) und das letzte Bild
+(Fortschreibung 2025 samt Gemeindezahlen für Connecticut).
 
 ## Offen
 
