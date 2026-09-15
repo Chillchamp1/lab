@@ -952,6 +952,11 @@ sonst die Nummer. Ein Feld und nicht drei Masken, damit die Schleife in
 `paleo()` einen Zugriff je Zelle behält. Punkt-in-Polygon je Zelle und je Bild
 wäre teuer; die Kästen bewegen sich nie.
 
+Die Schilder stehen **westlich** ihres Kreuzes. Rechts davon liegt bei jeder
+Zeitscheibe Eis, und weisse Schrift auf weissem Eis ist genau die Stelle, an
+der sie am schlechtesten zu lesen ist; westlich liegt Wasser. Passt der Text
+dort nicht mehr hin, fällt er auf die andere Seite zurück.
+
 Beschriftet wird **Name und Material**: „Scandinavian ice 2 694 m". Ohne das
 Wort liest sich die Zahl wie ein Berg, und sie ist das Gegenteil davon — die
 Oberfläche eines Eisschildes, gegen die schräg darunter der Mont Blanc mit

@@ -1668,7 +1668,12 @@ function heuteUeber() {
 const GIPFELFARBE = 'rgba(255,255,255,.88)';
 const GIPFELFELS = 'rgba(255,214,150,.92)';
 const nfm = new Intl.NumberFormat('en-GB');
-function marke(sx, sy, text, farbe, unten) {
+/* „rechts" heisst hier: der Text **endet** am Kreuz, liegt also links davon.
+   lieberLinks dreht die Vorliebe um — fuer die Eiskuppen, deren Schild sonst
+   quer ueber das Eis laeuft, auf dem es am schlechtesten zu lesen ist. Westlich
+   von ihnen liegt in jeder Zeitscheibe Wasser. Passt der Text dort nicht hin,
+   faellt er auf die andere Seite zurueck. */
+function marke(sx, sy, text, farbe, unten, lieberLinks) {
   ctx.lineJoin = 'round';
   // Klein. Die Schilder sind Beschriftung, nicht Ueberschrift: auf einer Karte,
   // die 900 Punkte breit steht, trug die alte Groesse wie ein Plakat.
@@ -1678,7 +1683,8 @@ function marke(sx, sy, text, farbe, unten) {
   // waren 60 Punkte breit; sie heissen jetzt „Scandinavian ice 2 694 m" und
   // sind doppelt so breit. Eine feste Schwelle von 90 Punkten liess sie am
   // rechten Rand halb draussen haengen.
-  const rechts = sx + 6 + ctx.measureText(text).width > breite - 4;
+  const tb = ctx.measureText(text).width;
+  const rechts = lieberLinks ? sx - 6 - tb > 4 : sx + 6 + tb > breite - 4;
   ctx.textAlign = rechts ? 'right' : 'left';
   const dx = rechts ? -6 : 6, dy = unten ? 5 : -5;
   // Erst das Kreuz und die Schrift dunkel umranden, dann hell fuellen: auf
@@ -1721,7 +1727,7 @@ function gipfelUeber() {
        der Vergleich, den die Karte anbietet — daneben steht der Mont Blanc
        mit seiner Felshoehe zur selben Zeit. */
     marke(sx, sy, KUPPEN[k].name + ' ice ' + nfm.format(Math.round(kuppeHoch[k])) + ' m',
-      GIPFELFARBE, false);
+      GIPFELFARBE, false, true);
   }
   if (MB && MB.gipfel_m) {
     const [sx, sy] = projRand(MB.x, MB.y);
