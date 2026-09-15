@@ -291,6 +291,19 @@ STAEDTE = [
 # das Differenzfeld addiert, genau wie beim Relief.
 MONTBLANC = (6.8652, 45.8326)
 
+# Der britisch-irische Eisschild, als eigener Koerper. Er hatte seine eigene
+# Kuppe, und sie ist die zweite Zahl, die diese Karte zu bieten hat: waehrend
+# ueber Skandinavien fast drei Kilometer Eis standen, kam Britannien auf gut
+# die Haelfte. Ohne eine Abgrenzung geht das unter, weil das Maximum immer der
+# skandinavische Gipfel ist.
+#
+# Die Grenze ist eine **Setzung**, kein Befund: elf Grad West bis zum
+# Nullmeridian, 49,5 bis 61 Grad Nord. Der Nullmeridian und nicht weiter
+# oestlich, weil sich die beiden Eisschilde beim Hochstand ueber der noerdlichen
+# Nordsee beruehrten — wo genau, ist selbst Gegenstand der Forschung, und eine
+# Linie mitten durch die Beruehrungszone wuerde den falschen Gipfel greifen.
+BRITANNIEN = dict(lon=(-11.0, 0.0), lat=(49.5, 61.0))
+
 
 def gipfelhoehe(lon, lat, umkreis_km=4.0):
     """Hoechster 15"-Wert im Umkreis. Sucht die Kachel selbst."""
@@ -1034,6 +1047,21 @@ def main():
             orte.append(dict(name=name, x=round(gx, 1), y=round(gy, 1)))
     log(f"  {len(orte)} Orte im Fenster: " + ", ".join(o["name"] for o in orte))
 
+    # Das Lon/Lat-Fenster wird an seinen Raendern abgetastet und projiziert —
+    # unter dieser Projektion ist ein Gradnetz-Rechteck kein Rechteck mehr.
+    rand = []
+    lo0, lo1 = BRITANNIEN["lon"]; la0, la1 = BRITANNIEN["lat"]
+    n = 12
+    for k in range(n):
+        rand.append(auf_gitter(lo0 + (lo1 - lo0) * k / n, la0))
+    for k in range(n):
+        rand.append(auf_gitter(lo1, la0 + (la1 - la0) * k / n))
+    for k in range(n):
+        rand.append(auf_gitter(lo1 - (lo1 - lo0) * k / n, la1))
+    for k in range(n):
+        rand.append(auf_gitter(lo0, la1 - (la1 - la0) * k / n))
+    britannien = [[round(x, 1), round(y, 1)] for x, y in rand]
+
     mbx, mby = auf_gitter(*MONTBLANC)
     mbh = gipfelhoehe(*MONTBLANC)
     mb = dict(name="Mont Blanc", x=round(mbx, 1), y=round(mby, 1),
@@ -1114,6 +1142,7 @@ def main():
         g90_m_je_zelle=g90,
         orte=orte,
         montblanc=mb,
+        britannien=britannien,
         quelle_grob=dict(w=int(td.shape[2]), h=int(td.shape[1]), **gmeta),
         je_scheibe=je, kennzahlen=kennzahlen,
         # Woher die Daten stammen. build.mjs weigert sich, aus Geruestdaten

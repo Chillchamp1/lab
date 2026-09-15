@@ -728,6 +728,37 @@ der Meeresspiegel lag tiefer, und die Alpen standen im Vorwölbungsgürtel.
 Der höchste Eispunkt wird in `paleo()` mitgesucht, wo das Feld ohnehin einmal
 durchlaufen wird — er kostet nichts extra.
 
+**Dazu ein zweiter, der über Britannien.** Ohne Abgrenzung ginge er unter: das
+Maximum ist immer der skandinavische Gipfel. Die Grenze ist eine **Setzung**,
+kein Befund — elf Grad West bis zum Nullmeridian, 49,5 bis 61 Grad Nord. Der
+Nullmeridian und nicht weiter östlich, weil sich die beiden Eisschilde beim
+Hochstand über der nördlichen Nordsee berührten; wo genau, ist selbst
+Gegenstand der Forschung, und eine Linie mitten durch die Berührungszone
+griffe den falschen Gipfel.
+
+Das Fenster wird an seinen Rändern abgetastet und projiziert — unter dieser
+Projektion ist ein Gradnetz-Rechteck kein Rechteck mehr —, und die Seite
+rechnet daraus einmal je Feldgrösse eine Maske. Punkt-in-Polygon je Zelle und
+je Bild wäre teuer; das Fenster bewegt sich nie.
+
+Was dabei herauskommt, ist mehr als eine zweite Zahl:
+
+| ka | Skandinavien | Britannien | Eisdicke Britannien |
+|---|---|---|---|
+| 26,0 | 2 990 m | **1 440 m** | 753 m |
+| 21,0 | 2 759 m | 1 414 m | 713 m |
+| 15,0 | 2 617 m | 987 m | 299 m |
+| 14,0 | 2 179 m | 816 m | 133 m |
+| **13,0** | 2 146 m | **1 347 m** | **724 m** |
+| 12,0 | 2 020 m | 772 m | 18 m |
+| 11,0 | 1 950 m | — | — |
+
+Der Einbruch bei 14 ka und der Wiederanstieg bei 13 ka sind der
+**Loch-Lomond-Wiedervorstoss** der Jüngeren Dryas: Britanniens Eis war fast
+weg und wuchs noch einmal auf drei Viertel seiner alten Mächtigkeit. In
+Skandinavien ist davon in derselben Reihe nichts zu sehen — dort läuft die
+Kurve durch. Genau dafür ist die zweite Marke da.
+
 ## 9. Kodierung und Nutzlast
 
 Grundlage ist der Zickzack-Varint der Vorlage im selben 64-Zeichen-Alphabet.

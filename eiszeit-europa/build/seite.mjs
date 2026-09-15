@@ -219,7 +219,7 @@ const NOTIZ = ${J(notizen)};
 
 /* ================================================================ Nutzlast */
 const GW = D.g.w, GH = D.g.h;
-const ORTE = D.orte || [], MB = D.mb || null;
+const ORTE = D.orte || [], MB = D.mb || null, UKRAND = D.uk || null;
 const NT = D.t.length;
 
 /* ---------- Das DEM ----------
@@ -506,6 +506,32 @@ function zeitFelder() {
    voller Aufloesung, waehrend sich Kruste, Kueste und Eisrand mitbewegen. */
 let feldStand = 0;
 let eisAnzahl = 0, eisMin = 0, eisMax = 0, eisHoch = 0, eisWo = -1;
+let ukHoch = 0, ukWo = -1;
+/* Welche Feldpunkte in den Britischen Inseln liegen — einmal je Feldgroesse
+   gerechnet und behalten. Punkt-in-Polygon je Zelle und je Bild waere teuer;
+   das Fenster bewegt sich aber nie. */
+let ukMaske = null, ukMaskeRW = 0;
+function ukMaskeBauen() {
+  if (ukMaske && ukMaskeRW === rW) return ukMaske;
+  ukMaske = new Uint8Array(rW * rH);
+  ukMaskeRW = rW;
+  if (!UKRAND || UKRAND.length < 3) return ukMaske;
+  const n = UKRAND.length;
+  for (let y = 0; y < rH; y++) {
+    const gy = y / rH * GH;
+    for (let x = 0; x < rW; x++) {
+      const gx = x / rW * GW;
+      let drin = false;
+      for (let i = 0, j = n - 1; i < n; j = i++) {
+        const [xi, yi] = UKRAND[i], [xj, yj] = UKRAND[j];
+        if ((yi > gy) !== (yj > gy)
+            && gx < (xj - xi) * (gy - yi) / (yj - yi) + xi) drin = !drin;
+      }
+      if (drin) ukMaske[y * rW + x] = 1;
+    }
+  }
+  return ukMaske;
+}
 function paleo() {
   feldStand++;
   zeitFelder();
@@ -533,11 +559,14 @@ function paleo() {
      schneidet, in denen ueberhaupt Eis vorkommt. Ohne das lief er auch dann
      ueber das ganze Feld, wenn gar kein Eis mehr da ist. */
   eisAnzahl = 0; eisMin = 1e9; eisMax = -1e9; eisHoch = 0; eisWo = -1;
+  ukHoch = 0; ukWo = -1;
+  const uk = ukMaskeBauen();
   for (let i = 0; i < rock.length; i++) {
     if (!maskeR[i] || eisD[i] < EISSCHWELLE) continue;
     eisAnzahl++;
     if (flaeche[i] < eisMin) eisMin = flaeche[i];
     if (flaeche[i] > eisMax) { eisMax = flaeche[i]; eisHoch = flaeche[i]; eisWo = i; }
+    if (uk[i] && flaeche[i] > ukHoch) { ukHoch = flaeche[i]; ukWo = i; }
   }
 }
 
@@ -1408,6 +1437,15 @@ function gipfelUeber() {
     const gx = (eisWo % rW) / rW * GW, gy = ((eisWo / rW) | 0) / rH * GH;
     const [sx, sy] = projRand(gx, gy);
     marke(sx, sy, 'ice ' + nfm.format(Math.round(eisHoch)) + ' m', GIPFELFARBE, false);
+  }
+  /* Der britische Eisschild hatte seine eigene Kuppe, und sie ist die zweite
+     Zahl dieser Karte: waehrend ueber Skandinavien fast drei Kilometer Eis
+     standen, kam Britannien auf gut die Haelfte. Ohne die Abgrenzung ginge das
+     unter — das Maximum ist immer der skandinavische Gipfel. */
+  if (ukHoch > 0 && ukWo >= 0 && ukWo !== eisWo) {
+    const gx = (ukWo % rW) / rW * GW, gy = ((ukWo / rW) | 0) / rH * GH;
+    const [sx, sy] = projRand(gx, gy);
+    marke(sx, sy, 'Britain ' + nfm.format(Math.round(ukHoch)) + ' m', GIPFELFARBE, false);
   }
   if (MB && MB.gipfel_m) {
     const [sx, sy] = projRand(MB.x, MB.y);
