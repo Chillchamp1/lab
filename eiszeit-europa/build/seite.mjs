@@ -893,6 +893,49 @@ function linienFeld() {
    Vorschrift, die der Zug spaeter liest. Er darf nur zu weit greifen, nie zu
    eng: uebersprungen wird ausschliesslich, was streng ausserhalb liegt. */
 const TKACHEL = 4, TKBIT = 2;   // 1 << TKBIT === TKACHEL
+
+/* ---------- Was ueberhaupt zu sehen ist ----------
+   Die Schleifen liefen ueber das **ganze** Feld, auch wenn die Karte
+   vierfach vergroessert dasteht und neun Zehntel davon neben der Leinwand
+   liegen. Gerechnet wird jetzt nur, was ins Bild fallen kann.
+
+   Gerechnet wird das Rechteck ueber die Umkehrung der Sicht: die vier Ecken
+   der Leinwand zurueck auf den Boden. Zwei Zugaben gehoeren dazu:
+
+   - Die Leinwand wird nach unten um die **Stapelhoehe** verlaengert. Der
+     Stapel hebt jeden Punkt auf dem Schirm nach oben; ein Punkt, dessen Boden
+     unter der Leinwand liegt, kann mit seiner obersten Platte noch
+     hereinragen.
+   - Das Ergebnis wird auf Vielfache von 16 Zellen **nach aussen gerundet**.
+     Sonst wechselt das Rechteck bei jedem Pixel einer Geste, und der
+     Ringspeicher, der daran haengt, waere bei jeder Bewegung ungueltig.
+
+   Zu weit greifen darf es, zu eng nie. */
+const SICHTRUND = 16;
+let sichtX0 = 0, sichtX1 = 0, sichtY0 = 0, sichtY1 = 0, sichtSchluessel = '';
+function sichtFeldRechnen() {
+  const S = sichtRechnen();
+  const hub = schraeg() ? NSCHEIBE * S.dz : 0;
+  let X0 = 1e9, X1 = -1e9, Y0 = 1e9, Y1 = -1e9;
+  for (const [sx, sy] of [[0, 0], [breite, 0], [0, hoehe + hub], [breite, hoehe + hub]]) {
+    const [X, Y] = bodenUnter(sx, sy);
+    if (X < X0) X0 = X; if (X > X1) X1 = X;
+    if (Y < Y0) Y0 = Y; if (Y > Y1) Y1 = Y;
+  }
+  const je = kw / rW;
+  const ab = (v, hin) => {
+    const z = (v - hin) / je;
+    return z;
+  };
+  const r = SICHTRUND;
+  sichtX0 = Math.max(0, Math.floor(ab(X0, kx) / r) * r);
+  sichtX1 = Math.min(rW - 1, Math.ceil(ab(X1, kx) / r) * r);
+  sichtY0 = Math.max(0, Math.floor(ab(Y0, ky) / r) * r);
+  sichtY1 = Math.min(rH - 1, Math.ceil(ab(Y1, ky) / r) * r);
+  if (!(sichtX1 > sichtX0)) { sichtX0 = 0; sichtX1 = rW - 1; }
+  if (!(sichtY1 > sichtY0)) { sichtY0 = 0; sichtY1 = rH - 1; }
+  sichtSchluessel = sichtX0 + ',' + sichtX1 + ',' + sichtY0 + ',' + sichtY1;
+}
 let kacNX = 0, kacNY = 0, kacMin = null, kacMax = null;
 function kachelBauen(nx, ny, feld, modus) {
   const tnx = Math.ceil(nx / TKACHEL), tny = Math.ceil(ny / TKACHEL);
@@ -914,10 +957,20 @@ function kachelBauen(nx, ny, feld, modus) {
           const i = z + x;
           // Ohne Rueckruf je Zelle: eine halbe Million indirekter Aufrufe je
           // Bild kosten mehr als der Vergleich, der dahinter steht.
-          // modus 0: das rohe Feld (Hoehenlinien — ungueltige Zellen werden im
-          // Rumpf uebersprungen, ihr Wert kommt nie vor).
-          // modus 1: wie ecke() beim Gesteinsstapel, 2: wie ecke() beim Eis.
-          const v = modus === 0 ? feld[i]
+          /* modus 0: das rohe Feld (Hoehenlinien — ungueltige Zellen werden im
+             Rumpf uebersprungen, ihr Wert kommt nie vor).
+             modus 1: wie ecke() beim Gesteinsstapel, 2: wie ecke() beim Eis.
+
+             Und zwar **einschliesslich des Sichtrands**. Ohne ihn kennt der
+             Index den Sprung auf -1e9 an der Schnittkante nicht, haelt die
+             Kachel dort fuer gleichfoermig und ueberspringt sie — dann bleibt
+             der Ring offen und fuellt sich als Keil quer ueber die Karte.
+             Genau dieser Fehler stand schon einmal hier, mit der Randspalte
+             statt dem Sichtrand. Ein Ring ist geschlossen oder Unsinn. */
+          const drin = modus === 0
+            || (x >= sichtX0 && x <= sichtX1 && y >= sichtY0 && y <= sichtY1);
+          const v = !drin ? -1e9
+                  : modus === 0 ? feld[i]
                   : modus === 1 ? (maskeR[i] ? feld[i] : -1e9)
                   : (maskeR[i] && eisD[i] >= EISSCHWELLE ? feld[i] : -1e9);
           if (v < mn) mn = v;
@@ -962,6 +1015,11 @@ function zieheLinien(zc, feld, niveaus, gilt, fest) {
       if (t < kacMin[ti] || t > kacMax[ti]) continue;
       const cyA = ty * TKACHEL, cyB = Math.min(ny, cyA + TKACHEL);
       const cxA = tx * TKACHEL, cxB = Math.min(nx, cxA + TKACHEL);
+      // Liegt die Kachel ganz neben der Leinwand, ist sie nicht zu zeichnen.
+      // Hoehenlinien werden gestrichen, nicht gefuellt — eine Linie, die am
+      // Rand endet, ist harmlos.
+      if (cxB * S < sichtX0 || cxA * S > sichtX1
+          || cyB * S < sichtY0 || cyA * S > sichtY1) continue;
       for (let cy = cyA; cy < cyB; cy++) {
        for (let cx = cxA; cx < cxB; cx++) {
         const px0 = cx * S, px1 = px0 + S, py0 = cy * S, py1 = py0 + S;
@@ -1281,14 +1339,22 @@ function ringFeld() {
    per Konstruktion eine Teilmenge des Felsrings, liegt also genau dort darueber,
    wo Eis liegt. Das ist dasselbe „Eis gewinnt, wo es liegt" wie in der flachen
    Sicht, nur in drei Dimensionen. */
-let ringeCache = [null, null], ringeStand = -1, ringeRW = 0;
+let ringeCache = [null, null], ringeStand = -1, ringeRW = 0, ringeSicht = '';
 function scheibenRinge(nurEis) {
-  if (ringeCache[nurEis] && ringeStand === feldStand && ringeRW === rW)
+  if (ringeCache[nurEis] && ringeStand === feldStand && ringeRW === rW
+      && ringeSicht === sichtSchluessel)
     return ringeCache[nurEis];
-  if (ringeStand !== feldStand || ringeRW !== rW) ringeCache = [null, null];
+  if (ringeStand !== feldStand || ringeRW !== rW || ringeSicht !== sichtSchluessel)
+    ringeCache = [null, null];
   ringFeld();
   const S = LSCHRITT, je = kw / rW, nx = rnx, ny = rny;
+  /* Ausserhalb des Sichtbaren gilt dasselbe wie ausserhalb des Feldes: tiefer
+     als jede Platte. Das ist **noetig, nicht bloss sparsam** — ein Plattenring
+     wird gefuellt, und eine Kette, die am Rand einfach aufhoert, fuellt sich
+     als Keil quer ueber die Karte. Mit dem Nullrand schliesst sich der Ring
+     entlang der Schnittkante, und die liegt neben der Leinwand. */
   const ecke = (px, py) => {
+    if (px < sichtX0 || py < sichtY0 || px > sichtX1 || py > sichtY1) return -1e9;
     if (px < 0 || py < 0 || px >= rW || py >= rH) return -1e9;
     const i = py * rW + px;
     if (!maskeR[i]) return -1e9;
@@ -1317,12 +1383,18 @@ function scheibenRinge(nurEis) {
       }
     };
     const binde = (p, q) => { if (rA[p] < 0) rA[p] = q; else if (rB[p] < 0) rB[p] = q; };
-    for (let cy = -1; cy <= ny; cy++) {
+    // Nur ueber das Sichtbare, plus eine Zelle Rand ringsum: dort schliessen
+    // sich die Ringe gegen den Nullrand aus ecke().
+    const cyVon = Math.max(-1, ((sichtY0 / S) | 0) - 1);
+    const cyBis = Math.min(ny, ((sichtY1 / S) | 0) + 1);
+    const cxVon = Math.max(-1, ((sichtX0 / S) | 0) - 1);
+    const cxBis = Math.min(nx, ((sichtX1 / S) | 0) + 1);
+    for (let cy = cyVon; cy <= cyBis; cy++) {
       // Der Rand aus Nullen schliesst die Ringe und wird immer gegangen; im
       // Inneren springt der Index ueber ganze Kacheln hinweg.
-      const randY = cy < 0 || cy >= ny;
-      for (let cx = -1; cx <= nx; cx++) {
-        if (!randY && cx >= 0 && cx < nx) {
+      const randY = cy <= cyVon || cy >= cyBis;
+      for (let cx = cxVon; cx <= cxBis; cx++) {
+        if (!randY && cx > cxVon && cx < cxBis && cx >= 0 && cx < nx) {
           const ti = (cy >> TKBIT) * tnx + (cx >> TKBIT);
           if (t < kacMin[ti] || t > kacMax[ti]) {
             // Ans Kachelende — aber hoechstens bis nx-1, sonst ueberspringt
@@ -1331,7 +1403,8 @@ function scheibenRinge(nurEis) {
             // offene Kette wird als Keil gefuellt: grosse schiefe Flaechen
             // quer ueber die Karte.
             const ende = (((cx >> TKBIT) + 1) << TKBIT) - 1;
-            cx = ende < nx - 1 ? ende : nx - 1;
+            const deckel = Math.min(nx - 1, cxBis - 1);
+            cx = ende < deckel ? ende : deckel;
             continue;
           }
         }
@@ -1378,6 +1451,7 @@ function scheibenRinge(nurEis) {
     if (etwas) pfade[k] = pfad;
   }
   ringeCache[nurEis] = pfade; ringeStand = feldStand; ringeRW = rW;
+  ringeSicht = sichtSchluessel;
   return pfade;
 }
 
@@ -1863,7 +1937,13 @@ function heuteKueste() {
   if (kuesteCache && kuesteRW === rW) return kuesteCache;
   ringFeld();
   const S = LSCHRITT, je = kw / rW, nx = rnx, ny = rny;
+  /* Ausserhalb des Sichtbaren gilt dasselbe wie ausserhalb des Feldes: tiefer
+     als jede Platte. Das ist **noetig, nicht bloss sparsam** — ein Plattenring
+     wird gefuellt, und eine Kette, die am Rand einfach aufhoert, fuellt sich
+     als Keil quer ueber die Karte. Mit dem Nullrand schliesst sich der Ring
+     entlang der Schnittkante, und die liegt neben der Leinwand. */
   const ecke = (px, py) => {
+    if (px < sichtX0 || py < sichtY0 || px > sichtX1 || py > sichtY1) return -1e9;
     if (px < 0 || py < 0 || px >= rW || py >= rH) return -1e9;
     const i = py * rW + px;
     return maskeR[i] ? demR[i] : -1e9;
@@ -2027,6 +2107,7 @@ function bedienung() {
 let hkLinien = null, hcLinien = null;
 function zeichne() {
   if (!(breite > 60 && hoehe > 60)) return;
+  sichtFeldRechnen();
   paleo();
   lichtRechnen();
   // Das Farbbild ist die **flache** Karte. Gekippt malt jede Platte ihre
