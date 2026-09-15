@@ -66,10 +66,39 @@ body{background:var(--plane);color:var(--ink);
 .faden b{font-size:clamp(8px,1.09cqw,9.5px);line-height:1.35;font-weight:600;
   color:var(--ink);transition:opacity .5s}
 
+/* ---------- Hochkant auf dem Telefon: die Karte randlos ----------
+   Der Rahmen der Buehne kostet dort, wo am wenigsten da ist: 6 px Seitenrand,
+   12 px Polster und ein Strich machen auf 390 px Schirmbreite **zehn Prozent**
+   der Karte aus. Also faellt er weg — die Karte laeuft von Kante zu Kante, und
+   nur was Text ist, bekommt sein Polster zurueck.
+
+   Das Feld haelt dabei mindestens die halbe Schirmhoehe. Bei einem Rahmen von
+   5 370 auf 5 250 km und voller Breite steht die Karte selbst auf 45 Prozent
+   der Hoehe; den Rest nimmt die Schraegsicht, die den Stapel nach oben
+   aufstellt. Mehr ginge nur, indem die Karte seitlich beschnitten wird — und
+   ein beschnittener Rahmen ist genau das, was dieser Ordner hinter sich hat. */
+@media(max-width:640px) and (orientation:portrait){
+  .wrap{padding:0;align-items:stretch}
+  .buehne{border:0;border-radius:0;padding:0;background:transparent;
+    max-height:none}
+  .buehne .feld{min-height:52dvh}
+  .schild,.fuss,.regler,.msp,.sicht,.text{padding-inline:10px}
+  .schild{padding-top:8px}
+  .sicht{padding-bottom:10px}
+  /* Der lange Legendensatz wird auf dem Telefon ohnehin nach zwei Zeilen
+     abgeschnitten und sagt dort nichts, was die Leiter darueber nicht zeigt. */
+  .fuss .klein{display:none}
+  /* Der Faden nennt alle neun Abschnitte; auf 390 px sind das zwei Zeilen
+     graue Woerter neben einer Notiz, die dasselbe schon sagt. */
+  .faden{display:none}
+  .pole{font-size:10.5px}
+}
 @media(max-width:640px){
   .jetzt{max-width:100%;font-size:11.5px}
   .jetzt b{font-size:12.5px}
   .faden b{font-size:9.5px}
+  .schild>b{font-size:26px}
+  .schild>span{font-size:12px}
 }
 
 /* Das Feld haelt das Seitenverhaeltnis der Karte, statt den Schirm zu fuellen.
@@ -1993,8 +2022,14 @@ function masse() {
      liegt, ist Seitengrund und wird nicht gerechnet. */
   const fw = Math.max(120, feld.clientWidth), fh = Math.max(120, feld.clientHeight);
   const mass = GW / GH;
-  if (fw / fh > mass) { hoehe = fh; breite = Math.round(fh * mass); }
-  else { breite = fw; hoehe = Math.round(fw / mass); }
+  /* Die Hoehe nimmt die Leinwand ganz, die Breite nur so viel, wie die Karte
+     braucht. Hochkant ist das Feld hoeher als die Karte breit — und die
+     Schraegsicht stellt den Stapel nach oben auf, braucht die Hoehe also. In
+     der Breite waere alles darueber schwarzer Rand, der jedes Bild mitgerechnet
+     wuerde: quer stand die Leinwand einmal 862 Punkte breit und die Karte darin
+     543. */
+  hoehe = fh;
+  breite = Math.min(fw, Math.round(fh * mass));
   cv.style.width = breite + 'px';
   cv.style.height = hoehe + 'px';
   // Gerueckt wird mit left/top, **nicht** mit einem transform: eine verschobene
@@ -2274,13 +2309,21 @@ function zweiMessen() {
   zweiMitte = (p[0][1] + p[1][1]) / 2;
 }
 cv.addEventListener('pointermove', e => {
-  if (!zeiger.has(e.pointerId)) return;
+  const vorher = zeiger.get(e.pointerId);
+  if (!vorher) return;
+  /* Der Weg seit dem letzten Ereignis wird **selbst gerechnet**, nicht aus
+     movementX genommen. Das ist der Unterschied zwischen Maus und Finger:
+     movementX/Y fuellt der Browser nur fuer Zeigegeraete zuverlaessig, bei
+     Beruehrungen steht dort null. Mit der Maus liess sich die Karte also
+     schieben, mit dem Finger nicht — und aufgefallen ist es keinem, der am
+     Schreibtisch sass. */
+  const dx = e.offsetX - vorher[0], dy = e.offsetY - vorher[1];
   zeiger.set(e.pointerId, [e.offsetX, e.offsetY]);
   const p = [...zeiger.values()];
   if (p.length === 1) {
     if (tippStart && Math.hypot(e.offsetX - tippStart[0], e.offsetY - tippStart[1]) > 8) {
       grobAn();
-      vX += e.movementX; vY += e.movementY;
+      vX += dx; vY += dy;
       ansichtKlemmen(); malBald();
     }
   } else if (p.length === 2) {
