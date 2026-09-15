@@ -163,17 +163,20 @@ Download, ein zweiter Regler. Das ist ein eigenes Projekt.
   weg wäre es mit einer Schablone, die den Hub zeilenweise aus dem Feldstand
   nimmt statt pauschal aus der Stapelhöhe.
 - **Die Schrägsicht rechnet die Scheibenringe je Bild neu**, solange die Uhr
-  läuft — und seit der Trennung von Fels und Eis zwei Sätze davon. Gemessen 194
-  ms je Bild gekippt, 195 ms sobald kein Eis mehr da ist, 107 ms flach; vor dem
-  Kilometer-Rahmen waren es 175, 140 und 88 ms bei 30 Prozent leerer Leinwand. Die
+  läuft — und seit der Trennung von Fels und Eis zwei Sätze davon. Gemessen an
+  der grossen Karte (884 × 864): 294 ms je Bild in der Standardkippung, 384 ms
+  stark gekippt, 173 ms flach. Der Kachelindex und die gesammelten Striche
+  (METHODIK 8f) haben den Preis je Bildpunkt gedrittelt; teurer ist sie
+  trotzdem, weil sie viermal so viel Karte zeigt. Die
   Vorlage friert ihr Feld ein, sobald es steht, und spart damit die teuersten
   Posten bei jeder Geste. Hier ist nur der Ringspeicher an den Feldstand
   gehängt; der Rest wäre nachzuziehen, wenn sich die Schrägsicht auf dem Telefon
   als zäh erweist.
-- **Die Seite wiegt 1,15 MB (gzip 563 kB).** Das ist gut die Hälfte mehr als
-  vor dem Kilometer-Rahmen, und die Rechnung geht auf — der Rahmen deckt
-  28 Prozent mehr Fläche und ist dabei ganz gefüllt statt zu 69,7 Prozent, also
-  72 Prozent mehr Zellen mit Gelände darin. Zwei Schrauben stehen bereit,
+- **Die Seite wiegt 1,35 MB (gzip 654 kB).** Das ist doppelt so viel wie vor
+  dem Kilometer-Rahmen, und die Rechnung geht auf — der Rahmen deckt 23 Prozent
+  mehr Fläche, ist dabei ganz gefüllt statt zu 69,7 Prozent, und seine Zelle
+  misst 5,97 statt 6,83 km: 2,3-mal so viele Zellen mit Gelände darin. Zwei
+  Schrauben stehen bereit,
   falls es zu schwer wird: `BREITE` (640 statt 760 kostet ein Drittel der
   DEM-Werte) und ein **eigener Teiler je grobem Feld** — `Topo_Diff` ist
   räumlich glatt und verträgt eine gröbere Stufe als `stgit`, das einen

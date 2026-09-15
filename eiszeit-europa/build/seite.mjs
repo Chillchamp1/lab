@@ -92,7 +92,34 @@ body{background:var(--plane);color:var(--ink);
    Seitengrund statt Loch in der Karte. */
 .feld{position:relative;z-index:1;flex:0 1 auto;min-height:0;
   aspect-ratio:var(--kartenmass,1.17)}
-canvas{position:absolute;left:0;top:0;width:100%;height:100%}
+/* Breite und Hoehe kommen aus masse(): die Leinwand ist genau die Karte, ohne
+   schwarzen Rand darin. */
+canvas{position:absolute;left:0;top:0}
+
+/* ---------- Auf einem breiten, queren Schirm steht die Leiste daneben ----
+   Die Karte ist fast quadratisch, das Fenster ist quer. Untereinander bleibt
+   der Karte die Fensterhoehe **minus** Leiste, Reglern und Notiz — auf 1 440 ×
+   900 waren das 515 × 530 Punkte in einem Fenster von 1 296 000: ein Fuenftel.
+   Nebeneinander bekommt sie die **ganze** Hoehe und wird 896 × 876.
+   Der Bruch liegt dort, wo die Spalte daneben noch Text tragen kann. */
+@media (min-width:1040px) and (min-aspect-ratio:11/10){
+  .wrap{max-width:none;padding:8px}
+  .buehne{display:grid;height:calc(100dvh - 16px);max-height:none;
+    grid-template-columns:minmax(0,1fr) clamp(280px,23vw,390px);
+    grid-template-rows:auto auto auto auto auto minmax(0,1fr);
+    column-gap:16px}
+  .feld{grid-column:1;grid-row:1/-1;min-width:0;aspect-ratio:auto}
+  .schild{grid-column:2;grid-row:1}
+  .fuss{grid-column:2;grid-row:2}
+  .regler{grid-column:2;grid-row:3}
+  .msp{grid-column:2;grid-row:4}
+  .sicht{grid-column:2;grid-row:5}
+  .text{grid-column:2;grid-row:6;overflow:hidden;min-height:0}
+  /* In einer schmalen Spalte steht der Faden wieder untereinander. */
+  .faden{flex-direction:column;gap:2px}
+  .fuss .klein{white-space:normal;max-height:4em}
+  .sicht{flex-wrap:wrap}
+}
 #karte{touch-action:none}
 
 .fuss{flex:0 0 auto;min-width:0;padding:6px 0 0}
@@ -156,9 +183,9 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
 #zurueck{right:8px;top:8px;font-size:15px;padding:3px 8px}
 /* Beide sitzen am Rand der **Leinwand**, nicht des Feldes: die Leinwand ist
    schmaler, wenn die Hoehe klemmt (siehe masse()). */
-.feld{--rand:calc((100% - var(--kb,100%)) / 2)}
-#nord{left:calc(8px + var(--rand))}
-#zurueck{right:calc(8px + var(--rand))}
+.feld{--rand:calc((100% - var(--kb,100%)) / 2);--randY:calc((100% - var(--kh,100%)) / 2)}
+#nord{left:calc(8px + var(--rand));bottom:calc(8px + var(--randY))}
+#zurueck{right:calc(8px + var(--rand));top:calc(8px + var(--randY))}
 #farben{padding:2px 7px;font-size:11px;line-height:1.2;border-radius:6px;color:var(--muted);
   border-style:dashed}
 #farben[aria-pressed=true]{color:var(--ink);border-style:solid}
@@ -383,8 +410,18 @@ function setzeZeit(p) {
   ka = D.t[a] + (D.t[a + 1] - D.t[a]) * u;
 }
 
-/* ================================================================ Das Feld */
-const RAUF = 0.55;
+/* ================================================================ Das Feld
+   RAUF ist die Feinheit des Reliefgitters als Anteil der gezeichneten Karte.
+   Es stand auf 0,55 — jede Feldzelle also knapp zwei Bildpunkte breit —, und
+   das war vertretbar, solange die Karte 540 Punkte breit stand. Seit sie 900
+   Punkte breit steht, sah man es: die Farbflaeche wird aus dem Feld
+   hochskaliert und wurde klotzig, und die Hoehenlinien laufen ueber die
+   Ecken des Feldgitters und wurden eckig.
+
+   Gedeckelt wird trotzdem, und zwar in absoluten Zellen: die Kosten je Bild
+   haengen an der Zahl der Feldzellen, und gekippt wird der Scheibenstapel je
+   Bild neu geschnitten. FELDMAX ist gemessen (METHODIK 8f), nicht gegriffen. */
+const RAUF = 0.9, FELDMAX = 680;
 let rW = 0, rH = 0;
 let demR = null, maskeR = null, rock = null, eisD = null, flaeche = null;
 let bild = null, licht = null, lichtBild = null;
@@ -435,7 +472,9 @@ function feldAnlegen() {
   const mass = Math.min(breite / GW, hoehe / GH);
   kw = GW * mass; kh = GH * mass;
   kx = (breite - kw) / 2; ky = (hoehe - kh) / 2;
-  const w = Math.max(8, Math.round(kw * RAUF)), h = Math.max(8, Math.round(kh * RAUF));
+  const deckel = Math.min(1, FELDMAX / Math.max(1, kw * RAUF));
+  const w = Math.max(8, Math.round(kw * RAUF * deckel));
+  const h = Math.max(8, Math.round(kh * RAUF * deckel));
   if (w === rW && h === rH) return false;
   rW = w; rH = h;
   for (const k of [hkF, hkL, hkS]) { k.width = w; k.height = h; }
@@ -779,6 +818,61 @@ function linienFeld() {
   bahnX = new Float32Array(n); bahnY = new Float32Array(n); bahnF = new Float32Array(n);
 }
 
+/* ---------- Kachelindex fuer Marching Squares ----------
+   Ohne ihn laeuft jeder Zug ueber das **ganze** Feld: 37 Hoehenlinien mal
+   140 000 Marschzellen sind fuenf Millionen Besuche je Bild, und gekippt
+   kommen 33 Platten mal zwei Materialien noch einmal so viel dazu. Gemessen
+   waren das 610 von 619 ms — die Karte ist mit dem feineren Feld nicht an
+   ihrem Bild teuer geworden, sondern an dieser einen Schleife.
+
+   Der Index teilt das Marschgitter in Kacheln von 8 mal 8 Zellen und merkt
+   sich je Kachel den kleinsten und groessten Feldwert darin. Ein Zug auf der
+   Hoehe t kann eine Kachel nur kreuzen, wenn t zwischen beiden liegt; alle
+   anderen werden als Block uebersprungen. Gelaende ist zusammenhaengend —
+   eine Kachel deckt rund hundert Kilometer, und ueber hundert Kilometer
+   aendert sich die Hoehe selten um mehr als zwei, drei Baender.
+
+   Gebaut wird er in **einem** Durchgang ueber das Feld, mit derselben
+   Vorschrift, die der Zug spaeter liest. Er darf nur zu weit greifen, nie zu
+   eng: uebersprungen wird ausschliesslich, was streng ausserhalb liegt. */
+const TKACHEL = 4, TKBIT = 2;   // 1 << TKBIT === TKACHEL
+let kacNX = 0, kacNY = 0, kacMin = null, kacMax = null;
+function kachelBauen(nx, ny, feld, modus) {
+  const tnx = Math.ceil(nx / TKACHEL), tny = Math.ceil(ny / TKACHEL);
+  if (tnx !== kacNX || tny !== kacNY || !kacMin) {
+    kacNX = tnx; kacNY = tny;
+    kacMin = new Float32Array(tnx * tny); kacMax = new Float32Array(tnx * tny);
+  }
+  const S = LSCHRITT;
+  for (let ty = 0; ty < tny; ty++) {
+    const cy1 = Math.min(ny, (ty + 1) * TKACHEL);
+    const py0 = ty * TKACHEL * S, py1 = Math.min(rH - 1, cy1 * S);
+    for (let tx = 0; tx < tnx; tx++) {
+      const cx1 = Math.min(nx, (tx + 1) * TKACHEL);
+      const px0 = tx * TKACHEL * S, px1 = Math.min(rW - 1, cx1 * S);
+      let mn = Infinity, mx = -Infinity;
+      for (let y = py0; y <= py1; y++) {
+        const z = y * rW;
+        for (let x = px0; x <= px1; x++) {
+          const i = z + x;
+          // Ohne Rueckruf je Zelle: eine halbe Million indirekter Aufrufe je
+          // Bild kosten mehr als der Vergleich, der dahinter steht.
+          // modus 0: das rohe Feld (Hoehenlinien — ungueltige Zellen werden im
+          // Rumpf uebersprungen, ihr Wert kommt nie vor).
+          // modus 1: wie ecke() beim Gesteinsstapel, 2: wie ecke() beim Eis.
+          const v = modus === 0 ? feld[i]
+                  : modus === 1 ? (maskeR[i] ? feld[i] : -1e9)
+                  : (maskeR[i] && eisD[i] >= EISSCHWELLE ? feld[i] : -1e9);
+          if (v < mn) mn = v;
+          if (v > mx) mx = v;
+        }
+      }
+      kacMin[ty * tnx + tx] = mn; kacMax[ty * tnx + tx] = mx;
+    }
+  }
+  return tnx;
+}
+
 // Ein Zug je Beleuchtungsstufe: 12 Stufen, hell und dunkel, also 24 Zuege fuer
 // die ganze Karte statt zweitausend einzelner Striche.
 const LINIENEIMER = Array.from({ length: 4 * NSTUFE }, () => []);
@@ -789,6 +883,11 @@ function zieheLinien(zc, feld, niveaus, gilt, fest) {
   for (const e of LINIENEIMER) e.length = 0;
   const holL = (x, y) => licht[Math.max(0, Math.min(rH - 1, y)) * rW + Math.max(0, Math.min(rW - 1, x))];
 
+  /* Der Index liest hier das **rohe** Feld, nicht die Gueltigkeit: eine
+     ungueltige Zelle wird im Rumpf uebersprungen, ihr Wert kommt also nie
+     vor. Damit ist [min,max] eine Obermenge dessen, was der Zug sieht — und
+     eine Obermenge ueberspringt nie zu viel. */
+  const tnx = kachelBauen(nx, ny, feld, 0), tny = kacNY;
   for (const niv of niveaus) {
     const t = niv.m;
     const stempel = ++stempelZaehler;
@@ -800,8 +899,14 @@ function zieheLinien(zc, feld, niveaus, gilt, fest) {
       }
     };
     const binde = (p, q) => { if (kA[p] < 0) kA[p] = q; else if (kB[p] < 0) kB[p] = q; };
-    for (let cy = 0; cy < ny; cy++) {
-      for (let cx = 0; cx < nx; cx++) {
+    for (let ty = 0; ty < tny; ty++) {
+     for (let tx = 0; tx < tnx; tx++) {
+      const ti = ty * tnx + tx;
+      if (t < kacMin[ti] || t > kacMax[ti]) continue;
+      const cyA = ty * TKACHEL, cyB = Math.min(ny, cyA + TKACHEL);
+      const cxA = tx * TKACHEL, cxB = Math.min(nx, cxA + TKACHEL);
+      for (let cy = cyA; cy < cyB; cy++) {
+       for (let cx = cxA; cx < cxB; cx++) {
         const px0 = cx * S, px1 = px0 + S, py0 = cy * S, py1 = py0 + S;
         const i0 = py0 * rW + px0, i1 = py0 * rW + px1, i2 = py1 * rW + px1, i3 = py1 * rW + px0;
         // Eine Zelle, deren Ecken nicht alle gelten, wird uebersprungen. Das
@@ -828,7 +933,9 @@ function zieheLinien(zc, feld, niveaus, gilt, fest) {
           case 7: case 8: binde(h2, v3); binde(v3, h2); break;
           default: binde(v3, h0); binde(h0, v3); binde(v1, h2); binde(h2, v1);
         }
+       }
       }
+     }
     }
     // Verketten: erst die offenen Ketten, dann die geschlossenen Ringe.
     for (let runde = 0; runde < 2; runde++) {
@@ -893,7 +1000,17 @@ function ablegen(m, zaehl, kueste) {
   }
 }
 
-const LINIE = 0.7, ZAEHLSTARK = 1.6, KUESTESTARK = 2.1;
+/* Duenner als frueher (0,7 / 1,6 / 2,1). Die Strichbreite steht in
+   Bildpunkten und die Karte ist fast doppelt so gross geworden — dieselbe
+   Breite liest sich auf der grossen Karte als Balken, nicht als Linie. */
+const LINIE = 0.55, ZAEHLSTARK = 1.7, KUESTESTARK = 2.3;
+/* Ein Strich je Eimer und Breite, nicht je Zug.
+   Vorher wurde jeder Zug einzeln begonnen und gestrichen: bei feinem Feld
+   sind das mehrere tausend Striche je Bild, und gemessen waren es **182
+   von 271 ms**. Die Punkte sind dieselben; teuer war das Aufsetzen. Jetzt
+   sammelt ein Pfad alle Zuege eines Eimers, die dieselbe Breite
+   haben — zwei Breiten je Eimer, also rund fuenfzig Striche fuer die ganze
+   Karte. Die Kueste kommt zuletzt, damit sie obenauf liegt. */
 function malen(zc) {
   zc.lineCap = 'round'; zc.lineJoin = 'round';
   for (let idx = 0; idx < LINIENEIMER.length; idx++) {
@@ -906,12 +1023,20 @@ function malen(zc) {
     const staerke = (s + 0.5) / NSTUFE;
     zc.strokeStyle = dunkel ? 'rgba(0,0,0,' + (0.15 + 0.7 * staerke).toFixed(3) + ')'
                             : 'rgba(255,255,255,' + (0.12 + 0.62 * staerke).toFixed(3) + ')';
-    for (const { seg, kueste } of eimer) {
-      zc.lineWidth = LINIE * (kueste ? KUESTESTARK : zaehl ? ZAEHLSTARK : 1);
-      zc.beginPath();
-      zc.moveTo(seg[0], seg[1]);
-      for (let i = 1; i < seg.length / 2; i++) zc.lineTo(seg[i * 2], seg[i * 2 + 1]);
-      zc.stroke();
+    for (let art = 0; art < 2; art++) {
+      const kueste = art === 1;
+      let offen = false;
+      for (const e of eimer) {
+        if (e.kueste !== kueste) continue;
+        if (!offen) { zc.beginPath(); offen = true; }
+        const seg = e.seg;
+        zc.moveTo(seg[0], seg[1]);
+        for (let i = 1; i < seg.length / 2; i++) zc.lineTo(seg[i * 2], seg[i * 2 + 1]);
+      }
+      if (offen) {
+        zc.lineWidth = LINIE * (kueste ? KUESTESTARK : zaehl ? ZAEHLSTARK : 1);
+        zc.stroke();
+      }
     }
   }
 }
@@ -926,7 +1051,7 @@ function malen(zc) {
 function eisrandUeber(zc) {
   zc.save();
   zc.strokeStyle = 'rgba(120,150,175,.85)';
-  zc.lineWidth = 0.9;
+  zc.lineWidth = 0.75;
   zieheLinien(zc, eisD, [{ m: EISSCHWELLE, zaehl: false, kueste: false }],
     i => maskeR[i] === 2, true);
   zc.restore();
@@ -958,7 +1083,13 @@ function scheiben() {
 
    Eine Scheibe ist ein **Umriss**, keine Maske. Gemessen in der Vorlage:
    Pfade beschneiden 0,1 ms, derselbe Stapel als Rastermasken 242 ms. */
-let NEIGUNG = 0, DREHUNG = 0, ZOOM = 1, vX = 0, vY = 0;
+/* Die Karte steht **leicht gekippt** da, nicht flach. Der Grund ist der
+   Gegenstand: ein Eisschild ist ein Koerper, und flach gesehen ist er eine
+   weisse Flaeche. Schon zwoelf Grad geben dem Stapel eine Kante und dem
+   Betrachter den Hinweis, dass er kippen und drehen kann.
+   KIPPSTART in Anteilen von KIPPMAX; „Zurueck" stellt darauf zurueck. */
+const KIPPSTART = 0.2;
+let NEIGUNG = KIPPSTART, DREHUNG = 0, ZOOM = 1, vX = 0, vY = 0;
 const KIPPMAX = 62 * Math.PI / 180, ZOOMMAX = 8;
 /* ---------- Wie hoch der Stapel steht ----------
    Vorher ein Anteil der Feldhoehe: hoch = hoehe mal 0,30. Das ist bequem und
@@ -1109,6 +1240,11 @@ function scheibenRinge(nurEis) {
   };
   const pfade = new Array(NSCHEIBE).fill(null);
   if (nurEis && eisAnzahl === 0) { ringeCache[1] = pfade; return pfade; }
+  /* Derselbe Kachelindex wie bei den Hoehenlinien, mit derselben Vorschrift,
+     die ecke() liest. Gekippt sind es 33 Platten mal zwei Materialien statt
+     37 Hoehenlinien — dieselbe Schleife, dieselbe Rechnung, dieselbe
+     Ersparnis. */
+  const tnx = kachelBauen(nx, ny, flaeche, nurEis ? 2 : 1);
   for (let k = 1; k < NSCHEIBE; k++) {
     const t = S_VON + k * dzM;
     // Der Eisstapel braucht nur die Hoehen, in denen Eis liegt. Eine Scheibe
@@ -1125,7 +1261,23 @@ function scheibenRinge(nurEis) {
     };
     const binde = (p, q) => { if (rA[p] < 0) rA[p] = q; else if (rB[p] < 0) rB[p] = q; };
     for (let cy = -1; cy <= ny; cy++) {
+      // Der Rand aus Nullen schliesst die Ringe und wird immer gegangen; im
+      // Inneren springt der Index ueber ganze Kacheln hinweg.
+      const randY = cy < 0 || cy >= ny;
       for (let cx = -1; cx <= nx; cx++) {
+        if (!randY && cx >= 0 && cx < nx) {
+          const ti = (cy >> TKBIT) * tnx + (cx >> TKBIT);
+          if (t < kacMin[ti] || t > kacMax[ti]) {
+            // Ans Kachelende — aber hoechstens bis nx-1, sonst ueberspringt
+            // das cx++ der Schleife die **Randspalte** cx = nx. Ohne sie
+            // schliesst sich der Ring am rechten Bildrand nicht, und eine
+            // offene Kette wird als Keil gefuellt: grosse schiefe Flaechen
+            // quer ueber die Karte.
+            const ende = (((cx >> TKBIT) + 1) << TKBIT) - 1;
+            cx = ende < nx - 1 ? ende : nx - 1;
+            continue;
+          }
+        }
         const px0 = cx * S, px1 = px0 + S, py0 = cy * S, py1 = py0 + S;
         const a = ecke(px0, py0), b = ecke(px1, py0), c = ecke(px1, py1), d = ecke(px0, py1);
         const A = a > t, B = b > t, C = c > t, E = d > t;
@@ -1453,7 +1605,7 @@ function heuteUeber() {
      Karte hat weisses Eis und dunkles Wasser, und ein Schatten traegt nur auf
      einem von beiden. Stockholm stand auf der Eiskuppe und war nicht zu
      lesen. */
-  ctx.font = '600 ' + (breite < 460 ? 8 : 9.5) + 'px system-ui,sans-serif';
+  ctx.font = '600 ' + (breite < 460 ? 7.5 : 8.5) + 'px system-ui,sans-serif';
   ctx.textBaseline = 'middle';
   ctx.lineJoin = 'round';
   for (const o of ORTE) {
@@ -1489,10 +1641,12 @@ const GIPFELFELS = 'rgba(255,214,150,.92)';
 const nfm = new Intl.NumberFormat('en-GB');
 function marke(sx, sy, text, farbe, unten) {
   ctx.lineJoin = 'round';
-  ctx.font = '600 10.5px system-ui,sans-serif';
+  // Klein. Die Schilder sind Beschriftung, nicht Ueberschrift: auf einer Karte,
+  // die 900 Punkte breit steht, trug die alte Groesse wie ein Plakat.
+  ctx.font = '600 ' + (breite < 520 ? 8 : 9) + 'px system-ui,sans-serif';
   ctx.textBaseline = unten ? 'top' : 'bottom';
   // Gemessen, nicht geraten: die Schilder hiessen einmal „ice 2 798 m" und
-  // waren 60 Punkte breit; sie heissen jetzt „Fennoscandia ice 2 702 m" und
+  // waren 60 Punkte breit; sie heissen jetzt „Scandinavian ice 2 694 m" und
   // sind doppelt so breit. Eine feste Schwelle von 90 Punkten liess sie am
   // rechten Rand halb draussen haengen.
   const rechts = sx + 6 + ctx.measureText(text).width > breite - 4;
@@ -1522,7 +1676,7 @@ function gipfelUeber() {
   ctx.save();
   /* Eine Marke je Kuppe des eurasischen Eiskomplexes, und sie verschwindet,
      sobald diese Kuppe geschmolzen ist. Das ist der Gewinn des groesseren
-     Rahmens: dass Barents-Kara neben Fennoscandia steht, dass Britannien mit
+     Rahmens: dass Barents-Kara neben Skandinavien steht, dass Britannien mit
      knapp der halben Hoehe daneben liegt, und dass man beim Ablaufen sieht,
      in welcher Reihenfolge sie verschwinden.
 
@@ -1533,7 +1687,7 @@ function gipfelUeber() {
     if (!(kuppeHoch[k] > 0) || kuppeWo[k] < 0) continue;
     const gx = (kuppeWo[k] % rW) / rW * GW, gy = ((kuppeWo[k] / rW) | 0) / rH * GH;
     const [sx, sy] = projRand(gx, gy);
-    /* Der Name **und** das Wort: „Fennoscandia 2 702 m" liest sich wie ein
+    /* Der Name **und** das Wort: „Scandinavian 2 694 m" liest sich wie ein
        Berg. Es ist aber die Oberflaeche eines Eisschildes, und genau das ist
        der Vergleich, den die Karte anbietet — daneben steht der Mont Blanc
        mit seiner Felshoehe zur selben Zeit. */
@@ -1812,7 +1966,10 @@ function zeichne() {
   if (!(breite > 60 && hoehe > 60)) return;
   paleo();
   lichtRechnen();
-  farbeRechnen();
+  // Das Farbbild ist die **flache** Karte. Gekippt malt jede Platte ihre
+  // Bandfarbe selbst und das Bild wird nie hochgelegt — es zu rechnen kostete
+  // 35 ms je Bild fuer nichts.
+  if (!schraeg()) farbeRechnen();
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   ctx.clearRect(0, 0, breite, hoehe);
   if (schraeg()) {
@@ -1856,22 +2013,25 @@ function masse() {
   // schwimmt.
   const buehne = feld.closest('.buehne') || document.documentElement;
   buehne.style.setProperty('--kartenmass', (GW / GH).toFixed(4));
-  /* Das Feld haelt das Verhaeltnis nur, solange die **Breite** knapp ist. Auf
-     einem breiten, niedrigen Schirm klemmt die Hoehe, und ein Flex-Kind
-     schrumpft dann in der Hoehe, ohne in der Breite nachzugeben: die Leinwand
-     stand 862 Punkte breit da und die Karte darin 543 — ein Drittel der
-     Bildpunkte wurde fuer schwarzen Rand gerechnet. Die Leinwand bekommt
-     deshalb hier ihre Breite, nicht vom CSS. Das Feld bleibt, wie es ist —
-     sonst legte das Setzen der Breite die Hoehe neu fest und das Messen liefe
-     im Kreis. */
-  hoehe = Math.max(120, feld.clientHeight);
-  breite = Math.max(120, Math.min(feld.clientWidth, Math.round(hoehe * GW / GH)));
+  /* Die Leinwand ist **genau die Karte**, in beiden Richtungen. Das CSS-Feld
+     kann sie nicht liefern: ein Flex-Kind mit aspect-ratio schrumpft in der
+     Hoehe, ohne in der Breite nachzugeben (die Leinwand stand 862 Punkte breit
+     da und die Karte darin 543), und in der Spalte daneben ist das Feld so
+     hoch wie das Fenster und die Karte nicht. Was daneben oder darueber
+     liegt, ist Seitengrund und wird nicht gerechnet. */
+  const fw = Math.max(120, feld.clientWidth), fh = Math.max(120, feld.clientHeight);
+  const mass = GW / GH;
+  if (fw / fh > mass) { hoehe = fh; breite = Math.round(fh * mass); }
+  else { breite = fw; hoehe = Math.round(fw / mass); }
   cv.style.width = breite + 'px';
-  // Gerueckt wird mit left, **nicht** mit einem transform: eine verschobene
+  cv.style.height = hoehe + 'px';
+  // Gerueckt wird mit left/top, **nicht** mit einem transform: eine verschobene
   // Leinwand kostete im Pruefbrowser 25 ms je Bild gekippt, weil sie damit
   // eine eigene Ebene bekommt und in jedem Bild neu zusammengesetzt wird.
-  cv.style.left = Math.round((feld.clientWidth - breite) / 2) + 'px';
+  cv.style.left = Math.round((fw - breite) / 2) + 'px';
+  cv.style.top = Math.round((fh - hoehe) / 2) + 'px';
   feld.style.setProperty('--kb', breite + 'px');
+  feld.style.setProperty('--kh', hoehe + 'px');
   const dpr = GROB ? 1 : Math.min(2.5, devicePixelRatio || 1);
   DPR = dpr;
   const bw = Math.round(breite * dpr), bh = Math.round(hoehe * dpr);
@@ -2255,7 +2415,7 @@ document.getElementById('band').addEventListener('click', e => {
   zeichne();
 });
 document.getElementById('zurueck').addEventListener('click', () => {
-  ZOOM = 1; vX = 0; vY = 0; NEIGUNG = 0; DREHUNG = 0;
+  ZOOM = 1; vX = 0; vY = 0; NEIGUNG = KIPPSTART; DREHUNG = 0;
   reglerNach(); sichtRechnen(); zeichne();
 });
 function leiterWaehlen(cvd, merken) {
