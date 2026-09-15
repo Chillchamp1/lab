@@ -524,6 +524,83 @@ Seitenverhältnis der Karte, die Bühne schrumpft mit, die Notiz wandert unter
 640 px unter die Karte, und die Marken der Leiter werden **gemessen** und bei
 Berührung ausgedünnt, statt nach einer geratenen Schwelle.
 
+## 8c. Die Schrägsicht: wie hoch der Stapel steht
+
+Die Schrägsicht ist ein Laserschnittmodell — das Feld wird in Höhenscheiben
+geschnitten und versetzt übereinandergelegt. Zwei Dinge daran waren falsch, und
+beide fielen erst am fertigen Bild auf.
+
+### Die Überhöhung war eine geratene Zahl
+
+Sie stand als Anteil der Feldhöhe: `hoch = hoehe × 0,30`. Das sagt über das
+Gelände nichts. Dieselbe Zahl macht aus einem Tiefland einen Teller und aus den
+Alpen einen Nadelwald — und genau das war zu sehen: jede Bergspitze ein Turm,
+der Eisschild eine Wand.
+
+**Die Metrik, die an ihre Stelle tritt,** misst, was schiefgeht. Bei einem
+Laserschnittmodell ist das das Verdecken: steht die Wand einer Platte höher, als
+die Terrasse darunter tief ist, sieht man von der Terrasse nichts mehr.
+
+    λ(g) = tan(φ) · g · px_v / px_h
+
+mit *g* der Geländesteigung in Metern je Gitterzelle, *px_v* den Bildpunkten je
+Meter Höhe, *px_h* den Bildpunkten je Gitterzelle, *φ* der Kippung. λ < 1 heisst:
+die Terrasse bleibt sichtbar.
+
+Ausgelegt wird auf die stärkste Kippung — dort verdeckt es am meisten — und auf
+den Hang, der das Gebirge ausmacht. Gemessen wird er in `quellen.py` über alle
+48 Zeitscheiben, auf genau dem Feld, das die Seite zeichnet:
+
+| Quantil der Steigung | m je 6,83-km-Zelle | Neigung |
+|---|---|---|
+| p50 | 20,3 | 0,30 % |
+| p75 | 66,0 | 0,97 % |
+| **p90** | **173,4** | **2,54 %** |
+| p99 | 547,4 | 8,01 % |
+| p100 | 2 180,7 | 31,9 % |
+
+Genommen wird **p90**: unterhalb davon liegt das Flachland, das ohnehin flach
+aussieht; oberhalb liegen die einzelnen Steilkanten, nach denen man nicht
+auslegen kann, ohne alles andere platt zu drücken. Die Zahl reist als `D.g90`
+in der Nutzlast mit, die Seite rechnet daraus
+
+    hoch = λ · px_h · (S_BIS − S_VON) / (tan(φ_max) · g90)
+
+**Der Zielwert λ ist am Bild festgelegt, nicht gerechnet.** Die Metrik sagt, was
+gemessen wird, nicht wo die Grenze des guten Geschmacks liegt. Gerendert und
+verglichen:
+
+| λ | Überhöhung | Anteil der Feldhöhe | Bild |
+|---|---|---|---|
+| 13 | 273-fach | 0,30 | der alte Zustand: Nadelwald, der Eisschild eine Wand |
+| 6 | 126-fach | 0,14 | die Alpen fangen wieder an zu zacken |
+| **4** | **84-fach** | **0,09** | **Gebirge bleiben Gebirge, der Eisschild ist eine Kuppel** |
+| 2,6 | 55-fach | 0,06 | die Mittelgebirge verschwinden |
+
+84-fach ist immer noch viel. Die Karte ist 4 400 km breit und 5 km hoch: bei 1:1
+wäre der Eisschild einen halben Bildpunkt dick. Eine Schrägsicht auf einen
+Kontinent kommt ohne starke Überhöhung nicht aus — sie sollte nur eine gemessene
+sein und keine geratene.
+
+### Eine Platte hatte eine Farbe zu wenig
+
+Eine Platte ist eine Höhenstufe, und eine Höhenstufe hat eine Farbe. Welche —
+Gestein oder Eis — wurde danach entschieden, was auf dieser Höhe über die ganze
+Karte überwiegt. Bei 1 400 m liegen aber die Alpen **und** der Eisschild, und wer
+von beiden mehr Zellen hatte, färbte den anderen mit: **der Gletscher bekam
+grüne Wände, die Alpen weisse.** Auf einem Bild, das Fels und Eis trennen soll,
+ist das der eine Fehler, den es nicht geben darf.
+
+Jetzt wird je Höhe zweimal geschnitten — einmal über das ganze Feld, einmal nur
+über die Eiszellen — und in dieser Reihenfolge gemalt. Der Eisring ist per
+Konstruktion eine Teilmenge des Felsrings, liegt also genau dort darüber, wo Eis
+liegt. Das ist dasselbe „Eis gewinnt, wo es liegt" wie in der flachen Sicht, nur
+in drei Dimensionen.
+
+Gekostet hat es 126 statt 98 ms je Bild; der Eisstapel überspringt dafür die
+Höhen, in denen kein Eis liegt, und fällt ganz weg, sobald keines mehr da ist
+(96 ms bei 0 ka).
+
 ## 9. Kodierung und Nutzlast
 
 Grundlage ist der Zickzack-Varint der Vorlage im selben 64-Zeichen-Alphabet.
@@ -613,8 +690,9 @@ aus fünf Bildern:
 
 | | |
 |---|---|
-| flach, Jahr läuft | 72 ms |
-| gekippt, Jahr läuft | 98 ms |
+| flach, Jahr läuft | 91 ms |
+| gekippt, Jahr läuft | 126 ms |
+| gekippt, heute (kein Eis) | 96 ms |
 
 Zum Vergleich nennt die Vorlage für ihre Karte im selben Messgeschirr 143 ms
 flach und 133 ms gekippt. Die Zahlen sind nicht unmittelbar vergleichbar —

@@ -600,7 +600,16 @@ bis 45° O ist breiter als hoch (760 × 649 Zellen).
 | `.wrap{height:100dvh}`, das Feld füllt den Schirm | `min-height`, und das Feld hält `aspect-ratio` der Karte | Auf 390 px füllte die Karte sonst **48 Prozent** des Feldes; der Rest war schwarz. Jetzt schrumpft die Bühne, und der Rand unten ist Seitengrund statt Loch in der Karte. |
 | Notiz und Faden liegen **hinter** der Karte, die Karte weicht ihnen aus | unter 640 px liegen sie **unter** der Karte | Das Prinzip hängt daran, dass der Umriss Platz lässt. Deutschland tut das; Europa reicht auf dem Telefon bis an beide Ränder und verdeckte zwei Drittel jeder Zeile. |
 
-Dazu eine dritte, kleinere: die Marken der Farbleiter werden **gemessen** und
+Und eine dritte, die nicht am Ausschnitt hängt, sondern am Gelände: die
+**Überhöhung der Schrägsicht** steht in der Vorlage als Anteil der Feldhöhe
+(`hoehe × 0,30`). Für ihre Karte geht das — Deutschlands Höhen und ihr
+Kartenmassstab passen zufällig dazu. Für einen Kontinent von 4 400 km Breite
+geht es nicht: dieselbe Zahl machte aus den Alpen einen Nadelwald. Hier kommt
+sie aus einer gemessenen Grösse des Geländes (METHODIK, Abschnitt 8c). Das
+Verfahren der Vorlage — Laserschnitt, Wandanstrich, geprägte Lichtkante — bleibt
+unangetastet; nur die eine Zahl ist jetzt eine gerechnete.
+
+Dazu eine vierte, kleinere: die Marken der Farbleiter werden **gemessen** und
 bei Berührung ausgedünnt, statt nach einer Bildschirmbreite zu schalten. Die
 Wasserbänder dieser Leiter sind doppelt so hoch wie die Landbänder, also
 drängen sich −2 km, −1 km und 0 auf dem linken Drittel — eine geratene

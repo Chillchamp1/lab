@@ -110,6 +110,12 @@ Download, ein zweiter Regler. Das ist ein eigenes Projekt.
 
 ## Bekannte Schwächen der jetzigen Fassung
 
+- **Die Überhöhung der Schrägsicht ist 84-fach.** Das ist gemessen und nicht
+  geraten (METHODIK, Abschnitt 8c) — aber es bleibt eine Überhöhung, und wer
+  Hangneigungen aus dem Bild abliest, liest sie falsch. Das Gegenmittel wäre
+  eine Zahl im Bild; sie hätte auf einer Karte, die schon zwei Leitern, eine
+  Zeitleiste und ein Unsicherheitsband trägt, keinen Platz, der sie besser
+  machte.
 - **Der Eisrand ist auf 68 km abgetastet.** Das ist die Auflösung der Quelle,
   nicht eine Sparmassnahme: `quellen.py` lässt das Grobgitter nie feiner
   werden als die ICE-6G_C-Zelle. Die Stufe am Eisrand wird dadurch über rund
@@ -123,10 +129,12 @@ Download, ein zweiter Regler. Das ist ein eigenes Projekt.
   weg wäre es mit einer Schablone, die den Hub zeilenweise aus dem Feldstand
   nimmt statt pauschal aus der Stapelhöhe.
 - **Die Schrägsicht rechnet die Scheibenringe je Bild neu**, solange die Uhr
-  läuft. Die Vorlage friert ihr Feld ein, sobald es steht, und spart damit die
-  teuersten Posten bei jeder Geste. Hier ist nur der Ringspeicher an den
-  Feldstand gehängt; der Rest wäre nachzuziehen, wenn sich die Schrägsicht auf
-  dem Telefon als zäh erweist.
+  läuft — und seit der Trennung von Fels und Eis zwei Sätze davon. Gemessen 126
+  ms je Bild gekippt, 96 ms sobald kein Eis mehr da ist, 91 ms flach. Die
+  Vorlage friert ihr Feld ein, sobald es steht, und spart damit die teuersten
+  Posten bei jeder Geste. Hier ist nur der Ringspeicher an den Feldstand
+  gehängt; der Rest wäre nachzuziehen, wenn sich die Schrägsicht auf dem Telefon
+  als zäh erweist.
 - **Kein Tiefpass über die Bilder.** Die Vorlage glättet das Höhenfeld über die
   Zeit, weil ihr Raster von Bild zu Bild springt und die Höhenlinien mitzappeln.
   Hier steht das Gitter fest — es ist aus einem festen DEM abgeleitet, nicht aus
