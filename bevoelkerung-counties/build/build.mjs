@@ -1,0 +1,3940 @@
+// Erzeugt die fertige, in sich geschlossene index.html.
+// Aufruf: node build.mjs > ../index.html
+//
+// Dieselbe Maschine wie bei der Karte der deutschen Kreise, mit drei
+// Unterschieden: die Geometrie kommt als TopoJSON statt als Shapefile, die
+// Projektion steht auf der Mitte der Vereinigten Staaten, und es sind knapp
+// achtmal so viele Gebiete. Das Knotenbudget ist entsprechend höher.
+
+import { ladeCountys } from './laden.mjs';
+import { baueKnotenmodell, vereinfache, beschraenke } from './topologie.mjs';
+import { leseLang, baueBilder } from './daten.mjs';
+import { rechneZeitreihe } from './zeitreihe.mjs';
+import { baueNutzlast } from './nutzlast.mjs';
+import { ENTPACKER } from './code.mjs';
+import { kreisStammdaten } from './stammdaten.mjs';
+import { ringVorzeichen, gefalteteRinge } from './geometrie.mjs';
+
+const log = s => process.stderr.write(s + '\n');
+const KNOTEN = Number(process.env.KNOTEN ?? 24000);
+const GITTER = Number(process.env.GITTER ?? 1600);
+// Wie oft das Kartogramm je Bild nachgerechnet wird. Deutschland kommt mit
+// 6 und 4 aus; die Vereinigten Staaten spannen fünf Zehnerpotenzen Dichte
+// statt dreieinhalb, und die Strömung braucht entsprechend länger.
+const KALT = Number(process.env.KALT ?? 6);
+const WARM = Number(process.env.WARM ?? 4);
+// Wohin die gerechnete Zeitreihe zwischengelegt wird. Mit einem eigenen Namen
+// lässt sich ein schneller Probebau fahren, ohne den guten Stand zu überschreiben.
+const CACHE = process.env.CACHE ? '-' + process.env.CACHE : '';
+
+/* ---------- Die Farbleiter, gerechnet statt gegriffen ----------
+   Sie stand als Liste von vierundzwanzig Zeichenketten in der Seite, und der
+   Kommentar daneben behauptete, sie sei berechnet. Das stimmte auch — nur eben
+   einmal, von Hand, und das Ergebnis war hineinkopiert. Jetzt rechnet sie hier,
+   aus ihrer Beschreibung: je Band eine Helligkeit, ein Farbton und ein Anteil
+   der **grössten Buntheit, die sRGB an dieser Stelle noch hergibt**. Gesucht
+   wird die per Halbierung, in OKLCh.
+
+   Zwei Bahnen. Die untersten Bänder sind **Wasser**: tief dunkelblau, zum Ufer
+   hin heller. Darüber das Land, von Waldgrün über Grasgrün, Gelb und Ocker bis
+   Rot, und ganz oben zwei feste Töne — ein fast entsättigtes Grau als Fels und
+   reines Weiss als Schnee. */
+/* ---------- Wo die Küste liegt ----------
+   Das Ufer war eine Zahl ohne Bedeutung: vier der vierundzwanzig Bänder waren
+   blau, das Leiterende lag bei ×2,31, und daraus fiel eine Küste bei ×0,43
+   heraus — kein Schwellenwert, den irgendwer kennt, sondern ein Nebenprodukt
+   zweier anderer Entscheidungen. Blau hiess „unten", weiter nichts.
+
+   Jetzt heisst es etwas. **Der Meeresspiegel liegt bei ×0,50, der halben
+   mittleren Dichte Deutschlands von 2024** — in der Wirklichkeit rund 95
+   Einwohner je Quadratkilometer und damit ungefähr die Linie, unterhalb derer
+   die EU eine Gegend „dünn besiedelt" nennt. Unter Wasser steht also das, was
+   man strukturschwach nennt, wenn man es an der Dichte misst.
+
+   Das „ungefähr" ist ernst gemeint. Gefärbt wird **gezeichnete** Dichte, und
+   der feste Boden ist ein halb eingemischtes Kartogramm: er schrumpft leere
+   Kreise und streckt volle. ×0,50 ist in der Karte exakt, in Einwohnern je km²
+   aber nur im Mittel — die 27 Kreise, die 2024 zwischen ×0,48 und ×0,52
+   liegen, haben real zwischen 78 und 126, im Median 95. Und weil der Boden die
+   leeren Kreise kleiner zeichnet, als sie sind, liegen 12,4 % der Karte unter
+   Wasser, während real 31,9 % der Landesfläche unter 100 E/km² liegen.
+
+   Damit die Küste genau dort liegt, hängen drei Zahlen zusammen — die Zahl der
+   Bänder, die Zahl der blauen darunter und das obere Ende der Leiter:
+
+       Ufer = WASSER / NBAND · (1 + RESERVE) · Leiterende
+
+   Zwei davon sind frei, die dritte folgt. Gewählt sind **25 Bänder und 5
+   blaue**, und damit geht die ganze Leiter in runden Zahlen auf:
+
+       ein Band          = ×0,1
+       fünf Bänder       = ×0,5 = die Küste
+       die Rampe endet   = ×2,5
+       das Knie beginnt  = ×2,222 (gemessenes Quantil ×2,305, 4 % daneben)
+
+   Jede halbe Stufe fällt damit auf eine Bandgrenze, also auf eine Höhenlinie,
+   und die Marken der Legende stehen bei 0, 20, 40, 60 und 80 Prozent der
+   Leiter.
+
+   Was das über die Zeit zeigt: 1871 liegen 90 % der Fläche unter Wasser, die
+   Karte ist eine Inselgruppe. 1900 sind es 56 %, 1939 34 %, um 1950 nur noch
+   11,4 % — nie wohnte in der Fläche so viel Deutschland wie nach der
+   Vertreibung. Seither steigt die See wieder: 8,9 % 1996, 11,4 % 2011, 12,2 %
+   2024, und sie steht fast ganz im Nordosten. */
+const NBAND = Number(process.env.NBAND ?? 25), WASSER = Number(process.env.WASSER ?? 5);
+const UFER = Number(process.env.UFER ?? 0.50);   // Meeresspiegel, Vielfache von 2024
+const svg = t => t > 0.0031308 ? 1.055 * Math.pow(t, 1 / 2.4) - 0.055 : 12.92 * t;
+function oklab(L, a, b) {
+  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+  const m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+  const q = (L - 0.0894841775 * a - 1.2914855480 * b) ** 3;
+  return [ 4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * q,
+          -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * q,
+          -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * q];
+}
+const imRaum = v => v.every(x => x >= -0.0005 && x <= 1.0005);
+function ton(L, anteil, h) {
+  const r = h * Math.PI / 180;
+  let lo = 0, hi = 0.4;
+  for (let i = 0; i < 44; i++) {
+    const m = (lo + hi) / 2;
+    if (imRaum(oklab(L, m * Math.cos(r), m * Math.sin(r)))) lo = m; else hi = m;
+  }
+  const C = lo * anteil, v = oklab(L, C * Math.cos(r), C * Math.sin(r));
+  return '#' + v.map(x => Math.round(Math.max(0, Math.min(1, svg(x))) * 255).toString(16).padStart(2, '0')).join('');
+}
+// Stützstellen: Anteil, Helligkeit, Farbton, Anteil der grössten Buntheit.
+const bahn = (P, t, k) => {
+  let i = 0; while (i < P.length - 2 && P[i + 1][0] < t) i++;
+  const u = Math.max(0, Math.min(1, (t - P[i][0]) / (P[i + 1][0] - P[i][0])));
+  return P[i][k] + (P[i + 1][k] - P[i][k]) * u;
+};
+const WASSERBAHN = [[0, 0.30, 258, 0.85], [1, 0.62, 242, 0.80]];
+const LANDBAHN = [[0, 0.43, 146, 1.0], [0.22, 0.57, 144, 1.0], [0.40, 0.68, 140, 0.95],
+                  [0.55, 0.79, 128, 0.88], [0.66, 0.87, 106, 0.88], [0.74, 0.84, 93, 0.92],
+                  [0.84, 0.75, 66, 0.95], [0.93, 0.64, 44, 0.94], [1, 0.57, 33, 0.92]];
+const HYPSO = [];
+for (let i = 0; i < WASSER; i++) {
+  const t = WASSER > 1 ? i / (WASSER - 1) : 0;
+  HYPSO.push(ton(bahn(WASSERBAHN, t, 1), bahn(WASSERBAHN, t, 3), bahn(WASSERBAHN, t, 2)));
+}
+const NLAND = NBAND - WASSER - 2;
+for (let i = 0; i < NLAND; i++) {
+  const t = i / (NLAND - 1);
+  HYPSO.push(ton(bahn(LANDBAHN, t, 1), bahn(LANDBAHN, t, 3), bahn(LANDBAHN, t, 2)));
+}
+HYPSO.push('#f2ebe6', '#ffffff');            // Fels, Schnee
+/* Eine zweite Leiter für Rot-Grün-Schwäche. Die Höhenschichten sind
+   Atlas-Konvention, aber Grün und Rot fallen für Deuteranope zusammen, und
+   die Helligkeit läuft nicht mit der Höhe (Gelb ist heller als Rot). Hier
+   läuft sie **streng** mit: Wasser dunkel nach hell, das Land von Braun nach
+   Creme, oben Fels und Schnee wie gehabt — heller ist dichter, über die ganze
+   Leiter ohne Rücksprung. Braun gegen Blau liegt auf der Achse, die auch eine
+   Rot-Grün-Schwäche behält. */
+const WASSERBAHN2 = [[0, 0.30, 258, 0.85], [1, 0.44, 242, 0.80]];   // Tiefe wie in der Atlasleiter
+const LANDBAHN2 = [[0, 0.48, 50, 0.85], [0.5, 0.70, 68, 0.75], [1, 0.90, 85, 0.45]];
+const HYPSO2 = [];
+for (let i = 0; i < WASSER; i++) {
+  const t = WASSER > 1 ? i / (WASSER - 1) : 0;
+  HYPSO2.push(ton(bahn(WASSERBAHN2, t, 1), bahn(WASSERBAHN2, t, 3), bahn(WASSERBAHN2, t, 2)));
+}
+for (let i = 0; i < NLAND; i++) {
+  const t = i / (NLAND - 1);
+  HYPSO2.push(ton(bahn(LANDBAHN2, t, 1), bahn(LANDBAHN2, t, 3), bahn(LANDBAHN2, t, 2)));
+}
+HYPSO2.push('#f2ebe6', '#ffffff');
+log(`Farbleiter: ${NBAND} Bänder, davon ${WASSER} Wasser; zweite Leiter für Rot-Grün-Schwäche`);
+
+log('Daten …');
+const zeilen = leseLang();
+const bilder = baueBilder(zeilen);
+log(`  ${zeilen.length} Zeilen, ${bilder.length} Zeitpunkte: ${bilder.map(b => b.jahr).join(', ')}`);
+
+log('Geometrie …');
+const roh = ladeCountys();
+const alles = baueKnotenmodell(roh.kreise);
+const mitZahlen = new Set(zeilen.map(z => z.ags));
+const modell = beschraenke(alles.gebiete, alles.attr, alles.X, alles.Y, mitZahlen);
+const fehlend = [...mitZahlen].filter(a => !alles.attr.some(x => x.ags === a));
+if (fehlend.length) log(`  ohne Geometrie: ${fehlend.join(', ')}`);
+const geo = vereinfache(modell.gebiete, modell.X, modell.Y, KNOTEN);
+log(`  ${alles.gebiete.length} Kreise gelesen, ${modell.gebiete.length} mit Zahlen, `
+  + `${geo.X.length} Knoten, Quelle: ${roh.quelle}`);
+
+// Kreise, die nur in wenigen Bildern Zahlen haben. Im Pilotgebiet ist das
+// Berlin: die Stadt steht erst ab 1995 in den Daten, hat dort aber mehr
+// Einwohner als ganz Brandenburg — und weil sie mitten in Brandenburg liegt
+// und winzig ist, presst sie im Kartogramm alles andere zu einem Ring
+// zusammen. Deshalb entstehen zwei Reihen über derselben Geometrie: eine
+// ohne diese Kreise, eine mit. Umschalten macht sichtbar, was die Stadt
+// wiegt, statt es elf Bildern lang zu verstecken.
+// Bei den deutschen Kreisen entsteht hier eine zweite Reihe ohne die Kreise,
+// die erst spät Zahlen haben — wegen Berlin, das ab 1995 mitten in Brandenburg
+// auftaucht und im Kartogramm alles andere zu einem Ring presst. Hier gibt es
+// diesen Fall nicht: was spät dazukommt, sind Countys wie Broomfield (2001 aus
+// vier Nachbarn herausgeschnitten, 74 000 Menschen) oder La Paz in Arizona.
+// Sie verziehen nichts, und eine zweite Reihe für sie wäre ein Schalter ohne
+// sichtbaren Unterschied.
+const kommtSpaet = [];
+const ohne = m => new Map([...m].filter(([ags]) => !kommtSpaet.includes(ags)));
+const bilderOhne = bilder.map(b => ({ ...b, werte: ohne(b.werte),
+  summe: [...ohne(b.werte).values()].reduce((x, y) => x + y, 0) }));
+const spaeteNamen = kommtSpaet.map(ags => modell.attr.find(a => a.ags === ags).name);
+const groesste = Math.max(...bilder.map(b => b.summe));
+
+log('Zeitreihe …');
+const reihen = [];
+if (kommtSpaet.length) {
+  log(`  ohne ${spaeteNamen.join(', ')}`);
+  reihen.push({ id: 'kern', name: 'without ' + spaeteNamen.join(' and '), bilder: bilderOhne,
+    zeitreihe: rechneZeitreihe({ gebiete: geo.gebiete, X: geo.X, Y: geo.Y, attr: modell.attr,
+      bilder: bilderOhne, groesste, gitter: GITTER, kaltDurchgaenge: KALT, warmDurchgaenge: WARM,
+      cache: 'zeitreihe-kern' + CACHE + '.json', log }) });
+}
+log('  mit allen Kreisen');
+reihen.push({ id: 'alle', name: kommtSpaet.length ? 'with ' + spaeteNamen.join(' and ') : 'all counties',
+  bilder, zeitreihe: rechneZeitreihe({ gebiete: geo.gebiete, X: geo.X, Y: geo.Y, attr: modell.attr,
+    bilder, groesste, gitter: GITTER, kaltDurchgaenge: KALT, warmDurchgaenge: WARM,
+    cache: 'zeitreihe-alle' + CACHE + '.json', log }) });
+
+// Die Form, auf der die Seite steht: der Mittelwert aller Kartogramme, zur
+// Hälfte in die Landkarte gemischt. Eine lineare Mischung knickfreier Formen
+// muss selbst nicht knickfrei sein — und hier werden gleich elf gemischt, zehn
+// Kartogramme und die Landkarte. Also nachgezählt: kein Ring darf sich dabei
+// umstülpen. Die einzelnen Zwischenformen stehen mit in der Ausgabe, weil sie
+// zeigen, ob es an der Mischung liegt oder an einer der Vorlagen.
+{
+  const vorz = ringVorzeichen(geo.gebiete, geo.X, geo.Y);
+  const zs = reihen[reihen.length - 1].zeitreihe.zustaende;
+  const MX = new Float64Array(geo.X.length), MY = new Float64Array(geo.Y.length);
+  for (const z of zs) for (let i = 0; i < MX.length; i++) { MX[i] += z.X[i] / zs.length; MY[i] += z.Y[i] / zs.length; }
+  for (const a of [0.25, 0.5, 0.75]) {
+    let kaputt = 0, gesamt = 0;
+    for (const z of zs) {
+      const BX = new Float64Array(z.X.length), BY = new Float64Array(z.Y.length);
+      for (let i = 0; i < z.X.length; i++) {
+        BX[i] = geo.X[i] + a * (z.X[i] - geo.X[i]);
+        BY[i] = geo.Y[i] + a * (z.Y[i] - geo.Y[i]);
+      }
+      const f = gefalteteRinge(geo.gebiete, BX, BY, vorz);
+      kaputt += f.kaputt; gesamt += f.gesamt;
+    }
+    log(`  einzeln, Zwischenform ${a}: ${kaputt} gefaltete Ringe von ${gesamt}`);
+  }
+  const BX = new Float64Array(MX.length), BY = new Float64Array(MY.length);
+  for (let i = 0; i < MX.length; i++) {
+    BX[i] = geo.X[i] + 0.5 * (MX[i] - geo.X[i]);
+    BY[i] = geo.Y[i] + 0.5 * (MY[i] - geo.Y[i]);
+  }
+  const f = gefalteteRinge(geo.gebiete, BX, BY, vorz);
+  log(`  Mittelform, halb eingemischt: ${f.kaputt} gefaltete Ringe von ${f.gesamt}`);
+}
+
+log('Nutzlast …');
+const stamm = kreisStammdaten();
+const { nutz, jeKreis } = baueNutzlast({
+  gebiete: geo.gebiete, attr: modell.attr, X: geo.X, Y: geo.Y,
+  reihen, bilder, kreisInfo: stamm, log,
+});
+
+// Kennzahlen für den Text unter der Karte
+const medianGuete = nutz.guete.median, maxGuete = nutz.guete.max;
+const gefaltet = reihen.flatMap(r => r.zeitreihe.zustaende).reduce((a, z) => a + z.bilanz.gefaltet, 0);
+const erstes = bilder[0], letztes = bilder[bilder.length - 1];
+// Welche Länder die Daten abdecken — daraus entstehen Titel und Vorspann,
+// damit die Seite mitwächst, sobald weitere Länder dazukommen.
+// Titel und Vorspann richten sich nach der Reihe, die zuerst zu sehen ist.
+const startReihe = reihen[0];
+const kreiseStart = modell.attr.filter(a => startReihe.bilder.some(b => b.werte.has(a.ags)));
+const abgedeckt = [...new Set(kreiseStart.map(a => a.land))].sort();
+const anzahlKreise = kreiseStart.length;
+const anzahlAlle = new Set(zeilen.map(z => z.ags)).size;
+const laender = {
+  '01': 'Alabama', '04': 'Arizona', '05': 'Arkansas', '06': 'California', '08': 'Colorado',
+  '09': 'Connecticut', '10': 'Delaware', '11': 'District of Columbia', '12': 'Florida',
+  '13': 'Georgia', '16': 'Idaho', '17': 'Illinois', '18': 'Indiana', '19': 'Iowa',
+  '20': 'Kansas', '21': 'Kentucky', '22': 'Louisiana', '23': 'Maine', '24': 'Maryland',
+  '25': 'Massachusetts', '26': 'Michigan', '27': 'Minnesota', '28': 'Mississippi',
+  '29': 'Missouri', '30': 'Montana', '31': 'Nebraska', '32': 'Nevada', '33': 'New Hampshire',
+  '34': 'New Jersey', '35': 'New Mexico', '36': 'New York', '37': 'North Carolina',
+  '38': 'North Dakota', '39': 'Ohio', '40': 'Oklahoma', '41': 'Oregon', '42': 'Pennsylvania',
+  '44': 'Rhode Island', '45': 'South Carolina', '46': 'South Dakota', '47': 'Tennessee',
+  '48': 'Texas', '49': 'Utah', '50': 'Vermont', '51': 'Virginia', '53': 'Washington',
+  '54': 'West Virginia', '55': 'Wisconsin', '56': 'Wyoming',
+};
+
+const daten = {
+  vb: [nutz.breite, nutz.hoehe], ank: nutz.ank,
+  gx: nutz.gx, gy: nutz.gy,
+  ringzahl: nutz.ringzahl, ringe: nutz.ringe, idx: nutz.idx,
+  R: nutz.reihen, B: nutz.bilder, takt: null,
+  bev: nutz.bev, mj: nutz.methodenJeWert, ai: nutz.anteilJeWert,
+  k: jeKreis.map(k => [k.ags, k.name, k.bez, k.land, k.flaeche]),
+  L: laender,
+};
+
+// ---------------------------------------------------------------------------
+// Was jeweils geschah. Die Karte zeigt, dass sich etwas ändert, und wo — warum,
+// steht in keiner Zahl. Diese Notizen laufen als Untertitel mit.
+//
+// `von` und `bis` sind Anzeigefenster auf der Zeitachse, nicht die Jahreszahlen
+// des Ereignisses; die stehen in der Überschrift. Die Fenster stossen
+// aneinander, damit immer eine Notiz zu sehen ist, und sind dort etwas gedehnt,
+// wo die Karte schnell durchläuft. `kurz` steht unter der Karte und muss in drei
+// Zeilen passen, `mehr` kommt nur in der Liste weiter unten dazu.
+//
+// Was sich aus der Tabelle dieser Seite selbst belegen lässt, ist von dort
+// genommen; der Rest ist Schulwissen und als solches gekennzeichnet.
+// Wie viele Überschriften der Faden in der Karte hält und wie blass sie mit
+// jeder Zeile werden. Sechs sind so viele, wie oben links Platz haben, ohne
+// über die Karte zu wachsen.
+const FADEN_TIEFE = 6;
+const FADEN_DECK = [1, 0.52, 0.38, 0.27, 0.19, 0.13];
+const NOTIZEN = [
+  { von: 1900, bis: 1908, kopf: '1900\u20131910 \u00b7 The last frontier',
+    kurz: 'Oklahoma becomes a state; the West is still filling in.',
+    mehr: 'Three territories \u2014 Arizona, New Mexico, Oklahoma \u2014 are not yet states in 1900.' },
+  { von: 1908, bis: 1918, kopf: '1910\u20131920 \u00b7 The Great Migration',
+    kurz: 'The rural South empties northward, to the factories.',
+    mehr: '1920 is the first census with more Americans in towns than on farms.' },
+  { von: 1918, bis: 1928, kopf: '1920\u20131930 \u00b7 Cars and the first suburbs',
+    kurz: 'Detroit builds the car and doubles on it.',
+    mehr: 'Wayne County goes from 348,793 people in 1900 to 1,888,946 by 1930.' },
+  { von: 1928, bis: 1938, kopf: '1930\u20131940 \u00b7 Dust Bowl and Depression',
+    kurz: 'A third of all counties lose people; the Plains blow away.',
+    mehr: '961 of 3,089 counties shrink between 1930 and 1940.' },
+  { von: 1938, bis: 1948, kopf: '1940\u20131950 \u00b7 War plants, and west',
+    kurz: 'Shipyards and aircraft factories pull millions to the coast.',
+    mehr: 'Los Angeles County passes four million; Las Vegas has 16,414 people in 1940.' },
+  { von: 1948, bis: 1958, kopf: '1950\u20131960 \u00b7 The suburbs',
+    kurz: 'Growth moves to the ring of counties around each city.',
+    mehr: 'St. Louis peaks at 856,796 in 1950 and has fallen ever since.' },
+  { von: 1958, bis: 1968, kopf: '1960\u20131970 \u00b7 The industrial cities crest',
+    kurz: 'Detroit, Cleveland and Chicago reach their high point.',
+    mehr: 'Wayne County tops out at 2,666,751 in 1970, Cuyahoga at 1,721,300.' },
+  { von: 1968, bis: 1978, kopf: '1970\u20131980 \u00b7 Rust Belt, Sun Belt',
+    kurz: 'The industrial north loses people; the south and west take them.',
+    mehr: 'New York, Ohio and Pennsylvania shrink for the first time.' },
+  { von: 1978, bis: 1988, kopf: '1980\u20131990 \u00b7 Three states take the growth',
+    kurz: 'California, Texas and Florida absorb most of the increase.',
+    mehr: 'Maricopa County \u2014 Phoenix \u2014 passes two million.' },
+  { von: 1988, bis: 1998, kopf: '1990\u20132000 \u00b7 The longest boom',
+    kurz: 'Las Vegas and Phoenix grow faster than anywhere else.',
+    mehr: 'Clark County nearly doubles again, 741,459 to 1,375,765.' },
+  { von: 1998, bis: 2009, kopf: '2000\u20132010 \u00b7 Sprawl, then the crash',
+    kurz: 'The exurbs run until 2008, then stop dead.',
+    mehr: 'The places that grew fastest fell hardest when the lending stopped.' },
+  { von: 2009, bis: 2021, kopf: '2010\u20132020 \u00b7 Half the map empties',
+    kurz: 'More than half of all counties lose people.',
+    mehr: '1,637 of 3,108 counties shrink \u2014 52.7 per cent, a first.' },
+];
+
+
+// Die grössten Städte tragen ihren Namen auf der Karte — und zwar die, die
+// **im gerade gezeigten Jahr** die grössten sind, nicht die von heute. Hier
+// entsteht nur der Vorrat; ausgewählt wird in der Seite, Bild für Bild.
+//
+// **Das County heisst anders als die Stadt.** Cook County ist Chicago, Harris
+// ist Houston, Kings ist Brooklyn — und niemand liest eine Karte, auf der
+// Chicago „Cook" heisst. Wo der Name des Countys den Ort verfehlt, steht er
+// deshalb unten in der Tabelle. Sie ist kurz gehalten: nur Orte, die über den
+// ganzen Zeitraum eine Rolle spielen und deren County anders heisst. Alles
+// andere behält seinen County-Namen, denn die Karte zeigt Countys.
+const STADTNAME = {
+  '36061': 'Manhattan', '36047': 'Brooklyn', '36005': 'The Bronx',
+  '36085': 'Staten Island', '17031': 'Chicago', '48201': 'Houston',
+  '04013': 'Phoenix', '26163': 'Detroit', '25025': 'Boston',
+  '53033': 'Seattle', '12086': 'Miami', '39035': 'Cleveland',
+  '27053': 'Minneapolis', '13121': 'Atlanta', '29095': 'Kansas City',
+  '41051': 'Portland', '49035': 'Salt Lake City', '32003': 'Las Vegas',
+  '47037': 'Nashville', '47157': 'Memphis', '22071': 'New Orleans',
+  '39061': 'Cincinnati', '42003': 'Pittsburgh', '36029': 'Buffalo',
+  '39049': 'Columbus', '18097': 'Indianapolis', '37119': 'Charlotte',
+  '48029': 'San Antonio', '48453': 'Austin', '06001': 'Oakland',
+  '06085': 'San Jose', '12057': 'Tampa', '37183': 'Raleigh',
+  '45045': 'Greenville', '21111': 'Louisville', '31055': 'Omaha',
+  '19153': 'Des Moines', '40109': 'Oklahoma City', '40143': 'Tulsa',
+  '08031': 'Denver', '11001': 'Washington', '04019': 'Tucson',
+  '12031': 'Jacksonville', '01073': 'Birmingham', '29189': 'St. Louis County',
+  '24005': 'Baltimore County', '06067': 'Sacramento', '37081': 'Greensboro',
+  '12095': 'Orlando', '48113': 'Dallas', '06073': 'San Diego', '06059': 'Orange County',
+};
+// Sonst: der County-Name, ohne den Zusatz. „St. Louis city" wird „St. Louis",
+// „Miami-Dade County" wäre „Miami-Dade" — aber das steht schon oben.
+const kurzerName = (n, ags) => STADTNAME[ags]
+  ?? n.replace(/\s+(County|Parish|Borough|city|City and Borough|Municipality)$/i, '').trim();
+const hoechsteBev = new Map();
+for (const b of bilder) for (const [ags, v] of b.werte) hoechsteBev.set(ags, Math.max(hoechsteBev.get(ags) ?? 0, v));
+// Anders als in Deutschland gibt es keine kreisfreien Städte, an denen sich
+// „Stadt" ablesen liesse — ein County ist ein County. Wer in Frage kommt,
+// entscheidet deshalb allein die Einwohnerzahl in ihrem stärksten Jahr.
+// Eine halbe Million lässt gut hundertfünfzig Orte übrig, aus denen die
+// Auswahl je Bild schöpft.
+const KANDIDAT_AB = 500000;
+// Der Kontinent ist fünfmal so breit wie Deutschland lang. Sechzig Kilometer
+// Abstand liessen im Nordosten zwei Dutzend Namen übereinander stehen; bei
+// hundertfünfzig bleibt aus der Bucht von San Francisco einer übrig statt
+// dreier, und aus dem Grossraum New York ebenso.
+const ABSTAND_KM = 150;
+const mitte = new Map();
+geo.gebiete.forEach((ringe, g) => {
+  let sx = 0, sy = 0, n = 0;
+  for (const r of ringe) for (const id of r) { sx += geo.X[id]; sy += geo.Y[id]; n++; }
+  if (n) mitte.set(modell.attr[g].ags, [sx / n, sy / n]);
+});
+const staedte = jeKreis
+  .map((k, i) => ({ i, ags: k.ags, kurz: kurzerName(k.name, k.ags), bev: hoechsteBev.get(k.ags) ?? 0,
+    m: mitte.get(k.ags) }))
+  .filter(k => k.bev >= KANDIDAT_AB && k.m)
+  .sort((a, b) => b.bev - a.bev);
+log(`Beschriftung: ${staedte.length} Städte im Vorrat, ausgewählt wird je Bild`);
+// Zur Kontrolle: wer stünde in welchem Bild da? Dieselbe Auswahl wie in der
+// Seite, nur ohne Zwischenzeiten — damit im Bauprotokoll steht, was die Karte
+// später zeigt, und ein Wechsel nicht unbemerkt verschwindet.
+{
+  const ZEIGE = 17;
+  let vorher = null;
+  for (const b of bilder) {
+    const nimm = [];
+    for (const k of staedte.map(k => ({ k, v: b.werte.get(k.ags) ?? 0 }))
+      .filter(x => x.v > 0).sort((x, y) => y.v - x.v)) {
+      if (nimm.some(s => Math.hypot(s.k.m[0] - k.k.m[0], s.k.m[1] - k.k.m[1]) < ABSTAND_KM * 1000)) continue;
+      nimm.push(k);
+      if (nimm.length >= ZEIGE) break;
+    }
+    const namen = nimm.map(x => x.k.kurz);
+    const rein = vorher ? namen.filter(n => !vorher.includes(n)) : [];
+    const raus = vorher ? vorher.filter(n => !namen.includes(n)) : [];
+    log(`  ${String(b.jahr).padEnd(9)} Schwelle ${Math.round(nimm[nimm.length - 1].v / 1000)}k`
+      + (rein.length || raus.length ? `   + ${rein.join(', ') || '–'}   − ${raus.join(', ') || '–'}` : ''));
+    vorher = namen;
+  }
+}
+
+// Wie lange dauert welcher Abschnitt? Nicht nach Jahren allein — dann rauscht
+// die Umwälzung zwischen 1939 und 1946 in vier Sekunden vorbei, während die
+// ruhigen Jahrzehnte vor 1900 fünfzehn bekommen. Und nicht nach Umschichtung allein,
+// denn dann wäre die Zeitachse keine mehr. Genommen wird das geometrische
+// Mittel aus beidem: dem Anteil an den Jahren und dem Anteil an der Summe aller
+// Veränderungen je Kreis. Die Kriegs- und Nachkriegsjahre bekommen damit rund
+// acht statt vier Sekunden, ohne dass die langen ruhigen Strecken einbrechen.
+const abschnitte = bilder.slice(0, -1).map((b, i) => {
+  const a = bilder[i], c = bilder[i + 1];
+  let um = 0;
+  for (const [ags, v] of a.werte) { const w = c.werte.get(ags); if (w > 0) um += Math.abs(w - v); }
+  return { jahre: Math.max(0.1, nutz.bilder[i + 1].t - nutz.bilder[i].t), um: Math.max(1, um) };
+});
+// Dazu eine Untergrenze: unter fünfeinhalb Sekunden ist ein Abschnitt vorbei,
+// ehe die Notiz gelesen ist. Die kurzen Abschnitte am Ende — 2011 bis 2019,
+// 2019 bis 2024 — bekämen nach Jahren und Umschichtung sonst drei Sekunden und
+// weniger. Wer über der Grenze liegt, gibt dafür anteilig ab; das wird ein paar
+// Mal wiederholt, bis es steht.
+const SPIELZEIT = 84;             // Sekunden für die ganze Achse
+const MINDEST = 5.4 / SPIELZEIT;  // kleinster Anteil je Abschnitt
+{
+  const sj = abschnitte.reduce((x, a) => x + a.jahre, 0), su = abschnitte.reduce((x, a) => x + a.um, 0);
+  const roh = abschnitte.map(a => Math.sqrt((a.jahre / sj) * (a.um / su)));
+  let anteil = roh.map(v => v / roh.reduce((x, y) => x + y, 0));
+  for (let runde = 0; runde < 20; runde++) {
+    const klein = anteil.map(v => v < MINDEST);
+    if (!klein.some(Boolean)) break;
+    const fest = klein.reduce((x, k, i) => x + (k ? MINDEST : 0), 0);
+    const rest = anteil.reduce((x, v, i) => x + (klein[i] ? 0 : v), 0);
+    anteil = anteil.map((v, i) => klein[i] ? MINDEST : v * (1 - fest) / rest);
+  }
+  abschnitte.forEach((a, i) => { a.anteil = Number(anteil[i].toFixed(5)); });
+}
+log('Takt: ' + abschnitte.map((a, i) => `${bilder[i].jahr}→${bilder[i + 1].jahr} ${(a.anteil * SPIELZEIT).toFixed(1)}s`).join(', '));
+
+const mio = n => (n / 1e6).toFixed(1);
+const zahl = n => n.toLocaleString('en-GB');
+const undListe = a => a.length < 2 ? (a[0] ?? '') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
+const gebietsname = undListe(abgedeckt.map(l => laender[l]));
+const ganzesLand = abgedeckt.length >= 49;
+const titel = ganzesLand ? 'America, drawn by its people'
+  : gebietsname + ', drawn by ' + (abgedeckt.length > 1 ? 'their' : 'its') + ' people';
+const jahrVon = erstes.jahr.match(/\d{4}/)[0], jahrBis = letztes.jahr.match(/\d{4}/)[0];
+
+daten.takt = abschnitte.map(a => a.anteil);
+// Beschriftung der Umschalter, jetzt wo die Ländernamen bekannt sind.
+if (nutz.reihen.length > 1) {
+  nutz.reihen[0].name = gebietsname + ' only';
+  nutz.reihen[1].name = 'with ' + spaeteNamen.join(' and ');
+}
+
+process.stdout.write(`<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>${titel}</title>
+<meta name="description" content="Every one of today's ${anzahlKreise} counties in ${gebietsname} sized by the people living in it, from ${jahrVon} to ${jahrBis}. A relief map: colour and shading are how densely the land is settled.">
+<style>
+/* Eine Seite, ein Bild. Schwarz aussen, die Karte füllt den Schirm; alles, was
+   nicht zur Karte gehört, ist weg. Nur ein Farbklima, kein Umschalten zwischen
+   hell und dunkel: die Geländefarben sind auf diesen Grund gesetzt. */
+:root{
+  --plane:#000; --surface:#0c0c0c; --ink:#fff; --ink2:#bfbeb6; --muted:#7f7d77;
+  --line:#232321; --axis:#33332f; --ring:rgba(255,255,255,.09);
+  --leer:#1a1a18;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--plane);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.5;
+  -webkit-text-size-adjust:100%;overflow:hidden}
+.wrap{max-width:860px;margin:0 auto;height:100dvh;padding:6px;display:flex}
+/* Die Null bei min-width ist kein Feinschliff, sondern ein Fehler, den es zu
+   beheben galt: ein Flex-Kind ist voreingestellt mindestens so breit wie sein
+   Inhalt, und in der Legende steht eine Zeile, die nicht umbrechen darf. Wurde
+   sie lang („1946–1950 → 1961–1964"), dehnte sie die ganze Bühne über ihren
+   Rahmen hinaus — die Karte sprang um siebzehn Bildpunkte in die Breite und
+   wieder zurück, je nachdem, welche Notiz gerade galt. */
+/* container-type macht die Bühne zum Massstab für alles darin: 1cqw ist ein
+   Hundertstel ihrer Breite. Damit kann der Text mit der Karte wachsen, statt
+   in Bildpunkten festzustehen — die Karte selbst misst sich ja auch an dieser
+   Breite (breite/38 für den grössten Stadtnamen). */
+.buehne{container-type:inline-size;
+  position:relative;flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;
+  background:var(--surface);border:1px solid var(--ring);border-radius:14px;padding:10px 12px 8px}
+
+/* Kopfzeile: Jahr und Einwohnerzahl. */
+/* ---------- Drei Ebenen ----------
+   Der Text stand einmal über der Karte im Fluss und schob sie nach unten: eine
+   lange Notiz kostete der Karte vier Zeilen Höhe, eine kurze gab sie zurück,
+   und die Karte sprang. Jetzt liegt der Text **über der Bühne**, nicht in ihr,
+   und nimmt keinen Platz mehr weg — die Karte bekommt in jedem Fall die ganze
+   Fläche.
+
+   Damit stellt sich die Frage, was oben liegt. Die Leinwand ist draussen
+   durchsichtig, also:
+
+     Ebene 2  Jahr und Einwohnerzahl — über der Karte, mit Schein dahinter;
+              das ist die eine Zeile, die immer lesbar sein muss.
+     Ebene 1  die Karte.
+     Ebene 0  die Notiz und der Faden — **hinter** der Karte. Wo Platz ist,
+              stehen sie da; wo die Karte hinreicht, verschwinden sie dahinter.
+
+   Der Text weicht der Karte also aus, statt sie zu verdrängen. */
+.schild{position:absolute;left:12px;right:12px;top:10px;z-index:2;pointer-events:none;
+  display:flex;align-items:baseline;gap:10px;
+  text-shadow:0 0 6px var(--surface),0 0 6px var(--surface),0 0 14px var(--surface)}
+.schild>b{font-size:30px;font-weight:650;letter-spacing:-.02em;line-height:1}
+.schild>span{color:var(--ink2);font-size:13px}
+
+.text{position:absolute;left:12px;right:12px;top:48px;z-index:0;pointer-events:none}
+
+/* Die laufende Notiz, ausgeschrieben: Überschrift und Sätze. */
+/* Deutlich kleiner als in den ersten Fassungen (13,5 → 9). Der Text stand als
+   Block über der Karte und zog den Blick, bevor die Karte ihn bekam; klein
+   gesetzt ist er da, wenn man ihn sucht, und im Weg, wenn nicht. Zwischendurch
+   stand er bei 7 und war zu klein — das hier ist die Mitte. Der Faden darunter
+   geht im selben Verhältnis mit, sonst wären die alten Überschriften grösser
+   als die laufende Notiz.
+
+   Die neun Bildpunkte sind jetzt der **Boden**, nicht der Wert: darüber hängt
+   die Grösse an der Breite der Bühne. Auf dem Telefon ändert sich damit nichts,
+   auf einem breiten Schirm wächst der Text mit der Karte mit — er stand dort
+   sonst als immer kleiner werdender Fleck neben einer Karte, deren Schrift sich
+   nach genau dieser Breite richtet. Nach oben ist gedeckelt, weil die Bühne bei
+   860 Bildpunkten aufhört und die Notiz eine Notiz bleiben soll. */
+.jetzt{margin:0;max-width:min(94%,470px);
+  font-size:clamp(9px,1.36cqw,11.6px);line-height:1.5;color:var(--ink2);
+  opacity:0;transition:opacity .4s}
+.jetzt b{display:block;color:var(--ink);font-weight:650;
+  font-size:clamp(9.8px,1.48cqw,12.6px);margin-bottom:2px}
+
+/* Darunter die vorigen Überschriften, mit jeder Zeile blasser. */
+.faden{width:min(52%,210px);padding-top:4px;
+  display:flex;flex-direction:column;gap:2px;will-change:transform}
+.faden b{font-size:clamp(7.2px,1.09cqw,9.3px);line-height:1.3;font-weight:600;
+  color:var(--ink);transition:opacity .5s}
+@media(max-width:540px){.faden b{font-size:6.5px}}
+
+/* Die Karte füllt die Bühne. */
+.feld{position:relative;z-index:1;flex:1 1 auto;min-height:0}
+canvas{position:absolute;left:0;top:0;width:100%;height:100%;touch-action:manipulation}
+/* Die zweite Leinwand trägt nur den Umriss des angetippten Kreises. Sie liegt
+   über der Karte und lässt die Zeiger durch — sonst bekäme sie die Tipper, die
+   der Karte gelten.
+
+   Und sie ist weggeschaltet, solange sie leer ist: eine zweite Ebene derselben
+   Grösse kann den Setzer in jedem Bild eine Überblendung kosten, auch wenn
+   nichts darauf steht. Nachgemessen ist der Unterschied hier allerdings keiner
+   — 9,0 gegen 9,1 Bilder in der Sekunde, weich gerendert, und dieselbe Zahl
+   misst auch die Fassung ohne die zweite Leinwand. Es bleibt trotzdem so: was
+   nichts zeigt, soll auch nicht da sein. */
+#umriss{pointer-events:none;display:none}
+/* Die Karte nimmt die Gesten selbst entgegen; ohne das scrollt und zoomt der
+   Browser die Seite, statt die Karte zu drehen. */
+#karte{touch-action:none}
+
+.fuss{flex:0 0 auto;min-width:0;padding:6px 0 0}
+/* Eine Zeile, und zwar auch dann, wenn sie noch leer ist: sonst ist die Leiste
+   beim ersten Messen niedriger als gleich darauf, und die Karte wird für eine
+   Höhe gezeichnet, die es nicht mehr gibt. */
+.fuss .klein{margin:4px 0 0;font-size:11.5px;line-height:1.35;color:var(--ink2);
+  min-height:1.35em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Auf dem Telefon darf die Zeile umbrechen statt abzureissen — zwei Zeilen
+   höchstens. Bei 360 Bildpunkten Fensterbreite passt sie mit fünf Bildpunkten
+   Luft noch auf eine; darunter bricht sie um, und dann ist eine zweite Zeile
+   allemal besser als drei abgeschnittene Wörter. Reserviert wird sie nicht:
+   die eine Zeile ist der Normalfall, und die Leiste soll dafür nicht vierzehn
+   Bildpunkte Kartenhöhe verschenken. */
+@media(max-width:540px){
+  .fuss .klein{white-space:normal;max-height:2.7em}
+}
+/* Die Leiter trug ihre beiden Zahlen links und rechts daneben — den Anfang und
+   das Ende, und dazwischen nichts. Bei einer linearen Leiter ist das die
+   ungünstigste aller Auskünfte: der ganze bewohnte Bereich drängt sich im
+   linken Drittel, und wo darin ×1 liegt, war nicht zu erraten. Jetzt stehen
+   die Zahlen **auf der Leiter**, jede an ihrer Stelle. */
+.legende{font-size:11.5px;color:var(--ink2);font-variant-numeric:tabular-nums}
+/* Zwei Wörter über der Leiter, an ihre Enden gesetzt. Die Farben sagen die
+   Richtung schon — aber erst diese beiden Wörter sagen, wovon die Richtung
+   handelt, und zwar bevor man die Zahlen darunter liest. Blasser als die
+   Zahlen, denn sie sind Beschriftung und keine Daten. */
+.pole{display:flex;justify-content:space-between;color:var(--muted);
+  margin-bottom:3px;line-height:1.2}
+.rampe{height:9px;border-radius:5px;border:1px solid var(--ring)}
+.stufen{position:relative;height:1.2em;margin-top:3px}
+.stufen span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.stufen span::before{content:'';position:absolute;left:50%;top:-4px;width:1px;
+  height:4px;background:var(--axis)}
+.stufen .a{transform:none}
+.stufen .a::before{left:0}
+.stufen .z{transform:translateX(-100%)}
+.stufen .z::before{left:100%}
+/* Die Eins ist der Anker der ganzen Leiter und sah aus wie jede andere Marke.
+   Ein längerer, hellerer Strich und eine hellere Zahl sagen, dass hier der
+   Bezugspunkt steht — und das kostet keinen einzigen Bildpunkt Breite, anders
+   als jedes Wort, das man dorthin setzen könnte. */
+.stufen .eins{color:var(--ink)}
+.stufen .eins::before{top:-7px;height:7px;background:var(--ink)}
+
+/* Die Bedienung, so wenig wie möglich: ein Knopf und ein Regler. */
+.regler{display:flex;align-items:center;gap:9px;flex:0 0 auto;margin-top:6px}
+button{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--axis);
+  border-radius:8px;padding:5px 10px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+#spiel{width:38px;flex:0 0 38px;padding:5px 0;font-variant-numeric:tabular-nums}
+.bahn{position:relative;flex:1}
+input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
+.marken{position:relative;height:9px;margin-top:1px}
+.marken i{position:absolute;top:0;width:1px;height:4px;background:var(--axis)}
+.marken i.voll{height:7px;background:var(--muted)}
+
+/* Die zweite Reihe: Blickwinkel und Namen. Sie steht unter der Zeitleiste,
+   weil sie seltener angefasst wird, und nimmt der Karte rund zwanzig Pixel
+   Höhe — das rechnet der Umbruch von selbst, masse() misst ja das Feld. */
+.sicht{display:flex;align-items:center;gap:10px;flex:0 0 auto;margin-top:5px}
+.sicht label{display:flex;align-items:center;gap:6px;flex:1 1 0;min-width:0}
+.sicht label span{flex:0 0 auto;color:var(--muted);font-size:11.5px}
+#namen{flex:0 0 auto;padding:3px 9px;font-size:11.5px;border-radius:7px}
+#namen[aria-pressed=false]{color:var(--muted);border-style:dashed}
+/* Drei kleine Dinge auf der Karte selbst: Nordpfeil, Ansicht zurück, Farbleiter.
+   Nicht in der Bedienzeile — die ist auf 320 Punkten schon voll. */
+.aufKarte{position:absolute;z-index:2;font-size:11.5px;line-height:1;padding:4px 8px;border-radius:7px;
+  background:rgba(20,20,18,.78)}
+#nord{left:8px;bottom:8px;width:26px;height:26px;padding:0;display:grid;place-items:center;
+  color:var(--ink2);border:1px solid var(--axis);pointer-events:none}
+#nord[hidden]{display:none}
+#nord svg{width:20px;height:20px;display:block}
+#zurueck{right:8px;top:8px;font-size:15px;padding:3px 8px}
+/* Die zweite Leiter sitzt bei der Legende, denn sie ist die Legende. */
+.pole .rechts{display:flex;align-items:center;gap:8px}
+#farben{padding:2px 7px;font-size:11px;line-height:1.2;border-radius:6px;color:var(--muted);border-style:dashed}
+#farben[aria-pressed=true]{color:var(--ink);border-style:solid}
+.tip{position:absolute;pointer-events:none;background:#141412;border:1px solid var(--axis);
+  border-radius:9px;padding:7px 9px;font-size:12.5px;box-shadow:0 6px 20px rgba(0,0,0,.5);
+  max-width:210px;opacity:0;transition:opacity .12s}
+.tip b{display:block;font-size:13px;margin-bottom:2px}
+.tip dl{margin:0;display:grid;grid-template-columns:auto auto;gap:1px 10px}
+.tip dt{color:var(--ink2)}
+.tip dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.tip .warn{display:block;margin-top:3px;color:var(--muted);font-size:11.5px}
+</style>
+</head><body>
+<div class="wrap">
+<div class="buehne" id="buehne">
+  <div class="feld">
+    <canvas id="karte"></canvas>
+    <canvas id="umriss"></canvas>
+    <div class="tip" id="tip"></div>
+    <div class="aufKarte" id="nord" hidden aria-hidden="true" title="North"><svg viewBox="0 0 20 20"><path d="M10 1.5 L14.2 13.5 L10 11 L5.8 13.5 Z" fill="currentColor"/><text x="10" y="19.2" font-size="6.5" font-weight="700" text-anchor="middle" fill="currentColor">N</text></svg></div>
+    <button class="aufKarte" id="zurueck" hidden aria-label="Reset the view" title="Reset the view">↺</button>
+  </div>
+  <div class="fuss">
+    <div class="legende"><div class="pole"><span>less crowded</span><span class="rechts"><span>more crowded</span><button id="farben" aria-pressed="false" title="Colours for red-green colour blindness">Colours</button></span></div><div class="rampe" id="rampe"></div><div class="stufen" id="legStufen"></div></div>
+    <p class="klein" id="legText"></p>
+  </div>
+  <div class="regler">
+    <button id="spiel" aria-label="Play or pause">▶</button>
+    <div class="bahn">
+      <input type="range" id="zeit" min="0" max="1000" value="0" step="1" aria-label="Year">
+      <div class="marken" id="marken"></div>
+    </div>
+  </div>
+  <div class="sicht">
+    <label><span>Tilt</span><input type="range" id="kipp" min="0" max="100" value="0" step="1" aria-label="Tilt the map"></label>
+    <label><span>Turn</span><input type="range" id="dreh" min="0" max="360" value="0" step="1" aria-label="Turn the map"></label>
+    <button id="namen" aria-pressed="true">Names</button>
+  </div>
+  <div class="schild"><b id="jahrZahl">–</b><span id="jahrBev"></span></div>
+  <div class="text">
+    <p class="jetzt" id="jetzt"></p>
+    <div class="faden" id="faden" aria-live="polite"></div>
+  </div>
+</div>
+</div>
+
+<script>
+${ENTPACKER}
+const D = ${JSON.stringify(daten)};
+
+/* ---------- Geometrie aus der Nutzlast ---------- */
+const kum = a => { let v = 0; const o = new Int32Array(a.length); for (let i = 0; i < a.length; i++) { v += a[i]; o[i] = v; } return o; };
+const GX = kum(entpacke(D.gx)), GY = kum(entpacke(D.gy));
+const N = GX.length;
+const RINGZAHL = entpacke(D.ringzahl), RINGLEN = entpacke(D.ringe), IDXD = entpacke(D.idx);
+const GEBIETE = [];
+{ let rp = 0, ip = 0;
+  for (const nr of RINGZAHL) {
+    const rs = [];
+    for (let k = 0; k < nr; k++) {
+      const len = RINGLEN[rp++]; const r = new Int32Array(len); let v = 0;
+      for (let m = 0; m < len; m++) { v += IDXD[ip++]; r[m] = v; }
+      rs.push(r);
+    }
+    GEBIETE.push(rs);
+  } }
+const NK = D.k.length, NF = D.B.length;
+const JAHRE = D.B.map(b => b.t);
+const T0 = JAHRE[0], T1 = JAHRE[NF - 1];
+
+/* ---------- Die Reihen: dieselbe Geometrie, andere Verzerrung ---------- */
+const REIHEN = D.R.map((r, ri) => {
+  /* ---------- Ein Boden, der keinem Jahr gehört ----------
+     Die Karte stand lange auf dem Kartogramm **des jeweiligen Jahres**: die
+     Fläche eines Kreises war sein Anteil an der Bevölkerung dieses Bildes, und
+     der Umriss verformte sich im Lauf der Zeit. Das zeigte gut, wo die Menschen
+     gerade sind — und machte zwei Bilder unvergleichbar. Berlin hatte 1910
+     dieselben 3,7 Millionen wie heute, wurde aber sechzig Prozent breiter
+     gezeichnet, weil es damals fast jeden dreizehnten Deutschen hielt und heute
+     nur noch jeden dreiundzwanzigsten. Bei festem Volumen je Mensch muss die
+     Höhe das ausgleichen: derselbe Berg lag flach.
+
+     Jetzt steht der Boden still, auf dem **Mittel aller zehn Kartogramme**.
+     Nicht auf dem von 2024 — das wäre ein Körper, der einem Jahr gehört, und
+     1871 würde auf der Gestalt von heute gezeichnet. Der Mittelwert gehört
+     keinem Jahr und allen.
+
+     Daraus folgt das, worum es geht: die Grundfläche eines Kreises ist über
+     hundertfünfzig Jahre dieselbe, also ist seine **Höhe unmittelbar seine
+     Bevölkerung**. Zwei Bilder sind vergleichbar; Berlin 1910 steht so hoch wie
+     Berlin 2024, und 1939 steht höher als beide. Was die Karte dafür aufgibt,
+     ist die Bewegung: sie verformt sich nicht mehr, sie steigt und fällt.
+
+     Gemittelt wird nicht mehr hier, sondern beim Bauen: in der Nutzlast steht
+     nur noch die eine Form, als Unterschied zur Landkarte. Die neun anderen
+     Kartogramme wogen rund 450 kB und gingen nur in diesen Mittelwert ein. */
+  const dx = entpacke(r.mx), dy = entpacke(r.my);
+  const MX = new Int32Array(N), MY = new Int32Array(N);
+  for (let i = 0; i < N; i++) { MX[i] = GX[i] + dx[i]; MY[i] = GY[i] + dy[i]; }
+  const BEV = [];
+  const d = entpacke(D.bev[ri]);
+  let vor = new Float64Array(NK);
+  for (let f = 0; f < NF; f++) {
+    const jetzt = new Float64Array(NK);
+    for (let k = 0; k < NK; k++) jetzt[k] = vor[k] + d[f * NK + k];
+    BEV.push(jetzt); vor = jetzt;
+  }
+  return { id: r.id, name: r.name, MX, MY, BEV };
+});
+const ANTEIL = entpacke(D.ai);
+let reihe = REIHEN[0];
+
+/* ---------- Weiche Interpolation ----------
+   Zwischen zwei Zählungen wurde geradlinig gerechnet. Das trifft die Zählungen
+   genau, aber die Bewegung knickt an jeder von ihnen: die Geschwindigkeit
+   springt, und das sieht aus wie ein Ruck. Zwischen 1946 und 1950 wächst ein
+   Kreis vielleicht doppelt so schnell wie zwischen 1950 und 1961, und genau
+   im Bild der Zählung wechselt das schlagartig.
+
+   Stattdessen eine monotone kubische Kurve (Fritsch–Carlson, wie PCHIP): sie
+   geht durch jeden gezählten Wert, hat an den Zählungen keinen Knick mehr —
+   und schiesst trotzdem nie über sie hinaus. Das ist der Unterschied zu einem
+   gewöhnlichen Spline: wo eine Reihe steigt und dann fällt, wird die Steigung
+   an der Spitze auf null gesetzt, statt eine Beule zu erfinden. Ein Kreis kann
+   also zwischen zwei Zählungen nie mehr Menschen haben als in beiden, und eine
+   Ecke der Karte wandert nie über den Ort hinaus, den sie in beiden Bildern
+   hat. Dass die Zählungen selbst unverändert bleiben, ist damit garantiert.
+
+   Gerechnet wird auf der Spielzeitachse, denn auf ihr läuft die Bewegung: die
+   Abschnitte bekommen verschieden viel Zeit, und eine Steigung, die das nicht
+   berücksichtigt, ergäbe genau den Knick, den sie vermeiden soll. Die Abstände
+   kommen deshalb als h dazu.
+
+   Zurückgegeben werden die beiden Steigungen bereits mit h multipliziert, also
+   auf den Abschnitt normiert — dann rechnet hermite auf [0,1]. */
+/* Wie stark geglättet wird. 1 ist die volle Fritsch–Carlson-Kurve, 0 ist die
+   Gerade — denn eine Hermite-Kurve, deren beide Steigungen gleich der Sehne
+   sind, **ist** die Gerade. Dazwischen wird jede Steigung anteilig zur Sehne
+   hin gezogen.
+
+   Der Regler steht hier, weil die Frage berechtigt ist: die Kurve war für die
+   Knoten des Kartogramms gedacht, und der Boden steht seit einer Weile still.
+   Also nachgemessen, über alle Kreise und neunhundert Stellen der Achse —
+   Abweichung von der Geraden gegen den Knick der Höhe an einer Zählung
+   (Median über die Kreise, die in allen zehn Bildern Zahlen haben):
+
+     straff   grösste Abweichung   im Mittel   Knick im Median
+       0                       0       0,00 %            74 %
+       0,25              58 305 M       0,19 %            65 %
+       0,5              116 611 M       0,38 %            53 %
+       0,75             174 916 M       0,57 %            35 %
+       1                233 221 M       0,75 %             5 %
+
+   Die Mitte ist also das Schlechteste von beidem: den halben Preis für ein
+   Viertel des Nutzens. Entweder ganz oder gar nicht — und ganz, weil ein
+   Knick von 74 Prozent bedeutet, dass sich die Wachstumsgeschwindigkeit des
+   mittleren Kreises an jeder Zählung fast verdoppelt oder halbiert. Neunmal
+   im Lauf, über vierhundert Kreise zugleich: ein Zucken, und genau dagegen
+   ist die Kurve gebaut.
+
+   Der Preis ist im Mittel 0,75 Prozent, steht aber nicht gleichmässig: fast
+   alles davon liegt in der einen 39-Jahre-Lücke zwischen 1871 und 1910, wo
+   Berlin um bis zu 233 221 Menschen über der Geraden läuft. Die Kurve zieht
+   das Wachstum dort nach vorn, weil der folgende Abschnitt flach ist und die
+   Monotonie diese Flachheit rückwärts in die Anfahrt trägt — für eine Stadt,
+   deren Wachstum sich in der Gründerzeit beschleunigte, die falsche Richtung.
+   Gezählt ist zwischen 1871 und 1910 nichts; beide Annahmen sind Annahmen,
+   und die gerade wäre dort die vorsichtigere. */
+const STRAFF = 1;
+function steigungen(y, h, f, n) {
+  const d1 = (y[f + 1] - y[f]) / h[f];
+  const d0 = f > 0 ? (y[f] - y[f - 1]) / h[f - 1] : d1;
+  const d2 = f + 2 < n ? (y[f + 2] - y[f + 1]) / h[f + 1] : d1;
+  let m1, m2;
+  // Am Rand einseitig; innen das gewichtete harmonische Mittel nach
+  // Fritsch–Carlson, das an einem Wendepunkt der Reihe auf null geht.
+  if (f === 0) m1 = d1;
+  else if (d0 * d1 <= 0) m1 = 0;
+  else { const w1 = 2 * h[f] + h[f - 1], w2 = h[f] + 2 * h[f - 1]; m1 = (w1 + w2) / (w1 / d0 + w2 / d1); }
+  if (f + 2 >= n) m2 = d1;
+  else if (d1 * d2 <= 0) m2 = 0;
+  else { const w1 = 2 * h[f + 1] + h[f], w2 = h[f + 1] + 2 * h[f]; m2 = (w1 + w2) / (w1 / d1 + w2 / d2); }
+  return [(d1 + STRAFF * (m1 - d1)) * h[f], (d1 + STRAFF * (m2 - d1)) * h[f]];
+}
+// Hermite auf [0,1] mit den beiden Steigungen
+function hermite(y1, y2, m1, m2, t) {
+  const t2 = t * t, t3 = t2 * t;
+  return y1 * (2 * t3 - 3 * t2 + 1) + m1 * (t3 - 2 * t2 + t)
+       + y2 * (-2 * t3 + 3 * t2) + m2 * (t3 - t2);
+}
+
+/* ---------- Zeichenkoordinaten ---------- */
+const px = new Float64Array(N), py = new Float64Array(N);
+// Ein Knoten im Bild f, schon auf den gemeinsamen Massstab gebracht.
+/* ---------- Wie stark verzerrt wird ----------
+   FORM ist der Regler zwischen der Landkarte (0) und dem vollen Kartogramm
+   (1). Die Landkarte steckt schon in der Nutzlast — sie ist der Anfang der
+   Differenzkette —, also kostet der Zwischenschritt kein einziges Zeichen
+   mehr: jeder Knoten liegt einfach zwischen seinem Ort auf dem Boden und
+   seinem Ort im Kartogramm.
+
+   Was dabei an Fläche fehlt, holt die Höhe zurück; das rechnet hoehen()
+   weiter unten. */
+/* ---------- Eine Form, und nur eine ----------
+   Die Seite konnte zwischen drei Formen umschalten — Landkarte, halbe
+   Verzerrung, volles Kartogramm —, dann nur noch zwischen einer, und jetzt ist
+   auch die Maschinerie dafür weg: kein Umblenden zwischen Formen, keine Leiter
+   je Form, keine Mindestbreite, kein Ausblenden des Reliefs. Das waren alles
+   Vorkehrungen für das volle Kartogramm, in dem jeder Kreis dieselbe Dichte
+   hat und nichts mehr zu modellieren ist; bei halber Verzerrung greift keine
+   davon.
+
+   Was bleibt, ist die Zahl: jeder Knoten liegt auf halbem Weg zwischen seinem
+   Ort auf der Landkarte und seinem Ort im Kartogramm. Beide Enden stehen
+   weiterhin in der Nutzlast — die Landkarte ist der Anfang der Differenzkette
+   —, die Zwischenform kostet also nichts und wäre jederzeit wieder aufziehbar.
+
+   Der Nebeneffekt, und er ist der Grund, warum das mehr ist als Aufräumen: die
+   Farbleiter wurde über **alle drei** Formen gemessen, damit ×1 in jeder
+   Knopfstellung dasselbe heisst. Die Landkarte streut am weitesten, also setzte
+   sie das obere Ende für alle. Jetzt misst die Leiter genau das, was gezeichnet
+   wird. */
+const FORM = 0.5;
+/* Hier stand noch ein Massstab und ein Ankerpunkt: jeder Zustand wurde um
+   diesen Punkt auf seine Grösse gebracht, damals, als die Karte
+   flächenproportional mit der Bevölkerung wuchs. Der Massstab wurde
+   eingefroren, als das Wachstum in die Farbe zog — und ein fester Massstab um
+   einen festen Punkt tut nichts mehr, sobald masse() den Rahmen der
+   gezeichneten Punkte misst und auf die Leinwand normiert: beide Faktoren
+   kürzen sich heraus. Also weg damit. */
+const ortX = i => GX[i] + FORM * (reihe.MX[i] - GX[i]);
+const ortY = i => GY[i] + FORM * (reihe.MY[i] - GY[i]);
+
+/* Hier stand die Bahn zwischen zwei Bildern: acht Zahlenreihen zu je
+   zwölftausend Knoten und eine monoton kubische Kurve, damit sich die Karte
+   ohne Knick und ohne Überschiessen von einem Kartogramm ins nächste
+   verformte. Sie ist weg, weil es nur noch **eine** Form gibt. Die Orte hängen
+   nicht mehr an der Zeit, also werden sie einmal gerechnet und dann behalten;
+   was sich über die Jahre bewegt, ist die Höhe, und die steckt in der Farbe.
+   Die Kurve selbst lebt weiter, einen Stock tiefer: die Bevölkerungszahlen
+   zwischen zwei Zählungen laufen weiterhin über sie (siehe werteBei). */
+let punkteFuer = null;
+function setzePunkte() {
+  if (punkteFuer === reihe) return;
+  punkteFuer = reihe;
+  for (let i = 0; i < N; i++) { px[i] = ortX(i); py[i] = ortY(i); }
+}
+// Grösster Rahmen je Reihe, gemessen nur an den Kreisen, die im jeweiligen
+// Bild auch gezeichnet werden. So füllt die Karte die Fläche, statt sich nach
+// Gebieten zu richten, die gar nicht zu sehen sind.
+function rahmenFuer(r) {
+  const merkR = reihe;
+  reihe = r;
+  let a = Infinity, b = -Infinity, c = Infinity, d = -Infinity;
+  for (let f = 0; f < NF; f++) {
+    setzePunkte(f, f, 0);
+    for (let g = 0; g < NK; g++) {
+      if (!(r.BEV[f][g] > 0)) continue;
+      for (const ring of GEBIETE[g]) for (const i of ring) {
+        if (px[i] < a) a = px[i]; if (px[i] > b) b = px[i];
+        if (py[i] < c) c = py[i]; if (py[i] > d) d = py[i];
+      }
+    }
+  }
+  reihe = merkR; punkteFuer = null;
+  return { x: a, y: c, w: b - a, h: d - c };
+}
+for (const r of REIHEN) r.rahmen = rahmenFuer(r);
+
+/* ---------- Die Farbleiter ----------
+   Eine einzige, und es ist die eines Schulatlas: Tiefland grün, dann gelb,
+   dann braun, oben Fels und Schnee. Sie ist keine Datenskala im üblichen Sinn,
+   sondern eine Konvention — und sie funktioniert, weil man sie schon kann.
+
+   Gefärbt wird damit die **Höhe**, also dasselbe, was auch das Relief zeigt.
+   Daraus folgt das Beste daran: die Höhenlinien liegen genau auf den
+   Farbgrenzen, wie in einer Geländekarte, weil beide dieselbe Zahl sind.
+
+   Gesetzt ist sie auf schwarzen Grund; die Seite kennt kein zweites Klima
+   mehr. Das spart nicht nur Code, es ist auch der Grund, warum das Tiefgrün
+   so tief sein darf. */
+/* Fünfundzwanzig Bänder, beim Bauen aus ihrer Beschreibung gerechnet (siehe
+   oben im Bauskript): je Band eine Helligkeit, ein Farbton und die grösste
+   Buntheit, die sRGB an dieser Stelle noch hergibt.
+
+   Die untersten fünf sind **Wasser**. Wo auf die Fläche am wenigsten Menschen
+   kommen, liegt jetzt ein See: tief dunkelblau, zum Ufer hin heller. Das ist
+   nicht nur hübsch, es räumt zwei Dinge zugleich auf. Die Grenze zwischen
+   Wasser und Land ist die schärfste, die eine Geländekarte kennt — man sieht
+   auf einen Blick, welcher Teil des Landes leer ist. Und weil das untere Ende
+   der Leiter damit an das Wasser geht, verteilen sich die Landbänder über
+   einen engeren Bereich: dieselben Farben lösen feiner auf, dort, wo die
+   Menschen wohnen.
+
+   Darüber das Land, von Waldgrün über Grasgrün, Gelbgrün, Gelb und Ocker zu
+   Orange und Rot. Oben endet es in **Weiss**, nicht in einem hellen Braun; das
+   vorletzte Band ist ein fast entsättigtes Grau als Übergang von Fels zu
+   Schnee.
+
+   Die Helligkeit steigt im Wasser durchgehend bis zum Ufer, dann fällt sie
+   scharf ins Waldgrün, steigt wieder bis zum Gelb und fällt mit den Rot-Tönen
+   — das ist die Konvention eines Schulatlas und nicht zu vermeiden, wenn Gelb
+   der hellste Farbton sein soll; die beiden obersten Bänder steigen wieder bis
+   ins Weiss. */
+const HYPSO_ATLAS = ${JSON.stringify(HYPSO)};
+const HYPSO_CVD = ${JSON.stringify(HYPSO2)};
+let HYPSO = HYPSO_ATLAS;   // die Leiter, mit der gerade gezeichnet wird — siehe leiterSetzen()
+const WASSER = ${WASSER};
+const UFER = ${UFER};
+const stil = n => getComputedStyle(document.body).getPropertyValue(n).trim();
+let LEER = '#1a1a18', INK = '#fff', STRICH = '#0c0c0c';
+const SCHATTEN = 'rgba(0,0,0,.6)', KANTE3D = '#060605';
+const STADTPUNKT = '#e8291c';
+const HELLMAX = 0.55, DUNKELMAX = 0.55;
+function farbenHolen() {
+  LEER = stil('--leer'); INK = stil('--ink'); STRICH = stil('--surface');
+}
+/* Bänder gleicher Breite, und sie liegen jetzt **auf dem Feldwert**
+   statt auf dem Leiterwert. Das klingt nach nichts und räumt zwei Dinge auf.
+
+   Die Grenzen fallen bei k/NBAND — das sind genau die Niveaus der
+   Höhenlinien. Jede Linie ist damit eine Farbgrenze und jede Farbgrenze trägt
+   ihre Linie, ohne dass die Reserve ein bestimmter Bruch sein müsste. Vorher
+   hing das an RESERVE = 1/8 und galt nur für jede zweite Linie.
+
+   Und die Reserve bekommt Farbe. Vorher endete die Leiter bei ihrem oberen
+   Quantil, und was darüber lag, hatte keinen eigenen Ton mehr: München, Berlin
+   und Oberhausen sassen im selben hellsten Band. Jetzt reicht die Farbe bis an
+   das obere Ende des Feldes — die beiden obersten Bänder, Fels und Schnee,
+   gehören der Spitze allein.
+
+   Abgeschnitten, nicht gerundet: es sind Bänder, nicht Stützstellen, und die
+   Höhenlinien brauchen die Grenzen. */
+const NBAND = HYPSO.length;
+const bandIdx = v => Math.max(0, Math.min(NBAND - 1, Math.floor(v * NBAND)));
+const stufe = (r, u) => r[Math.max(0, Math.min(r.length - 1, Math.round(u * (r.length - 1))))];
+
+/* ---------- Die Höhenskala ----------
+   Die Höhe eines Kreises ist seine Bevölkerung geteilt durch seine gezeichnete
+   Fläche, bezogen auf die mittlere Dichte des Bildes — im vollen Kartogramm
+   also für jeden 1, auf der Landkarte seine wirkliche Dichte im Verhältnis zur
+   mittleren.
+
+   Wie weit die Werte streuen, hängt damit ganz an der Form: auf der Landkarte
+   vom Fünftel bis zum Fünfzehnfachen, bei halber Verzerrung nur noch von 0,36
+   bis 2,5, im vollen Kartogramm gar nicht. Eine feste Skala für alle drei wäre
+   in zweien davon fast leer — die halbe Leiter bliebe ungenutzt, und die Karte
+   läge in einem einzigen Gelb.
+
+   Also wird die Spanne **je Form einmal aus den Daten gemessen**: alle Kreise
+   in allen Zählungen, ein halbes und neunundneunzigeinhalb Prozent. Das geht ohne
+   zu zeichnen, weil die Höhe ein Verhältnis ist und sich beim Skalieren der
+   ganzen Karte nicht ändert. Gemessen wird einmal je Form und dann behalten:
+   dieselbe Farbe heisst damit über die ganzen hundertfünfzig Jahre dasselbe.
+   Zwischen zwei Formen wird logarithmisch übergeblendet. */
+let SPANNE = null;
+// Umschalten zwischen relativ und absolut: die gemessene Spanne hängt daran
+// und wird verworfen.
+function bezugAbsolut(an) {
+  if (ABSOLUT === an) return;
+  ABSOLUT = an; SPANNE = null;
+  masse(); reliefFrisch(); zeichne();
+}
+// Flächengewichtetes Quantil über eine sortierte Liste von [Wert, Fläche].
+function gewichtet(liste) {
+  liste.sort((a, b) => a[0] - b[0]);
+  let ges = 0; for (const [, fa] of liste) ges += fa;
+  return t => {
+    let ziel = t * ges, lauf = 0;
+    for (const [v, fa] of liste) { lauf += fa; if (lauf >= ziel) return v; }
+    return liste[liste.length - 1][0];
+  };
+}
+function hoehenSkala() {
+  if (SPANNE) return SPANNE;
+  const merkR = reihe;
+  const alle = [];
+  const fl = new Float64Array(NK);
+  for (let f = 0; f < NF; f++) {
+    setzePunkte(f, f, 0);
+    let sP = 0, sA = 0;
+    for (let g = 0; g < NK; g++) {
+      const w = reihe.BEV[f][g];
+      let A2 = 0;
+      if (w > 0) for (const r of GEBIETE[g]) {
+        const n = r.length;
+        for (let i = 0, j = n - 1; i < n; j = i++) A2 += px[r[j]] * py[r[i]] - px[r[i]] * py[r[j]];
+      }
+      fl[g] = Math.abs(A2 / 2);
+      if (w > 0 && fl[g] > 0) { sP += w; sA += fl[g]; }
+    }
+    const mittel = (sA > 0 ? sP / sA : 1) * (ABSOLUT && sP > 0 ? bezugsBev() / sP : 1);
+    const jeBild = [];
+    for (let g = 0; g < NK; g++) {
+      const w = reihe.BEV[f][g];
+      if (w > 0 && fl[g] > 0) jeBild.push([(w / fl[g]) / mittel, fl[g]]);
+    }
+    for (const e of jeBild) alle.push(e);
+  }
+  /* Gewichtet mit der **Fläche**, nicht je Kreis gleich. Das ist der
+     Unterschied zwischen „wie dicht wohnt ein Kreis" und „wie dicht ist das
+     Land hier", und gefärbt wird Fläche. Ungewichtet setzten die hundertsieben
+     kreisfreien Städte das obere Quantil — sie sind dicht, aber winzig, und
+     nach dem Weichzeichnen bleibt von ihnen wenig übrig. Die Leiter reichte
+     deshalb weit über das hinaus, was im Feld je vorkommt, und die halbe
+     Palette blieb ungenutzt.
+
+     Aus demselben Grund ein Fünftelprozent statt eines halben an den Enden:
+     das Weichzeichnen zieht die Verteilung ohnehin zur Mitte, die Leiter darf
+     also enger stehen als die rohen Kreiswerte. */
+  const q = gewichtet(alle);
+  const lo = Math.max(1e-3, q(0.05));
+  let hi = Math.max(lo * 1.02, q(0.95) * KOPF);
+  /* Und dann wird das obere Ende nicht genommen, sondern gesetzt — damit die
+     Küste auf UFER fällt. Der gemessene Wert bleibt die Richtschnur: 25 Bänder
+     und 5 blaue setzen das Knie auf ×2,222, vier Prozent unter das gemessene
+     Quantil ×2,305 — und dafür endet die Rampe auf der runden ×2,5. Steht UFER
+     auf null, gilt wieder das Quantil. */
+  if (UFER > 0) hi = UFER * NBAND / (WASSER * (1 + RESERVE));
+  reihe = merkR; punkteFuer = null;
+  return (SPANNE = [Math.log(lo), Math.log(hi)]);
+}
+/* Hier standen zwei Bremsen für das volle Kartogramm: eine Mindestbreite der
+   Leiter und ein Ausblenden des Reliefs, beide aus der Spanne **innerhalb**
+   eines Bildes gerechnet. Dort hat jeder Kreis dieselbe Dichte, die Spanne
+   schnurrt auf ein Prozent zusammen, und ohne Bremse wird aus den
+   Rundungsresten des Diffusionsverfahrens ein Gebirge. Bei halber Verzerrung
+   steht diese Spanne bei 1,76 gegen 0,96, ab denen die Bremse überhaupt
+   greifen würde — beide sind mit dem Kartogramm weggefallen. */
+
+let skalaVon = -1, skalaBis = 1;
+// Wo das Mittel dieses Bildes auf der Leiter liegt, von 0 bis 1.
+/* ---------- Wo eine Dichte auf der Leiter liegt ----------
+   Zwei Möglichkeiten, und sie sind nicht gleichwertig.
+
+   **Logarithmisch.** Gleiche Vielfache liegen gleich weit auseinander: von ×0,5
+   auf ×1 ist derselbe Weg wie von ×1 auf ×2. Das löst unten gut auf, wo die
+   meisten Kreise liegen, und staucht oben. Die Farbe ist damit eine gute
+   Rangfolge, aber die Fläche darunter bedeutet nichts.
+
+   **Linear.** Der Feldwert ist die Dichte selbst. Und daraus folgt das, worum
+   es hier geht: Weichzeichnen erhält das Integral, also ist
+
+       Volumen unter der Geländeoberfläche = Bevölkerung
+
+   nicht nur je Kreis, sondern über jeden Ausschnitt, den man herausgreift.
+   Zwei gleich grosse Flecken mit gleicher Farbe haben dann gleich viele
+   Menschen, und ein doppelt so hoher Berg auf halber Fläche ebenso. Der Preis
+   ist unten: die Hälfte der Fläche liegt in den untersten zwei, drei Bändern,
+   und die frühen Bilder verlieren ihre Zeichnung fast ganz. */
+let LINEAR = true;
+/* ---------- Und oben: ein Knie statt eines Deckels ----------
+   Die Leiter endet bei einem gemessenen Quantil, und was darüber lag, wurde
+   abgeschnitten. Das war der eigentliche Grund, warum das Ruhrgebiet höher
+   aussah als Berlin.
+
+   Denn geklemmt wurden 2024 elf Kreise auf einmal — München (×2,58), Berlin
+   (×2,51), Oberhausen (×2,39), Essen — und sie bekamen dabei **alle denselben
+   Wert**.
+   Der Unterschied zwischen ihnen, also genau das, worum es geht, war weg,
+   bevor der erste Weichzeichner lief. Was danach noch entschied, war allein
+   die Breite der Fläche, und da gewinnt ein fünfzig Kilometer langes Band
+   dichter Städte gegen einen einzelnen Fleck. Berlins Gipfel lag im Feld bei
+   0,866, der des Ruhrgebiets bei 0,877: die falsche Reihenfolge, und sie kam
+   nicht aus den Zahlen, sondern aus dem Deckel.
+
+   Jetzt ein Knie: bis zum Quantil bleibt die Leiter genau linear — daran hängt
+   ja, dass das Volumen die Bevölkerung ist —, darüber läuft sie weich in die
+   Reserve und erreicht sie erst im Unendlichen. Nichts wird mehr geklemmt, die
+   Reihenfolge bleibt überall erhalten, und die Spitze behält ihren Vorsprung.
+   Auf der Landkarte, wo die Dichte bis zum Fünfzehnfachen geht, staucht das
+   Knie stark — aber es staucht, statt zu kappen. */
+const knie = u => u > 1 ? 1 + RESERVE * (1 - Math.exp((1 - u) / RESERVE))
+                : u < 0 ? -RESERVE * (1 - Math.exp(u / RESERVE))
+                : u;
+const aufLeiter = h => (h > 0)
+  ? knie(LINEAR ? h / Math.exp(skalaBis)
+                : (Math.log(h) - skalaVon) / (skalaBis - skalaVon))
+  : 0;
+const mitteAufLeiter = () => aufLeiter(MITTELHOCH);
+// Dasselbe im Feld; dort liegen Farbe und Höhenlinien.
+const mitteImFeld = () => zuFeld(aufLeiter(MITTELHOCH));
+
+/* ---------- Zustand ---------- */
+// Die Uhr läuft über die Spielzeit, nicht über die Jahre. Wie viel Spielzeit
+// ein Abschnitt bekommt, steht in D.takt und ist beim Bauen gerechnet: das
+// geometrische Mittel aus seinem Anteil an den Jahren und seinem Anteil an
+// allem, was sich umschichtet. Wo viel in Bewegung ist, läuft die Uhr also
+// langsamer — 1939 bis 1946 bekommt fünf Sekunden statt drei —, ohne dass die
+// Zeitachse ganz aufhört, eine zu sein.
+const TAKT = D.takt, TAKTKUM = [0];
+for (let i = 0; i < TAKT.length; i++) TAKTKUM.push(TAKTKUM[i] + TAKT[i]);
+let spiel = 0, jahr = T0, laeuft = false, letzterTip = -1;
+let dtSek = 1 / 60;   // wie lange das letzte Bild gedauert hat, für den Tiefpass
+function setzeZeit(p) {
+  spiel = Math.max(0, Math.min(1, p));
+  let a = 0;
+  while (a < NF - 2 && TAKTKUM[a + 1] <= spiel) a++;
+  const u = Math.max(0, Math.min(1, (spiel - TAKTKUM[a]) / TAKT[a]));
+  jahr = JAHRE[a] + (JAHRE[a + 1] - JAHRE[a]) * u;
+}
+const cv = document.getElementById('karte'), ctx = cv.getContext('2d');
+const uv = document.getElementById('umriss'), uctx = uv.getContext('2d');
+let breite = 0, hoehe = 0, mass = 1, verX = 0, verY = 0;
+
+let DPR = 1;          // Gerätepunkte je CSS-Punkt, mit denen gerade gezeichnet wird
+let GROB = false;     // grob, solange der Finger liegt — siehe grobAn()
+function masse() {
+  // Die Leinwand füllt, was der Rahmen ihr lässt — Kopfzeile, laufende Notiz,
+  // Legende und Bedienung stehen fest, der Rest gehört der Karte. Gemessen
+  // wird das Feld selbst; das Auslegen macht der Umbruch, nicht die Rechnung.
+  const feld = cv.parentElement;
+  breite = feld.clientWidth;
+  hoehe = Math.max(120, feld.clientHeight);
+  /* Grob, solange der Finger liegt: ein Gerätepunkt je CSS-Punkt statt zwei.
+     Der Stapel kostet dann weniger als die Hälfte (Telefon 96 → 44 ms), die
+     Rechnung im Feld bleibt, wie sie ist. Das volle Bild kommt beim Loslassen. */
+  const dpr = GROB ? 1 : Math.min(2.5, devicePixelRatio || 1);
+  DPR = dpr;
+  const bw = Math.round(breite * dpr), bh = Math.round(hoehe * dpr);
+  if (cv.width !== bw || cv.height !== bh) { cv.width = bw; cv.height = bh; }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (uv.width !== bw || uv.height !== bh) { uv.width = bw; uv.height = bh; }
+  uctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const V = reihe.rahmen;
+  mass = Math.min(breite / V.w, hoehe / V.h) * 0.99;
+  verX = (breite - V.w * mass) / 2 - V.x * mass;
+  /* Nicht senkrecht mittig, sondern **nach unten gerückt**. Die Karte hat ein
+     festes Seitenverhältnis; im Hochformat begrenzt sie die Breite, und was an
+     Höhe übrig bleibt, lag bisher zur Hälfte oben und zur Hälfte unten. Oben
+     aber steht der Text, und unten stand nichts. Also bekommt der Text den
+     freien Platz und die Karte rückt bis kurz vor die Legende — beides
+     gewinnt. Ein Achtel Rest bleibt unten stehen, damit sie nicht anstösst.
+
+     Im Querformat, wo die Höhe die Karte begrenzt, ist der Rest null und die
+     Zeile tut nichts. */
+  const rest = Math.max(0, hoehe - V.h * mass);
+  verY = rest * 0.875 - V.y * mass;
+  // Der Umriss hängt an mass/verX/verY und wird sonst nie ungültig — der Boden
+  // steht still. Eine Grössenänderung ist der einzige Fall.
+  ansichtKlemmen();
+  zeigeUmriss(letzterTip);
+}
+
+function bildBei(t) {
+  let a = 0;
+  while (a < NF - 2 && JAHRE[a + 1] <= t) a++;
+  const b = Math.min(NF - 1, a + 1);
+  const u = JAHRE[b] > JAHRE[a] ? Math.max(0, Math.min(1, (t - JAHRE[a]) / (JAHRE[b] - JAHRE[a]))) : 0;
+  return [a, b, u];
+}
+
+// Werte zwischen zwei Bildern. Fehlt ein Kreis in einem der beiden — Berlin
+// hat vor 1995 keine Zahl —, wird nicht dazwischengerechnet, sondern
+// ein- oder ausgeblendet: der vorhandene Wert gilt, die Deckkraft wandert.
+// Die Veränderung je Jahr im Abschnitt j, also zwischen den Bildern j und j+1.
+function rateIm(j, k) {
+  if (j < 0 || j + 1 >= NF) return null;
+  const va = reihe.BEV[j][k], vb = reihe.BEV[j + 1][k], dt = JAHRE[j + 1] - JAHRE[j];
+  if (!(va > 0) || !(vb > 0) || !(dt > 0)) return null;
+  return (Math.pow(vb / va, 1 / dt) - 1) * 100;
+}
+// Die Richtung gehört dem Abschnitt zwischen zwei Zählungen, nicht einem
+// einzelnen Augenblick darin. Sie bleibt deshalb stehen, solange die Karte von
+// einem Bild zum nächsten läuft — nur an der Zählung selbst sprang sie um, und
+// ein Sprung mitten in einer laufenden Bewegung sieht aus wie ein Fehler.
+//
+// Sie blendet deshalb über, aber **nur nach hinten**: an der Zählung gilt noch
+// die alte Rate, und im ersten Sechstel des neuen Abschnitts wandert die Farbe
+// zur neuen hinüber. Die erste Fassung blendete auch nach vorn, und das war
+// falsch: der Einbruch von 1939 war dann schon 1934 zu sehen, weil die Karte
+// eine Rate zeigte, die es noch gar nicht gab. Keine Farbe nimmt jetzt etwas
+// vorweg — was zu sehen ist, ist gezählt oder schon vorbei.
+const UEBER = 1 / 6;
+const glatt = x => x * x * (3 - 2 * x);
+function werteBei(a, b, u) {
+  const w = new Float64Array(NK), deck = new Float64Array(NK), rate = new Array(NK).fill(null);
+  const vonF = Math.max(0, a - 1), bisF = Math.min(NF - 1, b + 1), nF = bisF - vonF + 1;
+  const hh = [];
+  for (let f = vonF; f < bisF; f++) hh.push(TAKT[f]);
+  for (let k = 0; k < NK; k++) {
+    const va = reihe.BEV[a][k], vb = reihe.BEV[b][k];
+    if (va > 0 && vb > 0) {
+      // Dieselbe weiche Kurve wie für die Form, damit Zahl und Fläche
+      // zusammenpassen: über die Zählung hinaus geht sie nie.
+      const y = [];
+      for (let f = vonF; f <= bisF; f++) y.push(reihe.BEV[f][k]);
+      if (y.every(v => v > 0)) {
+        const [m1, m2] = steigungen(y, hh, a - vonF, nF);
+        w[k] = hermite(va, vb, m1, m2, u);
+      } else w[k] = va + (vb - va) * u;
+      deck[k] = 1;
+      const hier = rateIm(a, k);
+      if (hier !== null) {
+        let r = hier;
+        if (u < UEBER) {
+          const vor = rateIm(a - 1, k);
+          if (vor !== null) r = vor + (hier - vor) * glatt(u / UEBER);
+        }
+        rate[k] = r;
+      }
+    }
+    else if (va > 0) { w[k] = va; deck[k] = 1 - u; }
+    else if (vb > 0) { w[k] = vb; deck[k] = u; }
+  }
+  return { w, deck, rate };
+}
+
+/* ---------- Relief ----------
+   Die Karte soll nicht flach liegen, sondern sich wölben. Gerechnet wird das
+   über ein Höhenfeld, nicht über gezeichnete Kanten:
+
+   1. Die Kreise weiss, die Fugen zwischen ihnen schwarz und überall gleich
+      breit. Das ist die Vorlage.
+   2. Zweimal weichgezeichnet und gemischt: einmal knapp, einmal weit. Das
+      knappe Feld rundet jeden Kreis für sich ab, das weite mittelt darüber,
+      wie dicht die Fugen liegen.
+   3. Aus dem Gefälle des Feldes die Normale, daraus Lambert-Beleuchtung von
+      oben links.
+
+   Dass dabei die grossen Städte aufgehen, ist kein Effekt, sondern folgt aus
+   der Fläche: ein Kreis mit vielen Menschen ist breit gezeichnet, kommt weit
+   von seinen Fugen weg und erreicht die volle Höhe; ein kleiner erreicht sie
+   nie und bleibt ein flaches Kissen. Die Dicke ist für alle dieselbe — Fläche
+   mal Höhe, also Volumen, bleibt damit die Bevölkerung. */
+/* ---------- Wie hoch ein Kreis steht ----------
+   Die eine Aussage dieser Karte ist: **Volumen ist Bevölkerung.** Im vollen
+   Kartogramm trägt das allein die Fläche, und die Höhe ist überall dieselbe.
+   Nimmt man die Verzerrung zurück, fehlt der Fläche etwas — und genau das
+   bekommt die Höhe:
+
+       Höhe = Bevölkerung / gezeichnete Fläche
+
+   Gemessen wird die gezeichnete Fläche, nicht gerechnet, was sie sein
+   sollte. Damit stimmt die Rechnung bei jedem Zwischenschritt von selbst,
+   ohne dass die Zwischenform ein eigenes Kartogramm bräuchte. Bezug ist die
+   mittlere Dichte des Bildes: im vollen Kartogramm kommt für jeden Kreis 1
+   heraus, auf der Landkarte seine wirkliche Dichte im Verhältnis zur
+   mittleren.
+
+   Gezeichnet wird die Höhe gestaucht. Zwischen dem leersten Landkreis und
+   Berlin liegt auf der Landkarte der Faktor 140, und ein Relief mit Faktor
+   140 ist eine senkrechte Wand neben einer Ebene. Die Wurzel daraus lässt
+   sich beleuchten. Die Reihenfolge bleibt dabei richtig, der Abstand nicht —
+   die Zahl selbst steht beim Antippen. */
+const GEZEICHNET = new Float64Array(NK), HOCH = new Float64Array(NK);
+let MITTELHOCH = 1;
+// Je Farbstufe ein Eimer, dazu einer für die Kreise ohne Zahl.
+// Die Stauchung und der Sockel, auf dem das Relief steht. Ohne Sockel läge auf
+// der Landkarte das halbe Land im Dunkeln, weil eine einzige Stadt die Skala
+// setzt; mit Sockel ist die Ebene eine Ebene und die Städte steigen daraus auf.
+// Im vollen Kartogramm sind alle Höhen gleich, dann ist der Sockel wirkungslos
+// und es bleibt genau beim flachen Deckel von vorher.
+/* ---------- Was im Höhenfeld steht ----------
+   Bis hierher stand darin die **gestauchte Höhe**: Wurzel aus der Dichte,
+   normiert auf den höchsten Kreis des Bildes. Die Farbe dagegen kam aus
+   log(Dichte) auf der gemessenen Leiter, und gefärbt wurde Kreis für Kreis.
+   Zwei verschiedene Grössen, zwei verschiedene Geometrien — und das sah man:
+   Berlin war ein kleiner Farbfleck in der Form seines Kreises, während sein
+   Berg, aus dem weiten Feld gezogen, weit darüber hinausreichte und seine
+   Höhenlinien sich drängten. Farbe und Relief widersprachen einander.
+
+   Jetzt steht im Feld **dieselbe Zahl, die auch die Leiter zeigt**: die
+   logarithmische Dichte, linear auf die gemessene Spanne abgebildet. Daraus
+   kommen Farbe, Schattierung und Höhenlinien gemeinsam — dieselbe Zahl,
+   dieselbe Glättung, dieselbe Geometrie.
+
+   RESERVE ist Luft über der Farbleiter, und sie hat jetzt zwei Aufgaben statt
+   einer. Die alte: der Gipfel soll Platz haben. Die neue: sie **bekommt Farbe**
+   — die obersten Bänder, Fels und Schnee, liegen genau dort. Zusammen mit dem
+   Knie in aufLeiter heisst das, dass über dem gemessenen Quantil weder die
+   Höhe noch die Farbe abreisst.
+
+   An eine bestimmte Zahl ist der Wert nicht mehr gebunden. Er war es einmal:
+   solange die Farbbänder auf dem Leiterwert lagen, fiel eine Farbgrenze nur
+   dann auf eine Höhenlinie, wenn die Reserve genau ein Achtel betrug. Seit die
+   Bänder auf dem Feldwert liegen, fallen sie immer zusammen. */
+const RESERVE = 0.125;
+/* Leiterwert (0 = unteres Ende der Farbskala, 1 = oberes) → Feldwert.
+
+   Unten braucht die lineare Leiter keine Luft: sie fängt bei null an, und unter
+   null wohnt niemand — mit Reserve blieben dort die beiden untersten Bänder
+   leer. Die logarithmische fängt bei einem gemessenen Quantil an und braucht
+   sie. */
+const unten = () => LINEAR ? 0 : RESERVE;
+const zuFeld = u => {
+  const v = (u + unten()) / (1 + unten() + RESERVE);
+  return v < 0 ? 0 : v > 1 ? 1 : v;
+};
+/* ---------- Bezogen worauf? ----------
+   Die Höhe ist ein Verhältnis, und die Frage ist, wozu.
+
+   **Absolut** (so steht die Seite): zu einer festen Dichte, der von Deutschland
+   2024. Dann heisst ×2 in jedem Jahr dasselbe — doppelt so dicht wie das Land
+   heute. Das ganze Land steigt im Lauf der Zeit aus dem Grün heraus, weil es
+   sich fast verdreifacht; 1871 liegt fast einfarbig im Tiefgrün, und das ist
+   keine Untertreibung, sondern der Befund. Seit die Karte nicht mehr mitwächst,
+   ist die Farbe der einzige Ort, an dem das Wachstum steht — und dort steht es
+   richtig.
+
+   **Relativ** (der Schalter, früher die Voreinstellung): zur mittleren Dichte
+   **desselben Bildes**. Ein Kreis steht dann auf ×2, wenn dort doppelt so dicht
+   gewohnt wird wie im Landesdurchschnitt jenes Jahres, und wer mit dem Land
+   Schritt hält, behält seine Farbe über hundertfünfzig Jahre. Das zeigt die
+   Verteilung schärfer, verschweigt aber das Wachstum.
+
+   Gerechnet ist der Unterschied ein Faktor: die Bevölkerung dieses Bildes,
+   geteilt durch die des letzten. */
+let ABSOLUT = true;
+// Die Bevölkerung des letzten Bildes, einmal gerechnet und behalten.
+let bevRef = 0;
+function bezugsBev() {
+  if (!bevRef) for (let g = 0; g < NK; g++) bevRef += reihe.BEV[NF - 1][g];
+  return bevRef;
+}
+/* Die wirkliche mittlere Dichte des Landes 2024, auf der **amtlichen** Fläche:
+   83,6 Millionen auf 357 677 km², also 234 Einwohner je Quadratkilometer. Sie
+   hat mit der Höhenskala nichts zu tun — die rechnet auf der gezeichneten
+   Fläche — und steht nur im Zettel, damit dort beide Zahlen nebeneinander
+   stehen können. */
+let dichteRef = 0;
+function landesDichte() {
+  if (!dichteRef) {
+    let fl = 0;
+    for (let g = 0; g < NK; g++) if (D.k[g][4] && reihe.BEV[NF - 1][g] > 0) fl += D.k[g][4];
+    dichteRef = fl > 0 ? bezugsBev() / fl : 1;
+  }
+  return dichteRef;
+}
+function hoehen(w, deck) {
+  let sP = 0, sA = 0;
+  for (let g = 0; g < NK; g++) {
+    let A2 = 0;
+    if (deck[g] > 0.5) for (const r of GEBIETE[g]) {
+      const n = r.length;
+      for (let i = 0, j = n - 1; i < n; j = i++) A2 += px[r[j]] * py[r[i]] - px[r[i]] * py[r[j]];
+    }
+    GEZEICHNET[g] = Math.abs(A2 / 2) * mass * mass;
+    if (deck[g] > 0.5 && w[g] > 0 && GEZEICHNET[g] > 0) { sP += w[g]; sA += GEZEICHNET[g]; }
+  }
+  const mittel = (sA > 0 ? sP / sA : 1) * (ABSOLUT && sP > 0 ? bezugsBev() / sP : 1);
+  // Die Höhe, die ein Kreis von durchschnittlicher Dichte in diesem Bild hätte.
+  // Relativ ist das immer 1; absolut ist es die Dichte des Jahres, bezogen auf
+  // die von 2024 — also 0,35 im Jahr 1871.
+  MITTELHOCH = ABSOLUT && sP > 0 ? sP / bezugsBev() : 1;
+  for (let g = 0; g < NK; g++)
+    HOCH[g] = (deck[g] > 0.5 && GEZEICHNET[g] > 0 && w[g] > 0) ? (w[g] / GEZEICHNET[g]) / mittel : 0;
+}
+
+/* ---------- Wie weit geglättet, und wie stark nachgeschärft ----------
+   Drei Zahlen, und an ihnen hängt die Frage, an der sich das Ruhrgebiet und
+   Berlin messen.
+
+   2024 sind die dichtesten Kreise bei halber Verzerrung München ×2,58, Berlin
+   ×2,51, Frankfurt ×2,41, Oberhausen ×2,39 — Berlin ist also dichter als jede
+   einzelne Ruhrstadt. Auf der Karte sah es lange umgekehrt aus: das Ruhrgebiet
+   trug die grosse helle Kappe, Berlin einen Fleck. Drei Gründe, und alle drei
+   sind Darstellung, nicht Befund. Zwei davon sind anderswo behoben — der
+   Deckel der Leiter steht jetzt als Knie in aufLeiter, die Farbe reicht bis in
+   die Reserve hinauf. Der dritte steht hier.
+
+   **Weichzeichnen trägt Volumen über die Kreisgrenze.** Über die ganze Karte
+   bleibt das Integral erhalten, über einen Ausschnitt nicht — und wen es
+   trifft, entscheidet die Nachbarschaft. Berlin verliert an Brandenburg und
+   bekommt von dort nichts zurück; Essen verliert an Bochum und bekommt von
+   Bochum dasselbe wieder. Der Weichzeichner bevorzugt damit systematisch das
+   Plateau vor der Spitze.
+
+   Dagegen steht ENGANTEIL über eins: eine Unscharfmaskierung, die genau die
+   Differenz aus engem und weitem Feld wieder aufschlägt. Sie ist gross, wo ein
+   Berg allein steht, null, wo ein Plateau liegt, und über die ganze Karte
+   mittelwertfrei. Gemessen für 2024 steht das Ruhrgebiet danach bei 1,44 mal
+   Berlin, wo die Menschen 1,36 stehen; vorher waren es 1,76.
+
+   Ihr Preis steht im Gipfel: eine Unscharfmaskierung überschiesst, und Berlins
+   höchster Punkt liest sich dadurch um knapp ein Zehntel über der Dichte
+   seines Kreises. Das ist der Tausch — der Gipfel ist eine Schätzung, das
+   Volumen ist die Bevölkerung.
+
+   Was bleibt, bleibt zu Recht: die gleichfarbige Zone ist im Ruhrgebiet
+   grösser, weil dort auf grösserer Fläche ähnlich dicht gewohnt wird. */
+let FEINTEILER = 95, GROBTEILER = 28, ENGANTEIL = 0.85;
+let WEITTEILER = 9, SCHAERFE = 0.13;
+/* Wo die Leiter oben endet, im Verhältnis zum gemessenen Quantil — die
+   Schneegrenze. Sie ist gemessen, nicht geraten.
+
+   Seit das Knie in aufLeiter nichts mehr kappt, entscheidet sie nicht mehr
+   darüber, ob ein Gipfel Zeichnung behält, sondern nur noch, **wie hoch der
+   Schnee anfängt**: schiebt man sie hoch, wird die weisse Kappe seltener und
+   der Vorsprung des höchsten Berges deutlicher. Gemessen für 2024:
+
+     Schneegrenze   Fels und Schnee   Gipfel Berlin : Ruhr   Volumen R:B
+        1,04            5,2 %            1,00 : 0,97           1,54
+        1,12            3,0 %            0,99 : 0,93           1,48
+        1,17            1,8 %            0,97 : 0,89           1,45
+        1,24            1,2 %            0,93 : 0,84           1,43
+
+   (Die Menschen stehen 1,36 : 1.) Gewählt ist 1,17: knapp ein Prozent der
+   Fläche im weissen Band, knapp zwei in den obersten beiden. Berlin steht dort
+   allein im Schnee, das Ruhrgebiet bleibt im Rot — und das ist die Reihenfolge,
+   die auch in den Zahlen steht. Die Schneegrenze wandert mit den Jahren: 1943
+   liegt nichts darüber, die Gipfel entstehen erst.
+
+   Der Faktor stand eine Fassung lang bei 1,04, und dass er gestiegen ist,
+   heisst nicht, dass die Leiter höher endet — sie endet fast genau dort, wo
+   vorher. Gemessen wird jetzt nur noch die eine gezeichnete Form, und deren
+   Quantil liegt bei ×2,04 statt bei ×2,29 der Landkarte. Der Faktor gleicht
+   das aus; oben steht danach ×2,39 gegen vorher ×2,38. */
+let KOPF = 1.10;
+const RAUF = 0.55;                // Auflösung des Höhenfelds, Anteil der Bildpunkte
+const hkA = document.createElement('canvas'), hcA = hkA.getContext('2d');
+const hkB = document.createElement('canvas'), hcB = hkB.getContext('2d', { willReadFrequently: true });
+const hkC = document.createElement('canvas'), hcC = hkC.getContext('2d', { willReadFrequently: true });
+const hkF = document.createElement('canvas'), hcF = hkF.getContext('2d');
+/* Zwei Leinwände nur fürs Licht: hkL trägt die Beleuchtung ohne Farbe,
+   hkS den daraus gebauten Stapel. Siehe METHODIK.md, Abschnitt 4k. */
+const hkL = document.createElement('canvas'), hcL = hkL.getContext('2d');
+const hkS = document.createElement('canvas'), hcS = hkS.getContext('2d');
+let rW = 0, rH = 0, fBild = null, lBild = null;
+let feinH = null, grobH = null, grobM = null, grobAuf = null, feldH = null,
+    farbF = null, maskeH = null, schatten = null, licht = null, weitH = null,
+    kastenA = null, kastenB = null;
+
+// Die Farbleiter als drei Zahlenreihen — je Bildpunkt ein Nachschlagen statt
+// eines Zerlegens von '#rrggbb'.
+let HYPSO_R = HYPSO.map(h => parseInt(h.slice(1, 3), 16));
+let HYPSO_G = HYPSO.map(h => parseInt(h.slice(3, 5), 16));
+let HYPSO_B = HYPSO.map(h => parseInt(h.slice(5, 7), 16));
+/* ---------- Ein sehr weites Feld, in Zahlen statt auf der Leinwand ----------
+   Gebraucht wird eine dritte, viel weitere Glättung — als Bezug für die
+   Schärfung, siehe unten. Über die Leinwand ginge das auch, kostete aber eine
+   weitere Weichzeichnung **und** ein weiteres Auslesen der Bildpunkte, und das
+   Auslesen ist der teuerste Schritt am ganzen Relief.
+
+   Also von Hand, mit laufender Summe: ein Kastenfilter kostet je Bildpunkt
+   dasselbe, egal wie breit er ist, und zweimal quer angewendet ergibt er einen
+   Dreieckskern, der für einen Bezugswert glatt genug ist. Vier Durchgänge über
+   neunzigtausend Zahlen, ohne eine einzige Leinwand anzufassen. */
+function kastenX(a, b, r, w, h) {
+  const f = 1 / (2 * r + 1);
+  for (let y = 0; y < h; y++) {
+    const z = y * w;
+    let summe = 0;
+    for (let x = -r; x <= r; x++) summe += a[z + (x < 0 ? 0 : x > w - 1 ? w - 1 : x)];
+    for (let x = 0; x < w; x++) {
+      b[z + x] = summe * f;
+      const rein = x + r + 1, raus = x - r;
+      summe += a[z + (rein > w - 1 ? w - 1 : rein)] - a[z + (raus < 0 ? 0 : raus)];
+    }
+  }
+}
+function kastenY(a, b, r, w, h) {
+  const f = 1 / (2 * r + 1);
+  for (let x = 0; x < w; x++) {
+    let summe = 0;
+    for (let y = -r; y <= r; y++) summe += a[(y < 0 ? 0 : y > h - 1 ? h - 1 : y) * w + x];
+    for (let y = 0; y < h; y++) {
+      b[y * w + x] = summe * f;
+      const rein = y + r + 1, raus = y - r;
+      summe += a[(rein > h - 1 ? h - 1 : rein) * w + x] - a[(raus < 0 ? 0 : raus) * w + x];
+    }
+  }
+}
+// Zweimal Kasten, quer und längs — und **normalisiert**: geteilt wird durch
+// dieselbe Glättung der Deckung, sonst zöge das Meer die Küste herunter und
+// eine Hafenstadt sähe weniger allein aus, als sie ist.
+function weitesFeld(r) {
+  const n = rW * rH;
+  for (let i = 0; i < n; i++) kastenA[i] = grobH[i] * grobM[i];
+  kastenX(kastenA, kastenB, r, rW, rH); kastenY(kastenB, kastenA, r, rW, rH);
+  kastenX(kastenA, kastenB, r, rW, rH); kastenY(kastenB, weitH, r, rW, rH);
+  for (let i = 0; i < n; i++) kastenA[i] = grobM[i];
+  kastenX(kastenA, kastenB, r, rW, rH); kastenY(kastenB, kastenA, r, rW, rH);
+  kastenX(kastenA, kastenB, r, rW, rH); kastenY(kastenB, kastenA, r, rW, rH);
+  for (let i = 0; i < n; i++) weitH[i] = kastenA[i] > 0.02 ? weitH[i] / kastenA[i] : 0;
+}
+
+/* ---------- Tiefpass ----------
+   Das Höhenfeld wird jedes Bild neu gerastert, und dabei rutschen die Kreise um
+   Bruchteile eines Feldpunktes. Das Feld selbst ist glatt, aber sein Raster
+   springt — und die Höhenlinien, die daraus verfolgt werden, zappeln mit, um
+   ein, zwei Bildpunkte, sechzigmal in der Sekunde. Zu sehen ist das als Zittern,
+   obwohl sich in den Daten nichts dergleichen tut.
+
+   Also ein Tiefpass erster Ordnung über die Bilder: das gezeigte Feld folgt dem
+   gerechneten mit einer Zeitkonstanten von einer halben Sekunde. Bei siebzig
+   Sekunden für hundertdreiundfünfzig Jahre ist das gut ein Jahr — das Zittern
+   des Rasters fällt weg, die Bewegung über die Jahre bleibt.
+
+   Gerechnet mit der wirklich vergangenen Zeit, nicht je Bild: sonst hinge die
+   Zeitkonstante daran, wie schnell das Gerät gerade ist. Und wo die Zeit
+   springt — am Regler, beim Umschalten, beim Ändern der Grösse —, wird der
+   Filter geleert statt nachgezogen; sonst zeigte das Bild danach eine halbe
+   Sekunde lang das Gelände von vorher. */
+// Zwei Zeitkonstanten, in Sekunden. Das weite Feld trägt die Höhenlinien und
+// darf träge sein: es ist ohnehin über fünfzehn Punkte verschmiert, ein paar
+// Jahre Nachlauf sieht dort niemand. Das enge Feld und der Rand hängen an den
+// Umrissen der Kreise — liefen sie zu weit nach, sässe die Schattierung neben
+// ihrer Fläche.
+const TIEFPASS_GROB = 1.2, TIEFPASS_FEIN = 0.55;
+let glattFein = null, glattGrob = null, glattGrobM = null, glattMaske = null, glattDa = false;
+function reliefFrisch() { glattDa = false; }
+function reliefFeld() {
+  const w = Math.max(8, Math.round(breite * RAUF)), h = Math.max(8, Math.round(hoehe * RAUF));
+  if (w === rW && h === rH) return;
+  rW = w; rH = h;
+  for (const k of [hkA, hkB, hkC, hkF, hkL, hkS]) { k.width = w; k.height = h; }
+  fBild = hcF.createImageData(w, h);
+  lBild = hcL.createImageData(w, h);
+  feinH = new Float32Array(w * h); feldH = new Float32Array(w * h);
+  grobH = new Float32Array(w * h); grobM = new Float32Array(w * h);
+  grobAuf = new Float32Array(w * h); farbF = new Float32Array(w * h);
+  maskeH = new Float32Array(w * h); schatten = new Float32Array(w * h);
+  licht = new Float32Array(w * h); weitH = new Float32Array(w * h);
+  kastenA = new Float32Array(w * h); kastenB = new Float32Array(w * h);
+}
+
+/* ---------- Die Schrägsicht: ein Stapel Scheiben ----------
+   Die Karte lag hundertfünfzig Jahre lang flach. Zwei Regler unter der
+   Zeitleiste richten sie auf und drehen sie.
+
+   Gerechnet wird sie als **Laserschnittmodell**: das Höhenfeld wird in
+   fünfundzwanzig gleiche Höhen geschnitten, von jeder die Fläche genommen, die
+   mindestens so hoch liegt, und die Flächen werden versetzt übereinandergelegt.
+   Fünfundzwanzig, weil das die Zahl der Farbbänder ist — **jede Scheibe ist
+   genau ein Band, jede Stufenkante genau eine Höhenlinie.** Dieselbe
+   Konstruktion, die die flache Karte schon hat, nur aufgestellt.
+
+   Eine erste Fassung lief stattdessen Spalte für Spalte in die Tiefe, wie die
+   Geländespiele der neunziger Jahre. Das war teurer, hing an der Auflösung des
+   Schirms, und es franste unten aus: wo die Umrisslinie in Blickrichtung
+   verläuft, traf der Lauf den Rand mal und mal nicht. Der Stapel hat keine
+   Tiefenabtastung und deshalb auch keine Fransen; er kostet immer dasselbe,
+   ganz gleich wie gross der Schirm ist.
+
+   Gefärbt wird nicht flach, sondern mit der **fertigen Karte**: jede Scheibe
+   ist ein Ausschnitt aus hkF, also samt Licht, Schlagschatten und
+   Höhenlinien. */
+let SICHT = null;
+/* ---------- Zoom und Verschiebung ----------
+   Die Karte füllte bisher immer den Rahmen. Jetzt lässt sie sich heranziehen
+   und verschieben, und weil beides nach der ganzen Rechnung kommt, ist es eine
+   einzige Abbildung auf dem fertigen Bild: X' = X·ZOOM + vX.
+
+   Ein **Vergrösserungsglas**, kein neues Rendern. Das ist Absicht: das
+   Höhenfeld ist in Bildpunkten der Leinwand gerastert, und der Weichzeichner,
+   der aus Dichte ein Gebirge macht, misst in denselben Bildpunkten. Würde man
+   für das Heranziehen neu rechnen, änderte sich mit dem Massstab die Form der
+   Berge — und dann zeigte die Karte bei jedem Zoom etwas anderes. Lieber
+   unscharf als unwahr. */
+let ZOOM = 1, vX = 0, vY = 0;
+const ZOOMMAX = 8;
+const ansichtFrei = () => ZOOM !== 1 || vX !== 0 || vY !== 0;
+
+let NEIGUNG = 0;                  // 0 bis 1, entspricht 0 bis KIPPMAX Grad
+let DREHUNG = 0;                  // Bogenmass, 0 ist Norden oben
+let NAMEN = true;                 // Städtenamen an
+const KIPPMAX = 62 * Math.PI / 180;
+// Volle Höhe, in Punkten des Höhenfelds. Das Relief rechnet mit UEBERHOEHT=30
+// für seine Normalen; fürs Ansehen braucht es ein Vielfaches davon, sonst ist
+// die gekippte Karte ein Blatt Papier statt einer Landschaft.
+/* Zweimal heruntergesetzt: 0,30 auf 0,18 auf 0,126, also auf zweiundvierzig
+   Prozent des ursprünglichen. Die Berge ragten zu hoch, die
+   Karte stand darunter wie ein Sockel. Es ist **eine** Schraube für beides,
+   denn die Scheibendicke ist dz = hoch·sin(Neigung)·Massstab / 25 — mit der
+   Gesamthöhe sinkt die Plattendicke im selben Verhältnis, und der Stapel
+   bleibt derselbe Stapel, nur flacher geschichtet. Nebenbei wird die Karte
+   grösser, weil die Einpassung weniger Platz nach oben braucht. */
+const HOCH3D = 0.126;             // Anteil der Feldhöhe, den ein Wert 1 aufragt
+const schraeg = () => NEIGUNG > 0.001 || Math.abs(DREHUNG) > 1e-4;
+
+
+/* Der Versatz der beleuchteten Kante in Bildpunkten — **bei Zoom eins**, und
+   von da an wächst er mit dem Zoom mit, gedeckelt.
+
+   Das ist der Unterschied, der zählt. Vorher stand er fest auf dem Schirm, und
+   damit war er beim weitesten Blick am schädlichsten: dort liegen die
+   Terrassen an einer steilen Flanke nur wenige Bildpunkte auseinander, und
+   zwei feste Sicheln von je gut zwei Punkten decken sie zu. Übrig blieben
+   weisse und schwarze Flächen, und die Farbe der Fläche — die Aussage der
+   Karte — war überblendet. Heranziehen machte es besser, statt schlechter.
+
+   Jetzt hängt er am Massstab: weit weg dünn, herangezogen kräftiger, und der
+   Deckel verhindert, dass er bei acht­fachem Zoom zum Balken wird. */
+let KANTENVERSATZ = 0.55, KANTENZOOM = 4, KANTENHELL = 0.85, KANTENDUNKEL = 0.75;
+/* Zählkurven: jede fünfte Kante kräftiger, wie auf der topografischen Karte —
+   und die fünfte, zehnte, fünfzehnte und zwanzigste Stufe sind genau die
+   Zahlen der Legende (×0,5, ×1, ×1,5, ×2). Gemessen kostet das nichts: jede
+   zweite Kante wegzulassen sparte keine Millisekunde, also kostet eine
+   kräftigere auch keine. */
+const ZAEHLJEDE = 5, ZAEHLSTARK = 1.6, ZAEHLSTARKFLACH = 1.5;
+
+/* ---------- Die Wand einer Scheibe ----------
+   Bisher zeigte der Stapel nur Deckflächen: fünfundzwanzig Platten, jede eine
+   Stufe höher, und zwischen ihnen sah man die darunterliegende Deckfläche.
+   Das las sich wie Terrassen, nicht wie geschnittene Platten — einer Platte
+   fehlte ihre **Schnittkante**, die Wand, die ihre Dicke zeigt.
+
+   Sie ist erstaunlich billig zu bekommen, ohne einen einzigen neuen Umriss:
+   derselbe Ring wird **zweimal** gemalt, einmal eine Stufe tiefer (das ist die
+   Unterseite der Platte, denn sie ist genau dz dick) und einmal an seinem
+   Platz. Was von der tieferen Füllung stehen bleibt, nachdem die Deckfläche
+   darüberkommt, ist genau der nach Süden gewandte Teil der Wand — und mehr
+   ist von einer Wand im Parallelriss nicht zu sehen. Die nach Norden gewandte
+   Hälfte deckt die eigene Platte zu, ganz von selbst, ohne Prüfung.
+
+   Kostet eine Füllung je Scheibe, also fünfundzwanzig je Bild. Gemessen:
+   siehe METHODIK.md.
+
+   Gefärbt wird sie mit der Farbe des eigenen Bandes, gedunkelt. Das ist auch
+   physikalisch die richtige Seite: das Licht steht im Nordwesten, eine nach
+   Süden gewandte Wand liegt im Schatten.
+
+   Nur **wenig** gedunkelt, und das ist der ganze Streit an dieser Stelle. An
+   einem steilen Kegel ist die Wand breiter als die Terrasse darüber: bei
+   0,40 verschluckte sie Berlin und Hamburg, aus Rot und Weiss wurde Oliv, und
+   die Karte hatte ihre Aussage verloren, um schön auszusehen. Bei 0,80 ist
+   jede Platte sichtbar dick und die Farbleiter trotzdem so zu lesen wie
+   vorher. Ein dünner schwarzer Strich auf der Oberkante trennt beides. */
+/* Die Wand wird **von unten nach oben heller**, in drei gleich hohen Stufen.
+   Eine einzige flache Farbe war der Fehler: sie unterschied sich zu wenig von
+   der Deckfläche, und weil die Deckfläche die Schattierung des glatten
+   Geländes trägt — hell nach Nordwesten —, las das Auge jede Platte als
+   beleuchtete Scheibe statt als geschnittene Kante. Die Scheiben schienen
+   übereinander zu schweben.
+
+   Drei Stufen geben der Wand einen dunklen Fuss und eine helle Oberkante, also
+   genau das, was eine senkrechte Fläche unter einem Überhang zeigt: unten
+   weniger Himmel, oben mehr. Damit steht der Stapel als Körper da.
+
+   Kostet zwei Füllungen je Scheibe mehr, und das ist gemessen nichts: der
+   ganze Stapel braucht mit drei Stufen 6 ms, mit einer 14 — beides Rauschen
+   neben dem, was die fünfundzwanzig Beschnitte und Bilder kosten. */
+/* Wie fein gestrichen wird, in Bildpunkten je Füllung. Eins wäre die reine
+   Lehre und ist gemessen die Hälfte zu teuer: die Wandfüllungen kosten bei
+   62 Grad **ein Viertel des ganzen Bildes**, und von einem auf zwei Punkte
+   fallen die leeren Bildpunkte nur um zwei Prozent (4980 auf 5076 von rund
+   fünftausend) — die zusätzlichen Lücken sind Haarrisse, keine Löcher. Zwei
+   Punkte sind deshalb der gemessene Tausch, nicht der geschätzte.
+
+   Auch geprüft und verworfen: von oben nach unten malen und nur ins Leere
+   (destination-over), damit jede Füllung bloss den noch freien Saum trifft.
+   Dasselbe Bild auf den Bildpunkt, aber **langsamer** — 412 statt 312 ms auf
+   dem Schirm, 236 statt 191 auf dem Telefon. Das Mischen kostet mehr, als das
+   Sparen bringt.
+
+   Und drei statt zwei, nachdem der Frame zerlegt war: noch einmal 16 ms auf
+   dem Telefon (147 → 131), die Lücken bei 62 Grad von 203 auf 219 von rund
+   6 500 Bildpunkten — im Bild nicht zu finden. Vier bringt nichts mehr (132),
+   also drei. */
+const WANDSCHRITT = 3;
+
+/* Die Töne der Wand kosten übrigens **nichts**: es sind fertige Zeichenketten,
+   einmal gerechnet. Teuer ist die Zahl der Füllungen, und die Zahl der Töne
+   folgt ihr nur — wer weniger füllt, sieht von selbst weniger Abstufungen. */
+/* **Eine Farbe, kein Verlauf mehr.** Der senkrechte Verlauf von dunklem Fuss
+   zu heller Oberkante war eine Krücke aus der Zeit, als die Schrägsicht kein
+   eigenes Licht hatte: er liess die Wand als senkrechte Fläche lesen, aber
+   immer gleich, ganz gleich wohin sie zeigt. Sobald die Lichtebene auch die
+   Wände deckt, ist er nicht nur überflüssig, sondern falsch — er legte seinen
+   Verlauf auch auf die Wand, auf die die Sonne voll scheint. Jetzt trägt die
+   Wand ihr Band, nur gedunkelt, und woher das Licht kommt, sagt das Licht. */
+const WANDDUNKEL = 0.80;
+/* ---------- Drei billige Griffe fürs Licht ----------
+   Alle drei zusammen gemessen im Rauschen (115 gegen 120 ms auf dem Telefon).
+
+   **Der Kontaktschatten.** Wo eine Wand auf die Terrasse darunter trifft,
+   wird es an einem wirklichen Modell dunkel — dort kommt am wenigsten Himmel
+   hin. Der unterste Streifen der Wandschraffur wird deshalb dunkler gefüllt
+   als der Rest; die Schraffur läuft ohnehin von unten nach oben, also bleibt
+   von ihm genau der Fuss stehen. Kostet nichts: ein Farbwechsel.
+
+   **Der Sockel.** Die Grundplatte hatte keine Wand — die Ringe fangen bei
+   Niveau 1 an —, also endete die Karte unten wie ein Blatt Papier. Jetzt
+   bekommt sie die Wand des untersten Wasserrings, eine Stufe tiefer. Der
+   Länderumriss selbst (vierhundert Kreise) wäre der genauere Rand und ist
+   gemessen viermal so teuer: 159 statt 115 ms. Der Wasserring liegt ein paar
+   Punkte innerhalb der Küste und kostet nichts, weil er schon da ist.
+
+   **Der Schlagschatten.** In der Lichtebene wird der Schatten, den ein Berg
+   auf das Land dahinter wirft, noch einmal zusätzlich abgezogen. Die flache
+   Karte zeigt ihn mit WURF = 0,32 und bleibt dabei; die Schrägsicht darf mehr,
+   weil sie ein Modell zeigt und kein Blatt. 0,6 statt 1,0 — Knete, nicht
+   übertrieben.
+
+   Geprüft und verworfen: ein Tiefenverlauf, der die Ferne abdunkelt. Mit
+   multiply auf die Leinwand färbte er den durchsichtigen Hintergrund grau;
+   richtig in die Lichtebene gerechnet hätte er die fernen Gipfel gedämpft, und
+   die sind Daten. */
+let WANDFUSS = 0.55;        // Ton des Kontaktschattens, Anteil der Bandfarbe
+let SOCKEL = true;          // Wand unter der Grundplatte
+let SCHATTENHUB = 0.6;      // Schlagschatten in der Lichtebene, zusätzlich
+let WANDFUSSFARBE, WANDFARBE;
+/* Die Leiter setzen: beim Laden die Atlasleiter, per Knopf die zweite. Alles,
+   was aus HYPSO abgeleitet ist, wird hier neu gerechnet. Feld, Möbel und
+   Linien werden danach frisch gemalt, weil die Farbe in ihnen steckt. */
+function leiterSetzen(liste) {
+  HYPSO = liste;
+  HYPSO_R = liste.map(h => parseInt(h.slice(1, 3), 16));
+  HYPSO_G = liste.map(h => parseInt(h.slice(3, 5), 16));
+  HYPSO_B = liste.map(h => parseInt(h.slice(5, 7), 16));
+  WANDFUSSFARBE = liste.map((h, i) => 'rgb(' + Math.round(HYPSO_R[i] * WANDFUSS)
+    + ',' + Math.round(HYPSO_G[i] * WANDFUSS) + ',' + Math.round(HYPSO_B[i] * WANDFUSS) + ')');
+  WANDFARBE = liste.map((h, i) => 'rgb(' + Math.round(HYPSO_R[i] * WANDDUNKEL)
+    + ',' + Math.round(HYPSO_G[i] * WANDDUNKEL) + ',' + Math.round(HYPSO_B[i] * WANDDUNKEL) + ')');
+}
+leiterSetzen(HYPSO);
+
+/* ---------- Die Umrisse der Scheiben ----------
+   Eine Scheibe ist die Fläche, die mindestens so hoch liegt wie ihr Niveau.
+   Gebraucht wird davon nur der **Umriss**, als Linienzug — denn gemalt wird
+   sie nicht als Fläche, sondern als Schablone: beschneiden, fertige Karte
+   hineinzeichnen, fertig.
+
+   Das ist der ganze Unterschied zur ersten Fassung, und er ist gross. Dort
+   wurde je Scheibe eine Rastermaske gebaut, ein halbes Megabyte Alphakanal,
+   fünfundzwanzigmal je Bild. Gemessen: fünfundzwanzig Pfade beschneiden und
+   das Bild hineinzeichnen kostet **0,1 ms**, der Rasterstapel 242.
+
+   Gezogen wird wie die Höhenlinien, mit demselben Marching-Squares-Verfahren
+   und denselben Niveaus — eine Scheibenkante **ist** eine Höhenlinie. Nur
+   zwei Dinge sind anders: das Gitter bekommt einen Rand aus Nullen, damit
+   jeder Ring sich schliesst und die Fläche füllbar ist; und der Rand der
+   Karte wird nicht abgefragt, weil ihn die Vorlage selbst mitbringt — was
+   draussen liegt, ist dort durchsichtig. */
+let rnx = 0, rny = 0, rX = null, rY = null, rA = null, rB = null,
+    rStempel = null, rBesucht = null, rListe = null, rZellen = null, rStamm = 0;
+let rZaehler = 0;
+
+function ringFeld() {
+  const nx = Math.floor((rW - 1) / LSCHRITT), ny = Math.floor((rH - 1) / LSCHRITT);
+  if (nx === rnx && ny === rny && rZellen && rZellen.length === NBAND) return;
+  rnx = nx; rny = ny;
+  rStamm = 2 * (nx + 3);
+  const n = rStamm * (ny + 3);
+  rX = new Float32Array(n); rY = new Float32Array(n);
+  rA = new Int32Array(n); rB = new Int32Array(n);
+  rStempel = new Int32Array(n); rBesucht = new Int32Array(n);
+  rListe = new Int32Array(n);
+  rZellen = Array.from({ length: NBAND }, () => []);
+}
+
+/* Die Ringe hängen nur am Feld. Steht das (siehe feldSteht), stehen auch sie. */
+let ringeStand = -1, ringeCache = null, ringKasten = null;
+function scheibenRinge(N) {
+  if (ringeCache && ringeStand === feldStand) return ringeCache;
+  ringFeld();
+  let kx0 = Infinity, ky0 = Infinity, kx1 = -Infinity, ky1 = -Infinity;
+  const S = LSCHRITT, je = breite / rW, nx = rnx, ny = rny, F = farbF, M = maskeH;
+  /* Ausserhalb des Gitters null: so schliesst sich jeder Ring, und erst ein
+     geschlossener Ring lässt sich als Fläche beschneiden.
+
+     Und **mit dem Rand der Karte multipliziert**. Für die Schablone wäre das
+     gleichgültig — was draussen liegt, ist in der Vorlage ohnehin durchsichtig
+     —, aber die Kante wird ja auch gestrichen, und ohne den Rand liefen die
+     Striche über die Küste hinaus ins Schwarze: der Weichzeichner trägt die
+     Dichte einer Küstenstadt ein Stück aufs Meer hinaus. */
+  const ecke = (px, py) => (px < 0 || py < 0 || px >= rW || py >= rH)
+    ? 0 : F[py * rW + px] * M[py * rW + px];
+  for (const z of rZellen) z.length = 0;
+
+  for (let cy = -1; cy <= ny; cy++) {
+    const py0 = cy * S, py1 = py0 + S;
+    for (let cx = -1; cx <= nx; cx++) {
+      const px0 = cx * S, px1 = px0 + S;
+      const a = ecke(px0, py0), b = ecke(px1, py0), c = ecke(px1, py1), d = ecke(px0, py1);
+      let lo = a, hi = a;
+      if (b < lo) lo = b; if (b > hi) hi = b;
+      if (c < lo) lo = c; if (c > hi) hi = c;
+      if (d < lo) lo = d; if (d > hi) hi = d;
+      let n0 = Math.ceil(lo * N), n1 = Math.floor(hi * N);
+      if (n0 < 1) n0 = 1; if (n1 > N - 1) n1 = N - 1;
+      if (n1 < n0) continue;
+      const zelle = (cy + 1) * (nx + 2) + (cx + 1);
+      for (let n = n0; n <= n1; n++) rZellen[n].push(zelle);
+    }
+  }
+
+  const pfade = new Array(N).fill(null);
+  for (let n = 1; n < N; n++) {
+    const zellen = rZellen[n];
+    if (zellen.length < 2) continue;
+    const t = n / N;
+    const stempel = ++rZaehler;
+    let nk = 0;
+    const setze = (k, x, y) => {
+      if (rStempel[k] !== stempel) {
+        rStempel[k] = stempel; rX[k] = x; rY[k] = y;
+        rA[k] = -1; rB[k] = -1; rBesucht[k] = 0; rListe[nk++] = k;
+      }
+    };
+    const binde = (p, q) => { if (rA[p] < 0) rA[p] = q; else if (rB[p] < 0) rB[p] = q; };
+    for (let z = 0; z < zellen.length; z++) {
+      const zelle = zellen[z], cy = ((zelle / (nx + 2)) | 0) - 1, cx = zelle - (cy + 1) * (nx + 2) - 1;
+      const px0 = cx * S, px1 = px0 + S, py0 = cy * S, py1 = py0 + S;
+      const a = ecke(px0, py0), b = ecke(px1, py0), c = ecke(px1, py1), d = ecke(px0, py1);
+      const A = a > t, B = b > t, C = c > t, D2 = d > t;
+      const ka = (A ? 1 : 0) | (B ? 2 : 0) | (C ? 4 : 0) | (D2 ? 8 : 0);
+      if (ka === 0 || ka === 15) continue;
+      const X0 = px0 * je, Y0 = py0 * je, SS = S * je;
+      const h0 = (cy + 1) * rStamm + 2 * (cx + 1), h2 = (cy + 2) * rStamm + 2 * (cx + 1);
+      const v3 = h0 + 1, v1 = (cy + 1) * rStamm + 2 * (cx + 2) + 1;
+      if (A !== B) setze(h0, X0 + SS * (t - a) / (b - a), Y0);
+      if (B !== C) setze(v1, X0 + SS, Y0 + SS * (t - b) / (c - b));
+      if (D2 !== C) setze(h2, X0 + SS * (t - d) / (c - d), Y0 + SS);
+      if (A !== D2) setze(v3, X0, Y0 + SS * (t - a) / (d - a));
+      switch (ka) {
+        case 1: case 14: binde(v3, h0); binde(h0, v3); break;
+        case 2: case 13: binde(h0, v1); binde(v1, h0); break;
+        case 3: case 12: binde(v3, v1); binde(v1, v3); break;
+        case 4: case 11: binde(v1, h2); binde(h2, v1); break;
+        case 6: case 9:  binde(h0, h2); binde(h2, h0); break;
+        case 7: case 8:  binde(h2, v3); binde(v3, h2); break;
+        default:         binde(v3, h0); binde(h0, v3); binde(v1, h2); binde(h2, v1);
+      }
+    }
+
+    const pfad = new Path2D();
+    let etwas = false;
+    for (let q = 0; q < nk; q++) {
+      const start = rListe[q];
+      if (rBesucht[start] === stempel) continue;
+      let cur = start, vor = -1, m = 0;
+      while (cur >= 0) {
+        rBesucht[cur] = stempel;
+        if (m === 0) pfad.moveTo(rX[cur], rY[cur]); else pfad.lineTo(rX[cur], rY[cur]);
+        if (rX[cur] < kx0) kx0 = rX[cur]; if (rX[cur] > kx1) kx1 = rX[cur];
+        if (rY[cur] < ky0) ky0 = rY[cur]; if (rY[cur] > ky1) ky1 = rY[cur];
+        m++;
+        const na = rA[cur], nb = rB[cur];
+        const weiter = (na >= 0 && na !== vor && rBesucht[na] !== stempel) ? na
+                     : (nb >= 0 && nb !== vor && rBesucht[nb] !== stempel) ? nb : -1;
+        vor = cur; cur = weiter;
+      }
+      if (m > 2) { pfad.closePath(); etwas = true; }
+    }
+    if (etwas) pfade[n] = pfad;
+  }
+  // Der Kasten im Grundriss, in dem der ganze Stapel liegt — fürs Mischen des Lichts.
+  ringKasten = kx1 > kx0 ? [kx0, ky0, kx1, ky1] : null;
+  ringeCache = pfade; ringeStand = feldStand;
+  return pfade;
+}
+
+/* ---------- Die Einpassung, getrennt vom Malen ----------
+   Die Gesten brauchen sie, ohne ein Bild zu erzeugen. Um die Karte unter den
+   Fingern festzuhalten, muss man wissen, wohin ein Bodenpunkt **nach** der
+   Änderung fällt — und das steht erst fest, wenn neu eingepasst ist. Also
+   rechnet diese Funktion nur, und das Malen nimmt ihr Ergebnis.
+
+   Der Rahmen steht dabei **fest**, nämlich auf dem oberen Ende der Farbleiter.
+   Nach dem höchsten Berg zu rechnen, der gerade dasteht, wäre verlockend —
+   1871 gäbe es kaum einen, und die Karte stünde grösser da. Nur schrumpfte
+   sie dann in dem Mass, in dem die Städte wachsen, und zwei Bilder wären
+   nicht mehr zu vergleichen: genau das, wofür die ganze Karte gebaut ist. */
+function sichtRechnen() {
+  const N = NBAND;
+  const phi = NEIGUNG * KIPPMAX, co = Math.cos(phi), si = Math.sin(phi);
+  /* Positives DREHUNG dreht die Karte **im Uhrzeigersinn**. Das Minus steht
+     hier, weil die Leinwand y nach unten zählt: ohne es lief die Karte den
+     Fingern entgegen — im Uhrzeigersinn verdreht, drehte sie sich dagegen. */
+  const ct = Math.cos(DREHUNG), st = -Math.sin(DREHUNG);
+  const cx = breite / 2, cy = hoehe / 2, hoch = hoehe * HOCH3D;
+  let aMin = 1e9, aMax = -1e9, yMin = 1e9, yMax = -1e9;
+  for (const e of [[0, 0], [breite, 0], [0, hoehe], [breite, hoehe]]) {
+    const dx = e[0] - cx, dy = e[1] - cy;
+    const a = dx * ct + dy * st, b = -dx * st + dy * ct;
+    if (a < aMin) aMin = a; if (a > aMax) aMax = a;
+    const y0 = b * co, y1 = b * co - hoch * si;
+    if (y1 < yMin) yMin = y1; if (y0 > yMax) yMax = y0;
+  }
+  const rand = 2;
+  const z = Math.min((breite - 2 * rand) / Math.max(1e-6, aMax - aMin),
+                     (hoehe - 2 * rand) / Math.max(1e-6, yMax - yMin));
+  const oX = rand + (breite - 2 * rand - (aMax - aMin) * z) / 2 - aMin * z;
+  const oY = rand + (hoehe - 2 * rand - (yMax - yMin) * z) / 2 - yMin * z;
+  // Zoom und Verschiebung kommen **nach** dem Einpassen: sie sind eine
+  // Abbildung auf dem fertigen Bild, kein Teil der Geometrie.
+  const zz = z * ZOOM, ozX = oX * ZOOM + vX, ozY = oY * ZOOM + vY;
+  SICHT = { co, si, ct, st, cx, cy, hoch, z: zz, oX: ozX, oY: ozY, N,
+            dz: hoch * si * zz / N,
+            links: ozX + aMin * zz, rechts: ozX + aMax * zz,
+            oben: ozY + yMin * zz, unten: ozY + yMax * zz };
+  return SICHT;
+}
+
+/* Der **Boden** unter einem Bildpunkt und zurück — dieselbe Umkehrung wie
+   beim Griff auf einen Kreis, nur auf Höhe null statt auf der Oberfläche des
+   Geländes. Das ist der richtige Bezug für eine Geste: man fasst die Karte an,
+   nicht die Flanke eines Berges. */
+function bodenUnter(sx, sy) {
+  if (!schraeg()) return [(sx - vX) / ZOOM, (sy - vY) / ZOOM];
+  const S = SICHT || sichtRechnen();
+  const u = (sx - S.oX) / S.z, v = (sy - S.oY) / (S.co * S.z);
+  return [S.cx + S.ct * u - S.st * v, S.cy + S.st * u + S.ct * v];
+}
+function bodenAuf(X, Y) {
+  if (!schraeg()) return [X * ZOOM + vX, Y * ZOOM + vY];
+  const S = SICHT || sichtRechnen();
+  const dx = X - S.cx, dy = Y - S.cy;
+  const a = dx * S.ct + dy * S.st, b = -dx * S.st + dy * S.ct;
+  return [a * S.z + S.oX, b * S.co * S.z + S.oY];
+}
+
+function scheibenMalen(s) {
+  const N = NBAND;
+  const D = DPR;
+
+  const S = sichtRechnen();
+  const co = S.co, si = S.si, ct = S.ct, st = S.st, cx = S.cx, cy = S.cy;
+  const zz = S.z, ozX = S.oX, ozY = S.oY, dz = S.dz;
+
+  const ringe = scheibenRinge(N);
+  const a2 = D * zz * ct, c2 = D * zz * st, b2 = -D * co * zz * st, d2 = D * co * zz * ct;
+  const eX = D * ozX - a2 * cx - c2 * cy;
+  for (let k = 0; k < N; k++) {
+    if (k > 0 && !ringe[k]) continue;
+    // Der Sockel: die Grundplatte bekommt die Wand des untersten Wasserrings.
+    const ring = k > 0 ? ringe[k] : (SOCKEL ? ringe[1] : null);
+    /* Erst die Wand: derselbe Ring, eine Stufe tiefer, gefüllt. Die eigene
+       Deckfläche deckt ihn gleich wieder zu, bis auf den südlichen Saum — und
+       der ist die Schnittkante. Weil von unten nach oben gemalt wird, steht
+       die Wand vor der Terrasse der Scheibe darunter, wie es sein soll. */
+    if (ring) {
+      const kb = Math.min(NBAND - 1, k);
+      /* **Ein Schritt je Bildpunkt, nicht je Plattendicke.** Daran hing alles:
+         ein einzelner Abzug eine Stufe tiefer lässt nur den unteren Saum der
+         Form stehen, und der ist höchstens so hoch, wie die Form selbst auf
+         dem Schirm hoch ist. Gekippt staucht cos(Neigung) sie zusammen — ein
+         Gipfelring ist dann ein paar Punkte hoch, die Platte aber neun. Der
+         Rest blieb schwarz, und die Kuppen schwebten. */
+      const schritte = Math.max(1, Math.ceil(D * dz / WANDSCHRITT));
+      for (let w = 0; w < schritte; w++) {
+        // Der unterste Streifen ist der Kontaktschatten.
+        ctx.fillStyle = (w === 0 && schritte > 1) ? WANDFUSSFARBE[kb] : WANDFARBE[kb];
+        ctx.setTransform(a2, b2, c2, d2, eX,
+          D * (ozY - (k - 1 + w / schritte) * dz) - b2 * cx - d2 * cy);
+        ctx.fill(ring, 'evenodd');
+      }
+    }
+    /* ---------- Die Deckfläche: **eine Farbe, fertig** ----------
+       Lange wurde hier die fertige Karte hineinbeschnitten, samt Licht,
+       Schlagschatten und Höhenlinien. Das war der Fehler, und er kostete
+       doppelt.
+
+       Die Farbe entsteht auf dem Reliefgitter, 0,55 der Leinwand — jede
+       Bandkante ist dort von Geburt an vier, fünf Gerätepunkte weich. Die
+       Schnittkante ist dagegen gestochen scharf. Also blutete auf jeder Platte
+       die Nachbarfarbe über den Rand: das Weiss der Kuppe stand noch auf der
+       roten Platte darunter.
+
+       Eine Platte **hat** aber nur einen Wert. Sie ist genau ein Farbband —
+       dafür ist sie geschnitten. Sie flach zu füllen verliert deshalb nichts:
+       die Höhe ist in fünfundzwanzig Stufen schon zerlegt, der Verlauf
+       innerhalb einer Stufe wiederholte nur, was die Stufe selbst sagt. Was
+       wegfällt, ist die Schattierung des *glatten* Geländes — und die hat
+       schräg ohnehin gegen das wirkliche Relief gearbeitet und die Platten
+       gewölbt aussehen lassen.
+
+       Gewonnen wird an beiden Enden: kein Beschnitt, kein ganzes Bild je
+       Scheibe, keine Vorlage, keine Höhenlinien darin. Gemessen halb gekippt
+       361 auf 182 ms auf dem Schirm und 217 auf 117 auf dem Telefon — die
+       Schrägsicht ist damit **schneller als die flache Karte**. */
+    ctx.save();
+    ctx.setTransform(a2, b2, c2, d2, eX, D * (ozY - k * dz) - b2 * cx - d2 * cy);
+    if (k > 0) {
+      /* ---------- Die beleuchtete Kante ----------
+         Was der flachen Karte ihre Dynamik gibt, sind Tanakas Höhenlinien:
+         **weiss, wo die Kante der Sonne zugewandt ist, schwarz, wo sie
+         wegfällt.** Eine gleichmässig graue Kante sagt nichts davon, und die
+         Lichtebene konnte sie nur schwach anheben — sie ist weich und die
+         Kante ist dünn.
+
+         Also der alte Prägetrick, und zwar mit **Füllungen statt Strichen**:
+         derselbe Ring zweimal versetzt gefüllt, einmal weiss zum Licht hin,
+         einmal schwarz von ihm weg, und dann die Bandfarbe an ihrem Platz
+         darüber. Die deckt von beiden die innere Hälfte zu; stehen bleibt je
+         eine Sichel — weiss auf der Sonnenseite, schwarz auf der anderen. Wo
+         die Kante längs zum Licht läuft, liegen beide unter der Füllung und
+         verschwinden von selbst, genau wie bei Tanaka.
+
+         Versetzt wird in **Grundriss-Koordinaten**, nicht auf dem Schirm: die
+         Abbildung dreht und staucht den Versatz dann mit, also wandert die
+         Sonne beim Drehen richtig mit der Karte.
+
+         Und es ist **billiger als der eine graue Strich vorher**: zwei
+         Füllungen eines verwickelten Pfades kosten weniger als ein Strich
+         desselben Pfades, weil der Strich seine Verbindungen mitrechnen muss.
+         Telefon 133 auf 122 ms, Schirm 231 auf 204. */
+      // Jede fünfte Kante ist eine Zählkurve: kräftiger, wie auf einer
+      // topografischen Karte. Sie fallen auf die Zahlen der Legende.
+      const lv = KANTENVERSATZ * Math.min(ZOOM, KANTENZOOM) / (D * zz) * Math.SQRT1_2
+        * (k % ZAEHLJEDE === 0 ? ZAEHLSTARK : 1);
+      ctx.translate(-lv, -lv);
+      ctx.fillStyle = '#fff'; ctx.globalAlpha = KANTENHELL;
+      ctx.fill(ringe[k], 'evenodd');
+      ctx.translate(2 * lv, 2 * lv);
+      ctx.fillStyle = '#000'; ctx.globalAlpha = KANTENDUNKEL;
+      ctx.fill(ringe[k], 'evenodd');
+      ctx.translate(-lv, -lv);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = HYPSO[Math.min(NBAND - 1, k)];
+      ctx.fill(ringe[k], 'evenodd');
+    } else {
+      // Die unterste Scheibe ist die ganze Karte: sie bringt den Rand und das
+      // tiefste Wasserband mit, und was draussen liegt, ist durchsichtig.
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(hkF, 0, 0, breite, hoehe);
+    }
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1;
+
+  /* ---------- Das Licht, eine Stufe kleiner ----------
+     Die flachen Platten sind scharf, aber tot: Schattierung und Schlagschatten
+     lagen in der Farbe, und die ist mit ihr weggefallen. Beides kommt hier
+     zurück, ohne die Farbe wieder anzufassen — als **reine Lichtebene**, die
+     über die fertigen Platten gelegt wird.
+
+     Je Scheibe ein Bild auf die Leinwand zu legen kostet aber genau so viel
+     wie früher die Vorlage: gemessen 112 auf 164 ms. Es sind die
+     fünfundzwanzig Blits über die ganze Leinwand, nicht das Bild selbst.
+
+     Also wird derselbe Stapel im **Feldgitter** gebaut — 0,55 der Leinwand,
+     ein Vierzehntel der Fläche je Blit — und einmal fertig hochgelegt. Das
+     kostet 113 auf 132 ms statt auf 164. Unscharf wird dabei nur das Licht;
+     Farbe, Kanten und Wände bleiben, wo sie sind. Genau so herum ist es
+     richtig: weiches Licht auf harten Flächen ist ein Modell, hartes Licht
+     auf weichen Flächen war der Fehler. */
+  const sL = rW / (D * breite);
+  hcS.setTransform(1, 0, 0, 1, 0, 0);
+  hcS.clearRect(0, 0, rW, rH);
+  hcS.imageSmoothingEnabled = true;
+  for (let k = 1; k < N; k++) {
+    if (!ringe[k]) continue;
+    hcS.save();
+    hcS.setTransform(a2 * sL, b2 * sL, c2 * sL, d2 * sL, eX * sL,
+      (D * (ozY - (k - 1) * dz) - b2 * cx - d2 * cy) * sL);
+    hcS.clip(ringe[k], 'evenodd');
+    /* Zweimal, und der erste Blit ist der wichtige: eine Stufe tiefer deckt er
+       die **Wand**. Damit bekommt auch sie die Schattierung des Geländes an
+       ihrer Stelle — und weil das Gelände an einer Höhenlinie steil ist, ist
+       die Schattierung dort stark gerichtet: die Wand, die nach Nordwesten
+       zeigt, wird hell, die nach Südosten dunkel. Der zweite Blit legt die
+       Deckfläche darüber. */
+    for (const t of [k - 1, k]) {
+      hcS.setTransform(a2 * sL, b2 * sL, c2 * sL, d2 * sL, eX * sL,
+        (D * (ozY - t * dz) - b2 * cx - d2 * cy) * sL);
+      hcS.drawImage(hkL, 0, 0, breite, hoehe);
+    }
+    hcS.restore();
+  }
+  /* Gemischt wird nur dort, wo der Stapel liegt. soft-light über die ganze
+     Leinwand war der grösste Einzelposten des gekippten Bildes — rund 36 ms
+     auf dem Telefon, 61 auf dem Schirm —, und die Karte belegt davon nur 42
+     beziehungsweise 33 Prozent; der Rest war Mischen ins Durchsichtige. Der
+     Kasten kommt aus den Ringen: ihre Hülle im Grundriss, projiziert für den
+     Fuss des Sockels (eine Stufe unter null) und für die oberste Platte. */
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalCompositeOperation = 'soft-light';
+  ctx.imageSmoothingEnabled = true;
+  const K = ringKasten;
+  let bx0 = 0, by0 = 0, bx1 = cv.width, by1 = cv.height;
+  if (K) {
+    bx0 = Infinity; by0 = Infinity; bx1 = -Infinity; by1 = -Infinity;
+    for (const t of [-1, N - 1]) {
+      const eY = D * (ozY - t * dz) - b2 * cx - d2 * cy;
+      for (const [x, y] of [[K[0], K[1]], [K[2], K[1]], [K[2], K[3]], [K[0], K[3]]]) {
+        const X = a2 * x + c2 * y + eX, Y = b2 * x + d2 * y + eY;
+        if (X < bx0) bx0 = X; if (X > bx1) bx1 = X;
+        if (Y < by0) by0 = Y; if (Y > by1) by1 = Y;
+      }
+    }
+    const saum = 4 * D;
+    bx0 = Math.max(0, Math.floor(bx0 - saum)); by0 = Math.max(0, Math.floor(by0 - saum));
+    bx1 = Math.min(cv.width, Math.ceil(bx1 + saum)); by1 = Math.min(cv.height, Math.ceil(by1 + saum));
+  }
+  if (bx1 > bx0 && by1 > by0) {
+    const f = hkS.width / cv.width, g = hkS.height / cv.height;
+    ctx.drawImage(hkS, bx0 * f, by0 * g, (bx1 - bx0) * f, (by1 - by0) * g, bx0, by0, bx1 - bx0, by1 - by0);
+  }
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.setTransform(D, 0, 0, D, 0, 0);
+}
+
+function projPunkt(X, Y) {
+  // Flach ist die Ansicht nur Zoom und Verschiebung; schräg steckt beides
+  // schon im Massstab des Stapels.
+  if (!schraeg()) return [X * ZOOM + vX, Y * ZOOM + vY];
+  if (!SICHT || !(rW > 0)) return [X, Y];
+  const s = rW / breite, N = SICHT.N;
+  // Die Höhe kommt aus dem Feld, die Lage aus der Leinwand — beides muss
+  // getrennt bleiben, sonst wandern die Namen quer über die Karte.
+  const ix = (X * s) | 0, iy = (Y * s) | 0;
+  let k = 0;
+  if (ix >= 0 && iy >= 0 && ix < rW && iy < rH) {
+    k = (farbF[iy * rW + ix] * N) | 0;
+    if (k < 0) k = 0; else if (k > N - 1) k = N - 1;
+  }
+  const dx = X - SICHT.cx, dy = Y - SICHT.cy;
+  const a = dx * SICHT.ct + dy * SICHT.st, b = -dx * SICHT.st + dy * SICHT.ct;
+  return [a * SICHT.z + SICHT.oX,
+          b * SICHT.co * SICHT.z + SICHT.oY - k * SICHT.dz];
+}
+
+/* Und zurück: welcher Punkt der flachen Karte liegt unter dem Zeiger?
+
+   Ein Punkt auf dem schrägen Bild lässt sich nicht in einem Schritt
+   zurückrechnen — er kann von einem nahen Tal oder einem fernen Gipfel kommen.
+   Beim Stapel ist es aber einfach: es sind fünfundzwanzig Scheiben, jede mit
+   einer bekannten, umkehrbaren Abbildung. Also von oben nach unten durchgehen
+   und die erste nehmen, deren Fläche den Punkt wirklich enthält — die oberste
+   gewinnt, denn sie wurde zuletzt gemalt. Zurück kommen Punkte der Leinwand. */
+function feldUnter(X, Y) {
+  if (!SICHT || !(rW > 0)) return null;
+  const S = SICHT, N = S.N, s = rW / breite;
+  for (let k = N - 1; k >= 0; k--) {
+    const u = (X - S.oX) / S.z, v = (Y - S.oY + k * S.dz) / (S.co * S.z);
+    const cxx = S.cx + S.ct * u - S.st * v, cyy = S.cy + S.st * u + S.ct * v;
+    const ix = (cxx * s) | 0, iy = (cyy * s) | 0;
+    if (ix < 0 || iy < 0 || ix >= rW || iy >= rH) continue;
+    const i = iy * rW + ix;
+    if (!(maskeH[i] > 0.5)) continue;
+    if (farbF[i] * N >= k) return [cxx, cyy];
+  }
+  return null;
+}
+
+// Die Stellschrauben des Reliefs.
+// Zwei Sonnen, und das ist Absicht. Die Modellierung braucht ein Licht, das
+// hoch genug steht, damit die Hänge noch Zeichnung haben; der Schlagschatten
+// braucht ein Licht, das flach genug steht, damit überhaupt einer entsteht —
+// ein Strahl, der steiler abfällt als der Hang selbst, trifft nie auf Schatten.
+// Kartenzeichner machen das seit jeher so.
+/* Das Licht wird in die Farbe gerechnet, nicht mehr darübergelegt: der helle
+   Hang laeuft anteilig gegen Weiss, der dunkle gegen Schwarz. Zwei Zahlen
+   statt eines Mischmodus, und sie gelten fuer jede Farbe gleich — auch fuer
+   die weisse Kappe, an der weiches Licht abprallte.
+
+   Aufhellen wiegt weniger als Abdunkeln: eine Leiter, die oben in Weiss
+   endet, hat nach oben kaum noch Weg, nach unten aber viel. */
+let STAERKE = 1.6, AUFHELLEN = 0.55, ABDUNKELN = 0.70;
+let LICHTHUB = 1.7;      // Verstärkung fürs Licht der Schrägsicht
+let SONNE = 40;                 // Grad über der Fläche, Licht von oben links
+let WURFSONNE = 16;             // dasselbe Licht, flach, nur für den Schlagschatten
+let UEBERHOEHT = 30;            // volle Höhe in Bildpunkten des Höhenfelds
+let MULDE = 0.85;               // wie stark Mulden verschatten
+let WURF = 0.32;                // wie dunkel ein Schlagschatten ist
+/* So viele Niveaus, wie es Farbbänder gibt, und beide liegen bei k/NBAND des
+   Feldwerts. **Jede Höhenlinie ist damit eine Farbgrenze** und jede Farbgrenze
+   trägt ihre Linie. Das ist die Konstruktion eines Schulatlas, und es ist das,
+   was eine Höhenlinie auf einer Geländekarte überhaupt tun soll: den
+   Farbwechsel begründen, statt quer durch ihn hindurchzulaufen. */
+let LINIE = 0.72, NIVEAUS = NBAND, FLACHHANG = 0.0012, DUNKELLINIE = 0.85;
+const LINIENSCHRITT = 2;          // Gitterschritt der Linienverfolgung, in Feldpunkten
+// So fein wird die Höhe abgestuft, ehe sie weichgezeichnet wird. Gezeichnet
+// wird in Bündeln, und die Zahl ist nicht beliebig: die Stufen stecken
+// hinterher im Feld. Zu grob, und die Höhenlinien laufen an ihnen entlang statt
+// an der Landschaft — und schlimmer, im Lauf der Zeit springt ein Kreis von
+// einer Stufe zur nächsten, und die Linien in seiner Umgebung zucken mit.
+const STUFEN = 200;
+const EIMER_H = Array.from({ length: STUFEN }, () => []);
+/* ---------- Steht das Feld? ----------
+   Es hängt am Jahr, an der Reihe und an der Grösse des Feldgitters — und am
+   Tiefpass (4j), der es je Bild ein wenig weiterzieht, aber konvergiert. Erst
+   wenn er still steht, wird gespart: bis dahin wurde bei **jeder Geste** das
+   ganze Feld neu gerechnet, obwohl sich nur der Blick bewegt — 33 ms auf dem
+   Telefon, 68 auf dem Schirm, dazu 7 beziehungsweise 10 für die Ringe. Im
+   Lauf ändert sich nichts, dort läuft das Jahr. feldStand zählt die
+   Neuberechnungen; Ringe und Linien hängen ihre Zwischenspeicher daran. */
+let feldStand = 0, feldJahr = NaN, feldReihe = null, feldRW = 0, feldRH = 0, feldRuhig = false;
+function feldSteht() {
+  return glattDa && feldRuhig && feldJahr === jahr && feldReihe === reihe && feldRW === rW && feldRH === rH;
+}
+function reliefUeber(deck) {
+  if (!(breite > 60 && hoehe > 60)) return;
+  reliefFeld();
+  const s = rW / breite;
+  if (feldSteht()) { feldZeichnen(s); return; }
+  const fein = Math.max(2.2, breite / FEINTEILER);   // enges Weichzeichnen: der einzelne Kreis
+  const grob = Math.max(7, breite / GROBTEILER);     // weites: die Landschaft darüber
+
+  // Die Vorlage. Draussen bleibt sie durchsichtig, nicht schwarz: dieselbe
+  // Fläche dient hinterher als Schablone, mit der das Licht auf die Karte
+  // beschnitten wird — das erspart ein zweites Beschneiden an einem Pfad aus
+  // vierhundert Vielecken, und das ist der teuerste Teil des Bildes.
+  hcA.setTransform(1, 0, 0, 1, 0, 0);
+  hcA.clearRect(0, 0, rW, rH);
+  hcA.setTransform(s, 0, 0, s, 0, 0);
+  // Jeder Kreis bekommt sein eigenes Grau: das ist seine Höhe. Gezeichnet
+  // wird in Bündeln statt in vierhundert Füllungen — dieselbe Ersparnis wie
+  // im Nadelrelief.
+  for (const e of EIMER_H) e.length = 0;
+  for (let g = 0; g < NK; g++) {
+    if (!(deck[g] > 0.5) || !(HOCH[g] > 0)) continue;
+    const v = zuFeld(aufLeiter(HOCH[g]));
+    let st = Math.round(v * (STUFEN - 1));
+    if (st < 1) st = 1; if (st > STUFEN - 1) st = STUFEN - 1;
+    EIMER_H[st].push(g);
+  }
+  for (let st = 1; st < STUFEN; st++) {
+    const e = EIMER_H[st];
+    if (!e.length) continue;
+    hcA.beginPath();
+    for (const g of e) for (const r of GEBIETE[g]) {
+      hcA.moveTo(px[r[0]] * mass + verX, py[r[0]] * mass + verY);
+      for (let i = 1; i < r.length; i++) hcA.lineTo(px[r[i]] * mass + verX, py[r[i]] * mass + verY);
+      hcA.closePath();
+    }
+    const t = Math.round(255 * st / (STUFEN - 1));
+    const grau = 'rgb(' + t + ',' + t + ',' + t + ')';
+    hcA.fillStyle = grau;
+    hcA.fill('evenodd');
+    // Dieselbe Naht wie auf der Leinwand, und hier wiegt sie schwerer: ein
+    // durchsichtiger Spalt im Höhenfeld wird nach dem Weichzeichnen zu einer
+    // Kerbe, also wieder zu einer sichtbaren Grenze — diesmal als Relief.
+    hcA.strokeStyle = grau; hcA.lineWidth = 1 / s; hcA.stroke();
+  }
+  // Hier stand eine Fuge: ein schwarzer Strich auf jeder Kreisgrenze, der nach
+  // dem Weichzeichnen einen Graben hinterliess und jeden Kreis als eigene
+  // Platte ausformte. Das war eine Grenze wie jede andere, nur als Relief
+  // gezeichnet statt als Linie — und sie blieb sichtbar, als die Linien
+  // längst weg waren. Jetzt stossen die Plateaus unmittelbar aneinander; das
+  // enge Weichzeichnen macht daraus einen Hang, und es bleibt ein
+  // durchgehendes Gelände statt eines Mosaiks.
+
+  // Das weite Feld. Es entstand eine Fassung lang auf einer dreimal gröberen
+  // Leinwand — Weichzeichnen kostet nach Fläche, und für die grosse Form
+  // schien die Auflösung zu reichen. Sie reichte für die Schattierung, aber
+  // nicht für die Höhenlinien: aus einem dreifach hochgerechneten Feld wurden
+  // zappelige Linien mit Knicken an jeder Stützstelle. Jetzt in voller
+  // Auflösung; Weichzeichnen ist ohnehin linear in der Fläche, nicht im
+  // Radius.
+  hcC.setTransform(1, 0, 0, 1, 0, 0);
+  hcC.clearRect(0, 0, rW, rH);
+  hcC.filter = 'blur(' + (grob * s).toFixed(2) + 'px)';
+  hcC.drawImage(hkA, 0, 0);
+  hcC.filter = 'none';
+
+  hcB.setTransform(1, 0, 0, 1, 0, 0);
+  hcB.globalAlpha = 1;
+  hcB.clearRect(0, 0, rW, rH);
+  hcB.filter = 'blur(' + (fein * s).toFixed(2) + 'px)';
+  hcB.drawImage(hkA, 0, 0);
+  hcB.filter = 'none';
+
+  /* Gelesen wird in zwei Kanälen, und das ist der Kniff.
+
+     Die Vorlage ist draussen durchsichtig. Weichzeichnen mischt deshalb am
+     Rand Farbe mit Nichts — nähme man das Ergebnis einfach als Höhe, fiele
+     die Karte schon dreissig Pixel vor der Küste ab, und der grösste Berg im
+     Feld wäre Deutschland selbst. Für die Berge im Inneren bliebe kaum
+     Spielraum.
+
+     getImageData gibt die Farbe aber **unmultipliziert** zurück: Rot ist
+     bereits blur(Höhe·Deckung) / blur(Deckung), also der örtliche Mittelwert
+     der Höhe ohne den Rand — genau die normalisierte Faltung, die man sonst
+     von Hand bauen müsste. Die Deckung steht daneben im Alphakanal und gibt
+     den Rand der Karte, jetzt als eigene, schmale Rundung.
+
+     Höhe und Rand sind damit getrennt: die ganze Spanne gehört dem Inneren,
+     und die Küste bekommt trotzdem eine Kante, die nicht senkrecht abbricht. */
+  const df = hcB.getImageData(0, 0, rW, rH).data;
+  for (let i = 0, n = rW * rH; i < n; i++) {
+    feinH[i] = df[i << 2] / 255;
+    const a = df[(i << 2) + 3] / 255;
+    maskeH[i] = a * a * (3 - 2 * a);
+  }
+  
+  // Das weite Feld bekommt seinen eigenen Rand, den aus seinem eigenen
+  // Alphakanal: der ist über dieselbe weite Strecke verlaufen und damit glatt.
+  // Nähme es den schmalen Rand des engen Feldes, knickten die Höhenlinien
+  // entlang der Küste.
+  const dg = hcC.getImageData(0, 0, rW, rH).data;
+  for (let i = 0, n = rW * rH; i < n; i++) {
+    grobH[i] = dg[i << 2] / 255;
+    const a = dg[(i << 2) + 3] / 255;
+    grobM[i] = a * a * (3 - 2 * a);
+  }
+
+  // Und hier der Tiefpass. Drei Felder, ein Gewicht, aus der wirklich
+  // vergangenen Zeit gerechnet.
+  const n3 = rW * rH;
+  if (!glattFein || glattFein.length !== n3) {
+    glattFein = new Float32Array(n3); glattGrob = new Float32Array(n3);
+    glattGrobM = new Float32Array(n3); glattMaske = new Float32Array(n3);
+    glattDa = false;
+  }
+  if (!glattDa) {
+    glattFein.set(feinH); glattGrob.set(grobH); glattGrobM.set(grobM); glattMaske.set(maskeH);
+    glattDa = true; feldRuhig = true;
+  } else {
+    // Im Stillstand darf ein Bild viel Zeit nachholen: dann steht der Tiefpass
+    // nach ein, zwei Bildern, und das Feld kann stehen bleiben.
+    const dt = Math.max(0.001, Math.min(laeuft ? 0.25 : 4, dtSek));
+    const gG = 1 - Math.exp(-dt / TIEFPASS_GROB), gF = 1 - Math.exp(-dt / TIEFPASS_FEIN);
+    let weit = 0;   // der grösste noch offene Abstand: steht der Tiefpass?
+    for (let i = 0; i < n3; i++) {
+      const aF = feinH[i] - glattFein[i], aG = grobH[i] - glattGrob[i];
+      glattFein[i] += aF * gF;
+      glattGrob[i] += aG * gG;
+      glattGrobM[i] += (grobM[i] - glattGrobM[i]) * gG;
+      glattMaske[i] += (maskeH[i] - glattMaske[i]) * gF;
+      if (aF > weit) weit = aF; else if (-aF > weit) weit = -aF;
+      if (aG > weit) weit = aG; else if (-aG > weit) weit = -aG;
+    }
+    /* Still heisst: nirgends mehr als ein Viertel Band vom Ziel entfernt. Das
+       Feld wird dann **eingefroren, nicht gesprungen** — es bleibt also, wo es
+       ist, nur eben nicht mehr ganz am Ziel, und das sieht niemand. Strenger
+       (ein Tausendstel) stand es nach einer Pause erst nach Sekunden. */
+    feldRuhig = weit < 0.25 / NBAND;
+  }
+  // Der Tiefpass liegt jetzt auf dem **weiten Feld selbst**, nicht mehr auf
+  // seinem Produkt mit dem Rand: aus diesem Feld kommt gleich die Farbe der
+  // Karte, und die darf den Randabfall nicht mitnehmen — sonst bekäme die
+  // Küste eine grüne Bordüre.
+  feinH.set(glattFein); grobH.set(glattGrob); grobM.set(glattGrobM); maskeH.set(glattMaske);
+
+  /* Ein Kern, zwei Ableitungen, und der Kern ist **geschärft**.
+
+     ENGANTEIL steht über eins, und das ist kein Tippfehler, sondern eine
+     Unscharfmaskierung: 1,15 mal das enge Feld minus 0,15 mal das weite. Der
+     Grund ist der zweite Teil der Ruhrgebietsfrage. Weichzeichnen erhält das
+     Integral über die ganze Karte, aber nicht über einen Ausschnitt — es trägt
+     Volumen über die Kreisgrenze hinaus. Wen das trifft, hängt an der
+     Nachbarschaft: Berlin, ein dichter Fleck in dünnem Brandenburg, verliert
+     nach aussen und bekommt nichts zurück; Essen verliert an Bochum und bekommt
+     von Bochum dasselbe wieder. Die Differenz aus engem und weitem Feld ist
+     genau dieses Mass — sie ist gross, wo ein Berg allein steht, und null, wo
+     ein Plateau liegt. Sie wieder aufzuschlagen gibt dem einzelnen Gipfel
+     zurück, was der Weichzeichner ihm genommen hat, und das Plateau lässt sie
+     in Ruhe. Über die ganze Karte ist sie mittelwertfrei, das Volumen bleibt
+     also die Bevölkerung.
+
+     Gemessen für 2024 steht das Ruhrgebiet danach bei 1,44 mal Berlin, wo die
+     Menschen 1,36 stehen — vorher 1,76. Mehr als 1,15 klemmt den Gipfel oben
+     wieder an, dann ist nichts gewonnen.
+
+     Aus dem Kern kommen **Farbe und Höhenlinien** unmittelbar. Die
+     **Schattierung** ist derselbe Kern, nur mit dem Randabfall multipliziert:
+     der Abfall zur Küste hin ist es, der ihr eine Kante gibt, und im Inneren,
+     wo die Maske eins ist, sind beide gleich — also liegen Farbe, Linie und
+     Licht wirklich aufeinander. Vorher taten sie das nicht: die Schattierung
+     mischte eng und weit 40 zu 60, die Farbe 55 zu 45, und der Kommentar
+     behauptete trotzdem, es sei dasselbe Feld.
+
+     Daneben bleibt das weite Feld mit seinem eigenen, breiteren Rand; aus ihm
+     kommt die Muldenverschattung, die ja gerade die weite Umgebung braucht. */
+  weitesFeld(Math.max(3, Math.round(breite / WEITTEILER * s)));
+  for (let i = 0; i < n3; i++) {
+    grobAuf[i] = grobH[i] * grobM[i];
+    let k = ENGANTEIL * feinH[i] + (1 - ENGANTEIL) * grobH[i]
+          + SCHAERFE * (feinH[i] - weitH[i]);
+    if (k < 0) k = 0; else if (k > 1) k = 1;
+    farbF[i] = k;
+    feldH[i] = k * (0.40 * maskeH[i] + 0.60 * grobM[i]);
+  }
+
+  /* ---------- Schlagschatten ----------
+     Das ist der Unterschied zwischen einer gewölbten Fläche und einem
+     Gebirge: ein Berg wirft einen Schatten über das, was hinter ihm liegt.
+     Gerechnet in einem einzigen Durchgang — das Licht kommt aus genau 45 Grad
+     von oben links, also laufen die Strahlen auf der Leinwand diagonal, und je
+     Diagonale genügt ein mitgeführter Horizont:
+
+         s = max(s − Abfall, Höhe)      und im Schatten liegt, was unter s ist.
+
+     Der Abfall ist, wie viel Höhe der Strahl je Schritt verliert. Aus ihm
+     folgt die Länge der Schatten, und damit, wie hoch das Gebirge wirkt. */
+  const ABFALL = Math.SQRT2 * Math.tan(Math.PI * WURFSONNE / 180) / UEBERHOEHT;
+  for (let k = 0; k < rW + rH - 1; k++) {
+    let x = k < rW ? k : 0, y = k < rW ? 0 : k - rW + 1, s2 = -1;
+    while (x < rW && y < rH) {
+      const i = y * rW + x;
+      s2 -= ABFALL;
+      if (feldH[i] >= s2) { s2 = feldH[i]; schatten[i] = 0; }
+      else schatten[i] = s2 - feldH[i];
+      x++; y++;
+    }
+  }
+
+  // Licht von oben links. Auf dem Bildschirm zeigt y nach unten, oben links
+  // ist also die negative Richtung in beiden Achsen.
+  const hochL = Math.cos(Math.PI * SONNE / 180) * Math.SQRT1_2;
+  const lx = -hochL, ly = -hochL, lz = Math.sin(Math.PI * SONNE / 180);
+  for (let y = 0; y < rH; y++) {
+    const zc = y * rW, zo = (y > 0 ? y - 1 : y) * rW, zu = (y < rH - 1 ? y + 1 : y) * rW;
+    for (let x = 0; x < rW; x++) {
+      const xm = x > 0 ? x - 1 : x, xp = x < rW - 1 ? x + 1 : x;
+      const i = zc + x;
+      const rx = (feldH[zc + xp] - feldH[zc + xm]) * 0.5;
+      const ry = (feldH[zu + x] - feldH[zo + x]) * 0.5;
+      const gx = rx * UEBERHOEHT, gy = ry * UEBERHOEHT;
+      let I = (-gx * lx - gy * ly + lz) / Math.sqrt(gx * gx + gy * gy + 1) - lz;
+
+      // Die Mulde. Was tiefer liegt als seine weite Umgebung, bekommt weniger
+      // Himmel ab — dasselbe, was in einem Tal weniger Licht ankommen lässt.
+      const mulde = grobAuf[i] - feldH[i];
+      if (mulde > 0) I -= mulde * MULDE;
+      // Und der Schlagschatten.
+      if (schatten[i] > 0) I -= (schatten[i] < 0.05 ? schatten[i] / 0.05 : 1) * WURF;
+
+      let a = I * STAERKE;
+      if (a > HELLMAX) a = HELLMAX; else if (a < -DUNKELMAX) a = -DUNKELMAX;
+      licht[i] = a;
+    }
+  }
+
+  /* ---------- Die Farbe der Karte, und das Licht darin ----------
+     Gefärbt wurde bisher Kreis für Kreis: jede Fläche bekam ihre eigene Dichte
+     als Ton, und heraus kam ein Mosaik. Die Höhenlinien dagegen kamen aus dem
+     weiten Feld, das über die Kreisgrenzen hinweg verläuft. Berlin war deshalb
+     ein kleiner Farbfleck in der Form seines Kreises, während sein Berg weit
+     darüber hinausreichte — Farbe und Relief widersprachen einander.
+
+     Jetzt kommt die Farbe aus demselben Feld, das die Linien trägt, und das
+     Licht wird gleich mit hineingerechnet. Auch das ist neu, und es war ein
+     Fehler, es nicht zu tun: die Schattierung lag eine Fassung lang als graues
+     Bild im Modus *soft-light* darüber, und weiches Licht kann Weiss nicht
+     dunkler machen. Die Rechenvorschrift enthält den Faktor Cb·(1−Cb), und der
+     ist bei Weiss null — auf den hellsten Bändern, also genau auf den Gipfeln,
+     kam überhaupt keine Hangschattierung an. Ein Aufhellen zum Weiss und ein
+     Abdunkeln zum Schwarz hat diese Schwäche nicht, und es spart nebenbei eine
+     Leinwand und einen Durchgang.
+
+     Gezeichnet wird das Feld in seiner eigenen, gröberen Auflösung und beim
+     Hochrechnen bilinear geglättet: die Bandgrenze wird dadurch ein weicher
+     Übergang von ein, zwei Bildpunkten, und die Höhenlinie liegt in seiner
+     Mitte. Scharf gerastert sähe dieselbe Grenze treppig aus. */
+  /* Hier lief die Farbe eine Fassung lang anteilig gegen die Farbe des
+     Bildmittels — dieselbe Bremse wie beim Relief, und aus demselben Grund:
+     im vollen Kartogramm wurden aus den Rundungsresten des
+     Diffusionsverfahrens sichtbare Farbbänder. Mit dem Kartogramm ist auch
+     sie weg; das Feld färbt jetzt unvermittelt. */
+  /* Dieselbe Beleuchtung ein zweites Mal, aber **ohne Farbe**: ein Grau, in dem
+     128 nichts tut, heller aufhellt und dunkler abdunkelt. Damit kann die
+     Schrägsicht ihr Licht bekommen, ohne die Farbe mitzuschleppen, an der sie
+     sich verschluckt hat. LICHTHUB gleicht aus, dass soft-light sanft ist. */
+  const fo = fBild.data, lo = lBild.data;
+  for (let i = 0; i < n3; i++) {
+    const k = bandIdx(farbF[i]);
+    let r = HYPSO_R[k], g = HYPSO_G[k], b = HYPSO_B[k];
+    const a = licht[i];
+    if (a > 0) { r += (255 - r) * a * AUFHELLEN; g += (255 - g) * a * AUFHELLEN; b += (255 - b) * a * AUFHELLEN; }
+    else if (a < 0) { const f = 1 + a * ABDUNKELN; r *= f; g *= f; b *= f; }
+    const j = i << 2;
+    fo[j] = r; fo[j + 1] = g; fo[j + 2] = b; fo[j + 3] = 255;
+    let L = 128 + (a > 0 ? 127 * a * AUFHELLEN : 128 * a * ABDUNKELN) * LICHTHUB;
+    // Der Schlagschatten noch einmal obendrauf, nur für die Schrägsicht.
+    if (schatten[i] > 0)
+      L -= 60 * SCHATTENHUB * (schatten[i] < 0.05 ? schatten[i] / 0.05 : 1);
+    if (L < 0) L = 0; else if (L > 255) L = 255;
+    lo[j] = lo[j + 1] = lo[j + 2] = L; lo[j + 3] = 255;
+  }
+  hcL.setTransform(1, 0, 0, 1, 0, 0);
+  hcL.globalCompositeOperation = 'source-over';
+  hcL.putImageData(lBild, 0, 0);
+  hcL.globalCompositeOperation = 'destination-in';   // nur, was auf der Karte liegt
+  hcL.drawImage(hkA, 0, 0);
+  hcL.globalCompositeOperation = 'source-over';
+  /* Flach geht die fertige Farbe unmittelbar auf die Leinwand und die
+     Höhenlinien darüber. Schräg wird dieselbe Farbe auf die Vorlagenleinwand
+     gelegt, die Linien kommen **hinein** statt darüber — sie gehören ja auf
+     das Gelände, nicht auf das Bild davon — und erst das Ganze wird gekippt. */
+  hcF.setTransform(1, 0, 0, 1, 0, 0);
+  hcF.globalCompositeOperation = 'source-over';
+  hcF.globalAlpha = 1;
+  hcF.putImageData(fBild, 0, 0);
+  hcF.globalCompositeOperation = 'destination-in';   // nur, was auf der Karte liegt
+  hcF.drawImage(hkA, 0, 0);
+  hcF.globalCompositeOperation = 'source-over';
+  feldStand++; feldJahr = jahr; feldReihe = reihe; feldRW = rW; feldRH = rH;
+  feldZeichnen(s);
+}
+
+/* Aus dem fertigen Feld das Bild: schräg der Stapel, flach Farbe und Linien. */
+let GLAETTUNG = 'low';
+function feldZeichnen(s) {
+  if (schraeg()) {
+    scheibenMalen(s);
+  } else {
+    ctx.imageSmoothingEnabled = true;
+    /* Bilinear reicht. Das Feld ist weich, und die drei Stufen unterscheiden
+       sich im Bild um rund ein Zweihundertstel (mittlere Abweichung 1,2/255,
+       0,4 Prozent der Punkte über 8) — im Lauf aber um ein Drittel der Zeit:
+       high/medium/low 78/64/56 ms auf dem Telefon, 172/137/118 auf dem
+       Schirm. */
+    ctx.imageSmoothingQuality = GLAETTUNG;
+    ctx.drawImage(hkF, 0, 0, breite, hoehe);
+    linienUeber(s);
+  }
+}
+
+/* ---------- Die Höhenlinien, einmal gezogen ----------
+   Flach kosten die Linien 29 ms auf dem Telefon und 60 auf dem Schirm, und sie
+   hängen nur am Feld und am Blick. Steht beides, kommen sie aus einer eigenen
+   Leinwand und werden nur kopiert. Im Lauf ändert sich das Feld je Bild; dann
+   direkt auf die Leinwand, ohne den Umweg. */
+let hkH = null, hcH = null, linienSchluessel = '';
+function linienUeber(s) {
+  if (laeuft) { hoehenLinien(s, ctx, 1); return; }
+  const schl = cv.width + ',' + cv.height + ',' + ZOOM + ',' + vX + ',' + vY + ',' + feldStand;
+  if (schl !== linienSchluessel) {
+    if (!hkH) { hkH = document.createElement('canvas'); hcH = hkH.getContext('2d'); }
+    if (hkH.width !== cv.width || hkH.height !== cv.height) { hkH.width = cv.width; hkH.height = cv.height; }
+    hcH.setTransform(1, 0, 0, 1, 0, 0);
+    hcH.clearRect(0, 0, hkH.width, hkH.height);
+    hcH.setTransform(ctx.getTransform());
+    hcH.lineJoin = 'round';
+    hoehenLinien(s, hcH, 1);
+    linienSchluessel = schl;
+  }
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.drawImage(hkH, 0, 0);
+  ctx.restore();
+}
+
+/* ---------- Beleuchtete Höhenlinien, nach Tanaka Kitiro (1950) ----------
+   Eine gewöhnliche Höhenlinie ist überall gleich dunkel und sagt über die Form
+   nur, wo gleiche Höhe liegt. Tanakas Linien werden **weiss, wo der Hang der
+   Sonne zugewandt ist, und schwarz, wo er von ihr wegfällt**, und dick, wo der
+   Hang voll im Licht oder voll im Schatten steht — sie tragen damit dieselbe
+   Auskunft wie eine Schattierung, aber als Kante, und eine Kante sieht das
+   Auge sehr viel deutlicher als einen Verlauf. Vor allem nehmen sie fast keine
+   Fläche weg, und die Fläche ist hier schon vergeben: sie trägt die Farbe, und
+   die Farbe sind die Daten.
+
+   Die ersten Fassungen malten sie **ins Höhenfeld**, also in ein Raster von
+   vierzig bis sechzig Prozent der Bildpunkte, und rechneten dieses Bild
+   hinterher hoch. Das kann nicht scharf werden: eine Linie ist ein bis zwei
+   Punkte breit, und zwei Punkte, um das Anderthalbfache gestreckt und weich
+   gezeichnet, sind ein Schmier mit ungleichmässigem Rand. Genau das war das
+   Zappeln.
+
+   Jetzt werden sie **verfolgt statt gemalt**: Marching Squares über das weite
+   Feld liefert die Linien als Strecken, und gezeichnet werden sie als Pfade
+   auf der Leinwand selbst — mit deren voller Auflösung und deren Kantenglättung.
+   Das Höhenfeld darf dafür ruhig grob sein: es ist über fünfzehn Punkte
+   weichgezeichnet, und die Stützstellen einer Linie dürfen weiter
+   auseinanderliegen als ein Bildpunkt, solange die Linie selbst scharf ist.
+
+   Gerechnet aus dem weiten Feld, nicht aus dem gemischten: das enge hat an
+   jeder Kreisgrenze eine Stufe, und auf einer Stufe lägen alle Niveaus
+   übereinander — das gäbe einen Strich an jeder Grenze statt einer Höhenlinie.
+
+   Gebündelt wird nach Beleuchtungsstärke: acht Stufen, hell und dunkel, also
+   sechzehn Pfade statt Tausender einzelner Striche. */
+const NSTUFE = 12;
+// Viermal NSTUFE: hell und dunkel, je einmal gewöhnlich und einmal als Zählkurve.
+const LINIENEIMER = Array.from({ length: 4 * NSTUFE }, () => []);
+let zaehlBahn = false;   // die Bahn, die gerade abgelegt wird, ist eine Zählkurve
+const LSCHRITT = 2;               // Gitterschritt der Verfolgung, in Feldpunkten
+
+/* Die Buchhaltung der Verfolgung. Jede Kante des Verfolgungsgitters kann von
+   einer Höhenlinie geschnitten werden, und jede Kante gehört zu genau zwei
+   Zellen — daraus ergibt sich die Kette von selbst: notiere je Kante den
+   Schnittpunkt und die ein bis zwei Kanten, mit denen sie in ihren Zellen
+   verbunden ist, und laufe hinterher durch.
+
+   Die Felder werden einmal angelegt und über alle Niveaus wiederbenutzt; ein
+   Stempel je Niveau erspart das Leeren. */
+let lnx = 0, lny = 0;
+let kX = null, kY = null, kA = null, kB = null, kStempel = null, kBesucht = null;
+let kListe = null, bahnX = null, bahnY = null, bahnF = null, bahnG = null;
+let zellenJe = null;
+// Der Stempel muss über Bilder hinweg fortlaufen, nicht bloss über die Niveaus
+// eines Bildes: sonst trägt die Buchhaltung im zweiten Bild noch die Marken des
+// ersten, hält jede Kante für schon gesetzt und findet keine einzige Linie.
+let stempelZaehler = 0;
+function linienFeld() {
+  const nx = Math.floor((rW - 1) / LSCHRITT), ny = Math.floor((rH - 1) / LSCHRITT);
+  if (nx === lnx && ny === lny && zellenJe && zellenJe.length === NIVEAUS) return;
+  lnx = nx; lny = ny;
+  const n = 2 * (nx + 1) * (ny + 1);
+  kX = new Float32Array(n); kY = new Float32Array(n);
+  kA = new Int32Array(n); kB = new Int32Array(n);
+  kStempel = new Int32Array(n); kBesucht = new Int32Array(n);
+  kListe = new Int32Array(n);
+  const lang = Math.max(256, ((nx * ny) >> 2) + 64);
+  bahnX = new Float32Array(lang); bahnY = new Float32Array(lang);
+  bahnF = new Float32Array(lang); bahnG = new Float32Array(lang);
+  zellenJe = Array.from({ length: NIVEAUS }, () => []);
+}
+
+/* Eine Linie in Läufe gleicher Beleuchtung zerlegen und in die Eimer legen.
+   Gezeichnet wird erst am Ende, alle Läufe eines Eimers in einem Zug: sonst
+   stünden bei hundert Linien und vierundzwanzig Stärken zweitausend einzelne
+   Striche an, und jeder kostet für sich.
+
+   Die Läufe überlappen sich um eine Stützstelle, damit zwischen zwei Stärken
+   keine Lücke steht. Abgelegt wird je Lauf die Zahl der Punkte und dann die
+   Punkte selbst. */
+function bahnAblegen(m, geschlossen) {
+  // Beleuchtung längs der Linie glätten: stützstellenweise gerechnet springt
+  // sie um ein paar Prozent hin und her, und das ist genau das Zappeln.
+  for (let d = 0; d < 2; d++) {
+    let vor = bahnF[geschlossen ? m - 2 : 0];
+    for (let i = 0; i < m; i++) {
+      const nach = bahnF[i + 1 < m ? i + 1 : (geschlossen ? 1 : i)];
+      const jetzt = bahnF[i];
+      bahnF[i] = (vor + 2 * jetzt + nach) * 0.25;
+      vor = jetzt;
+    }
+  }
+  const lege = (e, von, bis) => {
+    if (e < 0 || bis - von < 1) return;
+    const p = LINIENEIMER[e];
+    p.push(bis - von + 1);
+    for (let i = von; i <= bis; i++) p.push(bahnX[i], bahnY[i]);
+  };
+  let lauf = -1, von = 0;
+  for (let i = 0; i < m; i++) {
+    const st = Math.min(1, Math.abs(bahnF[i]) * bahnG[i]);
+    let k = (st * NSTUFE) | 0; if (k > NSTUFE - 1) k = NSTUFE - 1;
+    let e = st < 0.03 ? -1 : (bahnF[i] > 0 ? k : NSTUFE + k);
+    if (e >= 0 && zaehlBahn) e += 2 * NSTUFE;
+    if (e !== lauf) { lege(lauf, von, i); lauf = e; von = i > 0 ? i - 1 : 0; }
+  }
+  lege(lauf, von, m - 1);
+}
+
+// Und am Ende: je Eimer ein Pfad, als weiche Kurve durch die Mittelpunkte der
+// Stützstellen. Vierundzwanzig Züge für die ganze Karte.
+function linienMalen(strichBreite, zc, zm) {
+  /* Schräg drängen sich die Linien. Die Blende gegen zu enge Niveaus misst
+     ihren Abstand auf der **flachen** Karte — das ist der Abstand, den sie
+     hätten, läge die Karte. Gekippt staucht die Schrägsicht denselben Hang auf
+     einen Bruchteil, und die Blende weiss davon nichts: auf einem Südhang
+     liegen dann acht Linien, wo flach zwei lägen. Sie deshalb pauschal
+     leichter, statt die Blende umzubauen — eine Höhenlinie darf dichter
+     liegen, sie darf nur die Farbe darunter nicht zudecken. */
+  const SCHRAEGLINIE = schraeg() ? 0.62 : 1;
+  // Die Stützstellen stehen in Bildpunkten der Leinwand. Geht die Linie in die
+  // Vorlage statt auf die Leinwand, rechnet der Massstab sie um — samt
+  // Strichstaerke, die damit nach dem Hochrechnen wieder dieselbe ist.
+  zc.save();
+  if (zm !== 1) zc.setTransform(zm, 0, 0, zm, 0, 0);
+  zc.lineCap = 'round'; zc.lineJoin = 'round';
+  for (let e = 0; e < LINIENEIMER.length; e++) {
+    const p = LINIENEIMER[e];
+    if (!p.length) continue;
+    const zaehl = e >= 2 * NSTUFE, e2 = e - (zaehl ? 2 * NSTUFE : 0);
+    const hell = e2 < NSTUFE, k = e2 - (hell ? 0 : NSTUFE);
+    const st = (k + 0.5) / NSTUFE;
+    zc.beginPath();
+    for (let q = 0; q < p.length;) {
+      const anz = p[q]; q++;
+      const erst = q;
+      zc.moveTo(p[erst], p[erst + 1]);
+      for (let i = 1; i < anz - 1; i++) {
+        const a = erst + 2 * i;
+        zc.quadraticCurveTo(p[a], p[a + 1], (p[a] + p[a + 2]) / 2, (p[a + 1] + p[a + 3]) / 2);
+      }
+      const letzt = erst + 2 * (anz - 1);
+      zc.lineTo(p[letzt], p[letzt + 1]);
+      q += 2 * anz;
+    }
+    p.length = 0;
+    zc.lineWidth = (0.40 + 0.95 * st) * strichBreite * (zaehl ? ZAEHLSTARKFLACH : 1);
+    zc.strokeStyle = hell ? '#fff' : '#000';
+    zc.globalAlpha = Math.min(1, LINIE * SCHRAEGLINIE * st * (hell ? 1 : DUNKELLINIE));
+    zc.stroke();
+  }
+  zc.globalAlpha = 1;
+  zc.restore();
+}
+
+function hoehenLinien(s, zc, zm) {
+  linienFeld();
+  const S = LSCHRITT, je = 1 / s, nx = lnx, ny = lny;
+  const F = farbF, M = maskeH;   // dasselbe Feld, aus dem die Farbe kommt
+  // Geht die Linie in ein **gröberes** Raster als die Leinwand — die grobe
+  // Stufe der Schrägsicht —, wird ein Strich unter einem Punkt Breite zu
+  // Staub; dort bekommt er mehr. In der feinen Stufe ist das Raster so fein
+  // wie die Leinwand oder feiner, und er bleibt, wie er ist.
+  const strichBreite = Math.max(0.7, breite / 760) * (zm < 0.8 ? 1.7 : 1);
+  const lang = bahnX.length;
+  for (const z of zellenJe) z.length = 0;
+
+  // Erster Durchgang: welche Zelle schneidet welche Niveaus? Nur die Niveaus
+  // zwischen kleinstem und grösstem Eckwert kommen in Frage, meist null bis
+  // zwei von vierzig.
+  for (let cy = 0; cy < ny; cy++) {
+    const r0 = cy * S * rW, r1 = (cy * S + S) * rW;
+    for (let cx = 0; cx < nx; cx++) {
+      const x0 = cx * S, x1 = x0 + S;
+      if (M[r0 + x0] < 0.85 || M[r0 + x1] < 0.85 || M[r1 + x1] < 0.85 || M[r1 + x0] < 0.85) continue;
+      const a = F[r0 + x0], b = F[r0 + x1], c = F[r1 + x1], d = F[r1 + x0];
+      let lo = a, hi = a;
+      if (b < lo) lo = b; if (b > hi) hi = b;
+      if (c < lo) lo = c; if (c > hi) hi = c;
+      if (d < lo) lo = d; if (d > hi) hi = d;
+      let n0 = Math.ceil(lo * NIVEAUS), n1 = Math.floor(hi * NIVEAUS);
+      if (n0 < 1) n0 = 1; if (n1 > NIVEAUS - 1) n1 = NIVEAUS - 1;
+      const zelle = cy * nx + cx;
+      for (let n = n0; n <= n1; n++) zellenJe[n].push(zelle);
+    }
+  }
+
+  const stamm = 2 * (nx + 1);
+  for (let n = 1; n < NIVEAUS; n++) {
+    const zellen = zellenJe[n];
+    if (zellen.length < 2) continue;
+    const t = n / NIVEAUS;
+    zaehlBahn = n % ZAEHLJEDE === 0;   // jede fünfte Linie ist eine Zählkurve
+    /* Wie lange dieses Niveau durchhält, wenn die Linien zusammenrücken.
+
+       Vorher blendeten **alle** Linien aus, sobald zwei Niveaus auf der
+       Leinwand näher als vier Bildpunkte beieinander lagen, und unter
+       anderthalb waren sie ganz weg. Das trifft genau den steilsten Hang —
+       also Berlin, dessen Flanke in wenigen Bildpunkten durch fünf Niveaus
+       fällt. Heraus kam die Umkehrung dessen, was eine Höhenlinie tun soll:
+       je steiler das Gelände, desto weniger Linien.
+
+       Jetzt wird ausgedünnt, wie es ein Kartenzeichner tut: jedes vierte
+       Niveau hält am längsten durch, dann jedes zweite, dann der Rest. Am
+       steilen Hang bleiben vier Linien statt keiner, und ihr Abstand
+       untereinander ist wieder lesbar. */
+    const haelt = (n % 4 === 0) ? 4 : (n % 2 === 0) ? 2 : 1;
+    const stempel = ++stempelZaehler;
+    let nk = 0;
+
+    // Zweiter Durchgang: Schnittpunkte eintragen und benachbarte Kanten
+    // verbinden. Zwei Kanten sind benachbart, wenn dieselbe Zelle zwischen
+    // ihnen liegt.
+    const setze = (k, x, y) => {
+      if (kStempel[k] !== stempel) { kStempel[k] = stempel; kX[k] = x; kY[k] = y; kA[k] = -1; kB[k] = -1; kBesucht[k] = 0; kListe[nk++] = k; }
+    };
+    const binde = (p, q) => { if (kA[p] < 0) kA[p] = q; else if (kB[p] < 0) kB[p] = q; };
+    for (let z = 0; z < zellen.length; z++) {
+      const zelle = zellen[z], cy = (zelle / nx) | 0, cx = zelle - cy * nx;
+      const x0 = cx * S, x1 = x0 + S, r0 = cy * S * rW, r1 = (cy * S + S) * rW;
+      const a = F[r0 + x0], b = F[r0 + x1], c = F[r1 + x1], d = F[r1 + x0];
+      const A = a > t, B = b > t, C = c > t, D = d > t;
+      const ka = (A ? 1 : 0) | (B ? 2 : 0) | (C ? 4 : 0) | (D ? 8 : 0);
+      if (ka === 0 || ka === 15) continue;
+      const px0 = x0 * je, py0 = cy * S * je, SS = S * je;
+      const h0 = cy * stamm + 2 * cx, h2 = (cy + 1) * stamm + 2 * cx;
+      const v3 = h0 + 1, v1 = cy * stamm + 2 * (cx + 1) + 1;
+      if (A !== B) setze(h0, px0 + SS * (t - a) / (b - a), py0);
+      if (B !== C) setze(v1, px0 + SS, py0 + SS * (t - b) / (c - b));
+      if (D !== C) setze(h2, px0 + SS * (t - d) / (c - d), py0 + SS);
+      if (A !== D) setze(v3, px0, py0 + SS * (t - a) / (d - a));
+      switch (ka) {
+        case 1: case 14: binde(v3, h0); binde(h0, v3); break;
+        case 2: case 13: binde(h0, v1); binde(v1, h0); break;
+        case 3: case 12: binde(v3, v1); binde(v1, v3); break;
+        case 4: case 11: binde(v1, h2); binde(h2, v1); break;
+        case 6: case 9:  binde(h0, h2); binde(h2, h0); break;
+        case 7: case 8:  binde(h2, v3); binde(v3, h2); break;
+        default:         binde(v3, h0); binde(h0, v3); binde(v1, h2); binde(h2, v1);
+      }
+    }
+
+    // Dritter Durchgang: die Ketten ablaufen. Erst die offenen — eine Kante
+    // mit nur einem Nachbarn ist ein Anfang —, dann die geschlossenen Ringe.
+    for (let runde = 0; runde < 2; runde++) {
+      for (let q = 0; q < nk; q++) {
+        const start = kListe[q];
+        if (kBesucht[start] === stempel) continue;
+        if (runde === 0 && kB[start] >= 0) continue;
+        let cur = start, vor = -1, m = 0;
+        while (cur >= 0 && m < lang) {
+          kBesucht[cur] = stempel;
+          // Beleuchtung und die beiden Bremsen an dieser Stützstelle, aus dem
+          // Gefälle des Feldes dort.
+          let ix = (kX[cur] * s) | 0, iy = (kY[cur] * s) | 0;
+          if (ix < 1) ix = 1; if (ix > rW - 2) ix = rW - 2;
+          if (iy < 1) iy = 1; if (iy > rH - 2) iy = rH - 2;
+          const gx = (F[iy * rW + ix + 1] - F[iy * rW + ix - 1]) * 0.5;
+          const gy = (F[(iy + 1) * rW + ix] - F[(iy - 1) * rW + ix]) * 0.5;
+          const ql = Math.sqrt(gx * gx + gy * gy);
+          bahnX[m] = kX[cur]; bahnY[m] = kY[cur];
+          bahnF[m] = ql > 1e-7 ? (gx + gy) / (ql * Math.SQRT2) : 0;
+          // Über fast ebenem Land blenden die Linien ein, und wo zwei Niveaus
+          // auf der Leinwand zusammenrücken, wieder aus.
+          const abstand = (ql > 1e-7 ? je / (ql * NIVEAUS) : 1e9) * haelt;
+          bahnG[m] = Math.min(1, ql / FLACHHANG)
+            * (abstand > 4 ? 1 : Math.max(0, (abstand - 1.4) / 2.6));
+          m++;
+          const na = kA[cur], nb = kB[cur];
+          const weiter = (na >= 0 && na !== vor && kBesucht[na] !== stempel) ? na
+                       : (nb >= 0 && nb !== vor && kBesucht[nb] !== stempel) ? nb : -1;
+          vor = cur; cur = weiter;
+        }
+        // Ein Ring schliesst sich: die letzte Stützstelle ist mit der ersten
+        // verbunden, also noch einmal dorthin.
+        const zu = m > 2 && m < lang && (kA[vor] === start || kB[vor] === start);
+        if (zu) { bahnX[m] = bahnX[0]; bahnY[m] = bahnY[0]; bahnF[m] = bahnF[0]; bahnG[m] = bahnG[0]; m++; }
+        if (m >= 2) bahnAblegen(m, zu);
+      }
+    }
+  }
+  linienMalen(strichBreite, zc, zm);
+}
+
+/* ---------- Die Silhouette und die Möbel der flachen Karte, einmal gemalt ----------
+   Die Silhouette ist ein Pfad aus vierhundert Vielecken — der teuerste Teil
+   des Bildes —, und flach wurde sie **dreimal je Bild** gefüllt: Schatten mit
+   Weichzeichner, Kante, Grundfläche. Zusammen 55 ms auf dem Telefon und 100
+   auf dem Schirm, ein gutes Drittel des flachen Bildes. Das Ergebnis hängt
+   aber nur an Abdeckung, Blick und Grundfarbe. Also wird es in eine eigene
+   Leinwand gemalt und je Bild nur noch kopiert; im Lauf wechselt der Schlüssel
+   an den Jahren mit Teilabdeckung, sonst nie. */
+let silPfad = null, silSchluessel = '';
+function silhouette(deck) {
+  let ab = '';
+  for (let g = 0; g < NK; g++) ab += deck[g] > 0.5 ? '1' : '0';
+  const schl = mass + ',' + verX + ',' + verY + ',' + ab;
+  if (schl === silSchluessel) return silPfad;
+  const sil = new Path2D();
+  for (let g = 0; g < NK; g++) {
+    if (!(deck[g] > 0.5)) continue;
+    for (const r of GEBIETE[g]) {
+      sil.moveTo(px[r[0]] * mass + verX, py[r[0]] * mass + verY);
+      for (let i = 1; i < r.length; i++) sil.lineTo(px[r[i]] * mass + verX, py[r[i]] * mass + verY);
+      sil.closePath();
+    }
+  }
+  silPfad = sil; silSchluessel = schl;
+  return sil;
+}
+let hkM = null, hcM = null, moebelSchluessel = '';
+function moebel(deck, TIEFE) {
+  const sil = silhouette(deck);
+  const grund = HYPSO[bandIdx(mitteImFeld())];
+  const schl = cv.width + ',' + cv.height + ',' + ZOOM + ',' + vX + ',' + vY + ',' + grund + ',' + silSchluessel;
+  if (schl !== moebelSchluessel) {
+    if (!hkM) { hkM = document.createElement('canvas'); hcM = hkM.getContext('2d'); }
+    if (hkM.width !== cv.width || hkM.height !== cv.height) { hkM.width = cv.width; hkM.height = cv.height; }
+    hcM.setTransform(1, 0, 0, 1, 0, 0);
+    hcM.clearRect(0, 0, hkM.width, hkM.height);
+    hcM.setTransform(ctx.getTransform());   // dieselbe Abbildung wie die Leinwand
+    hcM.lineJoin = 'round';
+    hcM.save();
+    hcM.translate(0, TIEFE * 1.9); hcM.filter = 'blur(' + (TIEFE * 1.2).toFixed(1) + 'px)';
+    hcM.fillStyle = SCHATTEN; hcM.fill(sil);
+    hcM.restore();
+    hcM.save();
+    hcM.translate(0, TIEFE);
+    hcM.fillStyle = KANTE3D; hcM.fill(sil);
+    hcM.restore();
+    hcM.fillStyle = grund; hcM.fill(sil, 'evenodd');
+    moebelSchluessel = schl;
+  }
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.drawImage(hkM, 0, 0);
+  ctx.restore();
+}
+/* Nordpfeil und Zurück-Knopf: nur anfassen, wenn sich etwas geändert hat. */
+let nordStand = null, zurueckStand = null;
+function sichtMarken() {
+  if (DREHUNG !== nordStand) {
+    nordStand = DREHUNG;
+    const n = document.getElementById('nord');
+    n.hidden = DREHUNG === 0;
+    n.style.transform = 'rotate(' + DREHUNG + 'rad)';
+  }
+  const weg = ZOOM !== 1 || vX !== 0 || vY !== 0 || NEIGUNG !== 0 || DREHUNG !== 0;
+  if (weg !== zurueckStand) { zurueckStand = weg; document.getElementById('zurueck').hidden = !weg; }
+}
+
+/* Zeit vergeht auch im Stillstand. Nach dem Anhalten läuft der Tiefpass mit
+   der wirklich verstrichenen Zeit weiter und steht nach ein, zwei Bildern —
+   dann kann das Feld stehen bleiben. Der Film setzt dtSek selbst und hält
+   nie an; ihn geht das nichts an. */
+let ruheUhr = 0;
+/* Und nach dem Anhalten landet er vierfach schneller: der Tiefpass ist für den
+   Lauf da, wo er das Zucken zwischen den Bildern glättet. Steht die Zeit, soll
+   das Feld zügig dort ankommen, wo es hingehört — sonst rechnet jede Geste
+   noch anderthalb Sekunden lang das ganze Feld mit (gemessen 42 bis 47
+   Gestenbilder), bevor es stehen darf. */
+const RUHEFAKTOR = 4;
+function zeichne() {
+  if (!laeuft && ruheUhr) {
+    const t = performance.now();
+    dtSek = Math.max(0.001, (t - ruheUhr) / 1000) * RUHEFAKTOR;
+    ruheUhr = t;
+  }
+  const [a, b, u] = bildBei(jahr);
+  setzePunkte(a, b, u);
+  const { w, deck, rate } = werteBei(a, b, u);
+  ctx.clearRect(0, 0, breite, hoehe);
+  ctx.lineJoin = 'round';
+
+  /* Ein Pfad aus allen Umrissen. Weil die Kreise die Fläche lückenlos teilen,
+     ist die Vereinigung ihrer Umrisse zugleich die Silhouette der Karte, und
+     seine Teilpfade sind zugleich alle Kreisgrenzen. Schatten, Kante, Netz
+     und Relief hängen alle daran. */
+  const TIEFE = Math.max(2.5, breite / 130);
+  hoehen(w, deck);
+  [skalaVon, skalaBis] = hoehenSkala();
+  /* Schatten, Kante und Grundfläche sind die Möbel der **flachen** Karte: ein
+     Blatt, das auf einem Tisch liegt und einen Schatten nach unten wirft. In
+     der Schrägsicht stimmt keines davon mehr — dort baut das Gelände seine
+     Flanken selbst, aus seiner eigenen Höhe. Also bleiben sie dann weg. */
+  const flach = !schraeg();
+  /* Flach wird die Karte unter die Ansicht gestellt — Zoom und Verschiebung
+     als Leinwandabbildung über alles, was jetzt kommt. Schräg steckt beides
+     schon im Massstab des Scheibenstapels, dort wäre es doppelt.
+
+     Die Namen kommen **danach** und bleiben deshalb bei ihrer Grösse: ein
+     Vergrösserungsglas soll das Gelände vergrössern, nicht die Schrift. */
+  const dprZ = DPR;
+  if (flach && ansichtFrei()) {
+    ctx.save();
+    ctx.setTransform(dprZ * ZOOM, 0, 0, dprZ * ZOOM, dprZ * vX, dprZ * vY);
+  }
+
+  /* Die Grundfläche, in **einer** Farbe: der Mitte der Leiter, also dem Ton,
+     den ein Kreis von durchschnittlicher Dichte hat.
+
+     Sie ist nicht die Farbe der Karte — die kommt gleich aus dem Höhenfeld und
+     legt sich darüber. Sie ist nur die scharfe Kante: das Feld hat seine
+     eigene, gröbere Auflösung, und sein Rand ist beim Hochrechnen ein, zwei
+     Bildpunkte weich. Darunter muss etwas liegen, sonst franst die Küste aus.
+
+     Eine Farbe und nicht vierhundert, weil das Durchscheinende sonst als
+     Flecken sichtbar wird — im Kartogramm, wo das Feld einfarbig ist, lagen an
+     jeder schmalen Stelle Reste der alten Kreisfärbung. */
+  if (flach) moebel(deck, TIEFE);
+
+  /* Keine Grenzen mehr, weder um die Kreise noch um die Länder. Eine
+     Geländekarte hat keine; sie hat Farbe, Hang und Höhenlinie, und die
+     zeigen dieselbe Grenze dort, wo sie etwas bedeutet — wo sich die Dichte
+     ändert. Wo zwei Nachbarn gleich dicht wohnen, war der Strich ohnehin nur
+     Verwaltung. */
+
+  reliefUeber(deck);
+  if (flach && ansichtFrei()) ctx.restore();
+
+  if (NAMEN) beschrifte(deck, w);
+  schreibe(a, b, u, w, deck);
+  notizen();
+  sichtMarken();
+}
+
+const nf = new Intl.NumberFormat('en-GB');
+function schreibe(a, b, u, w, deck) {
+  const zwischen = u > 0.001 && u < 0.999;
+  let summe = 0; for (let k = 0; k < NK; k++) summe += w[k] * deck[k];
+  document.getElementById('jahrZahl').textContent = zwischen ? Math.round(jahr) : D.B[u < 0.5 ? a : b].jahr;
+  /* Zwischen zwei Zählungen ist die Zahl **keine Zählung**, und das muss
+     danebenstehen. Sonst liest sich „1941 · 60,5 Millionen" wie ein Befund,
+     und im Krieg wäre das ein falscher: die beiden Enden sind gezählt (59,6
+     Mio 1939, 66,2 Mio 1946/1950 — die Vertriebenen), der Weg dazwischen ist
+     eine monotone Kurve und keine Geschichte. In Wirklichkeit fiel die Zahl
+     erst und stieg dann in zwei Jahren.
+
+     Auf schmalen Schirmen die kurze Fassung, sonst schöbe sie sich über die
+     Karte. */
+  const eng = document.getElementById('buehne').clientWidth < 620;
+  const bev = (summe / 1e6).toFixed(1);
+  document.getElementById('jahrBev').textContent = zwischen
+    ? '≈ ' + bev + ' million' + (eng ? '' : ' people') + ' · '
+      + (eng ? D.B[a].jahr + ' → ' + D.B[b].jahr
+             : 'interpolated between the counts of ' + D.B[a].jahr + ' and ' + D.B[b].jahr)
+    : bev + ' million people' + (eng ? '' : ' · counted '
+      + D.B[u < 0.5 ? a : b].stichtage.join(', '));
+  // Die Legende hängt nicht mehr am Jahr: sie sagt einen Satz, und die Zahlen
+  // auf der Leiter stehen fest. Einmal gesetzt, nicht je Bild.
+  document.getElementById('zeit').value = Math.round(spiel * 1000);
+}
+
+/* ---------- Städtenamen ----------
+   Die grössten Städte tragen ihren Namen, und die Schrift wächst mit dem
+   Fleck: die Schrifthöhe folgt der Wurzel aus der gezeichneten
+   Fläche, also wächst sie wie die Stadt, nicht wie ihre Einwohnerzahl. 1871
+   ist Dortmund ein Punkt und bleibt namenlos; irgendwann wird der Fleck gross
+   genug, und der Name erscheint von selbst.
+
+   Gezeichnet wird nur, was hineinpasst und nichts anderes verdeckt: zu kleine
+   Schrift fällt weg, ein Name breiter als sein Fleck fällt weg, und wer sich
+   mit einem schon gesetzten Namen überschneidet, fällt auch weg — die
+   grösseren zuerst, damit im Ruhrgebiet nicht die kleinste Stadt gewinnt. */
+/* Der Vorrat, nicht die Auswahl: Kreis und kurzer Name. */
+const STADT = ${JSON.stringify(staedte.map(k => [k.i, k.kurz]))};
+const ZEIGE = 17;      // so viele Namen zur selben Zeit
+/* Wie weit zwei Namen auseinanderliegen müssen — und zwar **auf dem Bild**,
+   nicht auf der Landkarte. Das war vorher ein fester Abstand von sechzig
+   Kilometern, und daran ging das Ruhrgebiet zugrunde: Köln liegt 55 Kilometer
+   von Essen entfernt, warf es also aus der Liste, obwohl Essen 1910 mit
+   477 611 Menschen die neuntgrösste Stadt des Landes war. Übrig blieb ein
+   einziger Name für eine Region, in der sechs Städte unter den zwanzig
+   grössten lagen.
+
+   Gedrängt wird aber nicht auf der Landkarte, sondern auf dem Bild — und der
+   feste Boden ist ein halb eingemischtes Kartogramm, zieht das Ruhrgebiet
+   also auseinander: dort sind es rund zwei Bildpunkte je Kilometer, im Land
+   im Mittel 0,9. Derselbe Abstand auf dem Bild lässt dem Revier damit gut die
+   doppelte Zahl an Namen, und genau da braucht man sie.
+
+   Gemessen wird in Bodenmass, als Bruchteil der Kartenbreite. Damit hängt die
+   Auswahl an nichts als der Karte: dieselben Städte auf dem Telefon wie auf
+   dem Schirm, gleich wie hoch oder breit das Fenster gerade steht. */
+const ABSTANDTEILER = 12;   // Mindestabstand = Kartenbreite / 12
+const SAUM = 0.06;     // wie weit unter der Schwelle ein Name ausblendet, im Logarithmus
+const STUFUNG = 14;    // um diesen Faktor über der Schwelle ist die Schrift am grössten
+/* Hier stand ein feiner dunkler Strich um jede der hundertsieben kreisfreien
+   Städte. Er hatte seinen Grund, solange sich die Karte verformte: eine Stadt
+   wuchs dann mit ihrer Bevölkerung, und der Umriss sagte, wie weit sie reicht.
+   Seit der Boden stillsteht, sagt er das nicht mehr — die Grundfläche ist über
+   alle Jahre dieselbe, der Strich zeigt also nur noch Verwaltung. Und er war
+   das Letzte, was von den Kreisgrenzen übrig war. Eine Geländekarte hat keine
+   Grenzen; sie hat Gelände. */
+const MINSCHRIFT = 7;       // kleinste Schrift; auf einem Telefon knapp, aber lesbar
+/* Welche Städte gerade einen Namen bekommen. Nicht ein für alle Mal die
+   siebzehn grössten von heute, sondern die siebzehn grössten **jetzt**: die
+   Auswahl läuft in jedem Bild neu über die laufende Einwohnerzahl. 1871 stehen
+   damit Karlsruhe, Kassel und Erfurt auf der Karte und Bielefeld, Mannheim und
+   Kiel nicht; heute ist es umgekehrt. Chemnitz und Magdeburg sind 1871 unter
+   den zwölf grössten und heute die letzten der Liste — das ist die Geschichte,
+   die der Berg daneben erzählt, noch einmal in Schrift.
+
+   Zwei Regeln wie vorher: aus einem Bündel eng benachbarter Städte bleibt die
+   grösste, sonst hiesse das Ruhrgebiet siebenmal; und gemessen wird auf der
+   Landkarte, nicht auf dem gezogenen Boden.
+
+   Der Übergang darf nicht springen. Die **Schwelle** ist der Wert des
+   siebzehnten Namens; wer darüber liegt, steht voll da, wer darunter rutscht,
+   blendet über einen Saum von sechs Prozent aus. Im Augenblick des Wechsels
+   sind beide gleich gross, also ist die Blende dort gerade offen — niemand
+   erscheint oder verschwindet plötzlich, die Namen werden blass und dicht wie
+   die Berge unter ihnen. */
+/* Fläche und Schwerpunkt jeder Stadt auf dem festen Boden, einmal gerechnet.
+   Der Boden steht still, also ändern sie sich nie; mal mass ergibt beides den
+   Wert auf dem Schirm. Vorher lief diese Schleife in jedem Bild über die
+   Ringe jeder beschrifteten Stadt. */
+let ORTE = null;
+function orte() {
+  if (ORTE) return ORTE;
+  ORTE = STADT.map(([g]) => {
+    let bestA = 0, mx = 0, my = 0;
+    for (const r of GEBIETE[g]) {
+      let A2 = 0, sx = 0, sy = 0;
+      for (let i = 0, n = r.length; i < n; i++) {
+        const a = r[i], b = r[(i + 1) % n];
+        const xa = px[a], ya = py[a], xb = px[b], yb = py[b];
+        const f = xa * yb - xb * ya;
+        A2 += f; sx += (xa + xb) * f; sy += (ya + yb) * f;
+      }
+      const A = Math.abs(A2 / 2);
+      if (A > bestA) { bestA = A; mx = sx / (3 * A2); my = sy / (3 * A2); }
+    }
+    return [mx, my, bestA];
+  });
+  return ORTE;
+}
+function auswahl(deck, w) {
+  const O = orte(), eng = reihe.rahmen.w / ABSTANDTEILER;
+  /* Gemessen wird der Abstand **im Bild**, nicht auf dem Boden — aber ohne den
+     Zoom, der ist ein Vergrösserungsglas und soll die Auswahl nicht ändern.
+     Flach ist das dasselbe wie vorher. Gekippt staucht der Kosinus die
+     Nord-Süd-Abstände auf 47 Prozent, und ohne diese Rechnung standen
+     Münster, Bielefeld, Dortmund und Essen im Nordblick übereinander. */
+  const S = schraeg() && SICHT ? SICHT : null;
+  const abstandImBild = (p, q) => {
+    let dx = p[0] - q[0], dy = p[1] - q[1];
+    if (S) { const a = dx * S.ct + dy * S.st, b = (-dx * S.st + dy * S.ct) * S.co; dx = a; dy = b; }
+    return Math.hypot(dx, dy);
+  };
+  const kand = [];
+  for (let i = 0; i < STADT.length; i++) {
+    const g = STADT[i][0];
+    if (deck[g] > 0.5 && w[g] > 0 && O[i][2] > 0) kand.push(i);
+  }
+  kand.sort((a, b) => w[STADT[b][0]] - w[STADT[a][0]]);
+  const durch = [];
+  for (const i of kand) {
+    let nah = false;
+    for (const j of durch) if (abstandImBild(O[j], O[i]) < eng) { nah = true; break; }
+    if (nah) continue;
+    durch.push(i);
+    // Ein paar über der Grenze mitnehmen: das sind die, die gerade ausblenden.
+    if (durch.length >= ZEIGE + 5) break;
+  }
+  const schwelle = durch.length >= ZEIGE ? w[STADT[durch[ZEIGE - 1]][0]] : 0;
+  return { durch, schwelle };
+}
+function beschrifte(deck, w) {
+  const liste = [];
+  const O = orte();
+  const { durch, schwelle } = auswahl(deck, w);
+  for (let r = 0; r < durch.length; r++) {
+    const [g, name] = STADT[durch[r]];
+    /* Sichtbarkeit und Schriftgrösse kommen beide aus dem Verhältnis zur
+       Schwelle, nicht aus der Einwohnerzahl selbst. Das ist Absicht: der Berg
+       sagt, wie viele Menschen da sind — absolut, über hundertfünfzig Jahre
+       vergleichbar. Der Name sagt, wer hier gerade zu den grössten gehört. In
+       absoluten Zahlen wäre Chemnitz heute grösser geschrieben als 1871, obwohl
+       es damals die elftgrösste Stadt war und heute die sechzehnte. */
+    const sicht = glatt(Math.max(0, Math.min(1,
+      r < ZEIGE ? 1 : 1 - Math.log(schwelle / w[g]) / SAUM)));
+    // Unter einem Zwölftel Deckkraft ist ein Name nicht mehr zu sehen, kostet
+    // aber Schwerpunkt, Punkt und Strich. Dort endet die Blende.
+    if (sicht < 0.08) continue;
+    const o = O[durch[r]];
+    const bestA = o[2] * mass * mass, mx = o[0] * mass + verX, my = o[1] * mass + verY;
+    /* Nicht auf den Gipfel. Der Berg eines Kreises sitzt in seiner Mitte —
+       das weite Weichzeichnen macht aus der Fläche eine Kuppe, und ihr höchster
+       Punkt ist der Schwerpunkt. Genau dort stand bisher der Name, und bei
+       Berlin und Hamburg deckte er zu, was man sehen soll.
+
+       Also rückt der Name nach unten, um die Hälfte des Radius, den ein Kreis
+       dieser Fläche hätte. Bei einem grossen Fleck sind das viele Pixel und
+       der Gipfel wird frei; bei einem kleinen sind es wenige, und der Name
+       bleibt, wo er hingehört. Nach unten, weil das Licht von oben links
+       kommt: der Südhang liegt im Schatten, dort stört die Schrift am
+       wenigsten. */
+    {
+      /* Der Versatz hat zwei Teile. Der eine hängt am Fleck — bei einem grossen
+         rückt der Name weiter herunter, damit der Gipfel frei bleibt. Der
+         andere ist ein fester Abstand zur Kartenbreite: ohne ihn klebt die
+         Schrift einer kleinen Stadt am Punkt, weil deren Fleck kaum Versatz
+         hergibt. */
+      const versatz = Math.sqrt(bestA / Math.PI) * 0.5 + breite / 90;
+      /* In der Schrägsicht wandert der Ort mit seinem Berg: projiziert wird
+         der Punkt selbst, samt der Höhe, auf der er steht. Der Versatz nach
+         unten kommt **danach**, denn er ist ein Abstand auf dem Bild, keiner
+         im Gelände — der Name soll unter dem Gipfel stehen, wo immer der
+         gerade zu sehen ist. */
+      const q = projPunkt(mx, my);
+      // ox/oy ist der Ort selbst, mx/my der Ankerpunkt der Schrift darunter.
+      liste.push({ name, A: bestA, sicht, gross: w[g] / schwelle,
+        ox: q[0], oy: q[1], mx: q[0], my: q[1] + versatz });
+    }
+  }
+  liste.sort((a, b) => b.A - a.A);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+
+  /* Grösse: stufenlos, aus dem Logarithmus des Verhältnisses zur Schwelle.
+     Der kleinste Name der Auswahl bekommt breite/56, wer vierzehnmal so gross
+     ist wie er, breite/33; dazwischen läuft es gleichmässig. Die Spreizung ist
+     weiter als die der vier alten Stufen (52 bis 38): weil die Grösse jetzt
+     etwas aussagt, soll man sie auch sehen — Berlin steht in jedem Bild fast
+     doppelt so gross da wie der letzte Name der Auswahl. Angegeben als
+     Teiler der Kartenbreite, damit dieselbe Ordnung auf dem Telefon und auf dem
+     Schirm gilt — Berlin lief sonst in jeder Grösse gegen dieselben dreissig
+     Bildpunkte und stand als Überschrift über der Karte statt als Beschriftung
+     darin.
+
+     Dass die Schrift am Verhältnis hängt und nicht an der Einwohnerzahl, hält
+     die Ordnung über hundertfünfzig Jahre lesbar: der Abstand zwischen der
+     grössten Stadt und der siebzehnten liegt in jedem Bild zwischen zwölf und
+     zweiundzwanzig — 1871 wie 2024. Eine absolute Skala hätte 1871 siebzehn
+     gleich kleine Namen gezeigt, weil ausser Berlin keine Stadt 500 000
+     Menschen hatte.
+
+     Vorher waren es vier feste Stufen nach der höchsten Einwohnerzahl, die eine
+     Stadt je hatte. Das stand still, während die Karte lief. */
+  const KLEIN = 56, GROSS = 33;
+  for (const s of liste) {
+    ctx.font = '600 10px system-ui,-apple-system,sans-serif';
+    s.je10 = ctx.measureText(s.name).width / 10;
+    const t = Math.max(0, Math.min(1, Math.log(s.gross) / Math.log(STUFUNG)));
+    s.hoch = Math.max(MINSCHRIFT, breite / (KLEIN + (GROSS - KLEIN) * t));
+    s.br = s.je10 * s.hoch;
+    s.x = s.mx; s.y = s.my;
+  }
+  // Auseinanderschieben statt weglassen: wo zwei Namen übereinanderlägen,
+  // weichen beide entlang der kleineren Überlappung aus, und eine schwache
+  // Feder zieht jeden zu seinem Fleck zurück. Nach ein paar Runden steht ein
+  // Kompromiss, der sich von Bild zu Bild ruhig verändert — kein Flackern.
+  for (let runde = 0; runde < 40; runde++) {
+    for (let i = 0; i < liste.length; i++) for (let j = i + 1; j < liste.length; j++) {
+      const a = liste[i], b = liste[j];
+      const dx = b.x - a.x, dy = b.y - a.y;
+      // Der Luftspalt hängt an der Schrift, nicht an einer festen Zahl: vier
+      // Bildpunkte sind bei einer 24-Punkt-Schrift ein Haar und sahen aus wie
+      // ein zusammengewachsenes Wort („HannoverBraunschweig").
+      const ux = (a.br + b.br) / 2 + (a.hoch + b.hoch) * 0.28 - Math.abs(dx);
+      const uy = (a.hoch + b.hoch) / 2 + (a.hoch + b.hoch) * 0.18 - Math.abs(dy);
+      if (ux <= 0 || uy <= 0) continue;
+      /* Jeder weicht so weit aus, wie der andere **da** ist. Ein Name, der
+         gerade ausblendet, schiebt darum kaum noch — sonst rückte die halbe
+         Karte in dem Augenblick zur Seite, in dem ein siebzehnter Name unter
+         die Schwelle rutscht, und das wäre ein Sprung an einer Stelle, an der
+         nichts springen soll. Weggeschoben wird er trotzdem voll. */
+      if (uy / (a.hoch + b.hoch) < ux / (a.br + b.br)) {
+        const v = (dy >= 0 ? 1 : -1) * uy * 0.45; a.y -= v * b.sicht; b.y += v * a.sicht;
+      } else {
+        const v = (dx >= 0 ? 1 : -1) * ux * 0.45; a.x -= v * b.sicht; b.x += v * a.sicht;
+      }
+    }
+    /* Abstossen und Feder stehen im Gleichgewicht, und das heisst: die
+       Überlappung wird nie ganz aufgelöst, sondern nur bis auf Feder/(Feder +
+       Abstossung). Bei 0,08 gegen 0,3 blieb ein Fünftel stehen — genug, dass
+       aus zwei Namen ein Wort wurde. Bei 0,05 gegen 0,45 ist es ein Zehntel. */
+    for (const s of liste) { s.x += (s.mx - s.x) * 0.05; s.y += (s.my - s.y) * 0.05; }
+    /* Und keiner darf aus der Leinwand laufen. Mönchengladbach liegt so weit
+       im Westen, dass sein Name auf dem Telefon zwanzig Bildpunkte links neben
+       der Karte begann — das M war weg. Das Klemmen steht **innerhalb** der
+       Runden, nicht danach: so weicht der Nachbar in der nächsten Runde aus,
+       statt dass zwei Namen am Rand übereinanderstehen. */
+    for (const s of liste) {
+      const halb = s.br / 2 + 2, rand = s.hoch * 0.7;
+      s.x = Math.max(halb, Math.min(breite - halb, s.x));
+      s.y = Math.max(rand, Math.min(hoehe - rand, s.y));
+    }
+  }
+
+  for (const s of liste) {
+    // Ein Name, der gerade unter die Schwelle rutscht, geht mitsamt seinem
+    // Punkt und seinem Strich aus — sonst bliebe ein roter Fleck ohne Namen.
+    ctx.globalAlpha = s.sicht;
+    ctx.font = '600 ' + s.hoch.toFixed(1) + 'px system-ui,-apple-system,sans-serif';
+    /* Ein kleiner roter Punkt auf dem Ort selbst. Der Name steht darunter, und
+       ohne den Punkt sagt er nur ungefähr, wo die Stadt liegt — seit die
+       Stadtumrisse weg sind, sagt es sonst niemand mehr. Rot, weil es die
+       einzige Farbe ist, die auf dieser Leiter nichts bedeutet: Wasser, Grün,
+       Gelb, Orange und Weiss sind Daten, ein roter Punkt ist eine Marke. Ein
+       dunkler Ring darum, damit er auch auf dem roten Band und im Schnee steht. */
+    const punkt = Math.max(0.8, Math.min(1.7, breite / 380));
+    ctx.beginPath(); ctx.arc(s.ox, s.oy, punkt + 0.6, 0, 6.2832);
+    ctx.fillStyle = STRICH; ctx.fill();
+    ctx.beginPath(); ctx.arc(s.ox, s.oy, punkt, 0, 6.2832);
+    ctx.fillStyle = STADTPUNKT; ctx.fill();
+
+    // Weit ausgewichen? Dann ein Strich vom Punkt zum Namen. Gemessen wird ab
+    // dem Punkt, nicht ab dem Ankerpunkt — der liegt ohnehin immer ein Stück
+    // darunter, und ein Strich für diesen Versatz allein wäre nur Gestrüpp.
+    if (Math.hypot(s.x - s.ox, s.y - s.oy) > s.hoch * 1.8) {
+      ctx.beginPath(); ctx.moveTo(s.ox, s.oy); ctx.lineTo(s.x, s.y);
+      ctx.strokeStyle = STRICH; ctx.lineWidth = 2.5; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(s.ox, s.oy); ctx.lineTo(s.x, s.y);
+      ctx.strokeStyle = INK; ctx.lineWidth = 0.7; ctx.globalAlpha = s.sicht * 0.45; ctx.stroke();
+      ctx.globalAlpha = s.sicht;
+    }
+    ctx.lineWidth = Math.max(2, s.hoch * 0.2); ctx.strokeStyle = STRICH;
+    ctx.strokeText(s.name, s.x, s.y);
+    ctx.fillStyle = INK; ctx.fillText(s.name, s.x, s.y);
+  }
+  ctx.globalAlpha = 1;
+}
+
+/* ---------- Der Faden ----------
+   Was gerade geschieht, steht ausgeschrieben über der Karte. Was davor geschah,
+   steht darunter als blosse Überschrift: kommt eine neue Notiz, setzt sie sich
+   obenauf und schiebt die vorigen eine Zeile nach unten, blasser mit jedem
+   Schritt. Der Faden hält die letzten ${FADEN_TIEFE}.
+
+   Geschoben wird nicht Zeile für Zeile, sondern in einem Stück: der ganze
+   Faden springt ohne Übergang um eine Zeilenhöhe nach oben und läuft dann
+   nach unten zurück. Weil die neue Überschrift oben schon steht, sieht das
+   aus, als drücke sie die anderen weg — und kostet eine einzige Bewegung
+   statt ${FADEN_TIEFE}.
+
+   Welche Notiz gilt, hängt nur an der Uhr, also gilt sie in jeder Form. Am
+   Regler kann die Zeit auch zurücklaufen; dann wird der Faden neu aufgebaut
+   statt fortgeschrieben. */
+const NOTIZ = ${JSON.stringify(NOTIZEN.map(n => [n.von, n.bis, n.kopf, n.kurz, n.mehr]))};
+const FADEN = document.getElementById('faden');
+const TIEFE_FADEN = ${FADEN_TIEFE};
+const FADEN_DECK = ${JSON.stringify(FADEN_DECK)};
+let notizJetzt = -2, notizMarke = 0;
+function fadenBaue(i, geschoben) {
+  // Auf einem Telefon bricht jede Überschrift auf zwei Zeilen um; dort hält
+  // der Faden weniger, sonst wüchse er über die halbe Karte.
+  const tief = innerWidth < 540 ? 3 : TIEFE_FADEN;
+  const gab = FADEN.firstElementChild !== null;
+  FADEN.textContent = '';
+  for (let n = i - 1; n >= 0 && i - n <= tief; n--) {
+    const el = document.createElement('b');
+    el.textContent = NOTIZ[n][2];
+    el.style.opacity = FADEN_DECK[i - n - 1];
+    FADEN.appendChild(el);
+  }
+  // Um wie viel die vorigen nach unten rücken: um die Höhe der neuen Zeile
+  // samt Lücke. Gemessen wird sie, nachdem sie steht — eine Überschrift kann
+  // eine Zeile brauchen oder zwei.
+  const neu = FADEN.firstElementChild;
+  const zeile = neu ? neu.offsetHeight + 3 : 0;
+  if (!geschoben || !gab || !zeile) { FADEN.style.transition = 'none'; FADEN.style.transform = 'none'; return; }
+  FADEN.style.transition = 'none';
+  FADEN.style.transform = 'translateY(-' + zeile + 'px)';
+  requestAnimationFrame(() => {
+    FADEN.style.transition = 'transform .45s cubic-bezier(.22,.61,.36,1)';
+    FADEN.style.transform = 'translateY(0)';
+  });
+}
+function notizen() {
+  let i = -1;
+  for (let n = 0; n < NOTIZ.length; n++) if (jahr >= NOTIZ[n][0] && jahr < NOTIZ[n][1]) { i = n; break; }
+  if (i === notizJetzt) return;
+  const geschoben = i === notizJetzt + 1;
+  notizJetzt = i;
+  // Die laufende Notiz steht ausgeschrieben; die vorigen stehen als blosse
+  // Überschriften darunter und rücken mit jeder neuen nach unten.
+  const el = document.getElementById('jetzt'), marke = ++notizMarke;
+  el.style.opacity = 0;
+  setTimeout(() => {
+    if (marke !== notizMarke) return;
+    if (i < 0) { el.textContent = ''; return; }
+    el.innerHTML = '<b>' + NOTIZ[i][2] + '</b>' + NOTIZ[i][3] + ' ' + NOTIZ[i][4];
+    el.style.opacity = 1;
+  }, 260);
+  fadenBaue(i, geschoben);
+}
+
+/* ---------- Legende ---------- */
+/* Hier stand „fixed ground" mitten in der Zeile, zwischen zwei Jahreszahlen:
+   „× the 2024 average density · fixed ground · 1871-12-01". Drei Sachen,
+   durch Mittelpunkte aneinandergereiht, und die mittlere las sich wie eine
+   Eigenschaft der Jahreszahl daneben. Das Wort stand da, solange man zwischen
+   Landkarte und Kartogramm umschalten konnte und die Legende sagen musste,
+   was gerade eingestellt ist. Es gibt nur noch eine Form; wie sie gemacht
+   ist, steht in der Methodik.
+
+   Übrig bleiben zwei Angaben, jede mit einem Wort davor, das sagt, was sie
+   ist: wofür das Kreuz an den Enden der Leiter steht, und wann gezählt
+   wurde. */
+function legende() {
+  /* Harte Stufen statt eines weichen Verlaufs. Ein Verlauf setzt seine
+     Stützstellen auf k/(N−1) und mischt dazwischen; die Bänder der Karte
+     liegen aber auf k/N und mischen nicht. Der Unterschied ist klein und
+     ausgerechnet an der einen Stelle sichtbar, auf die es hier ankommt: das
+     Ufer lag im Verlauf drei Prozent links von der Zahl, die darunter steht.
+     Jetzt zeigt die Leiter dieselben fünfundzwanzig Bänder wie die Karte, und
+     die Uferkante fällt genau auf die ×0,5. */
+  const n = HYPSO.length, halt = [];
+  for (let i = 0; i < n; i++)
+    halt.push(HYPSO[i] + ' ' + (100 * i / n).toFixed(3) + '% ' + (100 * (i + 1) / n).toFixed(3) + '%');
+  document.getElementById('rampe').style.background = 'linear-gradient(90deg,' + halt.join(',') + ')';
+  stufen();
+  legText();
+}
+/* ---------- Die Zahlen auf der Leiter ----------
+   Sechs Marken, alle rund oder halb, jede an ihrer wirklichen Stelle. Weil die
+   Leiter linear teilt und bei ×2,5 endet, sitzen sie bei 0, 20, 40, 60 und 80
+   Prozent — gleichmässig, und ×1 damit bei 40 Prozent und nicht in der Mitte.
+
+   Das ist keine Schieflage, sondern die Ansage, wo die Leiter aufhört. In der
+   Mitte stünde ×1 nur bei einem Ende von ×2,0, und dort ist zu wenig Platz:
+   über ×2,0 liegen 2024 noch sieben Prozent der Fläche — Berlin, München,
+   Frankfurt, das halbe Ruhrgebiet —, und die müssten sich das letzte Fünftel
+   der Farben teilen. Über ×2,5 liegt nur noch ein halbes Prozent.
+
+   Die letzte Marke ist die ×3, und sie steht am Ende der Rampe (99 Prozent).
+   Dass auf die ×2 keine ×2,5 folgt, sondern gleich die ×3, hat einen Grund:
+   ab ×2,222 biegt das Knie die Leiter weich um, und das letzte Fünftel der
+   Rampe trägt deshalb eine ganze statt einer halben Stufe. Die Marken stehen
+   damit alle rund zwanzig Prozent auseinander, und die Zahlen sagen, dass der
+   letzte Schritt der doppelte ist.
+
+   Ein Deckel ist die ×3 nicht. Die Rampe endet rechnerisch im Unendlichen;
+   der höchste Kreis überhaupt ist München 2024 mit ×3,16, und abgeschnitten
+   wird nichts. */
+/* Die Eins sollte einmal ihren Namen tragen statt ihrer Zahl — „Germany 2024"
+   direkt auf der Marke, dann erklärt sich die Leiter von allein. Nachgemessen
+   war es zu breit: die Beschriftung braucht 86 Bildpunkte, die Marken stehen
+   bei 360 Bildpunkten Fensterbreite aber nur 52 auseinander. Sie hätte die
+   ×0,5 und die ×1,5 überschrieben, und die ×0,5 ist die Uferkante. Also bleibt
+   die Zahl auf der Marke, und die Zeile darunter sagt, wo das Land steht. */
+const MARKEN = [0, 0.5, 1, 1.5, 2, 3];
+const MARKENWORT = {};
+function stufen() {
+  const [, bis] = hoehenSkala(), hi = Math.exp(bis), e = document.getElementById('legStufen');
+  const zeig = x => (x >= 10 ? x.toFixed(0) : x >= 1 ? x.toFixed(1) : x.toFixed(1));
+  e.textContent = '';
+  for (const m of MARKEN) {
+    const s = document.createElement('span');
+    s.textContent = MARKENWORT[m] || (m === 0 ? '0' : '×' + zeig(m));
+    if (m === 1) s.className = 'eins';
+    // Feldwert, nicht Leiterwert: die Reserve über dem Quantil zählt mit.
+    s.style.left = (100 * aufLeiter(m) / (1 + RESERVE)).toFixed(2) + '%';
+    if (m === 0) s.className = 'a';
+    if (m === MARKEN[MARKEN.length - 1]) s.className = 'z';
+    e.appendChild(s);
+  }
+}
+/* ---------- Und darunter ein Satz ----------
+   Diese Zeile hat fünf Fassungen gebraucht, und die ersten vier scheiterten an
+   derselben Stelle: **an der Eins**.
+
+   „× the average population density of Germany 2024" war schlicht falsch — die
+   Höhe ist keine wirkliche Dichte, sondern Bevölkerung je gezeichneter Fläche
+   auf einem halb eingemischten Kartogramm (siehe unten). Berlin stünde damit
+   auf 551 Einwohnern je km² statt auf 4 136.
+
+   „volume = people · ×1 = the German average of 2024" war ehrlich und
+   unlesbar: zwei Gleichungen nebeneinander, und keine sagt, wovon das Mittel
+   das Mittel ist. „people per patch of map · Germany 2024 sits at ×1" war
+   ehrlich und immer noch unverständlich — „patch of map" ist genau der
+   Fachbegriff, den zu vermeiden die ganze Übung war. Und zwei erklärende Sätze
+   waren zwar verständlich, brauchten aber zwei Zeilen.
+
+   Das Wort, das gefehlt hat, ist **„compared with"**. Es sagt, dass die Zahlen
+   an der Leiter ein Verhältnis sind und wozu — und danach braucht keine
+   Gleichung mehr erklärt zu werden:
+
+       less crowded  [ Leiter ]  more crowded
+       Compared with Germany’s average in 2024
+
+   Der Satz steht seit den beiden Wörtern über der Leiter auf zwei Zeilen
+   verteilt, und jede tut eine Sache: oben, **was** gemessen wird, unten,
+   **wogegen**. „How crowded, compared with Germany in 2024" stand eine Fassung
+   lang ganz unten und sagte „crowded" dann dreimal im selben Block.
+
+   Und dann fehlte in „Compared with Germany in 2024" ein einziges Wort, an dem
+   die gefährlichste Fehllesart von allen hing: **als Ortsvergleich**. Jede
+   Stelle verglichen mit *derselben* Stelle im Jahr 2024 — bei einer Karte, die
+   durch die Zeit läuft, ist das sogar die naheliegende Vermutung. Gemeint ist
+   aber ein einziger Bezugswert für die ganze Karte.
+
+   Das führt zu Aussagen, die konkret falsch sind. Berlin hatte 1910 rund 3,7
+   Millionen Einwohner und hat heute 3,69; unter der falschen Lesart müsste es
+   1910 tief unten stehen und sich hocharbeiten. Tatsächlich steht Berlin 1910
+   fast genauso hoch wie 2024, weil beide gegen **denselben** Landesdurchschnitt
+   gehalten werden. Wer die Legende so liest, liest den Kern des Films falsch.
+
+   Ein Ort kann kein Durchschnitt sein: mit **„average"** ist die Fehllesart
+   tot. Nachgemessen 251 von 322 Bildpunkten bei 360 Bildpunkten
+   Fensterbreite, einzeilig auch bei 320. Verworfen, weil gemessen zu breit:
+   „Compared with the average for all of Germany in 2024" (316 von 322 — sechs
+   Bildpunkte Luft sind keine).
+
+   „Crowded" statt „people per area", und das ist nicht nur kürzer. „People
+   per area" klingt nach einer Zahl, die man ausrechnen kann — und genau diese
+   Rechnung ist die falsche: ×2,4 mal 234 wären 561 Einwohner je km², Berlin hat
+   4 136. Ein qualitatives Wort lädt nicht dazu ein. Es ist also gleichzeitig
+   verständlicher und an der einen wunden Stelle robuster.
+
+   Die Ungenauigkeit bleibt und sei hier benannt: gemeint ist die Dichte auf der
+   **gezeichneten** Fläche. Für das Land als Ganzes stimmt der Satz genau — die
+   Leiter ist ja darauf geeicht. Für einen einzelnen Kreis untertreibt er, weil
+   das Kartogramm die Städte schon breiter gezogen hat. Wer es genau wissen
+   will, tippt den Kreis an: der Zettel nennt beide Zahlen, und der Umriss zeigt
+   dazu, wovon überhaupt die Rede ist. Eine Legende, die gelesen wird, ist mehr
+   wert als eine genauere, die keiner versteht. */
+function legText() {
+  document.getElementById('legText').textContent =
+    'Compared with the American average in 2020';
+}
+
+/* ---------- Tippen ---------- */
+/* ---------- Der Umriss des angetippten Kreises ----------
+   „Eine Geländekarte hat keine Grenzen; sie hat Gelände" — das steht weiter
+   oben und bleibt richtig. Dies hier ist keine Grenze, sondern eine **Marke**,
+   dieselbe Sorte wie der rote Punkt auf einer Stadt: sie steht nicht im Bild,
+   sondern in der Antwort auf eine Frage, und verschwindet mit ihr.
+
+   Die Frage ist: **wovon ist hier eigentlich die Rede?** Das Weichzeichnen
+   verschmilzt Nachbarn zu einem Buckel, und der grösste ist selten der, dessen
+   Namen er trägt. Der „Nürnberg"-Buckel sind acht Kreise mit 1,37 Millionen
+   Menschen; die Stadt Nürnberg macht davon 38,6 Prozent aus. Wer die Zahl im
+   Zettel liest, soll sehen, auf welches Stück Land sie sich bezieht.
+
+   Gezeichnet wird auf einer **zweiten Leinwand** über der Karte, und das aus
+   zwei Gründen. Erstens ist das Zeichnen der Karte teuer — drei Weichzeichner,
+   mehrere Durchläufe über das ganze Feld, Höhenlinien —, und ein Neuzeichnen
+   bei jeder Mausbewegung wäre unbrauchbar. Zweitens steht der Boden still: seit der
+   festen Form ändern sich px/py über die Zeit nicht mehr. Ein einmal
+   gezeichneter Umriss bleibt damit hundertfünfzig Jahre lang richtig und muss
+   nur bei einer Grössenänderung neu.
+
+   Dunkel und breit unter hell und schmal, dasselbe Muster wie bei der
+   Führungslinie einer Beschriftung: so liest die Linie über Tiefblau, Grün, Rot
+   und Schnee gleich gut. */
+function zeigeUmriss(g) {
+  if (!(breite > 0 && hoehe > 0)) return;
+  uctx.clearRect(0, 0, breite, hoehe);
+  if (!(g >= 0) || !GEBIETE[g]) { uv.style.display = 'none'; return; }
+  uv.style.display = 'block';
+  const pfad = new Path2D();
+  // Flach ist der Umriss der Umriss. Schräg liegt er auf dem Gelände, also
+  // geht jeder Stützpunkt denselben Weg wie das Gelände unter ihm. Verdeckt
+  // wird dabei nichts — die Marke soll ganz zu sehen sein, auch hinter einem
+  // Berg; sie ist ja keine Grenze, sondern eine Antwort auf einen Tipp.
+  for (const r of GEBIETE[g]) {
+    const erst = projPunkt(px[r[0]] * mass + verX, py[r[0]] * mass + verY);
+    pfad.moveTo(erst[0], erst[1]);
+    for (let i = 1; i < r.length; i++) {
+      const q = projPunkt(px[r[i]] * mass + verX, py[r[i]] * mass + verY);
+      pfad.lineTo(q[0], q[1]);
+    }
+    pfad.closePath();
+  }
+  uctx.lineJoin = 'round';
+  uctx.globalAlpha = 0.85;
+  uctx.strokeStyle = STRICH; uctx.lineWidth = Math.max(2.2, breite / 330);
+  uctx.stroke(pfad);
+  uctx.globalAlpha = 1;
+  uctx.strokeStyle = INK; uctx.lineWidth = Math.max(0.9, breite / 820);
+  uctx.stroke(pfad);
+}
+
+function imGebiet(g, x, y) {
+  let drin = false;
+  for (const r of GEBIETE[g]) {
+    for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
+      const xi = px[r[i]] * mass + verX, yi = py[r[i]] * mass + verY;
+      const xj = px[r[j]] * mass + verX, yj = py[r[j]] * mass + verY;
+      if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) drin = !drin;
+    }
+  }
+  return drin;
+}
+const tip = document.getElementById('tip');
+/* ---------- Der Zettel bleibt stehen, bis man ihn wegtippt ----------
+   Auf dem Telefon gibt es kein Zeigen ohne Drücken: ein Tipp musste den Zettel
+   öffnen, und weggehen konnte er nur, indem man neben die Karte tippte. Jetzt
+   ist der Tipp ein Schalter — einmal auf, einmal zu, und das zweite Mal gilt
+   auch dann, wenn man einen anderen Kreis erwischt. Eine Geste, eine Wirkung.
+
+   ZETTELAN sagt, ob gerade einer steht. STUMM merkt sich den Kreis, der eben
+   weggetippt wurde, und ist nur für die Maus da: sie zeigt den Zettel beim
+   Darüberfahren, und ohne dieses Gedächtnis käme er im selben Augenblick
+   zurück, in dem man ihn weggeklickt hat. Sobald der Zeiger einen anderen
+   Kreis erreicht, ist das Gedächtnis wieder leer. */
+let zettelAn = false, stumm = -1;
+function versteckeTip() {
+  tip.style.opacity = 0;
+  zettelAn = false;
+  if (letzterTip !== -1) { letzterTip = -1; zeigeUmriss(-1); }
+}
+function zeigeTip(x, y) {
+  const [a, b, u] = bildBei(jahr);
+  const { w, deck, rate } = werteBei(a, b, u);
+  /* In der Schrägsicht lässt sich der Griff nicht zurückrechnen — ein Punkt
+     auf dem Bild kann von einem nahen Tal oder einem fernen Gipfel kommen.
+     Also wird gar nicht gerechnet: beim Malen hat sich jeder Bildpunkt
+     gemerkt, aus welchem Punkt des Feldes er stammt. Das ist die Antwort, und
+     sie ist die richtige, auch auf einer Flanke. Von dort geht es zurück auf
+     die flache Karte, und dann sucht wieder dieselbe Schleife wie immer. */
+  if (schraeg()) {
+    const f = feldUnter(x, y);
+    if (!f) { versteckeTip(); stumm = -1; return; }
+    x = f[0]; y = f[1];
+  } else if (ansichtFrei()) {
+    x = (x - vX) / ZOOM; y = (y - vY) / ZOOM;
+  }
+  let treffer = -1;
+  for (let g = 0; g < NK; g++) if (deck[g] > 0.001 && imGebiet(g, x, y)) { treffer = g; break; }
+  /* letzterTip war bis hierher eine tote Variable: dreimal geschrieben, nie
+     gelesen. Jetzt ist sie der Zustand — und der Umriss wird nur dann neu
+     gezogen, wenn sich der getroffene Kreis wirklich geändert hat. Beim Fahren
+     über die Karte sind das ein paar Male in der Sekunde statt sechzig. */
+  if (treffer < 0) { versteckeTip(); stumm = -1; return; }
+  // Eben weggetippt und die Maus steht noch darauf: dann bleibt er weg.
+  if (treffer === stumm) return;
+  stumm = -1;
+  if (treffer !== letzterTip) { letzterTip = treffer; zeigeUmriss(treffer); }
+  const k = D.k[treffer], v = w[treffer];
+  const abschnitt = rateIm(a, treffer);
+  const f = D.B[u < 0.5 ? a : b];
+  const anteil = ANTEIL[(u < 0.5 ? a : b) * NK + treffer];
+  const methode = D.mj[(u < 0.5 ? a : b) * NK + treffer];
+  const zwischen = u > 0.001 && u < 0.999;
+  tip.innerHTML = '<b>' + k[1] + '</b><dl>'
+    + '<dt>' + (D.L[k[3]] || '') + '</dt><dd>' + k[2] + '</dd>'
+    + '<dt>People</dt><dd>' + nf.format(Math.round(v)) + '</dd>'
+    /* Zwei Zahlen, und sie sind nicht dieselbe. „Per km²" ist die wirkliche
+       Dichte auf der amtlichen Fläche, samt Vielfachem des Landesmittels von
+       2024; „Height here" ist, wie hoch der Kreis auf dieser Karte steht, also
+       Menschen je **gezeichneter** Fläche. Der Boden ist ein halb
+       eingemischtes Kartogramm, deshalb gehen die beiden bei den Städten um
+       das Fünf- bis Siebenfache auseinander. Hier stehen sie nebeneinander —
+       das ist der einzige Ort, an dem sich der Unterschied zeigen lässt, ohne
+       die Karte mit Text zuzudecken. */
+    + (k[4] ? '<dt>Per km²</dt><dd>' + nf.format(Math.round(v / k[4]))
+        + ' · ×' + ((v / k[4]) / landesDichte()).toFixed(1) + '</dd>' : '')
+    + (HOCH[treffer] > 0
+      ? '<dt>Height here</dt><dd>×' + HOCH[treffer].toFixed(1) + '</dd>' : '')
+    + (abschnitt === null ? ''
+      : '<dt>' + D.B[a].jahr + '→' + D.B[b].jahr + '</dt><dd>'
+        + (abschnitt >= 0 ? '+' : '−') + Math.abs(abschnitt).toFixed(2) + ' %/yr</dd>')
+    + '</dl>'
+    + (zwischen ? '<span class="warn">Interpolated between ' + D.B[a].jahr + ' and ' + D.B[b].jahr + '.</span>'
+      : '<span class="warn">' + f.stichtage.join(', ') + ' · method ' + (methode === '-' ? '–' : methode)
+        + (anteil ? ', ' + anteil + ' % interpolated' : '') + '</span>');
+  tip.style.opacity = 1;
+  zettelAn = true;
+  // Der Zettel liegt jetzt im selben Kasten wie die Leinwand, also sind seine
+  // Koordinaten dieselben wie die des Zeigers — der alte Versatz um den Rahmen
+  // fällt weg.
+  tip.style.left = Math.max(0, Math.min(breite - 224, x - 100)) + 'px';
+  tip.style.top = Math.max(2, y - tip.offsetHeight - 14) + 'px';
+}
+/* ---------- Gesten auf der Karte ----------
+   Ein Finger zieht die Karte (wenn herangezogen ist), zwei Finger machen
+   dreierlei zugleich: auseinander und zusammen ist Zoom, verdrehen ist Drehen,
+   und beide zusammen nach oben schieben ist Kippen.
+
+   Gerechnet wird alles aus dem **Schritt zum vorigen Ereignis**, nicht aus dem
+   Anfang der Geste. Das ist der Kniff, der die drei auseinanderhält: eine reine
+   Drehung bewegt die Mitte nicht, ein reines Auseinanderziehen ändert den
+   Winkel nicht. Man muss also nichts sperren und nichts erraten — jede Geste
+   bekommt genau den Anteil, den sie wirklich enthält.
+
+   Ein Tipp bleibt ein Tipp: bewegt sich der Finger weniger als acht Punkte,
+   ist es kein Ziehen, sondern der Zettel. Zweimal tippen stellt die Ansicht
+   zurück. */
+const KIPPWEG = 220;               // Bildpunkte für den ganzen Kippbereich
+const zeiger = new Map();
+let zweiAbstand = 0, zweiWinkel = 0, zweiMitte = 0;
+let einStart = null, letzterTipp = 0, malBald = false;
+
+function baldMalen() {
+  // Ein Finger schickt hundertzwanzig Ereignisse in der Sekunde, ein Bild
+  // kostet hundert Millisekunden. Also höchstens eines je Bildtakt.
+  if (malBald) return;
+  malBald = true;
+  requestAnimationFrame(() => { malBald = false; zeichne(); zeigeUmriss(letzterTip); });
+}
+
+/* Die Karte darf wandern, aber nicht verschwinden. Früher war der Anschlag
+   an Breite·(ZOOM−1) gebunden — bei ZOOM 1 also null, die Karte stand fest.
+   Das ging nicht mehr, sobald Drehen und Kippen um die Finger laufen: dabei
+   **muss** sich die Karte verschieben, sonst bleibt der Punkt unter dem Finger
+   nicht stehen.
+
+   Also wird jetzt der wirkliche Kasten der eingepassten Karte geklemmt: von
+   jeder Seite muss sie mindestens KLEMMREST des Rahmens erreichen. Drei
+   Viertel darf man sie hinausschieben, das vierte hält sie fest. */
+const KLEMMREST = 0.25;
+function ansichtKlemmen() {
+  if (ZOOM < 1) ZOOM = 1; else if (ZOOM > ZOOMMAX) ZOOM = ZOOMMAX;
+  const S = sichtRechnen();
+  const rX = breite * KLEMMREST, rY = hoehe * KLEMMREST;
+  if (S.rechts < rX) vX += rX - S.rechts;
+  else if (S.links > breite - rX) vX -= S.links - (breite - rX);
+  if (S.unten < rY) vY += rY - S.unten;
+  else if (S.oben > hoehe - rY) vY -= S.oben - (hoehe - rY);
+  sichtRechnen();
+}
+
+/* ---------- Alles dreht sich um die Finger ----------
+   Wie in einer Strassenkarte: der Punkt, den man anfasst, bleibt liegen —
+   beim Aufziehen, beim Drehen und beim Kippen gleichermassen. Vorher drehte
+   und kippte die Karte um ihre eigene Mitte, und der angefasste Ort lief
+   davon.
+
+   Das Verfahren ist in drei Zeilen gesagt und gilt für alle drei Gesten
+   zugleich, auch wenn sie in einem Schritt zusammenkommen:
+
+     1. merken, welcher **Bodenpunkt** gerade unter dem Finger liegt,
+     2. ändern, was die Geste ändert, und neu einpassen,
+     3. so weit verschieben, dass derselbe Bodenpunkt wieder dort liegt.
+
+   Schritt 3 ist ein einziger Sprung und kein Nachlaufen: die Verschiebung
+   geht additiv in die Abbildung ein, also trifft man genau. */
+function haltePunkt(px, py, aendern) {
+  const g = bodenUnter(px, py);
+  aendern();
+  if (ZOOM < 1) ZOOM = 1; else if (ZOOM > ZOOMMAX) ZOOM = ZOOMMAX;
+  sichtRechnen();
+  const s = bodenAuf(g[0], g[1]);
+  vX += px - s[0]; vY += py - s[1];
+  ansichtKlemmen();
+}
+
+function zoomeUm(faktor, px, py) {
+  haltePunkt(px, py, () => { ZOOM *= faktor; });
+}
+
+function reglerNach() {
+  document.getElementById('kipp').value = String(Math.round(NEIGUNG * 100));
+  /* Der Regler läuft von 0 bis 360 und fängt damit **links** an, wie die
+     Zeitleiste und der Kippregler: links steht immer der Anfangszustand.
+     Deshalb wird hier nach [0, 360) gefaltet und nicht nach ±180. */
+  let g = DREHUNG * 180 / Math.PI;
+  g = ((g % 360) + 360) % 360;
+  DREHUNG = g * Math.PI / 180;
+  document.getElementById('dreh').value = String(Math.round(g) % 360);
+}
+
+const ortVon = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+
+function zweiMerken() {
+  const f = [...zeiger.values()];
+  if (f.length < 2) return;
+  zweiAbstand = Math.hypot(f[1].x - f[0].x, f[1].y - f[0].y);
+  zweiWinkel = Math.atan2(f[1].y - f[0].y, f[1].x - f[0].x);
+  zweiMitte = (f[0].y + f[1].y) / 2;
+}
+
+/* ---------- Grob, solange der Finger liegt ----------
+   Während einer Geste steht die Leinwand auf einem Gerätepunkt je CSS-Punkt
+   (siehe masse), beim Loslassen wieder auf allen, und das letzte Bild ist das
+   volle. Ein Tipp löst das nicht aus, erst eine wirkliche Bewegung; Rad und
+   Regler laufen mit einem kurzen Nachlauf. Das Umstellen leert die Leinwand,
+   also wird sofort ein Bild gemalt, sonst blitzt sie leer auf. */
+let grobUhr = 0;
+function grobAn() {
+  if (GROB) return;
+  GROB = true; masse(); zeichne();
+}
+function grobAus() {
+  if (grobUhr) { clearTimeout(grobUhr); grobUhr = 0; }
+  if (!GROB) return;
+  GROB = false; masse();
+  zeichne(); zeigeUmriss(letzterTip);
+}
+function grobKurz() {
+  grobAn();
+  if (grobUhr) clearTimeout(grobUhr);
+  grobUhr = setTimeout(grobAus, 220);
+}
+
+cv.addEventListener('pointerdown', e => {
+  cv.setPointerCapture(e.pointerId);
+  const [x, y] = ortVon(e);
+  zeiger.set(e.pointerId, { x, y });
+  if (zeiger.size === 1) einStart = { x, y, gezogen: false };
+  else { zweiMerken(); einStart = null; }
+});
+
+cv.addEventListener('pointermove', e => {
+  const p = zeiger.get(e.pointerId);
+  const [x, y] = ortVon(e);
+  if (!p) { if (e.pointerType === 'mouse') zeigeTip(x, y); return; }
+  const dx = x - p.x, dy = y - p.y;
+  p.x = x; p.y = y;
+  if (zeiger.size === 1) {
+    if (!einStart) return;
+    if (!einStart.gezogen && Math.hypot(x - einStart.x, y - einStart.y) > 8) einStart.gezogen = true;
+    if (einStart.gezogen) { grobAn(); vX += dx; vY += dy; ansichtKlemmen(); baldMalen(); }
+    return;
+  }
+  if (zeiger.size !== 2) return;
+  const f = [...zeiger.values()];
+  const abst = Math.hypot(f[1].x - f[0].x, f[1].y - f[0].y);
+  const wink = Math.atan2(f[1].y - f[0].y, f[1].x - f[0].x);
+  const mx = (f[0].x + f[1].x) / 2, my = (f[0].y + f[1].y) / 2;
+  let dw = wink - zweiWinkel;
+  while (dw > Math.PI) dw -= 2 * Math.PI;
+  while (dw < -Math.PI) dw += 2 * Math.PI;
+  grobAn();
+  // Zoom, Drehung und Neigung in **einem** gehaltenen Schritt: der Bodenpunkt
+  // wird einmal vorher gemerkt und einmal nachher zurechtgeschoben.
+  haltePunkt(mx, my, () => {
+    if (zweiAbstand > 12 && abst > 12) ZOOM *= abst / zweiAbstand;
+    DREHUNG += dw;
+    // Nach oben schieben richtet die Karte auf, wie in einer Straßenkarte.
+    NEIGUNG = Math.max(0, Math.min(1, NEIGUNG - (my - zweiMitte) / KIPPWEG));
+  });
+  zweiAbstand = abst; zweiWinkel = wink; zweiMitte = my;
+  reglerNach();
+  baldMalen();
+});
+
+function losLassen(e) {
+  const waren = zeiger.size;
+  zeiger.delete(e.pointerId);
+  if (zeiger.size === 2) zweiMerken();
+  if (waren === 1 && einStart && !einStart.gezogen) {
+    const jetzt = performance.now();
+    if (jetzt - letzterTipp < 320) {
+      // Zweimal getippt: Ansicht zurück auf den Rahmen.
+      ZOOM = 1; vX = 0; vY = 0; letzterTipp = 0;
+      versteckeTip(); stumm = -1; baldMalen();
+    } else {
+      letzterTipp = jetzt;
+      if (zettelAn) { stumm = letzterTip; versteckeTip(); }
+      else { stumm = -1; zeigeTip(einStart.x, einStart.y); }
+    }
+  }
+  einStart = null;
+  if (!zeiger.size) grobAus();
+}
+cv.addEventListener('pointerup', losLassen);
+cv.addEventListener('pointercancel', losLassen);
+
+// Am Rechner tut das Rad dasselbe wie zwei Finger, um den Zeiger herum.
+cv.addEventListener('wheel', e => {
+  e.preventDefault();
+  const [x, y] = ortVon(e);
+  grobKurz();
+  zoomeUm(Math.exp(-e.deltaY * 0.0015), x, y);
+  baldMalen();
+}, { passive: false });
+
+/* Und dieses Verlassen gilt nur für die Maus. Ein Finger „verlässt" die Karte
+   in dem Augenblick, in dem er sie loslässt — der Browser schickt für eine
+   Berührung nach dem Loslassen ein pointerleave hinterher. Der Zettel war auf
+   dem Telefon deshalb nur so lange zu sehen, wie der Finger lag: antippen,
+   aufblitzen, weg. Das war der eigentliche Grund, warum er nicht stehenblieb. */
+cv.addEventListener('pointerleave', e => {
+  if (e.pointerType !== 'mouse' || zeiger.size) return;
+  versteckeTip(); stumm = -1;
+});
+
+/* ---------- Ablauf ---------- */
+// Millisekunden für die ganze Zeitachse. Langsam genug, dass jede Notiz zu
+// lesen ist — zusammen mit der Untergrenze je Abschnitt (siehe D.takt).
+const DAUER = ${SPIELZEIT * 1000};
+let zuletzt = 0;
+function schlag(t) {
+  if (laeuft) {
+    if (zuletzt) { dtSek = Math.max(0.001, (t - zuletzt) / 1000); setzeZeit(spiel + (t - zuletzt) / DAUER); }
+    zuletzt = t;
+    if (spiel >= 1) halte();
+    zeichne();
+  }
+  requestAnimationFrame(schlag);
+}
+function starte() {
+  if (spiel >= 1 - 1e-9) setzeZeit(0);
+  laeuft = true; zuletzt = 0; ruheUhr = 0; document.getElementById('spiel').textContent = '❚❚';
+}
+function halte() {
+  laeuft = false; ruheUhr = performance.now();
+  document.getElementById('spiel').textContent = '\u25b6';
+}
+document.getElementById('spiel').onclick = () => laeuft ? halte() : starte();
+document.getElementById('zeit').addEventListener('input', e => {
+  halte(); setzeZeit(e.target.value / 1000); reliefFrisch(); zeichne();
+});
+
+/* Blickwinkel und Namen. Kein reliefFrisch: das Höhenfeld ändert sich dabei
+   nicht, nur der Blick darauf — der Tiefpass darf also weiterlaufen, sonst
+   zuckte die Karte bei jedem Ruck am Regler. Neu zu zeichnen ist trotzdem,
+   denn steht die Zeit still, zeichnet von allein niemand. Und der Umriss
+   liegt auf einer eigenen Leinwand und muss hinterher nachgezogen werden,
+   weil er den Winkel nicht von selbst mitbekommt. */
+function sichtNeu() {
+  zeichne();
+  zeigeUmriss(letzterTip);
+}
+/* Die Regler haben keinen Finger auf der Karte. Sie halten deshalb die
+   **Mitte des Rahmens** fest — dasselbe Verfahren, anderer Ankerpunkt. Ohne
+   das sprang eine verschobene Karte beim Drehen am Regler davon. */
+document.getElementById('kipp').addEventListener('input', e => {
+  const v = e.target.value / 100;
+  grobKurz();
+  haltePunkt(breite / 2, hoehe / 2, () => { NEIGUNG = v; });
+  sichtNeu();
+});
+document.getElementById('dreh').addEventListener('input', e => {
+  const g = e.target.value * Math.PI / 180;
+  grobKurz();
+  haltePunkt(breite / 2, hoehe / 2, () => { DREHUNG = g; });
+  sichtNeu();
+});
+for (const id of ['kipp', 'dreh']) document.getElementById(id).addEventListener('change', grobAus);
+document.getElementById('namen').addEventListener('click', e => {
+  NAMEN = !NAMEN;
+  e.currentTarget.setAttribute('aria-pressed', NAMEN ? 'true' : 'false');
+  zeichne();
+});
+// Ansicht zurück: was das Doppeltippen tut, plus die beiden Regler auf null.
+document.getElementById('zurueck').addEventListener('click', () => {
+  ZOOM = 1; vX = 0; vY = 0; NEIGUNG = 0; DREHUNG = 0;
+  reglerNach(); versteckeTip(); stumm = -1;
+  sichtNeu();
+});
+/* Die zweite Leiter: per Knopf, im Anker (#cvd) und gemerkt. Feld, Möbel und
+   Linien tragen die Farbe in sich und werden frisch gemalt. */
+function leiterWaehlen(cvd, merken) {
+  leiterSetzen(cvd ? HYPSO_CVD : HYPSO_ATLAS);
+  document.getElementById('farben').setAttribute('aria-pressed', cvd ? 'true' : 'false');
+  if (merken) { try { localStorage.setItem('leiter', cvd ? 'cvd' : 'atlas'); } catch (e) {} }
+  legende(); reliefFrisch(); zeichne(); zeigeUmriss(letzterTip);
+}
+document.getElementById('farben').addEventListener('click', () => leiterWaehlen(HYPSO !== HYPSO_CVD, true));
+addEventListener('resize', () => { masse(); reliefFrisch(); zeichne(); });
+/* Und dasselbe, wenn sich das Feld ändert, ohne dass das Fenster es tut.
+   Die Massfunktion misst die Leinwand einmal und hält die Zahl; ändert das Auslegen
+   danach noch etwas — eine Zeile, die sich füllt, eine Schrift, die nachlädt —,
+   zeichnet die Karte weiter für die alte Grösse, und die Leinwand wird per CSS
+   auf die neue gestreckt. Genau so war sie eine Fassung lang um drei Prozent
+   gestaucht. Der Beobachter macht daraus einen Nicht-Fehler: wer die Grösse
+   ändert, löst das Neumessen aus, egal wer es war. */
+if (window.ResizeObserver) {
+  let zuletztW = 0, zuletztH = 0;
+  new ResizeObserver(() => {
+    const f = cv.parentElement;
+    if (f.clientWidth === zuletztW && f.clientHeight === zuletztH) return;
+    zuletztW = f.clientWidth; zuletztH = f.clientHeight;
+    masse(); reliefFrisch(); zeichne();
+  }).observe(cv.parentElement);
+}
+
+// Markierungen für die Zählungen auf der Zeitachse
+function marken() {
+  const VOLL = Math.max(...reihe.BEV.map(b => b.filter(v => v > 0).length));
+  // Die Marken sitzen dort, wo die Zählungen im Ablauf liegen — der Regler
+  // misst Spielzeit, nicht Jahre.
+  document.getElementById('marken').innerHTML = D.B.map((b, i) =>
+    '<i class="' + (reihe.BEV[i].filter(v => v > 0).length >= VOLL ? 'voll' : '') + '" style="left:' +
+    (TAKTKUM[i] * 100).toFixed(2) + '%" title="' + b.jahr + '"></i>').join('');
+}
+
+// Die gemerkte oder im Anker verlangte Leiter, bevor das erste Bild entsteht.
+{
+  let cvd = false;
+  try { cvd = localStorage.getItem('leiter') === 'cvd'; } catch (e) {}
+  if (/cvd/.test(location.hash)) cvd = true;
+  if (cvd) { leiterSetzen(HYPSO_CVD); document.getElementById('farben').setAttribute('aria-pressed', 'true'); }
+}
+farbenHolen(); masse(); marken(); legende(); zeichne();
+requestAnimationFrame(schlag);
+setTimeout(starte, 700);
+</script>
+</body></html>
+`);

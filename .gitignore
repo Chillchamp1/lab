@@ -40,3 +40,6 @@ cb_20*_us_county_*.zip
 co-est*-alldata.csv
 sub-est*
 cencounts.csv
+# Rohdaten der US-Countykarte, siehe bevoelkerung-counties/build/DATEN.md
+bevoelkerung-counties/build/roh/
+counties-10m.json
