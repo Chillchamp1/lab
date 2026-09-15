@@ -22,7 +22,7 @@ export const SPALTEN = [
   'begriff', 'methode', 'anteil_interpoliert', 'quelle', 'bemerkung',
 ];
 
-function zerlege(zeile) {
+export function zerlege(zeile) {
   const felder = [];
   let feld = '', inAnfuehrung = false;
   for (let i = 0; i < zeile.length; i++) {
