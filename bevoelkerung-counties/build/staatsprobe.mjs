@@ -27,10 +27,12 @@ const abgedeckt = m.attr.map(a => b.werte.has(a.ags));
 // Anteil je Staat zum Vergleich
 const staatBev = {}; let ges = 0;
 m.attr.forEach((a, i) => { const s = a.ags.slice(0,2); staatBev[s] = (staatBev[s]??0) + werte[i]; ges += werte[i]; });
+for (const wa of (process.env.WACHSTUM ?? '1.05').split(',').map(Number))
+for (const bd of (process.env.BODEN ?? '0').split(',').map(Number))
 for (const g of (process.env.GS ?? '900,1600,2400').split(',').map(Number)) {
-  const t0 = Date.now();
+  const t0 = Date.now(); let frei = 0;
   const k = rechneKartogramm({ gebiete: geo.gebiete, X: geo.X, Y: geo.Y, werte, abgedeckt,
-    gitter: g, durchgaenge: Number(process.env.D ?? 8) });
+    gitter: g, boden: bd, wachstum: wa, durchgaenge: Number(process.env.D ?? 8), log: t => { if (/gefaltet 0$/.test(t)) frei++; } });
   // Staatsflächen im Ergebnis
   const fl = {}; let gesFl = 0;
   geo.gebiete.forEach((ringe, gi) => {
@@ -41,8 +43,8 @@ for (const g of (process.env.GS ?? '900,1600,2400').split(',').map(Number)) {
     fl[s] = (fl[s] ?? 0) + Math.abs(A2)/2; gesFl += Math.abs(A2)/2;
   });
   const v = s => (fl[s]/gesFl) / (staatBev[s]/ges);
-  console.log(`GITTER ${String(g).padStart(4)} (${g}×${Math.round(g/1.571)} = ${(g*g/1.571/1e6).toFixed(1)} Mio Zellen): `
-    + `Median ${(k.bilanz.median*100).toFixed(2)}%  gefaltet ${k.bilanz.gefaltet}  `
+  console.log(`Boden ${bd} Wachstum ${wa}  GITTER ${String(g).padStart(4)} (${g}×${Math.round(g/1.571)} = ${(g*g/1.571/1e6).toFixed(1)} Mio Zellen): `
+    + `Median ${(k.bilanz.median*100).toFixed(2)}%  faltungsfreie Durchgänge ${frei}  `
     + `CA ${v('06').toFixed(2)}×  TX ${v('48').toFixed(2)}×  MT ${v('30').toFixed(2)}×  WY ${v('56').toFixed(2)}×  `
     + `${((Date.now()-t0)/1000).toFixed(0)} s`);
 }

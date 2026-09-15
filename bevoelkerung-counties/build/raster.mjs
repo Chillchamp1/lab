@@ -43,7 +43,7 @@ function fuelle(ringe, X, Y, breite, hoehe, nachGitter, treffer) {
 // Gebieten. Das ist nötig, solange die Reihe nur einen Teil Deutschlands
 // abdeckt — sonst verteilt sich das Gitter über die ganze Republik, und dem
 // Pilotgebiet bleiben so wenige Zellen, dass der Ausgleich daran hängenbleibt.
-export function baueDichte(gebiete, X, Y, werte, { breite = 512, rand = 0.45, nurGebiete = null, meer = 'mittel' } = {}) {
+export function baueDichte(gebiete, X, Y, werte, { breite = 512, rand = 0.45, nurGebiete = null, meer = 'mittel', boden = 0 } = {}) {
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   const punkte = nurGebiete
     ? function* () { for (const gi of nurGebiete) for (const r of gebiete[gi]) for (const n of r) yield n; }()
@@ -97,10 +97,29 @@ export function baueDichte(gebiete, X, Y, werte, { breite = 512, rand = 0.45, nu
     meerDichte = d.length ? d[Math.floor(d.length / 2)] : mittel;
   }
 
+  // **Der Boden unter der Dichte.** Die Strömung des Kartogramms ist
+  // v = −grad(rho)/rho. Wo rho gegen null geht, geht 1/rho gegen unendlich —
+  // die Punkte schiessen über, Ringe stülpen sich um, und `kartogramm.mjs`
+  // verwirft den ganzen Durchgang, weil es nur faltungsfreie behält.
+  //
+  // Bei den deutschen Kreisen passiert das nie: dort spannt die Dichte gut
+  // drei Zehnerpotenzen, und alle Durchgänge bleiben faltungsfrei. Bei den
+  // US-Countys sind es fünf — Manhattan gegen Loving County in Texas —, und
+  // von 54 Durchgängen war genau **einer** faltungsfrei. Die Karte zeigte
+  // deshalb nicht dreizehn Kartogramme, sondern dreizehnmal dasselbe Ergebnis
+  // eines einzigen Schrittes.
+  //
+  // `boden` setzt eine Untergrenze als Anteil der mittleren Dichte und
+  // begrenzt damit 1/rho. Der Preis ist ehrlich zu nennen: die leersten
+  // Gebiete schrumpfen nicht mehr so weit, wie ihnen zustünde. Ein Boden von
+  // 0,05 heisst, dass ein Gebiet höchstens auf ein Zwanzigstel der mittleren
+  // Dichte gerechnet wird, statt auf ein Tausendstel.
+  const bodenWert = boden > 0 ? boden * mittel : 0;
   const dichte = new Float64Array(breite * hoehe);
   for (let i = 0; i < dichte.length; i++) {
     const g = gebietVon[i];
-    dichte[i] = g === -1 ? meerDichte : (zellen[g] ? werte[g] / zellen[g] : meerDichte);
+    const d = g === -1 ? meerDichte : (zellen[g] ? werte[g] / zellen[g] : meerDichte);
+    dichte[i] = d > bodenWert ? d : bodenWert;
   }
 
   return { dichte, breite, hoehe, zelle, x0, y0, nachGitter, nachWelt, gebietVon, zellen, mittel, summeZellen };

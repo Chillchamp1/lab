@@ -55,7 +55,7 @@ function bilanz(gebiete, X, Y, werte, abgedeckt) {
 
 export function rechneKartogramm({
   gebiete, X: X0, Y: Y0, werte, abgedeckt,
-  gitter = 1100, rand = 0.30, durchgaenge = 5, wachstum = 1.05, meer = 'mittel', log = () => {},
+  gitter = 1100, rand = 0.30, durchgaenge = 5, wachstum = 1.05, meer = 'mittel', boden = 0, log = () => {},
 }) {
   const X = Float64Array.from(X0), Y = Float64Array.from(Y0);
   // Immer eine ausdrückliche Liste, auch wenn sie alle Kreise enthält: der
@@ -77,7 +77,7 @@ export function rechneKartogramm({
     // mittlere Dichte und bleiben damit in der Strömung neutral.
     const masse = werte.map((w, i) => abgedeckt[i] ? w : mittelDichte * vor.flaechen[i]);
 
-    const R = baueDichte(gebiete, X, Y, masse, { breite: gitter, rand, nurGebiete, meer });
+    const R = baueDichte(gebiete, X, Y, masse, { breite: gitter, rand, nurGebiete, meer, boden });
     const PX = new Float64Array(X.length), PY = new Float64Array(Y.length);
     for (let i = 0; i < X.length; i++) { PX[i] = R.nachGitter.x(X[i]); PY[i] = R.nachGitter.y(Y[i]); }
 
