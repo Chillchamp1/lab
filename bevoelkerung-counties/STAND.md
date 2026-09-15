@@ -23,8 +23,8 @@ Stand: 15. September 2026. Zweite Fassung — das Kartogramm rechnet jetzt.
 | NHGIS gegen Forstall | zehn Abweichungen in 30 451 Vergleichen |
 | Kartogramm, gezeichnete Fläche gegen Bevölkerungsanteil | California 0,91×, Texas 1,11×, New York 0,96×, Pennsylvania 0,97×, Florida 0,89× |
 | davor, mit Faltungsschranke 0 | California 0,24×, Montana 5,9×, Wyoming 4,9× — die Karte stand still |
-| Wichtung gegen die Landkarte | 0,28 statt 0,5 — gemessen, siehe METHODIK 3 |
-| Verschiebung durch das volle Kartogramm | 17,71 % der Diagonale, Deutschland 3,83 % |
+| Wichtung gegen die Landkarte | 0,12 statt 0,5 — auf dieselbe gezeichnete Verformung geeicht wie Deutschland (2,01 % gegen 1,92 %) |
+| Verschiebung durch das volle Kartogramm | 16,72 % der Diagonale, Deutschland 3,83 % |
 | Film | 1080 × 1080 statt 1080 × 1920, weil die Bühne 1,57 breit zu hoch misst |
 | Gefaltete Ringe | 0 |
 

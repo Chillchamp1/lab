@@ -24,26 +24,29 @@ const GITTER = Number(process.env.GITTER ?? 1600);
 const KALT = Number(process.env.KALT ?? 6);
 // Wie stark das Kartogramm gegen die Landkarte gewichtet wird: 0 ist die reine
 // Landkarte, 1 das volle Kartogramm. Deutschland steht auf 0,5, diese Karte auf
-// **0,28** — und das ist gemessen, nicht gegriffen.
+// **0,12** — und der Wert ist nicht geraten, sondern auf dieselbe *gezeichnete*
+// Verformung geeicht.
 //
-// Gemessen wurde, wie weit das volle Kartogramm die Knoten verschiebt, relativ
-// zur Diagonale der eigenen Karte:
+// Gemessen, wie weit das volle Kartogramm die Knoten verschiebt, relativ zur
+// Diagonale der eigenen Karte:
 //
-//     Deutschland   3,83 % im Mittel, 9,45 % im Äussersten
-//     USA          17,71 % im Mittel, 26,85 % im Äussersten
+//     Deutschland    3,83 % im Mittel  ×0,5  = 1,92 % gezeichnet
+//     USA           16,72 % im Mittel  ×0,12 = 2,01 % gezeichnet
 //
-// Also das Viereinhalbfache. Bei gleichem Wert wäre die US-Karte entsprechend
-// stärker aufgebläht; um Deutschlands gezeichnete Verformung zu treffen, müsste
-// er auf 0,11 — dann täte das Kartogramm nichts mehr.
+// Also derselbe Maßstab. Dass dafür eine viel kleinere Zahl nötig ist, liegt
+// nicht an der Karte, sondern am Land: die Dichte der US-Countys spannt fünf
+// Zehnerpotenzen, die der deutschen Kreise dreieinhalb, und ein Kartogramm,
+// das fünf Zehnerpotenzen ausgleicht, verformt entsprechend viel mehr.
 //
-// Ein zweiter Grund kam beim Ansehen dazu, und er zeigt in dieselbe Richtung:
-// gefärbt wird die **gezeichnete** Dichte. Zieht das Kartogramm eine Stadt
-// auseinander, sinkt sie, und die Farbe wird kühler. Bei 0,28 bleiben Chicago,
-// Brooklyn, Los Angeles und Miami klein genug für Orange; bei 0,5 sind sie
-// grün. Schärfere Landform und kräftigere Farbe fallen hier zusammen — bei
-// Deutschland tun sie das nicht, dort ist die Verformung klein genug, dass 0,5
-// nichts kostet.
-const FORM = Number(process.env.FORM ?? 0.28);
+// Bei 0,28 — der ersten Fassung — war die gezeichnete Verschiebung 4,68 %, also
+// zweieinhalbmal die deutsche. Sichtbar wurde das erst, als das Kartogramm
+// überhaupt zu rechnen begann; davor verzerrte es ohnehin fast nichts.
+//
+// Ein zweiter Grund zeigt in dieselbe Richtung: gefärbt wird die **gezeichnete**
+// Dichte. Zieht das Kartogramm eine Stadt auseinander, sinkt sie, und die Farbe
+// wird kühler. Weniger Kartogramm heisst also schärfere Landform, trennbarere
+// Städte und kräftigere Farbe zugleich.
+const FORM = Number(process.env.FORM ?? 0.12);
 const WARM = Number(process.env.WARM ?? 4);
 // Untergrenze der Zelldichte im Kartogramm, als Anteil der mittleren. Ohne sie
 // steht diese Karte still: siehe raster.mjs. Gemessen ist 0,4 der beste Wert
