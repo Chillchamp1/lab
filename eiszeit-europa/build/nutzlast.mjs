@@ -151,6 +151,10 @@ export function baueNutzlast(zwischen, log) {
     // Gitterzelle). Aus ihr rechnet die Seite die Hoehe des Scheibenstapels —
     // siehe seite.mjs, LAMBDA.
     g90: Math.round(meta.g90_m_je_zelle || 0) || undefined,
+    // Orientierung von heute: zehn Staedte und der Mont Blanc als Massstab.
+    // Beide in Gitterkoordinaten — projiziert wird in quellen.py.
+    orte: meta.orte || [],
+    mb: meta.montblanc || null,
     sp: spK.s, spL: spK.lauf,
     dem: demK.s, demL: demK.lauf,
     td: { w: meta.topodiff.w, h: meta.topodiff.h, d: tdK.s, L: tdK.lauf },

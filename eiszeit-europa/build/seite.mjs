@@ -200,6 +200,7 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
   <div class="sicht">
     <label><span>Tilt</span><input type="range" id="kipp" min="0" max="100" value="0" step="1" aria-label="Tilt"></label>
     <label><span>Turn</span><input type="range" id="dreh" min="0" max="360" value="0" step="1" aria-label="Turn"></label>
+    <button id="heute" aria-pressed="true" title="Today&#39;s coastline and cities, for orientation">Today</button>
     <button id="band" aria-pressed="true" title="DATED-1 maximum and minimum margins">Band</button>
   </div>
   <div class="schild"><b id="jahrZahl">&#8211;</b><span id="jahrNeben"></span></div>
@@ -218,6 +219,7 @@ const NOTIZ = ${J(notizen)};
 
 /* ================================================================ Nutzlast */
 const GW = D.g.w, GH = D.g.h;
+const ORTE = D.orte || [], MB = D.mb || null;
 const NT = D.t.length;
 
 /* ---------- Das DEM ----------
@@ -503,7 +505,7 @@ function zeitFelder() {
    So bleiben Alpen, Skandinavisches Gebirge, Karpaten und Mittelgebirge in
    voller Aufloesung, waehrend sich Kruste, Kueste und Eisrand mitbewegen. */
 let feldStand = 0;
-let eisAnzahl = 0, eisMin = 0, eisMax = 0;
+let eisAnzahl = 0, eisMin = 0, eisMax = 0, eisHoch = 0, eisWo = -1;
 function paleo() {
   feldStand++;
   zeitFelder();
@@ -530,12 +532,12 @@ function paleo() {
   /* Wo das Eis liegt, in Hoehen — damit der Eisstapel nur die Scheiben
      schneidet, in denen ueberhaupt Eis vorkommt. Ohne das lief er auch dann
      ueber das ganze Feld, wenn gar kein Eis mehr da ist. */
-  eisAnzahl = 0; eisMin = 1e9; eisMax = -1e9;
+  eisAnzahl = 0; eisMin = 1e9; eisMax = -1e9; eisHoch = 0; eisWo = -1;
   for (let i = 0; i < rock.length; i++) {
     if (!maskeR[i] || eisD[i] < EISSCHWELLE) continue;
     eisAnzahl++;
     if (flaeche[i] < eisMin) eisMin = flaeche[i];
-    if (flaeche[i] > eisMax) eisMax = flaeche[i];
+    if (flaeche[i] > eisMax) { eisMax = flaeche[i]; eisHoch = flaeche[i]; eisWo = i; }
   }
 }
 
@@ -1306,6 +1308,120 @@ function scheibenMalen() {
   ctx.restore();
 }
 
+/* ================================================== Heute, und zwei Gipfel
+   Zwei Ebenen mit verschiedenen Aussagen, deshalb getrennt behandelt:
+
+   **Heute** — die moderne Kuestenlinie und zehn Staedte. Sie gehoeren nicht
+   in die Karte, sie gehoeren daneben: sie sagen nichts ueber die Eiszeit,
+   sondern geben dem Auge einen Anker. Abschaltbar, und im Ton so weit zurueck,
+   dass sie das Relief nicht stoeren.
+
+   **Die Gipfel** — der hoechste Punkt des Eises und der Mont Blanc, beide mit
+   ihrer Hoehe zur gezeigten Zeit. Der Vergleich ist die Aussage: der
+   Eisschild ueber Skandinavien misst sich am hoechsten Berg der Alpen, und
+   zwar an dem, der damals dastand, nicht an dem von heute. Immer sichtbar. */
+const HEUTEFARBE = 'rgba(255,255,255,.22)';
+const ORTFARBE = 'rgba(255,255,255,.52)';
+const ORTPUNKT = 'rgba(255,255,255,.62)';
+let HEUTE = true;
+
+function heuteUeber() {
+  if (!HEUTE) return;
+  ctx.save();
+  if (!schraeg()) ctx.clip(silhouette());
+  ctx.strokeStyle = HEUTEFARBE;
+  ctx.lineWidth = schraeg() ? 0.7 : 0.8;
+  ctx.lineJoin = 'round';
+  const p = new Path2D();
+  for (const [xs, ys] of heuteKueste()) {
+    for (let i = 0; i < xs.length; i++) {
+      const [sx, sy] = projRand(xs[i], ys[i]);
+      if (i === 0) p.moveTo(sx, sy); else p.lineTo(sx, sy);
+    }
+  }
+  ctx.stroke(p);
+
+  /* Die Orte: ein Punkt von anderthalb Bildpunkten und ein Name daneben.
+     Geschrieben wird **mit dunklem Umriss**, nicht mit Schlagschatten: die
+     Karte hat weisses Eis und dunkles Wasser, und ein Schatten traegt nur auf
+     einem von beiden. Stockholm stand auf der Eiskuppe und war nicht zu
+     lesen. */
+  ctx.font = '600 ' + (breite < 460 ? 8 : 9.5) + 'px system-ui,sans-serif';
+  ctx.textBaseline = 'middle';
+  ctx.lineJoin = 'round';
+  for (const o of ORTE) {
+    const [sx, sy] = projRand(o.x, o.y);
+    if (sx < -20 || sy < -20 || sx > breite + 20 || sy > hoehe + 20) continue;
+    // Am rechten Rand nach links setzen, sonst haengt der Name halb draussen
+    // — auf dem Telefon war Moskau auf „Mosco" verkuerzt.
+    const rechts = sx + 6 + ctx.measureText(o.name).width > breite - 4;
+    ctx.textAlign = rechts ? 'right' : 'left';
+    const dx = rechts ? -4 : 4;
+    ctx.strokeStyle = 'rgba(0,0,0,.62)';
+    ctx.lineWidth = 2.6;
+    ctx.beginPath(); ctx.arc(sx, sy, 1.5, 0, 7); ctx.stroke();
+    ctx.strokeText(o.name, sx + dx, sy - 0.5);
+    ctx.fillStyle = ORTPUNKT;
+    ctx.beginPath(); ctx.arc(sx, sy, 1.5, 0, 7); ctx.fill();
+    ctx.fillStyle = ORTFARBE;
+    ctx.fillText(o.name, sx + dx, sy - 0.5);
+    ctx.textAlign = 'left';
+  }
+  ctx.restore();
+}
+
+/* Der hoechste Punkt des Eises — gesucht wird er in paleo(), wo das Feld
+   ohnehin einmal durchlaufen wird. Hier steht nur, wo er landet. */
+const GIPFELFARBE = 'rgba(255,255,255,.88)';
+const GIPFELFELS = 'rgba(255,214,150,.92)';
+const nfm = new Intl.NumberFormat('en-GB');
+function marke(sx, sy, text, farbe, unten) {
+  ctx.lineJoin = 'round';
+  ctx.font = '600 10.5px system-ui,sans-serif';
+  ctx.textBaseline = unten ? 'top' : 'bottom';
+  const rechts = sx > breite - 90;
+  ctx.textAlign = rechts ? 'right' : 'left';
+  const dx = rechts ? -6 : 6, dy = unten ? 5 : -5;
+  // Erst das Kreuz und die Schrift dunkel umranden, dann hell fuellen: auf
+  // weissem Eis wie auf dunklem Wasser lesbar.
+  ctx.strokeStyle = 'rgba(0,0,0,.66)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(sx - 4, sy); ctx.lineTo(sx + 4, sy);
+  ctx.moveTo(sx, sy - 4); ctx.lineTo(sx, sy + 4);
+  ctx.stroke();
+  ctx.strokeText(text, sx + dx, sy + dy);
+  ctx.strokeStyle = farbe;
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(sx - 4, sy); ctx.lineTo(sx + 4, sy);
+  ctx.moveTo(sx, sy - 4); ctx.lineTo(sx, sy + 4);
+  ctx.stroke();
+  ctx.fillStyle = farbe;
+  ctx.fillText(text, sx + dx, sy + dy);
+  ctx.textAlign = 'left';
+}
+
+function gipfelUeber() {
+  ctx.save();
+  if (eisHoch > 0 && eisWo >= 0) {
+    const gx = (eisWo % rW) / rW * GW, gy = ((eisWo / rW) | 0) / rH * GH;
+    const [sx, sy] = projRand(gx, gy);
+    marke(sx, sy, 'ice ' + nfm.format(Math.round(eisHoch)) + ' m', GIPFELFARBE, false);
+  }
+  if (MB && MB.gipfel_m) {
+    const [sx, sy] = projRand(MB.x, MB.y);
+    // Die Gipfelhoehe aus dem feinen DEM, plus das Differenzfeld an dieser
+    // Stelle — genau die Rechnung, aus der auch das Relief entsteht.
+    const fx = Math.max(0, Math.min(rW - 1, Math.round(MB.x / GW * rW)));
+    const fy = Math.max(0, Math.min(rH - 1, Math.round(MB.y / GH * rH)));
+    const i = fy * rW + fx;
+    const h = MB.gipfel_m + (maskeR[i] ? flaeche[i] - demR[i] : 0);
+    marke(sx, sy, 'Mont Blanc ' + nfm.format(Math.round(h)) + ' m', GIPFELFELS, true);
+  }
+  ctx.restore();
+}
+
 /* ====================================================== Das Unsicherheitsband
    Die drei DATED-1-Linien. Das Band zwischen maximum und minimum ist **kein
    Deko-Element, es ist die Kernaussage**: wo es breit wird, ist die
@@ -1383,6 +1499,83 @@ function projRand(gx, gy) {
   if (!maskeR[i]) return [sx, sy];
   const k = Math.max(0, Math.min(NSCHEIBE - 1, (flaeche[i] - S_VON) / dzM));
   return [sx, sy - k * (SICHT || sichtRechnen()).dz];
+}
+
+/* ---------- Die heutige Kuestenlinie ----------
+   Die Nulllinie des **modernen** Hoehenmodells, ohne Differenzfeld. Sie
+   aendert sich nie, haengt also nur an der Feldgroesse und wird einmal
+   geschnitten und behalten.
+
+   Sie ist der Anker, an dem man die Bewegung ablesen kann: wo die Karte bei
+   22 ka Land zeigt und die Linie darunter durchlaeuft, stand spaeter Wasser.
+   Deshalb liegt sie **unter** allem anderen im Ton und nicht darueber — eine
+   Referenz, keine Aussage. */
+let kuesteCache = null, kuesteRW = 0;
+function heuteKueste() {
+  if (kuesteCache && kuesteRW === rW) return kuesteCache;
+  ringFeld();
+  const S = LSCHRITT, je = kw / rW, nx = rnx, ny = rny;
+  const ecke = (px, py) => {
+    if (px < 0 || py < 0 || px >= rW || py >= rH) return -1e9;
+    const i = py * rW + px;
+    return maskeR[i] ? demR[i] : -1e9;
+  };
+  const stempel = ++rZaehler;
+  let nk = 0;
+  const setze = (idx, x, y) => {
+    if (rStempel[idx] !== stempel) {
+      rStempel[idx] = stempel; rX[idx] = x; rY[idx] = y;
+      rA[idx] = -1; rB[idx] = -1; rBesucht[idx] = 0; rListe[nk++] = idx;
+    }
+  };
+  const binde = (q, r) => { if (rA[q] < 0) rA[q] = r; else if (rB[q] < 0) rB[q] = r; };
+  const t = 0;
+  for (let cy = -1; cy <= ny; cy++) {
+    for (let cx = -1; cx <= nx; cx++) {
+      const px0 = cx * S, px1 = px0 + S, py0 = cy * S, py1 = py0 + S;
+      const a = ecke(px0, py0), b = ecke(px1, py0), c = ecke(px1, py1), d = ecke(px0, py1);
+      const A = a > t, B = b > t, C = c > t, E = d > t;
+      const code = (A ? 1 : 0) | (B ? 2 : 0) | (C ? 4 : 0) | (E ? 8 : 0);
+      if (code === 0 || code === 15) continue;
+      const X0 = px0 * je, Y0 = py0 * je, SS = S * je;
+      const h0 = (cy + 1) * rStamm + 2 * (cx + 1), h2 = (cy + 2) * rStamm + 2 * (cx + 1);
+      const v3 = h0 + 1, v1 = (cy + 1) * rStamm + 2 * (cx + 2) + 1;
+      if (A !== B) setze(h0, X0 + SS * (t - a) / (b - a), Y0);
+      if (B !== C) setze(v1, X0 + SS, Y0 + SS * (t - b) / (c - b));
+      if (E !== C) setze(h2, X0 + SS * (t - d) / (c - d), Y0 + SS);
+      if (A !== E) setze(v3, X0, Y0 + SS * (t - a) / (d - a));
+      switch (code) {
+        case 1: case 14: binde(v3, h0); binde(h0, v3); break;
+        case 2: case 13: binde(h0, v1); binde(v1, h0); break;
+        case 3: case 12: binde(v3, v1); binde(v1, v3); break;
+        case 4: case 11: binde(v1, h2); binde(h2, v1); break;
+        case 6: case 9: binde(h0, h2); binde(h2, h0); break;
+        case 7: case 8: binde(h2, v3); binde(v3, h2); break;
+        default: binde(v3, h0); binde(h0, v3); binde(v1, h2); binde(h2, v1);
+      }
+    }
+  }
+  // Als Punktzuege im **Gittermass** ablegen, damit sie sich gekippt auf die
+  // Oberflaeche heben lassen wie die DATED-Raender.
+  const zuege = [];
+  for (let q = 0; q < nk; q++) {
+    const start = rListe[q];
+    if (rBesucht[start] === stempel) continue;
+    let cur = start, vor = -1, m = 0;
+    const xs = [], ys = [];
+    while (cur >= 0) {
+      rBesucht[cur] = stempel;
+      xs.push(rX[cur] / kw * GW); ys.push(rY[cur] / kh * GH);
+      m++;
+      const na = rA[cur], nb = rB[cur];
+      const w = (na >= 0 && na !== vor && rBesucht[na] !== stempel) ? na
+              : (nb >= 0 && nb !== vor && rBesucht[nb] !== stempel) ? nb : -1;
+      vor = cur; cur = w;
+    }
+    if (m > 3) zuege.push([xs, ys]);
+  }
+  kuesteCache = zuege; kuesteRW = rW;
+  return zuege;
 }
 
 /* ---------- Die Silhouette ----------
@@ -1502,7 +1695,9 @@ function zeichne() {
     linienUeber(ctx);
     ctx.restore();
   }
+  heuteUeber();
   datedUeber();
+  gipfelUeber();
   schreibe();
   sichtMarken();
 }
@@ -1923,6 +2118,11 @@ document.getElementById('dreh').addEventListener('input', e => {
   zeichne();
 });
 for (const id of ['kipp', 'dreh']) document.getElementById(id).addEventListener('change', grobAus);
+document.getElementById('heute').addEventListener('click', e => {
+  HEUTE = !HEUTE;
+  e.currentTarget.setAttribute('aria-pressed', HEUTE ? 'true' : 'false');
+  zeichne();
+});
 document.getElementById('band').addEventListener('click', e => {
   BAND = !BAND;
   e.currentTarget.setAttribute('aria-pressed', BAND ? 'true' : 'false');

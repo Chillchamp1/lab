@@ -261,6 +261,66 @@ def huelle(g):
     return ZLON, ZLAT, maske, im_fenster
 
 
+# ---------------------------------------------------------- Orte zum Anhalten
+# Die Karte hat bis hierher bewusst keine Ortsnamen getragen — ihre Aussage
+# haengt an Flaechen und Raendern, nicht an Orten. Sie bekommt jetzt welche,
+# und zwar als **Orientierung von heute**: wer wissen will, wo das Eis lag,
+# braucht einen Anker in der Gegenwart. Zusammen mit der heutigen Kuestenlinie
+# sind sie deshalb eine eigene, abschaltbare Ebene und keine Beschriftung der
+# Karte selbst.
+#
+# Zehn Staedte, ueber den Ausschnitt verteilt, keine nach Groesse gewaehlt:
+# gebraucht wird ein Netz, das das Auge traegt, keine Rangliste.
+STAEDTE = [
+    ("London",     -0.128,  51.507),
+    ("Paris",       2.352,  48.857),
+    ("Berlin",     13.405,  52.520),
+    ("Madrid",     -3.704,  40.417),
+    ("Rome",       12.496,  41.903),
+    ("Vienna",     16.373,  48.208),
+    ("Warsaw",     21.012,  52.230),
+    ("Stockholm",  18.069,  59.329),
+    ("Moscow",     37.617,  55.756),
+    ("Istanbul",   28.978,  41.008),
+]
+
+# Der Mont Blanc als Massstab fuer die Eiskuppe. Seine Hoehe wird **nicht**
+# aus dem Zielgitter genommen — dort ist er ueber eine 6,8-km-Zelle gemittelt
+# und damit rund tausend Meter zu niedrig. Genommen wird das Maximum des
+# 15"-DEM in seiner Umgebung, also der Gipfel selbst; zeitabhaengig wird nur
+# das Differenzfeld addiert, genau wie beim Relief.
+MONTBLANC = (6.8652, 45.8326)
+
+
+def gipfelhoehe(lon, lat, umkreis_km=4.0):
+    """Hoechster 15"-Wert im Umkreis. Sucht die Kachel selbst."""
+    import glob
+    d = 15.0 / 3600.0
+    dlat = umkreis_km / 111.0
+    dlon = dlat / max(0.2, math.cos(math.radians(lat)))
+    best = float("nan")
+    for pfad in sorted(glob.glob(str(ROH / "dem" / "*.nc"))):
+        ds = oeffne(pfad)
+        try:
+            lo, la = achsen(ds)
+            if not (lo.min() - d <= lon <= lo.max() + d
+                    and la.min() - d <= lat <= la.max() + d):
+                continue
+            ix = np.where((lo >= lon - dlon) & (lo <= lon + dlon))[0]
+            iy = np.where((la >= lat - dlat) & (la <= lat + dlat))[0]
+            if not len(ix) or not len(iy):
+                continue
+            v = erste(ds, "z", "Band1", "elevation", "topo")
+            a = np.asarray(np.ma.filled(v[iy[0]:iy[-1] + 1, ix[0]:ix[-1] + 1],
+                                        np.nan), dtype=np.float64)
+            m = np.nanmax(a)
+            if not np.isfinite(best) or m > best:
+                best = float(m)
+        finally:
+            ds.close()
+    return best
+
+
 def lies_dem(g, ZLON, ZLAT, maske):
     """Das 15"-DEM auf das Zielgitter.
 
@@ -960,6 +1020,34 @@ def main():
             f"Eis {100*e['eis_anteil']:5.1f} %  "
             f"MSp {e['meeresspiegel_m']:7.1f} m")
 
+    # ---- Orte und der Mont Blanc, in Gitterkoordinaten ---------------------
+    # Projiziert wird hier, weil hier die Projektion steht. Die Seite bekommt
+    # nur noch Gitterpunkte und muss von Laenge und Breite nichts wissen.
+    def auf_gitter(lon, lat):
+        x, y = vor(lon, lat)
+        return [(x - g["x0"]) / g["schritt"], (g["y1"] - y) / g["schritt"]]
+
+    orte = []
+    for name, lon, lat in STAEDTE:
+        gx, gy = auf_gitter(lon, lat)
+        if 0 <= gx < g["w"] and 0 <= gy < g["h"]:
+            orte.append(dict(name=name, x=round(gx, 1), y=round(gy, 1)))
+    log(f"  {len(orte)} Orte im Fenster: " + ", ".join(o["name"] for o in orte))
+
+    mbx, mby = auf_gitter(*MONTBLANC)
+    mbh = gipfelhoehe(*MONTBLANC)
+    mb = dict(name="Mont Blanc", x=round(mbx, 1), y=round(mby, 1),
+              gipfel_m=None if not np.isfinite(mbh) else round(float(mbh)))
+    # Das Zielgitter an derselben Stelle, zum Vergleich: der Unterschied ist
+    # der Preis der Aufloesung und gehoert gemessen, nicht geschaetzt.
+    gi = int(round(mby)) * 0 + int(round(mby))
+    gj = int(round(mbx))
+    im_raster = float(dem[gi, gj]) if 0 <= gi < g["h"] and 0 <= gj < g["w"] else float("nan")
+    mb["im_zielgitter_m"] = None if not np.isfinite(im_raster) else round(im_raster)
+    log(f"  Mont Blanc: Gipfel im 15\"-DEM {mb['gipfel_m']} m, "
+        f"im Zielgitter {mb['im_zielgitter_m']} m "
+        f"(Differenz {None if mb['gipfel_m'] is None else mb['gipfel_m'] - mb['im_zielgitter_m']} m)")
+
     # ------------------------------------------- die groben Felder, projiziert
     # Beide werden hier auf ein **projiziertes** Grobgitter gelegt, nicht als
     # Laengen-Breiten-Feld durchgereicht. Das nimmt der Seite die Umkehrung der
@@ -1024,6 +1112,8 @@ def main():
         topodiff=dict(w=tw, h=th, teiler=tdt),
         stgit=dict(w=ew, h=eh, teiler=est),
         g90_m_je_zelle=g90,
+        orte=orte,
+        montblanc=mb,
         quelle_grob=dict(w=int(td.shape[2]), h=int(td.shape[1]), **gmeta),
         je_scheibe=je, kennzahlen=kennzahlen,
         # Woher die Daten stammen. build.mjs weigert sich, aus Geruestdaten

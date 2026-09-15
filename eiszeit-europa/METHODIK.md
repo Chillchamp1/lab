@@ -687,6 +687,47 @@ ist eine flache Kuppel, die Hälfte seiner Fläche liegt unter einem Drittel
 seiner Höhe (bei 22 ka: Median 804 m, 90 Prozent unter 2 081 m). Eine lineare
 Bahn liesse die halbe Fläche im blassen Teil der Leiter.
 
+## 8d. Heute, und zwei Gipfel
+
+Zwei Ebenen mit verschiedenen Aussagen, deshalb getrennt behandelt.
+
+**Heute** — die moderne Küstenlinie und zehn Städte. Die Linie ist die
+Nulllinie des **modernen** Höhenmodells, ohne Differenzfeld: sie ändert sich
+nie, wird einmal geschnitten und behalten. Die Städte sind in `quellen.py`
+projiziert und reisen als Gitterpunkte mit; die Seite muss von Länge und
+Breite nichts wissen.
+
+Beide sagen nichts über die Eiszeit. Sie geben dem Auge einen Anker in der
+Gegenwart — und dadurch wird die Bewegung ablesbar: wo die Karte bei 22 ka
+Land zeigt und die dünne Linie darunter durchläuft, stand später Wasser. Bei
+0 ka verschwindet sie, weil sie dann mit der gezeichneten Küste
+zusammenfällt. Abschaltbar über „Today".
+
+Geschrieben wird **mit dunklem Umriss**, nicht mit Schlagschatten: die Karte
+hat weisses Eis und dunkles Wasser, und ein Schatten trägt nur auf einem von
+beiden. Stockholm stand auf der Eiskuppe und war nicht zu lesen.
+
+**Die Gipfel** — der höchste Punkt des Eises und der Mont Blanc, beide mit
+ihrer Höhe zur gezeigten Zeit. Der Vergleich ist die Aussage: der Eisschild
+misst sich am höchsten Berg der Alpen, und zwar an dem, der damals dastand.
+
+Beim Mont Blanc steckt eine Messung, ohne die die Zahl falsch wäre:
+
+| | |
+|---|---|
+| Gipfel im 15″-DEM | **4 693 m** |
+| dieselbe Stelle im Zielgitter (6,8 km) | **2 297 m** |
+| Unterschied | **2 396 m** |
+
+Das Herunterrechnen auf 6,8 km nimmt dem Mont Blanc die Hälfte. Genommen wird
+deshalb das Maximum des feinen DEM in seiner Umgebung, und zeitabhängig wird
+nur das Differenzfeld addiert — genau die Rechnung, aus der auch das Relief
+entsteht. Bei 22 ka steht er dadurch bei 4 784 m, rund 90 m höher als heute:
+der Meeresspiegel lag tiefer, und die Alpen standen im Vorwölbungsgürtel.
+
+Der höchste Eispunkt wird in `paleo()` mitgesucht, wo das Feld ohnehin einmal
+durchlaufen wird — er kostet nichts extra.
+
 ## 9. Kodierung und Nutzlast
 
 Grundlage ist der Zickzack-Varint der Vorlage im selben 64-Zeichen-Alphabet.

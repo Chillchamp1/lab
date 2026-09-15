@@ -95,10 +95,18 @@ Download, ein zweiter Regler. Das ist ein eigenes Projekt.
 
 ## Was bewusst so bleibt
 
-- **Keine Ortsnamen.** Die Vorlage beschriftet Städte, weil ihre Aussage an
-  Orten hängt. Hier hängt sie an Flächen und Rändern. Ein „Doggerland" ins Bild
-  zu setzen wäre schön und wäre Beschriftung eines Zustands, den die Karte
-  ohnehin zeigt.
+- **Ortsnamen: als Ebene von heute, nicht als Beschriftung der Karte.** Hier
+  stand lange „keine" — die Vorlage beschriftet Städte, weil ihre Aussage an
+  Orten hängt, und hier hängt sie an Flächen und Rändern. Das Argument stimmt
+  weiter für Namen, die den Zustand benennen: ein „Doggerland" ins Bild zu
+  setzen wäre Beschriftung dessen, was die Karte ohnehin zeigt.
+
+  Zehn heutige Städte und die heutige Küstenlinie sind etwas anderes. Sie
+  sagen nichts über die Eiszeit, sie geben dem Auge einen Anker in der
+  Gegenwart — und genau dadurch wird die Bewegung ablesbar: wo die Karte bei
+  22 ka Land zeigt und die dünne Linie darunter durchläuft, stand später
+  Wasser. Deshalb sind sie eine **eigene, abschaltbare Ebene** („Today") und
+  liegen im Ton so weit zurück, dass sie das Relief nicht stören.
 - **Keine Interpolation der DATED-Ränder.** Siehe METHODIK, Abschnitt 6.
 - **Kein Beschneiden der Ränder auf den Eisschild.** Wo die DATED-Linie und
   ICE-6G_Cs Eisrand auseinanderlaufen, ist das der Befund und kein Fehler, den
