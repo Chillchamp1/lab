@@ -886,6 +886,7 @@ def main():
     # dieselben sind, die jemand am Bildschirm abliest. Die Kuestenlinie kommt
     # aus paleo > 0, nicht aus sftlf (siehe ../QUELLEN.md, Abschnitt 3).
     log("Kennzahlen je Zeitscheibe")
+    steigungen = []
     fx = np.clip((ZLON - gmeta["lon0"]) / gmeta["dlon"], 0, td.shape[2] - 1)
     fy = np.clip((ZLAT - gmeta["lat0"]) / gmeta["dlat"], 0, td.shape[1] - 1)
     nm = int(im_fenster.sum())
@@ -905,6 +906,17 @@ def main():
         # Probe 3 ueberein, und deshalb steht daneben, wie viel davon Eis ist.
         land = (flaeche > 0) & im_fenster
         unter_eis = (eis > 1.0) & im_fenster
+        # ---- Steigung, fuer die Ueberhoehung der Schraegsicht ----------
+        # Gemessen wird auf genau dem Feld, das die Seite zeichnet: Betrag der
+        # Nachbardifferenz in Metern je Gitterzelle. Daraus kommt spaeter das
+        # 90-Prozent-Quantil, und daraus die Hoehe des Scheibenstapels. Der
+        # Grund steht in seite.mjs bei LAMBDA; kurz: eine feste Ueberhoehung
+        # macht aus einem Tiefland einen Teller und aus den Alpen einen
+        # Nadelwald, eine gemessene nicht.
+        f = np.where(im_fenster, flaeche, np.nan)
+        for d in (np.abs(np.diff(f, axis=1)), np.abs(np.diff(f, axis=0))):
+            steigungen.append(d[np.isfinite(d)].astype(np.float32))
+
         je.append(dict(
             ka=t,
             land_anteil=float(land.sum() / nm),
@@ -915,6 +927,18 @@ def main():
             tiefster_fels_m=float(np.nanmin(np.where(im_fenster, fels, np.nan))),
             meeresspiegel_m=sl[i],
         ))
+
+    # ---- Die Steigungsstatistik, eine Zahl fuer die ganze Karte ------------
+    alle = np.concatenate(steigungen)
+    g90 = float(np.percentile(alle, 90))
+    kennzahlen["steigung_m_je_zelle"] = {
+        f"p{q}": float(np.percentile(alle, q)) for q in (50, 75, 90, 99, 100)}
+    log(f"  Steigung des Feldes, Meter je {g['schritt']:.2f}-km-Zelle: "
+        + "  ".join(f"p{q}={np.percentile(alle, q):7.1f}" for q in (50, 90, 99, 100)))
+    log(f"           -> g90 = {g90:.1f} m je Zelle "
+        f"({100*g90/(g['schritt']*1000):.2f} % Neigung); daraus rechnet die "
+        f"Seite die Hoehe des Scheibenstapels.")
+    del steigungen, alle
 
     # Probe 3 — die Kuestenlinie. Die eigene Nulllinie gegen die, die ICE-6G_C
     # selbst zoege (Topo > 0). Gleich sein muessen sie nicht: die eine hat
@@ -999,6 +1023,7 @@ def main():
         zeiten=zeiten, takt=tk, meeresspiegel=sl,
         topodiff=dict(w=tw, h=th, teiler=tdt),
         stgit=dict(w=ew, h=eh, teiler=est),
+        g90_m_je_zelle=g90,
         quelle_grob=dict(w=int(td.shape[2]), h=int(td.shape[1]), **gmeta),
         je_scheibe=je, kennzahlen=kennzahlen,
         # Woher die Daten stammen. build.mjs weigert sich, aus Geruestdaten

@@ -502,6 +502,7 @@ function zeitFelder() {
    So bleiben Alpen, Skandinavisches Gebirge, Karpaten und Mittelgebirge in
    voller Aufloesung, waehrend sich Kruste, Kueste und Eisrand mitbewegen. */
 let feldStand = 0;
+let eisAnzahl = 0, eisMin = 0, eisMax = 0;
 function paleo() {
   feldStand++;
   zeitFelder();
@@ -524,6 +525,16 @@ function paleo() {
        ausschliesslich der Ueberlauf der Interpolation. */
     if (flaeche[i] <= 0) eisD[i] = 0;
     rock[i] = flaeche[i] - eisD[i];   // der Fels liegt darunter
+  }
+  /* Wo das Eis liegt, in Hoehen — damit der Eisstapel nur die Scheiben
+     schneidet, in denen ueberhaupt Eis vorkommt. Ohne das lief er auch dann
+     ueber das ganze Feld, wenn gar kein Eis mehr da ist. */
+  eisAnzahl = 0; eisMin = 1e9; eisMax = -1e9;
+  for (let i = 0; i < rock.length; i++) {
+    if (!maskeR[i] || eisD[i] < EISSCHWELLE) continue;
+    eisAnzahl++;
+    if (flaeche[i] < eisMin) eisMin = flaeche[i];
+    if (flaeche[i] > eisMax) eisMax = flaeche[i];
   }
 }
 
@@ -897,7 +908,44 @@ function scheiben() {
    Pfade beschneiden 0,1 ms, derselbe Stapel als Rastermasken 242 ms. */
 let NEIGUNG = 0, DREHUNG = 0, ZOOM = 1, vX = 0, vY = 0;
 const KIPPMAX = 62 * Math.PI / 180, ZOOMMAX = 8;
-const HOCH3D = 0.30;
+/* ---------- Wie hoch der Stapel steht ----------
+   Vorher ein Anteil der Feldhoehe: hoch = hoehe mal 0,30. Das ist bequem und
+   sagt ueber das Gelaende nichts — dieselbe Zahl macht aus einem Tiefland
+   einen Teller und aus den Alpen einen Nadelwald. Genau das war zu sehen.
+
+   Stattdessen eine Metrik, die misst, was schiefgeht. Bei einem
+   Laserschnittmodell ist das Verdecken: steht die Wand einer Platte hoeher, als
+   die Terrasse darunter tief ist, sieht man von der Terrasse nichts mehr, und
+   aus einer Stufenpyramide wird eine Nadel. Das Verhaeltnis der beiden ist
+
+       lambda(g) = tan(phi) * g * px_v / px_h
+
+   mit g der Gelaendesteigung in Metern je Gitterzelle, px_v den Bildpunkten je
+   Meter Hoehe, px_h den Bildpunkten je Gitterzelle und phi der Kippung.
+   lambda < 1 heisst: die Terrasse bleibt sichtbar.
+
+   Ausgelegt wird auf die **staerkste** Kippung — dort verdeckt es am meisten —
+   und auf den Hang, der das Gebirge ausmacht: das 90-Prozent-Quantil der
+   Steigung, ueber alle Zeitscheiben gemessen und in der Nutzlast mitgeliefert
+   (D.g90). Fuer diesen Ausschnitt sind das 173 m je 6,8-km-Zelle, also 2,5
+   Prozent Neigung.
+
+   Der alte Wert 0,30 entsprach lambda(g90) = 13: dreizehn Wandhoehen auf eine
+   Terrassentiefe. Der Median des Gelaendes stand schon bei lambda = 1,6. */
+/* Der Zielwert ist am Bild festgelegt, nicht gerechnet — die Metrik sagt, was
+   gemessen wird, nicht wo die Grenze des guten Geschmacks liegt. Gerendert und
+   verglichen wurden lambda = 13 (der alte Zustand), 8, 6, 5, 4, 2,6, 1,8, 1,2:
+
+     13   Nadelwald. Jede Alpenspitze ein Turm, der Eisschild eine Wand.
+      6   die Alpen fangen wieder an zu zacken.
+      4   Gebirge bleiben Gebirge, der Eisschild ist eine Kuppel. Gewaehlt.
+      2,6 die Mittelgebirge verschwinden, das Relief wird zur Reliefandeutung.
+
+   lambda = 4 entspricht hier einer Ueberhoehung von rund 84-fach — viel, aber
+   die Karte ist 4400 km breit und 5 km hoch: bei 1:1 waere der Eisschild
+   einen halben Bildpunkt dick. Vorher standen 273-fach. */
+const LAMBDA = Number(D.lambda ?? 4);
+let HOCH3D = 0.30;               // wird in masse() aus der Metrik gesetzt
 const schraeg = () => NEIGUNG > 0.001 || Math.abs(DREHUNG) > 1e-4;
 const ansichtFrei = () => ZOOM !== 1 || vX !== 0 || vY !== 0;
 let SICHT = null;
@@ -915,6 +963,8 @@ function sichtRechnen() {
   const phi = NEIGUNG * KIPPMAX, co = Math.cos(phi), si = Math.sin(phi);
   const ct = Math.cos(DREHUNG), st = -Math.sin(DREHUNG);
   const cx = breite / 2, cy = hoehe / 2, hoch = hoehe * HOCH3D;
+  // hoch ist in masse() gesetzt; HOCH3D ist nur noch die abgeleitete Zahl,
+  // damit ein Blick in die Konsole sie zeigt.
   let aMin = 1e9, aMax = -1e9, yMin = 1e9, yMax = -1e9;
   for (const e of [[0, 0], [breite, 0], [0, hoehe], [breite, hoehe]]) {
     const dx = e[0] - cx, dy = e[1] - cy;
@@ -961,19 +1011,42 @@ function ringFeld() {
   rA = new Int32Array(n); rB = new Int32Array(n);
   rStempel = new Int32Array(n); rBesucht = new Int32Array(n); rListe = new Int32Array(n);
 }
-let ringeCache = null, ringeStand = -1, ringeRW = 0;
-function scheibenRinge() {
-  if (ringeCache && ringeStand === feldStand && ringeRW === rW) return ringeCache;
+/* Zwei Staepel statt einem, und das ist der Grund:
+   Eine Platte ist eine Hoehenstufe, und eine Hoehenstufe hat **eine** Farbe.
+   Welche — Gestein oder Eis — wurde vorher danach entschieden, was auf dieser
+   Hoehe ueber die ganze Karte ueberwiegt. Bei 1400 m liegen aber die Alpen
+   **und** der Eisschild, und wer von beiden mehr Zellen hat, faerbte den
+   anderen mit: der Gletscher bekam gruene Waende, die Alpen weisse. Auf einem
+   Bild, das Fels und Eis trennen soll, ist das der eine Fehler, den es nicht
+   geben darf.
+
+   Jetzt wird je Hoehe zweimal geschnitten — einmal ueber das ganze Feld, einmal
+   nur ueber die Eiszellen — und in dieser Reihenfolge gemalt. Der Eisring ist
+   per Konstruktion eine Teilmenge des Felsrings, liegt also genau dort darueber,
+   wo Eis liegt. Das ist dasselbe „Eis gewinnt, wo es liegt" wie in der flachen
+   Sicht, nur in drei Dimensionen. */
+let ringeCache = [null, null], ringeStand = -1, ringeRW = 0;
+function scheibenRinge(nurEis) {
+  if (ringeCache[nurEis] && ringeStand === feldStand && ringeRW === rW)
+    return ringeCache[nurEis];
+  if (ringeStand !== feldStand || ringeRW !== rW) ringeCache = [null, null];
   ringFeld();
   const S = LSCHRITT, je = kw / rW, nx = rnx, ny = rny;
   const ecke = (px, py) => {
     if (px < 0 || py < 0 || px >= rW || py >= rH) return -1e9;
     const i = py * rW + px;
-    return maskeR[i] ? flaeche[i] : -1e9;
+    if (!maskeR[i]) return -1e9;
+    if (nurEis && eisD[i] < EISSCHWELLE) return -1e9;
+    return flaeche[i];
   };
   const pfade = new Array(NSCHEIBE).fill(null);
+  if (nurEis && eisAnzahl === 0) { ringeCache[1] = pfade; return pfade; }
   for (let k = 1; k < NSCHEIBE; k++) {
     const t = S_VON + k * dzM;
+    // Der Eisstapel braucht nur die Hoehen, in denen Eis liegt. Eine Scheibe
+    // ueber dem hoechsten oder unter dem tiefsten Eis ist leer, und ein leerer
+    // Marching-Squares-Lauf ueber 760 mal 649 Punkte kostet trotzdem.
+    if (nurEis && (t > eisMax || t + dzM < eisMin)) continue;
     const stempel = ++rZaehler;
     let nk = 0;
     const setze = (idx, x, y) => {
@@ -1027,7 +1100,7 @@ function scheibenRinge() {
     }
     if (etwas) pfade[k] = pfad;
   }
-  ringeCache = pfade; ringeStand = feldStand; ringeRW = rW;
+  ringeCache[nurEis] = pfade; ringeStand = feldStand; ringeRW = rW;
   return pfade;
 }
 
@@ -1036,23 +1109,13 @@ function scheibenRinge() {
    groeberen Gitter entsteht, blutete auf jeder Platte ein Saum der Nachbarfarbe
    ueber den Rand. Welche Leiter — Gestein oder Eis — entscheidet, ob auf dieser
    Hoehe ueberwiegend Eis liegt. */
-/* Welche Leiter eine Platte traegt — Gestein oder Eis —, entscheidet, was auf
-   ihrer Hoehe ueberwiegt. Gezaehlt wird das in **einem** Durchgang ueber das
-   Feld, nicht in einem je Scheibe: der erste Wurf lief sechsundzwanzigmal
-   ueber die ganze Karte und kostete mehr als der ganze Stapel. */
-const plattenEis = new Int32Array(NSCHEIBE), plattenFels = new Int32Array(NSCHEIBE);
-function plattenZaehlen() {
-  plattenEis.fill(0); plattenFels.fill(0);
-  for (let i = 0; i < rW * rH; i++) {
-    if (!maskeR[i]) continue;
-    const k = Math.floor((flaeche[i] - S_VON) / dzM);
-    if (k < 0 || k >= NSCHEIBE) continue;
-    if (eisD[i] >= EISSCHWELLE) plattenEis[k]++; else plattenFels[k]++;
-  }
-}
-function plattenFarbe(k) {
+/* Die Farbe einer Platte haengt nur an ihrer Hoehe und ihrem Material — eine
+   Platte ist genau eine Hoehenstufe, und welche Leiter sie traegt, steht jetzt
+   beim Schneiden fest (siehe scheibenRinge). Das Abzaehlen, was auf einer Hoehe
+   ueberwiegt, ist damit weg: es war die Quelle der gruenen Gletscherwaende. */
+function bandFarbe(k, eis) {
   const t = S_VON + k * dzM;
-  if (plattenEis[k] > plattenFels[k]) {
+  if (eis) {
     const j = Math.max(0, Math.min(NEIS - 1, Math.floor(eisLeiter(t) * NEIS)));
     return [ER[j], EG[j], EB[j]];
   }
@@ -1070,15 +1133,20 @@ function scheibenMalen() {
   const Dp = DPR;
   const S = sichtRechnen();
   const { co, si, ct, st, cx, cy, z: zz, oX: ozX, oY: ozY, dz } = S;
-  const ringe = scheibenRinge();
-  plattenZaehlen();
+  const fels = scheibenRinge(0), eis = scheibenRinge(1);
   const a2 = Dp * zz * ct, c2 = Dp * zz * st, b2 = -Dp * co * zz * st, d2 = Dp * co * zz * ct;
   const eX = Dp * ozX - a2 * cx - c2 * cy;
   const lv = KANTENVERSATZ * Math.min(KANTENZOOM, ZOOM) / zz * breite / rW;
 
+  /* Von unten nach oben, und je Hoehe erst das Gestein, dann das Eis darauf.
+     Nicht erst alle Felsplatten und dann alle Eisplatten: der Stapel muss in
+     der Tiefe geordnet bleiben, sonst laege eine niedrige Eisplatte ueber
+     einem hohen Berg. */
   for (let k = 1; k < NSCHEIBE; k++) {
+    for (const istEis of [0, 1]) {
+    const ringe = istEis ? eis : fels;
     if (!ringe[k]) continue;
-    const [r, g, b] = plattenFarbe(k);
+    const [r, g, b] = bandFarbe(k, istEis);
     const wand = 'rgb(' + Math.round(r * WANDDUNKEL) + ',' + Math.round(g * WANDDUNKEL) + ',' + Math.round(b * WANDDUNKEL) + ')';
     const fuss = 'rgb(' + Math.round(r * WANDFUSS) + ',' + Math.round(g * WANDFUSS) + ',' + Math.round(b * WANDFUSS) + ')';
     /* Erst die Wand: derselbe Ring, eine Stufe tiefer, gefuellt — und
@@ -1110,6 +1178,7 @@ function scheibenMalen() {
     ctx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
     ctx.fill(ringe[k], 'evenodd');
     ctx.restore();
+    }
   }
   ctx.setTransform(Dp, 0, 0, Dp, 0, 0);
 
@@ -1125,13 +1194,15 @@ function scheibenMalen() {
   const f = rW / kw;
   const A2 = f * zz * ct, C2 = f * zz * st, B2 = -f * co * zz * st, D2 = f * co * zz * ct;
   const EX = f * (ozX - kx) - A2 * cx - C2 * cy;
+  // Fuer das Licht genuegt der Gesteinsstapel: er ist die volle Flaeche, der
+  // Eisstapel eine Teilmenge davon. Zweimal aufzulegen kostete nur Zeit.
   for (let k = 1; k < NSCHEIBE; k++) {
-    if (!ringe[k]) continue;
+    if (!fels[k]) continue;
     for (const tief of [k - 1, k]) {
       hcS.save();
       hcS.setTransform(A2, B2, C2, D2, EX, f * (ozY - ky - tief * dz) - B2 * cx - D2 * cy);
       hcS.beginPath();
-      hcS.clip(ringe[k], 'evenodd');
+      hcS.clip(fels[k], 'evenodd');
       hcS.setTransform(1, 0, 0, 1, 0, 0);
       hcS.drawImage(hkL, 0, 0);
       hcS.restore();
@@ -1368,6 +1439,17 @@ if (typeof ResizeObserver === 'function') {
   if (sch) new ResizeObserver(kopfMessen).observe(sch);
 }
 
+/* Die Stapelhoehe aus der Metrik. Sie haengt an der Kartenbreite, nicht an der
+   Feldhoehe: beim Zoomen soll das Relief mitwachsen, beim Strecken des Fensters
+   nicht steiler werden. */
+function hoeheSetzen() {
+  const pxH = kw / GW;                          // Bildpunkte je Gitterzelle
+  const g90 = Math.max(1, D.g90 || 173);        // Meter je Zelle, gemessen
+  const hoch = LAMBDA * pxH * (S_BIS - S_VON) / (Math.tan(KIPPMAX) * g90);
+  HOCH3D = hoch / Math.max(1, hoehe);
+  SICHT = null;
+}
+
 function masse() {
   const feld = cv.parentElement;
   // Das Seitenverhaeltnis der Karte an das CSS geben — es setzt damit die
@@ -1386,6 +1468,7 @@ function masse() {
   if (cv.width !== bw || cv.height !== bh) { cv.width = bw; cv.height = bh; }
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   feldAnlegen();
+  hoeheSetzen();     // braucht kw/kh aus feldAnlegen()
   ansichtKlemmen();
 }
 
