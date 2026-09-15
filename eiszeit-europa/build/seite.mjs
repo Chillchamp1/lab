@@ -1171,12 +1171,34 @@ function bandFarbe(k, eis) {
   return [GR[j], GG[j], GB[j]];
 }
 
-const WANDDUNKEL = 0.78, WANDFUSS = 0.55, WANDSCHRITT = 3;
+/* Die Wand einer Platte, und ihr Fuss. Beide standen auf 0,78 und 0,55 —
+   gemessen an 26 Platten. Seit der Stapel von der untersten Bandgrenze bis zur
+   obersten laeuft, sind es 33, und damit stehen ein Drittel mehr dunkle
+   Streifen im Bild. Bei 0,86 und 0,70 traegt die Wand die Stufe weiter, ohne
+   die Karte zu zerschneiden. */
+let WANDDUNKEL = 0.86, WANDFUSS = 0.70; const WANDSCHRITT = 3;
 /* Die Sicheln der beleuchteten Kante sind absichtlich **nicht** ganz deckend:
    gerade das laesst die Bandfarbe durchscheinen, statt sie zu ueberblenden.
    Der erste Wurf stand auf 0,85/0,75 und uebertoente den Eisschild — bei 26
    Scheiben liegen die Kanten dort dichter als die Terrassen breit sind. */
-const KANTENVERSATZ = 0.55, KANTENZOOM = 4, KANTENHELL = 0.62, KANTENDUNKEL = 0.58;
+/* Die beleuchtete Kante: **an die Zahl der Platten gekoppelt**, nicht fest.
+
+   Sie wird je Platte zweimal halbdurchsichtig gefuellt. Was davon stehen
+   bleibt, haengt nicht an der einzelnen Deckkraft, sondern an ihrer Potenz:
+   ueber n Platten bleibt (1 − a)^n durch. Eine feste Zahl heisst also, dass
+   der Schleier mitwaechst, sobald der Stapel feiner wird — und genau das ist
+   passiert, als aus 26 Platten 33 wurden. Ueber jeder Kuestenlinie lag ein
+   weisser Saum, und die Karte sah aus, als haette jemand Milchglas
+   davorgestellt.
+
+   Gemessen und verglichen wurden vier Staerken bei 33 Platten: 0,62 (der alte
+   Stand, Milchglas), 0,34 (Stufen lesbar, kein Schleier), 0,22 (sauber, aber
+   das Relief wird flach) und ganz aus. Genommen ist **0,34 bei 33 Platten**,
+   und daraus die Potenz fuer jede andere Zahl. */
+const KANTENVERSATZ = 0.55, KANTENZOOM = 4;
+const KANTENBEI = 33, KANTENHELL33 = 0.34, KANTENDUNKEL33 = 0.32;
+const kantenDeck = a => 1 - Math.pow(1 - a, KANTENBEI / Math.max(1, NSCHEIBE));
+let KANTENHELL = kantenDeck(KANTENHELL33), KANTENDUNKEL = kantenDeck(KANTENDUNKEL33);
 function scheibenMalen() {
   const Dp = DPR;
   const S = sichtRechnen();

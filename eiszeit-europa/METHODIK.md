@@ -660,6 +660,40 @@ genau wie sie in der Farbleiter im untersten Band liegen.
 
 Kosten: 33 Platten statt 26, also 162 statt 132 ms je Bild gekippt.
 
+### Die Kante muss mit der Zahl der Platten leiser werden
+
+Die beleuchtete Kante entsteht mit dem alten Prägetrick: derselbe Ring
+zweimal versetzt gefüllt, weiss zum Licht und schwarz von ihm weg, halb
+durchsichtig, dann die Bandfarbe darüber.
+
+Was davon stehen bleibt, hängt **nicht** an der einzelnen Deckkraft, sondern
+an ihrer Potenz: über *n* Platten bleibt (1 − a)ⁿ durch. Eine feste Zahl
+heisst deshalb, dass der Schleier mitwächst, sobald der Stapel feiner wird —
+und genau das ist passiert, als aus 26 Platten 33 wurden. Über jeder
+Küstenlinie lag ein weisser Saum, und die Karte sah gekippt aus, als hätte
+jemand Milchglas davorgestellt.
+
+Gemessen und verglichen wurden vier Stärken bei 33 Platten:
+
+| Deckkraft | Bild |
+|---|---|
+| 0,62 | der alte Stand: Milchglas, Küsten verschwommen |
+| **0,34** | **Stufen lesbar, kein Schleier** |
+| 0,22 | sauber, aber das Relief wird flach |
+| aus | das Laserschnittmodell verliert seine Kante |
+
+Genommen ist 0,34 bei 33 Platten, und daraus die Potenz für jede andere Zahl:
+
+    a(n) = 1 − (1 − 0,34)^(33/n)
+
+also 0,41 bei 26 Platten, 0,29 bei 40. Damit bleibt der Eindruck stabil, wenn
+sich der Stapel je ändert — und er hat sich in diesem Ordner schon zweimal
+geändert.
+
+Die **Wand** einer Platte stand bei 0,78 ihrer Farbe, ihr Fuss bei 0,55 —
+gemessen an 26 Platten. Mit 33 stehen ein Drittel mehr dunkle Streifen im
+Bild; 0,86 und 0,70 tragen die Stufe weiter, ohne die Karte zu zerschneiden.
+
 ### Zwei Farbentscheidungen, beide gemessen
 
 **Das tiefste Wasserband** lag bei einer Helligkeit von 0,22. Auf dem fast
