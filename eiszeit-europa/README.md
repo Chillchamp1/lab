@@ -119,7 +119,7 @@ Zeitscheibe deren Jahr, dazwischen die beiden, zwischen denen interpoliert
 wird.
 
 **Die Uhr läuft nicht gleichmässig durch die Jahre.** Jeder Abschnitt bekommt
-einen Anteil an den 90 Sekunden, der Dauer und Umschichtung mischt — das
+einen Anteil an den 69 Sekunden, der Dauer und Umschichtung mischt — das
 geometrische Mittel aus seinem Anteil an den Jahren und seinem Anteil an der
 Veränderung des Eisvolumens, mit einer Untergrenze. Rein nach Jahren liefe der
 Zusammenbruch des Eisschildes in einem Fünftel der Zeit ab, während die ruhigen
