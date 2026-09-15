@@ -601,6 +601,46 @@ Gekostet hat es 126 statt 98 ms je Bild; der Eisstapel überspringt dafür die
 Höhen, in denen kein Eis liegt, und fällt ganz weg, sobald keines mehr da ist
 (96 ms bei 0 ka).
 
+### Und die Lichtebene lag schief
+
+Die Schattierung wird nicht ueber die Karte gemalt, sondern in eine eigene
+Ebene im Feldgitter gebaut und am Ende in einem Stueck mit `soft-light`
+aufgelegt — so macht es die Vorlage, und die Kosten sitzen in den Blits, nicht
+im Bild.
+
+Nur wurde das Lichtbild dort mit der **Einheitsmatrix** gezeichnet, waehrend
+der Ausschnitt, auf den es geschnitten wurde, die gedrehte und gekippte Sicht
+war. Flach faellt das kaum auf. Gedreht liegt die ganze Schattierung schief
+ueber dem Relief: die Hell-Dunkel-Struktur bleibt stehen, waehrend sich die
+Karte darunter dreht — am auffaelligsten im Wasser, wo die Terrassen fein sind
+und das falsche Licht wie eine Textur wirkt, die nicht mitdreht.
+
+Das Lichtbild nimmt jetzt denselben Weg wie das Gelaende, dessen Licht es ist:
+erst ins Grundriss-Mass (mal kw/rW, plus kx), dann durch die Sichtmatrix. Dazu
+zwei Dinge, die derselbe Fehler verdeckt hatte:
+
+- **Der Massstab der Lichtebene** war rW/kw statt rW/breite, und der Versatz
+  der Karte steckte mit drin. Solange die Karte die Leinwand ausfuellt, ist das
+  dasselbe; sobald sie es nicht tut — ein breites Fenster, die Buehne
+  gedeckelt —, lag das Licht daneben.
+- **Ein grauer Saum um die Karte.** `soft-light` rechnet mit dem Untergrund;
+  wo der durchsichtig ist, gibt die Formel die Quelle unveraendert zurueck, und
+  die ist hier ein mittleres Grau. Der Lichtstapel wird im Feldgitter
+  geschnitten, also bei einem Viertel der Leinwandbreite, und ein grob
+  gerasterter Rand deckt Punkte, die die feine Farbe daneben nur halb fuellt.
+
+  Gegen den Saum wurde dreierlei gemessen: die Ebene um einen Punkt schrumpfen
+  (half halb), um zwei (half etwas mehr), ohne Glaettung hochrechnen (machte
+  Bloecke daraus). Was hilft, ist derselbe Umriss in voller Aufloesung: die
+  Ringe werden beim Malen mitgesammelt und schneiden den Blit. Die
+  naheliegende Loesung — die fertige Karte als Maske hineinblitten — kostete
+  **110 ms je Bild**: die grosse Leinwand zurueckzulesen haelt die Pipeline an.
+
+Und weil das Licht nun richtig lag, wurde ein dritter Fehler sichtbar: zwischen
+zwei Platten blieb ein Spalt offen, wo die Ringe weit auseinanderliegen — an
+steilen Kuesten. Die Wand wurde mit einem einzigen Strich gemalt, sobald die
+Platten duenn genug waren. Jetzt sind es mindestens zwei.
+
 ## 9. Kodierung und Nutzlast
 
 Grundlage ist der Zickzack-Varint der Vorlage im selben 64-Zeichen-Alphabet.
@@ -690,9 +730,9 @@ aus fünf Bildern:
 
 | | |
 |---|---|
-| flach, Jahr läuft | 91 ms |
-| gekippt, Jahr läuft | 126 ms |
-| gekippt, heute (kein Eis) | 96 ms |
+| flach, Jahr läuft | 92 ms |
+| gekippt, Jahr läuft | 132 ms |
+| gekippt, heute (kein Eis) | 101 ms |
 
 Zum Vergleich nennt die Vorlage für ihre Karte im selben Messgeschirr 143 ms
 flach und 133 ms gekippt. Die Zahlen sind nicht unmittelbar vergleichbar —
