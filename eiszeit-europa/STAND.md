@@ -156,7 +156,9 @@ Download, ein zweiter Regler. Das ist ein eigenes Projekt.
   Auflösung, also ein Füllvorgang mehr je Scheibe. Bis dahin: die üblichen
   Blickwinkel sind sauber, der Fehler steht hier.
 - **Gekippt ragt das Unsicherheitsband am Ostrand ein paar Pixel über die
-  Karte.** Die DATED-Ringe sind auf das Gitterrechteck beschnitten; die
+  Karte** — sichtbar nur, wenn man es mit *Band* einschaltet, denn beim Laden
+  ist es aus (METHODIK 6). Die DATED-Ringe sind auf das Gitterrechteck
+  beschnitten; die
   Schnittkante wird nicht gestrichelt, aber die **Füllung** des Bandes wird an
   ihr angehoben wie das Gelände daneben, und am Ostrand steht das Gelände
   niedriger als der Hub. Sichtbar nur gekippt, nur am Rand, wenige Pixel. Ganz

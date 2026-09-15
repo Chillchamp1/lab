@@ -78,9 +78,18 @@ sieht: weiches Licht kann Weiss nicht dunkler machen.
 
 Über dem Eis liegen die Ränder aus DATED-1, und zwar alle drei: die
 *most-credible*-Linie kräftig, dazwischen *maximum* und *minimum* als
-halbtransparentes Band.
+halbtransparentes Band. **Der Knopf *Band* holt sie; beim Laden sind sie
+aus.**
 
-**Das Band ist kein Deko-Element, es ist die Kernaussage.** Wo es breit wird,
+Das ist eine bewusste Entscheidung und keine Bescheidenheit: die
+DATED-1-Linien sind die Feldbefunde, die Karte darunter ist ein Modell. Zwei
+Arten von Aussage im selben Bild sind für den ersten Blick eine zu viel, und
+die creme Linie läuft ausgerechnet dort entlang, wo ohnehin die Kante zwischen
+Weiss und Grün das Auge hält. Wer den Vergleich sucht, findet ihn auf
+Knopfdruck — wer die Eiszeit sehen will, sieht erst mal die Eiszeit.
+
+**Wenn es an ist, ist das Band kein Deko-Element, sondern die Kernaussage.**
+Wo es breit wird,
 ist die Rekonstruktion schwach — und es wird nicht gleichmässig breit. Der
 Aufbau vor 25 ka ist deutlich schwächer belegt als der Rückzug danach, weil
 vorrückendes Eis zerstört, was es überfährt, und zurückweichendes datierbares
@@ -133,8 +142,8 @@ Karte etwas ausserhalb ihres Ausschnitts liest.
 
 ## Aufrichten und Drehen
 
-*Tilt* kippt die Karte aus der Senkrechten, *Turn* dreht sie, *Band* schaltet
-das Unsicherheitsband weg. Zwei Finger auf der Karte tun dasselbe:
+*Tilt* kippt die Karte aus der Senkrechten, *Turn* dreht sie, *Band* holt die
+DATED-1-Ränder dazu (beim Laden sind sie aus). Zwei Finger auf der Karte tun dasselbe:
 auseinanderziehen vergrössert, verdrehen dreht, beide Finger zusammen nach oben
 schieben richtet auf. Der Punkt, den man anfasst, bleibt dabei liegen.
 
