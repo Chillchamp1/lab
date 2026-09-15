@@ -386,6 +386,7 @@ let tmpT = null, tmpE = null;
 const hkF = document.createElement('canvas'), hcF = hkF.getContext('2d');
 const hkL = document.createElement('canvas'), hcL = hkL.getContext('2d');
 const hkS = document.createElement('canvas'), hcS = hkS.getContext('2d');
+const hkE = document.createElement('canvas'), hcE = hkE.getContext('2d');
 
 // Catmull-Rom, dieselbe Kurve wie beim Bauen.
 function crGewichte(n, quelle, ziel) {
@@ -1111,6 +1112,9 @@ function scheibenMalen() {
   const S = sichtRechnen();
   const { co, si, ct, st, cx, cy, z: zz, oX: ozX, oY: ozY, dz } = S;
   const fels = scheibenRinge(0), eis = scheibenRinge(1);
+  // Der Umriss dessen, was dieser Durchgang malt — in Geraetepunkten, damit er
+  // am Ende den Lichtblit schneiden kann.
+  const lichtMaske = new Path2D();
   const a2 = Dp * zz * ct, c2 = Dp * zz * st, b2 = -Dp * co * zz * st, d2 = Dp * co * zz * ct;
   const eX = Dp * ozX - a2 * cx - c2 * cy;
   const lv = KANTENVERSATZ * Math.min(KANTENZOOM, ZOOM) / zz * breite / rW;
@@ -1131,7 +1135,11 @@ function scheibenMalen() {
        unteren Saum der Form stehen, und der ist so hoch wie die Form auf dem
        Schirm, nicht wie die Platte. Gekippt staucht der Kosinus sie zusammen,
        und der Rest bliebe schwarz — die Kuppen schwebten. */
-    const schritte = Math.max(1, Math.ceil(Dp * dz / WANDSCHRITT));
+    /* Mindestens zwei Striche. Bei einem blieb zwischen zwei Platten ein Spalt
+       offen, wo die Ringe weit auseinanderliegen — an steilen Kuesten —, und
+       durch den Spalt sah man den schwarzen Grund. Auffallen tat es erst,
+       als das Licht richtig lag: auf Durchsichtigem malt soft-light grau. */
+    const schritte = Math.max(2, Math.ceil(Dp * dz / WANDSCHRITT));
     for (let w = 0; w < schritte; w++) {
       ctx.fillStyle = (w === 0 && schritte > 1) ? fuss : wand;
       ctx.setTransform(a2, b2, c2, d2, eX,
@@ -1145,6 +1153,9 @@ function scheibenMalen() {
        bei Tanaka. Versetzt wird in Grundriss-Koordinaten, damit die Sonne beim
        Drehen mit der Karte wandert. */
     ctx.setTransform(a2, b2, c2, d2, eX, Dp * (ozY - k * dz) - b2 * cx - d2 * cy);
+    if (!istEis) for (const tief of [k - 1, k])
+      lichtMaske.addPath(ringe[k], new DOMMatrix([a2, b2, c2, d2, eX,
+        Dp * (ozY - tief * dz) - b2 * cx - d2 * cy]));
     ctx.save();
     ctx.translate(-lv, -lv);
     ctx.fillStyle = '#fff'; ctx.globalAlpha = KANTENHELL; ctx.fill(ringe[k], 'evenodd');
@@ -1165,28 +1176,66 @@ function scheibenMalen() {
      nur das Licht; Farbe, Kanten und Waende bleiben scharf. */
   hcS.setTransform(1, 0, 0, 1, 0, 0);
   hcS.clearRect(0, 0, rW, rH);
-  // Der Lichtstapel liegt im Feldgitter. Die Karte beginnt dort bei (0,0),
-  // auf der Leinwand aber bei (kx,ky) — der Versatz muss also heraus, bevor
-  // skaliert wird, sonst sitzt das Licht neben seinem Gelaende.
-  const f = rW / kw;
+  /* Zwei Abbildungen, und beide muessen stimmen.
+
+     hkS ist eine verkleinerte Kopie der **Leinwand** — am Ende wird sie in
+     einem Stueck darueber geblittet. Der Massstab ist deshalb rW/breite, nicht
+     rW/kw, und der Versatz der Karte (kx,ky) gehoert **nicht** hinein: die
+     Leinwand faengt bei null an.
+
+     Das Lichtbild hkL dagegen liegt im **Feldgitter**. Es muss denselben Weg
+     nehmen wie das Gelaende, dessen Licht es ist: erst ins Grundriss-Mass
+     (mal kw/rW, plus kx), dann durch die Sichtmatrix. Genau das fehlte —
+     es wurde mit der Einheitsmatrix gezeichnet, also **ungedreht**, waehrend
+     der Ausschnitt gedreht war. Flach faellt das kaum auf; gedreht liegt die
+     ganze Schattierung schief ueber dem Relief, und das Wasser sieht aus, als
+     drehte seine Textur nicht mit. */
+  const f = rW / breite;                        // Leinwand -> Lichtleinwand
   const A2 = f * zz * ct, C2 = f * zz * st, B2 = -f * co * zz * st, D2 = f * co * zz * ct;
-  const EX = f * (ozX - kx) - A2 * cx - C2 * cy;
+  const EX = f * ozX - A2 * cx - C2 * cy;
+  const gx = kw / rW, gy = kh / rH;             // Feldgitter -> Grundriss
   // Fuer das Licht genuegt der Gesteinsstapel: er ist die volle Flaeche, der
   // Eisstapel eine Teilmenge davon. Zweimal aufzulegen kostete nur Zeit.
   for (let k = 1; k < NSCHEIBE; k++) {
     if (!fels[k]) continue;
     for (const tief of [k - 1, k]) {
       hcS.save();
-      hcS.setTransform(A2, B2, C2, D2, EX, f * (ozY - ky - tief * dz) - B2 * cx - D2 * cy);
+      hcS.setTransform(A2, B2, C2, D2, EX, f * (ozY - tief * dz) - B2 * cx - D2 * cy);
       hcS.beginPath();
       hcS.clip(fels[k], 'evenodd');
-      hcS.setTransform(1, 0, 0, 1, 0, 0);
+      hcS.transform(gx, 0, 0, gy, kx, ky);
       hcS.drawImage(hkL, 0, 0);
       hcS.restore();
     }
   }
+  /* Und die Lichtebene auf das beschneiden, was wirklich gemalt ist.
+     soft-light rechnet mit dem Untergrund — wo der **durchsichtig** ist, gibt
+     die Formel die Quelle unveraendert zurueck, und das ist hier ein
+     mittleres Grau. Genau das stand als grauer Saum um die Karte, sobald sie
+     gedreht war und der Lichtstapel ueber ihren Rand hinausragte.
+
+     destination-in behaelt vom Licht nur, was die fertige Karte deckt. Ein
+     Blit der grossen Leinwand in die kleine, einmal je Bild. */
+  /* Und der Blit **geschnitten auf das, was wirklich gemalt ist**.
+
+     soft-light rechnet mit dem Untergrund; wo der durchsichtig ist, gibt die
+     Formel die Quelle unveraendert zurueck, und die ist hier ein mittleres
+     Grau. Das stand als Saum um die Karte — am deutlichsten gedreht, weil der
+     Rand dann schraeg liegt.
+
+     Der Saum kommt nicht vom Hochrechnen, sondern von der **Aufloesung des
+     Ausschnitts**: der Lichtstapel wird im Feldgitter geschnitten, also bei
+     einem Viertel der Leinwandbreite, und ein grob gerasterter Rand deckt
+     Punkte ab, die die feine Farbe daneben nur halb fuellt. Dagegen hilft kein
+     Schrumpfen der Ebene — gemessen mit einem und mit zwei Punkten Erosion,
+     der Saum blieb.
+
+     Was hilft, ist derselbe Umriss in voller Aufloesung: die Ringe werden beim
+     Malen mitgesammelt (lichtMaske) und schneiden hier den Blit. Ein Pfad, ein
+     Blit, kein Ruecklesen der grossen Leinwand — das kostete 110 ms je Bild. */
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clip(lichtMaske);
   ctx.globalCompositeOperation = 'soft-light';
   ctx.imageSmoothingEnabled = true;
   ctx.drawImage(hkS, 0, 0, cv.width, cv.height);

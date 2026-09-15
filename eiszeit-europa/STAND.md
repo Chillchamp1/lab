@@ -121,6 +121,14 @@ Download, ein zweiter Regler. Das ist ein eigenes Projekt.
   werden als die ICE-6G_C-Zelle. Die Stufe am Eisrand wird dadurch über rund
   zehn Bildpunkte weich. Die DATED-Linien liegen in voller Schärfe darüber —
   sie sind die Aussage über den Rand.
+- **Über 90 Grad Drehung bleiben graue Wolken stehen.** Die Lichtebene wird je
+  Höhenscheibe mit der Regel „gerade-ungerade" beschnitten, damit Löcher —
+  Meeresboden unter der Scheibenhöhe — ausgespart bleiben; der Umriss, der
+  daraus als Maske für den Blit entsteht, kennt diese Löcher nicht mehr. Bei
+  kleinen Drehwinkeln liegt der Unterschied hinter der Karte, bei starken tritt
+  er als Wolke daneben. Der saubere Weg wäre eine Maske je Scheibe in voller
+  Auflösung, also ein Füllvorgang mehr je Scheibe. Bis dahin: die üblichen
+  Blickwinkel sind sauber, der Fehler steht hier.
 - **Gekippt ragt das Unsicherheitsband am Ostrand ein paar Pixel über die
   Karte.** Die DATED-Ringe sind auf das Gitterrechteck beschnitten; die
   Schnittkante wird nicht gestrichelt, aber die **Füllung** des Bandes wird an
