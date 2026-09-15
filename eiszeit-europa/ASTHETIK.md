@@ -591,7 +591,7 @@ Genau dort steht in der neuen Karte die **Meeresspiegelkurve**.
 
 ## 8b. Wo bewusst abgewichen wird
 
-Vier Stellen, alle aus demselben Grund: **der Ausschnitt der Vorlage ist
+Fünf Stellen, alle aus demselben Grund: **der Ausschnitt der Vorlage ist
 hochkant und lässt Platz, dieser ist fast quadratisch und lässt keinen.**
 Deutschland ist höher als breit und hat einen Umriss; dieser Rahmen ist ein
 gefülltes Rechteck von 760 × 778 Zellen.
@@ -601,6 +601,7 @@ gefülltes Rechteck von 760 × 778 Zellen.
 | `.wrap{height:100dvh}`, das Feld füllt den Schirm | `min-height`, und das Feld hält `aspect-ratio` der Karte | Auf 390 px füllte die Karte sonst **48 Prozent** des Feldes; der Rest war schwarz. Jetzt schrumpft die Bühne, und der Rand unten ist Seitengrund statt Loch in der Karte. |
 | Notiz und Faden liegen **hinter** der Karte, die Karte weicht ihnen aus | sie liegen **neben** der Karte (quer, ab 1 040 px) oder **unter** ihr (sonst) | Das Prinzip hängt daran, dass der Umriss Platz lässt. Deutschland tut das; ein gefülltes Rechteck tut es nirgends. Die Karte kann nicht ausweichen, also weicht der Text — und in einem queren Fenster geht er zur Seite, nicht nach unten: dort ist Platz, und die Karte bekommt die ganze Fensterhöhe statt der Hälfte. |
 | Die Bühne ist eine Spalte: Karte, Leiste, Regler untereinander | quer ein **zweispaltiges Blatt**: links die Karte über die ganze Höhe, rechts Leiter, Regler, Ticker und Notiz | Die Karte der Vorlage ist hochkant und füllt eine Spalte. Diese ist fast quadratisch: untereinander blieben ihr 21 Prozent des Fensters, nebeneinander sind es 59. |
+| Die Bühne hat Rand, Polster und einen Strich drumherum | hochkant **nichts davon**: die Karte läuft von Kante zu Kante | Auf 390 px sind Rand und Polster zehn Prozent der Kartenbreite. Die Vorlage kann sich das leisten, weil ihre Karte hochkant ohnehin schmal steht; diese füllt die Breite oder sie ist zu klein. |
 | Das Schild steht **auf** der Karte, mit einem Schein aus dem Seitengrund | es steht **über** ihr | Der Schein trägt, solange unter dem Schild Wasser liegt. Seit der Rahmen bis Grönland reicht, liegt dort Eis: weisse Schrift auf Weiss. Eine Zeile Höhe ist billiger als ein unlesbares Schild. |
 
 Und eine vierte, die nicht am Ausschnitt hängt, sondern am Gelände: die

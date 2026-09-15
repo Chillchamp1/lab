@@ -164,8 +164,8 @@ Download, ein zweiter Regler. Das ist ein eigenes Projekt.
   nimmt statt pauschal aus der Stapelhöhe.
 - **Die Schrägsicht rechnet die Scheibenringe je Bild neu**, solange die Uhr
   läuft — und seit der Trennung von Fels und Eis zwei Sätze davon. Gemessen an
-  der grossen Karte (884 × 864): 294 ms je Bild in der Standardkippung, 384 ms
-  stark gekippt, 173 ms flach. Der Kachelindex und die gesammelten Striche
+  der grossen Karte (884 × 864): 316 ms je Bild in der Standardkippung, 421 ms
+  stark gekippt, 180 ms flach. Der Kachelindex und die gesammelten Striche
   (METHODIK 8f) haben den Preis je Bildpunkt gedrittelt; teurer ist sie
   trotzdem, weil sie viermal so viel Karte zeigt. Die
   Vorlage friert ihr Feld ein, sobald es steht, und spart damit die teuersten

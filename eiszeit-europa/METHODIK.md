@@ -1054,6 +1054,37 @@ offene Kette füllt sich als Keil. Das Bild zeigte grosse schiefe Flächen quer
 über Russland und den Atlantik. Ein Marching-Squares-Ring ist entweder
 geschlossen oder Unsinn — dazwischen gibt es nichts.
 
+### Hochkant: die Karte randlos
+
+Der Rahmen der Bühne kostet dort am meisten, wo am wenigsten da ist. Auf 390 px
+Schirmbreite sind 6 px Seitenrand, 12 px Polster und ein Strich zusammen
+**zehn Prozent der Kartenbreite**. Hochkant fällt er deshalb weg: die Karte
+läuft von Kante zu Kante, und nur was Text ist, bekommt sein Polster zurück.
+
+Das Feld hält dabei mindestens die halbe Schirmhöhe (52 dvh). Die Karte selbst
+füllt davon nicht alles — bei einem Rahmen von 5 370 × 5 250 km und voller
+Breite steht sie auf 45 Prozent der Höhe, und der Rest ist der Raum, den die
+Schrägsicht nach oben braucht. Mehr ginge nur, indem die Karte seitlich
+beschnitten wird, und ein beschnittener Rahmen ist genau das, was dieser
+Ordner hinter sich hat (Abschnitt 1).
+
+Weggefallen ist hochkant auch Text: der lange Legendensatz (er wird nach zwei
+Zeilen abgeschnitten und sagt nichts, was die Leiter darüber nicht zeigt) und
+der Faden mit allen neun Abschnittsüberschriften (zwei Zeilen graue Wörter
+neben einer Notiz, die dasselbe sagt).
+
+### Mit dem Finger liess sich die Karte nicht schieben
+
+Und das seit dem ersten Tag. Das Schieben nahm den Weg aus `movementX` und
+`movementY` des Zeigerereignisses — die füllt der Browser für Maus und Stift
+zuverlässig, bei **Berührungen steht dort null**. Am Schreibtisch funktionierte
+alles, auf dem Telefon bewegte sich nichts, und keiner der Prüfläufe hat es
+gefangen: sie alle haben die Ansicht direkt gesetzt statt gezogen.
+
+Gerechnet wird der Weg jetzt selbst, aus der vorigen Position desselben
+Zeigers — dieselbe Zahl, nur nicht geliehen. Der Prüflauf zieht dafür einen
+echten Finger über die Leinwand und sieht nach, ob sich `vX` bewegt.
+
 ## 9. Kodierung und Nutzlast
 
 Grundlage ist der Zickzack-Varint der Vorlage im selben 64-Zeichen-Alphabet.
@@ -1160,10 +1191,10 @@ aus achtzehn Bildern:
 
 | | |
 |---|---|
-| flach | 173 ms |
-| in der Standardkippung | 294 ms |
-| stark gekippt | 384 ms |
-| in der Standardkippung, heute (kein Eis) | 296 ms |
+| flach | 180 ms |
+| in der Standardkippung | 316 ms |
+| stark gekippt | 421 ms |
+| in der Standardkippung, heute (kein Eis) | 310 ms |
 
 Gemessen an der **grossen** Karte: 884 × 864 Punkte, Feld 680 × 665. Vorher
 waren es 107 ms flach und 194 ms gekippt — bei einer Karte von 515 × 530 und
@@ -1172,7 +1203,7 @@ der Feldzellen. Auf dieselbe Kartengrösse gerechnet ist die Seite schneller
 geworden, nicht langsamer (METHODIK 8f); in absoluten Zahlen ist sie teurer,
 weil sie viermal so viel Karte zeigt.
 
-Die Schrägsicht ist der Standard, und sie kostet: 294 statt 173 ms. Ein
+Die Schrägsicht ist der Standard, und sie kostet: 316 statt 180 ms. Ein
 Eisschild ist ein Körper, und flach gesehen ist er eine weisse Fläche — die
 zwölf Grad sind der Hinweis, dass es etwas zu kippen gibt.
 
