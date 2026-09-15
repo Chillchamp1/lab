@@ -49,6 +49,9 @@ const WARM = Number(process.env.WARM ?? 4);
 // steht diese Karte still: siehe raster.mjs. Gemessen ist 0,4 der beste Wert
 // für die grossen Staaten, 0,6 für den Median über alle Countys.
 const BODEN = Number(process.env.BODEN ?? 0.4);
+// Wie viele umgestülpte Ringe ein Durchgang haben darf, um behalten zu werden.
+// Siehe kartogramm.mjs: bei null steht diese Karte still.
+const FALTEN = Number(process.env.FALTEN ?? 30);
 // Wohin die gerechnete Zeitreihe zwischengelegt wird. Mit einem eigenen Namen
 // lässt sich ein schneller Probebau fahren, ohne den guten Stand zu überschreiben.
 const CACHE = process.env.CACHE ? '-' + process.env.CACHE : '';
@@ -214,13 +217,13 @@ if (kommtSpaet.length) {
   log(`  ohne ${spaeteNamen.join(', ')}`);
   reihen.push({ id: 'kern', name: 'without ' + spaeteNamen.join(' and '), bilder: bilderOhne,
     zeitreihe: rechneZeitreihe({ gebiete: geo.gebiete, X: geo.X, Y: geo.Y, attr: modell.attr,
-      bilder: bilderOhne, groesste, gitter: GITTER, kaltDurchgaenge: KALT, warmDurchgaenge: WARM, boden: BODEN,
+      bilder: bilderOhne, groesste, gitter: GITTER, kaltDurchgaenge: KALT, warmDurchgaenge: WARM, boden: BODEN, faltGrenze: FALTEN,
       cache: 'zeitreihe-kern' + CACHE + '.json', log }) });
 }
 log('  mit allen Kreisen');
 reihen.push({ id: 'alle', name: kommtSpaet.length ? 'with ' + spaeteNamen.join(' and ') : 'all counties',
   bilder, zeitreihe: rechneZeitreihe({ gebiete: geo.gebiete, X: geo.X, Y: geo.Y, attr: modell.attr,
-    bilder, groesste, gitter: GITTER, kaltDurchgaenge: KALT, warmDurchgaenge: WARM, boden: BODEN,
+    bilder, groesste, gitter: GITTER, kaltDurchgaenge: KALT, warmDurchgaenge: WARM, boden: BODEN, faltGrenze: FALTEN,
     cache: 'zeitreihe-alle' + CACHE + '.json', log }) });
 
 // Die Form, auf der die Seite steht: der Mittelwert aller Kartogramme, zur

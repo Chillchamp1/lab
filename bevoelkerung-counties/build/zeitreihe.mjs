@@ -44,11 +44,11 @@ function schwerpunkt(gebiete, X, Y) {
 
 export function rechneZeitreihe({
   gebiete, X, Y, attr, bilder, groesste = null,
-  gitter = 1600, kaltDurchgaenge = 6, warmDurchgaenge = 4, boden = 0,
+  gitter = 1600, kaltDurchgaenge = 6, warmDurchgaenge = 4, boden = 0, faltGrenze = 0,
   cache = CACHE, log = () => {},
 }) {
   const schluessel = JSON.stringify({
-    gitter, kaltDurchgaenge, warmDurchgaenge, boden, knoten: X.length, groesste,
+    gitter, kaltDurchgaenge, warmDurchgaenge, boden, faltGrenze, knoten: X.length, groesste,
     bilder: bilder.map(b => [b.jahr, b.summe, b.werte.size]),
   });
   if (existsSync(cache)) {
@@ -87,7 +87,7 @@ export function rechneZeitreihe({
     const abgedeckt = attr.map(a => b.werte.has(a.ags));
     log(`  ${b.jahr}: ${b.werte.size} Kreise, ${(b.summe / 1e6).toFixed(2)} Mio`);
     const k = rechneKartogramm({
-      gebiete, X: startX, Y: startY, werte, abgedeckt, gitter, durchgaenge, boden, log,
+      gebiete, X: startX, Y: startY, werte, abgedeckt, gitter, durchgaenge, boden, faltGrenze, log,
     });
     zustaende.set(b.jahr, {
       jahr: b.jahr,

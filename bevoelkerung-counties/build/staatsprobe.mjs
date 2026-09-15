@@ -32,7 +32,7 @@ for (const bd of (process.env.BODEN ?? '0').split(',').map(Number))
 for (const g of (process.env.GS ?? '900,1600,2400').split(',').map(Number)) {
   const t0 = Date.now(); let frei = 0;
   const k = rechneKartogramm({ gebiete: geo.gebiete, X: geo.X, Y: geo.Y, werte, abgedeckt,
-    gitter: g, boden: bd, wachstum: wa, durchgaenge: Number(process.env.D ?? 8), log: t => { if (/gefaltet 0$/.test(t)) frei++; } });
+    gitter: g, boden: bd, wachstum: wa, faltGrenze: Number(process.env.FALTEN ?? 0), durchgaenge: Number(process.env.D ?? 8), log: t => { if (/gefaltet 0$/.test(t)) frei++; } });
   // Staatsflächen im Ergebnis
   const fl = {}; let gesFl = 0;
   geo.gebiete.forEach((ringe, gi) => {
