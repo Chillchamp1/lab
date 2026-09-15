@@ -42,6 +42,12 @@
     "datum": "2026-09"
   },
   {
+    "slug": "bevoelkerung-counties",
+    "titel": "America, drawn by its people",
+    "beschreibung": "Dieselbe Geländekarte für 3.108 US-Countys: dreizehn Volkszählungen von 1900 bis 2020, von 75,5 auf 329,3 Millionen Menschen.",
+    "datum": "2026-09"
+  },
+  {
     "slug": "eiszeit-europa",
     "titel": "Europa unter dem Eis",
     "beschreibung": "Eine animierte Reliefkarte Europas durch die letzte Eiszeit: echtes Gebirgsrelief aus einem 15-Bogensekunden-Höhenmodell, darunter die Kruste, die unter dem Eis einsinkt und danach wieder steigt, darüber der skandinavische Eisschild und das veröffentlichte Unsicherheitsband seines Randes. Die Verarbeitungskette steht und ist geprüft — die Seite wartet noch auf die drei Datensätze und zeigt bis dahin, woraus sie gebaut wird, statt erfundenes Gelände. In English.",
