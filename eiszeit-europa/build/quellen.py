@@ -71,20 +71,25 @@ ZWISCHEN = Path(os.environ.get("ZWISCHEN") or (HIER / "zwischen"))
 # Jede Kante hat einen Grund, und es ist immer derselbe: sie haelt etwas, das
 # zur Eiszeit gehoert.
 #
-#   Westen  -2470  Island und der ostgroenlaendische Schelf
-#   Osten   +2900  das Kaspische Meer und die Obmuendung
+#   Westen  -2150  Island ganz, Kap St. Vincent (-2111) knapp
+#   Osten   +2350  der Ural (+2167) und die Obmuendung (+2124)
 #   Sueden  -1850  gerade noch Sizilien (Kap Passero -1807) und Tarifa (-1630)
 #   Norden  +3400  Franz-Josef-Land — und damit 97 Prozent der DATED-1-Raender
 #
-# Der Sueden stand bei -2100 und hielt damit 300 km Sahara, die nichts sagen.
-# Der Norden ist das Thema, und jeder Kilometer, den der Rahmen im Sueden
-# aufgibt, ist einer, den die Karte im Fenster groesser stehen darf.
+# Der Rahmen ist zweimal enger geworden, und beide Male aus demselben Grund:
+# was die Karte nicht zeigen muss, kostet Nutzlast **und** Rechenzeit in jedem
+# Bild. Der Sueden gab 250 km Sahara auf, Westen und Osten je 300 bis 550 km
+# offenen Atlantik und kaspische Steppe. Der Norden nie — dort liegt das Thema.
+#
+# Und ein Nebeneffekt, der kein Nebeneffekt ist: 4 500 auf 5 250 km sind
+# **hochkant**. Auf einem hochkant gehaltenen Telefon fuellt die Karte damit
+# 54 statt 45 Prozent der Schirmhoehe.
 #
 # Der Norden ist der Grund fuer das Ganze. Das alte Fenster endete bei 72 N und
 # 45 O und schnitt damit ein Viertel der DATED-1-Rekonstruktion ab: den
 # **barentsisch-karischen Eisschild**, der auf einem Schelfmeer lag, so gross
 # war wie der skandinavische und dessen Rand das Fenster gar nicht mehr zeigte.
-X0, X1 = -2470.0, 2900.0
+X0, X1 = -2150.0, 2350.0
 Y0, Y1 = -1850.0, 3400.0
 # Mitte der Projektion. 53 N / 15 O liegt im Schwerpunkt des alten Fensters und
 # bleibt es auch fuer den neuen Rahmen: dort ist die Verzerrung am kleinsten,
@@ -92,13 +97,13 @@ Y0, Y1 = -1850.0, 3400.0
 MLON, MLAT = 15.0, 53.0
 ERDR = 6371.0088  # km, Radius der flaechengleichen Kugel
 
-# 900 Zellen Breite, und die Zahl ist gemessen, nicht gegriffen: seit die Karte
-# neben der Leiste steht statt ueber ihr, wird sie auf einem Schirm von 1 440
-# Punkten rund 900 Punkte breit gezeichnet. Bei 5 370 km Rahmenbreite ist das
-# ein Bildpunkt je 6 km — also eine Gitterzelle je Bildpunkt. Es waren 760 (7,1
-# km), solange die Karte halb so gross stand. Die Messreihe steht in
-# ../METHODIK.md, Abschnitt 9.
-BREITE = int(os.environ.get("BREITE", "900"))
+# 760 Zellen Breite, und die Zahl ist gemessen, nicht gegriffen: die Karte steht
+# neben der Leiste und bekommt die ganze Fensterhoehe; hochkant im Rahmen heisst
+# das, die **Hoehe** bindet. Auf einem Schirm von 1 440 x 900 wird sie rund 750
+# Punkte breit gezeichnet, bei 4 500 km Rahmenbreite also ein Bildpunkt je 6 km
+# — eine Gitterzelle je Bildpunkt. Die Messreihe steht in ../METHODIK.md,
+# Abschnitt 9.
+BREITE = int(os.environ.get("BREITE", "760"))
 
 log = lambda s: print(s, file=sys.stderr)
 
@@ -300,7 +305,13 @@ STAEDTE = [
     # Zwei dazu, seit der Rahmen in Kilometern steht: Island liegt jetzt ganz
     # im Bild, und zwischen Moskau und dem Ostrand lagen 1 500 km ohne Anker.
     ("Reykjavik",  -21.940, 64.147),
-    ("Yekaterinburg", 60.597, 56.838),
+    # Der Anker im Osten war Jekaterinburg; mit dem engeren Rahmen faellt es
+    # heraus (x = 2 555 bei einer Ostkante von 2 350). Perm steht 280 km
+    # westlich davon, noch am Ural — und Archangelsk dazu, weil es genau dort
+    # liegt, wo der fennoskandische und der barentsisch-karische Schild sich
+    # trafen.
+    ("Perm",        56.250, 58.000),
+    ("Arkhangelsk", 40.530, 64.540),
 ]
 
 # Der Mont Blanc als Massstab fuer die Eiskuppe. Seine Hoehe wird **nicht**

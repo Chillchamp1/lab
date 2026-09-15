@@ -25,12 +25,12 @@ Einzeln geht auch: `./holen.sh ice6g`, `./holen.sh dated`, `./holen.sh dem`.
 |---|---|---|
 | `data/raw/ice6g/I6_C.VM5a_1deg.<t>.nc` | [Peltier, ICE-6G_C (VM5a), 1°](https://www.atmosp.physics.utoronto.ca/~peltier/data.php) | 48 Dateien, 26 … 0 ka, als `.nc.gz` geladen und entpackt |
 | `data/raw/dated1/allfiles.zip` → `entpackt/` | [PANGAEA doi:10.1594/PANGAEA.848117](https://doi.pangaea.de/10.1594/PANGAEA.848117) | 25 … 10 ka, je 3 Linien |
-| `data/raw/dem/…` | [ETOPO 2022, 15", `15s_surface_elev_netcdf`](https://www.ngdc.noaa.gov/thredds/fileServer/global/ETOPO2022/15s/15s_surface_elev_netcdf/) | 39 Kacheln, 780 MB |
+| `data/raw/dem/…` | [ETOPO 2022, 15", `15s_surface_elev_netcdf`](https://www.ngdc.noaa.gov/thredds/fileServer/global/ETOPO2022/15s/15s_surface_elev_netcdf/) | 34 Kacheln, 680 MB |
 
 Das DEM ist der grosse Posten. Wer den globalen GEBCO-Satz nicht will:
 
 ```
-DEM=etopo ./holen.sh dem      # ETOPO 2022, 15", 39 Kacheln, 780 MB
+DEM=etopo ./holen.sh dem      # ETOPO 2022, 15", 34 Kacheln, 680 MB
 ```
 
 Genommen wird die **Oberfläche** (`surface`), nicht der Fels (`bed`), und das
@@ -84,7 +84,7 @@ bestätigt die Ablage, und `build.mjs` läuft ohne Änderung.
 den vorigen diffen.
 
 Der teure Schritt ist `quellen.py`: 15 Bogensekunden über den Rahmen (in Grad
-64,3° W … 97,6° O und 31,0 … 83,9° N) sind über 500 Millionen Werte, die
+61,3° W … 93,2° O und 32,8 … 83,9° N) sind über 500 Millionen Werte, die
 streifenweise gelesen und auf das Zielgitter heruntergemittelt werden müssen. Das Ergebnis liegt in
 `zwischen/`; löschen erzwingt eine Neurechnung.
 

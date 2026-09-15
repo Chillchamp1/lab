@@ -107,7 +107,20 @@ body{background:var(--plane);color:var(--ink);
      gerade uebrig laesst — und die Notiz wechselt mit dem Abschnitt ihre
      Laenge. Drei Zeilen weniger, und die Karte waere um dreissig Punkte
      gewachsen: das Bild hopst bei jedem Abschnittswechsel. */
-  .buehne .feld{flex:0 0 auto;height:52vh;height:52svh;min-height:0}
+  /* Die Feldhoehe folgt der **Karte**, nicht dem Schirm: volle Breite geteilt
+     durch ihr Seitenverhaeltnis. Vorher stand hier eine feste Zahl (52 svh),
+     und solange der Rahmen quer war, passte das — die Breite band. Seit er
+     hochkant ist (4 500 auf 5 250 km), bindet die Hoehe: die Karte stand 376
+     statt 390 Punkte breit und liess links und rechts sieben Punkte Rand
+     stehen. Genau den sollte es nicht geben.
+
+     Fest ist die Hoehe trotzdem, denn sie haengt nur an der Schirmbreite —
+     nicht an der Notiz, die mit dem Abschnitt ihre Laenge wechselt. Gedeckelt
+     bei 62 svh, damit auf einem kurzen Schirm noch Platz fuer die Leiste
+     bleibt. */
+  .buehne .feld{flex:0 0 auto;min-height:0;
+    height:min(calc(100vw / var(--kartenmass,1)), 62vh);
+    height:min(calc(100vw / var(--kartenmass,1)), 62svh)}
   /* Und die Notiz nimmt, was uebrig ist, statt die Seite laenger zu machen.
      Eine laengere Seite heisst auf dem Telefon: die Adressleiste faehrt beim
      Scrollen ein, die Schirmhoehe aendert sich, und alles darueber wandert
@@ -148,7 +161,7 @@ body{background:var(--plane);color:var(--ink);
    Mit aspect-ratio schrumpft stattdessen die Buehne, und der Rand unten ist
    Seitengrund statt Loch in der Karte. */
 .feld{position:relative;z-index:1;flex:0 1 auto;min-height:0;
-  aspect-ratio:var(--kartenmass,1.17)}
+  aspect-ratio:var(--kartenmass,0.857)}
 /* Breite und Hoehe kommen aus masse(): die Leinwand ist genau die Karte, ohne
    schwarzen Rand darin. */
 canvas{position:absolute;left:0;top:0}
