@@ -35,7 +35,17 @@ const NBAND = Number(process.env.NBAND ?? 25);
 const NEIS = Number(process.env.EISBAND ?? 12);
 const LANDSTUFE = Number(process.env.LANDSTUFE ?? 250);
 const WASSERSTUFE = Number(process.env.WASSERSTUFE ?? 500);
-const EISSTUFE = Number(process.env.EISSTUFE ?? 300);
+/* Die Eisstufe ist **dieselbe wie die Landstufe**, und das aus zwei Gruenden.
+
+   Der erste ist gemessen: die hoechste Eisoberflaeche im Fenster steht bei
+   2 798 m. Mit 300 m je Band reichte die Leiter bis 3 600 m, und ihre obersten
+   drei Baender — die kraeftig blauen — kamen in keinem einzigen Bild vor. Mit
+   250 m endet sie bei 3 000 m, und die Kuppe erreicht das letzte Band.
+
+   Der zweite ist der Scheibenstapel: seine Platten sind eine Landstufe dick.
+   Mit derselben Stufe fuer das Eis faellt jede Eisbandgrenze auf eine
+   Plattenkante, so wie es beim Gestein schon der Fall ist. */
+const EISSTUFE = Number(process.env.EISSTUFE ?? 250);
 
 /* ---------- Die Seite, solange die Daten fehlen ----------
    Sie braucht keine Zwischendateien und steht deshalb **vor** der Pruefung
@@ -67,8 +77,17 @@ const mC = monoton(cvd), mE = monoton(eis);
 log(`  Gestein ${gestein.length} Baender (${WASSER} unter Null), Eis ${eis.length}`);
 log(`  CVD-Leiter monoton in der Helligkeit: ${mC.verletzt === 0 ? 'ja' : 'NEIN (' + mC.verletzt + ')'}`
   + `, kleinster Schritt ${mC.kleinsterSchritt.toFixed(4)}`);
-log(`  Eisleiter  monoton: ${mE.verletzt === 0 ? 'ja' : 'NEIN'}`
-  + `, kleinster Schritt ${mE.kleinsterSchritt.toFixed(4)}`);
+/* Die Eisleiter laeuft nach oben **dunkler** — vom fast weissen Randeis ins
+   Eisblau der Kuppe. Das ist Absicht (leiter.mjs, eisRampe): die
+   Gesteinsleiter wird nach oben heller, und liefen beide gleich, stiessen sie
+   an ihrem hellen Ende aneinander. Gemessen wird trotzdem, nur andersherum. */
+const eisFaellt = mE.verletzt === eis.length - 1;
+log(`  Eisleiter  Helligkeit faellt durchgehend: ${eisFaellt ? 'ja' : 'NEIN'}`
+  + `, staerkster Schritt ${(-mE.kleinsterSchritt).toFixed(4)}`);
+if (!eisFaellt) {
+  log('  ACHTUNG: die Eisleiter soll nach oben gleichmaessig dunkler werden.');
+  log('           Eine Stelle, an der sie umkehrt, macht zwei Hoehen gleich hell.');
+}
 if (mC.verletzt) {
   log('  ABBRUCH: die zweite Leiter ist fuer Rot-Gruen-Schwaeche da. Faellt ihre');
   log('           Helligkeit irgendwo, taugt sie dafuer nicht.');

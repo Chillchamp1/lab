@@ -641,6 +641,52 @@ zwei Platten blieb ein Spalt offen, wo die Ringe weit auseinanderliegen — an
 steilen Kuesten. Die Wand wurde mit einem einzigen Strich gemalt, sobald die
 Platten duenn genug waren. Jetzt sind es mindestens zwei.
 
+### Der Rahmen der Platten, und was darunter fehlte
+
+Der Scheibenstapel lief von −1000 bis 3800 m. Alles darunter hatte keine
+Platte, also auch keine Farbe: **neunzehn Prozent der Karte** — der ganze
+Atlantik, das ganze Mittelmeer, die Norwegische See — standen gekippt als
+schwarze Löcher da, während sie flach in vier Blautönen lagen.
+
+Der Rahmen ist jetzt **die Farbleiter**: von der untersten Bandgrenze
+(−4000 m) bis zur obersten (4250 m), und die Plattendicke ist die Landstufe
+(250 m). Weil ein Wasserband genau zwei Landstufen misst, fällt damit jede
+Bandgrenze auf eine Plattenkante — Farbe, Höhenlinie und Plattenrand sind
+dieselbe Zahl. Das ist der Grundsatz der Karte, der bisher nur flach galt.
+
+Die zwei Prozent, die tiefer liegen als die unterste Bandgrenze, liegen auf
+einem **Sockel**: die ganze Kartenfläche in der Farbe des tiefsten Bandes,
+genau wie sie in der Farbleiter im untersten Band liegen.
+
+Kosten: 33 Platten statt 26, also 162 statt 132 ms je Bild gekippt.
+
+### Zwei Farbentscheidungen, beide gemessen
+
+**Das tiefste Wasserband** lag bei einer Helligkeit von 0,22. Auf dem fast
+schwarzen Seitengrund war der Atlantik davon nicht zu unterscheiden, und das
+Mittelmeer las sich als Loch in der Karte. Jetzt 0,33 — immer noch das
+dunkelste Blau der Leiter, aber vom Grund getrennt.
+
+**Die Eisleiter läuft jetzt nach oben blauer**, vom fast weissen Randeis ins
+Eisblau der Kuppe, und ihre Helligkeit fällt dabei. Das läuft der
+Atlaskonvention zuwider, und das ist hier richtig: die Gesteinsleiter daneben
+wird nach oben heller; liefen beide gleich, stiessen sie an ihrem hellen Ende
+aneinander. So trennt schon die Richtung der Helligkeit die Materialien.
+
+Dazu zwei Messungen, ohne die die Leiter nicht gegriffen hätte:
+
+| | |
+|---|---|
+| höchste Eisoberfläche im Fenster | **2 798 m** |
+| Leiter reichte bis | 3 600 m (12 × 300 m) |
+| Folge | die obersten drei Bänder — die kräftig blauen — kamen in keinem Bild vor |
+| jetzt | 12 × **250 m** = 3 000 m, dieselbe Stufe wie beim Land |
+
+Und die Stützstellen der Leiter liegen **nicht** gleichmässig: ein Eisschild
+ist eine flache Kuppel, die Hälfte seiner Fläche liegt unter einem Drittel
+seiner Höhe (bei 22 ka: Median 804 m, 90 Prozent unter 2 081 m). Eine lineare
+Bahn liesse die halbe Fläche im blassen Teil der Leiter.
+
 ## 9. Kodierung und Nutzlast
 
 Grundlage ist der Zickzack-Varint der Vorlage im selben 64-Zeichen-Alphabet.
@@ -731,8 +777,8 @@ aus fünf Bildern:
 | | |
 |---|---|
 | flach, Jahr läuft | 92 ms |
-| gekippt, Jahr läuft | 132 ms |
-| gekippt, heute (kein Eis) | 101 ms |
+| gekippt, Jahr läuft | 162 ms |
+| gekippt, heute (kein Eis) | 132 ms |
 
 Zum Vergleich nennt die Vorlage für ihre Karte im selben Messgeschirr 143 ms
 flach und 133 ms gekippt. Die Zahlen sind nicht unmittelbar vergleichbar —

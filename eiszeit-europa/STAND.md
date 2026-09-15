@@ -121,6 +121,12 @@ Download, ein zweiter Regler. Das ist ein eigenes Projekt.
   werden als die ICE-6G_C-Zelle. Die Stufe am Eisrand wird dadurch über rund
   zehn Bildpunkte weich. Die DATED-Linien liegen in voller Schärfe darüber —
   sie sind die Aussage über den Rand.
+- **Wenn das Eis weg ist, stimmen die Küsten noch nicht.** Das ist kein Fehler,
+  sondern die Aussage: bei 8,5 ka liegt kein Eis mehr im Fenster, der
+  Meeresspiegel steht aber noch bei −6,6 m und die Kruste bewegt sich weiter.
+  `Topo_Diff` reicht dort bis −206 m. Erst bei 0 ka ist es exakt null — dann
+  ist die Küste **genau** die moderne, weil das moderne Höhenmodell die Karte
+  ist.
 - **Über 90 Grad Drehung bleiben graue Wolken stehen.** Die Lichtebene wird je
   Höhenscheibe mit der Regel „gerade-ungerade" beschnitten, damit Löcher —
   Meeresboden unter der Scheibenhöhe — ausgespart bleiben; der Umriss, der
