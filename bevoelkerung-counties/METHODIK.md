@@ -44,7 +44,7 @@ Nicht das Gitter war schuld, sondern die Geometrie.
 Die Seite zeigt nicht das volle Kartogramm, sondern eine Mischung:
 `Ort(a) = Landkarte + a · (Kartogramm − Landkarte)`. Zwischenformen kosten
 nichts, weil nur **eine** Form in der Nutzlast steht und der Rest gerechnet
-wird. Deutschland steht auf `a = 0,5`. Diese Karte steht auf **0,28**.
+wird. Deutschland steht auf `a = 0,5`. Diese Karte steht auf **0,12**.
 
 Das ist gemessen. Wie weit das volle Kartogramm die Knoten verschiebt, relativ
 zur Diagonale der eigenen Karte:
@@ -54,10 +54,17 @@ zur Diagonale der eigenen Karte:
 | Deutschland | 3,83 % | 9,45 % |
 | Vereinigte Staaten | **17,71 %** | **26,85 %** |
 
-Das Viereinhalbfache. Bei gleichem `a` wäre diese Karte entsprechend stärker
-aufgebläht — die Ostküste quillt auf, der Westen wird flachgedrückt, und das
-Land verliert seine Form. Um Deutschlands *gezeichnete* Verformung zu treffen,
-müsste `a` auf 0,11; dann täte das Kartogramm gar nichts mehr.
+Diese Zahlen stammen aus der Zeit, als das Kartogramm noch gar nicht rechnete
+(Abschnitt 4). Mit einem funktionierenden Kartogramm verschiebt es 16,72 % im
+Mittel — mehr als das Vierfache der deutschen 3,83 %.
+
+Geeicht wird deshalb auf die **gezeichnete** Verformung, nicht auf die Zahl:
+
+    Deutschland    3,83 %  ×0,5   = 1,92 % gezeichnet
+    Vereinigte St. 16,72 %  ×0,12  = 2,01 % gezeichnet
+
+Also derselbe Maßstab. Dass dafür eine viel kleinere Zahl nötig ist, liegt nicht
+an der Karte, sondern am Land.
 
 **Der zweite Grund kam beim Ansehen dazu.** Gefärbt wird die *gezeichnete*
 Dichte, nicht die wirkliche. Zieht das Kartogramm eine Stadt auseinander, sinkt
