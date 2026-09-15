@@ -23,14 +23,24 @@ export function baueSeite({ D, nutzlast, gestein, gesteinCvd, eisrampe, notizen,
   --line:#232321; --axis:#33332f; --ring:rgba(255,255,255,.09);
 }
 *{box-sizing:border-box}
-html,body{margin:0;height:100%}
+html,body{margin:0;height:100%;overscroll-behavior:none}
 body{background:var(--plane);color:var(--ink);
   font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.5;
   -webkit-text-size-adjust:100%;overflow:hidden}
 /* min-height statt height, und die Buehne oben ausgerichtet: sie ist so hoch
    wie ihr Inhalt, hoechstens schirmhoch. Die Vorlage nagelt ihre auf 100dvh —
    richtig fuer einen hochkanten Ausschnitt, falsch fuer diesen queren. */
-.wrap{max-width:900px;margin:0 auto;min-height:100dvh;padding:6px;
+/* **svh statt dvh, und das ist der ganze Trick.** dvh ist die *dynamische*
+   Schirmhoehe: auf dem Telefon wandert sie, sobald die Adressleiste ein- oder
+   ausfaehrt, und jede Wanderung legt die Buehne neu aus — die Karte wird neu
+   gemessen, neu gezeichnet und springt. Wer dabei scrollt, faehrt die Leiste
+   weiter ein, was die Hoehe weiter aendert: das Bild hopst.
+
+   svh ist die *kleine* Schirmhoehe — die mit ausgefahrener Leiste, also die
+   kleinste, die vorkommt. Damit steht die Auslegung fest: faehrt die Leiste
+   ein, bleibt unten etwas Seitengrund stehen, und nichts bewegt sich. vh davor
+   als Rueckfall fuer Browser, die svh nicht kennen. */
+.wrap{max-width:900px;margin:0 auto;min-height:100vh;min-height:100svh;padding:6px;
   display:flex;align-items:flex-start}
 /* container-type macht die Buehne zum Massstab fuer alles darin: 1cqw ist ein
    Hundertstel ihrer Breite. Damit waechst der Text mit der Karte, statt in
@@ -38,7 +48,8 @@ body{background:var(--plane);color:var(--ink);
    so breit ist wie sein Inhalt — und in der Legende steht eine Zeile, die
    nicht umbrechen darf. */
 .buehne{container-type:inline-size;
-  position:relative;flex:0 1 auto;width:100%;min-width:0;min-height:0;max-height:calc(100dvh - 12px);
+  position:relative;flex:0 1 auto;width:100%;min-width:0;min-height:0;
+  max-height:calc(100vh - 12px);max-height:calc(100svh - 12px);
   display:flex;flex-direction:column;
   background:var(--surface);border:1px solid var(--ring);border-radius:14px;padding:10px 12px 8px}
 
@@ -92,9 +103,26 @@ body{background:var(--plane);color:var(--ink);
   .wrap{padding:0;align-items:stretch}
   .buehne{border:0;border-radius:0;padding:0;background:transparent;
     max-height:none}
-  .buehne .feld{min-height:52dvh}
+  /* Fest, nicht nur mindestens: sonst nimmt das Feld sich, was die Notiz
+     gerade uebrig laesst — und die Notiz wechselt mit dem Abschnitt ihre
+     Laenge. Drei Zeilen weniger, und die Karte waere um dreissig Punkte
+     gewachsen: das Bild hopst bei jedem Abschnittswechsel. */
+  .buehne .feld{flex:0 0 auto;height:52vh;height:52svh;min-height:0}
+  /* Und die Notiz nimmt, was uebrig ist, statt die Seite laenger zu machen.
+     Eine laengere Seite heisst auf dem Telefon: die Adressleiste faehrt beim
+     Scrollen ein, die Schirmhoehe aendert sich, und alles darueber wandert
+     mit. contain haelt das Scrollen in der Notiz. */
+  .text{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain}
   .schild,.fuss,.regler,.msp,.sicht,.text{padding-inline:10px}
   .schild{padding-top:8px}
+  /* Die Zeitangabe steht hochkant **immer** in ihrer eigenen Zeile. Neben der
+     Jahreszahl passt sie mal (auf einer Zeitscheibe: „ICE-6G_C time slice 21
+     ka") und mal nicht (dazwischen: „between the 22 and 21 ka slices —
+     interpolated"); dann bricht sie um, das Schild wird 28 Punkte hoeher, und
+     die ganze Karte darunter rutscht nach unten. Achtundvierzigmal im Film —
+     das war das Hopsen. Eine feste Zeile kostet weniger als ein springendes
+     Bild. */
+  .schild>span{flex:0 0 100%}
   .sicht{padding-bottom:10px}
   /* Der lange Legendensatz wird auf dem Telefon ohnehin nach zwei Zeilen
      abgeschnitten und sagt dort nichts, was die Leiter darueber nicht zeigt. */
@@ -133,7 +161,7 @@ canvas{position:absolute;left:0;top:0}
    Der Bruch liegt dort, wo die Spalte daneben noch Text tragen kann. */
 @media (min-width:1040px) and (min-aspect-ratio:11/10){
   .wrap{max-width:none;padding:8px}
-  .buehne{display:grid;height:calc(100dvh - 16px);max-height:none;
+  .buehne{display:grid;height:calc(100vh - 16px);height:calc(100svh - 16px);max-height:none;
     grid-template-columns:minmax(0,1fr) clamp(280px,23vw,390px);
     grid-template-rows:auto auto auto auto auto minmax(0,1fr);
     column-gap:16px}
@@ -2541,7 +2569,7 @@ html,body{margin:0;min-height:100%}
 body{background:var(--plane);color:var(--ink);
   font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.5;
   -webkit-text-size-adjust:100%}
-.wrap{max-width:900px;margin:0 auto;min-height:100dvh;padding:6px;display:flex}
+.wrap{max-width:900px;margin:0 auto;min-height:100vh;min-height:100svh;padding:6px;display:flex}
 .buehne{container-type:inline-size;
   position:relative;flex:1;min-width:0;
   background:var(--surface);border:1px solid var(--ring);border-radius:14px;

@@ -1104,6 +1104,34 @@ Zeilen abgeschnitten und sagt nichts, was die Leiter darüber nicht zeigt) und
 der Faden mit allen neun Abschnittsüberschriften (zwei Zeilen graue Wörter
 neben einer Notiz, die dasselbe sagt).
 
+### Das Bild hopste, und zwar aus drei Gründen
+
+Alle drei sind Layout, keiner ist Rechnen, und alle drei fallen nur hochkant
+auf, weil dort alles untereinander steht.
+
+**`dvh` ist die *dynamische* Schirmhöhe.** Auf dem Telefon wandert sie, sobald
+die Adressleiste ein- oder ausfährt, und jede Wanderung legt die Bühne neu aus.
+Wer dabei scrollt, fährt die Leiste weiter ein — das Bild hopst, und das
+Scrollen macht es schlimmer. Jetzt `svh`, die *kleine* Schirmhöhe: die mit
+ausgefahrener Leiste, also die kleinste, die vorkommt. Damit steht die
+Auslegung fest; fährt die Leiste ein, bleibt unten Seitengrund stehen.
+
+**Das Feld nahm sich, was die Notiz übrig liess.** Die Notiz wechselt mit dem
+Abschnitt ihre Länge, und drei Zeilen weniger hiessen dreissig Punkte mehr
+Karte. Jetzt steht die Kartenhöhe hochkant **fest** (52 svh), und die Notiz
+nimmt den Rest und rollt in sich selbst, statt die Seite länger zu machen.
+
+**Und das Schild wuchs um eine Zeile.** Neben der Jahreszahl passt die
+Zeitangabe mal („ICE-6G_C time slice 21 ka") und mal nicht („between the 22 and
+21 ka slices — interpolated"); dann bricht sie um, das Schild wird 28 Punkte
+höher, und die ganze Karte rutscht nach. Das passiert **achtundvierzigmal im
+Film** — bei jedem Wechsel zwischen einer Zeitscheibe und der Strecke dazwischen.
+Hochkant steht die Zeitangabe deshalb jetzt immer in ihrer eigenen Zeile.
+
+Nachgemessen über sieben Stände des Films auf 390 × 844: Feld 390 × 439, obere
+Kante bei 67, Seitenhöhe 844 — siebenmal dieselbe Zahl. Vorher sprang die obere
+Kante zwischen 39 und 67.
+
 ### Mit dem Finger liess sich die Karte nicht schieben
 
 Und das seit dem ersten Tag. Das Schieben nahm den Weg aus `movementX` und
