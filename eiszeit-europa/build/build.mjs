@@ -55,7 +55,7 @@ if (process.argv.includes('--leer')) {
   const zeit = ['26', '48'];
   const leer = baueLeerseite({
     zeitscheiben: zeit,
-    fenster: '12&#176;W to 45&#176;E, 34&#176;N to 72&#176;N',
+    fenster: '5 370 by 5 500 kilometres around 53&#176;N 15&#176;E',
   });
   log(`Leerseite ${(leer.length / 1024).toFixed(1)} kB — zeigt keine Daten, weil keine da sind.`);
   process.stdout.write(leer);
@@ -115,15 +115,18 @@ const mspBei = k => {
 };
 const NOTIZEN = [
   [26, 23, 'Before the maximum',
-    'The Eurasian ice sheet is still growing. Britain and Scandinavia carry '
-    + 'separate domes; the North Sea between them is dry land. This is the '
-    + 'stretch DATED-1 calls poorly constrained &#8212; far fewer dates '
-    + 'record a build-up than a retreat, because advancing ice destroys what '
-    + 'it overruns.'],
+    'The Eurasian ice sheet is still growing, and it grows as three separate '
+    + 'domes: over Britain, over Scandinavia, and over the Barents and Kara '
+    + 'seas north of Russia. The North Sea between the first two is dry land. '
+    + 'This is the stretch DATED-1 calls poorly constrained &#8212; far fewer '
+    + 'dates record a build-up than a retreat, because advancing ice destroys '
+    + 'what it overruns.'],
   [23, 20.5, 'The Last Glacial Maximum',
-    'Ice reaches its greatest extent. The crust beneath the dome is pressed '
-    + 'down by hundreds of metres, and the water locked up in ice drops the '
-    + 'sea far enough to walk from England to Denmark.'],
+    'The three domes have merged into one sheet. The crust beneath it is '
+    + 'pressed down by hundreds of metres, and the water locked up in ice '
+    + 'drops the sea far enough to walk from England to Denmark. The '
+    + 'Barents-Kara dome is the strange one: it sits on a shelf sea, grounded '
+    + 'on a sea floor its own weight has pushed below the waves.'],
   [20.5, 18, 'Doggerland',
     'The southern North Sea is a plain of rivers and marsh, not a sea. It is '
     + 'not a land bridge but a country in its own right &#8212; the largest '
@@ -141,9 +144,10 @@ const NOTIZEN = [
     + 'ICE-6G_C carries the readvance only faintly &#8212; it is a model '
     + 'fitted to sea level and crustal motion, not a climate simulation.'],
   [11.5, 9, 'The last domes',
-    'What is left of the ice sits over the Gulf of Bothnia, the deepest part '
-    + 'of the isostatic bowl. The land there is still hundreds of metres below '
-    + 'where it will end up.'],
+    'What is left of the Eurasian ice sits over the Gulf of Bothnia, the '
+    + 'deepest part of the isostatic bowl. The land there is still hundreds '
+    + 'of metres below where it will end up. Barents-Kara went first, Britain '
+    + 'second; Greenland, in the top-left corner, is not going anywhere.'],
   [9, 4, 'Rebound',
     'The ice is gone, and the crust is still rising. This is the part of the '
     + 'map that keeps moving after the white is gone &#8212; Scandinavia is '
@@ -151,7 +155,9 @@ const NOTIZEN = [
   [4, -1, 'Today',
     'The coastline matches the modern one, because the modern elevation model '
     + 'is exactly what the map is built on. Everything before this is that '
-    + 'same terrain with the reconstructed difference field added.'],
+    + 'same terrain with the reconstructed difference field added. The white '
+    + 'left in the corner is Greenland: the one ice sheet on this map that '
+    + 'never melted.'],
 ];
 log('Notizen');
 log(`  ${NOTIZEN.length} Abschnitte, Meeresspiegel bei 26/20/15/10/0 ka: `

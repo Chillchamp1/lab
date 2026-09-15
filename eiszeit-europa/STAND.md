@@ -72,10 +72,22 @@ Dicke zeichnet, kann nichts zeigen.
 
 ### Die anderen Eisschilde
 
-Der Ausschnitt schneidet Grönland und den Laurentidischen Eisschild ab. Das ist
-eine Entscheidung der Aufgabe und keine der Daten: ICE-6G_C ist global, und die
-Kette käme mit einem grösseren Fenster zurecht. Nur wäre es dann keine Karte
-Europas mehr.
+Hier stand einmal: „Der Ausschnitt schneidet Grönland und den Laurentidischen
+Eisschild ab." Das erste stimmt nicht mehr. Seit der Rahmen in Kilometern
+steht, liegt **Grönlands Ostseite mit im Bild** — und mit ihr der ganze
+barentsisch-karische Eisschild, den das alte Grad-Fenster ebenfalls
+abgeschnitten hatte, ohne dass es dort als Verlust vermerkt war.
+
+Der **Laurentidische** fehlt weiter, und das bleibt so: er läge 3 000 km weiter
+westlich, und die Karte wäre dann keine Karte Europas mehr. Von Grönland ist
+der Ostrand zu sehen, nicht die Insel — der Rahmen schneidet sie bei etwa
+45° W. Das ist ein Bildrand wie jeder andere und keine Aussage über den
+Eisschild.
+
+Was Grönland mitbringt, ist eine **Asymmetrie im Bild**: es ist das einzige
+Eis, das am Ende noch dasteht, und zugleich der höchste Eispunkt der ganzen
+Karte. Deshalb trägt es keine Gipfelmarke (METHODIK 8d) — die drei Marken
+gehören dem eurasischen Komplex, dem Grönland nicht angehört.
 
 ### Die zweite Unsicherheit
 
@@ -151,12 +163,22 @@ Download, ein zweiter Regler. Das ist ein eigenes Projekt.
   weg wäre es mit einer Schablone, die den Hub zeilenweise aus dem Feldstand
   nimmt statt pauschal aus der Stapelhöhe.
 - **Die Schrägsicht rechnet die Scheibenringe je Bild neu**, solange die Uhr
-  läuft — und seit der Trennung von Fels und Eis zwei Sätze davon. Gemessen 175
-  ms je Bild gekippt, 140 ms sobald kein Eis mehr da ist, 88 ms flach. Die
+  läuft — und seit der Trennung von Fels und Eis zwei Sätze davon. Gemessen 194
+  ms je Bild gekippt, 195 ms sobald kein Eis mehr da ist, 107 ms flach; vor dem
+  Kilometer-Rahmen waren es 175, 140 und 88 ms bei 30 Prozent leerer Leinwand. Die
   Vorlage friert ihr Feld ein, sobald es steht, und spart damit die teuersten
   Posten bei jeder Geste. Hier ist nur der Ringspeicher an den Feldstand
   gehängt; der Rest wäre nachzuziehen, wenn sich die Schrägsicht auf dem Telefon
   als zäh erweist.
+- **Die Seite wiegt 1,15 MB (gzip 563 kB).** Das ist gut die Hälfte mehr als
+  vor dem Kilometer-Rahmen, und die Rechnung geht auf — der Rahmen deckt
+  28 Prozent mehr Fläche und ist dabei ganz gefüllt statt zu 69,7 Prozent, also
+  72 Prozent mehr Zellen mit Gelände darin. Zwei Schrauben stehen bereit,
+  falls es zu schwer wird: `BREITE` (640 statt 760 kostet ein Drittel der
+  DEM-Werte) und ein **eigener Teiler je grobem Feld** — `Topo_Diff` ist
+  räumlich glatt und verträgt eine gröbere Stufe als `stgit`, das einen
+  scharfen Rand hat. Das Format trägt den Teiler schon je Feld; genutzt wird
+  es nicht.
 - **Kein Tiefpass über die Bilder.** Die Vorlage glättet das Höhenfeld über die
   Zeit, weil ihr Raster von Bild zu Bild springt und die Höhenlinien mitzappeln.
   Hier steht das Gitter fest — es ist aus einem festen DEM abgeleitet, nicht aus
