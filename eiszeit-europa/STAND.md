@@ -2,57 +2,64 @@
 
 Was fehlt, was offen ist, und was bewusst so bleibt.
 
-## Das eine, was wirklich fehlt
+## Was steht
 
-**ICE-6G_C.** DEM und DATED-1 liegen seit dem 14.09.2026 unter `data/raw/`
-(17 Dateien, 418 MB, Prüfsummen in `build/PRUEFSUMMEN.eigen`). Für ICE-6G_C
-fehlt in der Netzfreigabe genau ein Wirt: `crt.sectigo.com`, von dem das
-Zwischenzertifikat des Toronto-Servers kommt. Warum, steht in
-[QUELLEN.md](QUELLEN.md), Abschnitt 1.
-
-Solange ICE-6G_C fehlt, steht unter der Adresse die Seite ohne Karte
-(`node build.mjs --leer`). Was zu tun ist, sobald die 48 Zeitscheiben da sind:
+Alles. Die drei Rohdatensätze liegen unter `data/raw/` (65 Dateien, 418 MB,
+Prüfsummen in `build/PRUEFSUMMEN.eigen`), die Karte ist daraus gebaut, und die
+Seite unter der Adresse zeigt sie.
 
 ```
 cd build
-./holen.sh ice6g               # oder die Dateien von Hand nach data/raw/ice6g/
+./holen.sh                     # lädt alles drei, prüft die TLS-Kette selbst
 python3 quellen.py
 node build.mjs > ../index.html
 ```
 
-Der Eintrag in `projects.json` steht schon; seine Beschreibung ist dann
-nachzuziehen, danach `node ../tools/readme.mjs`.
+## Was beim ersten echten Lauf geprüft wurde
 
-## Was beim ersten echten Lauf zu prüfen ist
+Die fünf Punkte, die hier als offen standen, sind beantwortet — **drei davon
+waren falsch geraten**, und einer davon hätte die Karte still verdorben.
 
-Die Kette ist am Prüfgerüst durchgemessen (METHODIK, Abschnitt 8). Was das
-Gerüst **nicht** prüfen kann, sind die Eigenheiten der echten Dateien. Diese
-fünf Punkte gehören beim ersten Lauf angesehen, nicht überflogen:
+1. **Heissen die Variablen so?** Ja. `Topo`, `Topo_Diff`, `stgit`, `sftlf`,
+   `sftgif` — nur `sftgif`, nicht `stgif`, wie das Prüfgerüst annahm.
+2. **Probe 1 muss null sein.** War sie nicht: 584 m. Und das war richtig so.
+   `Topo` trägt im Kopf der Datei den Zusatz „(Point-value altitude)",
+   `Topo_Diff` trägt ihn nicht — wo das Differenzfeld innerhalb einer Zelle
+   eine Stufe hat, sind ein Stichwert und ein Zellmittel zwei verschiedene
+   Zahlen. Gemessen: an Zellen ohne solche Stufe unter **2,6 m** quer durch
+   alle 48 Scheiben, ausdrücklich auch über den Alpen; an den übrigen 28
+   Prozent dreistellig. Die Probe prüft jetzt die stufenfreien Zellen scharf
+   und meldet die übrigen daneben.
 
-> **Drei der fünf Punkte sind inzwischen beantwortet** — und zwei davon waren
-> falsch geraten. Punkt 3 (Achsenrichtung) stimmte; Punkt 4 (Benennung der
-> Shapefiles) stimmte **nicht**, die Dateien heissen `TS20_mc` und tragen die
-> Zeit als Attribut; Punkt 5 (DEM-Abdeckung) hat einen echten Fehler
-> aufgedeckt, siehe METHODIK 8. Offen sind Punkt 1 und 2, beide zu ICE-6G_C.
+   **Der eigentliche Fang steckte dahinter:** Beim Nachgehen dieser Abweichung
+   kam heraus, dass `Topo` und `Topo_Diff` das **Eis enthalten**. Die Formel
+   der Aufgabe hätte das Skandinavische Gebirge bei 21 ka als 2000 m hohen
+   Fels gezeichnet und das Eis noch einmal 2400 m darüber. Siehe
+   [METHODIK.md](METHODIK.md), Abschnitt 2 und 8b.
+3. **Läuft die Breitenachse aufsteigend?** Ja, `lat0 = 30,5`, `dlat = +1`.
+4. **Wie benennt PANGAEA die Shapefiles?** Nicht wie vermutet: `TS20_mc`,
+   Polygone in polaren Lambert-Azimutal-Metern, Zeit als Attribut `AV_Time`.
+5. **Deckt das DEM die Hülle?** Nach der Korrektur ja — **100,0 Prozent**. Auf
+   dem Weg dahin ein echter Fehler: jede ETOPO-Kachel wurde für sich
+   blockgemittelt, dadurch fielen an den Kachelgrenzen 2 872 Zellen (0,84 %)
+   aus. Behoben durch global ausgerichtete Blöcke.
 
-1. **Heissen die Variablen so?** `quellen.py` sucht fallunabhängig und mit
-   Alternativen (`Topo_Diff`/`topo_diff`/`TopoDiff`, `stgit`/`thk`/…). Findet
-   es nichts, nennt es alle vorhandenen Namen. Ein Bau, der an einem
-   Grossbuchstaben scheitert, hilft niemandem — einer, der stillschweigend das
-   falsche Feld nimmt, noch weniger.
-2. **Probe 1 muss null sein.** `max |Topo(t) − Topo(0) − Topo_Diff(t)|` ist
-   per Definition null. Steht dort etwas anderes, ist entweder das Vorzeichen
-   von `Topo_Diff` umgekehrt gemeint oder der Bezugszeitpunkt ein anderer.
-   **Bevor irgendetwas gezeichnet wird.**
-3. **Läuft die Breitenachse aufsteigend?** Wenn nicht, steht die Karte auf dem
-   Kopf. `quellen.py` liest `dlat` mit Vorzeichen; ein Blick auf die gemeldeten
-   `lat0`/`dlat` sagt es.
-4. **Wie benennt PANGAEA die Shapefiles?** Die Zuordnung Datei → (Zeit, Sorte)
-   rät aus Dateiname und Ordner. Am Ende steht „N zugeordnet, M nicht" — wenn M
-   nicht null ist, gehört der Ausdruck angepasst. Erwartet werden 16 × 3 = 48.
-5. **Deckt das DEM die Hülle?** Nicht nur das Fenster: die zeilenweise Hülle
-   reicht bis rund 73,7° N. `quellen.py` meldet Zellen ohne Wert — dort stünde
-   sonst Meereshöhe, wo nichts gemessen ist.
+## Was der Ausschnitt kostet
+
+**ICE-6G_C liegt hier bei 1 Grad, nicht bei 10 Bogenminuten.** Die
+10'-Variante gibt es nur bei PMIP4, hinter einem Zertifikat, das abgelaufen
+*und* auf einen anderen Namen ausgestellt ist; das wird nicht umgangen
+([QUELLEN.md](QUELLEN.md), Abschnitt 1). Die groben Felder liegen damit bei
+68 km statt 27 km.
+
+Der Fels verliert dadurch nichts — er kommt aus dem 15″-Höhenmodell. Weich
+wird ICE-6G_Cs **Eisrand**, und über genau den sagt die Karte ihre Aussage
+ohnehin nicht selbst: das tun die DATED-1-Linien, die in voller Schärfe
+darüber liegen.
+
+Sollte die 10'-Variante eines Tages erreichbar sein, genügt es, sie nach
+`data/raw/ice6g/` zu legen: `quellen.py` rechnet die Teiler aus der Quellzelle
+und wird von selbst feiner.
 
 ## Was fehlt und erreichbar wäre
 
@@ -103,11 +110,18 @@ Download, ein zweiter Regler. Das ist ein eigenes Projekt.
 
 ## Bekannte Schwächen der jetzigen Fassung
 
-- **Der Eisrand ist auf 27 km abgetastet.** `stgit` liegt im Grobgitter mit
-  Teiler 4. Die Stufe am Eisrand wird dadurch über gut vier Bildpunkte weich.
-  Feiner ginge, kostet aber je Halbierung des Teilers das Vierfache an
-  Nutzlast; und ICE-6G_C selbst hat dort 18 km. Die DATED-Linien liegen in
-  voller Schärfe darüber — sie sind die Aussage über den Rand.
+- **Der Eisrand ist auf 68 km abgetastet.** Das ist die Auflösung der Quelle,
+  nicht eine Sparmassnahme: `quellen.py` lässt das Grobgitter nie feiner
+  werden als die ICE-6G_C-Zelle. Die Stufe am Eisrand wird dadurch über rund
+  zehn Bildpunkte weich. Die DATED-Linien liegen in voller Schärfe darüber —
+  sie sind die Aussage über den Rand.
+- **Gekippt ragt das Unsicherheitsband am Ostrand ein paar Pixel über die
+  Karte.** Die DATED-Ringe sind auf das Gitterrechteck beschnitten; die
+  Schnittkante wird nicht gestrichelt, aber die **Füllung** des Bandes wird an
+  ihr angehoben wie das Gelände daneben, und am Ostrand steht das Gelände
+  niedriger als der Hub. Sichtbar nur gekippt, nur am Rand, wenige Pixel. Ganz
+  weg wäre es mit einer Schablone, die den Hub zeilenweise aus dem Feldstand
+  nimmt statt pauschal aus der Stapelhöhe.
 - **Die Schrägsicht rechnet die Scheibenringe je Bild neu**, solange die Uhr
   läuft. Die Vorlage friert ihr Feld ein, sobald es steht, und spart damit die
   teuersten Posten bei jeder Geste. Hier ist nur der Ringspeicher an den

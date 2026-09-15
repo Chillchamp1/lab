@@ -110,7 +110,51 @@ hole() {       # URL, Pfad, rel
 #  in Schritten von 0,5 ka. Die Seite muss das sichtbar machen (siehe
 #  ASTHETIK.md, Abschnitt 7) — hier steht es zum ersten Mal.
 # =====================================================================
-ICE6G_BASIS="${ICE6G_BASIS:-https://www.atmosp.physics.utoronto.ca/~peltier/datasets/Ice6g_c_VM5a_10min}"
+# Geprüft am 14.09.2026. Drei Dinge, die man nicht rät:
+#
+#   * Die Dateien liegen unter ~peltier/datasets/Ice6G_C_VM5a/ und heissen
+#     I6_C.VM5a_1deg.<t>.nc.gz — **gzip**, und in **1 Grad**. Die von der
+#     Aufgabe verlangte 10'-Fassung liegt dort nicht; sie kommt von PMIP4,
+#     dessen Zertifikat am 4.8.2026 abgelaufen ist (siehe ../QUELLEN.md).
+#   * Der Server antwortet fremden Programmen mit 403. Er braucht einen
+#     Browser-Kennstring.
+#   * Er sendet sein Zwischenzertifikat nicht mit. Die Wurzel liegt in jedem
+#     Vertrauensspeicher, das Glied dazwischen nicht — ohne es bricht die
+#     TLS-Prüfung ab. Die Adresse steht im Serverzertifikat selbst (AIA).
+ICE6G_BASIS="${ICE6G_BASIS:-https://www.atmosp.physics.utoronto.ca/~peltier/datasets/Ice6G_C_VM5a}"
+ICE6G_KENN="${ICE6G_KENN:-Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36}"
+ICE6G_AIA="${ICE6G_AIA:-http://crt.sectigo.com/SectigoPublicServerAuthenticationCAOVR36.crt}"
+ICE6G_KETTE="${ICE6G_KETTE:-$HIER/.kette.pem}"
+
+# Die fehlende Zwischenstelle holen und an den vorhandenen Vertrauensspeicher
+# hängen. Das ist **keine** Abschwächung der Prüfung: der Vertrauensanker
+# bleibt dieselbe Wurzel, es wird nur das Glied nachgeliefert, das der Server
+# hätte senden sollen. Die Prüfung abzuschalten wäre etwas ganz anderes, und
+# das tut dieses Skript nicht.
+kette_bauen() {
+  [ -s "$ICE6G_KETTE" ] && return 0
+  local speicher="${CURL_CA_BUNDLE:-${SSL_CERT_FILE:-/etc/ssl/certs/ca-certificates.crt}}"
+  [ -s "$speicher" ] || { rot "  kein Vertrauensspeicher gefunden"; return 1; }
+  sagt "  hole    das fehlende Zwischenzertifikat (AIA)"
+  local tmp; tmp=$(mktemp)
+  # crt.sectigo.com spricht nur HTTP; hinter einem reinen HTTPS-Proxy braucht
+  # es deshalb einen erzwungenen Tunnel auf Port 80.
+  if ! curl -fsS --max-time 60 -o "$tmp" "$ICE6G_AIA" 2>>"$ROH/.holen.log" \
+     && ! curl -fsS --max-time 60 --proxytunnel ${https_proxy:+-x "$https_proxy"} \
+              -o "$tmp" "$ICE6G_AIA" 2>>"$ROH/.holen.log"; then
+    rot "  FEHLER  Zwischenzertifikat nicht erreichbar: $ICE6G_AIA"
+    rm -f "$tmp"; return 1
+  fi
+  local pem; pem=$(mktemp)
+  openssl x509 -inform DER -in "$tmp" -out "$pem" 2>/dev/null || cp "$tmp" "$pem"
+  if ! openssl verify -CAfile "$speicher" "$pem" >/dev/null 2>&1; then
+    rot "  FEHLER  das geholte Zwischenzertifikat hängt an keiner bekannten Wurzel"
+    rm -f "$tmp" "$pem"; return 1
+  fi
+  cat "$speicher" "$pem" > "$ICE6G_KETTE"
+  rm -f "$tmp" "$pem"
+  grau "  Kette geprüft und zusammengesetzt: $ICE6G_KETTE"
+}
 
 ice6g_scheiben() {
   local t
@@ -124,11 +168,22 @@ ice6g_scheiben() {
 
 hole_ice6g() {
   sagt ""
-  sagt "(a) ICE-6G_C (VM5a), 10', 48 Zeitscheiben von 26 bis 0 ka"
-  local t datei
+  sagt "(a) ICE-6G_C (VM5a), 1 Grad, 48 Zeitscheiben von 26 bis 0 ka"
+  kette_bauen || { rot "  ohne geschlossene Kette wird nicht geladen"; return 1; }
+  local t datei roh
   for t in $(ice6g_scheiben); do
-    datei="I6_C.VM5a_10min.${t}.nc"
-    hole "$ICE6G_BASIS/$datei" "$ROH/ice6g/$datei" "ice6g/$datei"
+    datei="I6_C.VM5a_1deg.${t}.nc"
+    roh="$datei.gz"
+    if [ -s "$ROH/ice6g/$datei" ]; then DA=$((DA+1)); grau "  da      ice6g/$datei"; continue; fi
+    if [ "${NURPRUEFEN:-0}" = 1 ]; then FEHLT=$((FEHLT+1)); rot "  fehlt   ice6g/$datei"; continue; fi
+    if curl -fsSL --cacert "$ICE6G_KETTE" -A "$ICE6G_KENN" --retry 3 --retry-delay 3 \
+         --retry-all-errors --max-time 240 -o "$ROH/ice6g/$roh" \
+         "$ICE6G_BASIS/$roh" 2>>"$ROH/.holen.log" && gunzip -f "$ROH/ice6g/$roh"; then
+      NEU=$((NEU+1)); merke "ice6g/$datei" "$(summe "$ROH/ice6g/$datei")"
+    else
+      FEHLT=$((FEHLT+1)); rot "  FEHLER  ice6g/$datei"; rm -f "$ROH/ice6g/$roh"
+    fi
+    sleep 0.4     # der Server mag keine Salven
   done
 }
 
