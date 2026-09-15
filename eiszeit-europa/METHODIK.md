@@ -413,6 +413,22 @@ Schrittweite bei 21 ka. Dort ändert sich die Geschwindigkeit je Sekunde
 sprunghaft — aber das ist eine Eigenschaft der Zeitachse (Abschnitt 7.2), nicht
 der Interpolation.
 
+### Die Zeit steht als Jahreszahl da, nicht als „ka"
+
+ICE-6G_C zählt in Jahrtausenden vor **1950**, dem Nullpunkt der
+Radiokohlenstoffdatierung. Das ist die Einheit der Quelle und die Einheit des
+Fachs; ausserhalb davon versteht sie niemand. Gezeigt wird deshalb die
+Jahreszahl: 21,8 ka sind 21 800 Jahre vor 1950, also **19 850 v. Chr.**
+
+Gerundet wird auf hundert Jahre. Feiner wäre gelogen — die Scheiben stehen
+fünfhundert Jahre auseinander und dazwischen wird interpoliert; gröber wäre
+träge, denn die Zahl soll sich beim Lauf bewegen.
+
+Unter 1950 Jahren vor heute kippt es in die Zeitrechnung (1,5 ka = AD 450), und
+vierstellige Jahre stehen ohne Trennzeichen da. Im Schild heisst die letzte
+Scheibe **today**, in der Zeitangabe darunter **AD 1950**: das eine ist die
+Gegenwart, das andere der Nullpunkt, auf den sich „vor heute" bezieht.
+
 ### Die Uhr läuft über Spielzeit
 
 Jeder Abschnitt bekommt einen Anteil an den 69 Sekunden, der **Dauer und
@@ -1103,6 +1119,37 @@ Weggefallen ist hochkant auch Text: der lange Legendensatz (er wird nach zwei
 Zeilen abgeschnitten und sagt nichts, was die Leiter darüber nicht zeigt) und
 der Faden mit allen neun Abschnittsüberschriften (zwei Zeilen graue Wörter
 neben einer Notiz, die dasselbe sagt).
+
+### Die Ecken aus den Linien nehmen
+
+Marching Squares setzt seine Stützpunkte auf die **Kanten des Gitters**. Eine
+Höhenlinie besteht damit aus lauter kurzen Stücken, die nur vier Richtungen
+kennen — auf einer Karte von 900 Punkten sieht man das: die Umrisse wirken
+gezackt, als wären sie mit dem Lineal gezogen.
+
+Zwei Durchgänge Laplace-Glättung nehmen das heraus: jeder Punkt rückt zur
+Hälfte auf die Mitte seiner beiden Nachbarn zu. Die **Zahl der Punkte bleibt
+gleich** — anders als beim Eckenschneiden (Chaikin), das sie verdoppelt und
+damit das Streichen verteuert. Gemessen kostet es nichts (313 gegen 322 ms,
+innerhalb der Streuung).
+
+Weit rückt dabei nichts: die Zacken sind eine halbe Feldzelle hoch, also knapp
+ein Bildpunkt, und genau der wird geglättet. Die Linie bleibt auf ihrer
+Bandgrenze — sie muss es, denn die Farbfläche darunter kommt aus demselben
+Feld. Ein geschlossener Ring wird zyklisch geglättet und bleibt geschlossen.
+
+### Der Film darf feiner sein als die Seite
+
+Die Seite deckelt das Reliefgitter bei 680 Zellen, weil dort jedes Bild in
+Echtzeit fallen muss. Der Film rechnet Bild für Bild und hat es nicht eilig:
+`film.mjs` dreht `RAUF` auf 1,4 und den Deckel weg, das Feld ist damit feiner
+als die Leinwand breit ist. Farbfläche und Höhenlinien kommen so auf
+Geräteauflösung heraus statt auf halbe — das ist der Unterschied zwischen „am
+Telefon flüssig" und „sieht gut aus". Dafür stehen `RAUF` und `FELDMAX` als
+`let` statt als `const` in der Seite; die Seite selbst rührt sie nie an.
+
+Und der Film läuft in der **Standardkippung**, nicht flach: er hat keine
+Regler, mit denen man selbst herausfindet, dass da ein Körper steht.
 
 ### Gerechnet wird nur, was zu sehen ist
 

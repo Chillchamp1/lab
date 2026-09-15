@@ -35,16 +35,29 @@ const page = await browser.newPage({
 await page.goto('file://' + resolve(seite));
 await page.waitForTimeout(1500);
 
-// Die Bedienung weg, den Blick auf null: der Film zeigt die flache Karte.
-await page.evaluate(() => {
+/* Die Bedienung weg — und die Karte in der **Standardkippung**, nicht flach:
+   ein Eisschild ist ein Koerper, und der Film hat keine Regler, mit denen man
+   das selbst herausfindet.
+
+   Dazu wird das Reliefgitter hochgedreht. Die Seite deckelt es bei 680 Zellen,
+   weil dort jedes Bild in Echtzeit fallen muss; der Film rechnet Bild fuer
+   Bild und hat es nicht eilig. RAUF = 1,4 heisst: das Feld ist feiner als die
+   Leinwand breit ist — Farbflaeche und Hoehenlinien kommen damit auf
+   Geraeteaufloesung heraus statt auf halbe. Das ist der ganze Unterschied
+   zwischen „am Telefon fluessig" und „sieht gut aus". */
+const FEIN = Number(process.env.FEIN || 1.4);
+await page.evaluate((fein) => {
   halte();
-  ZOOM = 1; vX = 0; vY = 0; NEIGUNG = 0; DREHUNG = 0;
+  ZOOM = 1; vX = 0; vY = 0; NEIGUNG = KIPPSTART; DREHUNG = 0;
   for (const s of ['.regler', '.sicht']) {
     const e = document.querySelector(s);
     if (e) e.style.visibility = 'hidden';
   }
+  RAUF = fein; FELDMAX = 4000;
   masse(); sichtRechnen();
-});
+}, FEIN);
+console.error(`Feld ${await page.evaluate(() => rW + ' x ' + rH)}, `
+  + `Leinwand ${await page.evaluate(() => breite + ' x ' + hoehe)}`);
 
 const n = Math.round(LAUF * FPS);
 const proc = spawn(ffmpeg, [

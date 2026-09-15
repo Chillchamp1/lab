@@ -478,7 +478,7 @@ function setzeZeit(p) {
    Gedeckelt wird trotzdem, und zwar in absoluten Zellen: die Kosten je Bild
    haengen an der Zahl der Feldzellen, und gekippt wird der Scheibenstapel je
    Bild neu geschnitten. FELDMAX ist gemessen (METHODIK 8f), nicht gegriffen. */
-const RAUF = 0.9, FELDMAX = 680;
+let RAUF = 0.9, FELDMAX = 680;   // let, damit der Film sie hochdrehen kann
 let rW = 0, rH = 0;
 let demR = null, maskeR = null, rock = null, eisD = null, flaeche = null;
 let bild = null, licht = null, lichtBild = null;
@@ -862,7 +862,7 @@ const NIV_G = niveausGestein(), NIV_E = niveausEis();
 // alle Bilder wiederbenutzt — mit fortlaufendem Stempel statt Leeren.
 let lnx = 0, lny = 0, lStamm = 0;
 let kX = null, kY = null, kA = null, kB = null, kStempel = null, kBesucht = null, kListe = null;
-let bahnX = null, bahnY = null, bahnF = null;
+let bahnX = null, bahnY = null, bahnF = null, glX = null, glY = null;
 let stempelZaehler = 0;
 function linienFeld() {
   const nx = Math.floor((rW - 1) / LSCHRITT), ny = Math.floor((rH - 1) / LSCHRITT);
@@ -873,6 +873,44 @@ function linienFeld() {
   kA = new Int32Array(n); kB = new Int32Array(n);
   kStempel = new Int32Array(n); kBesucht = new Int32Array(n); kListe = new Int32Array(n);
   bahnX = new Float32Array(n); bahnY = new Float32Array(n); bahnF = new Float32Array(n);
+  glX = new Float32Array(n); glY = new Float32Array(n);
+}
+
+/* ---------- Die Ecken aus den Linien nehmen ----------
+   Marching Squares setzt seine Stuetzpunkte auf die **Kanten des Gitters**.
+   Eine Hoehenlinie besteht damit aus lauter kurzen Stuecken, die nur vier
+   Richtungen kennen, und auf einer Karte von 900 Punkten sieht man das: die
+   Umrisse wirken gezackt, als waeren sie mit dem Lineal gezogen.
+
+   Zwei Durchgaenge Laplace-Glaettung nehmen das heraus: jeder Punkt rueckt zur
+   Haelfte auf die Mitte seiner beiden Nachbarn zu. Die Zahl der Punkte bleibt
+   gleich — anders als beim Eckenschneiden, das sie verdoppelt und damit das
+   Streichen verteuert.
+
+   Weit rueckt dabei nichts: die Zacken sind eine halbe Feldzelle hoch, also
+   knapp ein Bildpunkt, und genau der wird geglaettet. Die Linie bleibt auf
+   ihrer Bandgrenze — sie muss es, denn die Farbflaeche darunter kommt aus
+   demselben Feld.
+
+   Ein geschlossener Ring wird zyklisch geglaettet und bleibt geschlossen; bei
+   einer offenen Kette wandern auch die Enden ein wenig, und das ist an einer
+   Schnittkante gleichgueltig. */
+function glaetten(m) {
+  if (m < 5) return;
+  const zu = Math.abs(bahnX[0] - bahnX[m - 1]) < 1e-6
+          && Math.abs(bahnY[0] - bahnY[m - 1]) < 1e-6;
+  const n = zu ? m - 1 : m;
+  if (n < 4) return;
+  for (let d = 0; d < 2; d++) {
+    for (let i = 0; i < n; i++) { glX[i] = bahnX[i]; glY[i] = bahnY[i]; }
+    for (let i = 0; i < n; i++) {
+      const p = i === 0 ? (zu ? n - 1 : 0) : i - 1;
+      const q = i === n - 1 ? (zu ? 0 : n - 1) : i + 1;
+      bahnX[i] = glX[i] * 0.5 + (glX[p] + glX[q]) * 0.25;
+      bahnY[i] = glY[i] * 0.5 + (glY[p] + glY[q]) * 0.25;
+    }
+  }
+  if (zu) { bahnX[m - 1] = bahnX[0]; bahnY[m - 1] = bahnY[0]; }
 }
 
 /* ---------- Kachelindex fuer Marching Squares ----------
@@ -1069,7 +1107,10 @@ function zieheLinien(zc, feld, niveaus, gilt, fest) {
                   : (nb >= 0 && nb !== vor && kBesucht[nb] !== stempel) ? nb : -1;
           vor = cur; cur = w;
         }
-        if (m > 2) { if (fest) festMalen(zc, m); else ablegen(m, niv.zaehl, niv.kueste); }
+        if (m > 2) {
+          glaetten(m);
+          if (fest) festMalen(zc, m); else ablegen(m, niv.zaehl, niv.kueste);
+        }
       }
     }
   }
@@ -2194,11 +2235,38 @@ function masse() {
 
 /* ================================================================ Das Schild */
 const nf = new Intl.NumberFormat('en-GB');
+
+/* Die Zeit stand als „21,8 ka" da. Das ist die Einheit der Quelle — ICE-6G_C
+   zaehlt Jahrtausende vor **1950**, dem Nullpunkt der Radiokohlenstoffdatierung
+   —, und ausserhalb des Fachs versteht sie niemand. Gezeigt wird deshalb die
+   Jahreszahl: 21,8 ka sind 21 800 Jahre vor 1950, also 19 850 v. Chr.
+
+   Gerundet wird auf hundert Jahre. Feiner waere gelogen: die Scheiben stehen
+   fuenfhundert Jahre auseinander, und dazwischen wird interpoliert. Groeber
+   waere traege — die Zahl soll sich beim Lauf bewegen.
+
+   Unter 1950 Jahren vor heute kippt es in die Zeitrechnung: 1,5 ka sind 450
+   n. Chr. Und ganz am Ende steht „today", nicht „2026 n. Chr." — die letzte
+   Scheibe ist die Gegenwart, nicht ein Jahr darin. */
+function jahrWort(kaWert, alsScheibe) {
+  const vor1950 = kaWert * 1000;
+  // Vierstellige Jahre ohne Trennzeichen: „AD 1500", nicht „AD 1,500".
+  const z = v => v < 10000 ? String(v) : nf.format(v);
+  if (kaWert <= 0.049) {
+    // Die letzte Scheibe **ist** 1950 — das ist der Nullpunkt, auf den sich
+    // „vor heute" bezieht. Als Jahreszahl im Schild waere das aber eine
+    // falsche Genauigkeit: gemeint ist die Gegenwart.
+    return alsScheibe ? 'AD 1950' : 'today';
+  }
+  const v = Math.round((vor1950 - 1950) / 100) * 100;
+  if (v > 0) return z(v) + ' BC';
+  const n = Math.round((1950 - vor1950) / 100) * 100;
+  return n <= 0 ? 'AD 1950' : 'AD ' + z(n);
+}
 function schreibe() {
   const j = document.getElementById('jahrZahl');
   const n = document.getElementById('jahrNeben');
-  const kaR = Math.round(ka * 10) / 10;
-  j.textContent = kaR <= 0.049 ? 'today' : kaR.toFixed(1).replace(/\\.0$/, '') + ' ka';
+  j.textContent = jahrWort(ka);
   // Steht die Uhr auf einer Zeitscheibe, wird sie genannt; dazwischen sagt das
   // Schild, dass interpoliert wird und zwischen welchen beiden. Kein Glaetten
   // ueber die Datenlage hinweg — dieselbe Regel wie in der Vorlage.
@@ -2207,8 +2275,9 @@ function schreibe() {
   const e = D.je[auf >= 0 ? auf : a];
   const vol = D.je[auf >= 0 ? auf : a].vol;
   const teil = auf >= 0
-    ? 'ICE-6G_C time slice ' + D.t[auf] + ' ka'
-    : 'between the ' + D.t[a] + ' and ' + D.t[b] + ' ka slices &#8212; interpolated';
+    ? 'ICE-6G_C time slice ' + jahrWort(D.t[auf], true)
+    : 'between the ' + jahrWort(D.t[a], true) + ' and ' + jahrWort(D.t[b], true)
+      + ' slices &#8212; interpolated';
   n.innerHTML = '<span class="roh">' + teil + '</span>';
   tickerSchreiben();
 }
