@@ -660,11 +660,12 @@ genau wie sie in der Farbleiter im untersten Band liegen.
 
 Kosten: 33 Platten statt 26, also 162 statt 132 ms je Bild gekippt.
 
-### Die Kante muss mit der Zahl der Platten leiser werden
+### Die Kante: dünn und hart, nicht breit und leise
 
 Die beleuchtete Kante entsteht mit dem alten Prägetrick: derselbe Ring
 zweimal versetzt gefüllt, weiss zum Licht und schwarz von ihm weg, halb
-durchsichtig, dann die Bandfarbe darüber.
+durchsichtig, dann die Bandfarbe darüber. Sichtbar bleibt ein Saum von der
+Breite des Versatzes.
 
 Was davon stehen bleibt, hängt **nicht** an der einzelnen Deckkraft, sondern
 an ihrer Potenz: über *n* Platten bleibt (1 − a)ⁿ durch. Eine feste Zahl
@@ -673,26 +674,60 @@ und genau das ist passiert, als aus 26 Platten 33 wurden. Über jeder
 Küstenlinie lag ein weisser Saum, und die Karte sah gekippt aus, als hätte
 jemand Milchglas davorgestellt.
 
-Gemessen und verglichen wurden vier Stärken bei 33 Platten:
+Der erste Griff dagegen war, die Deckkraft zu senken, von 0,62 auf 0,34, und
+sie an die Zahl der Platten zu koppeln. Das nahm den Schleier — und mit ihm
+die Kante: das Relief wirkte flach, die Textur verwaschen, „ich kann es nicht
+richtig greifen". Der Fehler sass in der Annahme, Schleier und Kante seien
+dieselbe Grösse. Sind sie nicht. Der Schleier ist **Fläche mal Deckkraft**,
+summiert über die Platten; die Kante ist **Kontrast am Rand**. Ein breiter,
+leiser Saum hat viel Fläche und wenig Kontrast — das Schlechteste von beidem.
 
-| Deckkraft | Bild |
-|---|---|
-| 0,62 | der alte Stand: Milchglas, Küsten verschwommen |
-| **0,34** | **Stufen lesbar, kein Schleier** |
-| 0,22 | sauber, aber das Relief wird flach |
-| aus | das Laserschnittmodell verliert seine Kante |
+Verglichen wurden sechs Fassungen, jede gekippt bei 22,2 ka, über den Alpen
+und am Eisrand:
 
-Genommen ist 0,34 bei 33 Platten, und daraus die Potenz für jede andere Zahl:
+| | Kante | dazu | Bild |
+|---|---|---|---|
+| 0 | 0,34, ein CSS-Pixel Versatz | — | kein Schleier, aber flach; die Stufen sind kaum zu greifen |
+| 1 | 0,85 / 0,75 wie die Vorlage | Mulde 0,85 | die Kante ist da, das Milchglas auch wieder |
+| 2 | 0,34 | Schlagschatten | Tiefe kommt, die Kante bleibt weich |
+| 3 | 0,34 | Schlagschatten, Mulde 0,85, Lichthub 2,2 | die Flächen bekommen Form, der Rand nicht |
+| 4 | 0,55, ein CSS-Pixel | Schlagschatten | der Schleier kommt zurück |
+| **5** | **0,70, ein Gerätepixel Versatz** | **Schlagschatten, Mulde 0,85, Lichthub 2,2** | **scharfe Schnittkante, Tiefe, kein Schleier** |
 
-    a(n) = 1 − (1 − 0,34)^(33/n)
+Genommen ist die fünfte. Drei Dinge daran:
 
-also 0,41 bei 26 Platten, 0,29 bei 40. Damit bleibt der Eindruck stabil, wenn
-sich der Stapel je ändert — und er hat sich in diesem Ordner schon zweimal
-geändert.
+**Der Versatz ist ein Gerätepixel**, nicht ein CSS-Pixel: 0,55 Gerätepixel
+bei einfacher Punktdichte wie in der Vorlage, 0,64 bei doppelter statt 1,1.
+Ein Saum, der kaum Fläche hat, summiert sich nicht zu Milchglas, wie hoch
+seine Deckkraft auch steht; und hart gezogen liest er sich als Schnittkante
+eines Modells, nicht als Weichzeichner. Die Deckkraft bleibt an die Zahl der
+Platten gekoppelt,
 
-Die **Wand** einer Platte stand bei 0,78 ihrer Farbe, ihr Fuss bei 0,55 —
-gemessen an 26 Platten. Mit 33 stehen ein Drittel mehr dunkle Streifen im
-Bild; 0,86 und 0,70 tragen die Stufe weiter, ohne die Karte zu zerschneiden.
+    a(n) = 1 − (1 − 0,70)^(33/n)
+
+also 0,78 bei 26 Platten, 0,63 bei 40 — damit der Eindruck stabil bleibt,
+wenn sich der Stapel je ändert, und er hat sich in diesem Ordner schon
+zweimal geändert.
+
+**Ein Schlagschatten** unter jeder Platte: drei schwarze Kopien des Rings, vom
+Licht weg versetzt, nach aussen abnehmend deckend (0,35 · 0,23 · 0,12), bis
+zum 1,2-fachen des Kantenversatzes. Die Kante sagt, *wo* die Stufe ist; der
+Schatten sagt, *wie hoch*. Ohne ihn stehen die Platten nebeneinander wie die
+Farbflächen einer Landkarte, mit ihm liegen sie aufeinander. Kosten: drei
+Füllungen mehr je Platte, 13 ms je Bild gekippt.
+
+**Mulde und Lichthub** stehen auf 0,85 und 2,2 (vorher 0,55 und 1,7; die
+Vorlage hat 0,85 und 1,7). Die Platten sind Volltonflächen — alles, was
+innerhalb einer Platte Form gibt, ist dieses Licht, und es durfte mehr tragen.
+Dass es auf Feldauflösung unscharf bleibt, bleibt: weiches Licht auf harten
+Flächen ist ein Modell, und die harte Kante, gegen die es sich absetzt, ist
+jetzt da.
+
+Die **Wand** einer Platte stand bei 0,86 ihrer Farbe, ihr Fuss bei 0,70 —
+heraufgesetzt, als die 33 Platten ein Drittel mehr dunkle Streifen ins Bild
+brachten. Mit der harten Kante und dem Schatten darunter muss die Wand den
+Absatz nicht mehr allein zeigen; 0,82 und 0,62 lassen sie wieder etwas
+dunkler stehen, ohne die Karte zu zerschneiden.
 
 ### Zwei Farbentscheidungen, beide gemessen
 
@@ -877,14 +912,14 @@ scharf.
 
 ## 10. Was gemessen ist
 
-Im Prüfbrowser ohne Grafikkarte, 1 100 × 900 bei doppelter Punktdichte, Mittel
-aus fünf Bildern:
+Im Prüfbrowser ohne Grafikkarte, 980 × 1 000 bei doppelter Punktdichte, Median
+aus sechzehn Bildern:
 
 | | |
 |---|---|
-| flach, Jahr läuft | 92 ms |
-| gekippt, Jahr läuft | 162 ms |
-| gekippt, heute (kein Eis) | 132 ms |
+| flach, Jahr läuft | 88 ms |
+| gekippt, Jahr läuft | 175 ms |
+| gekippt, heute (kein Eis) | 140 ms |
 
 Zum Vergleich nennt die Vorlage für ihre Karte im selben Messgeschirr 143 ms
 flach und 133 ms gekippt. Die Zahlen sind nicht unmittelbar vergleichbar —

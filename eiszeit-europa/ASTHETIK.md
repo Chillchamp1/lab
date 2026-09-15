@@ -606,14 +606,23 @@ Und eine dritte, die nicht am Ausschnitt hängt, sondern am Gelände: die
 Kartenmassstab passen zufällig dazu. Für einen Kontinent von 4 400 km Breite
 geht es nicht: dieselbe Zahl machte aus den Alpen einen Nadelwald. Hier kommt
 sie aus einer gemessenen Grösse des Geländes (METHODIK, Abschnitt 8c). Das
-Verfahren der Vorlage — Laserschnitt, Wandanstrich, geprägte Lichtkante — bleibt
-unangetastet; nur die eine Zahl ist jetzt eine gerechnete.
+Verfahren der Vorlage — Laserschnitt, Wandanstrich, geprägte Lichtkante —
+bleibt; nur die eine Zahl ist jetzt eine gerechnete.
 
 Dazu eine vierte, kleinere: die Marken der Farbleiter werden **gemessen** und
 bei Berührung ausgedünnt, statt nach einer Bildschirmbreite zu schalten. Die
 Wasserbänder dieser Leiter sind doppelt so hoch wie die Landbänder, also
 drängen sich −2 km, −1 km und 0 auf dem linken Drittel — eine geratene
 Schwelle wäre entweder zu früh oder zu spät.
+
+Und eine fünfte, an der Zahl der Platten: die **geprägte Lichtkante** ist hier
+ein Gerätepixel breit statt ein CSS-Pixel, und unter jeder Platte liegt ein
+Schlagschatten, den die Vorlage nicht hat. Die Vorlage stapelt wenige breite
+Platten; hier sind es 33, und an den Alpen liegen ihre Kanten dichter, als
+die Terrassen breit sind. Ein Saum von der Breite der Vorlage summiert sich
+dort zu Milchglas, leiser gestellt wird er zum Weichzeichner. Schmal und hart
+bleibt er Schnittkante, und der Schatten darunter sagt, was die Kante allein
+nicht sagt: wie hoch die Stufe ist (METHODIK, Abschnitt 8c).
 
 Und ein Grundsatz, der übernommen wird, obwohl er kein Verfahren ist:
 
