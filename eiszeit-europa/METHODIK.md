@@ -927,6 +927,12 @@ sonst die Nummer. Ein Feld und nicht drei Masken, damit die Schleife in
 `paleo()` einen Zugriff je Zelle behält. Punkt-in-Polygon je Zelle und je Bild
 wäre teuer; die Kästen bewegen sich nie.
 
+Beschriftet wird **Name und Material**: „Fennoscandia ice 2 702 m". Ohne das
+Wort liest sich die Zahl wie ein Berg, und sie ist das Gegenteil davon — die
+Oberfläche eines Eisschildes, gegen die schräg darunter der Mont Blanc mit
+seiner Felshöhe zur selben Zeit steht. Das ist der Vergleich, den die Karte
+anbietet.
+
 **Grönland bekommt keine Marke**, obwohl es der höchste Eispunkt des Bildes
 ist. Es gehört nicht zum eurasischen Komplex, und mit ihm im Topf sähe man nur
 noch, dass Grönland höher ist. Dass es da ist, ist trotzdem die Pointe: es ist
