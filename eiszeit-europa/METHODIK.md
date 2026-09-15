@@ -341,6 +341,53 @@ Leinwand: ein Kastenfilter mit laufender Summe kostet je Bildpunkt dasselbe,
 egal wie breit er ist, und zweimal quer angewendet ergibt er einen
 Dreieckskern.
 
+#### Die Mulde kannte nur eine Grösse von Hohlform
+
+Sie lief über **eine** Weite (rW/14), und eine einzelne Weite sieht genau eine
+Grösse: die Alpentäler verschwanden darin, das Becken der Nordsee war zu gross
+für sie. Jetzt drei Weiten, von eng nach weit zusammengezählt —
+
+| Weite | Anteil | was sie sieht |
+|---|---|---|
+| rW/56 | 50 % | den Talgrund, die Form, die man wirklich als Form liest |
+| rW/18 | 33 % | Mittelgebirge, Fjorde, den Fuss der Eiskuppe |
+| rW/6 | 17 % | Becken und Schelf, nur als Grundton |
+
+— und das ist die billige Fassung dessen, was ein Renderer
+Umgebungsverdeckung nennt: wie viel Himmel eine Stelle sieht. Weil der
+Kastenfilter O(1) je Bildpunkt ist, kosten drei Weiten dreimal einen billigen
+Durchgang und nicht dreimal einen teuren.
+
+#### Der Schlagschatten hatte eine Kante von einem Feldpunkt
+
+Der Sweep liefert eine harte Grenze, und die Rampe darüber lief linear über
+0,05. Eine Sonne von 16 Grad wirft keine solche Kante — sie hat einen
+Halbschatten. Zwei Änderungen: ein kurzer Kasten über das Schattenfeld nach
+dem Sweep (billiger als mehrere Sonnen, und auf einer Karte sieht man den
+Unterschied nicht), und eine Smoothstep-Rampe statt der linearen. Die Breite
+des Kastens hängt an der Feldgrösse, damit die Kante bei jeder Auflösung
+gleich breit **aussieht** — sonst wäre sie im Film, der ein dreimal feineres
+Feld rechnet, wieder hart.
+
+#### Eis glänzt, Gestein nicht
+
+Ein Glanzlicht auf dem Gestein sähe nach Plastik aus — die Fläche trägt dort
+die Farbleiter, und die sind die Daten. Auf einer Eiskuppe ist es das, was sie
+zu einem Körper macht statt zu einer weissen Fläche: ein Blinn-Term über den
+Halbvektor aus Sonne und Blick, `n·h` hoch 16, mit 0,16 gewichtet. Der
+Schimmer sitzt auf den Flanken, die dem Halbvektor zugewandt sind, und wandert
+über sie, während die Kuppe wächst.
+
+Zwei Bedingungen, beide nötig:
+
+- **Nur wo Eis liegt** (`eisD >= EISSCHWELLE`) — sonst glänzt die Nordsee.
+- **Nicht im Schlagschatten.** Ein Glanzlicht ohne Sonne ist der Fehler, an dem
+  man billige Renderer erkennt.
+
+Er zieht gegen Weiss, nicht gegen die Bandfarbe: ein Glanzlicht hat die Farbe
+der Quelle, nicht die des Stoffs. Auf Eis ist das fast dieselbe Farbe —
+sichtbar wird der Unterschied nur auf den blauen Bändern der tiefen Eisleiter.
+
 ### Die Höhenlinien, nach Tanaka Kitiro (1950)
 
 Weiss, wo die Kante der Sonne zugewandt ist, schwarz, wo sie wegfällt.
@@ -407,22 +454,63 @@ Bahn stehen sie doppelt so dicht. Eine zweite Reihe in Orange markiert die
 sechzehn DATED-1-Rekonstruktionen. Über der Karte steht dazu, ob man auf einer
 Zeitscheibe steht oder zwischen zweien.
 
-### Linear interpoliert, mit Absicht
+### Monoton kubisch interpoliert — nach einem Irrtum
 
-Die Vorlage rechnet mit einer monotonen kubischen Kurve (Fritsch–Carlson) und
-begründet das mit einem gemessenen Knick von **74 Prozent** an jeder ihrer
-ungleich verteilten Zählungen; sie zahlt dafür im Mittel 0,75 Prozent
-Abweichung von der Geraden.
+Hier stand lange **linear**, mit einer ausdrücklichen Begründung: eine Kurve
+behaupte zwischen zwei Datenpunkten etwas, die Aufgabe verlange kein Glätten
+über die Datenlage hinweg, und das hier sei eine Rekonstruktion und keine
+Simulation. Die Vorlage rechnet mit einer monotonen kubischen Kurve
+(Fritsch–Carlson), aber sie hat ungleich verteilte Zählungen und einen
+gemessenen Knick von 74 Prozent an jeder; hier seien die Schritte gleichmässig
+und der Knick klein.
 
-Hier sind die Schritte gleichmässig — 1 ka, dann 0,5 ka —, der Knick ist klein,
-und der Preis wäre, dass die Kurve zwischen zwei Datenpunkten etwas behauptet.
-Die Aufgabe sagt es selbst: kein Glätten über die Datenlage hinweg, das ist
-eine Rekonstruktion und keine Simulation.
+**Das Argument war richtig und trotzdem falsch angewandt.** Es gilt für eine
+*freie* Kurve — eine Catmull-Rom schwingt über die Datenpunkte hinaus und
+erfindet dabei Eis, wo in beiden Nachbarscheiben weniger stand. Für die
+**monotone** Variante gilt es nicht, und genau die hatte die Vorlage genommen:
 
-Die einzige Stelle, an der sich die Frage stellen könnte, ist der Wechsel der
-Schrittweite bei 21 ka. Dort ändert sich die Geschwindigkeit je Sekunde
-sprunghaft — aber das ist eine Eigenschaft der Zeitachse (Abschnitt 7.2), nicht
-der Interpolation.
+- Sie geht durch **jeden** Datenpunkt exakt hindurch.
+- Ihre Knotensteigung ist null, sobald die beiden Sekanten das Vorzeichen
+  wechseln. Die Kurve bleibt damit in jedem Segment zwischen den beiden
+  Werten, die sie verbindet.
+
+Sie behauptet also nichts über die Höhe — nur über die *Geschwindigkeit*. Und
+über die musste ohnehin etwas behauptet werden: linear ist die Höhe stetig,
+die Geschwindigkeit aber nicht. An jeder der 48 Scheiben knickt sie um. Das
+sind 48 Rucke in 69 Sekunden Lauf, und man sieht sie — der Eisrand wandert
+nicht, er pulst. Beim Schieben des Reglers fällt das nicht auf, im Film sofort.
+
+Nachgemessen an der Summe des Eisfeldes über alle 2 071 Bilder des Laufs, als
+zweite Differenz (das ist die Beschleunigung je Bild):
+
+| | Median | 99 % | **Maximum** |
+|---|---|---|---|
+| linear | 0,009 | 275 | **2 220** |
+| monoton kubisch | 12,8 | 97 | **111** |
+
+Linear steht die Beschleunigung bei vier von fünf Bildern praktisch auf null
+und schlägt dann an der Scheibengrenze aus; die Kurve verteilt sie. **Der
+grösste Ruck fällt um den Faktor 20.** Das ist der ganze Unterschied zwischen
+„wandert" und „pulst".
+
+Geprüft ist auch, dass die Kurve hält, was sie verspricht — über alle 2 071
+Bilder und alle 5 520 Zellen des groben Feldes:
+
+- Überschwinger über oder unter die beiden verbundenen Scheiben: **0**, grösste
+  Abweichung 0,0000 m.
+- Negative Eismächtigkeit: **0**.
+- Anfang und Ende treffen Scheibe 0 und Scheibe 47 auf **0,000000 m**.
+
+Die Gewichte laufen über die **Spielzeit** der Segmente, nicht über ihre
+Jahrtausende. Die Zeitachse steht ungleichmässig (1 ka, dann 0,5 ka), und die
+Spielzeit je Scheibe hängt ausserdem daran, wie viel sich in ihr bewegt
+(Abschnitt 7.2). Stetig soll die Geschwindigkeit dort sein, wo das Auge sie
+sieht — auf dem Schirm, nicht auf der Zeitachse. Damit ist auch der Wechsel der
+Schrittweite bei 21 ka erledigt, der vorher als „Eigenschaft der Zeitachse,
+nicht der Interpolation" abgebucht war.
+
+Derselbe Weg nimmt der Meeresspiegel im Ticker: er soll nicht rucken, wenn das
+Eis es nicht tut.
 
 ### Die Zeit steht als Jahreszahl da, nicht als „ka"
 
@@ -1201,16 +1289,82 @@ Feld. Ein geschlossener Ring wird zyklisch geglättet und bleibt geschlossen.
 
 ### Der Film darf feiner sein als die Seite
 
-Die Seite deckelt das Reliefgitter bei 680 Zellen, weil dort jedes Bild in
-Echtzeit fallen muss. Der Film rechnet Bild für Bild und hat es nicht eilig:
-`film.mjs` dreht `RAUF` auf 1,4 und den Deckel weg, das Feld ist damit feiner
-als die Leinwand breit ist. Farbfläche und Höhenlinien kommen so auf
-Geräteauflösung heraus statt auf halbe — das ist der Unterschied zwischen „am
-Telefon flüssig" und „sieht gut aus". Dafür stehen `RAUF` und `FELDMAX` als
-`let` statt als `const` in der Seite; die Seite selbst rührt sie nie an.
+Die Seite deckelt das Reliefgitter bei 680 Zellen und die Punktdichte bei 2,5,
+weil dort jedes Bild in Echtzeit fallen muss. Der Film rechnet Bild für Bild
+und hat es nicht eilig. Dafür stehen `RAUF`, `FELDMAX` und `DPRMAX` als `let`
+statt als `const` in der Seite; die Seite selbst rührt sie nie an.
 
-Und der Film läuft in der **Standardkippung**, nicht flach: er hat keine
-Regler, mit denen man selbst herausfindet, dass da ein Körper steht.
+Drei Grössen, und es ist wichtig, sie auseinanderzuhalten:
+
+| | | |
+|---|---|---|
+| **Satz** | 540 CSS-Punkte | in welcher Breite die Seite **gesetzt** wird: wie gross die Schrift zur Karte steht, wo das CSS auf Hochkant umschaltet, wie viele Zeilen die Notiz braucht |
+| **Über** | 4 | die Punktdichte, mit der dieser Satz gerendert wird. Leinwand damit 2 160 × 2 524 — das Doppelte der Zielbreite |
+| **Fein** | 3 | das Reliefgitter als Vielfaches der Satzbreite: 1 620 Zellen, drei Viertel der Leinwand |
+
+Am Ende wird von 2 160 auf 1 080 heruntergerechnet, mit Lanczos. Aus je vier
+gerechneten Bildpunkten wird einer — Kantenglättung durch **Überabtastung**,
+und auf Höhenlinien, die einen Punkt breit sind, ist sie der sichtbarste
+Unterschied überhaupt.
+
+#### Der Fehler, der dabei einmal drinstand
+
+Die Satzbreite kam aus `Zielbreite / Über`. Das sieht richtig aus und ist
+genau verkehrt herum: die Leinwand landet damit **exakt** auf der Zielgrösse,
+das Verkleinern am Ende ist ein 1:1-Kopieren, und überabgetastet wird gar
+nichts. Gemerkt an der Zeile, die der Film beim Start ausgibt — Leinwand
+1 080 × 1 264 statt 2 160 × 2 524. Seitdem steht die Satzbreite für sich, und
+der Film bricht ab, wenn Satz × Über nicht deutlich über der Zielbreite liegt.
+Eine Zahl, die man nicht nachrechnen kann, gehört nicht in eine Formel,
+sondern in eine Prüfung.
+
+#### Was das kostet
+
+Gemessen im Prüfbrowser, je Bild einschliesslich Schuss, bei Satz 540:
+
+| Über | Fein | Feld | ms je Bild |
+|---|---|---|---|
+| 2 | 2 | 1,21 M | 2 147 |
+| 3 | 3 | 2,73 M | 4 163 |
+| 4 | 2,5 | 1,90 M | 4 136 |
+| **4** | **3** | **2,73 M** | **4 957** |
+| 4 | 4 | 4,85 M | 7 305 |
+
+Zeile drei kostet dasselbe wie Zeile zwei und rechnet die Leinwand doppelt
+statt anderthalbfach: **Leinwandgrösse ist billiger als Feldgrösse.** Genommen
+ist Zeile vier — zweifache Überabtastung und ein Feld, das drei Viertel der
+Leinwand trägt. Für 2 130 Bilder sind das rund drei Stunden.
+
+Gerechnet wird deshalb in **Abschnitten** zu 300 Bildern, jeder für sich ein
+mp4, am Ende ohne Neukodieren aneinandergehängt. Drei Stunden an einem Stück
+sind drei Stunden, in denen nichts schiefgehen darf; so ist die teuerste
+verlorene Arbeit ein Abschnitt, und ein Neustart überspringt, was schon
+dasteht.
+
+#### Was im Film anders aussieht als auf der Seite
+
+- Die **Bedienung** ist weg, und zwar mit `display:none` statt
+  `visibility:hidden`: unsichtbar hielte sie ihren Platz, und im Bild stünde
+  ein schwarzes Band, in dem nichts passiert.
+- Die **Karte nimmt die volle Breite**. Auf der Seite deckelt das CSS die
+  Feldhöhe bei 62 svh, damit unter der Karte noch die Leiste Platz hat; im
+  Film ist die Leiste weg, und der Deckel kostete 30 der 540 Punkte — die
+  Karte stand 510 breit mit Rand links und rechts.
+- Er läuft in der **Standardkippung**, nicht flach: er hat keine Regler, mit
+  denen man selbst herausfindet, dass da ein Körper steht.
+
+Nachgemessen über acht Zeitpunkte des Laufs steht die Leinwand auf 0,67 und
+540 × 631 — **dieselben vier Zahlen jedes Mal**. Ein Bild, das mit der Länge
+der Notiz wandert, wäre im Film ein Ruck, den kein Zuschauer der Notiz
+zuordnen könnte.
+
+#### Und was herauskommt
+
+1 080 × 1 920, 30 Bilder je Sekunde, H.264 High in `yuv420p`, crf 17, mit
+`+faststart`. Das ist die Kombination, die überall ohne Neukodieren läuft.
+30 statt 60 Bilder je Sekunde ist kein Sparen: die Kamera steht still, es
+morpht nur die Karte, und dafür reichen 30 — die Glätte kommt aus der
+Interpolation (Abschnitt 7), nicht aus der Bildrate.
 
 ### Gerechnet wird nur, was zu sehen ist
 
@@ -1411,6 +1565,11 @@ aus sechs Sekunden Lauf je Fall:
 Karte 740 × 864 Punkte bei Feld 666 × 777 gegen 884 × 864 bei Feld 680 × 665.
 **Der kleinere Rahmen kostet nichts** — er ist schmaler, aber sein Feld steht
 höher, und das hebt sich auf.
+
+> Diese Tabelle ist **vor** dem neuen Licht gemessen (drei Muldenweiten statt
+> einer, weicher Schlagschatten, Schimmer auf dem Eis — Abschnitt 5). Das
+> kostet zusätzliche Durchgänge über das Feld und ist hier noch nicht
+> beziffert; nachzumessen auf einer Maschine, auf der sonst nichts läuft.
 
 Diese Zahlen sind nicht mit denen der vorigen Runde vergleichbar, und das ist
 keine Regression der Seite, sondern eine Eigenschaft des Prüfrechners. Die

@@ -235,6 +235,29 @@ python3 quellen.py
 node build.mjs > ../index.html
 ```
 
+### Der Film
+
+Die Seite gibt es auch als hochkantes mp4 — 1 080 × 1 920, 30 Bilder je
+Sekunde, 69 Sekunden plus zwei Sekunden Standbild. Nichts daran ist
+nachgebaut: `film.mjs` lädt dieselbe `index.html`, blendet die Bedienung aus
+und stellt die Uhr Bild für Bild weiter.
+
+```
+npm install playwright-core ffmpeg-static
+node film.mjs ../index.html film.mp4 30
+```
+
+Die beiden Pakete sind **Werkzeug, nicht Seite** — die Regel „keine
+Abhängigkeiten" gilt für alles, was ausgeliefert wird, und ausgeliefert wird
+eine einzelne HTML-Datei.
+
+Gerechnet wird doppelt so gross wie das Ziel und am Ende heruntergerechnet;
+das kostet rund drei Stunden für 2 130 Bilder und ist der sichtbarste
+Unterschied auf den Höhenlinien. Die Schrauben stehen als Umgebungsvariablen
+(`SATZ`, `UEBER`, `FEIN`, `ABSCHNITT`), die Messreihe dazu in
+[METHODIK.md](METHODIK.md), Abschnitt 8f. Wer eine Vorschau will, nimmt
+`LAUF=2 UEBER=2 FEIN=1.2` und ist in zwei Minuten fertig.
+
 Und danach, weil sonst niemand merkt, dass es die Seite gibt: Eintrag in
 `../projects.json` ergänzen und `node ../tools/readme.mjs` laufen lassen.
 

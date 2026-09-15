@@ -486,7 +486,7 @@ function setzeZeit(p) {
    Gedeckelt wird trotzdem, und zwar in absoluten Zellen: die Kosten je Bild
    haengen an der Zahl der Feldzellen, und gekippt wird der Scheibenstapel je
    Bild neu geschnitten. FELDMAX ist gemessen (METHODIK 8f), nicht gegriffen. */
-let RAUF = 0.9, FELDMAX = 680;   // let, damit der Film sie hochdrehen kann
+let RAUF = 0.9, FELDMAX = 680, DPRMAX = 2.5;  // let, damit der Film sie hochdreht
 let rW = 0, rH = 0;
 let demR = null, maskeR = null, rock = null, eisD = null, flaeche = null;
 let bild = null, licht = null, lichtBild = null;
@@ -579,21 +579,80 @@ function feldAnlegen() {
 }
 
 /* ---------- Was in der Zeit dazwischen steht ----------
-   **Linear**, und das ist eine inhaltliche Entscheidung, keine Bequemlichkeit.
-   Die Vorlage rechnet mit einer monotonen kubischen Kurve, weil ihre Zaehlungen
-   bis zu 39 Jahre auseinanderliegen und die Geschwindigkeit an jeder von ihnen
-   um 74 Prozent sprang. Hier sind die Schritte gleichmaessig — 1 ka, dann
-   0,5 ka —, der Knick ist klein, und der Preis einer Kurve waere, dass sie
-   zwischen zwei Datenpunkten etwas behauptet. Das ist eine Rekonstruktion,
-   keine Simulation. */
+   **Monotones kubisches Hermite** nach Fritsch–Carlson, wie in der Vorlage.
+
+   Hier stand lange linear, mit einer ausdruecklichen Begruendung: eine Kurve
+   behaupte zwischen zwei Datenpunkten etwas, und das hier sei eine
+   Rekonstruktion, keine Simulation. Das Argument gilt fuer eine **freie**
+   Kurve — eine Catmull-Rom schwingt ueber die Datenpunkte hinaus und erfindet
+   dabei Eis, wo in beiden Nachbarscheiben weniger stand.
+
+   Fuer die monotone Variante gilt es nicht. Sie geht durch jeden Datenpunkt
+   exakt hindurch, und ihre Knotensteigung ist null, sobald die beiden
+   Sekanten das Vorzeichen wechseln — die Kurve bleibt damit in jedem Segment
+   **zwischen** den beiden Werten, die sie verbindet. Sie behauptet nichts
+   ueber die Hoehe, nur ueber die Geschwindigkeit.
+
+   Und genau die war das Problem. Linear ist die Hoehe stetig, die
+   Geschwindigkeit aber nicht: an jeder der 48 Scheiben knickt sie um. Im Lauf
+   sind das 48 Rucke in 69 Sekunden, und man sieht sie — der Eisrand wandert
+   nicht, er pulst. Das faellt beim Schieben des Reglers nicht auf und im Film
+   sofort.
+
+   Die Gewichte laufen ueber die **Spielzeit** der Segmente (TAKT), nicht ueber
+   ihre Jahrtausende: die Zeitachse steht ungleichmaessig (1 ka, dann 0,5 ka)
+   und die Spielzeit je Scheibe haengt ausserdem daran, wie viel sich in ihr
+   bewegt. Stetig soll die Geschwindigkeit dort sein, wo das Auge sie sieht. */
 const tdJetzt = new Float32Array(TD.w * TD.h);
 const eisJetzt = new Float32Array(EIS.w * EIS.h);
+
+/* Die Randbedingung an beiden Enden ist die einseitige Sekante: Tm = T0 setzt
+   dm = d0, und das gewichtete harmonische Mittel zweier gleicher Zahlen ist
+   die Zahl selbst. Kein Sonderfall im Code, nur eine Zuweisung davor. */
+function kurveFeld(scheiben, ziel, a, b, u) {
+  const am = a > 0 ? a - 1 : a, bp = b < NT - 1 ? b + 1 : b;
+  const T0 = TAKT[a] || 1;
+  const Tm = a > 0 ? (TAKT[a - 1] || T0) : T0;
+  const T1 = b < NT - 1 ? (TAKT[b] || T0) : T0;
+  const Vm = scheiben[am], V0 = scheiben[a], V1 = scheiben[b], V2 = scheiben[bp];
+  // Alles, was nur an den Segmentlaengen haengt, einmal je Bild statt je Zelle.
+  const wm1 = 2 * T0 + Tm, wm2 = T0 + 2 * Tm;
+  const wp1 = 2 * T1 + T0, wp2 = T1 + 2 * T0;
+  const u2 = u * u, u3 = u2 * u;
+  const h00 = 2 * u3 - 3 * u2 + 1, h10 = (u3 - 2 * u2 + u) * T0;
+  const h01 = -2 * u3 + 3 * u2,    h11 = (u3 - u2) * T0;
+  for (let i = 0; i < ziel.length; i++) {
+    const v0 = V0[i], v1 = V1[i];
+    const d0 = (v1 - v0) / T0;
+    const dm = a > 0 ? (v0 - Vm[i]) / Tm : d0;
+    const d1 = b < NT - 1 ? (V2[i] - v1) / T1 : d0;
+    const m0 = dm * d0 > 0 ? (wm1 + wm2) / (wm1 / dm + wm2 / d0) : 0;
+    const m1 = d0 * d1 > 0 ? (wp1 + wp2) / (wp1 / d0 + wp2 / d1) : 0;
+    ziel[i] = h00 * v0 + h10 * m0 + h01 * v1 + h11 * m1;
+  }
+}
 function zeitFelder() {
   const a = abschnitt, b = Math.min(NT - 1, a + 1), u = uAbschnitt;
-  const A = TD.s[a], B = TD.s[b];
-  for (let i = 0; i < tdJetzt.length; i++) tdJetzt[i] = A[i] + (B[i] - A[i]) * u;
-  const C = EIS.s[a], E = EIS.s[b];
-  for (let i = 0; i < eisJetzt.length; i++) eisJetzt[i] = C[i] + (E[i] - C[i]) * u;
+  kurveFeld(TD.s, tdJetzt, a, b, u);
+  kurveFeld(EIS.s, eisJetzt, a, b, u);
+}
+/* Dieselbe Kurve fuer einen einzelnen Wert — der Meeresspiegel im Ticker soll
+   nicht rucken, wenn das Eis es nicht tut. */
+function kurveWert(reihe, a, b, u) {
+  const T0 = TAKT[a] || 1;
+  const Tm = a > 0 ? (TAKT[a - 1] || T0) : T0;
+  const T1 = b < NT - 1 ? (TAKT[b] || T0) : T0;
+  const v0 = reihe[a], v1 = reihe[b];
+  const d0 = (v1 - v0) / T0;
+  const dm = a > 0 ? (v0 - reihe[a - 1]) / Tm : d0;
+  const d1 = b < NT - 1 ? (reihe[b + 1] - v1) / T1 : d0;
+  const wm1 = 2 * T0 + Tm, wm2 = T0 + 2 * Tm;
+  const wp1 = 2 * T1 + T0, wp2 = T1 + 2 * T0;
+  const m0 = dm * d0 > 0 ? (wm1 + wm2) / (wm1 / dm + wm2 / d0) : 0;
+  const m1 = d0 * d1 > 0 ? (wp1 + wp2) / (wp1 / d0 + wp2 / d1) : 0;
+  const u2 = u * u, u3 = u2 * u;
+  return (2 * u3 - 3 * u2 + 1) * v0 + (u3 - 2 * u2 + u) * T0 * m0
+       + (-2 * u3 + 3 * u2) * v1 + (u3 - u2) * T0 * m1;
 }
 
 /* ---------- Die Paläotopographie ----------
@@ -705,7 +764,30 @@ const STAERKE = 1.55, AUFHELLEN = 0.55, ABDUNKELN = 0.70;
    hier mehr tragen. Verglichen an sechs Varianten, siehe METHODIK 8c. */
 const MULDE = 0.85, WURF = 0.30, LICHTHUB = 2.2, SCHATTENHUB = 0.6;
 const HELLMAX = 0.55, DUNKELMAX = 0.55;
+/* Die Mulde lief ueber **eine** Weite (rW/14). Eine einzelne Weite kennt genau
+   eine Groesse von Hohlform: die Alpentaeler verschwanden darin, das Becken
+   der Nordsee war zu gross fuer sie. Jetzt drei, von eng nach weit
+   zusammengezaehlt — das ist die billige Fassung dessen, was ein Renderer
+   Umgebungsverdeckung nennt: wie viel Himmel eine Stelle sieht. Eng faengt den
+   Talgrund, weit das Becken, und die Summe steht dazwischen.
+
+   Die Gewichte fallen nach aussen: die enge Form ist die, die man wirklich als
+   Form liest, die weite gibt nur den Grundton. */
+const MULDENWEITE = [56, 18, 6], MULDENGEWICHT = [0.5, 0.33, 0.17];
+/* Der Schlagschatten hatte eine Kante von einem Feldpunkt (die Rampe lief ueber
+   0,05). Eine Sonne von 16 Grad wirft keine solche Kante — sie hat einen
+   Halbschatten. Der kommt hier aus einem kurzen Kasten ueber das Schattenfeld
+   selbst, nach dem Sweep: billiger als mehrere Sonnen, und fuer eine Karte
+   sieht es genauso aus. */
+const HALBSCHATTEN = 220;        // Nenner: je groesser, desto enger die Kante
+/* Eis glaenzt. Gestein in dieser Karte nicht — es traegt die Farbleiter, und
+   ein Glanzlicht darauf saehe nach Plastik aus. Auf einer Eiskuppe ist es das,
+   was sie zu einem Koerper macht statt zu einer weissen Flaeche: der Schimmer
+   sitzt auf den Flanken, die dem Halbvektor zugewandt sind, und wandert ueber
+   sie, waehrend die Kuppe waechst. */
+const GLANZKRAFT = 0.16, GLANZQUADRATE = 4;   // Schaerfe = nh hoch 2^4, also 16
 let schattenF = null, weitF = null, kastA = null, kastB = null;
+let muldeF = null, glanzF = null;
 
 function kastenX(a, b, r, w, h) {
   const f = 1 / (2 * r + 1);
@@ -737,12 +819,21 @@ function lichtRechnen() {
   if (!schattenF || schattenF.length !== n) {
     schattenF = new Float32Array(n); weitF = new Float32Array(n);
     kastA = new Float32Array(n); kastB = new Float32Array(n);
+    muldeF = new Float32Array(n); glanzF = new Float32Array(n);
   }
-  // Die weite Umgebung, fuer die Mulde. Kastenfilter mit laufender Summe:
-  // kostet je Bildpunkt dasselbe, egal wie breit er ist.
-  const r = Math.max(3, Math.round(rW / 14));
-  kastenX(flaeche, kastB, r, rW, rH); kastenY(kastB, kastA, r, rW, rH);
-  kastenX(kastA, kastB, r, rW, rH); kastenY(kastB, weitF, r, rW, rH);
+  /* Die Umgebung in drei Weiten, fuer die Mulde. Kastenfilter mit laufender
+     Summe: kostet je Bildpunkt dasselbe, egal wie breit er ist — deshalb sind
+     drei Weiten auch nur dreimal ein billiger Durchgang und nicht dreimal ein
+     teurer. Zweimal Kasten je Weite ergibt eine Glocke; scharfe Kastenkanten
+     saehe man als Rechtecke im Licht. */
+  muldeF.fill(0);
+  for (let w = 0; w < MULDENWEITE.length; w++) {
+    const r = Math.max(2, Math.round(rW / MULDENWEITE[w]));
+    kastenX(flaeche, kastB, r, rW, rH); kastenY(kastB, kastA, r, rW, rH);
+    kastenX(kastA, kastB, r, rW, rH); kastenY(kastB, weitF, r, rW, rH);
+    const g = MULDENGEWICHT[w];
+    for (let i = 0; i < n; i++) muldeF[i] += (weitF[i] - flaeche[i]) * g;
+  }
 
   /* Schlagschatten in einem Durchgang. Das Licht kommt aus genau 45 Grad von
      oben links, also laufen die Strahlen diagonal, und je Diagonale genuegt
@@ -760,9 +851,22 @@ function lichtRechnen() {
       x++; y++;
     }
   }
+  /* Und weich an der Kante. Der Sweep liefert eine harte Grenze; eine Sonne
+     von 16 Grad hat einen Halbschatten, der mit dem Abstand vom Werfer
+     breiter wird. Ein kurzer Kasten ueber das Feld traegt das nicht exakt
+     nach, aber er nimmt die Treppe heraus, und mehr sieht man auf einer Karte
+     nicht. Der Radius haengt an der Feldgroesse, damit er bei jeder
+     Aufloesung gleich breit **aussieht**. */
+  const rs = Math.max(1, Math.round(rW / HALBSCHATTEN));
+  kastenX(schattenF, kastB, rs, rW, rH); kastenY(kastB, schattenF, rs, rW, rH);
 
   const hochL = Math.cos(Math.PI * SONNE / 180) * Math.SQRT1_2;
   const lx = -hochL, ly = -hochL, lz = Math.sin(Math.PI * SONNE / 180);
+  /* Der Halbvektor zwischen Sonne und Blick. Geblickt wird senkrecht von oben
+     (0,0,1) — die Kippung dreht spaeter das fertige Bild, nicht das Licht. */
+  const hx0 = lx, hy0 = ly, hz0 = lz + 1;
+  const hl = Math.sqrt(hx0 * hx0 + hy0 * hy0 + hz0 * hz0);
+  const hx = hx0 / hl, hy = hy0 / hl, hz = hz0 / hl;
   for (let y = 0; y < rH; y++) {
     const zc = y * rW, zo = (y > 0 ? y - 1 : y) * rW, zu = (y < rH - 1 ? y + 1 : y) * rW;
     for (let x = 0; x < rW; x++) {
@@ -770,13 +874,35 @@ function lichtRechnen() {
       const i = zc + x;
       const gx = (flaeche[zc + xp] - flaeche[zc + xm]) * 0.5 * UEBERHOEHT;
       const gy = (flaeche[zu + x] - flaeche[zo + x]) * 0.5 * UEBERHOEHT;
-      let I = (-gx * lx - gy * ly + lz) / Math.sqrt(gx * gx + gy * gy + 1) - lz;
-      const mulde = (weitF[i] - flaeche[i]) * UEBERHOEHT;
+      const nl = 1 / Math.sqrt(gx * gx + gy * gy + 1);
+      let I = (-gx * lx - gy * ly + lz) * nl - lz;
+      const mulde = muldeF[i] * UEBERHOEHT;
       if (mulde > 0) I -= mulde * MULDE;
-      if (schattenF[i] > 0) I -= (schattenF[i] < 0.05 ? schattenF[i] / 0.05 : 1) * WURF;
+      /* Weiche Rampe statt harter Kante: smoothstep ueber dieselbe Breite,
+         ueber die vorher linear aufgeblendet wurde. */
+      const sch = schattenF[i];
+      if (sch > 0) {
+        const t = sch < 0.05 ? sch / 0.05 : 1;
+        I -= t * t * (3 - 2 * t) * WURF;
+      }
       let a = I * STAERKE;
       if (a > HELLMAX) a = HELLMAX; else if (a < -DUNKELMAX) a = -DUNKELMAX;
       licht[i] = a;
+      /* Der Schimmer — nur dort gerechnet, wo auch Eis liegt. Im Schatten
+         gibt es ihn nicht: ein Glanzlicht ohne Sonne ist der Fehler, an dem
+         man billige Renderer erkennt. */
+      let gl = 0;
+      if (eisD[i] >= EISSCHWELLE && sch < 0.02) {
+        const nh = (-gx * hx - gy * hy + hz) * nl;
+        if (nh > 0) {
+          // nh hoch 16, durch viermal Quadrieren — billiger als Math.pow
+          // und hier je Feldzelle und Bild gerechnet.
+          let q = nh;
+          for (let e = 0; e < GLANZQUADRATE; e++) q *= q;
+          gl = q * GLANZKRAFT;
+        }
+      }
+      glanzF[i] = gl;
     }
   }
 }
@@ -803,10 +929,19 @@ function farbeRechnen() {
     const a = licht[i];
     if (a > 0) { r += (255 - r) * a * AUFHELLEN; g += (255 - g) * a * AUFHELLEN; b += (255 - b) * a * AUFHELLEN; }
     else if (a < 0) { const f = 1 + a * ABDUNKELN; r *= f; g *= f; b *= f; }
+    /* Der Schimmer kommt **nach** dem Licht und zieht gegen Weiss, nicht
+       gegen die Bandfarbe: ein Glanzlicht hat die Farbe der Quelle, nicht die
+       des Stoffs. Auf Eis heisst das fast dieselbe Farbe — sichtbar ist der
+       Unterschied nur auf den blauen Baendern der tiefen Eisleiter. */
+    const gl = glanzF[i];
+    if (gl > 0) { r += (255 - r) * gl; g += (255 - g) * gl; b += (255 - b) * gl; }
     fo[j] = r; fo[j + 1] = g; fo[j + 2] = b; fo[j + 3] = 255;
     let L = 128 + (a > 0 ? 127 * a * AUFHELLEN : 128 * a * ABDUNKELN) * LICHTHUB;
-    if (schattenF[i] > 0)
-      L -= 60 * SCHATTENHUB * (schattenF[i] < 0.05 ? schattenF[i] / 0.05 : 1);
+    if (schattenF[i] > 0) {
+      const t = schattenF[i] < 0.05 ? schattenF[i] / 0.05 : 1;
+      L -= 60 * SCHATTENHUB * t * t * (3 - 2 * t);
+    }
+    if (gl > 0) L += 255 * gl * LICHTHUB * 0.5;
     lo[j] = lo[j + 1] = lo[j + 2] = L < 0 ? 0 : L > 255 ? 255 : L;
     lo[j + 3] = 255;
   }
@@ -2208,7 +2343,11 @@ function masse() {
   cv.style.top = Math.round((fh - hoehe) / 2) + 'px';
   feld.style.setProperty('--kb', breite + 'px');
   feld.style.setProperty('--kh', hoehe + 'px');
-  const dpr = GROB ? 1 : Math.min(2.5, devicePixelRatio || 1);
+  /* Der Deckel von 2,5 ist fuer die Seite: darueber zahlt ein Telefon
+     Bildpunkte, die sein Schirm nicht hat. Der Film dreht ihn hoch und
+     rechnet absichtlich groesser als das Ziel, um beim Verkleinern
+     Kantenglaettung geschenkt zu bekommen — deshalb let, nicht const. */
+  const dpr = GROB ? 1 : Math.min(DPRMAX, devicePixelRatio || 1);
   DPR = dpr;
   const bw = Math.round(breite * dpr), bh = Math.round(hoehe * dpr);
   if (cv.width !== bw || cv.height !== bh) { cv.width = bw; cv.height = bh; }
@@ -2300,7 +2439,7 @@ function tickerMalen() {
 }
 function mspJetzt() {
   const a = abschnitt, b = Math.min(NT - 1, a + 1);
-  return D.msp[a] + (D.msp[b] - D.msp[a]) * uAbschnitt;
+  return kurveWert(D.msp, a, b, uAbschnitt);
 }
 function tickerSchreiben() {
   const v = mspJetzt();
