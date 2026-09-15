@@ -165,7 +165,8 @@ Download, ein zweiter Regler. Das ist ein eigenes Projekt.
 - **Die Schrägsicht rechnet die Scheibenringe je Bild neu**, solange die Uhr
   läuft — und seit der Trennung von Fels und Eis zwei Sätze davon. Gemessen an
   der Karte im hochkanten Rahmen (740 × 864): 1 038 ms je Bild in der
-  Standardkippung, 828 ms stark gekippt, 460 ms flach. **Diese Zahlen sind mit
+  Standardkippung, 828 ms stark gekippt, 460 ms flach — **vor** dem neuen
+  Licht gemessen, das noch nicht beziffert ist. **Diese Zahlen sind mit
   den früher notierten nicht vergleichbar** — der Prüfcontainer läuft seit der
   vorigen Runde rund 2,8-mal langsamer, nachgemessen am unveränderten alten
   Stand (METHODIK 10). Der Vergleich in derselben Stunde sagt: der kleinere
@@ -201,8 +202,14 @@ Download, ein zweiter Regler. Das ist ein eigenes Projekt.
 - **Kein Tiefpass über die Bilder.** Die Vorlage glättet das Höhenfeld über die
   Zeit, weil ihr Raster von Bild zu Bild springt und die Höhenlinien mitzappeln.
   Hier steht das Gitter fest — es ist aus einem festen DEM abgeleitet, nicht aus
-  wandernden Umrissen —, also gibt es das Zittern nicht. Sollte es sich beim
-  Lauf mit echten Daten doch zeigen, ist der Filter aus der Vorlage zu
-  übernehmen.
-- **Der Film ist nicht gelaufen.** `build/film.mjs` steht und ist gegen die
-  Vorlage geschrieben, aber ohne echte Daten gibt es nichts zu filmen.
+  wandernden Umrissen —, also gibt es das Zittern nicht. Was es gab, war etwas
+  anderes: ein Ruck an jeder der 48 Zeitscheiben, weil linear interpoliert
+  wurde und damit die *Geschwindigkeit* sprang. Behoben mit einer monotonen
+  kubischen Kurve; grösster Ruck um den Faktor 20 kleiner, nachgemessen
+  (METHODIK 7).
+- **Der Film ist gelaufen.** 1 080 × 1 920 hochkant, 30 Bilder je Sekunde,
+  H.264 in `yuv420p` — 69 Sekunden plus zwei Sekunden Standbild. Gerechnet
+  wird auf 2 160 × 2 524 und heruntergerechnet, also zweifach überabgetastet,
+  mit einem Reliefgitter von 1 620 Zellen; das sind rund drei Stunden für
+  2 130 Bilder, in Abschnitten zu 300, damit ein Abbruch nicht alles kostet
+  (METHODIK 8f).

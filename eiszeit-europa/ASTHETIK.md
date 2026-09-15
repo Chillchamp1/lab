@@ -259,8 +259,9 @@ dass sie überhaupt Höhenlinien bekommen.
 |---|---|
 | Schattierung | Lambert, Licht von **oben links**, `SONNE = 40` Grad über der Fläche |
 | Schlagschatten | dasselbe Licht **flacher**, `WURFSONNE = 16` Grad |
-| Mulde | was tiefer liegt als seine weite Umgebung, bekommt weniger Himmel (`MULDE = 0.85`) |
-| Stärke | `STAERKE = 1.6`, gedeckelt bei ±0,55 |
+| Mulde | was tiefer liegt als seine Umgebung, bekommt weniger Himmel (`MULDE = 0.85`) — hier über **drei** Weiten statt einer |
+| Stärke | `STAERKE = 1.55`, gedeckelt bei ±0,55 |
+| Schimmer | Blinn-Term, nur auf Eis und nur ausserhalb des Schlagschattens (`GLANZKRAFT = 0.16`) |
 
 Die beiden Sonnen sind kein Versehen: „ein Strahl, der steiler abfällt als der
 Hang selbst, trifft nie auf Schatten — bei 40 Grad gäbe es über diesen sanften
@@ -269,7 +270,17 @@ jeher."
 
 Der Schlagschatten läuft in **einem einzigen Durchgang**: das Licht kommt aus
 genau 45 Grad, die Strahlen laufen auf der Leinwand diagonal, und je Diagonale
-genügt ein mitgeführter Horizont — `s = max(s − Abfall, Höhe)`.
+genügt ein mitgeführter Horizont — `s = max(s − Abfall, Höhe)`. Danach ein
+kurzer Kasten darüber: der Sweep liefert eine Kante von einem Feldpunkt, und
+eine Sonne von 16 Grad hat einen Halbschatten.
+
+Die **drei Weiten** der Mulde sind der Ausschnitt geschuldet. Eine einzelne
+Weite sieht genau eine Grösse von Hohlform; auf einer Karte von Sizilien bis
+Spitzbergen stehen Alpentäler und das Becken der Nordsee nebeneinander im
+selben Bild, und keine Weite trägt beide. Drei, mit nach aussen fallendem
+Gewicht (0,50 / 0,33 / 0,17), sind die billige Fassung einer
+Umgebungsverdeckung — und billig ist hier wörtlich: der Kastenfilter kostet je
+Bildpunkt dasselbe, egal wie breit er ist.
 
 **Die Schattierung wird in die Farbe gerechnet**, nicht als graues Bild
 darübergelegt. Das ist der teuerste Fehler, den die Vorlage gemacht und
@@ -534,16 +545,19 @@ der Knick zurück, den die Kurve beseitigen soll."
 Sie geht durch jeden gemessenen Wert, knickt dort nicht und **schiesst nie
 über die beiden Nachbarwerte hinaus** (gemessen: 0,0000 % Überschiessen).
 
-> Hier gilt allerdings die Ansage der Aufgabe: **linear interpolieren.** Die
-> Vorlage begründet ihre Kurve mit einem gemessenen Knick von 74 Prozent an
-> jeder Zählung und zahlt dafür im Mittel 0,75 Prozent Abweichung. Bei
-> gleichmässigen 1-ka-Schritten ist der Knick klein und der Preis
-> unbegründet — und „kein Glätten über die Datenlage hinweg" steht in der
-> Aufgabe. Die Maschinerie (`steigungen`, `hermite`, `STRAFF`) wird
-> übernommen und `STRAFF` auf 0 gesetzt; eine Hermite-Kurve, deren beide
-> Steigungen gleich der Sehne sind, **ist** die Gerade. Damit steht der
-> Schalter da, falls sich die Frage am Übergang 21 ka (wo die Schrittweite
-> wechselt) doch noch stellt.
+> Hier stand einmal das Gegenteil: **linear interpolieren**, weil bei
+> gleichmässigen 1-ka-Schritten der Knick klein sei und „kein Glätten über
+> die Datenlage hinweg" in der Aufgabe stehe. Das war eine Fehlanwendung des
+> richtigen Arguments. Es gilt für eine *freie* Kurve, die über die
+> Datenpunkte hinausschiesst — nicht für die **monotone**, die genau das
+> nicht tut und die die Vorlage ohnehin schon genommen hatte.
+>
+> Was linear glättete, war nämlich nichts: geglättet wird die
+> *Geschwindigkeit*, und die war linear gar nicht stetig. Sie knickte an
+> jeder der 48 Scheiben um, was im Lauf 48 Rucke in 69 Sekunden ergibt. Der
+> grösste davon fällt mit der Kurve um den Faktor 20 (METHODIK, Abschnitt 7).
+> Übernommen wird damit auch hier wieder das Verfahren der Vorlage — nach
+> einem Umweg.
 
 ### Die Bedienleiste
 
@@ -592,15 +606,15 @@ Genau dort steht in der neuen Karte die **Meeresspiegelkurve**.
 ## 8b. Wo bewusst abgewichen wird
 
 Fünf Stellen, alle aus demselben Grund: **der Ausschnitt der Vorlage ist
-hochkant und lässt Platz, dieser ist fast quadratisch und lässt keinen.**
+hochkant und lässt Platz, dieser ist ein gefülltes Rechteck und lässt keinen.**
 Deutschland ist höher als breit und hat einen Umriss; dieser Rahmen ist ein
-gefülltes Rechteck von 760 × 778 Zellen.
+gefülltes Rechteck von 760 × 887 Zellen.
 
 | Vorlage | hier | warum |
 |---|---|---|
 | `.wrap{height:100dvh}`, das Feld füllt den Schirm | `min-height`, und das Feld hält `aspect-ratio` der Karte | Auf 390 px füllte die Karte sonst **48 Prozent** des Feldes; der Rest war schwarz. Jetzt schrumpft die Bühne, und der Rand unten ist Seitengrund statt Loch in der Karte. |
 | Notiz und Faden liegen **hinter** der Karte, die Karte weicht ihnen aus | sie liegen **neben** der Karte (quer, ab 1 040 px) oder **unter** ihr (sonst) | Das Prinzip hängt daran, dass der Umriss Platz lässt. Deutschland tut das; ein gefülltes Rechteck tut es nirgends. Die Karte kann nicht ausweichen, also weicht der Text — und in einem queren Fenster geht er zur Seite, nicht nach unten: dort ist Platz, und die Karte bekommt die ganze Fensterhöhe statt der Hälfte. |
-| Die Bühne ist eine Spalte: Karte, Leiste, Regler untereinander | quer ein **zweispaltiges Blatt**: links die Karte über die ganze Höhe, rechts Leiter, Regler, Ticker und Notiz | Die Karte der Vorlage ist hochkant und füllt eine Spalte. Diese ist fast quadratisch: untereinander blieben ihr 21 Prozent des Fensters, nebeneinander sind es 59. |
+| Die Bühne ist eine Spalte: Karte, Leiste, Regler untereinander | quer ein **zweispaltiges Blatt**: links die Karte über die ganze Höhe, rechts Leiter, Regler, Ticker und Notiz | Die Karte der Vorlage ist hochkant und füllt eine Spalte. Diese ist hochkant, aber flacher: untereinander blieben ihr 21 Prozent des Fensters, nebeneinander sind es 49. |
 | Die Bühne hat Rand, Polster und einen Strich drumherum | hochkant **nichts davon**: die Karte läuft von Kante zu Kante | Auf 390 px sind Rand und Polster zehn Prozent der Kartenbreite. Die Vorlage kann sich das leisten, weil ihre Karte hochkant ohnehin schmal steht; diese füllt die Breite oder sie ist zu klein. |
 | Das Schild steht **auf** der Karte, mit einem Schein aus dem Seitengrund | es steht **über** ihr | Der Schein trägt, solange unter dem Schild Wasser liegt. Seit der Rahmen bis Grönland reicht, liegt dort Eis: weisse Schrift auf Weiss. Eine Zeile Höhe ist billiger als ein unlesbares Schild. |
 
