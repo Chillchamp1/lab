@@ -2405,7 +2405,10 @@ function malBald() {
 }
 
 /* ================================================================ Uhr */
-const LAUF = 90;                       // Sekunden fuer 26 000 Jahre
+/* Sekunden fuer 26 000 Jahre. Waren 90; 30 Prozent schneller sind 69. Die
+   Verteilung der Zeit auf die Abschnitte bleibt davon unberuehrt — sie ist
+   ein Anteil, kein Betrag. */
+const LAUF = 69;
 let zuletzt = 0;
 function schlag(t) {
   if (laeuft) {

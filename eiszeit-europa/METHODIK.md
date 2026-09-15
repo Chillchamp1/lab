@@ -415,7 +415,7 @@ der Interpolation.
 
 ### Die Uhr läuft über Spielzeit
 
-Jeder Abschnitt bekommt einen Anteil an den 90 Sekunden, der **Dauer und
+Jeder Abschnitt bekommt einen Anteil an den 69 Sekunden, der **Dauer und
 Umschichtung** mischt: das geometrische Mittel aus seinem Anteil an den Jahren
 und seinem Anteil an der Summe aller Änderungen des Eisvolumens. Dazu eine
 Untergrenze von 55 Prozent des Gleichanteils — darunter ist ein Abschnitt

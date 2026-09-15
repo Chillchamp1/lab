@@ -22,7 +22,7 @@ import { resolve } from 'node:path';
 const [, , seite = '../index.html', ziel = 'film.mp4', fpsArg = '30'] = process.argv;
 const FPS = Number(fpsArg);
 const BREITE = 1080, HOEHE = 1920;
-const LAUF = 90;                 // Sekunden, muss zu LAUF in der Seite passen
+const LAUF = 69;                 // Sekunden, muss zu LAUF in der Seite passen
 const NACH = 2;                  // Sekunden Standbild am Ende
 
 const { chromium } = await import('playwright-core');
