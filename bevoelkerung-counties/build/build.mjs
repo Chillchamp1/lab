@@ -22,6 +22,28 @@ const GITTER = Number(process.env.GITTER ?? 1600);
 // 6 und 4 aus; die Vereinigten Staaten spannen fünf Zehnerpotenzen Dichte
 // statt dreieinhalb, und die Strömung braucht entsprechend länger.
 const KALT = Number(process.env.KALT ?? 6);
+// Wie stark das Kartogramm gegen die Landkarte gewichtet wird: 0 ist die reine
+// Landkarte, 1 das volle Kartogramm. Deutschland steht auf 0,5, diese Karte auf
+// **0,28** — und das ist gemessen, nicht gegriffen.
+//
+// Gemessen wurde, wie weit das volle Kartogramm die Knoten verschiebt, relativ
+// zur Diagonale der eigenen Karte:
+//
+//     Deutschland   3,83 % im Mittel, 9,45 % im Äussersten
+//     USA          17,71 % im Mittel, 26,85 % im Äussersten
+//
+// Also das Viereinhalbfache. Bei gleichem Wert wäre die US-Karte entsprechend
+// stärker aufgebläht; um Deutschlands gezeichnete Verformung zu treffen, müsste
+// er auf 0,11 — dann täte das Kartogramm nichts mehr.
+//
+// Ein zweiter Grund kam beim Ansehen dazu, und er zeigt in dieselbe Richtung:
+// gefärbt wird die **gezeichnete** Dichte. Zieht das Kartogramm eine Stadt
+// auseinander, sinkt sie, und die Farbe wird kühler. Bei 0,28 bleiben Chicago,
+// Brooklyn, Los Angeles und Miami klein genug für Orange; bei 0,5 sind sie
+// grün. Schärfere Landform und kräftigere Farbe fallen hier zusammen — bei
+// Deutschland tun sie das nicht, dort ist die Verformung klein genug, dass 0,5
+// nichts kostet.
+const FORM = Number(process.env.FORM ?? 0.28);
 const WARM = Number(process.env.WARM ?? 4);
 // Wohin die gerechnete Zeitreihe zwischengelegt wird. Mit einem eigenen Namen
 // lässt sich ein schneller Probebau fahren, ohne den guten Stand zu überschreiben.
@@ -862,7 +884,7 @@ const px = new Float64Array(N), py = new Float64Array(N);
    Knopfstellung dasselbe heisst. Die Landkarte streut am weitesten, also setzte
    sie das obere Ende für alle. Jetzt misst die Leiter genau das, was gezeichnet
    wird. */
-const FORM = 0.5;
+const FORM = ${FORM};
 /* Hier stand noch ein Massstab und ein Ankerpunkt: jeder Zustand wurde um
    diesen Punkt auf seine Grösse gebracht, damals, als die Karte
    flächenproportional mit der Bevölkerung wuchs. Der Massstab wurde
