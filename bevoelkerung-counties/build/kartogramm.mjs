@@ -55,7 +55,7 @@ function bilanz(gebiete, X, Y, werte, abgedeckt) {
 
 export function rechneKartogramm({
   gebiete, X: X0, Y: Y0, werte, abgedeckt,
-  gitter = 1100, rand = 0.30, durchgaenge = 5, wachstum = 1.05, meer = 'mittel', log = () => {},
+  gitter = 1100, rand = 0.30, durchgaenge = 5, wachstum = 1.05, meer = 'mittel', boden = 0, faltGrenze = 0, log = () => {},
 }) {
   const X = Float64Array.from(X0), Y = Float64Array.from(Y0);
   // Immer eine ausdrückliche Liste, auch wenn sie alle Kreise enthält: der
@@ -77,7 +77,7 @@ export function rechneKartogramm({
     // mittlere Dichte und bleiben damit in der Strömung neutral.
     const masse = werte.map((w, i) => abgedeckt[i] ? w : mittelDichte * vor.flaechen[i]);
 
-    const R = baueDichte(gebiete, X, Y, masse, { breite: gitter, rand, nurGebiete, meer });
+    const R = baueDichte(gebiete, X, Y, masse, { breite: gitter, rand, nurGebiete, meer, boden });
     const PX = new Float64Array(X.length), PY = new Float64Array(Y.length);
     for (let i = 0; i < X.length; i++) { PX[i] = R.nachGitter.x(X[i]); PY[i] = R.nachGitter.y(Y[i]); }
 
@@ -87,7 +87,17 @@ export function rechneKartogramm({
     const nach = bilanz(gebiete, X, Y, werte, abgedeckt);
     const faltung = faltungAbgedeckt(gebiete, X, Y, vorzeichen, abgedeckt);
     log(`    Durchgang ${d}: Median ${(nach.median * 100).toFixed(3)}%  Max ${(nach.max * 100).toFixed(1)}%  über 1%: ${nach.ueber1}  gefaltet ${faltung.kaputt}`);
-    if (nach.median < besterMedian && faltung.kaputt === 0) {
+    // **Wie viele gefaltete Ringe hinnehmbar sind.** Ursprünglich: keiner. Bei
+    // den deutschen Kreisen ist das gratis, dort faltet nie etwas. Bei den
+    // US-Countys faltete fast jeder Durchgang, und weil ein Durchgang mit
+    // Faltung verworfen wird, gab die Funktion ihre Eingabe zurück — die Karte
+    // stand still. Von 158 Durchgängen waren dreizehn sauber, und die alle
+    // früh; mehr Rechnen ändert daran nichts, das ist nachgemessen.
+    //
+    // `faltGrenze` erlaubt eine Handvoll. Dreizehn umgestülpte Ringe von
+    // 42 016 sind 0,03 Prozent und im Bild nicht zu finden; eine Karte, die
+    // sich gar nicht verformt, ist dagegen sofort zu sehen.
+    if (nach.median < besterMedian && faltung.kaputt <= faltGrenze) {
       besterMedian = nach.median; bestX = X.slice(); bestY = Y.slice();
     }
   }

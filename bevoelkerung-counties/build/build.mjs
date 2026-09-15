@@ -45,6 +45,13 @@ const KALT = Number(process.env.KALT ?? 6);
 // nichts kostet.
 const FORM = Number(process.env.FORM ?? 0.28);
 const WARM = Number(process.env.WARM ?? 4);
+// Untergrenze der Zelldichte im Kartogramm, als Anteil der mittleren. Ohne sie
+// steht diese Karte still: siehe raster.mjs. Gemessen ist 0,4 der beste Wert
+// für die grossen Staaten, 0,6 für den Median über alle Countys.
+const BODEN = Number(process.env.BODEN ?? 0.4);
+// Wie viele umgestülpte Ringe ein Durchgang haben darf, um behalten zu werden.
+// Siehe kartogramm.mjs: bei null steht diese Karte still.
+const FALTEN = Number(process.env.FALTEN ?? 30);
 // Wohin die gerechnete Zeitreihe zwischengelegt wird. Mit einem eigenen Namen
 // lässt sich ein schneller Probebau fahren, ohne den guten Stand zu überschreiben.
 const CACHE = process.env.CACHE ? '-' + process.env.CACHE : '';
@@ -210,13 +217,13 @@ if (kommtSpaet.length) {
   log(`  ohne ${spaeteNamen.join(', ')}`);
   reihen.push({ id: 'kern', name: 'without ' + spaeteNamen.join(' and '), bilder: bilderOhne,
     zeitreihe: rechneZeitreihe({ gebiete: geo.gebiete, X: geo.X, Y: geo.Y, attr: modell.attr,
-      bilder: bilderOhne, groesste, gitter: GITTER, kaltDurchgaenge: KALT, warmDurchgaenge: WARM,
+      bilder: bilderOhne, groesste, gitter: GITTER, kaltDurchgaenge: KALT, warmDurchgaenge: WARM, boden: BODEN, faltGrenze: FALTEN,
       cache: 'zeitreihe-kern' + CACHE + '.json', log }) });
 }
 log('  mit allen Kreisen');
 reihen.push({ id: 'alle', name: kommtSpaet.length ? 'with ' + spaeteNamen.join(' and ') : 'all counties',
   bilder, zeitreihe: rechneZeitreihe({ gebiete: geo.gebiete, X: geo.X, Y: geo.Y, attr: modell.attr,
-    bilder, groesste, gitter: GITTER, kaltDurchgaenge: KALT, warmDurchgaenge: WARM,
+    bilder, groesste, gitter: GITTER, kaltDurchgaenge: KALT, warmDurchgaenge: WARM, boden: BODEN, faltGrenze: FALTEN,
     cache: 'zeitreihe-alle' + CACHE + '.json', log }) });
 
 // Die Form, auf der die Seite steht: der Mittelwert aller Kartogramme, zur
@@ -363,25 +370,61 @@ const NOTIZEN = [
 // ganzen Zeitraum eine Rolle spielen und deren County anders heisst. Alles
 // andere behält seinen County-Namen, denn die Karte zeigt Countys.
 const STADTNAME = {
-  '36061': 'Manhattan', '36047': 'Brooklyn', '36005': 'The Bronx',
-  '36085': 'Staten Island', '17031': 'Chicago', '48201': 'Houston',
-  '04013': 'Phoenix', '26163': 'Detroit', '25025': 'Boston',
-  '53033': 'Seattle', '12086': 'Miami', '39035': 'Cleveland',
-  '27053': 'Minneapolis', '13121': 'Atlanta', '29095': 'Kansas City',
-  '41051': 'Portland', '49035': 'Salt Lake City', '32003': 'Las Vegas',
-  '47037': 'Nashville', '47157': 'Memphis', '22071': 'New Orleans',
-  '39061': 'Cincinnati', '42003': 'Pittsburgh', '36029': 'Buffalo',
-  '39049': 'Columbus', '18097': 'Indianapolis', '37119': 'Charlotte',
-  '48029': 'San Antonio', '48453': 'Austin', '06001': 'Oakland',
-  '06085': 'San Jose', '12057': 'Tampa', '37183': 'Raleigh',
+  // New York: fünf Stadtbezirke sind fünf Countys. Der Berg im Osten ist
+  // Manhattan (28 000 Menschen je km²), das grösste County aber Brooklyn
+  // (2,74 Mio). Nach Einwohnern ausgewählt stünde „Brooklyn" neben dem Berg,
+  // der Manhattan ist. Alle fünf heissen deshalb New York — was auch stimmt.
+  '36061': 'New York', '36047': 'New York', '36081': 'New York',
+  '36005': 'New York', '36085': 'New York', '36059': 'New York',
+  '36103': 'New York', '36119': 'New York', '34003': 'New York',
+  '34017': 'New York', '34039': 'New York', '34023': 'New York',
+  '34031': 'New York', '34027': 'New York', '34025': 'New York',
+  '34029': 'New York', '34013': 'Newark',
+  // Grosse Städte, deren County anders heisst
+  '17031': 'Chicago', '17043': 'Chicago', '17097': 'Chicago', '17197': 'Chicago',
+  '17089': 'Chicago', '18089': 'Gary',
+  '48201': 'Houston', '48157': 'Houston', '48339': 'Houston',
+  '04013': 'Phoenix', '04019': 'Tucson',
+  '26163': 'Detroit', '26125': 'Detroit', '26099': 'Detroit', '26081': 'Grand Rapids',
+  '25025': 'Boston', '25017': 'Boston', '25021': 'Boston', '25009': 'Boston',
+  '25023': 'Boston', '25027': 'Worcester', '25005': 'Providence',
+  '53033': 'Seattle', '53053': 'Seattle', '53061': 'Seattle', '53063': 'Spokane',
+  '12086': 'Miami', '12011': 'Fort Lauderdale', '12099': 'West Palm Beach',
+  '12057': 'Tampa', '12103': 'St. Petersburg', '12095': 'Orlando',
+  '12031': 'Jacksonville', '12071': 'Fort Myers', '12105': 'Lakeland',
+  '12009': 'Melbourne', '12127': 'Daytona Beach', '12101': 'Tampa',
+  '39035': 'Cleveland', '39049': 'Columbus', '39061': 'Cincinnati',
+  '39153': 'Akron', '39113': 'Dayton',
+  '27053': 'Minneapolis', '27123': 'St. Paul',
+  '13121': 'Atlanta', '13135': 'Atlanta', '13067': 'Atlanta', '13089': 'Atlanta',
+  '29095': 'Kansas City', '20091': 'Kansas City', '20173': 'Wichita',
+  '41051': 'Portland', '41067': 'Portland', '53011': 'Portland',
+  '49035': 'Salt Lake City', '49049': 'Provo',
+  '32003': 'Las Vegas',
+  '47037': 'Nashville', '47157': 'Memphis',
+  '22071': 'New Orleans',
+  '42003': 'Pittsburgh', '42091': 'Philadelphia', '42017': 'Philadelphia',
+  '42045': 'Philadelphia', '42029': 'Philadelphia', '42071': 'Lancaster',
+  '36029': 'Buffalo', '36055': 'Rochester',
+  '18097': 'Indianapolis',
+  '37119': 'Charlotte', '37183': 'Raleigh', '37081': 'Greensboro',
+  '48029': 'San Antonio', '48453': 'Austin', '48491': 'Austin',
+  '48439': 'Fort Worth', '48085': 'Dallas', '48121': 'Dallas',
+  '48215': 'McAllen',
+  '06001': 'Oakland', '06085': 'San Jose', '06013': 'Oakland', '06081': 'San Francisco',
+  '06019': 'Fresno', '06029': 'Bakersfield', '06077': 'Stockton', '06099': 'Modesto',
+  '06111': 'Oxnard', '06067': 'Sacramento',
   '45045': 'Greenville', '21111': 'Louisville', '31055': 'Omaha',
   '19153': 'Des Moines', '40109': 'Oklahoma City', '40143': 'Tulsa',
-  '08031': 'Denver', '11001': 'Washington', '04019': 'Tucson',
-  '12031': 'Jacksonville', '01073': 'Birmingham', '29189': 'St. Louis County',
-  '24005': 'Baltimore County', '06067': 'Sacramento', '37081': 'Greensboro',
-  '12095': 'Orlando', '48113': 'Dallas', '06073': 'San Diego', '06059': 'Orange County',
-};
-// Sonst: der County-Name, ohne den Zusatz. „St. Louis city" wird „St. Louis",
+  '08031': 'Denver', '08005': 'Denver', '08001': 'Denver', '08059': 'Denver',
+  '08041': 'Colorado Springs',
+  '11001': 'Washington', '51059': 'Washington', '24031': 'Washington',
+  '24033': 'Washington', '24003': 'Baltimore', '24005': 'Baltimore',
+  '09001': 'Bridgeport', '09003': 'Hartford', '09009': 'New Haven',
+  '35001': 'Albuquerque', '01073': 'Birmingham', '10003': 'Wilmington',
+  '55079': 'Milwaukee', '55025': 'Madison', '44007': 'Providence',
+  '29189': 'St. Louis', '34007': 'Philadelphia',
+};// Sonst: der County-Name, ohne den Zusatz. „St. Louis city" wird „St. Louis",
 // „Miami-Dade County" wäre „Miami-Dade" — aber das steht schon oben.
 const kurzerName = (n, ags) => STADTNAME[ags]
   ?? n.replace(/\s+(County|Parish|Borough|city|City and Borough|Municipality)$/i, '').trim();
@@ -696,7 +739,7 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
     </div>
   </div>
   <div class="sicht">
-    <label><span>Tilt</span><input type="range" id="kipp" min="0" max="100" value="0" step="1" aria-label="Tilt the map"></label>
+    <label><span>Tilt</span><input type="range" id="kipp" min="0" max="100" value="62" step="1" aria-label="Tilt the map"></label>
     <label><span>Turn</span><input type="range" id="dreh" min="0" max="360" value="0" step="1" aria-label="Turn the map"></label>
     <button id="namen" aria-pressed="true">Names</button>
   </div>
@@ -1616,7 +1659,12 @@ let ZOOM = 1, vX = 0, vY = 0;
 const ZOOMMAX = 8;
 const ansichtFrei = () => ZOOM !== 1 || vX !== 0 || vY !== 0;
 
-let NEIGUNG = 0;                  // 0 bis 1, entspricht 0 bis KIPPMAX Grad
+// Die Karte geht **schräg** auf, nicht senkrecht von oben. Sie ist eine
+// Geländekarte; von oben sieht man die Farbe, aber nicht das Gelände, und die
+// Städte sind Berge, keine Flecken. 0,62 von KIPPMAX (62 Grad) sind knapp
+// 39 Grad — steil genug, dass die Berge stehen, flach genug, dass der Westen
+// hinter ihnen nicht verschwindet.
+let NEIGUNG = 0.62;               // 0 bis 1, entspricht 0 bis KIPPMAX Grad
 let DREHUNG = 0;                  // Bogenmass, 0 ist Norden oben
 let NAMEN = true;                 // Städtenamen an
 const KIPPMAX = 62 * Math.PI / 180;
