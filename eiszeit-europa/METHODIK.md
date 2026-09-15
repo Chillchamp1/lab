@@ -429,6 +429,32 @@ statt Menschen.
 Der Regler misst entsprechend Spielzeit, und die Marken sitzen dort, wo die
 Zeitscheiben im Ablauf liegen. Die Jahreszahl zeigt weiter das wirkliche Jahr.
 
+#### Der Deckel war eine heimliche Bremse
+
+Die Uhr zählt echte Zeit: je Bild kommt sie um die verstrichenen Sekunden
+weiter, geteilt durch die Spieldauer. Darüber lag ein Deckel von **0,1 s**,
+und der ist als Schutz gegen Pausen gemeint — ein Blatt im Hintergrund bekommt
+keine Bilder, und ohne Deckel spränge der Film beim Zurückkommen um die ganze
+Pause vor.
+
+Nur bremst ein solcher Deckel eben auch: dauert ein Bild länger als ein
+Zehntel, zählt die Uhr trotzdem nur ein Zehntel weiter. Flach und auf einer
+Karte von 515 Punkten fiel das kaum auf. Seit die Karte viermal so gross steht
+und gekippt der Standard ist, fiel es sehr auf — gemessen im Prüfbrowser:
+
+| | Dauer des ganzen Films |
+|---|---|
+| gesetzt | 69 s |
+| tatsächlich, Deckel 0,1 s | **795 s** |
+| tatsächlich, Deckel 1 s | 80 s |
+
+Der Deckel steht jetzt bei **einer Sekunde**: jedes echte Bild geht
+ungedeckelt durch, und eine Pause springt höchstens um anderthalb Prozent des
+Films. Bei langsamen Bildern läuft der Film damit in **grösseren Schritten**,
+aber nicht langsamer — und das ist die richtige Reihenfolge der Übel: eine
+Karte, die ruckelt, sieht man; eine, die zehnmal zu lang braucht, hält man für
+kaputt.
+
 ### Der Meeresspiegel-Ticker
 
 Unten mitlaufend, relativ zu heute, als Kurve über die Spielzeit mit Zeiger.

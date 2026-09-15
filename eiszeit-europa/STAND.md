@@ -182,6 +182,17 @@ Download, ein zweiter Regler. Das ist ein eigenes Projekt.
   räumlich glatt und verträgt eine gröbere Stufe als `stgit`, das einen
   scharfen Rand hat. Das Format trägt den Teiler schon je Feld; genutzt wird
   es nicht.
+- **Gekippt kommt der Film im Prüfbrowser auf etwa ein Bild je Sekunde**
+  (1 046 ms je Durchgang bei 1 440 × 900 und doppelter Punktdichte, flach
+  472 ms). Die Uhr läuft seit dem Deckel von einer Sekunde in echter Zeit, der
+  Film dauert also seine 69 Sekunden — er tut es in grösseren Schritten. Der
+  Prüfbrowser hat keine Grafikkarte, und der grösste Posten ist dort das
+  Zusammensetzen der Leinwand (3 Millionen Bildpunkte je Bild), das auf
+  richtiger Hardware die Grafikkarte macht. Wie es auf einem Telefon aussieht,
+  ist damit **nicht** gemessen. Die Schraube, falls es dort ruckelt: die
+  Leinwand beim Abspielen auf einfache Punktdichte stellen (`GROB`, gibt es
+  schon für Gesten) — das kostet Schärfe genau dann, wenn das Bild ohnehin
+  in Bewegung ist.
 - **Kein Tiefpass über die Bilder.** Die Vorlage glättet das Höhenfeld über die
   Zeit, weil ihr Raster von Bild zu Bild springt und die Höhenlinien mitzappeln.
   Hier steht das Gitter fest — es ist aus einem festen DEM abgeleitet, nicht aus

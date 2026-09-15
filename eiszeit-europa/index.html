@@ -2385,7 +2385,19 @@ let zuletzt = 0;
 function schlag(t) {
   if (laeuft) {
     if (zuletzt) {
-      dtSek = Math.min(0.1, (t - zuletzt) / 1000);
+      /* Der Deckel ist ein **Schutz gegen Pausen**, keine Geschwindigkeit: ein
+         Blatt im Hintergrund bekommt keine Bilder, und ohne ihn spraenge der
+         Film beim Zurueckkommen um die ganze Pause vor. Er stand auf 0,1 s —
+         und war damit zugleich eine heimliche Bremse: dauert ein Bild laenger
+         als ein Zehntel, zaehlt die Uhr trotzdem nur ein Zehntel weiter. Flach
+         und klein fiel das kaum auf; seit die Karte viermal so gross steht und
+         gekippt der Standard ist, brauchte der Film 795 statt 69 Sekunden.
+
+         Jetzt eine Sekunde: jedes echte Bild geht ungedeckelt durch, und eine
+         Pause springt hoechstens um anderthalb Prozent des Films. Die Uhr
+         laeuft damit in echter Zeit — bei langsamen Bildern in groesseren
+         Schritten, aber nicht langsamer. */
+      dtSek = Math.min(1, (t - zuletzt) / 1000);
       setzeZeit(spiel + dtSek / LAUF);
       document.getElementById('zeit').value = Math.round(spiel * 1000);
       notizen();
