@@ -72,10 +72,22 @@ Dicke zeichnet, kann nichts zeigen.
 
 ### Die anderen Eisschilde
 
-Der Ausschnitt schneidet Grönland und den Laurentidischen Eisschild ab. Das ist
-eine Entscheidung der Aufgabe und keine der Daten: ICE-6G_C ist global, und die
-Kette käme mit einem grösseren Fenster zurecht. Nur wäre es dann keine Karte
-Europas mehr.
+Hier stand einmal: „Der Ausschnitt schneidet Grönland und den Laurentidischen
+Eisschild ab." Das erste stimmt nicht mehr. Seit der Rahmen in Kilometern
+steht, liegt **Grönlands Ostseite mit im Bild** — und mit ihr der ganze
+barentsisch-karische Eisschild, den das alte Grad-Fenster ebenfalls
+abgeschnitten hatte, ohne dass es dort als Verlust vermerkt war.
+
+Der **Laurentidische** fehlt weiter, und das bleibt so: er läge 3 000 km weiter
+westlich, und die Karte wäre dann keine Karte Europas mehr. Von Grönland ist
+der Ostrand zu sehen, nicht die Insel — der Rahmen schneidet sie bei etwa
+45° W. Das ist ein Bildrand wie jeder andere und keine Aussage über den
+Eisschild.
+
+Was Grönland mitbringt, ist eine **Asymmetrie im Bild**: es ist das einzige
+Eis, das am Ende noch dasteht, und zugleich der höchste Eispunkt der ganzen
+Karte. Deshalb trägt es keine Gipfelmarke (METHODIK 8d) — die drei Marken
+gehören dem eurasischen Komplex, dem Grönland nicht angehört.
 
 ### Die zweite Unsicherheit
 
@@ -95,10 +107,18 @@ Download, ein zweiter Regler. Das ist ein eigenes Projekt.
 
 ## Was bewusst so bleibt
 
-- **Keine Ortsnamen.** Die Vorlage beschriftet Städte, weil ihre Aussage an
-  Orten hängt. Hier hängt sie an Flächen und Rändern. Ein „Doggerland" ins Bild
-  zu setzen wäre schön und wäre Beschriftung eines Zustands, den die Karte
-  ohnehin zeigt.
+- **Ortsnamen: als Ebene von heute, nicht als Beschriftung der Karte.** Hier
+  stand lange „keine" — die Vorlage beschriftet Städte, weil ihre Aussage an
+  Orten hängt, und hier hängt sie an Flächen und Rändern. Das Argument stimmt
+  weiter für Namen, die den Zustand benennen: ein „Doggerland" ins Bild zu
+  setzen wäre Beschriftung dessen, was die Karte ohnehin zeigt.
+
+  Zehn heutige Städte und die heutige Küstenlinie sind etwas anderes. Sie
+  sagen nichts über die Eiszeit, sie geben dem Auge einen Anker in der
+  Gegenwart — und genau dadurch wird die Bewegung ablesbar: wo die Karte bei
+  22 ka Land zeigt und die dünne Linie darunter durchläuft, stand später
+  Wasser. Deshalb sind sie eine **eigene, abschaltbare Ebene** („Today") und
+  liegen im Ton so weit zurück, dass sie das Relief nicht stören.
 - **Keine Interpolation der DATED-Ränder.** Siehe METHODIK, Abschnitt 6.
 - **Kein Beschneiden der Ränder auf den Eisschild.** Wo die DATED-Linie und
   ICE-6G_Cs Eisrand auseinanderlaufen, ist das der Befund und kein Fehler, den
@@ -110,28 +130,88 @@ Download, ein zweiter Regler. Das ist ein eigenes Projekt.
 
 ## Bekannte Schwächen der jetzigen Fassung
 
+- **Die Überhöhung der Schrägsicht ist 84-fach.** Das ist gemessen und nicht
+  geraten (METHODIK, Abschnitt 8c) — aber es bleibt eine Überhöhung, und wer
+  Hangneigungen aus dem Bild abliest, liest sie falsch. Das Gegenmittel wäre
+  eine Zahl im Bild; sie hätte auf einer Karte, die schon zwei Leitern, eine
+  Zeitleiste und ein Unsicherheitsband trägt, keinen Platz, der sie besser
+  machte.
 - **Der Eisrand ist auf 68 km abgetastet.** Das ist die Auflösung der Quelle,
   nicht eine Sparmassnahme: `quellen.py` lässt das Grobgitter nie feiner
   werden als die ICE-6G_C-Zelle. Die Stufe am Eisrand wird dadurch über rund
   zehn Bildpunkte weich. Die DATED-Linien liegen in voller Schärfe darüber —
   sie sind die Aussage über den Rand.
+- **Wenn das Eis weg ist, stimmen die Küsten noch nicht.** Das ist kein Fehler,
+  sondern die Aussage: bei 8,5 ka liegt kein Eis mehr im Fenster, der
+  Meeresspiegel steht aber noch bei −6,6 m und die Kruste bewegt sich weiter.
+  `Topo_Diff` reicht dort bis −206 m. Erst bei 0 ka ist es exakt null — dann
+  ist die Küste **genau** die moderne, weil das moderne Höhenmodell die Karte
+  ist.
+- **Über 90 Grad Drehung bleiben graue Wolken stehen.** Die Lichtebene wird je
+  Höhenscheibe mit der Regel „gerade-ungerade" beschnitten, damit Löcher —
+  Meeresboden unter der Scheibenhöhe — ausgespart bleiben; der Umriss, der
+  daraus als Maske für den Blit entsteht, kennt diese Löcher nicht mehr. Bei
+  kleinen Drehwinkeln liegt der Unterschied hinter der Karte, bei starken tritt
+  er als Wolke daneben. Der saubere Weg wäre eine Maske je Scheibe in voller
+  Auflösung, also ein Füllvorgang mehr je Scheibe. Bis dahin: die üblichen
+  Blickwinkel sind sauber, der Fehler steht hier.
 - **Gekippt ragt das Unsicherheitsband am Ostrand ein paar Pixel über die
-  Karte.** Die DATED-Ringe sind auf das Gitterrechteck beschnitten; die
+  Karte** — sichtbar nur, wenn man es mit *Band* einschaltet, denn beim Laden
+  ist es aus (METHODIK 6). Die DATED-Ringe sind auf das Gitterrechteck
+  beschnitten; die
   Schnittkante wird nicht gestrichelt, aber die **Füllung** des Bandes wird an
   ihr angehoben wie das Gelände daneben, und am Ostrand steht das Gelände
   niedriger als der Hub. Sichtbar nur gekippt, nur am Rand, wenige Pixel. Ganz
   weg wäre es mit einer Schablone, die den Hub zeilenweise aus dem Feldstand
   nimmt statt pauschal aus der Stapelhöhe.
 - **Die Schrägsicht rechnet die Scheibenringe je Bild neu**, solange die Uhr
-  läuft. Die Vorlage friert ihr Feld ein, sobald es steht, und spart damit die
-  teuersten Posten bei jeder Geste. Hier ist nur der Ringspeicher an den
-  Feldstand gehängt; der Rest wäre nachzuziehen, wenn sich die Schrägsicht auf
-  dem Telefon als zäh erweist.
+  läuft — und seit der Trennung von Fels und Eis zwei Sätze davon. Gemessen an
+  der Karte im hochkanten Rahmen (740 × 864): 1 038 ms je Bild in der
+  Standardkippung, 828 ms stark gekippt, 460 ms flach — **vor** dem neuen
+  Licht gemessen, das noch nicht beziffert ist. **Diese Zahlen sind mit
+  den früher notierten nicht vergleichbar** — der Prüfcontainer läuft seit der
+  vorigen Runde rund 2,8-mal langsamer, nachgemessen am unveränderten alten
+  Stand (METHODIK 10). Der Vergleich in derselben Stunde sagt: der kleinere
+  Rahmen kostet nichts (grosser Rahmen 1 027 / 831 / 443 ms). Der Kachelindex
+  und die gesammelten Striche (METHODIK 8f) haben den Preis je Bildpunkt
+  gedrittelt. Die
+  Vorlage friert ihr Feld ein, sobald es steht, und spart damit die teuersten
+  Posten bei jeder Geste. Hier ist nur der Ringspeicher an den Feldstand
+  gehängt; der Rest wäre nachzuziehen, wenn sich die Schrägsicht auf dem Telefon
+  als zäh erweist.
+- **Die Seite wiegt 1,22 MB (gzip 591 kB).** Das ist deutlich mehr als vor
+  dem Kilometer-Rahmen, und die Rechnung geht auf — der Rahmen deckt 23,6 statt
+  23,0 Millionen km², ist dabei ganz gefüllt statt zu 69,7 Prozent, und seine
+  Zelle misst 5,92 statt 6,83 km: doppelt so viele Zellen mit Gelände darin.
+  Der kleinere Rahmen hat davon 130 kB zurückgeholt. Zwei
+  Schrauben stehen bereit,
+  falls es zu schwer wird: `BREITE` (640 statt 760 kostet ein Drittel der
+  DEM-Werte) und ein **eigener Teiler je grobem Feld** — `Topo_Diff` ist
+  räumlich glatt und verträgt eine gröbere Stufe als `stgit`, das einen
+  scharfen Rand hat. Das Format trägt den Teiler schon je Feld; genutzt wird
+  es nicht.
+- **Gekippt kommt der Film im Prüfbrowser auf etwa ein Bild je Sekunde**
+  (1 038 ms je Durchgang bei 1 440 × 900 und doppelter Punktdichte, flach
+  460 ms). Die Uhr läuft seit dem Deckel von einer Sekunde in echter Zeit, der
+  Film dauert also seine 69 Sekunden — er tut es in grösseren Schritten. Der
+  Prüfbrowser hat keine Grafikkarte, und der grösste Posten ist dort das
+  Zusammensetzen der Leinwand (3 Millionen Bildpunkte je Bild), das auf
+  richtiger Hardware die Grafikkarte macht. Wie es auf einem Telefon aussieht,
+  ist damit **nicht** gemessen. Die Schraube, falls es dort ruckelt: die
+  Leinwand beim Abspielen auf einfache Punktdichte stellen (`GROB`, gibt es
+  schon für Gesten) — das kostet Schärfe genau dann, wenn das Bild ohnehin
+  in Bewegung ist.
 - **Kein Tiefpass über die Bilder.** Die Vorlage glättet das Höhenfeld über die
   Zeit, weil ihr Raster von Bild zu Bild springt und die Höhenlinien mitzappeln.
   Hier steht das Gitter fest — es ist aus einem festen DEM abgeleitet, nicht aus
-  wandernden Umrissen —, also gibt es das Zittern nicht. Sollte es sich beim
-  Lauf mit echten Daten doch zeigen, ist der Filter aus der Vorlage zu
-  übernehmen.
-- **Der Film ist nicht gelaufen.** `build/film.mjs` steht und ist gegen die
-  Vorlage geschrieben, aber ohne echte Daten gibt es nichts zu filmen.
+  wandernden Umrissen —, also gibt es das Zittern nicht. Was es gab, war etwas
+  anderes: ein Ruck an jeder der 48 Zeitscheiben, weil linear interpoliert
+  wurde und damit die *Geschwindigkeit* sprang. Behoben mit einer monotonen
+  kubischen Kurve; grösster Ruck um den Faktor 20 kleiner, nachgemessen
+  (METHODIK 7).
+- **Der Film ist gelaufen.** 1 080 × 1 920 hochkant, 30 Bilder je Sekunde,
+  H.264 in `yuv420p` — 69 Sekunden plus zwei Sekunden Standbild. Gerechnet
+  wird auf 2 160 × 2 524 und heruntergerechnet, also zweifach überabgetastet,
+  mit einem Reliefgitter von 1 620 Zellen; das sind rund drei Stunden für
+  2 130 Bilder, in Abschnitten zu 300, damit ein Abbruch nicht alles kostet
+  (METHODIK 8f).

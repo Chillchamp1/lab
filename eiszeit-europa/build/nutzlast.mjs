@@ -147,6 +147,19 @@ export function baueNutzlast(zwischen, log) {
     mitte: meta.mitte, erdr: meta.erdradius, fenster: meta.ausschnitt,
     t: meta.zeiten, takt: meta.takt, msp: meta.meeresspiegel.map(v => Math.round(v * 10) / 10),
     qdem: QDEM, qtd: QTD, qeis: QEIS,
+    // Die gemessene Gelaendesteigung (90-Prozent-Quantil, Meter je
+    // Gitterzelle). Aus ihr rechnet die Seite die Hoehe des Scheibenstapels —
+    // siehe seite.mjs, LAMBDA.
+    g90: Math.round(meta.g90_m_je_zelle || 0) || undefined,
+    // Orientierung von heute: zehn Staedte und der Mont Blanc als Massstab.
+    // Beide in Gitterkoordinaten — projiziert wird in quellen.py.
+    orte: meta.orte || [],
+    mb: meta.montblanc || null,
+    // Umriss der Britischen Inseln in Gitterkoordinaten, fuer den zweiten
+    // Die Kuppen des eurasischen Eiskomplexes, je ein Umriss in
+    // Gitterkoordinaten. Warum Setzungen und keine Messungen: quellen.py,
+    // KUPPEN.
+    kuppen: meta.kuppen || [],
     sp: spK.s, spL: spK.lauf,
     dem: demK.s, demL: demK.lauf,
     td: { w: meta.topodiff.w, h: meta.topodiff.h, d: tdK.s, L: tdK.lauf },

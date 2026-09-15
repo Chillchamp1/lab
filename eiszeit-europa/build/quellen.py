@@ -60,20 +60,49 @@ ROH = Path(os.environ.get("ROH") or (HIER / ".." / "data" / "raw"))
 ZWISCHEN = Path(os.environ.get("ZWISCHEN") or (HIER / "zwischen"))
 
 # --------------------------------------------------------------- Ausschnitt
-# Die Vorgabe der Aufgabe, unveraendert.
-LON0, LON1 = -12.0, 45.0
-LAT0, LAT1 = 34.0, 72.0
-# Mitte der Projektion. 53 N / 15 O liegt im Schwerpunkt des Ausschnitts und
-# damit dort, wo die Verzerrung am kleinsten ist — mitten im skandinavischen
-# Eisschild, um den es geht.
+# Der Rahmen steht in **Kilometern im projizierten Mass**, nicht in Grad.
+#
+# Zuerst stand hier die Vorgabe der Aufgabe als Laengen-Breiten-Rechteck,
+# -12 … 45 O und 34 … 72 N. Das Bild eines Grad-Rechtecks ist unter einer
+# flaechentreuen Projektion aber kein Rechteck, sondern ein Faecher: 31 Prozent
+# der Leinwand blieben leer, und die Karte sah aus wie ein Tortenstueck. Es war
+# nie die Projektion, es war der Schnitt. Ein Atlas schneidet in Kilometern.
+#
+# Jede Kante hat einen Grund, und es ist immer derselbe: sie haelt etwas, das
+# zur Eiszeit gehoert.
+#
+#   Westen  -2150  Island ganz, Kap St. Vincent (-2111) knapp
+#   Osten   +2350  der Ural (+2167) und die Obmuendung (+2124)
+#   Sueden  -1850  gerade noch Sizilien (Kap Passero -1807) und Tarifa (-1630)
+#   Norden  +3400  Franz-Josef-Land — und damit 97 Prozent der DATED-1-Raender
+#
+# Der Rahmen ist zweimal enger geworden, und beide Male aus demselben Grund:
+# was die Karte nicht zeigen muss, kostet Nutzlast **und** Rechenzeit in jedem
+# Bild. Der Sueden gab 250 km Sahara auf, Westen und Osten je 300 bis 550 km
+# offenen Atlantik und kaspische Steppe. Der Norden nie — dort liegt das Thema.
+#
+# Und ein Nebeneffekt, der kein Nebeneffekt ist: 4 500 auf 5 250 km sind
+# **hochkant**. Auf einem hochkant gehaltenen Telefon fuellt die Karte damit
+# 54 statt 45 Prozent der Schirmhoehe.
+#
+# Der Norden ist der Grund fuer das Ganze. Das alte Fenster endete bei 72 N und
+# 45 O und schnitt damit ein Viertel der DATED-1-Rekonstruktion ab: den
+# **barentsisch-karischen Eisschild**, der auf einem Schelfmeer lag, so gross
+# war wie der skandinavische und dessen Rand das Fenster gar nicht mehr zeigte.
+X0, X1 = -2150.0, 2350.0
+Y0, Y1 = -1850.0, 3400.0
+# Mitte der Projektion. 53 N / 15 O liegt im Schwerpunkt des alten Fensters und
+# bleibt es auch fuer den neuen Rahmen: dort ist die Verzerrung am kleinsten,
+# und dort liegt der skandinavische Eisschild, um den es geht.
 MLON, MLAT = 15.0, 53.0
 ERDR = 6371.0088  # km, Radius der flaechengleichen Kugel
 
-# 760 Zellen Breite, und die Zahl ist gemessen, nicht gegriffen: die Buehne ist
-# auf 900 Bildpunkte gedeckelt, das Reliefgitter liegt bei 55 Prozent davon,
-# also bei rund 460. 760 ist damit gut anderthalbfach ueberabgetastet — mehr
-# waere Nutzlast ohne Bild, denn der Zoom ist ein Vergroesserungsglas und kein
-# neues Rechnen. Die Messreihe steht in ../METHODIK.md, Abschnitt 9.
+# 760 Zellen Breite, und die Zahl ist gemessen, nicht gegriffen: die Karte steht
+# neben der Leiste und bekommt die ganze Fensterhoehe; hochkant im Rahmen heisst
+# das, die **Hoehe** bindet. Auf einem Schirm von 1 440 x 900 wird sie rund 750
+# Punkte breit gezeichnet, bei 4 500 km Rahmenbreite also ein Bildpunkt je 6 km
+# — eine Gitterzelle je Bildpunkt. Die Messreihe steht in ../METHODIK.md,
+# Abschnitt 9.
 BREITE = int(os.environ.get("BREITE", "760"))
 
 log = lambda s: print(s, file=sys.stderr)
@@ -112,45 +141,38 @@ def zurueck(x, y):
 
 
 def gitter():
-    """Der Rahmen des Ausschnitts im projizierten Mass, und daraus das Gitter.
+    """Der Rahmen in projiziertem Mass, und daraus das Gitter.
 
-    Der Rand wird dicht abgetastet statt nur an den vier Ecken: in einer
-    azimutalen Projektion ist die Bildkante eines Laengen-Breiten-Rechtecks
-    gekruemmt, und die Ecken sind nicht die Extrempunkte.
+    Frueher wurde hier der Rand eines Laengen-Breiten-Rechtecks dicht
+    abgetastet und sein Bild umschrieben. Der Rahmen steht jetzt direkt in
+    Kilometern (siehe oben, X0 … Y1); zu messen gibt es nichts mehr.
 
-    Dass dabei rund ein Drittel des Rechtecks ausserhalb des Fensters liegt, ist
-    nicht die Schuld dieser Projektion, sondern die Form des Fensters: 38 Grad
-    Breite auf 57 Grad Laenge lassen sich flaechentreu nicht in ein Rechteck
-    legen. Nachgemessen, Anteil des Rechtecks innerhalb des Fensters:
+    Was sich damit erledigt hat, ist die leere Flaeche. Gemessen am alten
+    Stand, Anteil der Leinwand mit Gelaende darauf:
 
-        Lambert azimutal 53 N 15 O        68,8 %
-        Lambert azimutal 52 N 10 O        67,9 %   (EPSG:3035)
-        Albers 43/65                      67,5 %
-        Albers 45/62                      67,8 %
+        Grad-Rechteck -12 … 45 O, 34 … 72 N      68,8 %
+        Kilometer-Rahmen                        100,0 %
 
-    Also bleibt es bei der azimutalen — derselben Familie wie in der Vorlage —
-    und der Rest wird **maskiert** statt gefuellt. Das ist die Machart des
-    Vorlagenprojekts: draussen ist die Leinwand durchsichtig, und die Karte
-    steht als Form auf schwarzem Grund. Ein Atlasblatt mit gebogenen Breiten-
-    kreisen sieht ohnehin richtiger aus als ein beschnittenes Rechteck.
+    Das war nie eine Frage der Projektion. Nachgemessen hatte das alte Fenster
+    unter Lambert azimutal 68,8 Prozent, unter EPSG:3035 67,9, unter Albers
+    43/65 67,5 — alle gleichauf, weil die Luecke die Form des *Fensters* war
+    und nicht die der Projektion. 38 Grad Breite auf 57 Grad Laenge lassen sich
+    flaechentreu nicht in ein Rechteck legen; 5 370 auf 5 500 Kilometer schon,
+    denn das *ist* eines.
 
-    Bezahlt wird dafuer nichts: das DEM wird zeilenweise nur ueber seinen
-    gueltigen Abschnitt kodiert (siehe nutzlast.mjs).
+    Die Projektion bleibt dieselbe: Lambert azimutal flaechentreu, dieselbe
+    Familie wie in der Vorlage. Die Breitenkreise laufen weiter gebogen durch
+    das Bild, Norden ist am Rand nicht genau oben — wie auf jedem Atlasblatt.
     """
-    rl = np.linspace(LON0, LON1, 400)
-    rb = np.linspace(LAT0, LAT1, 400)
-    lons = np.concatenate([rl, rl, np.full(400, LON0), np.full(400, LON1)])
-    lats = np.concatenate([np.full(400, LAT0), np.full(400, LAT1), rb, rb])
-    x, y = vor(lons, lats)
-    x0, x1, y0, y1 = float(x.min()), float(x.max()), float(y.min()), float(y.max())
-    schritt = (x1 - x0) / BREITE
-    hoehe = int(round((y1 - y0) / schritt))
+    schritt = (X1 - X0) / BREITE
+    hoehe = int(round((Y1 - Y0) / schritt))
     # y1 ist die **Oberkante**, und die Zeilen laufen von dort nach unten:
     # die Leinwand zaehlt y nach unten, die Projektion nach Norden. Beim ersten
     # Bau stand Skandinavien deshalb am unteren Bildrand und das Mittelmeer oben.
     # Der Dreh gehoert hierher und nicht in die Seite — dann stimmen Gitter,
     # DATED-Linien und Kennzahlen von selbst miteinander ueberein.
-    return dict(x0=x0, y0=y0, y1=y1, schritt=schritt, w=BREITE, h=hoehe)
+    return dict(x0=X0, y0=Y1 - hoehe * schritt, y1=Y1,
+                schritt=schritt, w=BREITE, h=hoehe)
 
 
 # ====================================================== Bikubisch, Catmull-Rom
@@ -230,35 +252,137 @@ def dem_datei():
     return kandidaten
 
 
-def huelle(g):
-    """Die gezeichnete Flaeche, und zwar **vor** dem DEM.
+def rahmen(g):
+    """Laenge und Breite jeder Gitterzelle, und der Umriss des Rahmens in Grad.
 
-    Erst das Fenster, dann zeilenweise aufgefuellt. Die Reihenfolge ist keine
-    Geschmackssache: das DEM muss ueber der Huelle gelesen werden, nicht ueber
-    dem Fenster, und die Huelle greift oben bis 73,7 N — anderthalb Grad ueber
-    den Fensterrand. Zuerst stand es andersherum, und dann fehlte dem DEM
-    genau dieser Saum: 4 196 Zellen, in denen Meereshoehe gestanden haette,
-    wo nichts gemessen ist.
+    Hier stand bis zuletzt eine Maske: das Bild des Grad-Fensters, zeilenweise
+    zu einer Huelle aufgefuellt, weil eine waagerechte Linie das gebogene
+    Fenster verlassen und wieder betreten konnte. Ein Drittel der Leinwand
+    blieb dabei leer, und das DEM musste ueber der Huelle gelesen werden statt
+    ueber dem Fenster, sonst fehlte ihm ein Saum von 4 196 Zellen.
+
+    Mit einem Rahmen in Kilometern ist davon **nichts** mehr noetig: jede Zelle
+    der Leinwand liegt im Rahmen, weil der Rahmen die Leinwand ist. Die Maske
+    bleibt trotzdem stehen — als lauter Einsen. Sie kostet in der Nutzlast
+    nichts (je Zeile ein Anfang und ein Ende, hier immer 0 und w), und die
+    Seite zeichnet ihren Umriss weiter als Silhouette. Wer den Rahmen eines
+    Tages wieder beschneidet, bekommt die Machart zurueck, ohne sie neu zu
+    bauen.
     """
     x = g["x0"] + (np.arange(g["w"]) + 0.5) * g["schritt"]
     y = g["y1"] - (np.arange(g["h"]) + 0.5) * g["schritt"]
     X, Y = np.meshgrid(x, y)
     ZLON, ZLAT = zurueck(X, Y)
-    im_fenster = (ZLON >= LON0) & (ZLON <= LON1) & (ZLAT >= LAT0) & (ZLAT <= LAT1)
-    maske = np.zeros_like(im_fenster)
-    for j in range(im_fenster.shape[0]):
-        r = np.nonzero(im_fenster[j])[0]
-        if r.size:
-            maske[j, r[0]:r[-1] + 1] = True
-    saum = int(maske.sum() - im_fenster.sum())
-    log(f"  Maske {int(maske.sum())} von {maske.size} Zellen ({100*maske.mean():.1f} % "
-        f"des Rechtecks), davon {saum} Saum ausserhalb des Fensters "
-        f"({100*saum/max(1,int(maske.sum())):.1f} %)")
-    if saum:
-        log(f"  Saum reicht bis lat {ZLAT[maske & ~im_fenster].max():.2f}, "
-            f"lon {ZLON[maske & ~im_fenster].min():.2f} … "
-            f"{ZLON[maske & ~im_fenster].max():.2f}")
-    return ZLON, ZLAT, maske, im_fenster
+    maske = np.ones(X.shape, dtype=bool)
+    log(f"  Rahmen {X1-X0:.0f} x {Y1-Y0:.0f} km, {int(maske.sum())} Zellen, "
+        f"100,0 % der Leinwand (vorher 68,8 %)")
+    log(f"  deckt lon {ZLON.min():.1f} … {ZLON.max():.1f}, "
+        f"lat {ZLAT.min():.1f} … {ZLAT.max():.1f}")
+    return ZLON, ZLAT, maske, maske
+
+
+# ---------------------------------------------------------- Orte zum Anhalten
+# Die Karte hat bis hierher bewusst keine Ortsnamen getragen — ihre Aussage
+# haengt an Flaechen und Raendern, nicht an Orten. Sie bekommt jetzt welche,
+# und zwar als **Orientierung von heute**: wer wissen will, wo das Eis lag,
+# braucht einen Anker in der Gegenwart. Zusammen mit der heutigen Kuestenlinie
+# sind sie deshalb eine eigene, abschaltbare Ebene und keine Beschriftung der
+# Karte selbst.
+#
+# Zehn Staedte, ueber den Ausschnitt verteilt, keine nach Groesse gewaehlt:
+# gebraucht wird ein Netz, das das Auge traegt, keine Rangliste.
+STAEDTE = [
+    ("London",     -0.128,  51.507),
+    ("Paris",       2.352,  48.857),
+    ("Berlin",     13.405,  52.520),
+    ("Madrid",     -3.704,  40.417),
+    ("Rome",       12.496,  41.903),
+    ("Vienna",     16.373,  48.208),
+    ("Warsaw",     21.012,  52.230),
+    ("Stockholm",  18.069,  59.329),
+    ("Moscow",     37.617,  55.756),
+    ("Istanbul",   28.978,  41.008),
+    # Zwei dazu, seit der Rahmen in Kilometern steht: Island liegt jetzt ganz
+    # im Bild, und zwischen Moskau und dem Ostrand lagen 1 500 km ohne Anker.
+    ("Reykjavik",  -21.940, 64.147),
+    # Der Anker im Osten war Jekaterinburg; mit dem engeren Rahmen faellt es
+    # heraus (x = 2 555 bei einer Ostkante von 2 350). Perm steht 280 km
+    # westlich davon, noch am Ural — und Archangelsk dazu, weil es genau dort
+    # liegt, wo der fennoskandische und der barentsisch-karische Schild sich
+    # trafen.
+    ("Perm",        56.250, 58.000),
+    ("Arkhangelsk", 40.530, 64.540),
+]
+
+# Der Mont Blanc als Massstab fuer die Eiskuppe. Seine Hoehe wird **nicht**
+# aus dem Zielgitter genommen — dort ist er ueber eine 6,8-km-Zelle gemittelt
+# und damit rund tausend Meter zu niedrig. Genommen wird das Maximum des
+# 15"-DEM in seiner Umgebung, also der Gipfel selbst; zeitabhaengig wird nur
+# das Differenzfeld addiert, genau wie beim Relief.
+MONTBLANC = (6.8652, 45.8326)
+
+# Die Kuppen des eurasischen Eiskomplexes, jede als eigener Koerper.
+#
+# Es war einmal eine: Britannien, weil das Maximum sonst immer der
+# skandinavische Gipfel ist. Seit der Rahmen in Kilometern steht und bis
+# Franz-Josef-Land reicht, sind es drei — und das ist der eigentliche Gewinn
+# des groesseren Rahmens. Der eurasische Eiskomplex bestand aus drei Kuppen,
+# die beim Hochstand zusammenwuchsen und beim Abbau wieder auseinanderfielen:
+#
+#   Scandinavian   die groesste, ueber dem Bottnischen Meerbusen
+#   Barents-Kara   auf einem Schelfmeer, fast so gross — und im alten
+#                  Grad-Fenster gar nicht zu sehen
+#   Britain        die kleinste, mit knapp der halben Hoehe
+#
+# Die Grenzen sind **Setzungen, keine Befunde**: beim Hochstand beruehrten
+# sich die Schilde, und wo genau, ist selbst Gegenstand der Forschung. Eine
+# Linie mitten durch die Beruehrungszone wuerde den falschen Gipfel greifen —
+# gezogen wird sie deshalb dort, wo das Eis am duennsten war: Britannien bis
+# zum Nullmeridian (nicht weiter oestlich, wegen der noerdlichen Nordsee),
+# Barents-Kara noerdlich von 71,5 N.
+#
+# Groenland bekommt **keine** Kuppe, obwohl es im Rahmen liegt und der
+# hoechste Eispunkt des Bildes ist. Es gehoert nicht zum eurasischen Komplex,
+# und mit ihm im Topf saehe man nur noch, dass Groenland hoeher ist. Dass es
+# da ist, ist trotzdem die Pointe: es ist das einzige Eis im Bild, das nie
+# wieder verschwindet.
+# Die Namen sind die, die auf der Karte stehen — die Seite haengt „ice" an:
+# „Scandinavian ice 2 694 m". „Fennoscandia" waere der genauere Begriff und
+# steht in der Methodik; auf der Karte gewinnt das Wort, das jeder kennt.
+KUPPEN = [
+    ("Scandinavian", dict(lon=(0.0, 60.0), lat=(54.0, 71.5))),
+    ("Barents-Kara", dict(lon=(10.0, 80.0), lat=(71.5, 83.5))),
+    ("Britain",      dict(lon=(-11.0, 0.0), lat=(49.5, 61.0))),
+]
+
+
+def gipfelhoehe(lon, lat, umkreis_km=4.0):
+    """Hoechster 15"-Wert im Umkreis. Sucht die Kachel selbst."""
+    import glob
+    d = 15.0 / 3600.0
+    dlat = umkreis_km / 111.0
+    dlon = dlat / max(0.2, math.cos(math.radians(lat)))
+    best = float("nan")
+    for pfad in sorted(glob.glob(str(ROH / "dem" / "*.nc"))):
+        ds = oeffne(pfad)
+        try:
+            lo, la = achsen(ds)
+            if not (lo.min() - d <= lon <= lo.max() + d
+                    and la.min() - d <= lat <= la.max() + d):
+                continue
+            ix = np.where((lo >= lon - dlon) & (lo <= lon + dlon))[0]
+            iy = np.where((la >= lat - dlat) & (la <= lat + dlat))[0]
+            if not len(ix) or not len(iy):
+                continue
+            v = erste(ds, "z", "Band1", "elevation", "topo")
+            a = np.asarray(np.ma.filled(v[iy[0]:iy[-1] + 1, ix[0]:ix[-1] + 1],
+                                        np.nan), dtype=np.float64)
+            m = np.nanmax(a)
+            if not np.isfinite(best) or m > best:
+                best = float(m)
+        finally:
+            ds.close()
+    return best
 
 
 def lies_dem(g, ZLON, ZLAT, maske):
@@ -279,8 +403,18 @@ def lies_dem(g, ZLON, ZLAT, maske):
     Linien quer durch die Karte. Eine Naht, die niemand gezeichnet hat, ist
     genau das, was diese Karte nicht haben darf.
 
-    Gelesen wird in Streifen: der Fensterausschnitt bei 15" ist ueber 120
-    Millionen Werte und passt nicht als Ganzes in den Speicher.
+    Gelesen wird in Streifen: der Rahmen bei 15" ist ueber 500 Millionen Werte
+    und passt nicht als Ganzes in den Speicher. (Es waren 120 Millionen,
+    solange der Rahmen ein Grad-Rechteck war — 39 Kacheln statt 15.)
+
+    **Genommen wird `surface`, nicht `bed`**, und seit Groenland im Rahmen
+    liegt ist das keine Verlegenheit mehr, sondern die richtige Wahl. Die
+    Rechnung dieser Karte ist Flaeche(t) = DEM + Topo_Diff(t), und Topo_Diff
+    ist auf Topo(0) bezogen — auf die **Oberflaeche** von heute, Eis
+    inbegriffen (Probe 1b). Das DEM muss dieselbe Groesse sein, sonst stimmt
+    der Bezugspunkt nicht. Probe 2 misst genau das, und sie misst es ueber
+    Groenland (Median 76 m) so gut wie ueber Europa (58 m). Der Fels kommt
+    danach heraus, nicht hinein: Fels = Flaeche − stgit.
     """
     dateien = dem_datei()
     blo0, blo1 = float(ZLON[maske].min()), float(ZLON[maske].max())
@@ -318,8 +452,17 @@ def lies_dem(g, ZLON, ZLAT, maske):
             var = erste(ds, "elevation", "z", "Band1", "bed", "topo", "elev")
             ilon = np.where((lon >= blo0 - 0.3) & (lon <= blo1 + 0.3))[0]
             ilat = np.where((lat >= bla0 - 0.3) & (lat <= bla1 + 0.3))[0]
-            if ilon.size == 0 or ilat.size == 0:
-                ds.close(); continue
+            if ilon.size == 0:
+                # Kein Ueberlapp: **nicht** hier schliessen, das macht das
+                # finally. Zweimal geschlossen wirft netCDF4 „Not a valid ID",
+                # und das ist lange niemandem aufgefallen, weil jede Kachel
+                # der Kachelliste auch gebraucht wurde. Seit der Rahmen im
+                # Sueden knapper steht, liegen die 30-Grad-Kacheln daneben.
+                log(f"  {pfad.name}: kein Ueberlapp, uebersprungen")
+                continue
+            if ilat.size == 0:
+                log(f"  {pfad.name}: kein Ueberlapp, uebersprungen")
+                continue
             xa, xb = int(ilon[0]), int(ilon[-1]) + 1
             ya, yb = int(ilat[0]), int(ilat[-1]) + 1
 
@@ -406,7 +549,7 @@ def ice6g_pfad(t):
         "Erst build/holen.sh laufen lassen.")
 
 
-def lies_ice6g():
+def lies_ice6g(huelle_grad):
     """Die 48 Scheiben, auf den Fensterausschnitt des 10'-Gitters beschnitten.
 
     Hochgerechnet wird hier **nicht**. Das grobe Feld geht so, wie es ist, in
@@ -437,8 +580,9 @@ def lies_ice6g():
 
             if fenster is None:
                 rand = 3   # Rand fuer die bikubische Abtastung in der Seite
-                ix = np.where((lonw >= LON0 - 1.0) & (lonw <= LON1 + 1.0))[0]
-                iy = np.where((lat >= LAT0 - 1.0) & (lat <= LAT1 + 1.0))[0]
+                hlo0, hlo1, hla0, hla1 = huelle_grad
+                ix = np.where((lonw >= hlo0 - 1.0) & (lonw <= hlo1 + 1.0))[0]
+                iy = np.where((lat >= hla0 - 1.0) & (lat <= hla1 + 1.0))[0]
                 x_a = max(0, int(ix[0]) - rand); x_b = min(len(lonw), int(ix[-1]) + 1 + rand)
                 y_a = max(0, int(iy[0]) - rand); y_b = min(len(lat), int(iy[-1]) + 1 + rand)
                 fenster = (x_a, x_b, y_a, y_b)
@@ -749,7 +893,7 @@ def main():
     log(f"Zielgitter {g['w']} x {g['h']}, Zelle {g['schritt']:.3f} km, "
         f"Lambert azimutal flaechentreu um {MLAT} N {MLON} O")
 
-    ZLON, ZLAT, maske, im_fenster = huelle(g)
+    ZLON, ZLAT, maske, im_fenster = rahmen(g)
 
     log("(c) DEM")
     dem = lies_dem(g, ZLON, ZLAT, maske)
@@ -768,7 +912,9 @@ def main():
         log("  ! Diese Rohdaten sind das PRUEFGERUEST — erfundener Inhalt.")
 
     log("(a) ICE-6G_C")
-    zeiten, td, st, sl, fenster, proben, gmeta = lies_ice6g()
+    huelle_grad = (float(ZLON.min()), float(ZLON.max()),
+                   float(ZLAT.min()), float(ZLAT.max()))
+    zeiten, td, st, sl, fenster, proben, gmeta = lies_ice6g(huelle_grad)
     log(f"  {len(zeiten)} Zeitscheiben, Topo_Diff {td.shape}, stgit {st.shape}")
 
     # ---- Gegenprobe: DEM grob + Topo_Diff muss Topo treffen -----------------
@@ -801,7 +947,8 @@ def main():
     if topo0 is not None:
         lf0 = proben[zeiten.index(0.0)]["lf"]
         gif0 = proben[zeiten.index(0.0)]["gif"]
-        schlimm = 0.0; schlimm_stufe = 0.0; n_stufe = 0; n_ges = 0
+        schlimm = 0.0; schlimm_stufe = 0.0; schlimm_eis = 0.0
+        n_stufe = 0; n_eis = 0; n_ges = 0
         for p in proben:
             i = zeiten.index(p["ka"])
             d = np.abs(p["topo"] - topo0 - td[i])
@@ -811,17 +958,28 @@ def main():
             bekannt = (np.isfinite(p["lf"]) & np.isfinite(lf0)
                        & np.isfinite(p["gif"]) & np.isfinite(gif0))
             stufe = ((p["lf"] != lf0) | (p["gif"] != gif0)) & bekannt
-            glatt = ~stufe
+            # Eis, das zu beiden Zeiten liegt und nur seine Maechtigkeit
+            # aendert, macht keine Stufe in sftgif — aber dieselbe Differenz
+            # zwischen Punktwert und Zellmittel. Es bekommt deshalb seine
+            # eigene Spalte, sonst fraesse Groenland die scharfe Probe auf.
+            eisig = ((p["gif"] > 0) | (gif0 > 0)) & bekannt & ~stufe
+            glatt = ~stufe & ~eisig
             if glatt.any():
                 schlimm = max(schlimm, float(d[glatt].max()))
             if stufe.any():
                 schlimm_stufe = max(schlimm_stufe, float(d[stufe].max()))
-            n_stufe += int(stufe.sum()); n_ges += d.size
+            if eisig.any():
+                schlimm_eis = max(schlimm_eis, float(d[eisig].max()))
+            n_stufe += int(stufe.sum()); n_eis += int(eisig.sum()); n_ges += d.size
         kennzahlen["topodiff_identitaet_max_m"] = schlimm
         kennzahlen["topodiff_identitaet_stufenzellen"] = dict(
             max_m=schlimm_stufe, anteil=n_stufe / max(n_ges, 1))
+        kennzahlen["topodiff_identitaet_eiszellen"] = dict(
+            max_m=schlimm_eis, anteil=n_eis / max(n_ges, 1))
         log(f"  Probe 1  max |Topo(t) − Topo(0) − Topo_Diff(t)|")
-        log(f"             an stufenfreien Zellen  {schlimm:8.3f} m")
+        log(f"             eisfrei und stufenfrei  {schlimm:8.3f} m")
+        log(f"             unter stehendem Eis     {schlimm_eis:8.3f} m "
+            f"({100*n_eis/max(n_ges,1):.1f} % der Zellen, Groenland)")
         log(f"             an Stufenzellen         {schlimm_stufe:8.3f} m "
             f"({100*n_stufe/max(n_ges,1):.1f} % der Zellen, Eisrand und Kueste)")
         if schlimm > 5.0:
@@ -886,6 +1044,7 @@ def main():
     # dieselben sind, die jemand am Bildschirm abliest. Die Kuestenlinie kommt
     # aus paleo > 0, nicht aus sftlf (siehe ../QUELLEN.md, Abschnitt 3).
     log("Kennzahlen je Zeitscheibe")
+    steigungen = []
     fx = np.clip((ZLON - gmeta["lon0"]) / gmeta["dlon"], 0, td.shape[2] - 1)
     fy = np.clip((ZLAT - gmeta["lat0"]) / gmeta["dlat"], 0, td.shape[1] - 1)
     nm = int(im_fenster.sum())
@@ -905,6 +1064,17 @@ def main():
         # Probe 3 ueberein, und deshalb steht daneben, wie viel davon Eis ist.
         land = (flaeche > 0) & im_fenster
         unter_eis = (eis > 1.0) & im_fenster
+        # ---- Steigung, fuer die Ueberhoehung der Schraegsicht ----------
+        # Gemessen wird auf genau dem Feld, das die Seite zeichnet: Betrag der
+        # Nachbardifferenz in Metern je Gitterzelle. Daraus kommt spaeter das
+        # 90-Prozent-Quantil, und daraus die Hoehe des Scheibenstapels. Der
+        # Grund steht in seite.mjs bei LAMBDA; kurz: eine feste Ueberhoehung
+        # macht aus einem Tiefland einen Teller und aus den Alpen einen
+        # Nadelwald, eine gemessene nicht.
+        f = np.where(im_fenster, flaeche, np.nan)
+        for d in (np.abs(np.diff(f, axis=1)), np.abs(np.diff(f, axis=0))):
+            steigungen.append(d[np.isfinite(d)].astype(np.float32))
+
         je.append(dict(
             ka=t,
             land_anteil=float(land.sum() / nm),
@@ -915,6 +1085,18 @@ def main():
             tiefster_fels_m=float(np.nanmin(np.where(im_fenster, fels, np.nan))),
             meeresspiegel_m=sl[i],
         ))
+
+    # ---- Die Steigungsstatistik, eine Zahl fuer die ganze Karte ------------
+    alle = np.concatenate(steigungen)
+    g90 = float(np.percentile(alle, 90))
+    kennzahlen["steigung_m_je_zelle"] = {
+        f"p{q}": float(np.percentile(alle, q)) for q in (50, 75, 90, 99, 100)}
+    log(f"  Steigung des Feldes, Meter je {g['schritt']:.2f}-km-Zelle: "
+        + "  ".join(f"p{q}={np.percentile(alle, q):7.1f}" for q in (50, 90, 99, 100)))
+    log(f"           -> g90 = {g90:.1f} m je Zelle "
+        f"({100*g90/(g['schritt']*1000):.2f} % Neigung); daraus rechnet die "
+        f"Seite die Hoehe des Scheibenstapels.")
+    del steigungen, alle
 
     # Probe 3 — die Kuestenlinie. Die eigene Nulllinie gegen die, die ICE-6G_C
     # selbst zoege (Topo > 0). Gleich sein muessen sie nicht: die eine hat
@@ -935,6 +1117,53 @@ def main():
         log(f"  {e['ka']:>5} ka  Land {100*e['land_anteil']:5.1f} %  "
             f"Eis {100*e['eis_anteil']:5.1f} %  "
             f"MSp {e['meeresspiegel_m']:7.1f} m")
+
+    # ---- Orte und der Mont Blanc, in Gitterkoordinaten ---------------------
+    # Projiziert wird hier, weil hier die Projektion steht. Die Seite bekommt
+    # nur noch Gitterpunkte und muss von Laenge und Breite nichts wissen.
+    def auf_gitter(lon, lat):
+        x, y = vor(lon, lat)
+        return [(x - g["x0"]) / g["schritt"], (g["y1"] - y) / g["schritt"]]
+
+    orte = []
+    for name, lon, lat in STAEDTE:
+        gx, gy = auf_gitter(lon, lat)
+        if 0 <= gx < g["w"] and 0 <= gy < g["h"]:
+            orte.append(dict(name=name, x=round(gx, 1), y=round(gy, 1)))
+    log(f"  {len(orte)} Orte im Fenster: " + ", ".join(o["name"] for o in orte))
+
+    # Das Lon/Lat-Fenster wird an seinen Raendern abgetastet und projiziert —
+    # unter dieser Projektion ist ein Gradnetz-Rechteck kein Rechteck mehr.
+    kuppen = []
+    for name, kasten in KUPPEN:
+        rand = []
+        lo0, lo1 = kasten["lon"]; la0, la1 = kasten["lat"]
+        n = 12
+        for k in range(n):
+            rand.append(auf_gitter(lo0 + (lo1 - lo0) * k / n, la0))
+        for k in range(n):
+            rand.append(auf_gitter(lo1, la0 + (la1 - la0) * k / n))
+        for k in range(n):
+            rand.append(auf_gitter(lo1 - (lo1 - lo0) * k / n, la1))
+        for k in range(n):
+            rand.append(auf_gitter(lo0, la1 - (la1 - la0) * k / n))
+        kuppen.append(dict(name=name,
+                           rand=[[round(x, 1), round(y, 1)] for x, y in rand]))
+    log("  Kuppen: " + ", ".join(k["name"] for k in kuppen))
+
+    mbx, mby = auf_gitter(*MONTBLANC)
+    mbh = gipfelhoehe(*MONTBLANC)
+    mb = dict(name="Mont Blanc", x=round(mbx, 1), y=round(mby, 1),
+              gipfel_m=None if not np.isfinite(mbh) else round(float(mbh)))
+    # Das Zielgitter an derselben Stelle, zum Vergleich: der Unterschied ist
+    # der Preis der Aufloesung und gehoert gemessen, nicht geschaetzt.
+    gi = int(round(mby)) * 0 + int(round(mby))
+    gj = int(round(mbx))
+    im_raster = float(dem[gi, gj]) if 0 <= gi < g["h"] and 0 <= gj < g["w"] else float("nan")
+    mb["im_zielgitter_m"] = None if not np.isfinite(im_raster) else round(im_raster)
+    log(f"  Mont Blanc: Gipfel im 15\"-DEM {mb['gipfel_m']} m, "
+        f"im Zielgitter {mb['im_zielgitter_m']} m "
+        f"(Differenz {None if mb['gipfel_m'] is None else mb['gipfel_m'] - mb['im_zielgitter_m']} m)")
 
     # ------------------------------------------- die groben Felder, projiziert
     # Beide werden hier auf ein **projiziertes** Grobgitter gelegt, nicht als
@@ -995,10 +1224,16 @@ def main():
         {str(k): v for k, v in sorted(dated.items())}), encoding="utf8")
     (ZWISCHEN / "meta.json").write_text(json.dumps(dict(
         gitter=g, mitte=[MLON, MLAT], erdradius=ERDR,
-        ausschnitt=[LON0, LON1, LAT0, LAT1],
+        rahmen_km=[X0, X1, Y0, Y1],
+        ausschnitt=[round(float(ZLON.min()), 1), round(float(ZLON.max()), 1),
+                    round(float(ZLAT.min()), 1), round(float(ZLAT.max()), 1)],
         zeiten=zeiten, takt=tk, meeresspiegel=sl,
         topodiff=dict(w=tw, h=th, teiler=tdt),
         stgit=dict(w=ew, h=eh, teiler=est),
+        g90_m_je_zelle=g90,
+        orte=orte,
+        montblanc=mb,
+        kuppen=kuppen,
         quelle_grob=dict(w=int(td.shape[2]), h=int(td.shape[1]), **gmeta),
         je_scheibe=je, kennzahlen=kennzahlen,
         # Woher die Daten stammen. build.mjs weigert sich, aus Geruestdaten

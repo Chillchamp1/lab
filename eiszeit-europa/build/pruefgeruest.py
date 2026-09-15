@@ -76,13 +76,14 @@ def dem_schreiben():
     Kettenprobe reichen 30 Bogensekunden — der Blockmittelungsschritt in
     quellen.py wird dabei genauso durchlaufen, nur mit halbem Faktor."""
     ZIEL.joinpath("dem").mkdir(parents=True, exist_ok=True)
-    schritt = 30.0 / 3600.0
-    # Bis 76 N und -16/49 O: die zeilenweise Huelle der Maske greift an den
-    # oberen Ecken knapp ueber das Fenster hinaus (bis rund 74,1 N). Ein
-    # globales DEM hat das Problem nicht, das Geruest muss es nachbilden.
-    lon = np.arange(-16.0, 49.0, schritt)
-    lat = np.arange(30.0, 76.0, schritt)
-    log(f"  DEM {len(lon)} x {len(lat)} bei 30\"")
+    schritt = 60.0 / 3600.0
+    # Das Fenster reicht von Reykjavik bis zum Ural und bis ueber Spitzbergen;
+    # das Geruest-DEM muss es ganz decken, sonst misst Probe 2 nicht die
+    # Datensaetze gegeneinander, sondern die Loecher dazwischen. Ein Saum von
+    # zwei Grad deckt den Rand, an dem quellen.py bilinear greift.
+    lon = np.arange(-67.0, 96.0, schritt)
+    lat = np.arange(28.0, 86.0, schritt)
+    log(f"  DEM {len(lon)} x {len(lat)} bei 60\"")
     pfad = ZIEL / "dem" / "GERUEST_dem_30s.nc"
     ds = Dataset(pfad, "w", format="NETCDF4")
     ds.createDimension("lon", len(lon))
@@ -124,7 +125,11 @@ def ice6g_schreiben():
 
     # heutige Topographie, grob — nur als Bezug fuer Topo = Topo0 + Topo_Diff
     topo0 = berge(LON, LAT, GEBIRGE) + berge(LON, LAT, SENKEN)
-    topo0 = np.where((LON > -12) & (LON < 46) & (LAT > 33) & (LAT < 73), topo0, -4000.0)
+    # Ausserhalb Europas tiefe See: quellen.py holt den Meeresspiegel aus dem
+    # aequatorialen Pazifik, und der soll Wasser bleiben. Der Kasten deckt das
+    # ganze Kartenfenster, sonst stuende mitten in der Karte eine Stufe von
+    # 4 000 m, die es im DEM nicht gibt — und Probe 2 und 3 maessen sie.
+    topo0 = np.where((LON > -67) & (LON < 96) & (LAT > 28) & (LAT < 86), topo0, -4000.0)
 
     zeiten = [26.0, 25.0, 24.0, 23.0, 22.0, 21.0]
     v = 20.5

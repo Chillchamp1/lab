@@ -78,9 +78,18 @@ sieht: weiches Licht kann Weiss nicht dunkler machen.
 
 Über dem Eis liegen die Ränder aus DATED-1, und zwar alle drei: die
 *most-credible*-Linie kräftig, dazwischen *maximum* und *minimum* als
-halbtransparentes Band.
+halbtransparentes Band. **Der Knopf *Band* holt sie; beim Laden sind sie
+aus.**
 
-**Das Band ist kein Deko-Element, es ist die Kernaussage.** Wo es breit wird,
+Das ist eine bewusste Entscheidung und keine Bescheidenheit: die
+DATED-1-Linien sind die Feldbefunde, die Karte darunter ist ein Modell. Zwei
+Arten von Aussage im selben Bild sind für den ersten Blick eine zu viel, und
+die creme Linie läuft ausgerechnet dort entlang, wo ohnehin die Kante zwischen
+Weiss und Grün das Auge hält. Wer den Vergleich sucht, findet ihn auf
+Knopfdruck — wer die Eiszeit sehen will, sieht erst mal die Eiszeit.
+
+**Wenn es an ist, ist das Band kein Deko-Element, sondern die Kernaussage.**
+Wo es breit wird,
 ist die Rekonstruktion schwach — und es wird nicht gleichmässig breit. Der
 Aufbau vor 25 ka ist deutlich schwächer belegt als der Rückzug danach, weil
 vorrückendes Eis zerstört, was es überfährt, und zurückweichendes datierbares
@@ -119,7 +128,7 @@ Zeitscheibe deren Jahr, dazwischen die beiden, zwischen denen interpoliert
 wird.
 
 **Die Uhr läuft nicht gleichmässig durch die Jahre.** Jeder Abschnitt bekommt
-einen Anteil an den 90 Sekunden, der Dauer und Umschichtung mischt — das
+einen Anteil an den 69 Sekunden, der Dauer und Umschichtung mischt — das
 geometrische Mittel aus seinem Anteil an den Jahren und seinem Anteil an der
 Veränderung des Eisvolumens, mit einer Untergrenze. Rein nach Jahren liefe der
 Zusammenbruch des Eisschildes in einem Fünftel der Zeit ab, während die ruhigen
@@ -133,32 +142,43 @@ Karte etwas ausserhalb ihres Ausschnitts liest.
 
 ## Aufrichten und Drehen
 
-*Tilt* kippt die Karte aus der Senkrechten, *Turn* dreht sie, *Band* schaltet
-das Unsicherheitsband weg. Zwei Finger auf der Karte tun dasselbe:
+*Tilt* kippt die Karte aus der Senkrechten, *Turn* dreht sie, *Band* holt die
+DATED-1-Ränder dazu (beim Laden sind sie aus). Zwei Finger auf der Karte tun dasselbe:
 auseinanderziehen vergrössert, verdrehen dreht, beide Finger zusammen nach oben
 schieben richtet auf. Der Punkt, den man anfasst, bleibt dabei liegen.
 
 Gerechnet wird die Schrägsicht als **Laserschnittmodell**: das Höhenfeld wird
-in sechsundzwanzig Scheiben geschnitten und versetzt übereinandergelegt, jede
+in dreiunddreissig Scheiben geschnitten und versetzt übereinandergelegt, jede
 Scheibe eine Höhenstufe, jede Stufenkante eine Höhenlinie. Die Scheiben stehen
 dabei auf **absoluten Höhen** und der Rahmen fest — nach dem höchsten Punkt zu
 rechnen, der gerade dasteht, schrumpfte die Karte in dem Mass, in dem der
 Eisschild wächst, und zwei Bilder wären nicht mehr vergleichbar.
 
-## Der Ausschnitt
+## Der Rahmen
 
-12° W bis 45° E, 34° N bis 72° N, in einer flächentreuen Lambert-Azimutal-
-projektion um 53° N / 15° O — dieselbe Familie wie in der Vorlage.
+**4 500 × 5 250 km** um 53° N / 15° O, in einer flächentreuen Lambert-Azimutal-
+projektion — dieselbe Familie wie in der Vorlage. Der Rahmen ist ein Rechteck
+in *Kilometern*, nicht in Grad.
 
-Rund ein Drittel des Bildrechtecks liegt dabei ausserhalb des Fensters. Das ist
-nicht die Schuld der Projektion, sondern die Form des Fensters: 38 Grad Breite
-auf 57 Grad Länge lassen sich flächentreu nicht in ein Rechteck legen.
-Nachgemessen liegen alle Kandidaten gleichauf — Lambert azimutal 68,8 %, EPSG:
-3035 67,9 %, Albers 43/65 67,5 %. Also bleibt es bei der azimutalen, und der
-Rest wird **maskiert** statt gefüllt: die Karte steht als Form auf schwarzem
-Grund, mit gebogenen Breitenkreisen wie ein Atlasblatt. Bezahlt wird dafür
-nichts — das Höhenmodell wird zeilenweise nur über seinen gültigen Abschnitt
-kodiert.
+Das war einmal anders, und es sah danach aus. Ein Grad-Rechteck (12° W … 45° O,
+34 … 72° N) hat unter einer flächentreuen Projektion kein rechteckiges Bild:
+31 Prozent der Leinwand blieben leer, und die Karte stand als Tortenstück da.
+Die Projektion konnte nichts dafür — nachgemessen liegen alle Kandidaten
+gleichauf (Lambert azimutal 68,8 %, EPSG:3035 67,9 %, Albers 43/65 67,5 %); die
+Lücke war die Form des *Fensters*. Ein Atlas schneidet in Kilometern.
+
+Jede Kante hält etwas: Westen Island ganz, Osten
+den Ural und die Obmündung, Süden gerade noch Sizilien und Tarifa,
+Norden Franz-Josef-Land. Der Norden ist der Grund für das Ganze:
+das alte Fenster schnitt ein Viertel der DATED-1-Ränder ab — und mit ihnen den
+**barentsisch-karischen Eisschild**, der auf einem Schelfmeer lag und so gross
+war wie der skandinavische. Der Rahmen hält jetzt 96,4 Prozent der Ränder
+statt 71,8.
+
+In Grad greift er von 61,3° W bis 93,2° O und von 32,8° bis 83,9° N; in den
+Ecken stehen Grönland, Spitzbergen, Sewernaja Semlja und Westsibirien. Die
+Breitenkreise laufen weiter gebogen durch das Bild — wie auf jedem
+Atlasblatt.
 
 ## Daten
 
@@ -224,13 +244,37 @@ python3 quellen.py
 node build.mjs > ../index.html
 ```
 
+### Der Film
+
+Die Seite gibt es auch als hochkantes mp4 — 1 080 × 1 920, 30 Bilder je
+Sekunde, 69 Sekunden plus zwei Sekunden Standbild. Nichts daran ist
+nachgebaut: `film.mjs` lädt dieselbe `index.html`, blendet die Bedienung aus
+und stellt die Uhr Bild für Bild weiter.
+
+```
+npm install playwright-core ffmpeg-static
+node film.mjs ../index.html film.mp4 30
+```
+
+Die beiden Pakete sind **Werkzeug, nicht Seite** — die Regel „keine
+Abhängigkeiten" gilt für alles, was ausgeliefert wird, und ausgeliefert wird
+eine einzelne HTML-Datei.
+
+Gerechnet wird doppelt so gross wie das Ziel und am Ende heruntergerechnet;
+das kostet rund drei Stunden für 2 130 Bilder und ist der sichtbarste
+Unterschied auf den Höhenlinien. Die Schrauben stehen als Umgebungsvariablen
+(`SATZ`, `UEBER`, `FEIN`, `ABSCHNITT`), die Messreihe dazu in
+[METHODIK.md](METHODIK.md), Abschnitt 8f. Wer eine Vorschau will, nimmt
+`LAUF=2 UEBER=2 FEIN=1.2` und ist in zwei Minuten fertig.
+
 Und danach, weil sonst niemand merkt, dass es die Seite gibt: Eintrag in
 `../projects.json` ergänzen und `node ../tools/readme.mjs` laufen lassen.
 
 Die ganze Seite steckt in dieser einen Datei — Höhenmodell, Eisfelder, Ränder,
-Skript, Stil. Am Prüfgerüst wiegt sie 706 kB und lädt nichts nach; mit echtem
-Gelände wird sie grösser, weil ein echtes DEM in jeder Zelle etwas zu sagen
-hat. Die Schraube dafür ist `BREITE` — siehe [METHODIK.md](METHODIK.md),
+Skript, Stil. Mit echten Daten wiegt sie **1,22 MB** (gzip 591 kB) und lädt
+nichts nach; am Prüfgerüst mit erfundenem Gelände sind es 1,19 MB, nach gzip
+aber nur 269 kB — ein echtes DEM hat in jeder Zelle etwas zu sagen, ein paar
+Gausskuppen nicht. Die Schraube dafür ist `BREITE` — siehe [METHODIK.md](METHODIK.md),
 Abschnitt 9.
 
 Die Kette ohne Daten durchspielen:

@@ -67,10 +67,14 @@ function bahn(n, stuetzen) {
    in den obersten beiden ins Weiss. Das ist Konvention und nicht zu umgehen,
    wenn Gelb der hellste Farbton sein soll. */
 export function gesteinAtlas(wasser, land) {
+  /* Das tiefste Band lag bei L 0,22 — auf dem fast schwarzen Seitengrund der
+     Vorlage war der Atlantik davon nicht mehr zu unterscheiden, und das
+     Mittelmeer las sich als Loch in der Karte. 0,33 ist immer noch das
+     dunkelste Blau der Leiter und hebt sich vom Grund ab. */
   const meer = bahn(wasser, [
-    [0.00, 0.22, 258, 0.85],
-    [0.60, 0.40, 250, 0.90],
-    [1.00, 0.62, 242, 0.85],
+    [0.00, 0.33, 258, 0.85],
+    [0.60, 0.46, 250, 0.90],
+    [1.00, 0.63, 242, 0.85],
   ]);
   const oben = 2;                       // Fels und Schnee
   const bunt = bahn(land - oben, [
@@ -104,11 +108,24 @@ export function eisRampe(n) {
      Form macht das Licht. Das ist zugleich der Grund, warum die Schattierung
      in die Farbe gerechnet wird und nicht per soft-light darueberliegt: auf
      Weiss taete soft-light nichts. */
+  /* **Blauer nach oben.** Der Rand ist ein ausgewaschenes Weiss, die Kuppe ein
+     kraeftiges Eisblau. Das laeuft der Atlaskonvention zuwider — dort wird es
+     nach oben heller —, und das ist hier richtig: die Gesteinsleiter daneben
+     wird nach oben heller, und wenn es das Eis auch taete, liefen die beiden
+     an ihrem hellen Ende ineinander. So trennt schon die Richtung der
+     Helligkeit die Materialien, bevor der Farbton etwas sagen muss.
+
+     Und es liest sich: ein duenner Rand ist blass, die Kuppe steht. */
+  /* Die Stuetzstellen liegen **nicht** gleichmaessig. Ein Eisschild ist eine
+     flache Kuppel: die Haelfte seiner Flaeche liegt unter einem Drittel seiner
+     Hoehe. Eine lineare Bahn liesse deshalb die halbe Karte im blassen Teil
+     der Leiter. Gemessen bei 22 ka: Median 804 m, 90 Prozent unter 2 081 m,
+     hoechster Punkt 2 798 m. */
   return bahn(n, [
-    [0.00, 0.840, 236, 0.075],          // Randeis, eine Spur blaeulich
-    [0.45, 0.905, 232, 0.050],
-    [0.80, 0.955, 228, 0.028],
-    [1.00, 0.992, 225, 0.010],          // Firn
+    [0.00, 0.982, 218, 0.08],           // Randeis, fast weiss
+    [0.30, 0.945, 228, 0.34],
+    [0.65, 0.897, 238, 0.58],
+    [1.00, 0.845, 246, 0.82],           // Kuppe, Eisblau
   ]);
 }
 

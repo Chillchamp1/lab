@@ -229,12 +229,12 @@ hole_dated() {
 #  (c) Modernes DEM als Reliefbasis
 #
 #  Vorgabe ist GEBCO 2024 (15"), Ersatz ist ETOPO 2022 (15"). Beide sind
-#  global und gross; gebraucht wird nur 12° W … 45° E, 34° N … 72° N.
+#  global und gross; gebraucht wird der Rahmen der Karte — 5 370 × 5 500 km
+#  um 53° N / 15° O, in Grad also 64° W … 98° O und 29° N … 84° N.
 #
 #  GEBCO liefert einen Ausschnitt nur über ein Formular, nicht über eine
 #  stabile URL — deshalb steht hier der globale Satz. Wer ihn nicht laden
-#  will, setzt DEM=etopo: ETOPO 2022 liegt gekachelt und der Ausschnitt
-#  braucht nur die Kacheln N90W030 und N90E000.
+#  will, setzt DEM=etopo: ETOPO 2022 liegt gekachelt.
 #
 #  Welche Fläche gemeint ist — „bedrock" (unter dem Eis) oder „surface"
 #  (Eisoberfläche): gebraucht wird **bedrock**. Die Paläotopographie dieser
@@ -245,11 +245,17 @@ DEM="${DEM:-etopo}"
 GEBCO_ZIP="${GEBCO_ZIP:-https://www.bodc.ac.uk/data/open_download/gebco/gebco_2024_sub_ice_topo/zip/}"
 ETOPO_BASIS="${ETOPO_BASIS:-https://www.ngdc.noaa.gov/thredds/fileServer/global/ETOPO2022/15s/15s_surface_elev_netcdf}"
 
-# Die fuenfzehn 15-Grad-Kacheln, die den Ausschnitt samt Saum decken
-# (lon -12,3…45,3, lat 33,6…74,1). Je rund 25 MB, zusammen gut 400 MB — statt
-# der 7,5 GB des globalen GEBCO-Satzes.
-ETOPO_KACHELN="N75W015 N75E000 N75E015 N75E030 N75E045
-N60W015 N60E000 N60E015 N60E030 N60E045
+# Die vierunddreissig 15-Grad-Kacheln, die den Rahmen decken (lon -61,4…93,3,
+# lat 32,7…84,0). Je rund 20 MB, zusammen 680 MB — statt der 7,5 GB des
+# globalen GEBCO-Satzes.
+#
+# Es waren einmal fuenfzehn. Der Rahmen stand damals als Grad-Rechteck und
+# wurde maskiert; jetzt steht er in Kilometern und ist gefuellt, und ein
+# Kilometer-Rechteck greift an seinen Nordecken weit nach Westen und Osten
+# aus — bis Groenland und bis zur Karasee.
+ETOPO_KACHELN="N90W060 N90W045 N90W030 N90W015 N90E000 N90E015 N90E030 N90E045 N90E060 N90E075
+N75W075 N75W060 N75W045 N75W030 N75W015 N75E000 N75E015 N75E030 N75E045 N75E060 N75E075 N75E090
+N60W030 N60W015 N60E000 N60E015 N60E030 N60E045 N60E060
 N45W015 N45E000 N45E015 N45E030 N45E045"
 
 hole_dem() {
@@ -260,7 +266,7 @@ hole_dem() {
       # bed-Kacheln nur dort, wo heute Eis liegt (Groenland, Antarktis, hohe
       # Arktis); in Europa ist die Oberflaeche der Fels. Nachgesehen: der
       # 15"-bed-Satz hat 62 Kacheln, keine davon deckt diesen Ausschnitt.
-      sagt "(c) ETOPO 2022, 15\", 15 Kacheln (surface = Fels in diesem Ausschnitt)"
+      sagt "(c) ETOPO 2022, 15\", 34 Kacheln (surface = Fels in diesem Ausschnitt)"
       local k datei
       for k in $ETOPO_KACHELN; do
         datei="ETOPO_2022_v1_15s_${k}_surface.nc"

@@ -35,7 +35,17 @@ const NBAND = Number(process.env.NBAND ?? 25);
 const NEIS = Number(process.env.EISBAND ?? 12);
 const LANDSTUFE = Number(process.env.LANDSTUFE ?? 250);
 const WASSERSTUFE = Number(process.env.WASSERSTUFE ?? 500);
-const EISSTUFE = Number(process.env.EISSTUFE ?? 300);
+/* Die Eisstufe ist **dieselbe wie die Landstufe**, und das aus zwei Gruenden.
+
+   Der erste ist gemessen: die hoechste Eisoberflaeche im Fenster steht bei
+   2 798 m. Mit 300 m je Band reichte die Leiter bis 3 600 m, und ihre obersten
+   drei Baender — die kraeftig blauen — kamen in keinem einzigen Bild vor. Mit
+   250 m endet sie bei 3 000 m, und die Kuppe erreicht das letzte Band.
+
+   Der zweite ist der Scheibenstapel: seine Platten sind eine Landstufe dick.
+   Mit derselben Stufe fuer das Eis faellt jede Eisbandgrenze auf eine
+   Plattenkante, so wie es beim Gestein schon der Fall ist. */
+const EISSTUFE = Number(process.env.EISSTUFE ?? 250);
 
 /* ---------- Die Seite, solange die Daten fehlen ----------
    Sie braucht keine Zwischendateien und steht deshalb **vor** der Pruefung
@@ -45,7 +55,7 @@ if (process.argv.includes('--leer')) {
   const zeit = ['26', '48'];
   const leer = baueLeerseite({
     zeitscheiben: zeit,
-    fenster: '12&#176;W to 45&#176;E, 34&#176;N to 72&#176;N',
+    fenster: '5 370 by 5 500 kilometres around 53&#176;N 15&#176;E',
   });
   log(`Leerseite ${(leer.length / 1024).toFixed(1)} kB — zeigt keine Daten, weil keine da sind.`);
   process.stdout.write(leer);
@@ -67,8 +77,17 @@ const mC = monoton(cvd), mE = monoton(eis);
 log(`  Gestein ${gestein.length} Baender (${WASSER} unter Null), Eis ${eis.length}`);
 log(`  CVD-Leiter monoton in der Helligkeit: ${mC.verletzt === 0 ? 'ja' : 'NEIN (' + mC.verletzt + ')'}`
   + `, kleinster Schritt ${mC.kleinsterSchritt.toFixed(4)}`);
-log(`  Eisleiter  monoton: ${mE.verletzt === 0 ? 'ja' : 'NEIN'}`
-  + `, kleinster Schritt ${mE.kleinsterSchritt.toFixed(4)}`);
+/* Die Eisleiter laeuft nach oben **dunkler** — vom fast weissen Randeis ins
+   Eisblau der Kuppe. Das ist Absicht (leiter.mjs, eisRampe): die
+   Gesteinsleiter wird nach oben heller, und liefen beide gleich, stiessen sie
+   an ihrem hellen Ende aneinander. Gemessen wird trotzdem, nur andersherum. */
+const eisFaellt = mE.verletzt === eis.length - 1;
+log(`  Eisleiter  Helligkeit faellt durchgehend: ${eisFaellt ? 'ja' : 'NEIN'}`
+  + `, staerkster Schritt ${(-mE.kleinsterSchritt).toFixed(4)}`);
+if (!eisFaellt) {
+  log('  ACHTUNG: die Eisleiter soll nach oben gleichmaessig dunkler werden.');
+  log('           Eine Stelle, an der sie umkehrt, macht zwei Hoehen gleich hell.');
+}
 if (mC.verletzt) {
   log('  ABBRUCH: die zweite Leiter ist fuer Rot-Gruen-Schwaeche da. Faellt ihre');
   log('           Helligkeit irgendwo, taugt sie dafuer nicht.');
@@ -96,15 +115,18 @@ const mspBei = k => {
 };
 const NOTIZEN = [
   [26, 23, 'Before the maximum',
-    'The Eurasian ice sheet is still growing. Britain and Scandinavia carry '
-    + 'separate domes; the North Sea between them is dry land. This is the '
-    + 'stretch DATED-1 calls poorly constrained &#8212; far fewer dates '
-    + 'record a build-up than a retreat, because advancing ice destroys what '
-    + 'it overruns.'],
+    'The Eurasian ice sheet is still growing, and it grows as three separate '
+    + 'domes: over Britain, over Scandinavia, and over the Barents and Kara '
+    + 'seas north of Russia. The North Sea between the first two is dry land. '
+    + 'This is the stretch DATED-1 calls poorly constrained &#8212; far fewer '
+    + 'dates record a build-up than a retreat, because advancing ice destroys '
+    + 'what it overruns.'],
   [23, 20.5, 'The Last Glacial Maximum',
-    'Ice reaches its greatest extent. The crust beneath the dome is pressed '
-    + 'down by hundreds of metres, and the water locked up in ice drops the '
-    + 'sea far enough to walk from England to Denmark.'],
+    'The three domes have merged into one sheet. The crust beneath it is '
+    + 'pressed down by hundreds of metres, and the water locked up in ice '
+    + 'drops the sea far enough to walk from England to Denmark. The '
+    + 'Barents-Kara dome is the strange one: it sits on a shelf sea, grounded '
+    + 'on a sea floor its own weight has pushed below the waves.'],
   [20.5, 18, 'Doggerland',
     'The southern North Sea is a plain of rivers and marsh, not a sea. It is '
     + 'not a land bridge but a country in its own right &#8212; the largest '
@@ -122,9 +144,10 @@ const NOTIZEN = [
     + 'ICE-6G_C carries the readvance only faintly &#8212; it is a model '
     + 'fitted to sea level and crustal motion, not a climate simulation.'],
   [11.5, 9, 'The last domes',
-    'What is left of the ice sits over the Gulf of Bothnia, the deepest part '
-    + 'of the isostatic bowl. The land there is still hundreds of metres below '
-    + 'where it will end up.'],
+    'What is left of the Eurasian ice sits over the Gulf of Bothnia, the '
+    + 'deepest part of the isostatic bowl. The land there is still hundreds '
+    + 'of metres below where it will end up. Barents-Kara went first, Britain '
+    + 'second; Greenland, in the top-left corner, is not going anywhere.'],
   [9, 4, 'Rebound',
     'The ice is gone, and the crust is still rising. This is the part of the '
     + 'map that keeps moving after the white is gone &#8212; Scandinavia is '
@@ -132,7 +155,9 @@ const NOTIZEN = [
   [4, -1, 'Today',
     'The coastline matches the modern one, because the modern elevation model '
     + 'is exactly what the map is built on. Everything before this is that '
-    + 'same terrain with the reconstructed difference field added.'],
+    + 'same terrain with the reconstructed difference field added. The white '
+    + 'left in the corner is Greenland: the one ice sheet on this map that '
+    + 'never melted.'],
 ];
 log('Notizen');
 log(`  ${NOTIZEN.length} Abschnitte, Meeresspiegel bei 26/20/15/10/0 ka: `

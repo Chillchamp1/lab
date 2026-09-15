@@ -259,8 +259,9 @@ dass sie überhaupt Höhenlinien bekommen.
 |---|---|
 | Schattierung | Lambert, Licht von **oben links**, `SONNE = 40` Grad über der Fläche |
 | Schlagschatten | dasselbe Licht **flacher**, `WURFSONNE = 16` Grad |
-| Mulde | was tiefer liegt als seine weite Umgebung, bekommt weniger Himmel (`MULDE = 0.85`) |
-| Stärke | `STAERKE = 1.6`, gedeckelt bei ±0,55 |
+| Mulde | was tiefer liegt als seine Umgebung, bekommt weniger Himmel (`MULDE = 0.85`) — hier über **drei** Weiten statt einer |
+| Stärke | `STAERKE = 1.55`, gedeckelt bei ±0,55 |
+| Schimmer | Blinn-Term, nur auf Eis und nur ausserhalb des Schlagschattens (`GLANZKRAFT = 0.16`) |
 
 Die beiden Sonnen sind kein Versehen: „ein Strahl, der steiler abfällt als der
 Hang selbst, trifft nie auf Schatten — bei 40 Grad gäbe es über diesen sanften
@@ -269,7 +270,17 @@ jeher."
 
 Der Schlagschatten läuft in **einem einzigen Durchgang**: das Licht kommt aus
 genau 45 Grad, die Strahlen laufen auf der Leinwand diagonal, und je Diagonale
-genügt ein mitgeführter Horizont — `s = max(s − Abfall, Höhe)`.
+genügt ein mitgeführter Horizont — `s = max(s − Abfall, Höhe)`. Danach ein
+kurzer Kasten darüber: der Sweep liefert eine Kante von einem Feldpunkt, und
+eine Sonne von 16 Grad hat einen Halbschatten.
+
+Die **drei Weiten** der Mulde sind der Ausschnitt geschuldet. Eine einzelne
+Weite sieht genau eine Grösse von Hohlform; auf einer Karte von Sizilien bis
+Spitzbergen stehen Alpentäler und das Becken der Nordsee nebeneinander im
+selben Bild, und keine Weite trägt beide. Drei, mit nach aussen fallendem
+Gewicht (0,50 / 0,33 / 0,17), sind die billige Fassung einer
+Umgebungsverdeckung — und billig ist hier wörtlich: der Kastenfilter kostet je
+Bildpunkt dasselbe, egal wie breit er ist.
 
 **Die Schattierung wird in die Farbe gerechnet**, nicht als graues Bild
 darübergelegt. Das ist der teuerste Fehler, den die Vorlage gemacht und
@@ -416,12 +427,12 @@ Hier weicht die neue Karte ab, und zwar begründet. Die Vorlage rechnet auf
 einer **flächentreuen** Projektion (Lambert azimutal, 52° N 10° O), weil
 Fläche × Höhe = Bevölkerung ihre eine Aussage ist.
 
-Diese Karte hat diese Aussage nicht. Ihr Ausschnitt ist 12° W bis 45° E und
-34° N bis 72° N — 38 Breitengrade, von Kreta bis zum Nordkap. In einer
-Plattkarte wäre Skandinavien dreifach überbreit gezogen, und der Eisschild,
-um den es geht, läge genau dort. Gewählt wird deshalb **Lambert azimutal
-flächentreu, zentriert auf 53° N 15° O** — dieselbe Projektionsfamilie wie die
-Vorlage, nur auf den neuen Ausschnitt gesetzt. Formeln und Umkehrung stehen
+Diese Karte hat diese Aussage nicht. Ihr Rahmen reicht von Kreta bis über
+Spitzbergen hinaus — 55 Breitengrade. In einer Plattkarte wäre Skandinavien
+dreifach überbreit gezogen, in Mercator flächenmässig siebenfach, und der
+Eisschild, um den es geht, läge genau dort. Gewählt wird deshalb **Lambert
+azimutal flächentreu, zentriert auf 53° N 15° O** — dieselbe Projektionsfamilie
+wie die Vorlage, nur auf den neuen Rahmen gesetzt. Formeln und Umkehrung stehen
 schon in `build/geometrie.mjs` der Vorlage.
 
 
@@ -534,16 +545,19 @@ der Knick zurück, den die Kurve beseitigen soll."
 Sie geht durch jeden gemessenen Wert, knickt dort nicht und **schiesst nie
 über die beiden Nachbarwerte hinaus** (gemessen: 0,0000 % Überschiessen).
 
-> Hier gilt allerdings die Ansage der Aufgabe: **linear interpolieren.** Die
-> Vorlage begründet ihre Kurve mit einem gemessenen Knick von 74 Prozent an
-> jeder Zählung und zahlt dafür im Mittel 0,75 Prozent Abweichung. Bei
-> gleichmässigen 1-ka-Schritten ist der Knick klein und der Preis
-> unbegründet — und „kein Glätten über die Datenlage hinweg" steht in der
-> Aufgabe. Die Maschinerie (`steigungen`, `hermite`, `STRAFF`) wird
-> übernommen und `STRAFF` auf 0 gesetzt; eine Hermite-Kurve, deren beide
-> Steigungen gleich der Sehne sind, **ist** die Gerade. Damit steht der
-> Schalter da, falls sich die Frage am Übergang 21 ka (wo die Schrittweite
-> wechselt) doch noch stellt.
+> Hier stand einmal das Gegenteil: **linear interpolieren**, weil bei
+> gleichmässigen 1-ka-Schritten der Knick klein sei und „kein Glätten über
+> die Datenlage hinweg" in der Aufgabe stehe. Das war eine Fehlanwendung des
+> richtigen Arguments. Es gilt für eine *freie* Kurve, die über die
+> Datenpunkte hinausschiesst — nicht für die **monotone**, die genau das
+> nicht tut und die die Vorlage ohnehin schon genommen hatte.
+>
+> Was linear glättete, war nämlich nichts: geglättet wird die
+> *Geschwindigkeit*, und die war linear gar nicht stetig. Sie knickte an
+> jeder der 48 Scheiben um, was im Lauf 48 Rucke in 69 Sekunden ergibt. Der
+> grösste davon fällt mit der Kurve um den Faktor 20 (METHODIK, Abschnitt 7).
+> Übernommen wird damit auch hier wieder das Verfahren der Vorlage — nach
+> einem Umweg.
 
 ### Die Bedienleiste
 
@@ -585,26 +599,48 @@ Genau dort steht in der neuen Karte die **Meeresspiegelkurve**.
 | Diffusionskartogramm | die Fläche wird hier nicht umverteilt |
 | halbe Verzerrung, `FORM = 0.5` | dito |
 | „Volumen ist Bevölkerung" | die tragende Aussage der Vorlage, hier gegenstandslos |
-| Städtenamen nach laufender Grösse | hier stehen Orte fest; Beschriftung, wenn überhaupt, ist Ortsmarke |
+| Städtenamen nach laufender Grösse | hier stehen Orte fest. Beschriftet wird trotzdem — aber als **Ebene von heute**, zusammen mit der heutigen Küstenlinie, abschaltbar und im Ton zurückgenommen. Die Vorlage nennt Orte, weil ihre Aussage an ihnen hängt; hier sind sie Anker, nicht Aussage. |
 | Kreisumriss beim Antippen | es gibt keine Verwaltungseinheiten |
 | `ABSOLUT` / relativ-Schalter | die Höhe ist in Metern, es gibt nichts zu beziehen |
 
 ## 8b. Wo bewusst abgewichen wird
 
-Zwei Stellen, beide aus demselben Grund: **der Ausschnitt der Vorlage ist
-hochkant, dieser ist quer.** Deutschland ist höher als breit, Europa von 12° W
-bis 45° O ist breiter als hoch (760 × 649 Zellen).
+Fünf Stellen, alle aus demselben Grund: **der Ausschnitt der Vorlage ist
+hochkant und lässt Platz, dieser ist ein gefülltes Rechteck und lässt keinen.**
+Deutschland ist höher als breit und hat einen Umriss; dieser Rahmen ist ein
+gefülltes Rechteck von 760 × 887 Zellen.
 
 | Vorlage | hier | warum |
 |---|---|---|
 | `.wrap{height:100dvh}`, das Feld füllt den Schirm | `min-height`, und das Feld hält `aspect-ratio` der Karte | Auf 390 px füllte die Karte sonst **48 Prozent** des Feldes; der Rest war schwarz. Jetzt schrumpft die Bühne, und der Rand unten ist Seitengrund statt Loch in der Karte. |
-| Notiz und Faden liegen **hinter** der Karte, die Karte weicht ihnen aus | unter 640 px liegen sie **unter** der Karte | Das Prinzip hängt daran, dass der Umriss Platz lässt. Deutschland tut das; Europa reicht auf dem Telefon bis an beide Ränder und verdeckte zwei Drittel jeder Zeile. |
+| Notiz und Faden liegen **hinter** der Karte, die Karte weicht ihnen aus | sie liegen **neben** der Karte (quer, ab 1 040 px) oder **unter** ihr (sonst) | Das Prinzip hängt daran, dass der Umriss Platz lässt. Deutschland tut das; ein gefülltes Rechteck tut es nirgends. Die Karte kann nicht ausweichen, also weicht der Text — und in einem queren Fenster geht er zur Seite, nicht nach unten: dort ist Platz, und die Karte bekommt die ganze Fensterhöhe statt der Hälfte. |
+| Die Bühne ist eine Spalte: Karte, Leiste, Regler untereinander | quer ein **zweispaltiges Blatt**: links die Karte über die ganze Höhe, rechts Leiter, Regler, Ticker und Notiz | Die Karte der Vorlage ist hochkant und füllt eine Spalte. Diese ist hochkant, aber flacher: untereinander blieben ihr 21 Prozent des Fensters, nebeneinander sind es 49. |
+| Die Bühne hat Rand, Polster und einen Strich drumherum | hochkant **nichts davon**: die Karte läuft von Kante zu Kante | Auf 390 px sind Rand und Polster zehn Prozent der Kartenbreite. Die Vorlage kann sich das leisten, weil ihre Karte hochkant ohnehin schmal steht; diese füllt die Breite oder sie ist zu klein. |
+| Das Schild steht **auf** der Karte, mit einem Schein aus dem Seitengrund | es steht **über** ihr | Der Schein trägt, solange unter dem Schild Wasser liegt. Seit der Rahmen bis Grönland reicht, liegt dort Eis: weisse Schrift auf Weiss. Eine Zeile Höhe ist billiger als ein unlesbares Schild. |
 
-Dazu eine dritte, kleinere: die Marken der Farbleiter werden **gemessen** und
+Und eine vierte, die nicht am Ausschnitt hängt, sondern am Gelände: die
+**Überhöhung der Schrägsicht** steht in der Vorlage als Anteil der Feldhöhe
+(`hoehe × 0,30`). Für ihre Karte geht das — Deutschlands Höhen und ihr
+Kartenmassstab passen zufällig dazu. Für einen Kontinent von 4 400 km Breite
+geht es nicht: dieselbe Zahl machte aus den Alpen einen Nadelwald. Hier kommt
+sie aus einer gemessenen Grösse des Geländes (METHODIK, Abschnitt 8c). Das
+Verfahren der Vorlage — Laserschnitt, Wandanstrich, geprägte Lichtkante —
+bleibt; nur die eine Zahl ist jetzt eine gerechnete.
+
+Dazu eine fünfte, kleinere: die Marken der Farbleiter werden **gemessen** und
 bei Berührung ausgedünnt, statt nach einer Bildschirmbreite zu schalten. Die
 Wasserbänder dieser Leiter sind doppelt so hoch wie die Landbänder, also
 drängen sich −2 km, −1 km und 0 auf dem linken Drittel — eine geratene
 Schwelle wäre entweder zu früh oder zu spät.
+
+Und eine sechste, an der Zahl der Platten: die **geprägte Lichtkante** ist hier
+ein Gerätepixel breit statt ein CSS-Pixel, und unter jeder Platte liegt ein
+Schlagschatten, den die Vorlage nicht hat. Die Vorlage stapelt wenige breite
+Platten; hier sind es 33, und an den Alpen liegen ihre Kanten dichter, als
+die Terrassen breit sind. Ein Saum von der Breite der Vorlage summiert sich
+dort zu Milchglas, leiser gestellt wird er zum Weichzeichner. Schmal und hart
+bleibt er Schnittkante, und der Schatten darunter sagt, was die Kante allein
+nicht sagt: wie hoch die Stufe ist (METHODIK, Abschnitt 8c).
 
 Und ein Grundsatz, der übernommen wird, obwohl er kein Verfahren ist:
 

@@ -12,7 +12,7 @@ fehlenden Zwischenzertifikat; das ist gelöst, ohne die Prüfung abzuschalten.
 
 | Wirt | für | Stand | |
 |---|---|---|---|
-| `www.ngdc.noaa.gov` | ETOPO 2022 | **geladen** | 15 Kacheln, 406 MB |
+| `www.ngdc.noaa.gov` | ETOPO 2022 | **geladen** | 34 Kacheln, 680 MB |
 | `store.pangaea.de`, `doi.pangaea.de` | DATED-1 | **geladen** | 12 MB, 58 Shapefiles |
 | `www.atmosp.physics.utoronto.ca` | ICE-6G_C | **geladen** | 48 Dateien, 1° |
 | `crt.sectigo.com` | das fehlende Zwischenzertifikat | **erreichbar über CONNECT** | siehe unten |
@@ -154,18 +154,28 @@ Islands heutiges Eis als Fels in der Karte und bekäme darüber noch einmal das
 eiszeitliche.
 
 **Benutzt wird der Ersatz:** **NOAA NCEI (2022):** *ETOPO 2022 15 Arc-Second
-Global Relief Model*, doi:10.25921/fd45-gt74, fünfzehn 15-Grad-Kacheln des
-Satzes `15s_surface_elev_netcdf`, zusammen 406 MB.
+Global Relief Model*, doi:10.25921/fd45-gt74, **vierunddreissig** 15-Grad-Kacheln
+des Satzes `15s_surface_elev_netcdf`, zusammen 680 MB. (Es waren fünfzehn,
+solange der Rahmen ein Grad-Rechteck war; ein Kilometer-Rechteck greift an
+seinen Nordecken bis Grönland und bis zur Karasee aus.)
 
-Und zwar **surface**, nicht `bed` — das sieht nach einem Widerspruch zum
-Absatz darüber aus und ist keiner. Nachgesehen hat der 15″-`bed`-Satz nur 62
-Kacheln: es gibt ihn **nur dort, wo heute Eis liegt** (Grönland, Antarktis,
-hohe Arktis). Überall sonst ist die Oberfläche der Fels, und für 12° W bis
-45° E deckt keine einzige `bed`-Kachel den Ausschnitt. `surface` ist hier also
-genau das, was `bed` wäre.
+Und zwar **surface**, nicht `bed`. Das stand hier einmal als Verlegenheit —
+der 15″-`bed`-Satz hat nur 62 Kacheln, es gibt ihn nur dort, wo heute Eis
+liegt, und für 12° W bis 45° O deckte keine einzige davon den Ausschnitt. Seit
+Grönland im Rahmen liegt, ist es keine Verlegenheit mehr, sondern die
+**richtige** Wahl, und zwar aus der Konstruktion heraus:
+
+> Fläche(t) = DEM + `Topo_Diff`(t), und `Topo_Diff` ist auf `Topo`(0) bezogen —
+> auf die **Oberfläche** von heute, Eis inbegriffen. Das DEM muss dieselbe
+> Grösse sein, sonst stimmt der Bezugspunkt nicht.
+
+Gemessen wird das als Probe 2, und sie fällt über Grönland (Median 76 m)
+genauso aus wie über Europa (52 m). Der Fels kommt danach heraus, nicht
+hinein: Fels = Fläche − `stgit`. Mit `bed` läge Grönland drei Kilometer zu
+tief und das eiszeitliche Eis schwebte über einer abgesackten Insel.
 
 GEBCO bleibt die Vorgabe der Aufgabe und ist gleichwertig; ETOPO ist genommen,
-weil sein gekachelter Satz 406 MB statt 7,5 GB überträgt.
+weil sein gekachelter Satz 680 MB statt 7,5 GB überträgt.
 
 ## 2b. Was an den erratenen Adressen falsch war
 
