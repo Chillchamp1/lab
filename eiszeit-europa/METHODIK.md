@@ -422,6 +422,34 @@ auseinanderlaufen, ist das der Befund.**
 Die drei DATED-1-Linien je Zeitscheibe: *most-credible* kräftig in Creme,
 *maximum* und *minimum* als halbtransparentes Band dazwischen.
 
+### Standardmässig aus — und der Knopf schaltet jetzt alles
+
+Zwei Änderungen, eine davon ein Fehler:
+
+**Der Knopf schaltete nur die Hälfte.** `BAND` deckte die Füllung zwischen
+*maximum* und *minimum* ab, die creme *most-credible*-Linie aber nicht. Wer
+„Band" ausschaltete, bekam trotzdem eine DATED-1-Linie über seiner Karte — und
+zwar die auffälligste der drei. Ein Schalter, der nur einen Teil dessen
+abschaltet, was man sieht, ist keiner. Jetzt liegt die ganze Ebene dahinter.
+
+**Und er steht jetzt auf aus.** Die DATED-1-Linien sind die *Feldbefunde* — wo
+Datierungen den Eisrand tatsächlich belegen — und liegen damit auf einer
+anderen Ebene als alles andere im Bild: die Karte zeigt ein Modell, sie zeigen
+die Messungen dazu. Für den ersten Blick ist das eine Ebene zu viel. Dazu
+kommt, dass sie am Eisrand entlanglaufen, also genau dort, wo ohnehin die
+Kante zwischen Weiss und Grün das Auge hält; die creme Linie konkurriert mit
+ihr, statt sie zu erklären.
+
+Im **Film** fällt das doppelt ins Gewicht: er hat keine Knöpfe, die Ebene wäre
+dort also gar nicht abwählbar, und in Bewegung springt sie alle 1 000 Jahre um
+(sie wird nicht interpoliert, siehe unten) — ein Zucken, das neben der glatten
+Eisbewegung wie ein Fehler aussieht.
+
+Der Legendensatz führt den Schalter mit: er erklärt die orange Linie nur,
+solange sie da ist, und sagt sonst, welcher Knopf sie holt. Ein
+Legendensatz, der etwas beschreibt, was gerade nicht im Bild steht, ist
+schlimmer als keiner.
+
 Gezeichnet als Fläche zwischen den beiden Linien — beide sind geschlossene
 Umrisse, also geht das mit der Nichtnull-Regel: maximum füllen, minimum mit
 `evenodd` wieder herausnehmen.

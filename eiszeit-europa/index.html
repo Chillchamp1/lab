@@ -289,7 +289,7 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
     <label><span>Tilt</span><input type="range" id="kipp" min="0" max="100" value="0" step="1" aria-label="Tilt"></label>
     <label><span>Turn</span><input type="range" id="dreh" min="0" max="360" value="0" step="1" aria-label="Turn"></label>
     <button id="heute" aria-pressed="true" title="Today&#39;s coastline and cities, for orientation">Today</button>
-    <button id="band" aria-pressed="true" title="DATED-1 maximum and minimum margins">Band</button>
+    <button id="band" aria-pressed="false" title="DATED-1 dated ice margin and its maximum/minimum uncertainty band">Band</button>
   </div>
   <div class="schild"><b id="jahrZahl">&#8211;</b><span id="jahrNeben"></span></div>
   <div class="text">
@@ -1413,7 +1413,13 @@ let HOCH3D = 0.30;               // wird in masse() aus der Metrik gesetzt
 const schraeg = () => NEIGUNG > 0.001 || Math.abs(DREHUNG) > 1e-4;
 const ansichtFrei = () => ZOOM !== 1 || vX !== 0 || vY !== 0;
 let SICHT = null;
-let BAND = true;
+/* Aus, bis jemand danach fragt. Die DATED-1-Linien sind die **Feldbefunde** —
+   wo Datierungen den Eisrand tatsaechlich belegen — und liegen damit auf einer
+   anderen Ebene als alles andere im Bild: die Karte zeigt ein Modell, sie
+   zeigen die Messungen dazu. Fuer den ersten Blick ist das eine Ebene zu viel,
+   und im Film, der keine Knoepfe hat, waere sie gar nicht abwaehlbar. Wer den
+   Vergleich sehen will, drueckt „Band". */
+let BAND = false;
 
 // Die Scheiben liegen auf **absoluten Hoehen**, damit der Rahmen feststeht.
 // Nach dem hoechsten Punkt zu rechnen, der gerade dasteht, waere verlockend —
@@ -2237,13 +2243,19 @@ function silhouetteHoch() {
 }
 
 function datedUeber() {
+  /* Der Knopf schaltet die **ganze** Ebene. Vorher deckte er nur die Fuellung
+     zwischen maximum und minimum ab, und die orange Linie blieb stehen: wer
+     „Band" ausschaltete, bekam trotzdem eine DATED-1-Linie ueber seiner Karte.
+     Ein Schalter, der nur die Haelfte dessen abschaltet, was man sieht, ist
+     keiner. */
+  if (!BAND) return;
   const t = datedBei(ka);
   if (!t) return;
   const s = DATED[t.ka];
   if (!s) return;
   ctx.save();
   ctx.clip(schraeg() ? silhouetteHoch() : silhouette());
-  if (BAND && s.max && s.min) {
+  if (s.max && s.min) {
     const p = new Path2D();
     p.addPath(bandPfad(s.max));
     p.addPath(bandPfad(s.min));
@@ -2492,9 +2504,17 @@ function legende() {
   const se = document.getElementById('stufenEis');
   se.innerHTML = '<span class="a" style="left:0%">0</span>'
     + '<span class="z" style="left:100%">' + (NEIS * EISSTUFE / 1000) + ' km</span>';
+  legendeText();
+}
+/* Steht getrennt, weil der Band-Knopf sie mitfuehren muss: ein Legendensatz,
+   der eine orange Linie erklaert, die gerade nicht da ist, ist schlimmer als
+   keiner. */
+function legendeText() {
   document.getElementById('legText').innerHTML =
-    'Rock elevation and ice-surface elevation, metres. Every contour is a colour boundary. '
-    + 'The orange line is the DATED-1 most-credible ice margin, the band around it its maximum and minimum.';
+    'Rock elevation and ice-surface elevation, metres. Every contour is a colour boundary.'
+    + (BAND
+      ? ' The orange line is the DATED-1 most-credible ice margin, the band around it its maximum and minimum.'
+      : ' Press Band for the DATED-1 dated ice margins.');
 }
 
 /* ================================================================ Notizen */
@@ -2778,6 +2798,7 @@ document.getElementById('heute').addEventListener('click', e => {
 document.getElementById('band').addEventListener('click', e => {
   BAND = !BAND;
   e.currentTarget.setAttribute('aria-pressed', BAND ? 'true' : 'false');
+  legendeText();
   zeichne();
 });
 document.getElementById('zurueck').addEventListener('click', () => {
