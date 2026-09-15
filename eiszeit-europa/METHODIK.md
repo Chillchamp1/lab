@@ -1104,6 +1104,47 @@ Zeilen abgeschnitten und sagt nichts, was die Leiter darüber nicht zeigt) und
 der Faden mit allen neun Abschnittsüberschriften (zwei Zeilen graue Wörter
 neben einer Notiz, die dasselbe sagt).
 
+### Gerechnet wird nur, was zu sehen ist
+
+Der Kachelindex sagt, welche Kachel eine Höhe **kreuzen** kann. Er sagt nicht,
+ob sie überhaupt im Bild liegt — und bei vierfacher Vergrösserung liegen neun
+Zehntel des Feldes neben der Leinwand. Gerechnet wurden sie trotzdem.
+
+Das sichtbare Rechteck kommt aus der Umkehrung der Sicht: die vier Ecken der
+Leinwand zurück auf den Boden, mit zwei Zugaben. Die Leinwand wird nach unten
+um die **Stapelhöhe** verlängert, weil der Stapel jeden Punkt auf dem Schirm
+anhebt — ein Punkt, dessen Boden unter der Leinwand liegt, kann mit seiner
+obersten Platte noch hereinragen. Und das Ergebnis wird auf Vielfache von 16
+Zellen nach aussen gerundet, sonst wechselte es bei jedem Pixel einer Geste und
+der Ringspeicher, der daran hängt, wäre bei jeder Bewegung ungültig.
+
+Gemessen bei 1 440 × 900, gekippt:
+
+| | ms je Bild |
+|---|---|
+| Zoom 1 (ganze Karte sichtbar) | 322 — unverändert |
+| Zoom 3 | **186** statt 322 |
+| Zoom 6 | **157** statt 322 |
+
+Im Normalfall spart es nichts, und das ist richtig so: dort **ist** alles zu
+sehen. Es spart genau dann, wenn man hineingeht.
+
+Zwei Dinge dabei, die nicht offensichtlich sind:
+
+**Höhenlinien darf man abschneiden, Plattenringe nicht.** Eine Linie wird
+gestrichen; hört sie am Rand auf, ist das harmlos. Ein Ring wird **gefüllt**;
+eine Kette, die am Rand aufhört, füllt sich als Keil quer über die Karte.
+Ausserhalb des Sichtbaren gilt deshalb dasselbe wie ausserhalb des Feldes:
+tiefer als jede Platte. Dann schliesst sich der Ring entlang der Schnittkante,
+und die liegt neben der Leinwand.
+
+**Und der Kachelindex muss von diesem Rand wissen.** Er wurde zuerst über die
+rohen Werte gebaut; an der Schnittkante sah er ein gleichförmiges Stück
+Meeresboden, hielt die Kachel für übersprungbar — und genau dort lag der Sprung
+auf den Nullrand. Der Keil stand wieder im Bild. Derselbe Fehler wie bei der
+Randspalte eine Runde zuvor, an einer anderen Kante: **ein
+Marching-Squares-Ring ist geschlossen oder Unsinn.**
+
 ### Das Bild hopste, und zwar aus drei Gründen
 
 Alle drei sind Layout, keiner ist Rechnen, und alle drei fallen nur hochkant
