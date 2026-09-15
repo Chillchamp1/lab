@@ -579,7 +579,11 @@ function paleo() {
    sehen. */
 const SONNE = 40, WURFSONNE = 16, UEBERHOEHT = 0.0016;
 const STAERKE = 1.55, AUFHELLEN = 0.55, ABDUNKELN = 0.70;
-const MULDE = 0.55, WURF = 0.30, LICHTHUB = 1.7, SCHATTENHUB = 0.6;
+/* MULDE und LICHTHUB standen auf 0,55 und 1,7 — die Vorlage hat 0,85 und
+   1,7. Gekippt wirkte das Relief damit flach: die Platten sind Volltonflaechen,
+   und alles, was innerhalb einer Platte Form gibt, ist dieses Licht. Es darf
+   hier mehr tragen. Verglichen an sechs Varianten, siehe METHODIK 8c. */
+const MULDE = 0.85, WURF = 0.30, LICHTHUB = 2.2, SCHATTENHUB = 0.6;
 const HELLMAX = 0.55, DUNKELMAX = 0.55;
 let schattenF = null, weitF = null, kastA = null, kastB = null;
 
@@ -1174,31 +1178,44 @@ function bandFarbe(k, eis) {
 /* Die Wand einer Platte, und ihr Fuss. Beide standen auf 0,78 und 0,55 —
    gemessen an 26 Platten. Seit der Stapel von der untersten Bandgrenze bis zur
    obersten laeuft, sind es 33, und damit stehen ein Drittel mehr dunkle
-   Streifen im Bild. Bei 0,86 und 0,70 traegt die Wand die Stufe weiter, ohne
-   die Karte zu zerschneiden. */
-let WANDDUNKEL = 0.86, WANDFUSS = 0.70; const WANDSCHRITT = 3;
+   Streifen im Bild; 0,86 und 0,70 trugen die Stufe weiter, ohne die Karte zu
+   zerschneiden. Mit der harten Kante und dem Schlagschatten darunter muss die
+   Wand den Absatz nicht mehr allein zeigen: 0,82 und 0,62 lassen sie wieder
+   etwas dunkler stehen. */
+const WANDDUNKEL = 0.82, WANDFUSS = 0.62, WANDSCHRITT = 3;
 /* Die Sicheln der beleuchteten Kante sind absichtlich **nicht** ganz deckend:
    gerade das laesst die Bandfarbe durchscheinen, statt sie zu ueberblenden.
    Der erste Wurf stand auf 0,85/0,75 und uebertoente den Eisschild — bei 26
    Scheiben liegen die Kanten dort dichter als die Terrassen breit sind. */
-/* Die beleuchtete Kante: **an die Zahl der Platten gekoppelt**, nicht fest.
+/* Die beleuchtete Kante: **duenn und hart**, nicht breit und schwach.
 
-   Sie wird je Platte zweimal halbdurchsichtig gefuellt. Was davon stehen
-   bleibt, haengt nicht an der einzelnen Deckkraft, sondern an ihrer Potenz:
-   ueber n Platten bleibt (1 − a)^n durch. Eine feste Zahl heisst also, dass
-   der Schleier mitwaechst, sobald der Stapel feiner wird — und genau das ist
-   passiert, als aus 26 Platten 33 wurden. Ueber jeder Kuestenlinie lag ein
-   weisser Saum, und die Karte sah aus, als haette jemand Milchglas
-   davorgestellt.
+   Der Praegetrick fuellt den Ring je Platte zweimal halbdurchsichtig, weiss
+   zum Licht und schwarz von ihm weg, versetzt um lv. Sichtbar bleibt ein
+   Saum von der Breite lv. Der Schleier, der gekippt ueber der Karte lag, war
+   die Summe dieser Saeume ueber 33 Platten — und der erste Versuch dagegen
+   war, die Deckkraft zu senken. Das nahm den Schleier und mit ihm die Kante:
+   das Relief wirkte flach, die Karte verwaschen.
 
-   Gemessen und verglichen wurden vier Staerken bei 33 Platten: 0,62 (der alte
-   Stand, Milchglas), 0,34 (Stufen lesbar, kein Schleier), 0,22 (sauber, aber
-   das Relief wird flach) und ganz aus. Genommen ist **0,34 bei 33 Platten**,
-   und daraus die Potenz fuer jede andere Zahl. */
-const KANTENVERSATZ = 0.55, KANTENZOOM = 4;
-const KANTENBEI = 33, KANTENHELL33 = 0.34, KANTENDUNKEL33 = 0.32;
+   Richtig ist das Umgekehrte: die Kante **schmal** machen — ein Geraetepixel,
+   nicht ein CSS-Pixel — und **hart** lassen. Ein duenner Saum summiert sich
+   nicht zu Milchglas, weil er kaum Flaeche hat; und hart gezogen liest er
+   sich als Schnittkante eines Modells, nicht als Weichzeichner. Gemessen an
+   sechs Varianten (METHODIK 8c): 0,70 bei einem Geraetepixel Breite.
+
+   Die Deckkraft bleibt an die Zahl der Platten gekoppelt: ueber n Platten
+   bleibt (1 − a)^n durch, also a(n) = 1 − (1 − 0,70)^(33/n). */
+let KANTENVERSATZ = 0.55; const KANTENZOOM = 4;
+const KANTENBEI = 33, KANTENHELL33 = 0.70, KANTENDUNKEL33 = 0.70;
 const kantenDeck = a => 1 - Math.pow(1 - a, KANTENBEI / Math.max(1, NSCHEIBE));
 let KANTENHELL = kantenDeck(KANTENHELL33), KANTENDUNKEL = kantenDeck(KANTENDUNKEL33);
+
+/* Der Schlagschatten einer Platte auf die darunter: drei dunkle Kopien des
+   Rings, vom Licht weg versetzt, nach aussen abnehmend deckend. Er ist das,
+   was einem Laserschnittmodell Tiefe gibt — die Kante sagt, **wo** die Stufe
+   ist, der Schatten sagt, **wie hoch**. WURFLAENGE in Vielfachen des
+   CSS-Pixel-Versatzes, WURFDECK die Deckkraft der innersten Kopie. */
+let WURFLAENGE = 1.2, WURFDECK = 0.35, WURFSTUFEN = 3;
+
 function scheibenMalen() {
   const Dp = DPR;
   const S = sichtRechnen();
@@ -1209,7 +1226,10 @@ function scheibenMalen() {
   const lichtMaske = new Path2D();
   const a2 = Dp * zz * ct, c2 = Dp * zz * st, b2 = -Dp * co * zz * st, d2 = Dp * co * zz * ct;
   const eX = Dp * ozX - a2 * cx - c2 * cy;
-  const lv = KANTENVERSATZ * Math.min(KANTENZOOM, ZOOM) / zz * breite / rW;
+  // lv0 ist ein CSS-Pixel im Grundriss; die Kante bekommt davon so viel, dass
+  // sie auf dem Schirm ein Geraetepixel breit ist — auf Retina also die Haelfte.
+  const lv0 = KANTENVERSATZ * Math.min(KANTENZOOM, ZOOM) / zz * breite / rW;
+  const lv = lv0 * Math.max(0.58, Math.min(1, 1.16 / Dp));
 
   /* Der Sockel: die ganze Kartenflaeche in der Farbe des tiefsten Bandes.
      Die Schleife darunter faengt bei k = 1 an, deckt also erst ab der zweiten
@@ -1277,6 +1297,19 @@ function scheibenMalen() {
     ctx.translate(2 * lv, 2 * lv);
     ctx.fillStyle = '#000'; ctx.globalAlpha = KANTENDUNKEL; ctx.fill(ringe[k], 'evenodd');
     ctx.translate(-lv, -lv);
+    if (WURFLAENGE > 0 && WURFDECK > 0) {
+      // Von aussen nach innen, jede Stufe deckender: die aeussere Kopie
+      // liegt unter den inneren, also addiert sich der Rand nicht.
+      for (let w = WURFSTUFEN; w >= 1; w--) {
+        const o = lv0 * WURFLAENGE * w / WURFSTUFEN;
+        ctx.save();
+        ctx.translate(o, o);
+        ctx.fillStyle = '#000';
+        ctx.globalAlpha = WURFDECK * (WURFSTUFEN - w + 1) / WURFSTUFEN;
+        ctx.fill(ringe[k], 'evenodd');
+        ctx.restore();
+      }
+    }
     ctx.globalAlpha = 1;
     ctx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
     ctx.fill(ringe[k], 'evenodd');

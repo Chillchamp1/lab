@@ -151,8 +151,8 @@ Download, ein zweiter Regler. Das ist ein eigenes Projekt.
   weg wäre es mit einer Schablone, die den Hub zeilenweise aus dem Feldstand
   nimmt statt pauschal aus der Stapelhöhe.
 - **Die Schrägsicht rechnet die Scheibenringe je Bild neu**, solange die Uhr
-  läuft — und seit der Trennung von Fels und Eis zwei Sätze davon. Gemessen 126
-  ms je Bild gekippt, 96 ms sobald kein Eis mehr da ist, 91 ms flach. Die
+  läuft — und seit der Trennung von Fels und Eis zwei Sätze davon. Gemessen 175
+  ms je Bild gekippt, 140 ms sobald kein Eis mehr da ist, 88 ms flach. Die
   Vorlage friert ihr Feld ein, sobald es steht, und spart damit die teuersten
   Posten bei jeder Geste. Hier ist nur der Ringspeicher an den Feldstand
   gehängt; der Rest wäre nachzuziehen, wenn sich die Schrägsicht auf dem Telefon
