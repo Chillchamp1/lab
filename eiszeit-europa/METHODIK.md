@@ -1,7 +1,7 @@
 # Methodik
 
 Gilt für den jetzigen Stand: 48 Zeitscheiben von 26 bis 0 ka, Rahmen
-5 370 × 5 250 km um 53° N / 15° O. Was von der Vorlage übernommen ist, steht in
+4 500 × 5 250 km um 53° N / 15° O. Was von der Vorlage übernommen ist, steht in
 [ASTHETIK.md](ASTHETIK.md); welche Quellen geprüft und welche gesperrt waren,
 in [QUELLEN.md](QUELLEN.md); was fehlt, in [STAND.md](STAND.md).
 
@@ -14,8 +14,8 @@ dabei. Was sich am Gerüst nicht messen lässt, wird auch nicht behauptet.
 
 Lambert azimutal flächentreu, Kugel mit R = 6 371,0088 km, zentriert auf
 **53° N / 15° O**. Dieselbe Projektionsfamilie wie in der Vorlage. Der Rahmen
-ist ein Rechteck von **5 370 × 5 250 km** in ebendieser projizierten Ebene —
-900 × 880 Zellen zu 5,97 km.
+ist ein Rechteck von **4 500 × 5 250 km** in ebendieser projizierten Ebene —
+760 × 887 Zellen zu 5,92 km.
 
 ### Das Tortenstück war der Schnitt, nicht die Projektion
 
@@ -37,7 +37,7 @@ innerhalb des Grad-Fensters:
 | Albers 45/62 | 67,8 % |
 
 Alle gleichauf: die Lücke ist die Form des *Fensters*. 38 Grad Breite auf 57
-Grad Länge lassen sich flächentreu nicht in ein Rechteck legen; 5 370 auf
+Grad Länge lassen sich flächentreu nicht in ein Rechteck legen; 4 500 auf
 5 250 Kilometer schon, denn das **ist** eines. Ein Atlas schneidet in
 Kilometern, und seither ist der Rahmen gefüllt.
 
@@ -69,10 +69,20 @@ Der Rahmen ist nicht gegriffen; jede seiner vier Kanten hält etwas:
 
 | Kante | km | hält |
 |---|---|---|
-| Westen | −2 470 | Island und den ostgrönländischen Schelf |
-| Osten | +2 900 | das Kaspische Meer und die Obmündung |
+| Westen | −2 150 | Island ganz, Kap St. Vincent (−2 111) knapp |
+| Osten | +2 350 | den Ural (+2 167) und die Obmündung (+2 124) |
 | Süden | −1 850 | gerade noch Sizilien (Kap Passero −1 807) und Tarifa (−1 630) |
 | Norden | +3 400 | Franz-Josef-Land |
+
+Der Rahmen ist zweimal enger geworden, und beide Male aus demselben Grund: was
+die Karte nicht zeigen muss, kostet Nutzlast **und** Rechenzeit in jedem Bild.
+Der Süden gab 250 km Sahara auf, Westen und Osten je 300 bis 550 km offenen
+Atlantik und kaspische Steppe. Der Norden nie — dort liegt das Thema.
+
+Und ein Nebeneffekt, der keiner ist: 4 500 auf 5 250 km sind **hochkant**. Auf
+einem hochkant gehaltenen Telefon füllt die Karte damit 54 statt 45 Prozent der
+Schirmhöhe; der Rahmen hat dieselbe Form wie das Gerät, auf dem er meistens
+angesehen wird.
 
 Der Norden ist der Grund für das Ganze. Das alte Fenster endete bei 72° N und
 45° O — und schnitt damit ein Viertel der DATED-1-Rekonstruktion ab:
@@ -81,14 +91,15 @@ Der Norden ist der Grund für das Ganze. Das alte Fenster endete bei 72° N und
 |---|---|
 | altes Grad-Fenster | 71,8 % |
 | altes Bildrechteck | 74,4 % |
-| **jetziger Rahmen** | **96,8 %** |
+| erster Kilometer-Rahmen (5 370 × 5 250 km) | 96,8 % |
+| **jetziger Rahmen (4 500 × 5 250 km)** | **96,4 %** |
 
 Was da fehlte, war kein Rand, sondern ein ganzer Eisschild: der
 **barentsisch-karische**, der auf einem Schelfmeer lag, so gross war wie der
 skandinavische und im alten Ausschnitt gar nicht vorkam. Er hat jetzt seine
 eigene Marke (Abschnitt 8e).
 
-In Grad greift der Rahmen damit von 64,3° W bis 97,6° O und von 31,0° bis
+In Grad greift der Rahmen damit von 61,3° W bis 93,2° O und von 32,8° bis
 83,9° N. In den Ecken stehen Grönland, Spitzbergen, Sewernaja Semlja und
 Westsibirien; die Breitenkreise laufen weiter gebogen durch das Bild, Norden
 ist am Bildrand nicht genau oben — wie auf jedem Atlasblatt.
@@ -565,6 +576,34 @@ all das steht erst fest, wenn die echten Dateien da sind. Deshalb liest
 Längenachse selbst zurecht, wenn sie von 0 bis 360 läuft, und meldet jede
 Zuordnung, die nicht gelingt, mit Zähler.
 
+### Das Gerüst muss mit dem Rahmen mitwandern
+
+Als der Rahmen auf 4 500 × 5 250 km umgestellt wurde, fielen am Gerüst Probe 2
+(Median 46,8 → 264,3 m, 95 % 121 → 4 000 m) und Probe 3 (92 → 66 Prozent) in
+den Keller, ohne dass an der Kette etwas geändert worden wäre. Der Grund stand
+im Gerüst, nicht in der Seite: sein DEM lag nur über 16° W bis 49° O und 30 bis
+76° N, und seine erfundene Topographie setzte alles ausserhalb von 12° W…46° O
+und 33…73° N pauschal auf −4 000 m. Der neue Rahmen reicht von Reykjavík bis
+zum Ural. Was die Proben also massen, war nicht der Unterschied zweier
+Datensätze, sondern die selbstgebaute Stufe an der Kante des Gerüsts.
+
+Die exakte Null von Probe 1 blieb dabei die ganze Zeit stehen — sie hängt nur
+an der Kette, nicht am Ausschnitt. Genau deshalb ist sie die scharfe Wache und
+die anderen sind Beschreibung.
+
+Behoben, indem das Gerüst-DEM auf 67° W…96° O und 28…86° N gezogen wurde, bei
+60″ statt 30″, damit die Datei bezahlbar bleibt (der Blockmittelungsschritt
+wird weiterhin durchlaufen, nur mit Teiler 3). Probe 2 steht seither wieder bei
+45,7 m Median und 120,2 m im 95. Perzentil, also dort, wo sie vor der
+Rahmenänderung stand. Probe 3 liegt am Gerüst jetzt zwischen 83 und 99 Prozent
+statt 92 und 98: über der neu gedeckten Fläche liegt die erfundene
+Topographie fast auf Meereshöhe, und dort kippt Land/Wasser schon bei ein paar
+Metern. Das ist eine Eigenschaft der Gausskuppen, keine der Kette.
+
+**Die Lehre:** ein Prüfgerüst hat einen Ausschnitt, und der steht nicht in
+`quellen.py`, sondern im Gerüst selbst. Wandert der Rahmen, wandert es mit —
+sonst misst man ab da seinen Rand.
+
 ## 8b. Was der Lauf mit den echten Daten gefunden hat
 
 **1. `Topo_Diff` enthält das Eis.** Der grosse Fang, ausführlich in
@@ -657,7 +696,8 @@ drei hängen daran, dass die Karte jetzt ein **gefülltes Rechteck** ist:
   einem breiten, niedrigen Schirm stand die Leinwand 862 Punkte breit da und
   die Karte darin 543. Ein Drittel der Bildpunkte wurde für schwarzen Rand
   gerechnet, und der Zuschnitt der Silhouette hat nebenbei die Ortsnamen am
-  Bildrand abgeschnitten — „Yekaterinburg" endete als „Yekate". Die Leinwand
+  Bildrand abgeschnitten — „Yekaterinburg" endete als „Yekate" (die Stadt lag
+  damals noch im Rahmen; heute stehen dort Perm und Arkhangelsk). Die Leinwand
   bekommt ihre Breite jetzt in `masse()`, gerückt mit `left` und **nicht** mit
   einem `transform`: eine verschobene Leinwand bekommt eine eigene
   Kompositionsebene und kostete im Prüfbrowser 25 ms je Bild gekippt.
@@ -689,13 +729,13 @@ Ausgelegt wird auf die stärkste Kippung — dort verdeckt es am meisten — und
 den Hang, der das Gebirge ausmacht. Gemessen wird er in `quellen.py` über alle
 48 Zeitscheiben, auf genau dem Feld, das die Seite zeichnet:
 
-| Quantil der Steigung | m je 5,97-km-Zelle | Neigung |
+| Quantil der Steigung | m je 5,92-km-Zelle | Neigung |
 |---|---|---|
-| p50 | 16,3 | 0,27 % |
-| p75 | 50,9 | 0,85 % |
-| **p90** | **141,4** | **2,37 %** |
-| p99 | 485,4 | 8,13 % |
-| p100 | 2 342,3 | 39,2 % |
+| p50 | 16,6 | 0,28 % |
+| p75 | 51,0 | 0,86 % |
+| **p90** | **140,5** | **2,37 %** |
+| p99 | 484,4 | 8,18 % |
+| p100 | 2 466,6 | 41,7 % |
 
 (Mit dem alten Grad-Fenster: p90 = 173,4 m je 6,83-km-Zelle, also 2,54 %. Die
 Zahl in Metern fällt mit der Zellgrösse, die **Neigung** bleibt — und genau die
@@ -928,13 +968,19 @@ Beim Mont Blanc steckt eine Messung, ohne die die Zahl falsch wäre:
 | | |
 |---|---|
 | Gipfel im 15″-DEM | **4 693 m** |
-| dieselbe Stelle im Zielgitter (5,97 km) | **3 486 m** |
-| Unterschied | **1 207 m** |
+| dieselbe Stelle im Zielgitter (5,92 km) | **2 245 m** |
+| Unterschied | **2 448 m** |
 
-Das Herunterrechnen auf 6,0 km nimmt dem Mont Blanc ein Viertel (auf 7,1 km waren es zwei Fünftel — die feinere Zelle holt 800 m zurück). Genommen wird
-deshalb das Maximum des feinen DEM in seiner Umgebung, und zeitabhängig wird
+Das Herunterrechnen auf 5,9 km nimmt dem Mont Blanc **mehr als die Hälfte**.
+Bemerkenswert daran ist, wie sehr die Zahl wackelt: beim vorigen Rahmen mass
+dieselbe Zelle 3 486 m, bei fast gleicher Zellgrösse (5,97 km). Nicht die
+Auflösung hat sich geändert, sondern der Ursprung des Gitters — der Gipfel
+liegt jetzt anders in seiner Zelle, und über eine Zelle gemittelt entscheidet
+das über tausend Meter. Genau deshalb ist diese Zahl kein Messwert der Karte,
+sondern die Begründung dafür, sie **nicht** zu benutzen: genommen wird
+das Maximum des feinen DEM in seiner Umgebung, und zeitabhängig wird
 nur das Differenzfeld addiert — genau die Rechnung, aus der auch das Relief
-entsteht. Bei 22 ka steht er dadurch bei 4 784 m, rund 90 m höher als heute:
+entsteht. Bei 22 ka steht er dadurch bei 4 783 m, rund 90 m höher als heute:
 der Meeresspiegel lag tiefer, und die Alpen standen im Vorwölbungsgürtel.
 
 Der höchste Eispunkt wird in `paleo()` mitgesucht, wo das Feld ohnehin einmal
@@ -973,7 +1019,7 @@ Zeitscheibe Eis, und weisse Schrift auf weissem Eis ist genau die Stelle, an
 der sie am schlechtesten zu lesen ist; westlich liegt Wasser. Passt der Text
 dort nicht mehr hin, fällt er auf die andere Seite zurück.
 
-Beschriftet wird **Name und Material**: „Scandinavian ice 2 694 m". Ohne das
+Beschriftet wird **Name und Material**: „Scandinavian ice 2 724 m". Ohne das
 Wort liest sich die Zahl wie ein Berg, und sie ist das Gegenteil davon — die
 Oberfläche eines Eisschildes, gegen die schräg darunter der Mont Blanc mit
 seiner Felshöhe zur selben Zeit steht. Das ist der Vergleich, den die Karte
@@ -989,27 +1035,30 @@ Klammern die Mächtigkeit):
 
 | ka | Scandinavian | Barents-Kara | Britain |
 |---|---|---|---|
-| 26,0 | 3 124 m (1 404) | **3 820 m (4 603)** | 1 632 m (761) |
-| 24,0 | 3 087 m (1 386) | 2 427 m (1 441) | 1 618 m (745) |
-| 22,0 | 2 946 m (1 255) | 2 397 m (1 388) | 1 606 m (727) |
-| 19,0 | 2 882 m (1 178) | 2 367 m (1 343) | 1 612 m (728) |
-| 15,0 | 2 767 m (1 032) | 2 298 m (1 258) | 1 174 m (262) |
-| 14,0 | 2 315 m (558) | 2 040 m (980) | 904 m (28) |
-| **13,0** | 2 260 m (484) | 2 049 m (1 002) | **1 376 m (693)** |
-| 12,0 | 2 148 m (345) | 1 891 m (821) | 831 m (36) |
-| 11,0 | 2 064 m (250) | 45 m (21) | — |
+| 26,0 | 2 972 m (2 407) | **3 848 m (4 638)** | 1 528 m (758) |
+| 24,0 | 2 924 m (2 376) | 2 390 m (1 368) | 1 515 m (746) |
+| 22,0 | 2 724 m (1 136) | 2 359 m (1 317) | 1 500 m (726) |
+| 19,0 | 2 669 m (1 565) | 2 335 m (1 281) | 1 506 m (727) |
+| 15,0 | 2 566 m (935) | 2 281 m (1 216) | 1 066 m (260) |
+| 14,0 | 2 125 m (470) | 2 017 m (924) | 884 m (84) |
+| **13,0** | 2 085 m (414) | 2 035 m (937) | **1 377 m (766)** |
+| 12,0 | 1 952 m (258) | 1 796 m (696) | 864 m (31) |
+| 11,0 | 1 899 m (200) | 349 m (12) | — |
 | 9,0 | — | — | — |
 
 Gesucht ist der **höchste Punkt der Eisoberfläche**, nicht die dickste Stelle.
-Seit die Zelle 5,97 km misst statt 6,83, findet die Suche in Skandinavien
-öfter einen Berggipfel mit dünnem Eis darauf als die Kuppe selbst — die Zahl
-in Klammern fällt deshalb, die vor der Klammer steigt. Beides ist richtig; die
-Karte zeigt Höhen über dem Meer, und das tut die Marke auch.
+Die Zahl in Klammern wackelt deshalb zwischen zwei Gitterständen erheblich —
+bei 22 ka steht Skandinavien hier auf 1 136 m Mächtigkeit, im vorigen Rahmen
+auf 1 255 m, bei 19 ka umgekehrt 1 565 gegen 1 178 m. Mal gewinnt ein
+Berggipfel mit dünnem Eis darauf, mal die Kuppe selbst; die Oberfläche
+dagegen liegt in beiden Fällen in derselben Handvoll Meter. Beides ist
+richtig gerechnet, und die stabilere der beiden Zahlen steht deshalb vorn:
+die Karte zeigt Höhen über dem Meer, und das tut die Marke auch.
 
 Zwei Dinge stehen darin, die eine einzelne Marke nicht zeigen kann.
 
-**Britannien bricht bei 14 ka ein und wächst bei 13 ka wieder** — von 48 auf
-791 m Eis. Das ist der **Loch-Lomond-Wiedervorstoss** der Jüngeren Dryas. In
+**Britannien bricht bei 14 ka ein und wächst bei 13 ka wieder** — von 84 auf
+766 m Eis. Das ist der **Loch-Lomond-Wiedervorstoss** der Jüngeren Dryas. In
 Skandinavien ist davon in derselben Reihe nichts zu sehen; dort läuft die
 Kurve durch.
 
@@ -1028,9 +1077,17 @@ Drei Zahlen zum Anfang. Auf einem Schirm von 1 440 × 900 stand die Karte
 | | Karte | Anteil des Fensters |
 |---|---|---|
 | untereinander (Leiste unter der Karte) | 515 × 530 | 21 % |
-| **nebeneinander (Leiste daneben)** | **884 × 864** | **59 %** |
+| nebeneinander (Leiste daneben), quadratischer Rahmen | 884 × 864 | 59 % |
+| **nebeneinander, hochkanter Rahmen (jetzt)** | **740 × 864** | **49 %** |
 
-Die Karte ist fast quadratisch, das Fenster ist quer. Untereinander bleibt ihr
+Die dritte Zeile ist kein Rückschritt: der Rahmen ist seither hochkant
+(4 500 × 5 250 km), und in einem queren Fenster ist die Höhe das Knappe. Die
+Karte bekommt sie ganz — 864 Punkte wie vorher —, die Breite folgt aus dem
+Seitenverhältnis. Was sie an Fensteranteil verliert, verliert sie an einen
+Rahmen, der weniger Wasser und mehr Europa zeigt. Im Telefon hochkant, wofür
+die Karte gemacht ist, gewinnt derselbe Rahmen: dort füllt er die Breite ganz.
+
+Die Karte war damals fast quadratisch, das Fenster ist quer. Untereinander bleibt ihr
 die Fensterhöhe **minus** Farbleiter, Reglern, Ticker und Notiz — und das ist
 in einem queren Fenster fast die Hälfte. Nebeneinander bekommt sie die ganze
 Höhe, und die Spalte daneben trägt, was vorher unter ihr lag. Der Bruch liegt
@@ -1108,12 +1165,16 @@ Schirmbreite sind 6 px Seitenrand, 12 px Polster und ein Strich zusammen
 **zehn Prozent der Kartenbreite**. Hochkant fällt er deshalb weg: die Karte
 läuft von Kante zu Kante, und nur was Text ist, bekommt sein Polster zurück.
 
-Das Feld hält dabei mindestens die halbe Schirmhöhe (52 dvh). Die Karte selbst
-füllt davon nicht alles — bei einem Rahmen von 5 370 × 5 250 km und voller
-Breite steht sie auf 45 Prozent der Höhe, und der Rest ist der Raum, den die
-Schrägsicht nach oben braucht. Mehr ginge nur, indem die Karte seitlich
-beschnitten wird, und ein beschnittener Rahmen ist genau das, was dieser
-Ordner hinter sich hat (Abschnitt 1).
+Das Feld ist hochkant nicht mehr der Rest, den die Notiz übriglässt, sondern
+wird aus der Karte gerechnet: `height:min(100vw / Seitenverhältnis, 62svh)`.
+Damit ist die Leinwand genau die Karte, und die Karte genau die volle Breite.
+Auf 390 × 844 misst beides 390 × 455, also **54 Prozent der Schirmhöhe** bei
+null Rand — gemessen, nicht gesetzt.
+
+Der hochkante Rahmen (4 500 × 5 250 km) ist die Voraussetzung dafür. Beim
+vorigen, fast quadratischen Rahmen blieb bei voller Breite unten Luft stehen;
+beim jetzigen füllt die Karte das Feld ganz. Der Deckel von 62 svh greift erst
+auf schmalen, hohen Schirmen und lässt dort die Notiz sichtbar.
 
 Weggefallen ist hochkant auch Text: der lange Legendensatz (er wird nach zwei
 Zeilen abgeschnitten und sagt nichts, was die Leiter darüber nicht zeigt) und
@@ -1246,23 +1307,26 @@ Gemessen am **echten** Datensatz, bei Gitterbreite 760:
 
 | | Werte | roh |
 |---|---|---|
-| DEM, 10 m je Stufe | 792 000 | 824 kB |
-| `Topo_Diff`, Teiler 11, 2 m je Stufe | 311 040 | 274 kB |
-| `stgit`, Teiler 11, 10 m je Stufe | 311 040 | 83 kB |
-| DATED-1, 16 857 Punkte | | 56 kB |
-| **Nutzlast zusammen** | | **1 237 kB** |
-| **fertige Seite** | | **1 345 kB**, gzip 654 kB |
+| DEM, 10 m je Stufe | 674 120 | 695 kB |
+| `Topo_Diff`, Teiler 11, 2 m je Stufe | 264 960 | 251 kB |
+| `stgit`, Teiler 11, 10 m je Stufe | 264 960 | 79 kB |
+| DATED-1, 16 949 Punkte | | 56 kB |
+| **Nutzlast zusammen** | | **1 089 kB** |
+| **fertige Seite** | | **1 216 kB**, gzip 591 kB |
 
-Das ist doppelt so viel wie vor dem Kilometer-Rahmen (628 kB Nutzlast, 706 kB
-Seite), und die Rechnung dafür geht auf. Der Rahmen deckt 28,2 statt 23,0
+Das ist deutlich mehr als vor dem Kilometer-Rahmen (628 kB Nutzlast, 706 kB
+Seite), und die Rechnung dafür geht auf. Der Rahmen deckt 23,6 statt 23,0
 Millionen km², er ist dabei **ganz** gefüllt statt zu 69,7 Prozent, und die
-Zelle ist von 6,83 auf 5,97 km gefallen: 792 000 statt 343 893 Zellen mit
-Gelände darin, also 2,3-mal so viele. Bezahlt wird Karte, nicht Verpackung.
+Zelle ist von 6,83 auf 5,92 km gefallen: 674 120 statt 343 893 Zellen mit
+Gelände darin, also doppelt so viele. Bezahlt wird Karte, nicht Verpackung.
 
 Die Zellgrösse ist dabei keine Geschmacksfrage: auf einem Schirm von 1 440
-Punkten wird die Karte 884 Punkte breit gezeichnet, und 5 370 km auf 884
-Punkte sind 6,1 km je Bildpunkt. Eine Zelle von 5,97 km ist genau eine Zelle
-je Bildpunkt — feiner wäre Nutzlast ohne Bild, gröber wäre sichtbar.
+Punkten wird die Karte 740 Punkte breit gezeichnet, und 4 500 km auf 740
+Punkte sind 6,1 km je Bildpunkt. Eine Zelle von 5,92 km ist genau eine Zelle
+je Bildpunkt — feiner wäre Nutzlast ohne Bild, gröber wäre sichtbar. Die Karte
+ist hochkant, seit der Rahmen es ist: das Fenster gibt ihr die Höhe, und die
+Breite folgt daraus. Der kleinere Rahmen hat die Karte also nicht kleiner
+gemacht, sondern schmaler und gleich hoch.
 
 Zum Vergleich dieselbe Messung am Prüfgerüst: Nutzlast 634 kB, Seite 709 kB,
 gzip **169 kB**. Roh fast gleich, gzip doppelt — genau wie vorhergesagt: die
@@ -1276,11 +1340,11 @@ Die zweite Schraube ist der Teiler der groben Felder — `Topo_Diff` ist
 räumlich glatt und verträgt eine gröbere Stufe als `stgit`, das einen scharfen
 Rand hat; das Format trägt je Feld einen eigenen Teiler, genutzt wird das
 bisher nicht.
-Bei 345 kB gzip für eine Reliefkarte Europas mit 48 Zeitscheiben ist sie
-nicht nötig.
+Bei 591 kB gzip für eine Reliefkarte Europas mit 48 Zeitscheiben ist sie
+bisher nicht nötig gewesen.
 
-Dass `stgit` von 253 auf 37 kB fiel, liegt nicht am Packen, sondern am
-gröberen Teiler — und daran, dass echtes Eis ausserhalb Skandinaviens
+Dass `stgit` mit 79 kB so leicht ist, liegt nicht am Packen, sondern am
+gröberen Teiler — und daran, dass echtes Eis ausserhalb der drei Kuppen
 tatsächlich null ist, wo das Gerüst überall ein bisschen etwas hatte. Die
 Nullläufe greifen dort voll.
 
@@ -1322,53 +1386,62 @@ Bewegung — genau andersherum, als man vermutet.
 
 ### Die Auflösung der Karte
 
-900 Zellen Breite, gewählt nach dem, was gezeichnet wird: seit die Karte neben
+760 Zellen Breite, gewählt nach dem, was gezeichnet wird: seit die Karte neben
 der Leiste steht statt über ihr, wird sie auf einem Schirm von 1 440 Punkten
-884 Punkte breit — eine Gitterzelle je Bildpunkt. Das Reliefgitter liegt bei
-90 Prozent davon und ist bei 680 Zellen gedeckelt, also leicht
-unterabgetastet — mehr wäre Nutzlast
-ohne Bild. Der Zoom ist ausdrücklich ein **Vergrösserungsglas** und kein neues
+740 Punkte breit — eine Gitterzelle je Bildpunkt. Das Reliefgitter liegt bei
+90 Prozent davon und ist bei 680 Zellen gedeckelt; auf dem hochkanten Rahmen
+greift der Deckel in der Breite gar nicht mehr (666 Zellen auf 740 Punkte),
+dafür steht das Feld jetzt 777 Zellen hoch. Leicht unterabgetastet bleibt es —
+mehr wäre Nutzlast ohne Bild. Der Zoom ist ausdrücklich ein **Vergrösserungsglas** und kein neues
 Rechnen; die Schrägsicht wird dagegen wirklich neu geschnitten und bleibt
 scharf.
 
 ## 10. Was gemessen ist
 
 Im Prüfbrowser ohne Grafikkarte, 1 440 × 900 bei doppelter Punktdichte, Median
-aus achtzehn Bildern:
+aus sechs Sekunden Lauf je Fall:
 
-| | |
-|---|---|
-| flach | 180 ms |
-| in der Standardkippung | 316 ms |
-| stark gekippt | 421 ms |
-| in der Standardkippung, heute (kein Eis) | 310 ms |
+| | kleiner Rahmen (jetzt) | grosser Rahmen |
+|---|---|---|
+| flach | 460 ms | 443 ms |
+| in der Standardkippung | 1 038 ms | 1 027 ms |
+| stark gekippt | 828 ms | 831 ms |
+| in der Standardkippung, heute (kein Eis) | 887 ms | 905 ms |
 
-Gemessen an der **grossen** Karte: 884 × 864 Punkte, Feld 680 × 665. Vorher
-waren es 107 ms flach und 194 ms gekippt — bei einer Karte von 515 × 530 und
-einem Feld von 353 × 361, also einem Viertel der Bildpunkte und einem Drittel
-der Feldzellen. Auf dieselbe Kartengrösse gerechnet ist die Seite schneller
-geworden, nicht langsamer (METHODIK 8f); in absoluten Zahlen ist sie teurer,
-weil sie viermal so viel Karte zeigt.
+Karte 740 × 864 Punkte bei Feld 666 × 777 gegen 884 × 864 bei Feld 680 × 665.
+**Der kleinere Rahmen kostet nichts** — er ist schmaler, aber sein Feld steht
+höher, und das hebt sich auf.
 
-Die Schrägsicht ist der Standard, und sie kostet: 316 statt 180 ms. Ein
-Eisschild ist ein Körper, und flach gesehen ist er eine weisse Fläche — die
-zwölf Grad sind der Hinweis, dass es etwas zu kippen gibt.
+Diese Zahlen sind nicht mit denen der vorigen Runde vergleichbar, und das ist
+keine Regression der Seite, sondern eine Eigenschaft des Prüfrechners. Die
+Runde davor mass am grossen Rahmen 180 ms flach und 316 ms gekippt. Derselbe
+Stand, heute nachgemessen, steht bei 460 und 1 067 ms: der Prüfcontainer läuft
+rund 2,8-mal langsamer als damals. Deshalb steht hier eine Tabelle mit zwei
+Spalten statt einer Zahlenreihe — **nur der Vergleich in derselben Stunde auf
+derselben Maschine trägt**, und der sagt: gleich schnell.
+
+Was an den absoluten Zahlen bleibt: flach ist billiger als gekippt (460 gegen
+1 038 ms). Die Schrägsicht ist trotzdem der Standard. Ein Eisschild ist ein
+Körper, und flach gesehen ist er eine weisse Fläche — die zwölf Grad sind der
+Hinweis, dass es etwas zu kippen gibt. Dass „stark gekippt" billiger ist als
+die Standardkippung, ist kein Messfehler: stark gekippt rutscht mehr Karte
+aus dem Bild, und gerechnet wird nur, was zu sehen ist (8f).
 
 Zum Vergleich nennt die Vorlage für ihre Karte im selben Messgeschirr 143 ms
-flach und 133 ms gekippt. Die Zahlen sind nicht unmittelbar vergleichbar —
-anderes Gerät, andere Karte —, aber sie liegen in derselben Grössenordnung, und
-der Film läuft damit.
+flach und 133 ms gekippt — gemessen allerdings zu der früheren, schnelleren
+Stunde. Die Zahlen sind ohnehin nicht unmittelbar vergleichbar: andere Karte,
+und dort wird das Feld eingefroren, sobald es steht.
 
 Die Gegenproben laufen bei jedem Lauf von `quellen.py` mit:
 
 | Probe | was sie fängt | am Gerüst | echt |
 |---|---|---|---|
 | 1 `Topo(t) − Topo(0) − Topo_Diff(t)`, eisfrei und stufenfrei | Vorzeichen, Bezugszeitpunkt | **0,000 m** | **2,820 m** |
-| 1 dieselbe unter stehendem Eis (Grönland) | — nur gemeldet | 0,000 m | 170 m (4,4 % der Zellen) |
-| 1 dieselbe an Stufenzellen (Eisrand, Küste) | — nur gemeldet | 0,000 m | 1 208 m (19,5 % der Zellen) |
-| 1b Median `Topo_Diff`, wo über 1500 m Eis liegt | ob `Topo_Diff` das Eis trägt | **+1967 m** | **+1330 m** |
-| 2 DEM auf Quellgitter gemittelt gegen `Topo(0)` | Ausschnitt, Achsenrichtung | Median 46,8 m, 95 % 120,9 m | Median 51,7 m, 95 % 588,3 m |
-| 3 eigene Nulllinie gegen `Topo > 0` | dasselbe, an der Küste | 92 bis 98 % | 93,6 bis 96,5 % |
+| 1 dieselbe unter stehendem Eis (Grönland) | — nur gemeldet | 0,000 m | 170 m (4,7 % der Zellen) |
+| 1 dieselbe an Stufenzellen (Eisrand, Küste) | — nur gemeldet | 0,000 m | 1 208 m (19,9 % der Zellen) |
+| 1b Median `Topo_Diff`, wo über 1500 m Eis liegt | ob `Topo_Diff` das Eis trägt | **+1 773 m** | **+1 293 m** |
+| 2 DEM auf Quellgitter gemittelt gegen `Topo(0)` | Ausschnitt, Achsenrichtung | Median 45,7 m, 95 % 120,2 m | Median 51,5 m, 95 % 582,1 m |
+| 3 eigene Nulllinie gegen `Topo > 0` | dasselbe, an der Küste | 83 bis 99 % | 93,0 bis 96,3 % |
 
 Probe 1b ist die einzige mit einem **Abbruchkriterium im Vorzeichen**: steht
 dort eine negative Zahl, ist `Topo_Diff` die eisfreie Kruste, und dann darf die
@@ -1377,7 +1450,7 @@ richtig, und welche, sagt diese Zahl.
 
 Proben 2 und 3 sind **keine Fehlermasse**: sie messen den Unterschied zweier
 Datensätze und zweier Auflösungen, und genau der ist der Zweck der ganzen
-Übung. Dass Probe 2 echt bei 95 % auf 735 m steht und am Gerüst auf 121 m,
+Übung. Dass Probe 2 echt bei 95 % auf 582 m steht und am Gerüst auf 120 m,
 sagt nichts über einen Fehler — es sagt, dass ein 1°-Stichwert in den Alpen
 etwas anderes ist als das Mittel von 15″-Werten über dieselbe Zelle. Genau
 deshalb trägt das DEM die Berge und nicht `Topo`.

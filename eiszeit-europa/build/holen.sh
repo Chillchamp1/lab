@@ -245,8 +245,8 @@ DEM="${DEM:-etopo}"
 GEBCO_ZIP="${GEBCO_ZIP:-https://www.bodc.ac.uk/data/open_download/gebco/gebco_2024_sub_ice_topo/zip/}"
 ETOPO_BASIS="${ETOPO_BASIS:-https://www.ngdc.noaa.gov/thredds/fileServer/global/ETOPO2022/15s/15s_surface_elev_netcdf}"
 
-# Die neununddreissig 15-Grad-Kacheln, die den Rahmen decken (lon -64,4…97,7,
-# lat 28,8…84,0). Je rund 20 MB, zusammen 780 MB — statt der 7,5 GB des
+# Die vierunddreissig 15-Grad-Kacheln, die den Rahmen decken (lon -61,4…93,3,
+# lat 32,7…84,0). Je rund 20 MB, zusammen 680 MB — statt der 7,5 GB des
 # globalen GEBCO-Satzes.
 #
 # Es waren einmal fuenfzehn. Der Rahmen stand damals als Grad-Rechteck und
@@ -255,9 +255,8 @@ ETOPO_BASIS="${ETOPO_BASIS:-https://www.ngdc.noaa.gov/thredds/fileServer/global/
 # aus — bis Groenland und bis zur Karasee.
 ETOPO_KACHELN="N90W060 N90W045 N90W030 N90W015 N90E000 N90E015 N90E030 N90E045 N90E060 N90E075
 N75W075 N75W060 N75W045 N75W030 N75W015 N75E000 N75E015 N75E030 N75E045 N75E060 N75E075 N75E090
-N60W045 N60W030 N60W015 N60E000 N60E015 N60E030 N60E045 N60E060 N60E075
-N45W030 N45W015 N45E000 N45E015 N45E030 N45E045
-N30E030 N30E045"
+N60W030 N60W015 N60E000 N60E015 N60E030 N60E045 N60E060
+N45W015 N45E000 N45E015 N45E030 N45E045"
 
 hole_dem() {
   sagt ""
@@ -267,7 +266,7 @@ hole_dem() {
       # bed-Kacheln nur dort, wo heute Eis liegt (Groenland, Antarktis, hohe
       # Arktis); in Europa ist die Oberflaeche der Fels. Nachgesehen: der
       # 15"-bed-Satz hat 62 Kacheln, keine davon deckt diesen Ausschnitt.
-      sagt "(c) ETOPO 2022, 15\", 39 Kacheln (surface = Fels in diesem Ausschnitt)"
+      sagt "(c) ETOPO 2022, 15\", 34 Kacheln (surface = Fels in diesem Ausschnitt)"
       local k datei
       for k in $ETOPO_KACHELN; do
         datei="ETOPO_2022_v1_15s_${k}_surface.nc"

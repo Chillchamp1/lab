@@ -147,7 +147,7 @@ Eisschild wächst, und zwei Bilder wären nicht mehr vergleichbar.
 
 ## Der Rahmen
 
-**5 370 × 5 250 km** um 53° N / 15° O, in einer flächentreuen Lambert-Azimutal-
+**4 500 × 5 250 km** um 53° N / 15° O, in einer flächentreuen Lambert-Azimutal-
 projektion — dieselbe Familie wie in der Vorlage. Der Rahmen ist ein Rechteck
 in *Kilometern*, nicht in Grad.
 
@@ -158,15 +158,15 @@ Die Projektion konnte nichts dafür — nachgemessen liegen alle Kandidaten
 gleichauf (Lambert azimutal 68,8 %, EPSG:3035 67,9 %, Albers 43/65 67,5 %); die
 Lücke war die Form des *Fensters*. Ein Atlas schneidet in Kilometern.
 
-Jede Kante hält etwas: Westen Island und den ostgrönländischen Schelf, Osten
-das Kaspische Meer und die Obmündung, Süden gerade noch Sizilien und Tarifa,
+Jede Kante hält etwas: Westen Island ganz, Osten
+den Ural und die Obmündung, Süden gerade noch Sizilien und Tarifa,
 Norden Franz-Josef-Land. Der Norden ist der Grund für das Ganze:
 das alte Fenster schnitt ein Viertel der DATED-1-Ränder ab — und mit ihnen den
 **barentsisch-karischen Eisschild**, der auf einem Schelfmeer lag und so gross
-war wie der skandinavische. Der Rahmen hält jetzt 96,8 Prozent der Ränder
+war wie der skandinavische. Der Rahmen hält jetzt 96,4 Prozent der Ränder
 statt 71,8.
 
-In Grad greift er von 64,3° W bis 97,6° O und von 31,0° bis 83,9° N; in den
+In Grad greift er von 61,3° W bis 93,2° O und von 32,8° bis 83,9° N; in den
 Ecken stehen Grönland, Spitzbergen, Sewernaja Semlja und Westsibirien. Die
 Breitenkreise laufen weiter gebogen durch das Bild — wie auf jedem
 Atlasblatt.
@@ -239,9 +239,10 @@ Und danach, weil sonst niemand merkt, dass es die Seite gibt: Eintrag in
 `../projects.json` ergänzen und `node ../tools/readme.mjs` laufen lassen.
 
 Die ganze Seite steckt in dieser einen Datei — Höhenmodell, Eisfelder, Ränder,
-Skript, Stil. Am Prüfgerüst wiegt sie 706 kB und lädt nichts nach; mit echtem
-Gelände wird sie grösser, weil ein echtes DEM in jeder Zelle etwas zu sagen
-hat. Die Schraube dafür ist `BREITE` — siehe [METHODIK.md](METHODIK.md),
+Skript, Stil. Mit echten Daten wiegt sie **1,22 MB** (gzip 591 kB) und lädt
+nichts nach; am Prüfgerüst mit erfundenem Gelände sind es 1,19 MB, nach gzip
+aber nur 269 kB — ein echtes DEM hat in jeder Zelle etwas zu sagen, ein paar
+Gausskuppen nicht. Die Schraube dafür ist `BREITE` — siehe [METHODIK.md](METHODIK.md),
 Abschnitt 9.
 
 Die Kette ohne Daten durchspielen:

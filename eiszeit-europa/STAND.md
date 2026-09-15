@@ -164,18 +164,23 @@ Download, ein zweiter Regler. Das ist ein eigenes Projekt.
   nimmt statt pauschal aus der Stapelhöhe.
 - **Die Schrägsicht rechnet die Scheibenringe je Bild neu**, solange die Uhr
   läuft — und seit der Trennung von Fels und Eis zwei Sätze davon. Gemessen an
-  der grossen Karte (884 × 864): 316 ms je Bild in der Standardkippung, 421 ms
-  stark gekippt, 180 ms flach. Der Kachelindex und die gesammelten Striche
-  (METHODIK 8f) haben den Preis je Bildpunkt gedrittelt; teurer ist sie
-  trotzdem, weil sie viermal so viel Karte zeigt. Die
+  der Karte im hochkanten Rahmen (740 × 864): 1 038 ms je Bild in der
+  Standardkippung, 828 ms stark gekippt, 460 ms flach. **Diese Zahlen sind mit
+  den früher notierten nicht vergleichbar** — der Prüfcontainer läuft seit der
+  vorigen Runde rund 2,8-mal langsamer, nachgemessen am unveränderten alten
+  Stand (METHODIK 10). Der Vergleich in derselben Stunde sagt: der kleinere
+  Rahmen kostet nichts (grosser Rahmen 1 027 / 831 / 443 ms). Der Kachelindex
+  und die gesammelten Striche (METHODIK 8f) haben den Preis je Bildpunkt
+  gedrittelt. Die
   Vorlage friert ihr Feld ein, sobald es steht, und spart damit die teuersten
   Posten bei jeder Geste. Hier ist nur der Ringspeicher an den Feldstand
   gehängt; der Rest wäre nachzuziehen, wenn sich die Schrägsicht auf dem Telefon
   als zäh erweist.
-- **Die Seite wiegt 1,35 MB (gzip 654 kB).** Das ist doppelt so viel wie vor
-  dem Kilometer-Rahmen, und die Rechnung geht auf — der Rahmen deckt 23 Prozent
-  mehr Fläche, ist dabei ganz gefüllt statt zu 69,7 Prozent, und seine Zelle
-  misst 5,97 statt 6,83 km: 2,3-mal so viele Zellen mit Gelände darin. Zwei
+- **Die Seite wiegt 1,22 MB (gzip 591 kB).** Das ist deutlich mehr als vor
+  dem Kilometer-Rahmen, und die Rechnung geht auf — der Rahmen deckt 23,6 statt
+  23,0 Millionen km², ist dabei ganz gefüllt statt zu 69,7 Prozent, und seine
+  Zelle misst 5,92 statt 6,83 km: doppelt so viele Zellen mit Gelände darin.
+  Der kleinere Rahmen hat davon 130 kB zurückgeholt. Zwei
   Schrauben stehen bereit,
   falls es zu schwer wird: `BREITE` (640 statt 760 kostet ein Drittel der
   DEM-Werte) und ein **eigener Teiler je grobem Feld** — `Topo_Diff` ist
@@ -183,8 +188,8 @@ Download, ein zweiter Regler. Das ist ein eigenes Projekt.
   scharfen Rand hat. Das Format trägt den Teiler schon je Feld; genutzt wird
   es nicht.
 - **Gekippt kommt der Film im Prüfbrowser auf etwa ein Bild je Sekunde**
-  (1 046 ms je Durchgang bei 1 440 × 900 und doppelter Punktdichte, flach
-  472 ms). Die Uhr läuft seit dem Deckel von einer Sekunde in echter Zeit, der
+  (1 038 ms je Durchgang bei 1 440 × 900 und doppelter Punktdichte, flach
+  460 ms). Die Uhr läuft seit dem Deckel von einer Sekunde in echter Zeit, der
   Film dauert also seine 69 Sekunden — er tut es in grösseren Schritten. Der
   Prüfbrowser hat keine Grafikkarte, und der grösste Posten ist dort das
   Zusammensetzen der Leinwand (3 Millionen Bildpunkte je Bild), das auf
