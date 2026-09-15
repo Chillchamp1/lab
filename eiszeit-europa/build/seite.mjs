@@ -1491,7 +1491,11 @@ function marke(sx, sy, text, farbe, unten) {
   ctx.lineJoin = 'round';
   ctx.font = '600 10.5px system-ui,sans-serif';
   ctx.textBaseline = unten ? 'top' : 'bottom';
-  const rechts = sx > breite - 90;
+  // Gemessen, nicht geraten: die Schilder hiessen einmal „ice 2 798 m" und
+  // waren 60 Punkte breit; sie heissen jetzt „Fennoscandia ice 2 702 m" und
+  // sind doppelt so breit. Eine feste Schwelle von 90 Punkten liess sie am
+  // rechten Rand halb draussen haengen.
+  const rechts = sx + 6 + ctx.measureText(text).width > breite - 4;
   ctx.textAlign = rechts ? 'right' : 'left';
   const dx = rechts ? -6 : 6, dy = unten ? 5 : -5;
   // Erst das Kreuz und die Schrift dunkel umranden, dann hell fuellen: auf
@@ -1529,7 +1533,11 @@ function gipfelUeber() {
     if (!(kuppeHoch[k] > 0) || kuppeWo[k] < 0) continue;
     const gx = (kuppeWo[k] % rW) / rW * GW, gy = ((kuppeWo[k] / rW) | 0) / rH * GH;
     const [sx, sy] = projRand(gx, gy);
-    marke(sx, sy, KUPPEN[k].name + ' ' + nfm.format(Math.round(kuppeHoch[k])) + ' m',
+    /* Der Name **und** das Wort: „Fennoscandia 2 702 m" liest sich wie ein
+       Berg. Es ist aber die Oberflaeche eines Eisschildes, und genau das ist
+       der Vergleich, den die Karte anbietet — daneben steht der Mont Blanc
+       mit seiner Felshoehe zur selben Zeit. */
+    marke(sx, sy, KUPPEN[k].name + ' ice ' + nfm.format(Math.round(kuppeHoch[k])) + ' m',
       GIPFELFARBE, false);
   }
   if (MB && MB.gipfel_m) {
