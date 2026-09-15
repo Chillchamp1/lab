@@ -155,6 +155,9 @@ export function baueNutzlast(zwischen, log) {
     // Beide in Gitterkoordinaten — projiziert wird in quellen.py.
     orte: meta.orte || [],
     mb: meta.montblanc || null,
+    // Umriss der Britischen Inseln in Gitterkoordinaten, fuer den zweiten
+    // Eisgipfel. Warum eine Setzung und keine Messung: quellen.py, BRITANNIEN.
+    uk: meta.britannien || null,
     sp: spK.s, spL: spK.lauf,
     dem: demK.s, demL: demK.lauf,
     td: { w: meta.topodiff.w, h: meta.topodiff.h, d: tdK.s, L: tdK.lauf },
