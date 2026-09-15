@@ -33,6 +33,7 @@ eiszeit-europa/build/zwischen/
 eiszeit-europa/build/zwischen-*/
 eiszeit-europa/build/pruefgeruest-roh/
 eiszeit-europa/build/__pycache__/
+eiszeit-europa/build/.kette.pem
 # Rohdaten der US-Pruefung, siehe bevoelkerung-kreise/build/pruefung/usa/DATEN.md
 roh-usa/
 nhgis0001_*

@@ -75,15 +75,47 @@ Höhenmodell, DATED-Linien und Kennzahlen von selbst miteinander überein.
 
 **Die eine Konstruktion, auf der alles steht:**
 
-    Paläotopographie(t) = modernes DEM + interpoliertes Topo_Diff(t)
-    Eisoberfläche(t)    = Paläotopographie(t) + stgit(t)
+    Eisoberfläche(t) = modernes DEM + interpoliertes Topo_Diff(t)
+    Fels(t)          = Eisoberfläche(t) − stgit(t)
 
-ICE-6G_C hat 10 Bogenminuten, rund 18 km. Die Alpen wären darin vier Zellen
-breit, das Skandinavische Gebirge ein Wall ohne Täler. Deshalb trägt das feine
-DEM die Berge, und vom groben Modell kommt **nur das Differenzfeld**:
-isostatische Absenkung, Hebung, Meeresspiegel. Das sind alles Grössen mit
-Wellenlängen von hunderten Kilometern — für sie sind 18 km nicht grob, sondern
-überaufgelöst.
+Die Aufgabe schreibt sie andersherum — `Paläotopographie = DEM + Topo_Diff`,
+und das Eis dann obendrauf. Das Ziel ist übernommen, die Formel korrigiert,
+und zwar nicht aus Geschmack, sondern nach einer Messung: **`Topo_Diff`
+enthält das Eis.**
+
+Über dem Bottnischen Meerbusen steht bei 21 ka `Topo_Diff` = +1845 m bei
+2374 m Eismächtigkeit. Wäre das die Kruste, hätte sie sich unter dem Eis um
+1845 m **gehoben**; sie liegt aber 525 m tiefer als heute. ICE-6G_Cs `Topo`
+ist die Höhe der Oberfläche — Fels, wo keiner liegt, Eisoberfläche, wo Eis
+aufliegt —, und `Topo_Diff` erbt das. Über allen Zellen mit mehr als 1500 m
+Eis ist der Median von `Topo_Diff` **+1590 m**; wäre es die Kruste, stünde
+dort eine negative Zahl. `quellen.py` misst genau das als Probe 1b.
+
+Wer wörtlich addiert, statt abzuziehen, bekommt das Skandinavische Gebirge
+bei 21 ka als zweitausend Meter hohen **Fels** und das Eis noch einmal
+zweitausendvierhundert Meter darüber. Das sieht nicht kaputt aus. Es sieht
+nach einem Gebirge aus — nach einem, das es nie gab.
+
+Ein Grad ist am 53. Breitengrad rund 67 km. Die Alpen wären darin ein Hügel,
+das Skandinavische Gebirge ein Wall ohne Täler. Deshalb trägt das feine DEM
+die Berge, und vom groben Modell kommt **nur das Differenzfeld**: isostatische
+Absenkung, Hebung, Meeresspiegel — und die Eismächtigkeit, die gleich wieder
+abgezogen wird. Die ersten drei sind Grössen mit Wellenlängen von hunderten
+Kilometern; für sie sind 67 km nicht grob, sondern reichlich.
+
+### Nur aufliegendes Eis
+
+Das grobe `stgit` wird bikubisch hochgerechnet und läuft dabei über den
+Eisrand hinaus aufs offene Meer. Ohne Schranke stünde bei 21 ka auf 5 bis 9
+Prozent der Eiszellen eine Eisoberfläche **unter** dem Meeresspiegel, die
+tiefste 2,8 km darunter.
+
+Die Schranke ist keine Geschmacksfrage. Aufliegendes Eis der Mächtigkeit H
+auf einem Grund b < 0 hält sich nur, solange es nicht aufschwimmt:
+H ≥ (ρ_w/ρ_i)·(−b) = 1,09·(−b). Seine Oberfläche liegt dann bei
+b + H ≥ −0,09·b, also **immer über null**. Eine Eisoberfläche unter dem
+Meeresspiegel kann es nicht geben; was die Schranke wegnimmt, ist
+ausschliesslich der Überlauf der Interpolation.
 
 ### Das DEM wird gemittelt, nicht abgetastet
 
@@ -133,15 +165,23 @@ Die Teiler sind nicht geraten:
 
 | Feld | Teiler | Zelle | Begründung |
 |---|---|---|---|
-| `Topo_Diff` | 8 | rund 55 km | Die kürzeste wirkliche Wellenlänge setzt die Biegesteifigkeit der Lithosphäre; sie liegt über hundert Kilometern. 55 km Abtastung ist feiner als das Feld selbst. |
-| `stgit` | 4 | rund 27 km | Die Eismächtigkeit hat am Rand eine Stufe und darf nicht so weit heruntergehen. Feiner als die 18 km von ICE-6G_C wäre gelogen; 27 km ist knapp darunter. |
+| `Topo_Diff` | 10 | rund 68 km | Die kürzeste wirkliche Wellenlänge setzt die Biegesteifigkeit der Lithosphäre; sie liegt über hundert Kilometern. |
+| `stgit` | 10 | rund 68 km | Die Eismächtigkeit hätte gern mehr, bekommt aber nicht mehr, als die Quelle hat. |
+
+Die Teiler stehen nicht als Zahlen im Quelltext, sondern werden **aus der
+Quellzelle gerechnet**: `quellen.py` misst, wie gross eine Zelle der
+ICE-6G_C-Datei am Fenstermittelpunkt wirklich ist, und lässt kein Grobgitter
+feiner werden als sie. Mit der 1°-Variante sind das 67 km und damit Teiler 10;
+läge eines Tages die 10'-Variante unter `data/raw/`, wären es 18 km und
+Teiler 3, ohne dass eine Zeile zu ändern wäre. Ein Grobgitter feiner als seine
+Quelle behauptet eine Schärfe, die in den Zahlen nicht steht.
 
 ## 3. Die Küstenlinie
 
 Aus der **Nulllinie der gerechneten Paläotopographie**, nicht aus `sftlf`.
 
 Das ist nicht nur die Vorgabe, es ist auch der Punkt, an dem diese Karte
-zusammenhält. `sftlf` ist ein Flächenanteil auf 18 km — eine Küste daraus hätte
+zusammenhält. `sftlf` ist ein Flächenanteil auf 67 km — eine Küste daraus hätte
 die Auflösung eines Rasters, in dem die ganze Doggerbank vier Zellen breit ist,
 und sie widerspräche dem Relief, das daneben in voller Auflösung steht.
 
@@ -354,14 +394,18 @@ nirgends in den Dateien.
 
 ## 8. Das Prüfgerüst, und was es gefunden hat
 
-Aus dieser Arbeitsumgebung ist keine der drei Quellen erreichbar. Ohne Gerüst
-wäre die ganze Kette ungetesteter Code; mit ihm ist alles geprüft ausser den
-Zahlen selbst.
+Solange keine der drei Quellen erreichbar war, wäre die ganze Kette
+ungetesteter Code gewesen. Inzwischen liegen alle Rohdaten da — das Gerüst
+bleibt trotzdem, weil es die Kette in Sekunden durchmisst, wo der echte Lauf
+zwanzig braucht, und weil es Fälle stellen kann, die in den echten Daten nicht
+vorkommen.
 
 `build/pruefgeruest.py` erzeugt einen vollständigen Satz Eingangsdateien in den
 **echten Dateiformaten**: ein DEM als NetCDF-4 bei 30", 48 ICE-6G_C-Scheiben
 als globales NetCDF-3 classic bei 10' mit `Topo`, `Topo_Diff`, `stgit`, `sftlf`
-und `stgif`, und DATED-1-Linien als Shapefiles. Der Inhalt ist erfunden:
+und `sftgif`, und DATED-1-Linien als Shapefiles. `Topo` trägt dort das Eis,
+genau wie in den echten Dateien — ein Gerüst, das eine andere Konvention
+nachbaut als die Quelle, prüft eine Kette, die es nicht gibt. Der Inhalt ist erfunden:
 Gausskuppen ungefähr dort, wo in Europa wirklich etwas steht, und ein
 Eisschild, der aufwächst, einen Hochstand hält und zusammenbricht.
 
@@ -373,7 +417,9 @@ ein Wasserzeichen, das man nicht übersehen kann.
 
 ### Fünf Fehler, die es gefunden hat
 
-Sie stehen hier, weil sie mehr über die Sache sagen als das Ergebnis.
+Sie stehen hier, weil sie mehr über die Sache sagen als das Ergebnis. Was der
+Lauf mit den **echten** Daten dann noch gefunden hat, steht in Abschnitt 8b —
+und das war der grössere Fang.
 
 **1. Die Karte stand auf dem Kopf.** Die Projektion zählt y nach Norden, die
 Leinwand nach unten. Skandinavien lag am unteren Bildrand. Behoben im Gitter,
@@ -384,11 +430,12 @@ nicht in der Seite — dann stimmen Höhenmodell, Ränder und Kennzahlen von sel
 gegen `Topo` auf dem *feinen* Gitter und bekam für jede Zeitscheibe dieselben
 49 m — das war nicht die Prüfung, sondern der Auflösungsunterschied zweier
 Datensätze. Jetzt prüft sie die Identität, die wirklich gelten muss:
-`Topo(t) − Topo(0) − Topo_Diff(t) = 0`, auf dem 10'-Gitter, ohne jede
-Interpolation. Gemessen **0,000 m**. Diese Probe fängt genau die beiden Fehler,
-die man hier wirklich macht: ein vertauschtes Vorzeichen und einen falschen
-Bezugszeitpunkt. Beides sieht man dem Bild nicht an — es sieht nur falsch aus,
-und zwar plausibel falsch.
+`Topo(t) − Topo(0) − Topo_Diff(t) = 0`, auf dem Quellgitter, ohne jede
+Interpolation. Am Gerüst **0,000 m**. Diese Probe fängt genau die beiden
+Fehler, die man hier wirklich macht: ein vertauschtes Vorzeichen und einen
+falschen Bezugszeitpunkt. Beides sieht man dem Bild nicht an — es sieht nur
+falsch aus, und zwar plausibel falsch. An den echten Daten musste sie dann
+umgeschrieben werden, siehe Abschnitt 8b.
 
 **3. Kein einziges DATED-1-Shapefile wurde zugeordnet.** Der reguläre Ausdruck
 für die Jahreszahl griff die `1` aus `DATED-1` statt der `10` aus `10ka`. Beim
@@ -423,6 +470,60 @@ all das steht erst fest, wenn die echten Dateien da sind. Deshalb liest
 Längenachse selbst zurecht, wenn sie von 0 bis 360 läuft, und meldet jede
 Zuordnung, die nicht gelingt, mit Zähler.
 
+## 8b. Was der Lauf mit den echten Daten gefunden hat
+
+**1. `Topo_Diff` enthält das Eis.** Der grosse Fang, ausführlich in
+Abschnitt 2. Aufgefallen ist er nur, weil Probe 1 an den echten Daten nicht
+null war und die Untersuchung dieser Abweichung bei der Frage endete, was
+`Topo` überhaupt ist. Ohne Probe wäre die Karte fertig geworden — und falsch,
+auf eine Art, die kein Betrachter hätte sehen können.
+
+**2. Probe 1 ist an den echten Daten nicht null, und das ist richtig so.**
+`max |Topo(t) − Topo(0) − Topo_Diff(t)|` steht im Fenster bei **584 m**. Die
+Erklärung steht im Kopf der Datei: `Topo` trägt den Zusatz „(Point-value
+altitude)", `Topo_Diff` trägt ihn nicht. Wo das Differenzfeld **innerhalb
+einer Zelle** eine Stufe hat — am Eisrand, an einer wandernden Küste, in der
+Antarktis an der Aufsetzlinie —, sind ein Stichwert im Zellmittelpunkt und ein
+Zellmittel zwei verschiedene Zahlen.
+
+Gemessen ist das so scharf, wie man es sich wünscht: an allen Zellen, deren
+Land- und Eisanteil sich gegenüber heute **nicht** geändert hat, liegt die
+Abweichung quer durch alle 48 Scheiben unter **2,6 m** — ausdrücklich auch
+über den Alpen, wo das Gelände schroff ist, das Differenzfeld aber glatt. An
+den übrigen 28 Prozent der Zellen wird sie dreistellig. Und sobald in Europa
+kein Eis mehr liegt (ab 9,5 ka), fällt sie über dem **ganzen** Fenster unter
+1,4 m und von da an monoton auf null.
+
+Die Probe prüft deshalb jetzt die stufenfreien Zellen scharf und meldet die
+übrigen daneben. Weicher ist sie dadurch nicht: ein vertauschtes Vorzeichen
+und ein falscher Bezugszeitpunkt schlagen global durch und fänden dort kein
+Versteck.
+
+**3. Das Eis lief beim Hochrechnen aufs offene Meer.** Bei 21 ka stand auf 5
+bis 9 Prozent der gezeichneten Eiszellen eine Eisoberfläche unter dem
+Meeresspiegel, die tiefste 2,8 km darunter. Behoben mit der
+Aufschwimm-Schranke aus Abschnitt 2.
+
+**4. DATED-1 reicht weiter als die Karte.** Die Rekonstruktion deckt die
+eurasischen Eisschilde bis Taimyr und über 80° N; der Ausschnitt endet bei
+45° O und 72° N. Flach schnitt die Silhouette das weg, gekippt hing ein
+Eisrand über der Barentssee im Schwarzen — ein Punkt nördlich des Fensters
+wird beim Anheben auf die oberste Gitterzeile geklemmt und bekommt deren Höhe.
+Beschnitten wird jetzt in den Daten (Sutherland-Hodgman gegen das
+Gitterrechteck, vor dem Vereinfachen, damit die Ringe geschlossen und die
+Bänder füllbar bleiben), und die dabei entstehende Schnittkante wird nie
+gestrichelt: sie ist kein Eisrand. Nebenbei 15 917 → 11 178 Punkte.
+
+**5. Das Layout rechnete mit einem hochkanten Ausschnitt.** Die Vorlage nagelt
+ihre Bühne auf `100dvh`; ihr Ausschnitt ist Deutschland. Dieser hier ist
+Europa von 12° W bis 45° O, also breiter als hoch — auf einem hochkant
+gehaltenen Telefon füllte die Karte 48 Prozent des Feldes, der Rest war
+schwarz, die Notiz lag hinter der Karte und war zu zwei Dritteln verdeckt, und
+die Marken der Farbleiter klebten ineinander. Behoben: das Feld hält das
+Seitenverhältnis der Karte, die Bühne schrumpft mit, die Notiz wandert unter
+640 px unter die Karte, und die Marken der Leiter werden **gemessen** und bei
+Berührung ausgedünnt, statt nach einer geratenen Schwelle.
+
 ## 9. Kodierung und Nutzlast
 
 Grundlage ist der Zickzack-Varint der Vorlage im selben 64-Zeichen-Alphabet.
@@ -433,29 +534,32 @@ sich. Die Felder dieser Karte sind Zeitableitungen — ausserhalb des Eisschilde
 Welche Form genommen wird, entscheidet die Messung, nicht das Gefühl: beide
 werden gepackt und die kürzere gewinnt, je Feld.
 
-Gemessen am Gerüst, bei Gitterbreite 760:
+Gemessen am **echten** Datensatz, bei Gitterbreite 760:
 
 | | Werte | roh |
 |---|---|---|
-| DEM, 10 m je Stufe | 343 893 | 231 kB |
-| `Topo_Diff`, Teiler 8, 2 m je Stufe | 369 360 | 129 kB |
-| `stgit`, Teiler 4, 10 m je Stufe | 1 477 440 | 253 kB |
-| DATED-1, 3 929 Punkte | | 15 kB |
-| **Nutzlast zusammen** | | **634 kB** |
-| **fertige Seite** | | **706 kB**, gzip 169 kB |
+| DEM, 10 m je Stufe | 343 893 | 360 kB |
+| `Topo_Diff`, Teiler 10, 2 m je Stufe | 233 472 | 189 kB |
+| `stgit`, Teiler 10, 10 m je Stufe | 233 472 | 37 kB |
+| DATED-1, 11 178 Punkte | | 37 kB |
+| **Nutzlast zusammen** | | **628 kB** |
+| **fertige Seite** | | **706 kB**, gzip 345 kB |
 
-> **Diese Zahlen sind am Gerüst gemessen und werden mit echten Daten grösser.**
-> Der DEM-Posten hängt an der Entropie des Geländes, und das Gerüst besteht aus
-> ein paar Gausskuppen; echtes Gelände hat in jeder Zelle etwas zu sagen. Wie
-> viel grösser, lässt sich hier nicht messen — nur die Richtung steht fest, und
-> der Posten, an dem es hängt, ist `BREITE`. Wird die Seite zu schwer, ist das
-> die Schraube; 640 statt 760 kostet ein Drittel der DEM-Werte und liegt immer
-> noch über dem Reliefgitter.
->
-> Wie stark die Entropie durchschlägt, war am Gerüst selbst zu sehen: als seine
-> Feinstruktur noch aliaste, kostete dasselbe DEM **336 statt 231 kB**. Die
-> anderen drei Posten sind davon fast unberührt — sie hängen an der Zahl der
-> Werte, nicht an ihrem Inhalt.
+Zum Vergleich dieselbe Messung am Prüfgerüst: Nutzlast 634 kB, Seite 709 kB,
+gzip **169 kB**. Roh fast gleich, gzip doppelt — genau wie vorhergesagt: die
+rohe Grösse hängt an der Zahl der Werte, die komprimierte an ihrer Entropie,
+und erfundenes Gelände aus ein paar Gausskuppen hat wenig zu sagen. Echtes
+Gelände hat in jeder Zelle etwas zu sagen.
+
+Die Schraube, falls die Seite zu schwer wird, ist `BREITE`: 640 statt 760
+kostet ein Drittel der DEM-Werte und liegt immer noch über dem Reliefgitter.
+Bei 345 kB gzip für eine Reliefkarte Europas mit 48 Zeitscheiben ist sie
+nicht nötig.
+
+Dass `stgit` von 253 auf 37 kB fiel, liegt nicht am Packen, sondern am
+gröberen Teiler — und daran, dass echtes Eis ausserhalb Skandinaviens
+tatsächlich null ist, wo das Gerüst überall ein bisschen etwas hatte. Die
+Nullläufe greifen dort voll.
 
 ### Was beim DEM gemessen wurde
 
@@ -484,6 +588,9 @@ Gemessen, `Topo_Diff` als Raumdelta je Scheibe auf dem Längen-Breiten-Gitter:
 | 10' (360 × 246) | 4 250 880 | 925 kB |
 | 20' (180 × 123) | 1 062 720 | 280 kB |
 | 30' (120 × 82) | 472 320 | 136 kB |
+
+(Am Gerüst gemessen, das bei 10' liegt. Mit der 1°-Quelle steht die Frage gar
+nicht mehr: dort ist schon die feinste Stufe grob genug.)
 
 Und noch eine Überraschung, die Arbeit erspart hat: für `Topo_Diff` ist das
 **Raumdelta besser als das Zeitdelta** (925 gegen 2 726 kB bei gleicher
@@ -514,15 +621,24 @@ flach und 133 ms gekippt. Die Zahlen sind nicht unmittelbar vergleichbar —
 anderes Gerät, andere Karte —, aber sie liegen in derselben Grössenordnung, und
 der Film läuft damit.
 
-Die drei Gegenproben laufen bei jedem Lauf von `quellen.py` mit:
+Die Gegenproben laufen bei jedem Lauf von `quellen.py` mit:
 
-| Probe | was sie fängt | am Gerüst |
-|---|---|---|
-| `Topo(t) − Topo(0) − Topo_Diff(t)` | Vorzeichen, Bezugszeitpunkt | **0,000 m** |
-| DEM auf 10' gemittelt gegen `Topo(0)` | Ausschnitt, Achsenrichtung | Median 44,8 m, 95 % 117,9 m |
-| eigene Nulllinie gegen `Topo > 0` | dasselbe, an der Küste | 92 bis 98 % Übereinstimmung |
+| Probe | was sie fängt | am Gerüst | echt |
+|---|---|---|---|
+| 1 `Topo(t) − Topo(0) − Topo_Diff(t)`, stufenfreie Zellen | Vorzeichen, Bezugszeitpunkt | **0,000 m** | **2,561 m** |
+| 1 dieselbe an Stufenzellen (Eisrand, Küste) | — nur gemeldet | 0,000 m | 584 m (28 % der Zellen) |
+| 1b Median `Topo_Diff`, wo über 1500 m Eis liegt | ob `Topo_Diff` das Eis trägt | **+1967 m** | **+1590 m** |
+| 2 DEM auf Quellgitter gemittelt gegen `Topo(0)` | Ausschnitt, Achsenrichtung | Median 46,8 m, 95 % 120,9 m | Median 58,4 m, 95 % 735,1 m |
+| 3 eigene Nulllinie gegen `Topo > 0` | dasselbe, an der Küste | 92 bis 98 % | 92 bis 95 % |
 
-Die zweite und dritte sind **keine Fehlermasse**: sie messen den Unterschied
-zweier Datensätze und zweier Auflösungen, und genau der ist der Zweck der
-ganzen Übung. Sie gehören trotzdem gemessen — laufen sie aus dem Ruder, stimmt
-etwas Grundsätzliches nicht.
+Probe 1b ist die einzige mit einem **Abbruchkriterium im Vorzeichen**: steht
+dort eine negative Zahl, ist `Topo_Diff` die eisfreie Kruste, und dann darf die
+Seite `stgit` nicht abziehen. Beide Fassungen sind plausibel; nur eine ist
+richtig, und welche, sagt diese Zahl.
+
+Proben 2 und 3 sind **keine Fehlermasse**: sie messen den Unterschied zweier
+Datensätze und zweier Auflösungen, und genau der ist der Zweck der ganzen
+Übung. Dass Probe 2 echt bei 95 % auf 735 m steht und am Gerüst auf 121 m,
+sagt nichts über einen Fehler — es sagt, dass ein 1°-Stichwert in den Alpen
+etwas anderes ist als das Mittel von 15″-Werten über dieselbe Zelle. Genau
+deshalb trägt das DEM die Berge und nicht `Topo`.

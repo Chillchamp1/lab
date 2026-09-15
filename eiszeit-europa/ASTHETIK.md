@@ -589,6 +589,23 @@ Genau dort steht in der neuen Karte die **Meeresspiegelkurve**.
 | Kreisumriss beim Antippen | es gibt keine Verwaltungseinheiten |
 | `ABSOLUT` / relativ-Schalter | die Höhe ist in Metern, es gibt nichts zu beziehen |
 
+## 8b. Wo bewusst abgewichen wird
+
+Zwei Stellen, beide aus demselben Grund: **der Ausschnitt der Vorlage ist
+hochkant, dieser ist quer.** Deutschland ist höher als breit, Europa von 12° W
+bis 45° O ist breiter als hoch (760 × 649 Zellen).
+
+| Vorlage | hier | warum |
+|---|---|---|
+| `.wrap{height:100dvh}`, das Feld füllt den Schirm | `min-height`, und das Feld hält `aspect-ratio` der Karte | Auf 390 px füllte die Karte sonst **48 Prozent** des Feldes; der Rest war schwarz. Jetzt schrumpft die Bühne, und der Rand unten ist Seitengrund statt Loch in der Karte. |
+| Notiz und Faden liegen **hinter** der Karte, die Karte weicht ihnen aus | unter 640 px liegen sie **unter** der Karte | Das Prinzip hängt daran, dass der Umriss Platz lässt. Deutschland tut das; Europa reicht auf dem Telefon bis an beide Ränder und verdeckte zwei Drittel jeder Zeile. |
+
+Dazu eine dritte, kleinere: die Marken der Farbleiter werden **gemessen** und
+bei Berührung ausgedünnt, statt nach einer Bildschirmbreite zu schalten. Die
+Wasserbänder dieser Leiter sind doppelt so hoch wie die Landbänder, also
+drängen sich −2 km, −1 km und 0 auf dem linken Drittel — eine geratene
+Schwelle wäre entweder zu früh oder zu spät.
+
 Und ein Grundsatz, der übernommen wird, obwohl er kein Verfahren ist:
 
 > **Eine Seite, die eine Sache gut zeigt, ist mehr wert als eine mit vier
