@@ -1,7 +1,7 @@
 # Methodik
 
-Gilt für den jetzigen Stand: 48 Zeitscheiben von 26 bis 0 ka, Ausschnitt
-12° W … 45° E und 34° N … 72° N. Was von der Vorlage übernommen ist, steht in
+Gilt für den jetzigen Stand: 48 Zeitscheiben von 26 bis 0 ka, Rahmen
+5 370 × 5 500 km um 53° N / 15° O. Was von der Vorlage übernommen ist, steht in
 [ASTHETIK.md](ASTHETIK.md); welche Quellen geprüft und welche gesperrt waren,
 in [QUELLEN.md](QUELLEN.md); was fehlt, in [STAND.md](STAND.md).
 
@@ -10,59 +10,99 @@ Quellen aus dieser Arbeitsumgebung nicht erreichbar sind, ist der gemessene
 Gegenstand teilweise das Prüfgerüst (Abschnitt 8) — wo das so ist, steht es
 dabei. Was sich am Gerüst nicht messen lässt, wird auch nicht behauptet.
 
-## 1. Der Ausschnitt und die Projektion
+## 1. Der Rahmen und die Projektion
 
 Lambert azimutal flächentreu, Kugel mit R = 6 371,0088 km, zentriert auf
-**53° N / 15° O**. Dieselbe Projektionsfamilie wie in der Vorlage, nur auf
-diesen Ausschnitt gesetzt; die Mitte liegt im Schwerpunkt des Fensters und
-damit dort, wo die Verzerrung am kleinsten ist — mitten im skandinavischen
-Eisschild.
+**53° N / 15° O**. Dieselbe Projektionsfamilie wie in der Vorlage. Der Rahmen
+ist ein Rechteck von **5 370 × 5 500 km** in ebendieser projizierten Ebene —
+760 × 778 Zellen zu 7,07 km.
 
-### Warum ein Drittel des Bildes leer ist
+### Das Tortenstück war der Schnitt, nicht die Projektion
 
-Das Fenster ist ein Längen-Breiten-Rechteck, sein Bild unter einer
-flächentreuen Projektion ist keines. Der Rahmen wird deshalb am **dicht
-abgetasteten Rand** gemessen, nicht an den vier Ecken: in einer azimutalen
-Projektion sind die Ecken nicht die Extrempunkte.
+Bis hierher stand der Rahmen als **Grad-Rechteck**: 12° W … 45° O, 34° … 72° N,
+die Vorgabe der Aufgabe. Das Bild eines Grad-Rechtecks ist unter einer
+flächentreuen Projektion aber keines, sondern ein Fächer. 31 Prozent der
+Leinwand blieben leer und wurden maskiert, und die Karte sah aus wie ein
+Tortenstück.
 
-Was dabei herauskommt, ist unvermeidlich und wurde gemessen, Anteil des
-Bildrechtecks innerhalb des Fensters:
+Die Projektion konnte nichts dafür. Nachgemessen, Anteil des Bildrechtecks
+innerhalb des Grad-Fensters:
 
 | Projektion | bedeckt |
 |---|---|
-| **Lambert azimutal 53 N / 15 O** | **68,8 %** |
+| Lambert azimutal 53 N / 15 O | 68,8 % |
 | Lambert azimutal 52 N / 10 O (EPSG:3035) | 67,9 % |
 | Albers 43/65 | 67,5 % |
 | Albers 40/68 | 67,4 % |
 | Albers 45/62 | 67,8 % |
 
-Alle gleichauf: die Lücke ist die Form des Fensters, nicht die Wahl der
-Projektion. 38 Grad Breite auf 57 Grad Länge lassen sich flächentreu nicht in
-ein Rechteck legen. Eine zylindrische flächentreue Projektion täte es —
-und stauchte Skandinavien bei 72° N auf 29 Prozent seiner Proportion. Für eine
-Karte, deren Gegenstand ein skandinavischer Eisschild ist, ist das keine
-Option.
+Alle gleichauf: die Lücke ist die Form des *Fensters*. 38 Grad Breite auf 57
+Grad Länge lassen sich flächentreu nicht in ein Rechteck legen; 5 370 auf
+5 500 Kilometer schon, denn das **ist** eines. Ein Atlas schneidet in
+Kilometern, und seither ist der Rahmen gefüllt.
 
-Also bleibt es bei der azimutalen, und der Rest wird **maskiert** statt
-gefüllt. Das ist die Machart der Vorlage — draussen ist die Leinwand
-durchsichtig — und sieht aus wie ein Atlasblatt mit gebogenen Breitenkreisen.
+### Warum nicht Mercator
 
-Bezahlt wird dafür **nichts**: das Höhenmodell wird zeilenweise nur über seinen
-gültigen Abschnitt kodiert, ein Anfang und ein Ende je Zeile.
+Weil dieser Ausschnitt Mercators schlechtester Fall ist. Der Maßstab wächst
+mit 1/cos φ:
 
-### Die zeilenweise Hülle
+| | |
+|---|---|
+| Längenmaßstab 72° N gegen 34° N | **2,68 ×** |
+| Flächenmaßstab | **7,2 ×** |
+| Seitenverhältnis dieses Fensters unter Mercator | 0,82 (statt 0,98) |
 
-Dass ein Anfang und ein Ende je Zeile reichen, setzt voraus, dass der gültige
-Teil einer Zeile zusammenhängend ist. **Er ist es nicht.** Unter dieser
-Projektion biegen sich die Breitenkreise so, dass eine waagerechte Linie oben
-das Fenster verlassen und wieder betreten kann. Nachgezählt: **4 878 Zellen**,
-1,4 Prozent der gültigen.
+Der Gegenstand dieser Karte ist ein Eisschild bei 60 bis 80 Grad Nord.
+Mercator zeigte ihn bis zu siebenmal zu gross gegenüber dem Mittelmeer, und
+die Zahlen in den Notizen („Eis 27 % der Kartenfläche") widersprächen dem
+Bild. Dazu kommt das Relief: die Überhöhung der Schrägsicht rechnet mit
+**einem** waagerechten Maßstab (Abschnitt 8c). Unter Mercator wäre derselbe
+Absatz von 1 000 m in Norwegen 2,7-mal flacher als in Andalusien.
 
-Aufgefüllt wird deshalb bis zur zeilenweisen Hülle. Was dabei dazukommt, ist
-kein erfundenes Gelände, sondern echtes DEM knapp ausserhalb des Fensters — ein
-Saum an den oberen Ecken, der bis 73,66° N reicht. Die Kennzahlen rechnen
-weiter mit dem **strengen** Fenster, damit die Zahlen in den Notizen den
-Ausschnitt meinen, den die Aufgabe nennt, und nicht den Saum.
+Eine zylindrisch flächentreue Projektion wäre rechteckig und flächentreu —
+und stauchte Skandinavien bei 72° N auf 29 Prozent seiner Proportion. Auch
+keine Option.
+
+### Was jede Kante hält
+
+Der Rahmen ist nicht gegriffen; jede seiner vier Kanten hält etwas:
+
+| Kante | km | hält |
+|---|---|---|
+| Westen | −2 470 | Island und den ostgrönländischen Schelf |
+| Osten | +2 900 | das Kaspische Meer und die Obmündung |
+| Süden | −2 100 | die afrikanische Seite des Mittelmeers |
+| Norden | +3 400 | Franz-Josef-Land |
+
+Der Norden ist der Grund für das Ganze. Das alte Fenster endete bei 72° N und
+45° O — und schnitt damit ein Viertel der DATED-1-Rekonstruktion ab:
+
+| | Stützpunkte der DATED-1-Ränder im Bild |
+|---|---|
+| altes Grad-Fenster | 71,8 % |
+| altes Bildrechteck | 74,4 % |
+| **jetziger Rahmen** | **96,8 %** |
+
+Was da fehlte, war kein Rand, sondern ein ganzer Eisschild: der
+**barentsisch-karische**, der auf einem Schelfmeer lag, so gross war wie der
+skandinavische und im alten Ausschnitt gar nicht vorkam. Er hat jetzt seine
+eigene Marke (Abschnitt 8e).
+
+In Grad greift der Rahmen damit von 64,3° W bis 97,6° O und von 28,9° bis
+83,9° N. In den Ecken stehen Grönland, Spitzbergen, Sewernaja Semlja und
+Westsibirien; die Breitenkreise laufen weiter gebogen durch das Bild, Norden
+ist am Bildrand nicht genau oben — wie auf jedem Atlasblatt.
+
+### Was dabei weggefallen ist
+
+Die **zeilenweise Hülle**. Unter der alten Maske konnte eine waagerechte Linie
+das gebogene Fenster verlassen und wieder betreten (4 878 Zellen, 1,4 Prozent),
+also wurde je Zeile bis zur Hülle aufgefüllt, und das DEM musste über der
+Hülle gelesen werden statt über dem Fenster — sonst fehlte ihm ein Saum von
+4 196 Zellen. Ein Rechteck hat dieses Problem nicht. Die Maske steht als
+lauter Einsen weiter da: sie kostet in der Nutzlast nichts (je Zeile ein
+Anfang und ein Ende, hier immer 0 und *w*), und wer den Rahmen eines Tages
+wieder beschneidet, bekommt die Machart zurück, ohne sie neu zu bauen.
 
 ### Das Gitter läuft nach Süden
 
@@ -119,15 +159,28 @@ ausschliesslich der Überlauf der Interpolation.
 
 ### Das DEM wird gemittelt, nicht abgetastet
 
-15 Bogensekunden auf rund 6,8 km Zielzelle ist ein Verhältnis von etwa 1:15 in
+15 Bogensekunden auf rund 7,1 km Zielzelle ist ein Verhältnis von etwa 1:15 in
 jeder Achse. Punktweise abgetastet bekäme man ein Zweihundertfünfundzwanzigstel
 der Werte und der Rest wäre Rauschen — und genau die Alpen, um die es geht,
 bestehen aus dem, was dabei wegfiele.
 
 Also wird das Quellgitter erst **blockweise gemittelt**, bis seine Zelle
 ungefähr so gross ist wie eine Zielzelle, und dann bilinear abgetastet.
-Gelesen wird in Streifen: der Fensterausschnitt bei 15" ist über 120 Millionen
-Werte und passt nicht als Ganzes in den Speicher.
+Gelesen wird in Streifen: der Rahmen bei 15" ist über **500 Millionen Werte**
+in 39 Kacheln und passt nicht als Ganzes in den Speicher. (Es waren 120
+Millionen in 15 Kacheln, solange der Rahmen ein Grad-Rechteck war — ein
+Kilometer-Rechteck greift an seinen Nordecken weit nach Westen und Osten aus,
+bis Grönland und bis zur Karasee.)
+
+**Genommen wird `surface`, nicht `bed`** — und seit Grönland im Rahmen liegt,
+ist das keine Verlegenheit mehr, sondern die richtige Wahl. Die Rechnung
+dieser Karte ist Fläche(t) = DEM + `Topo_Diff`(t), und `Topo_Diff` ist auf
+`Topo`(0) bezogen, also auf die **Oberfläche** von heute, Eis inbegriffen
+(Probe 1b). Das DEM muss dieselbe Grösse sein, sonst stimmt der Bezugspunkt
+nicht. Probe 2 misst genau das, und sie misst es über Grönland (Median 76 m)
+so gut wie über Europa (58 m). Der Fels kommt danach heraus, nicht hinein:
+Fels = Fläche − `stgit`. Mit einem `bed`-DEM läge Grönland drei Kilometer zu
+tief, und das eiszeitliche Eis schwebte über einer abgesackten Insel.
 
 Bilinear und nicht bikubisch, und das ist Absicht: es wird **herunter**gerechnet,
 und dabei überschwingt eine kubische Kurve an der Küste — ein Überschwinger an
@@ -479,50 +532,93 @@ null war und die Untersuchung dieser Abweichung bei der Frage endete, was
 auf eine Art, die kein Betrachter hätte sehen können.
 
 **2. Probe 1 ist an den echten Daten nicht null, und das ist richtig so.**
-`max |Topo(t) − Topo(0) − Topo_Diff(t)|` steht im Fenster bei **584 m**. Die
+`max |Topo(t) − Topo(0) − Topo_Diff(t)|` steht im Rahmen bei **1 208 m**. Die
 Erklärung steht im Kopf der Datei: `Topo` trägt den Zusatz „(Point-value
 altitude)", `Topo_Diff` trägt ihn nicht. Wo das Differenzfeld **innerhalb
 einer Zelle** eine Stufe hat — am Eisrand, an einer wandernden Küste, in der
 Antarktis an der Aufsetzlinie —, sind ein Stichwert im Zellmittelpunkt und ein
 Zellmittel zwei verschiedene Zahlen.
 
-Gemessen ist das so scharf, wie man es sich wünscht: an allen Zellen, deren
-Land- und Eisanteil sich gegenüber heute **nicht** geändert hat, liegt die
-Abweichung quer durch alle 48 Scheiben unter **2,6 m** — ausdrücklich auch
-über den Alpen, wo das Gelände schroff ist, das Differenzfeld aber glatt. An
-den übrigen 28 Prozent der Zellen wird sie dreistellig. Und sobald in Europa
-kein Eis mehr liegt (ab 9,5 ka), fällt sie über dem **ganzen** Fenster unter
-1,4 m und von da an monoton auf null.
+Gemessen ist das so scharf, wie man es sich wünscht — sofern man die Zellen
+richtig sortiert. Drei Mengen, alle 48 Scheiben:
 
-Die Probe prüft deshalb jetzt die stufenfreien Zellen scharf und meldet die
-übrigen daneben. Weicher ist sie dadurch nicht: ein vertauschtes Vorzeichen
-und ein falscher Bezugszeitpunkt schlagen global durch und fänden dort kein
-Versteck.
+| Zellen | max. Abweichung | Anteil |
+|---|---|---|
+| **eisfrei und stufenfrei** | **2,8 m** | 77 % |
+| unter stehendem Eis | 170 m | 4,2 % |
+| an Stufenzellen (Eisrand, Küste) | 1 208 m | 19,1 % |
+
+Die erste Zeile ist die eigentliche Probe: unter 3 m quer durch alle Scheiben,
+ausdrücklich auch über den Alpen, wo das Gelände schroff ist, das
+Differenzfeld aber glatt.
+
+Die mittlere Zeile ist neu und kam mit dem grösseren Rahmen: **Grönland**.
+Dort ändert sich die Eismächtigkeit um Hunderte Meter, ohne dass sich der
+Eisanteil der Zelle ändert — kein Stufenfall nach `sftgif`, aber derselbe
+Unterschied zwischen Stichwert und Zellmittel an den steilen Flanken der
+Kuppe. Ohne eine eigene Spalte hätte Grönland die scharfe Probe von 2,8 auf
+170 m aufgefressen, und der Wächter wäre stumpf geworden, ohne dass es jemand
+gemerkt hätte.
+
+Weicher ist die Probe dadurch nicht: ein vertauschtes Vorzeichen und ein
+falscher Bezugszeitpunkt schlagen global durch und fänden in keiner der drei
+Spalten ein Versteck.
 
 **3. Das Eis lief beim Hochrechnen aufs offene Meer.** Bei 21 ka stand auf 5
 bis 9 Prozent der gezeichneten Eiszellen eine Eisoberfläche unter dem
 Meeresspiegel, die tiefste 2,8 km darunter. Behoben mit der
 Aufschwimm-Schranke aus Abschnitt 2.
 
-**4. DATED-1 reicht weiter als die Karte.** Die Rekonstruktion deckt die
-eurasischen Eisschilde bis Taimyr und über 80° N; der Ausschnitt endet bei
-45° O und 72° N. Flach schnitt die Silhouette das weg, gekippt hing ein
-Eisrand über der Barentssee im Schwarzen — ein Punkt nördlich des Fensters
-wird beim Anheben auf die oberste Gitterzeile geklemmt und bekommt deren Höhe.
-Beschnitten wird jetzt in den Daten (Sutherland-Hodgman gegen das
+**4. DATED-1 reichte weiter als die Karte.** Die Rekonstruktion deckt die
+eurasischen Eisschilde bis Taimyr und über 80° N; das Grad-Fenster endete bei
+45° O und 72° N und liess **28 Prozent der Stützpunkte** draussen. Flach
+schnitt die Silhouette das weg, gekippt hing ein Eisrand über der Barentssee
+im Schwarzen — ein Punkt nördlich des Fensters wird beim Anheben auf die
+oberste Gitterzeile geklemmt und bekommt deren Höhe.
+
+Beschnitten wird seither in den Daten (Sutherland-Hodgman gegen das
 Gitterrechteck, vor dem Vereinfachen, damit die Ringe geschlossen und die
 Bänder füllbar bleiben), und die dabei entstehende Schnittkante wird nie
-gestrichelt: sie ist kein Eisrand. Nebenbei 15 917 → 11 178 Punkte.
+gestrichelt: sie ist kein Eisrand.
+
+Das war die Behandlung des Symptoms. Die Ursache war der Ausschnitt, und sie
+ist mit dem Kilometer-Rahmen weg: er hält jetzt **96,8 Prozent** der
+Stützpunkte, und was noch abgeschnitten wird, liegt auf Sewernaja Semlja und
+Taimyr — 4 000 km östlich von Berlin und nach keiner Lesart Europa. Der
+Zuschnitt bleibt trotzdem stehen; er kostet nichts und fängt den nächsten
+Rahmen mit. Übrig bleiben 15 092 statt 15 917 Punkten (mit dem alten Fenster:
+11 178).
 
 **5. Das Layout rechnete mit einem hochkanten Ausschnitt.** Die Vorlage nagelt
-ihre Bühne auf `100dvh`; ihr Ausschnitt ist Deutschland. Dieser hier ist
-Europa von 12° W bis 45° O, also breiter als hoch — auf einem hochkant
-gehaltenen Telefon füllte die Karte 48 Prozent des Feldes, der Rest war
-schwarz, die Notiz lag hinter der Karte und war zu zwei Dritteln verdeckt, und
-die Marken der Farbleiter klebten ineinander. Behoben: das Feld hält das
+ihre Bühne auf `100dvh`; ihr Ausschnitt ist Deutschland. Der hier war Europa
+von 12° W bis 45° O, also breiter als hoch — auf einem hochkant gehaltenen
+Telefon füllte die Karte 48 Prozent des Feldes, der Rest war schwarz, die
+Notiz lag hinter der Karte und war zu zwei Dritteln verdeckt, und die Marken
+der Farbleiter klebten ineinander. Behoben: das Feld hält das
 Seitenverhältnis der Karte, die Bühne schrumpft mit, die Notiz wandert unter
-640 px unter die Karte, und die Marken der Leiter werden **gemessen** und bei
-Berührung ausgedünnt, statt nach einer geratenen Schwelle.
+die Karte, und die Marken der Leiter werden **gemessen** und bei Berührung
+ausgedünnt, statt nach einer geratenen Schwelle.
+
+Mit dem Kilometer-Rahmen kamen drei Nachzügler desselben Befundes, und alle
+drei hängen daran, dass die Karte jetzt ein **gefülltes Rechteck** ist:
+
+- **Die Notiz** lag hinter der Karte, und die Karte wich ihr aus. Das setzt
+  voraus, dass der Umriss Platz lässt. Ein Rechteck lässt nirgends Platz —
+  also steht die Notiz jetzt auf allen Breiten unter der Karte, so wie sie auf
+  dem Telefon immer schon stand.
+- **Das Schild** („21,8 ka") stand auf der Karte, mit einem Schein aus dem
+  Seitengrund dahinter. Das trug, solange unter ihm Wasser lag; seit dort
+  Grönland liegt, ist es weisse Schrift auf weissem Eis. Es steht jetzt über
+  der Karte statt auf ihr.
+- **Die Leinwand war ein Drittel zu breit.** Ein Flex-Kind mit
+  `aspect-ratio` schrumpft in der Höhe, ohne in der Breite nachzugeben: auf
+  einem breiten, niedrigen Schirm stand die Leinwand 862 Punkte breit da und
+  die Karte darin 543. Ein Drittel der Bildpunkte wurde für schwarzen Rand
+  gerechnet, und der Zuschnitt der Silhouette hat nebenbei die Ortsnamen am
+  Bildrand abgeschnitten — „Yekaterinburg" endete als „Yekate". Die Leinwand
+  bekommt ihre Breite jetzt in `masse()`, gerückt mit `left` und **nicht** mit
+  einem `transform`: eine verschobene Leinwand bekommt eine eigene
+  Kompositionsebene und kostete im Prüfbrowser 25 ms je Bild gekippt.
 
 ## 8c. Die Schrägsicht: wie hoch der Stapel steht
 
@@ -551,13 +647,19 @@ Ausgelegt wird auf die stärkste Kippung — dort verdeckt es am meisten — und
 den Hang, der das Gebirge ausmacht. Gemessen wird er in `quellen.py` über alle
 48 Zeitscheiben, auf genau dem Feld, das die Seite zeichnet:
 
-| Quantil der Steigung | m je 6,83-km-Zelle | Neigung |
+| Quantil der Steigung | m je 7,07-km-Zelle | Neigung |
 |---|---|---|
-| p50 | 20,3 | 0,30 % |
-| p75 | 66,0 | 0,97 % |
-| **p90** | **173,4** | **2,54 %** |
-| p99 | 547,4 | 8,01 % |
-| p100 | 2 180,7 | 31,9 % |
+| p50 | 18,4 | 0,26 % |
+| p75 | 57,3 | 0,81 % |
+| **p90** | **153,5** | **2,17 %** |
+| p99 | 514,8 | 7,28 % |
+| p100 | 2 480,6 | 35,1 % |
+
+(Mit dem alten Grad-Fenster: p90 = 173,4 m je 6,83-km-Zelle. Der Rahmen hält
+jetzt mehr flache Tiefsee und mehr westsibirische Ebene, also fällt das
+Quantil, und der Stapel steht 13 Prozent höher. Das ist die Metrik bei der
+Arbeit, kein Fehler: sie legt den typischen Hang auf einen festen Sehwinkel,
+und der typische Hang **ist** flacher geworden.)
 
 Genommen wird **p90**: unterhalb davon liegt das Flachland, das ohnehin flach
 aussieht; oberhalb liegen die einzelnen Steilkanten, nach denen man nicht
@@ -756,11 +858,11 @@ ist eine flache Kuppel, die Hälfte seiner Fläche liegt unter einem Drittel
 seiner Höhe (bei 22 ka: Median 804 m, 90 Prozent unter 2 081 m). Eine lineare
 Bahn liesse die halbe Fläche im blassen Teil der Leiter.
 
-## 8d. Heute, und zwei Gipfel
+## 8d. Heute, und die Gipfel
 
 Zwei Ebenen mit verschiedenen Aussagen, deshalb getrennt behandelt.
 
-**Heute** — die moderne Küstenlinie und zehn Städte. Die Linie ist die
+**Heute** — die moderne Küstenlinie und zwölf Städte. Die Linie ist die
 Nulllinie des **modernen** Höhenmodells, ohne Differenzfeld: sie ändert sich
 nie, wird einmal geschnitten und behalten. Die Städte sind in `quellen.py`
 projiziert und reisen als Gitterpunkte mit; die Seite muss von Länge und
@@ -785,10 +887,10 @@ Beim Mont Blanc steckt eine Messung, ohne die die Zahl falsch wäre:
 | | |
 |---|---|
 | Gipfel im 15″-DEM | **4 693 m** |
-| dieselbe Stelle im Zielgitter (6,8 km) | **2 297 m** |
-| Unterschied | **2 396 m** |
+| dieselbe Stelle im Zielgitter (7,07 km) | **2 655 m** |
+| Unterschied | **2 038 m** |
 
-Das Herunterrechnen auf 6,8 km nimmt dem Mont Blanc die Hälfte. Genommen wird
+Das Herunterrechnen auf 7,1 km nimmt dem Mont Blanc zwei Fünftel. Genommen wird
 deshalb das Maximum des feinen DEM in seiner Umgebung, und zeitabhängig wird
 nur das Differenzfeld addiert — genau die Rechnung, aus der auch das Relief
 entsteht. Bei 22 ka steht er dadurch bei 4 784 m, rund 90 m höher als heute:
@@ -797,36 +899,69 @@ der Meeresspiegel lag tiefer, und die Alpen standen im Vorwölbungsgürtel.
 Der höchste Eispunkt wird in `paleo()` mitgesucht, wo das Feld ohnehin einmal
 durchlaufen wird — er kostet nichts extra.
 
-**Dazu ein zweiter, der über Britannien.** Ohne Abgrenzung ginge er unter: das
-Maximum ist immer der skandinavische Gipfel. Die Grenze ist eine **Setzung**,
-kein Befund — elf Grad West bis zum Nullmeridian, 49,5 bis 61 Grad Nord. Der
-Nullmeridian und nicht weiter östlich, weil sich die beiden Eisschilde beim
-Hochstand über der nördlichen Nordsee berührten; wo genau, ist selbst
-Gegenstand der Forschung, und eine Linie mitten durch die Berührungszone
-griffe den falschen Gipfel.
+**Nicht einer, sondern drei.** Es war einmal einer — der höchste Punkt des
+Eises im ganzen Bild — und daneben ein zweiter für Britannien, weil das
+Maximum sonst immer der skandinavische Gipfel ist. Mit dem Kilometer-Rahmen
+ging beides nicht mehr: der höchste Eispunkt im Bild ist jetzt **Grönland**,
+und eine Marke, die auf Grönland zeigt, sagt über Europa nichts.
 
-Das Fenster wird an seinen Rändern abgetastet und projiziert — unter dieser
+Also drei benannte Kuppen statt eines anonymen Maximums — die drei, aus denen
+der eurasische Eiskomplex bestand:
+
+| Kuppe | Kasten | |
+|---|---|---|
+| Fennoscandia | 0 … 60° O, 54 … 71,5° N | die grösste, über dem Bottnischen Meerbusen |
+| Barents-Kara | 10 … 80° O, 71,5 … 83,5° N | auf einem Schelfmeer, und im alten Fenster gar nicht zu sehen |
+| Britain | 11° W … 0°, 49,5 … 61° N | die kleinste, mit gut der halben Höhe |
+
+Die Grenzen sind **Setzungen, keine Befunde**: beim Hochstand berührten sich
+die Schilde, und wo genau, ist selbst Gegenstand der Forschung. Gezogen sind
+sie dort, wo das Eis am dünnsten war — Britannien bis zum Nullmeridian und
+nicht weiter östlich, weil sich die beiden über der nördlichen Nordsee
+trafen; Barents-Kara nördlich von 71,5° N.
+
+Jeder Kasten wird an seinen Rändern abgetastet und projiziert — unter dieser
 Projektion ist ein Gradnetz-Rechteck kein Rechteck mehr —, und die Seite
-rechnet daraus einmal je Feldgrösse eine Maske. Punkt-in-Polygon je Zelle und
-je Bild wäre teuer; das Fenster bewegt sich nie.
+rechnet daraus einmal je Feldgrösse **ein** Indexfeld: 0 heisst keine Kuppe,
+sonst die Nummer. Ein Feld und nicht drei Masken, damit die Schleife in
+`paleo()` einen Zugriff je Zelle behält. Punkt-in-Polygon je Zelle und je Bild
+wäre teuer; die Kästen bewegen sich nie.
 
-Was dabei herauskommt, ist mehr als eine zweite Zahl:
+**Grönland bekommt keine Marke**, obwohl es der höchste Eispunkt des Bildes
+ist. Es gehört nicht zum eurasischen Komplex, und mit ihm im Topf sähe man nur
+noch, dass Grönland höher ist. Dass es da ist, ist trotzdem die Pointe: es ist
+das einzige Eis im Bild, das am Ende noch dasteht.
 
-| ka | Skandinavien | Britannien | Eisdicke Britannien |
+Was dabei herauskommt, ist mehr als eine zweite Zahl (Eisoberfläche, in
+Klammern die Mächtigkeit):
+
+| ka | Fennoscandia | Barents-Kara | Britain |
 |---|---|---|---|
-| 26,0 | 2 990 m | **1 440 m** | 753 m |
-| 21,0 | 2 759 m | 1 414 m | 713 m |
-| 15,0 | 2 617 m | 987 m | 299 m |
-| 14,0 | 2 179 m | 816 m | 133 m |
-| **13,0** | 2 146 m | **1 347 m** | **724 m** |
-| 12,0 | 2 020 m | 772 m | 18 m |
-| 11,0 | 1 950 m | — | — |
+| 26,0 | 3 068 m (2 462) | **3 834 m (4 615)** | 1 548 m (744) |
+| 24,0 | 3 018 m (2 434) | 2 385 m (1 371) | 1 536 m (730) |
+| 22,0 | 2 866 m (1 753) | 2 343 m (1 309) | 1 521 m (710) |
+| 19,0 | 2 818 m (1 699) | 2 256 m (1 216) | 1 514 m (691) |
+| 15,0 | 2 671 m (1 525) | 2 034 m (1 047) | 1 069 m (222) |
+| 14,0 | 2 187 m (547) | 1 817 m (738) | 891 m (48) |
+| **13,0** | 2 128 m (468) | 1 779 m (771) | **1 439 m (791)** |
+| 12,0 | 1 989 m (303) | 1 615 m (597) | 882 m (25) |
+| 11,0 | 1 932 m (235) | 241 m (21) | — |
+| 9,0 | — | — | — |
 
-Der Einbruch bei 14 ka und der Wiederanstieg bei 13 ka sind der
-**Loch-Lomond-Wiedervorstoss** der Jüngeren Dryas: Britanniens Eis war fast
-weg und wuchs noch einmal auf drei Viertel seiner alten Mächtigkeit. In
-Skandinavien ist davon in derselben Reihe nichts zu sehen — dort läuft die
-Kurve durch. Genau dafür ist die zweite Marke da.
+Zwei Dinge stehen darin, die eine einzelne Marke nicht zeigen kann.
+
+**Britannien bricht bei 14 ka ein und wächst bei 13 ka wieder** — von 48 auf
+791 m Eis. Das ist der **Loch-Lomond-Wiedervorstoss** der Jüngeren Dryas. In
+Skandinavien ist davon in derselben Reihe nichts zu sehen; dort läuft die
+Kurve durch.
+
+**Barents-Kara ist bei 26 ka die höchste der drei** und verliert bis 24 ka
+über drei Kilometer Eis — vor dem Hochstand, nicht nach ihm. Das ist
+ICE-6G_C, nicht diese Karte: das Modell ist an Meeresspiegel und
+Krustenbewegung angepasst, nicht an Feldbefunde, und seine früheste Scheibe
+ist zugleich sein Anfangszustand. Wer wissen will, was der Feldbefund sagt,
+schaut auf die orange Linie daneben — DATED-1 —, und das ist genau der Grund,
+warum beides im selben Bild steht.
 
 ## 9. Kodierung und Nutzlast
 
@@ -842,12 +977,18 @@ Gemessen am **echten** Datensatz, bei Gitterbreite 760:
 
 | | Werte | roh |
 |---|---|---|
-| DEM, 10 m je Stufe | 343 893 | 360 kB |
-| `Topo_Diff`, Teiler 10, 2 m je Stufe | 233 472 | 189 kB |
-| `stgit`, Teiler 10, 10 m je Stufe | 233 472 | 37 kB |
-| DATED-1, 11 178 Punkte | | 37 kB |
-| **Nutzlast zusammen** | | **628 kB** |
-| **fertige Seite** | | **706 kB**, gzip 345 kB |
+| DEM, 10 m je Stufe | 591 280 | 612 kB |
+| `Topo_Diff`, Teiler 9, 2 m je Stufe | 346 752 | 297 kB |
+| `stgit`, Teiler 9, 10 m je Stufe | 346 752 | 87 kB |
+| DATED-1, 15 092 Punkte | | 49 kB |
+| **Nutzlast zusammen** | | **1 054 kB** |
+| **fertige Seite** | | **1 155 kB**, gzip 563 kB |
+
+Das ist gut die Hälfte mehr als vorher (628 kB Nutzlast, 706 kB Seite), und
+die Rechnung dafür geht auf: der Rahmen deckt 29,5 statt 23,0 Millionen km²
+(+28 %), und er ist dabei **ganz** gefüllt statt zu 69,7 Prozent — 591 280
+statt 343 893 Zellen mit Gelände darin, also 72 Prozent mehr. Bezahlt wird
+Karte, nicht Verpackung.
 
 Zum Vergleich dieselbe Messung am Prüfgerüst: Nutzlast 634 kB, Seite 709 kB,
 gzip **169 kB**. Roh fast gleich, gzip doppelt — genau wie vorhergesagt: die
@@ -857,6 +998,10 @@ Gelände hat in jeder Zelle etwas zu sagen.
 
 Die Schraube, falls die Seite zu schwer wird, ist `BREITE`: 640 statt 760
 kostet ein Drittel der DEM-Werte und liegt immer noch über dem Reliefgitter.
+Die zweite Schraube ist der Teiler der groben Felder — `Topo_Diff` ist
+räumlich glatt und verträgt eine gröbere Stufe als `stgit`, das einen scharfen
+Rand hat; das Format trägt je Feld einen eigenen Teiler, genutzt wird das
+bisher nicht.
 Bei 345 kB gzip für eine Reliefkarte Europas mit 48 Zeitscheiben ist sie
 nicht nötig.
 
@@ -905,7 +1050,9 @@ Bewegung — genau andersherum, als man vermutet.
 
 760 Zellen Breite, gewählt nach dem, was gezeichnet wird: die Bühne ist auf
 900 Bildpunkte gedeckelt, das Reliefgitter liegt bei 55 Prozent davon, also bei
-rund 460. 760 ist damit gut anderthalbfach überabgetastet — mehr wäre Nutzlast
+rund 460 — seit die Karte fast quadratisch ist, bindet die Höhe, und dort sind
+es 778 Zellen gegen rund 495 Bildpunkte. 760 ist damit gut anderthalbfach
+überabgetastet — mehr wäre Nutzlast
 ohne Bild. Der Zoom ist ausdrücklich ein **Vergrösserungsglas** und kein neues
 Rechnen; die Schrägsicht wird dagegen wirklich neu geschnitten und bleibt
 scharf.
@@ -917,9 +1064,12 @@ aus sechzehn Bildern:
 
 | | |
 |---|---|
-| flach, Jahr läuft | 88 ms |
-| gekippt, Jahr läuft | 175 ms |
-| gekippt, heute (kein Eis) | 140 ms |
+| flach, Jahr läuft | 107 ms |
+| gekippt, Jahr läuft | 194 ms |
+| gekippt, heute (kein Eis) | 195 ms |
+
+(Vor dem Kilometer-Rahmen: 88, 175 und 140 ms bei 69,7 Prozent gefüllter
+Leinwand.)
 
 Zum Vergleich nennt die Vorlage für ihre Karte im selben Messgeschirr 143 ms
 flach und 133 ms gekippt. Die Zahlen sind nicht unmittelbar vergleichbar —
@@ -930,11 +1080,12 @@ Die Gegenproben laufen bei jedem Lauf von `quellen.py` mit:
 
 | Probe | was sie fängt | am Gerüst | echt |
 |---|---|---|---|
-| 1 `Topo(t) − Topo(0) − Topo_Diff(t)`, stufenfreie Zellen | Vorzeichen, Bezugszeitpunkt | **0,000 m** | **2,561 m** |
-| 1 dieselbe an Stufenzellen (Eisrand, Küste) | — nur gemeldet | 0,000 m | 584 m (28 % der Zellen) |
-| 1b Median `Topo_Diff`, wo über 1500 m Eis liegt | ob `Topo_Diff` das Eis trägt | **+1967 m** | **+1590 m** |
-| 2 DEM auf Quellgitter gemittelt gegen `Topo(0)` | Ausschnitt, Achsenrichtung | Median 46,8 m, 95 % 120,9 m | Median 58,4 m, 95 % 735,1 m |
-| 3 eigene Nulllinie gegen `Topo > 0` | dasselbe, an der Küste | 92 bis 98 % | 92 bis 95 % |
+| 1 `Topo(t) − Topo(0) − Topo_Diff(t)`, eisfrei und stufenfrei | Vorzeichen, Bezugszeitpunkt | **0,000 m** | **2,820 m** |
+| 1 dieselbe unter stehendem Eis (Grönland) | — nur gemeldet | 0,000 m | 170 m (4,2 % der Zellen) |
+| 1 dieselbe an Stufenzellen (Eisrand, Küste) | — nur gemeldet | 0,000 m | 1 208 m (19,1 % der Zellen) |
+| 1b Median `Topo_Diff`, wo über 1500 m Eis liegt | ob `Topo_Diff` das Eis trägt | **+1967 m** | **+1330 m** |
+| 2 DEM auf Quellgitter gemittelt gegen `Topo(0)` | Ausschnitt, Achsenrichtung | Median 46,8 m, 95 % 120,9 m | Median 53,6 m, 95 % 596,1 m |
+| 3 eigene Nulllinie gegen `Topo > 0` | dasselbe, an der Küste | 92 bis 98 % | 93,7 bis 96,6 % |
 
 Probe 1b ist die einzige mit einem **Abbruchkriterium im Vorzeichen**: steht
 dort eine negative Zahl, ist `Topo_Diff` die eisfreie Kruste, und dann darf die

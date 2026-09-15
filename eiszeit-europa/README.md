@@ -139,26 +139,37 @@ auseinanderziehen vergrössert, verdrehen dreht, beide Finger zusammen nach oben
 schieben richtet auf. Der Punkt, den man anfasst, bleibt dabei liegen.
 
 Gerechnet wird die Schrägsicht als **Laserschnittmodell**: das Höhenfeld wird
-in sechsundzwanzig Scheiben geschnitten und versetzt übereinandergelegt, jede
+in dreiunddreissig Scheiben geschnitten und versetzt übereinandergelegt, jede
 Scheibe eine Höhenstufe, jede Stufenkante eine Höhenlinie. Die Scheiben stehen
 dabei auf **absoluten Höhen** und der Rahmen fest — nach dem höchsten Punkt zu
 rechnen, der gerade dasteht, schrumpfte die Karte in dem Mass, in dem der
 Eisschild wächst, und zwei Bilder wären nicht mehr vergleichbar.
 
-## Der Ausschnitt
+## Der Rahmen
 
-12° W bis 45° E, 34° N bis 72° N, in einer flächentreuen Lambert-Azimutal-
-projektion um 53° N / 15° O — dieselbe Familie wie in der Vorlage.
+**5 370 × 5 500 km** um 53° N / 15° O, in einer flächentreuen Lambert-Azimutal-
+projektion — dieselbe Familie wie in der Vorlage. Der Rahmen ist ein Rechteck
+in *Kilometern*, nicht in Grad.
 
-Rund ein Drittel des Bildrechtecks liegt dabei ausserhalb des Fensters. Das ist
-nicht die Schuld der Projektion, sondern die Form des Fensters: 38 Grad Breite
-auf 57 Grad Länge lassen sich flächentreu nicht in ein Rechteck legen.
-Nachgemessen liegen alle Kandidaten gleichauf — Lambert azimutal 68,8 %, EPSG:
-3035 67,9 %, Albers 43/65 67,5 %. Also bleibt es bei der azimutalen, und der
-Rest wird **maskiert** statt gefüllt: die Karte steht als Form auf schwarzem
-Grund, mit gebogenen Breitenkreisen wie ein Atlasblatt. Bezahlt wird dafür
-nichts — das Höhenmodell wird zeilenweise nur über seinen gültigen Abschnitt
-kodiert.
+Das war einmal anders, und es sah danach aus. Ein Grad-Rechteck (12° W … 45° O,
+34 … 72° N) hat unter einer flächentreuen Projektion kein rechteckiges Bild:
+31 Prozent der Leinwand blieben leer, und die Karte stand als Tortenstück da.
+Die Projektion konnte nichts dafür — nachgemessen liegen alle Kandidaten
+gleichauf (Lambert azimutal 68,8 %, EPSG:3035 67,9 %, Albers 43/65 67,5 %); die
+Lücke war die Form des *Fensters*. Ein Atlas schneidet in Kilometern.
+
+Jede Kante hält etwas: Westen Island und den ostgrönländischen Schelf, Osten
+das Kaspische Meer und die Obmündung, Süden die afrikanische Seite des
+Mittelmeers, Norden Franz-Josef-Land. Der Norden ist der Grund für das Ganze:
+das alte Fenster schnitt ein Viertel der DATED-1-Ränder ab — und mit ihnen den
+**barentsisch-karischen Eisschild**, der auf einem Schelfmeer lag und so gross
+war wie der skandinavische. Der Rahmen hält jetzt 96,8 Prozent der Ränder
+statt 71,8.
+
+In Grad greift er von 64,3° W bis 97,6° O und von 28,9° bis 83,9° N; in den
+Ecken stehen Grönland, Spitzbergen, Sewernaja Semlja und Westsibirien. Die
+Breitenkreise laufen weiter gebogen durch das Bild — wie auf jedem
+Atlasblatt.
 
 ## Daten
 

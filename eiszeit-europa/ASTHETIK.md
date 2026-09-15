@@ -416,12 +416,12 @@ Hier weicht die neue Karte ab, und zwar begründet. Die Vorlage rechnet auf
 einer **flächentreuen** Projektion (Lambert azimutal, 52° N 10° O), weil
 Fläche × Höhe = Bevölkerung ihre eine Aussage ist.
 
-Diese Karte hat diese Aussage nicht. Ihr Ausschnitt ist 12° W bis 45° E und
-34° N bis 72° N — 38 Breitengrade, von Kreta bis zum Nordkap. In einer
-Plattkarte wäre Skandinavien dreifach überbreit gezogen, und der Eisschild,
-um den es geht, läge genau dort. Gewählt wird deshalb **Lambert azimutal
-flächentreu, zentriert auf 53° N 15° O** — dieselbe Projektionsfamilie wie die
-Vorlage, nur auf den neuen Ausschnitt gesetzt. Formeln und Umkehrung stehen
+Diese Karte hat diese Aussage nicht. Ihr Rahmen reicht von Kreta bis über
+Spitzbergen hinaus — 55 Breitengrade. In einer Plattkarte wäre Skandinavien
+dreifach überbreit gezogen, in Mercator flächenmässig siebenfach, und der
+Eisschild, um den es geht, läge genau dort. Gewählt wird deshalb **Lambert
+azimutal flächentreu, zentriert auf 53° N 15° O** — dieselbe Projektionsfamilie
+wie die Vorlage, nur auf den neuen Rahmen gesetzt. Formeln und Umkehrung stehen
 schon in `build/geometrie.mjs` der Vorlage.
 
 
@@ -591,16 +591,18 @@ Genau dort steht in der neuen Karte die **Meeresspiegelkurve**.
 
 ## 8b. Wo bewusst abgewichen wird
 
-Zwei Stellen, beide aus demselben Grund: **der Ausschnitt der Vorlage ist
-hochkant, dieser ist quer.** Deutschland ist höher als breit, Europa von 12° W
-bis 45° O ist breiter als hoch (760 × 649 Zellen).
+Drei Stellen, alle aus demselben Grund: **der Ausschnitt der Vorlage ist
+hochkant und lässt Platz, dieser ist fast quadratisch und lässt keinen.**
+Deutschland ist höher als breit und hat einen Umriss; dieser Rahmen ist ein
+gefülltes Rechteck von 760 × 778 Zellen.
 
 | Vorlage | hier | warum |
 |---|---|---|
 | `.wrap{height:100dvh}`, das Feld füllt den Schirm | `min-height`, und das Feld hält `aspect-ratio` der Karte | Auf 390 px füllte die Karte sonst **48 Prozent** des Feldes; der Rest war schwarz. Jetzt schrumpft die Bühne, und der Rand unten ist Seitengrund statt Loch in der Karte. |
-| Notiz und Faden liegen **hinter** der Karte, die Karte weicht ihnen aus | unter 640 px liegen sie **unter** der Karte | Das Prinzip hängt daran, dass der Umriss Platz lässt. Deutschland tut das; Europa reicht auf dem Telefon bis an beide Ränder und verdeckte zwei Drittel jeder Zeile. |
+| Notiz und Faden liegen **hinter** der Karte, die Karte weicht ihnen aus | sie liegen **unter** der Karte, auf allen Breiten | Das Prinzip hängt daran, dass der Umriss Platz lässt. Deutschland tut das; ein gefülltes Rechteck tut es nirgends. Die Karte kann nicht ausweichen, also weicht der Text. |
+| Das Schild steht **auf** der Karte, mit einem Schein aus dem Seitengrund | es steht **über** ihr | Der Schein trägt, solange unter dem Schild Wasser liegt. Seit der Rahmen bis Grönland reicht, liegt dort Eis: weisse Schrift auf Weiss. Eine Zeile Höhe ist billiger als ein unlesbares Schild. |
 
-Und eine dritte, die nicht am Ausschnitt hängt, sondern am Gelände: die
+Und eine vierte, die nicht am Ausschnitt hängt, sondern am Gelände: die
 **Überhöhung der Schrägsicht** steht in der Vorlage als Anteil der Feldhöhe
 (`hoehe × 0,30`). Für ihre Karte geht das — Deutschlands Höhen und ihr
 Kartenmassstab passen zufällig dazu. Für einen Kontinent von 4 400 km Breite
@@ -609,13 +611,13 @@ sie aus einer gemessenen Grösse des Geländes (METHODIK, Abschnitt 8c). Das
 Verfahren der Vorlage — Laserschnitt, Wandanstrich, geprägte Lichtkante —
 bleibt; nur die eine Zahl ist jetzt eine gerechnete.
 
-Dazu eine vierte, kleinere: die Marken der Farbleiter werden **gemessen** und
+Dazu eine fünfte, kleinere: die Marken der Farbleiter werden **gemessen** und
 bei Berührung ausgedünnt, statt nach einer Bildschirmbreite zu schalten. Die
 Wasserbänder dieser Leiter sind doppelt so hoch wie die Landbänder, also
 drängen sich −2 km, −1 km und 0 auf dem linken Drittel — eine geratene
 Schwelle wäre entweder zu früh oder zu spät.
 
-Und eine fünfte, an der Zahl der Platten: die **geprägte Lichtkante** ist hier
+Und eine sechste, an der Zahl der Platten: die **geprägte Lichtkante** ist hier
 ein Gerätepixel breit statt ein CSS-Pixel, und unter jeder Platte liegt ein
 Schlagschatten, den die Vorlage nicht hat. Die Vorlage stapelt wenige breite
 Platten; hier sind es 33, und an den Alpen liegen ihre Kanten dichter, als

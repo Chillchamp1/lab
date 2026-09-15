@@ -42,47 +42,44 @@ body{background:var(--plane);color:var(--ink);
   display:flex;flex-direction:column;
   background:var(--surface);border:1px solid var(--ring);border-radius:14px;padding:10px 12px 8px}
 
-/* ---------- Drei Ebenen ----------
-     Ebene 2  Jahr und Eisvolumen — ueber der Karte, mit Schein dahinter.
+/* ---------- Zwei Ebenen, und eine, die es nicht mehr gibt ----------
+     Ebene 2  Jahr und Zeitscheibe — ueber der Karte, mit Schein dahinter.
      Ebene 1  die Karte.
-     Ebene 0  die Notiz und der Faden — hinter der Karte.
-   Der Text weicht der Karte aus, statt sie zu verdraengen. */
-.schild{position:absolute;left:12px;right:12px;top:10px;z-index:2;pointer-events:none;
-  display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
-  text-shadow:0 0 6px var(--surface),0 0 6px var(--surface),0 0 14px var(--surface)}
+   Die Notiz lag frueher als Ebene 0 **hinter** der Karte, und die Karte wich
+   ihr aus. Das Prinzip der Vorlage haengt daran, dass der Umriss der Karte
+   Platz laesst: Deutschland tut das. Seit der Rahmen hier in Kilometern steht
+   und gefuellt ist, laesst er **nirgends** Platz — ein Rechteck hat keine
+   leere Ecke. Also steht die Notiz jetzt auf allen Breiten unter der Karte,
+   im Fluss, so wie sie auf dem Telefon immer schon stand. */
+/* Das Schild stand ueber der Karte, mit einem Schein aus dem Seitengrund
+   dahinter. Das trug, solange unter ihm Wasser lag. Seit der Rahmen bis
+   Groenland reicht, liegt dort **Eis** — weisse Schrift auf weissem Eis, und
+   der Schein macht es nicht besser. Es steht jetzt ueber der Karte statt auf
+   ihr; das kostet eine Zeile Hoehe und ist zu jeder Zeit lesbar. */
+.schild{order:-1;margin-bottom:5px;pointer-events:none;
+  display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .schild>b{font-size:30px;font-weight:650;letter-spacing:-.02em;line-height:1;
   font-variant-numeric:tabular-nums}
 .schild>span{color:var(--ink2);font-size:13px}
 .schild .roh{color:var(--muted)}
 
-/* top kommt aus der gemessenen Hoehe des Schildes (masse()): bricht die
-   Zeitangabe neben dem Jahr auf schmalen Schirmen um, waechst das Schild, und
-   eine feste Zahl legte die Notiz mitten hinein. */
-.text{position:absolute;left:12px;right:12px;top:var(--kopf,48px);z-index:0;
-  pointer-events:none}
+.text{order:3;padding-top:8px;pointer-events:none}
 .jetzt{margin:0;max-width:min(94%,470px);
   font-size:clamp(9px,1.36cqw,11.6px);line-height:1.5;color:var(--ink2);
   opacity:0;transition:opacity .4s}
 .jetzt b{display:block;color:var(--ink);font-weight:650;
   font-size:clamp(9.8px,1.48cqw,12.6px);margin-bottom:2px}
-.faden{width:min(52%,210px);padding-top:4px;
-  display:flex;flex-direction:column;gap:2px;will-change:transform}
-.faden b{font-size:clamp(7.2px,1.09cqw,9.3px);line-height:1.3;font-weight:600;
+/* Der Faden — die Ueberschriften aller Abschnitte — laeuft quer statt
+   untereinander: unter der Karte ist Breite da und Hoehe knapp, hinter ihr war
+   es umgekehrt. */
+.faden{width:100%;padding-top:4px;
+  display:flex;flex-direction:row;flex-wrap:wrap;gap:0 10px;will-change:transform}
+.faden b{font-size:clamp(8px,1.09cqw,9.5px);line-height:1.35;font-weight:600;
   color:var(--ink);transition:opacity .5s}
-@media(max-width:540px){.faden b{font-size:6.5px}}
 
-/* ---------- Auf dem Telefon steht die Notiz unter der Karte ----------
-   Das Prinzip der Vorlage — Text hinter der Karte, die Karte weicht ihm aus —
-   haengt daran, dass ihr Umriss Platz laesst. Deutschland tut das. Europa von
-   12 W bis 45 O nicht: auf 390 px verdeckte die Karte zwei Drittel jeder
-   Zeile. Also wandert der Text dort in den Fluss, hinter Karte und Leiste.
-   Die Buehne ist da ohnehin kuerzer als der Schirm — der Platz ist da. */
 @media(max-width:640px){
-  .schild{position:static;order:-1;margin-bottom:6px}
-  .text{position:static;order:3;padding-top:8px}
   .jetzt{max-width:100%;font-size:11.5px}
   .jetzt b{font-size:12.5px}
-  .faden{width:100%;flex-direction:row;flex-wrap:wrap;gap:0 10px}
   .faden b{font-size:9.5px}
 }
 
@@ -157,6 +154,11 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
 #nord[hidden]{display:none}
 #nord svg{width:20px;height:20px;display:block}
 #zurueck{right:8px;top:8px;font-size:15px;padding:3px 8px}
+/* Beide sitzen am Rand der **Leinwand**, nicht des Feldes: die Leinwand ist
+   schmaler, wenn die Hoehe klemmt (siehe masse()). */
+.feld{--rand:calc((100% - var(--kb,100%)) / 2)}
+#nord{left:calc(8px + var(--rand))}
+#zurueck{right:calc(8px + var(--rand))}
 #farben{padding:2px 7px;font-size:11px;line-height:1.2;border-radius:6px;color:var(--muted);
   border-style:dashed}
 #farben[aria-pressed=true]{color:var(--ink);border-style:solid}
@@ -219,7 +221,7 @@ const NOTIZ = ${J(notizen)};
 
 /* ================================================================ Nutzlast */
 const GW = D.g.w, GH = D.g.h;
-const ORTE = D.orte || [], MB = D.mb || null, UKRAND = D.uk || null;
+const ORTE = D.orte || [], MB = D.mb || null, KUPPEN = D.kuppen || [];
 const NT = D.t.length;
 
 /* ---------- Das DEM ----------
@@ -505,32 +507,43 @@ function zeitFelder() {
    So bleiben Alpen, Skandinavisches Gebirge, Karpaten und Mittelgebirge in
    voller Aufloesung, waehrend sich Kruste, Kueste und Eisrand mitbewegen. */
 let feldStand = 0;
-let eisAnzahl = 0, eisMin = 0, eisMax = 0, eisHoch = 0, eisWo = -1;
-let ukHoch = 0, ukWo = -1;
-/* Welche Feldpunkte in den Britischen Inseln liegen — einmal je Feldgroesse
-   gerechnet und behalten. Punkt-in-Polygon je Zelle und je Bild waere teuer;
-   das Fenster bewegt sich aber nie. */
-let ukMaske = null, ukMaskeRW = 0;
-function ukMaskeBauen() {
-  if (ukMaske && ukMaskeRW === rW) return ukMaske;
-  ukMaske = new Uint8Array(rW * rH);
-  ukMaskeRW = rW;
-  if (!UKRAND || UKRAND.length < 3) return ukMaske;
-  const n = UKRAND.length;
-  for (let y = 0; y < rH; y++) {
-    const gy = y / rH * GH;
-    for (let x = 0; x < rW; x++) {
-      const gx = x / rW * GW;
-      let drin = false;
-      for (let i = 0, j = n - 1; i < n; j = i++) {
-        const [xi, yi] = UKRAND[i], [xj, yj] = UKRAND[j];
-        if ((yi > gy) !== (yj > gy)
-            && gx < (xj - xi) * (gy - yi) / (yj - yi) + xi) drin = !drin;
+let eisAnzahl = 0, eisMin = 0, eisMax = 0;
+/* Der hoechste Punkt **je Kuppe**, nicht einer fuers ganze Bild. Seit
+   Groenland im Rahmen liegt, waere der eine Punkt immer Groenland — und die
+   drei eurasischen Kuppen, um die es geht, haetten gar kein Schild mehr. */
+const kuppeHoch = new Float64Array(KUPPEN.length);
+const kuppeWo = new Int32Array(KUPPEN.length);
+/* Welcher Feldpunkt zu welcher Kuppe gehoert — 0 heisst keine, sonst der
+   Index plus eins. Einmal je Feldgroesse gerechnet und behalten: Punkt-in-
+   Polygon je Zelle und je Bild waere teuer, das Fenster bewegt sich aber nie.
+   Ein einziges Feld statt dreier Masken, damit die Schleife in paleo() einen
+   Zugriff je Zelle behaelt und nicht drei. */
+let kuppeIdx = null, kuppeIdxRW = 0;
+function kuppenMaskeBauen() {
+  if (kuppeIdx && kuppeIdxRW === rW) return kuppeIdx;
+  kuppeIdx = new Uint8Array(rW * rH);
+  kuppeIdxRW = rW;
+  for (let k = 0; k < KUPPEN.length; k++) {
+    const rand = KUPPEN[k].rand;
+    if (!rand || rand.length < 3) continue;
+    const n = rand.length;
+    for (let y = 0; y < rH; y++) {
+      const gy = y / rH * GH;
+      for (let x = 0; x < rW; x++) {
+        const gx = x / rW * GW;
+        let drin = false;
+        for (let i = 0, j = n - 1; i < n; j = i++) {
+          const [xi, yi] = rand[i], [xj, yj] = rand[j];
+          if ((yi > gy) !== (yj > gy)
+              && gx < (xj - xi) * (gy - yi) / (yj - yi) + xi) drin = !drin;
+        }
+        // Zuerst gewinnt: die Kuppen sind als Kaesten gesetzt und koennen
+        // sich an ihrer Naht ueberlappen.
+        if (drin && !kuppeIdx[y * rW + x]) kuppeIdx[y * rW + x] = k + 1;
       }
-      if (drin) ukMaske[y * rW + x] = 1;
     }
   }
-  return ukMaske;
+  return kuppeIdx;
 }
 function paleo() {
   feldStand++;
@@ -558,15 +571,18 @@ function paleo() {
   /* Wo das Eis liegt, in Hoehen — damit der Eisstapel nur die Scheiben
      schneidet, in denen ueberhaupt Eis vorkommt. Ohne das lief er auch dann
      ueber das ganze Feld, wenn gar kein Eis mehr da ist. */
-  eisAnzahl = 0; eisMin = 1e9; eisMax = -1e9; eisHoch = 0; eisWo = -1;
-  ukHoch = 0; ukWo = -1;
-  const uk = ukMaskeBauen();
+  eisAnzahl = 0; eisMin = 1e9; eisMax = -1e9;
+  kuppeHoch.fill(0); kuppeWo.fill(-1);
+  const kid = kuppenMaskeBauen();
   for (let i = 0; i < rock.length; i++) {
     if (!maskeR[i] || eisD[i] < EISSCHWELLE) continue;
     eisAnzahl++;
     if (flaeche[i] < eisMin) eisMin = flaeche[i];
-    if (flaeche[i] > eisMax) { eisMax = flaeche[i]; eisHoch = flaeche[i]; eisWo = i; }
-    if (uk[i] && flaeche[i] > ukHoch) { ukHoch = flaeche[i]; ukWo = i; }
+    if (flaeche[i] > eisMax) eisMax = flaeche[i];
+    const k = kid[i];
+    if (k && flaeche[i] > kuppeHoch[k - 1]) {
+      kuppeHoch[k - 1] = flaeche[i]; kuppeWo[k - 1] = i;
+    }
   }
 }
 
@@ -1412,6 +1428,11 @@ let HEUTE = true;
 function heuteUeber() {
   if (!HEUTE) return;
   ctx.save();
+  /* Der Schnitt gilt **nur der Kuestenlinie**. Er stand frueher ueber dem
+     ganzen Block, und damals war das folgenlos: die Karte war maskiert, und
+     wo nichts gezeichnet wurde, stand ohnehin kein Ort. Mit dem gefuellten
+     Rahmen schnitt er die Namen am Bildrand ab — „Yekaterinburg" endete als
+     „Yekate". */
   if (!schraeg()) ctx.clip(silhouette());
   ctx.strokeStyle = HEUTEFARBE;
   ctx.lineWidth = schraeg() ? 0.7 : 0.8;
@@ -1424,6 +1445,8 @@ function heuteUeber() {
     }
   }
   ctx.stroke(p);
+  ctx.restore();
+  ctx.save();
 
   /* Die Orte: ein Punkt von anderthalb Bildpunkten und ein Name daneben.
      Geschrieben wird **mit dunklem Umriss**, nicht mit Schlagschatten: die
@@ -1437,8 +1460,13 @@ function heuteUeber() {
     const [sx, sy] = projRand(o.x, o.y);
     if (sx < -20 || sy < -20 || sx > breite + 20 || sy > hoehe + 20) continue;
     // Am rechten Rand nach links setzen, sonst haengt der Name halb draussen
-    // — auf dem Telefon war Moskau auf „Mosco" verkuerzt.
-    const rechts = sx + 6 + ctx.measureText(o.name).width > breite - 4;
+    // — auf dem Telefon war Moskau auf „Mosco" verkuerzt. Gemessen wird am
+    // **Kartenrand**, nicht am Rand der Leinwand: die Karte steht seit dem
+    // Kilometer-Rahmen fast quadratisch in einem breiteren Feld, und ein Name,
+    // der rechts neben ihr im Schwarzen haengt, sieht aus wie ein Versehen.
+    const [randX] = projRand(GW, o.y);
+    const ende = Math.min(breite, randX) - 4;
+    const rechts = sx + 6 + ctx.measureText(o.name).width > ende;
     ctx.textAlign = rechts ? 'right' : 'left';
     const dx = rechts ? -4 : 4;
     ctx.strokeStyle = 'rgba(0,0,0,.62)';
@@ -1488,19 +1516,21 @@ function marke(sx, sy, text, farbe, unten) {
 
 function gipfelUeber() {
   ctx.save();
-  if (eisHoch > 0 && eisWo >= 0) {
-    const gx = (eisWo % rW) / rW * GW, gy = ((eisWo / rW) | 0) / rH * GH;
+  /* Eine Marke je Kuppe des eurasischen Eiskomplexes, und sie verschwindet,
+     sobald diese Kuppe geschmolzen ist. Das ist der Gewinn des groesseren
+     Rahmens: dass Barents-Kara neben Fennoscandia steht, dass Britannien mit
+     knapp der halben Hoehe daneben liegt, und dass man beim Ablaufen sieht,
+     in welcher Reihenfolge sie verschwinden.
+
+     Groenland traegt **keine** Marke, obwohl es der hoechste Eispunkt des
+     Bildes ist: es gehoert nicht zum eurasischen Komplex. Dass es als
+     einziges Eis am Ende noch dasteht, sagt das Bild von selbst. */
+  for (let k = 0; k < KUPPEN.length; k++) {
+    if (!(kuppeHoch[k] > 0) || kuppeWo[k] < 0) continue;
+    const gx = (kuppeWo[k] % rW) / rW * GW, gy = ((kuppeWo[k] / rW) | 0) / rH * GH;
     const [sx, sy] = projRand(gx, gy);
-    marke(sx, sy, 'ice ' + nfm.format(Math.round(eisHoch)) + ' m', GIPFELFARBE, false);
-  }
-  /* Der britische Eisschild hatte seine eigene Kuppe, und sie ist die zweite
-     Zahl dieser Karte: waehrend ueber Skandinavien fast drei Kilometer Eis
-     standen, kam Britannien auf gut die Haelfte. Ohne die Abgrenzung ginge das
-     unter — das Maximum ist immer der skandinavische Gipfel. */
-  if (ukHoch > 0 && ukWo >= 0 && ukWo !== eisWo) {
-    const gx = (ukWo % rW) / rW * GW, gy = ((ukWo / rW) | 0) / rH * GH;
-    const [sx, sy] = projRand(gx, gy);
-    marke(sx, sy, 'Britain ' + nfm.format(Math.round(ukHoch)) + ' m', GIPFELFARBE, false);
+    marke(sx, sy, KUPPEN[k].name + ' ' + nfm.format(Math.round(kuppeHoch[k])) + ' m',
+      GIPFELFARBE, false);
   }
   if (MB && MB.gipfel_m) {
     const [sx, sy] = projRand(MB.x, MB.y);
@@ -1795,26 +1825,10 @@ function zeichne() {
   sichtMarken();
 }
 
-/* Die Hoehe des Schildes, an das CSS gegeben. Beim ersten Messen steht dort
-   „26 ka — ICE-6G_C time slice 26 ka" in einer Zeile; sobald die Zeitangabe
-   „between the 23 and 22 ka slices — interpolated" lautet, bricht sie um, und
-   eine einmal gemessene Zahl legte die Notiz mitten hinein. Deshalb ein
-   ResizeObserver statt einer Messung je Bild: er kostet nichts, solange sich
-   nichts aendert. */
-let kopfZuletzt = 0;
-function kopfMessen() {
-  const sch = document.querySelector('.schild');
-  if (!sch) return;
-  const h = sch.offsetHeight;
-  if (h === kopfZuletzt) return;
-  kopfZuletzt = h;
-  (sch.closest('.buehne') || document.documentElement)
-    .style.setProperty('--kopf', (sch.offsetTop + h + 8) + 'px');
-}
-if (typeof ResizeObserver === 'function') {
-  const sch = document.querySelector('.schild');
-  if (sch) new ResizeObserver(kopfMessen).observe(sch);
-}
+/* Die Hoehe des Schildes wurde einmal gemessen und als --kopf an das CSS
+   gegeben: die Notiz lag hinter der Karte und musste unter dem Schild
+   anfangen. Seit sie unter der Karte steht, gibt es nichts mehr zu messen —
+   der Fluss macht das von selbst. */
 
 /* Die Stapelhoehe aus der Metrik. Sie haengt an der Kartenbreite, nicht an der
    Feldhoehe: beim Zoomen soll das Relief mitwachsen, beim Strecken des Fensters
@@ -1834,11 +1848,22 @@ function masse() {
   // schwimmt.
   const buehne = feld.closest('.buehne') || document.documentElement;
   buehne.style.setProperty('--kartenmass', (GW / GH).toFixed(4));
-  // Und die gemessene Hoehe des Schildes, damit die Notiz darunter anfaengt
-  // und nicht dahinter: auf schmalen Schirmen bricht das Schild um.
-  kopfMessen();
-  breite = feld.clientWidth;
+  /* Das Feld haelt das Verhaeltnis nur, solange die **Breite** knapp ist. Auf
+     einem breiten, niedrigen Schirm klemmt die Hoehe, und ein Flex-Kind
+     schrumpft dann in der Hoehe, ohne in der Breite nachzugeben: die Leinwand
+     stand 862 Punkte breit da und die Karte darin 543 — ein Drittel der
+     Bildpunkte wurde fuer schwarzen Rand gerechnet. Die Leinwand bekommt
+     deshalb hier ihre Breite, nicht vom CSS. Das Feld bleibt, wie es ist —
+     sonst legte das Setzen der Breite die Hoehe neu fest und das Messen liefe
+     im Kreis. */
   hoehe = Math.max(120, feld.clientHeight);
+  breite = Math.max(120, Math.min(feld.clientWidth, Math.round(hoehe * GW / GH)));
+  cv.style.width = breite + 'px';
+  // Gerueckt wird mit left, **nicht** mit einem transform: eine verschobene
+  // Leinwand kostete im Pruefbrowser 25 ms je Bild gekippt, weil sie damit
+  // eine eigene Ebene bekommt und in jedem Bild neu zusammengesetzt wird.
+  cv.style.left = Math.round((feld.clientWidth - breite) / 2) + 'px';
+  feld.style.setProperty('--kb', breite + 'px');
   const dpr = GROB ? 1 : Math.min(2.5, devicePixelRatio || 1);
   DPR = dpr;
   const bw = Math.round(breite * dpr), bh = Math.round(hoehe * dpr);
@@ -2333,8 +2358,8 @@ footer a{color:var(--muted)}
   <p class="unter">An animated relief map of Europe through the last ice age:
   ${fenster}, from ${zeitscheiben[0]} 000 years ago to today. Real mountain
   terrain from a 15-arcsecond elevation model, the crust pressed down and
-  rebounding underneath it, the Scandinavian ice sheet on top, and the
-  published uncertainty of its margin drawn as a band.</p>
+  rebounding underneath it, the three domes of the Eurasian ice sheet on top,
+  and the published uncertainty of their margin drawn as a band.</p>
 
   <div class="leiter">
     <div style="background:linear-gradient(90deg,#050d1b,#2e4256,#1d5529,#8aa91f,#e0c40b,#de7721,#cf3020,#d4d0cf,#fff)"></div>
