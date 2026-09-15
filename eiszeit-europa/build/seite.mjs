@@ -956,9 +956,25 @@ let BAND = true;
 // Nach dem hoechsten Punkt zu rechnen, der gerade dasteht, waere verlockend —
 // und dann schrumpfte die Karte in dem Mass, in dem der Eisschild waechst.
 // Zwei Bilder waeren nicht mehr vergleichbar, und genau dafuer ist sie gebaut.
-const NSCHEIBE = 26;
-const S_VON = -1000, S_BIS = 3800;      // Meter, fester Rahmen ueber alle Zeiten
-const dzM = (S_BIS - S_VON) / NSCHEIBE;
+/* Der Rahmen ist **die Farbleiter**, nicht eine runde Zahl.
+
+   Vorher stand hier −1000 bis 3800 m. Alles darunter hatte keine Platte, also
+   auch keine Farbe: neunzehn Prozent der Karte — der ganze Atlantik, das
+   ganze Mittelmeer, die Norwegische See — standen gekippt als schwarze
+   Loecher da, waehrend sie flach in vier Blautoenen lagen.
+
+   Jetzt laufen die Platten von der untersten Bandgrenze der Gesteinsleiter bis
+   zur obersten, und ihre Dicke ist **die Landstufe**. Weil ein Wasserband
+   genau zwei Landstufen misst, faellt damit jede Bandgrenze auf eine
+   Plattenkante: Farbe, Hoehenlinie und Plattenrand sind dieselbe Zahl. Das ist
+   der Grundsatz der Karte, der bisher nur flach galt.
+
+   Was tiefer liegt als die unterste Bandgrenze — zwei Prozent, die Tiefsee —
+   liegt auf dem Sockel, genau wie es in der Farbleiter im untersten Band
+   liegt. */
+const S_VON = -TIEFMAX, S_BIS = HOCHMAX;
+const dzM = LANDSTUFE;
+const NSCHEIBE = Math.round((S_BIS - S_VON) / dzM);
 
 function sichtRechnen() {
   const phi = NEIGUNG * KIPPMAX, co = Math.cos(phi), si = Math.sin(phi);
@@ -1142,6 +1158,29 @@ function scheibenMalen() {
   const eX = Dp * ozX - a2 * cx - c2 * cy;
   const lv = KANTENVERSATZ * Math.min(KANTENZOOM, ZOOM) / zz * breite / rW;
 
+  /* Der Sockel: die ganze Kartenflaeche in der Farbe des tiefsten Bandes.
+     Die Schleife darunter faengt bei k = 1 an, deckt also erst ab der zweiten
+     Bandgrenze; was tiefer liegt — die Tiefsee — bekaeme ohne den Sockel keine
+     Platte und stuende schwarz da. Genommen wird die Silhouette, die es fuer
+     die DATED-Raender ohnehin gibt. */
+  {
+    const [r, g, b] = bandFarbe(0, 0);
+    const sil = silhouette();
+    const schritte = Math.max(2, Math.ceil(Dp * dz / WANDSCHRITT));
+    ctx.fillStyle = 'rgb(' + Math.round(r * WANDFUSS) + ',' + Math.round(g * WANDFUSS)
+      + ',' + Math.round(b * WANDFUSS) + ')';
+    for (let w = 0; w < schritte; w++) {
+      ctx.setTransform(a2, b2, c2, d2, eX,
+        Dp * (ozY + (1 - w / schritte) * dz) - b2 * cx - d2 * cy);
+      ctx.fill(sil, 'evenodd');
+    }
+    ctx.setTransform(a2, b2, c2, d2, eX, Dp * ozY - b2 * cx - d2 * cy);
+    ctx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
+    ctx.fill(sil, 'evenodd');
+    lichtMaske.addPath(sil, new DOMMatrix([a2, b2, c2, d2, eX,
+      Dp * ozY - b2 * cx - d2 * cy]));
+  }
+
   /* Von unten nach oben, und je Hoehe erst das Gestein, dann das Eis darauf.
      Nicht erst alle Felsplatten und dann alle Eisplatten: der Stapel muss in
      der Tiefe geordnet bleiben, sonst laege eine niedrige Eisplatte ueber
@@ -1219,13 +1258,14 @@ function scheibenMalen() {
   const gx = kw / rW, gy = kh / rH;             // Feldgitter -> Grundriss
   // Fuer das Licht genuegt der Gesteinsstapel: er ist die volle Flaeche, der
   // Eisstapel eine Teilmenge davon. Zweimal aufzulegen kostete nur Zeit.
-  for (let k = 1; k < NSCHEIBE; k++) {
-    if (!fels[k]) continue;
-    for (const tief of [k - 1, k]) {
+  for (let k = 0; k < NSCHEIBE; k++) {
+    const ring = k === 0 ? silhouette() : fels[k];
+    if (!ring) continue;
+    for (const tief of (k === 0 ? [0] : [k - 1, k])) {
       hcS.save();
       hcS.setTransform(A2, B2, C2, D2, EX, f * (ozY - tief * dz) - B2 * cx - D2 * cy);
       hcS.beginPath();
-      hcS.clip(fels[k], 'evenodd');
+      hcS.clip(ring, 'evenodd');
       hcS.transform(gx, 0, 0, gy, kx, ky);
       hcS.drawImage(hkL, 0, 0);
       hcS.restore();
