@@ -585,7 +585,7 @@ Genau dort steht in der neuen Karte die **Meeresspiegelkurve**.
 | Diffusionskartogramm | die Fläche wird hier nicht umverteilt |
 | halbe Verzerrung, `FORM = 0.5` | dito |
 | „Volumen ist Bevölkerung" | die tragende Aussage der Vorlage, hier gegenstandslos |
-| Städtenamen nach laufender Grösse | hier stehen Orte fest; Beschriftung, wenn überhaupt, ist Ortsmarke |
+| Städtenamen nach laufender Grösse | hier stehen Orte fest. Beschriftet wird trotzdem — aber als **Ebene von heute**, zusammen mit der heutigen Küstenlinie, abschaltbar und im Ton zurückgenommen. Die Vorlage nennt Orte, weil ihre Aussage an ihnen hängt; hier sind sie Anker, nicht Aussage. |
 | Kreisumriss beim Antippen | es gibt keine Verwaltungseinheiten |
 | `ABSOLUT` / relativ-Schalter | die Höhe ist in Metern, es gibt nichts zu beziehen |
 
