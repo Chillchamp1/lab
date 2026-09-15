@@ -1,6 +1,6 @@
 # Stand
 
-Stand: 15. September 2026. Erste Fassung.
+Stand: 15. September 2026. Zweite Fassung — das Kartogramm rechnet jetzt.
 
 ## Fertig
 
@@ -21,7 +21,8 @@ Stand: 15. September 2026. Erste Fassung.
 | Bilanz 2020 | 331 449 281 mit Alaska und Hawaii, Differenz 0 |
 | Countysumme gegen Staatszeile | fünf Abweichungen von je einer Person in dreizehn Bildern |
 | NHGIS gegen Forstall | zehn Abweichungen in 30 451 Vergleichen |
-| Kartogramm, Median | 3,8 % (1900) bis 17,2 % (2020), volles Kartogramm |
+| Kartogramm, gezeichnete Fläche gegen Bevölkerungsanteil | California 0,91×, Texas 1,11×, New York 0,96×, Pennsylvania 0,97×, Florida 0,89× |
+| davor, mit Faltungsschranke 0 | California 0,24×, Montana 5,9×, Wyoming 4,9× — die Karte stand still |
 | Wichtung gegen die Landkarte | 0,28 statt 0,5 — gemessen, siehe METHODIK 3 |
 | Verschiebung durch das volle Kartogramm | 17,71 % der Diagonale, Deutschland 3,83 % |
 | Film | 1080 × 1080 statt 1080 × 1920, weil die Bühne 1,57 breit zu hoch misst |
