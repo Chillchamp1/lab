@@ -39,7 +39,37 @@ Das war teuer gelernt: ein erster Bau mit 8 000 Knoten ergab 2,6 Punkte je
 Gebiet, und das Kartogramm kam auf eine mittlere Abweichung von 37 Prozent.
 Nicht das Gitter war schuld, sondern die Geometrie.
 
-## 3. Wie genau das Kartogramm wird — und warum nicht genauer
+## 3. Wie stark das Kartogramm gegen die Landkarte zählt
+
+Die Seite zeigt nicht das volle Kartogramm, sondern eine Mischung:
+`Ort(a) = Landkarte + a · (Kartogramm − Landkarte)`. Zwischenformen kosten
+nichts, weil nur **eine** Form in der Nutzlast steht und der Rest gerechnet
+wird. Deutschland steht auf `a = 0,5`. Diese Karte steht auf **0,28**.
+
+Das ist gemessen. Wie weit das volle Kartogramm die Knoten verschiebt, relativ
+zur Diagonale der eigenen Karte:
+
+| | im Mittel | im Äussersten |
+|---|---|---|
+| Deutschland | 3,83 % | 9,45 % |
+| Vereinigte Staaten | **17,71 %** | **26,85 %** |
+
+Das Viereinhalbfache. Bei gleichem `a` wäre diese Karte entsprechend stärker
+aufgebläht — die Ostküste quillt auf, der Westen wird flachgedrückt, und das
+Land verliert seine Form. Um Deutschlands *gezeichnete* Verformung zu treffen,
+müsste `a` auf 0,11; dann täte das Kartogramm gar nichts mehr.
+
+**Der zweite Grund kam beim Ansehen dazu.** Gefärbt wird die *gezeichnete*
+Dichte, nicht die wirkliche. Zieht das Kartogramm eine Stadt auseinander, sinkt
+ihre gezeichnete Dichte, und die Farbe wird kühler. Bei 0,28 bleiben Chicago,
+Brooklyn, Los Angeles und Miami klein genug für Orange und Rot; bei 0,5 sind
+sie grün. Schärfere Landform und kräftigere Farbe fallen hier also zusammen.
+
+Bei Deutschland tun sie das nicht — dort ist die Verformung klein genug, dass
+0,5 die Farbe kaum kostet. Der Unterschied ist keine Geschmacksfrage zwischen
+zwei Karten, sondern eine Folge des Stoffs.
+
+## 4. Wie genau das Kartogramm wird — und warum nicht genauer
 
 Das ist der ehrliche Teil.
 
@@ -72,7 +102,11 @@ Ein feineres Gitter ist nicht die Antwort — es macht das Zielfeld schärfer un
 die Strömung unruhiger. Was helfen würde, wäre ein anderes Verfahren für den
 Randfall extremer Dichteunterschiede. Das steht noch aus.
 
-## 4. Die Daten
+Anzumerken bleibt: diese Abweichung misst das **volle** Kartogramm. Gezeigt
+wird es zu 28 Prozent (Abschnitt 3), und in der gezeichneten Form fällt ein
+Rest von 17 Prozent Flächenfehler entsprechend weniger ins Gewicht.
+
+## 5. Die Daten
 
 Zwei Quellen, beide in [QUELLEN.md](QUELLEN.md) beschrieben, und eine Regel:
 **es wird nichts geschätzt.** Jeder Wert steht so in einer Quelle oder gar
@@ -87,7 +121,7 @@ Eingliederungen (Bedford city geht 2013 in Bedford County auf). Addieren ist
 dann exakt und kein Schätzen; dieselbe Begründung, mit der die deutsche Karte
 Eisenach dem Wartburgkreis zuschlägt. **Geteilt wird nie.**
 
-## 5. Was die Prüfung ergeben hat
+## 6. Was die Prüfung ergeben hat
 
 Vor dem ersten Strich stand ein Prüfbericht; er liegt in
 [`bevoelkerung-kreise/build/pruefung/usa/bericht.md`](../bevoelkerung-kreise/build/pruefung/usa/bericht.md)
@@ -105,7 +139,20 @@ und ist mit `pruefe.mjs` jederzeit neu zu erzeugen. Die tragenden Befunde:
   gehalten ist die mittlere Abweichung der benutzten Reihe null; über ein
   Prozent weichen 14, 7 und 7 Gebiete ab.
 
-## 6. Was noch fehlt
+## 7. Der Film ist quadratisch
+
+`film.mjs` der deutschen Karte rendert 1080 × 1920: das Land ist hochkant
+(Bühne 8000 × 10213, also 0,78 breit zu hoch) und steht im Hochformat-Feed
+gross da. Diese Bühne misst **8000 × 5091** — 1,57, genau umgekehrt. Im
+9:16-Rahmen belegt die Karte etwa ein Drittel der Bildhöhe, der Rest ist
+schwarz.
+
+Querformat wäre die naheliegende Antwort und die falsche: 16:9 erscheint in
+einem Feed, den fast alle hochkant scrollen, als schmaler Streifen. **1:1**
+dagegen läuft auf dem Telefon über die volle Breite, die Karte nutzt sie ganz,
+und darüber bleibt Platz für Titel und Notizenstapel. Also 1080 × 1080.
+
+## 8. Was noch fehlt
 
 - Die Bilder **1900 und 1910** haben 290 und 165 Löcher — Countys, die es damals
   noch nicht gab. Um sie zu füllen, braucht es die historischen Grenzpolygone

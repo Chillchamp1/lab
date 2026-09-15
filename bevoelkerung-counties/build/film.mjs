@@ -33,9 +33,19 @@ const SEITE = process.argv[2];
 const ZIEL  = process.argv[3] ?? 'film.mp4';
 const FPS   = Number(process.argv[4] ?? 30);
 const NUR   = Number(process.argv[5] ?? 0);        // Probelauf: nur so viele Bilder
-// 432 × 768 mit zweieinhalbfacher Auflösung sind 1080 × 1920. Die CSS-Breite
-// liegt damit unter 540, also gilt dasselbe Auslegen wie auf dem Telefon.
-const CSSB = 432, CSSH = 768, DSF = 2.5;
+// **Quadratisch, nicht hochkant.** Die deutsche Karte filmt 1080 × 1920: das
+// Land ist hochkant (Bühne 8000 × 10213, also 0,78 breit zu hoch), und im
+// Hochformat-Feed steht es gross da. Diese Bühne misst 8000 × 5091 — 1,57,
+// genau umgekehrt. Im 9:16-Rahmen belegt die Karte dann etwa ein Drittel der
+// Bildhöhe und der Rest ist schwarz.
+//
+// Querformat wäre die naheliegende Antwort und die falsche: 16:9 erscheint im
+// Feed als schmaler Streifen, kleiner als alles andere. 1:1 dagegen läuft auf
+// dem Telefon über die volle Breite, die Karte nutzt sie ganz, und darüber
+// bleibt Platz für Titel und Notizenstapel.
+//
+// 540 × 540 mit doppelter Auflösung sind 1080 × 1080.
+const CSSB = 540, CSSH = 540, DSF = 2;
 const HALT = 2;                                    // Sekunden Standbild am Ende
 
 // CHROMIUM zeigt auf einen mitgelieferten Browser, falls playwright keinen

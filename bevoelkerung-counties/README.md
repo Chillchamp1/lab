@@ -44,6 +44,13 @@ Grenzen. Sie auf die heutigen umzurechnen braucht historische Grenzpolygone;
 das ist der nächste Schritt und noch nicht getan. Die Karte behandelt solche
 Gebiete wie Wasser: sie treiben mit und werden nicht gezeichnet.
 
+**Das Kartogramm zählt hier weniger als bei den Kreisen.** Gezeigt wird es zu
+28 statt zu 50 Prozent gegen die Landkarte. Gemessen verschiebt es die Knoten
+17,7 Prozent der Kartendiagonale, Deutschland nur 3,8 — das Viereinhalbfache.
+Bei gleicher Wichtung verlöre das Land seine Form, und weil die Farbe die
+*gezeichnete* Dichte meint, würden die Städte dabei auch noch blasser. Beides
+zusammen in [METHODIK.md](METHODIK.md), Abschnitt 3.
+
 **Das Kartogramm ist nicht so genau wie das deutsche.** Bei den Kreisen bleibt
 die Abweichung zwischen Fläche und Bevölkerung im Median unter 0,2 Prozent;
 hier sind es je nach Bild 3,8 bis 17,2 Prozent. Der Grund steht in
