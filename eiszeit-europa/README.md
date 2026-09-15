@@ -1,16 +1,6 @@
 # Europa unter dem Eis
 
 → **https://chillchamp1.github.io/lab/eiszeit-europa/**
->
-> **Dort steht noch keine Karte.** Die Seite ist online und nennt, woraus sie
-> gebaut wird — die Rohdaten fehlen noch. Sie zeigt bewusst **nichts
-> Erfundenes**: eine Rekonstruktion mit ausgedachtem Eisschild unter echten
-> Zitaten wäre das eine, was sie nicht tun darf. Warum die Daten fehlen, steht
-> im nächsten Absatz und ausführlich in [QUELLEN.md](QUELLEN.md).
->
-> Erzeugt wird dieser Zustand vom selben Bauvorgang wie die richtige Seite:
-> `node build.mjs --leer > ../index.html`. Sobald die Daten da sind, ersetzt
-> `node build.mjs > ../index.html` sie unter derselben Adresse.
 
 Eine animierte Reliefkarte Europas durch die letzte Eiszeit: von 26 000 Jahren
 vor heute bis in die Gegenwart, das Festland als echtes Gebirgsrelief, darüber
@@ -23,44 +13,51 @@ folgt.
 
 ## Der Stand
 
-Aus der Arbeitsumgebung, in der dieser Ordner entstanden ist, war **keiner der
-drei Datenhalter erreichbar**: PMIP4 und der Server der University of Toronto
-(ICE-6G_C), PANGAEA (DATED-1) und BODC/NOAA (GEBCO, ETOPO) antworten alle mit
-403 auf den CONNECT-Tunnel. Das ist die Ausgangssperre dieser Sitzung, nicht
-die Quellen — die sind offen. Jeder Versuch ist mit Wirt, Datum und Code in
-[QUELLEN.md](QUELLEN.md) protokolliert.
+Alle drei Datensätze liegen unter `data/raw/`, die Karte ist daraus gebaut.
+Zwei Dinge sind anders gekommen, als die Aufgabe sie vorgezeichnet hat, und
+beide stehen hier, weil sie die Karte verändern:
 
-Was daraus folgt, und was nicht:
+- **ICE-6G_C kommt bei 1 Grad, nicht bei 10 Bogenminuten.** Die 10'-Variante
+  liegt nur bei PMIP4, und deren Zertifikat ist abgelaufen *und* auf einen
+  anderen Namen ausgestellt — von einer Umleitung nicht zu unterscheiden. Das
+  wird nicht umgangen. Der Server der Arbeitsgruppe in Toronto führt dasselbe
+  Modell bei 1°, mit prüfbarer Kette. Was das kostet: die groben Felder liegen
+  bei 68 km statt 27 km. Was es **nicht** kostet: das Relief — das kommt aus
+  dem 15″-Höhenmodell und ist unverändert. Ausführlich in
+  [QUELLEN.md](QUELLEN.md).
+- **`Topo_Diff` enthält das Eis.** Die Aufgabe schreibt
+  `Paläotopographie = DEM + Topo_Diff` und meint damit den Fels. Gemessen ist
+  es die **Oberfläche**: über dem Bottnischen Meerbusen steht bei 21 ka
+  `Topo_Diff` = +1845 m bei 2374 m Eis, und die Kruste liegt dort 525 m tiefer
+  als heute. Wer addiert, statt abzuziehen, bekommt ein Gebirge aus Fels, wo
+  ein Eisschild über eingedrückter Kruste liegt. Siehe unten.
 
-- **Fertig und geprüft** ist die ganze Kette — Downloadskript, NetCDF- und
-  Shapefile-Verarbeitung, Projektion, Herunterrechnen des DEM, bikubisches
-  Hochrechnen des Differenzfeldes, Kodierung, Seite, Film. Geprüft an einem
-  **Prüfgerüst**, das dieselben Dateiformate mit erfundenem Inhalt erzeugt
-  (`build/pruefgeruest.py`). Es hat dabei fünf echte Fehler gefunden; sie
-  stehen in [METHODIK.md](METHODIK.md), weil sie mehr über die Sache sagen als
-  das Ergebnis.
-- **Nicht da** sind die Zahlen. Es fehlen die Bytes, nicht das Verfahren.
+Geprüft wurde die Kette zuerst an einem **Prüfgerüst**, das dieselben
+Dateiformate mit erfundenem Inhalt erzeugt (`build/pruefgeruest.py`) — es hat
+fünf echte Fehler gefunden. Der Lauf mit den echten Daten hat fünf weitere
+gefunden, darunter den mit dem Eis. Alle zehn stehen in
+[METHODIK.md](METHODIK.md), weil sie mehr über die Sache sagen als das
+Ergebnis.
 
-Sobald die drei Datensätze unter `data/raw/` liegen, erzeugt ein Befehl die
-echte Seite. Erfundenes Gelände kommt dabei nicht durch: `build.mjs` erkennt
-Gerüstdaten und **weigert sich**, daraus eine Seite ohne Wasserzeichen zu
-schreiben.
+Erfundenes Gelände kommt nicht durch: `build.mjs` erkennt Gerüstdaten und
+**weigert sich**, daraus eine Seite ohne Wasserzeichen zu schreiben.
 
 ## Was die Karte zeigt
 
 **Das Relief ist echt, die Bewegung ist rekonstruiert.** Das ist die eine
 Konstruktion, auf der alles steht:
 
-    Paläotopographie(t) = modernes DEM + interpoliertes Topo_Diff(t)
+    Eisoberfläche(t) = modernes DEM + interpoliertes Topo_Diff(t)
+    Fels(t)          = Eisoberfläche(t) − stgit(t)
 
 Das moderne Höhenmodell hat 15 Bogensekunden — rund 460 Meter. ICE-6G_C hat
-10 Bogenminuten, also rund 18 Kilometer; die Alpen wären darin ein Hügel von
-vier Zellen Breite. Deshalb trägt das feine DEM die Berge, und vom groben
-Modell kommt **nur das Differenzfeld**: die isostatische Absenkung unter dem
-Eis, die Hebung danach, der Meeresspiegel. Bikubisch hochgerechnet und
-aufaddiert. So bleiben Alpen, Skandinavisches Gebirge, Karpaten und
-Mittelgebirge in voller Auflösung, während sich Krustenlage und Küstenlinie
-korrekt mitbewegen.
+ein Grad, am 53. Breitengrad also rund 67 Kilometer; die Alpen wären darin ein
+Hügel. Deshalb trägt das feine DEM die Berge, und vom groben Modell kommt
+**nur das Differenzfeld**: die isostatische Absenkung unter dem Eis, die
+Hebung danach, der Meeresspiegel — und die Eismächtigkeit, die gleich wieder
+abgezogen wird. Bikubisch hochgerechnet und aufaddiert. So bleiben Alpen,
+Skandinavisches Gebirge, Karpaten und Mittelgebirge in voller Auflösung,
+während sich Krustenlage, Küstenlinie und Eisrand mitbewegen.
 
 **Die Küstenlinie ist die Nulllinie dieser Rechnung**, nicht das Landraster
 `sftlf` des Modells. Damit ist sie dieselbe Zahl wie das Relief daneben — und
@@ -172,8 +169,9 @@ kodiert.
   DOI 10.1002/2014JB011176. Dazu Argus, D. F., Peltier, W. R., Drummond, R. &
   Moore, A. W. (2014): *The Antarctica component of postglacial rebound model
   ICE-6G_C (VM5a).* Geophysical Journal International 198(1), 537–563,
-  DOI 10.1093/gji/ggu140. Variante 10 Bogenminuten, bezogen über
-  [PMIP4](https://pmip4.lsce.ipsl.fr/doku.php/data:ice_ice6g_c).
+  DOI 10.1093/gji/ggu140. Variante 1 Grad, bezogen über den
+  [Server der Arbeitsgruppe](https://www.atmosp.physics.utoronto.ca/~peltier/data.php);
+  warum nicht die 10'-Variante, steht in [QUELLEN.md](QUELLEN.md).
 - **Eisränder** — Hughes, A. L. C., Gyllencreutz, R., Lohne, Ø. S., Mangerud,
   J. & Svendsen, J. I. (2016): *The last Eurasian ice sheets – a chronological
   database and time-slice reconstruction, DATED-1.* Boreas 45(1), 1–45,
@@ -181,7 +179,9 @@ kodiert.
 - **Modernes Höhenmodell** — GEBCO Compilation Group (2024): *GEBCO 2024 Grid*,
   DOI 10.5285/1c44ce99-0a0d-5f4f-e063-7086abc0ea0f, Variante sub-ice topo,
   15 Bogensekunden. Ersatzweise NOAA NCEI (2022): *ETOPO 2022 15 Arc-Second
-  Global Relief Model*, DOI 10.25921/fd45-gt74, Variante bed elevation.
+  Global Relief Model*, DOI 10.25921/fd45-gt74, Variante surface elevation,
+  15 Kacheln. **Benutzt wird ETOPO.** Warum `surface` und nicht `bed` hier
+  dasselbe ist, steht in [QUELLEN.md](QUELLEN.md).
 
 Welche Datei wohin gehört und wie sie geholt wird, steht in
 [build/DATEN.md](build/DATEN.md); was geprüft und was gesperrt war, in

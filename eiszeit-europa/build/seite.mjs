@@ -27,14 +27,19 @@ html,body{margin:0;height:100%}
 body{background:var(--plane);color:var(--ink);
   font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.5;
   -webkit-text-size-adjust:100%;overflow:hidden}
-.wrap{max-width:900px;margin:0 auto;height:100dvh;padding:6px;display:flex}
+/* min-height statt height, und die Buehne oben ausgerichtet: sie ist so hoch
+   wie ihr Inhalt, hoechstens schirmhoch. Die Vorlage nagelt ihre auf 100dvh —
+   richtig fuer einen hochkanten Ausschnitt, falsch fuer diesen queren. */
+.wrap{max-width:900px;margin:0 auto;min-height:100dvh;padding:6px;
+  display:flex;align-items:flex-start}
 /* container-type macht die Buehne zum Massstab fuer alles darin: 1cqw ist ein
    Hundertstel ihrer Breite. Damit waechst der Text mit der Karte, statt in
    Bildpunkten festzustehen. min-width:0, weil ein Flex-Kind sonst mindestens
    so breit ist wie sein Inhalt — und in der Legende steht eine Zeile, die
    nicht umbrechen darf. */
 .buehne{container-type:inline-size;
-  position:relative;flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;
+  position:relative;flex:0 1 auto;width:100%;min-width:0;min-height:0;max-height:calc(100dvh - 12px);
+  display:flex;flex-direction:column;
   background:var(--surface);border:1px solid var(--ring);border-radius:14px;padding:10px 12px 8px}
 
 /* ---------- Drei Ebenen ----------
@@ -50,7 +55,11 @@ body{background:var(--plane);color:var(--ink);
 .schild>span{color:var(--ink2);font-size:13px}
 .schild .roh{color:var(--muted)}
 
-.text{position:absolute;left:12px;right:12px;top:48px;z-index:0;pointer-events:none}
+/* top kommt aus der gemessenen Hoehe des Schildes (masse()): bricht die
+   Zeitangabe neben dem Jahr auf schmalen Schirmen um, waechst das Schild, und
+   eine feste Zahl legte die Notiz mitten hinein. */
+.text{position:absolute;left:12px;right:12px;top:var(--kopf,48px);z-index:0;
+  pointer-events:none}
 .jetzt{margin:0;max-width:min(94%,470px);
   font-size:clamp(9px,1.36cqw,11.6px);line-height:1.5;color:var(--ink2);
   opacity:0;transition:opacity .4s}
@@ -62,7 +71,30 @@ body{background:var(--plane);color:var(--ink);
   color:var(--ink);transition:opacity .5s}
 @media(max-width:540px){.faden b{font-size:6.5px}}
 
-.feld{position:relative;z-index:1;flex:1 1 auto;min-height:0}
+/* ---------- Auf dem Telefon steht die Notiz unter der Karte ----------
+   Das Prinzip der Vorlage — Text hinter der Karte, die Karte weicht ihm aus —
+   haengt daran, dass ihr Umriss Platz laesst. Deutschland tut das. Europa von
+   12 W bis 45 O nicht: auf 390 px verdeckte die Karte zwei Drittel jeder
+   Zeile. Also wandert der Text dort in den Fluss, hinter Karte und Leiste.
+   Die Buehne ist da ohnehin kuerzer als der Schirm — der Platz ist da. */
+@media(max-width:640px){
+  .schild{position:static;order:-1;margin-bottom:6px}
+  .text{position:static;order:3;padding-top:8px}
+  .jetzt{max-width:100%;font-size:11.5px}
+  .jetzt b{font-size:12.5px}
+  .faden{width:100%;flex-direction:row;flex-wrap:wrap;gap:0 10px}
+  .faden b{font-size:9.5px}
+}
+
+/* Das Feld haelt das Seitenverhaeltnis der Karte, statt den Schirm zu fuellen.
+   Die Vorlage nagelt ihre Buehne auf 100dvh, und das ist dort richtig: ihr
+   Ausschnitt ist Deutschland, also hochkant. Dieser hier ist Europa von 12 W
+   bis 45 O — breiter als hoch. Auf einem hochkant gehaltenen Telefon blieb
+   damit die Haelfte des Feldes schwarz (gemessen: 48 % Fuellung bei 390 px).
+   Mit aspect-ratio schrumpft stattdessen die Buehne, und der Rand unten ist
+   Seitengrund statt Loch in der Karte. */
+.feld{position:relative;z-index:1;flex:0 1 auto;min-height:0;
+  aspect-ratio:var(--kartenmass,1.17)}
 canvas{position:absolute;left:0;top:0;width:100%;height:100%}
 #karte{touch-action:none}
 
@@ -456,12 +488,19 @@ function zeitFelder() {
 }
 
 /* ---------- Die Paläotopographie ----------
-       Gestein(t) = modernes DEM + Topo_Diff(t)
-       Oberflaeche(t) = Gestein(t) + Eismaechtigkeit(t)
-   Das feine DEM traegt die Berge, das grobe Differenzfeld nur die Krustenlage
-   und den Meeresspiegel. So bleiben Alpen, Skandinavisches Gebirge, Karpaten
-   und Mittelgebirge in voller Aufloesung, waehrend sich Kruste und Kueste
-   richtig mitbewegen. */
+       Oberflaeche(t) = modernes DEM + Topo_Diff(t)
+       Gestein(t)     = Oberflaeche(t) − Eismaechtigkeit(t)
+   Das feine DEM traegt die Berge, das grobe Differenzfeld nur die Krustenlage,
+   den Meeresspiegel — **und das Eis**. Letzteres ist die eine Stelle, an der
+   die naheliegende Rechnung falsch ist: ICE-6G_Cs Topo ist die Hoehe der
+   Oberflaeche, nicht die des Fels, und Topo_Diff erbt das. Ueber dem
+   Bottnischen Meerbusen steht bei 21 ka Topo_Diff = +1845 m bei 2374 m Eis.
+   Wer addiert, statt abzuziehen, bekommt ein Gebirge aus Fels, wo ein
+   Eisschild ueber eingedrueckter Kruste liegt — und zwar eines, das plausibel
+   aussieht. Gemessen wird das in quellen.py, Probe 1b.
+
+   So bleiben Alpen, Skandinavisches Gebirge, Karpaten und Mittelgebirge in
+   voller Aufloesung, waehrend sich Kruste, Kueste und Eisrand mitbewegen. */
 let feldStand = 0;
 function paleo() {
   feldStand++;
@@ -469,9 +508,22 @@ function paleo() {
   hochrechnen(tdJetzt, TD.w, TD.h, rock, rW, rH, wxT, ixT, wyT, iyT, tmpT);
   hochrechnen(eisJetzt, EIS.w, EIS.h, eisD, rW, rH, wxE, ixE, wyE, iyE, tmpE);
   for (let i = 0; i < rock.length; i++) {
-    rock[i] += demR[i];
     if (eisD[i] < 0) eisD[i] = 0;
-    flaeche[i] = rock[i] + eisD[i];
+    flaeche[i] = rock[i] + demR[i];   // DEM + Topo_Diff = Oberflaeche
+    /* ---- nur aufliegendes Eis ----
+       Das grobe stgit-Feld wird bikubisch hochgerechnet und laeuft dabei ueber
+       den Eisrand hinaus aufs offene Meer; ohne Schranke stuende bei 21 ka auf
+       5 bis 9 Prozent der Eiszellen eine Eisoberflaeche **unter** dem
+       Meeresspiegel, die tiefste 2,8 km darunter.
+
+       Die Schranke ist keine Geschmacksfrage. Aufliegendes Eis der Maechtig-
+       keit H auf einem Grund b < 0 haelt sich nur, solange es nicht aufschwimmt:
+       H >= (rho_w/rho_i)*(-b) = 1,09*(-b). Seine Oberflaeche liegt dann bei
+       b + H >= -0,09*b, also **immer ueber Null**. Eine Eisoberflaeche unter
+       dem Meeresspiegel kann es nicht geben; was hier wegfaellt, ist
+       ausschliesslich der Ueberlauf der Interpolation. */
+    if (flaeche[i] <= 0) eisD[i] = 0;
+    rock[i] = flaeche[i] - eisD[i];   // der Fels liegt darunter
   }
 }
 
@@ -1120,15 +1172,34 @@ function datedBei(kaJetzt) {
   return dist <= 0.5 ? { ka: best, d: dist } : null;
 }
 
-function bandPfad(linien) {
+/* Ein Segment, das auf dem Fensterrand liegt, ist kein Eisrand — es ist die
+   Schnittkante, an der quellen.py den Ring auf den Ausschnitt beschnitten hat.
+   Gefuellt wird der Ring trotzdem geschlossen (sonst fehlte das Band), gezogen
+   wird die Schnittkante nicht. */
+const RANDEPS = 0.01;
+function aufRand(ax, ay, bx, by) {
+  return (Math.abs(ax) < RANDEPS && Math.abs(bx) < RANDEPS)
+    || (Math.abs(ax - GW) < RANDEPS && Math.abs(bx - GW) < RANDEPS)
+    || (Math.abs(ay) < RANDEPS && Math.abs(by) < RANDEPS)
+    || (Math.abs(ay - GH) < RANDEPS && Math.abs(by - GH) < RANDEPS);
+}
+function bandPfad(linien, ohneRand) {
   const p = new Path2D();
   for (const [xs, ys] of linien) {
+    const n = xs.length;
     let erst = true;
-    for (let i = 0; i < xs.length; i++) {
+    for (let i = 0; i < n; i++) {
       const [sx, sy] = projRand(xs[i], ys[i]);
-      if (erst) { p.moveTo(sx, sy); erst = false; } else p.lineTo(sx, sy);
+      const j = (i + n - 1) % n;
+      if (erst || (ohneRand && aufRand(xs[j], ys[j], xs[i], ys[i]))) {
+        p.moveTo(sx, sy); erst = false;
+      } else p.lineTo(sx, sy);
     }
-    p.closePath();
+    if (!ohneRand) p.closePath();
+    else if (!aufRand(xs[n - 1], ys[n - 1], xs[0], ys[0])) {
+      const [sx, sy] = projRand(xs[0], ys[0]);
+      p.lineTo(sx, sy);
+    }
   }
   return p;
 }
@@ -1185,15 +1256,46 @@ function silhouette() {
   return p;
 }
 
+/* ---------- Dieselbe Schablone, gekippt ----------
+   Gekippt liegen die Raender nicht auf dem Boden, sondern um bis zu einen
+   ganzen Scheibenstapel darueber. Gegen den Bodenumriss beschnitten fiele
+   deshalb weg, was richtig ist; gar nicht beschnitten haengt DATED-1s Rand
+   ueber der Barentssee im Schwarzen, weit ausserhalb der Karte — die
+   Rekonstruktion reicht bis Taimyr, der Ausschnitt nur bis 45 Grad Ost.
+
+   Die Schablone ist deshalb nicht der Umriss, sondern der Bereich, den er
+   beim Anheben ueberstreicht: je Zeile ein Viereck vom Bodensegment bis zu
+   seiner hoechstmoeglichen Lage. Die Vierecke ueberlappen sich, nonzero
+   vereinigt sie. */
+let silHCache = null, silHSchluessel = '';
+function silhouetteHoch() {
+  const k = [kx, ky, kw, kh, ZOOM, vX, vY, NEIGUNG, DREHUNG].join(',');
+  if (silHCache && silHSchluessel === k) return silHCache;
+  const p = new Path2D();
+  const hub = NSCHEIBE * (SICHT || sichtRechnen()).dz;
+  const schritt = 3;
+  const tief = Math.abs(kh / GH) * schritt + 2;
+  for (let y = 0; y < GH; y += schritt) {
+    if (BIS[y] < 0) continue;
+    const [ax, ay] = projGitter(VON[y], y);
+    const [bx, by] = projGitter(BIS[y] + 1, y);
+    p.moveTo(ax, ay + tief);
+    p.lineTo(bx, by + tief);
+    p.lineTo(bx, by - hub);
+    p.lineTo(ax, ay - hub);
+    p.closePath();
+  }
+  silHCache = p; silHSchluessel = k;
+  return p;
+}
+
 function datedUeber() {
   const t = datedBei(ka);
   if (!t) return;
   const s = DATED[t.ka];
   if (!s) return;
   ctx.save();
-  // Gekippt wird nicht beschnitten: die Schablone ist der Bodenumriss, die
-  // Linien liegen aber auf der Oberflaeche — sie laegen dann teils daneben.
-  if (!schraeg()) ctx.clip(silhouette());
+  ctx.clip(schraeg() ? silhouetteHoch() : silhouette());
   if (BAND && s.max && s.min) {
     const p = new Path2D();
     p.addPath(bandPfad(s.max));
@@ -1202,14 +1304,14 @@ function datedUeber() {
     ctx.fill(p, 'evenodd');
     ctx.strokeStyle = RANDFARBE;
     ctx.lineWidth = 0.8;
-    ctx.stroke(bandPfad(s.max));
-    ctx.stroke(bandPfad(s.min));
+    ctx.stroke(bandPfad(s.max, true));
+    ctx.stroke(bandPfad(s.min, true));
   }
   if (s.mc) {
     ctx.strokeStyle = MCFARBE;
     ctx.lineWidth = 1.7;
     ctx.lineJoin = 'round';
-    ctx.stroke(bandPfad(s.mc));
+    ctx.stroke(bandPfad(s.mc, true));
   }
   ctx.restore();
 }
@@ -1245,8 +1347,37 @@ function zeichne() {
   sichtMarken();
 }
 
+/* Die Hoehe des Schildes, an das CSS gegeben. Beim ersten Messen steht dort
+   „26 ka — ICE-6G_C time slice 26 ka" in einer Zeile; sobald die Zeitangabe
+   „between the 23 and 22 ka slices — interpolated" lautet, bricht sie um, und
+   eine einmal gemessene Zahl legte die Notiz mitten hinein. Deshalb ein
+   ResizeObserver statt einer Messung je Bild: er kostet nichts, solange sich
+   nichts aendert. */
+let kopfZuletzt = 0;
+function kopfMessen() {
+  const sch = document.querySelector('.schild');
+  if (!sch) return;
+  const h = sch.offsetHeight;
+  if (h === kopfZuletzt) return;
+  kopfZuletzt = h;
+  (sch.closest('.buehne') || document.documentElement)
+    .style.setProperty('--kopf', (sch.offsetTop + h + 8) + 'px');
+}
+if (typeof ResizeObserver === 'function') {
+  const sch = document.querySelector('.schild');
+  if (sch) new ResizeObserver(kopfMessen).observe(sch);
+}
+
 function masse() {
   const feld = cv.parentElement;
+  // Das Seitenverhaeltnis der Karte an das CSS geben — es setzt damit die
+  // Feldhoehe, statt dass das Feld den Schirm fuellt und die Karte darin
+  // schwimmt.
+  const buehne = feld.closest('.buehne') || document.documentElement;
+  buehne.style.setProperty('--kartenmass', (GW / GH).toFixed(4));
+  // Und die gemessene Hoehe des Schildes, damit die Notiz darunter anfaengt
+  // und nicht dahinter: auf schmalen Schirmen bricht das Schild um.
+  kopfMessen();
   breite = feld.clientWidth;
   hoehe = Math.max(120, feld.clientHeight);
   const dpr = GROB ? 1 : Math.min(2.5, devicePixelRatio || 1);
@@ -1331,13 +1462,30 @@ function rampeCss(liste) {
   const st = liste.map((c, i) => c + ' ' + (100 * i / n).toFixed(3) + '% ' + (100 * (i + 1) / n).toFixed(3) + '%');
   return 'linear-gradient(90deg,' + st.join(',') + ')';
 }
+function stufenWahl(s, bei) {
+  const alle = [-2000, -1000, 0, 1000, 2000, 3000];
+  const duenn = [-2000, 0, 2000];
+  s.innerHTML = alle.map(m => '<span style="left:' + bei(m).toFixed(2) + '%">'
+    + (m > 0 ? '' : '&#8722;') + Math.abs(m / 1000) + ' km</span>').join('');
+  const k = [...s.children].map(e => e.getBoundingClientRect());
+  s.innerHTML = '';
+  for (let i = 1; i < k.length; i++)
+    if (k[i].left < k[i - 1].right + 4) return duenn;
+  return alle;
+}
 function legende() {
   document.getElementById('rampe').style.background = rampeCss(GESTEIN);
   document.getElementById('rampeEis').style.background = rampeCss(EISRAMPE);
   const s = document.getElementById('stufen');
   const marken = [];
   const bei = m => (gesteinLeiter(m) * 100);
-  for (const m of [-2000, -1000, 0, 1000, 2000, 3000]) {
+  /* Die Wasserbaender sind doppelt so hoch wie die Landbaender, also draengen
+     sich −2 km, −1 km und 0 auf dem linken Drittel der Leiter: acht Prozent
+     Abstand bei rund fuenfzig Pixeln Schrift. Bei 390 px klebten sie
+     ineinander. Ausgeduennt wird deshalb **gemessen**, nicht geraten — zuerst
+     alle setzen, dann nachsehen, ob sie sich beruehren, und notfalls jede
+     zweite streichen. Die Null bleibt immer: sie ist die Kuestenlinie. */
+  for (const m of stufenWahl(s, bei)) {
     const p = bei(m);
     if (p < -1 || p > 101) continue;
     const kl = m === 0 ? 'null' : '';

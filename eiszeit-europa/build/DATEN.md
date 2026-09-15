@@ -23,7 +23,7 @@ Einzeln geht auch: `./holen.sh ice6g`, `./holen.sh dated`, `./holen.sh dem`.
 
 | Ziel | Quelle | Menge |
 |---|---|---|
-| `data/raw/ice6g/I6_C.VM5a_10min.<t>.nc` | [PMIP4, ICE-6G_C (VM5a), 10'](https://pmip4.lsce.ipsl.fr/doku.php/data:ice_ice6g_c) | 48 Dateien, 26 … 0 ka |
+| `data/raw/ice6g/I6_C.VM5a_1deg.<t>.nc` | [Peltier, ICE-6G_C (VM5a), 1°](https://www.atmosp.physics.utoronto.ca/~peltier/data.php) | 48 Dateien, 26 … 0 ka, als `.nc.gz` geladen und entpackt |
 | `data/raw/dated1/allfiles.zip` → `entpackt/` | [PANGAEA doi:10.1594/PANGAEA.848117](https://doi.pangaea.de/10.1594/PANGAEA.848117) | 25 … 10 ka, je 3 Linien |
 | `data/raw/dem/…` | [GEBCO 2024 sub-ice topo, 15"](https://www.bodc.ac.uk/data/open_download/gebco/gebco_2024_sub_ice_topo/zip/) | global, mehrere GB |
 

@@ -13,8 +13,22 @@ Reihenfolge, in der es dort steht:
      Eismaechtigkeit stgit, beide auf ihrem groben 10'-Gitter. Sie werden
      **nicht** hier hochgerechnet: das tut die Seite, bikubisch, weil sie
      zwischen den Zeitscheiben ohnehin interpolieren muss.
-  3. Die Paläotopographie ist damit  DEM + Topo_Diff(t),  die Eisoberflaeche
-     Paläotopographie + stgit(t).
+  3. **Topo_Diff enthaelt das Eis.** Das steht so in keiner Beschreibung der
+     Dateien und ist am ersten Lauf mit echten Daten gemessen worden (Probe 1b
+     weiter unten): ICE-6G_Cs `Topo` ist die Hoehe der *Oberflaeche* — Fels,
+     wo keiner liegt, Eisoberflaeche, wo Eis aufliegt. Ueber dem Bottnischen
+     Meerbusen steht bei 21 ka Topo_Diff = +1845 m bei 2374 m Eis; das ist
+     nicht die Kruste, die sich hebt, sondern das Eis, das obendrauf liegt.
+
+     Daraus folgt die Rechnung, und sie ist eine andere als die naheliegende:
+
+         Oberflaeche(t) = DEM + Topo_Diff(t)          <- inklusive Eis
+         Fels(t)        = Oberflaeche(t) - stgit(t)
+
+     Die Aufgabe schreibt „Paläotopographie(t) = DEM + Topo_Diff(t)" und meint
+     damit den Fels. Das Ziel ist uebernommen, die Formel korrigiert: waere sie
+     woertlich genommen, stuende das Skandinavische Gebirge bei 21 ka als 2000 m
+     hoher **Fels** in der Karte und das Eis noch einmal 2400 m darueber.
 
 Die Kuestenlinie faellt aus der Nulllinie dieser Rechnung, nicht aus sftlf —
 siehe ../QUELLEN.md, Abschnitt 3.
@@ -372,14 +386,24 @@ def ice6g_scheiben():
 
 
 def ice6g_pfad(t):
+    """Die Datei zur Zeitscheibe t, gleich welcher Aufloesung.
+
+    ICE-6G_C gibt es in 10 Bogenminuten und in 1 Grad. Die Aufgabe nennt die
+    10'-Fassung; erreichbar war zum Bauzeitpunkt nur die 1-Grad-Fassung (siehe
+    ../QUELLEN.md). Der Bauvorgang nimmt, was daliegt, und richtet das
+    Grobgitter danach — er unterstellt nirgends eine Aufloesung.
+    """
     name = f"{t:g}"
-    p = ROH / "ice6g" / f"I6_C.VM5a_10min.{name}.nc"
-    if p.exists():
-        return p
-    treffer = sorted((ROH / "ice6g").glob(f"*{name}.nc"))
+    for muster in (f"I6_C.VM5a_10min.{name}.nc", f"I6_C.VM5a_1deg.{name}.nc"):
+        p = ROH / "ice6g" / muster
+        if p.exists():
+            return p
+    treffer = sorted((ROH / "ice6g").glob(f"I6_C.VM5a_*.{name}.nc"))
     if treffer:
         return treffer[0]
-    raise SystemExit(f"Zeitscheibe {name} ka fehlt: {p}\nErst build/holen.sh laufen lassen.")
+    raise SystemExit(
+        f"Zeitscheibe {name} ka fehlt unter {ROH / 'ice6g'}.\n"
+        "Erst build/holen.sh laufen lassen.")
 
 
 def lies_ice6g():
@@ -446,7 +470,21 @@ def lies_ice6g():
             fern = A[np.ix_(fl, fp)][tief]
             globalsl.append(float(-np.median(fern)) if fern.size else float("nan"))
 
-            proben.append(dict(ka=t, topo=np.asarray(T0[y_a:y_b, x_a:x_b])))
+            # sftlf und sftgif nur fuer Probe 1: sie sagen, an welchen Zellen
+            # das Differenzfeld innerhalb der Zelle eine Stufe hat.
+            def anteil(*namen):
+                try:
+                    v = erste(ds, *namen)
+                except KeyError:
+                    return np.full_like(T0, np.nan)
+                return np.asarray(np.ma.filled(v[:], 0.0), dtype=np.float64)[:, ordnung]
+
+            proben.append(dict(
+                ka=t,
+                topo=np.asarray(T0[y_a:y_b, x_a:x_b]),
+                lf=anteil("sftlf", "land_area_fraction")[y_a:y_b, x_a:x_b],
+                gif=anteil("sftgif", "stgif", "ice_area_fraction")[y_a:y_b, x_a:x_b],
+            ))
         finally:
             ds.close()
 
@@ -501,6 +539,49 @@ def polar_laea_zurueck(x, y, lon0=0.0):
            + (761 * _E2 ** 3 / 45360) * np.sin(6 * beta))
     lam = np.arctan2(x, -y)
     return lon0 + np.degrees(lam), np.degrees(phi)
+
+
+def beschneide(gx, gy, w, h):
+    """Den Ring auf das Gitterrechteck beschneiden (Sutherland-Hodgman).
+
+    DATED-1 rekonstruiert die **eurasischen** Eisschilde — bis Taimyr und bis
+    ueber 80 Grad Nord. Der Ausschnitt dieser Karte endet bei 45 Grad Ost und
+    72 Grad Nord. Ungekuerzt laufen die Raender weit ueber die Karte hinaus;
+    flach beschneidet die Silhouette sie weg, gekippt hingen sie im Schwarzen
+    ueber der Barentssee, weil ein Punkt noerdlich des Fensters beim Anheben
+    auf die oberste Gitterzeile geklemmt wird und deren Hoehe bekommt.
+
+    Beschnitten wird deshalb hier, wo es hingehoert: in den Daten, vor dem
+    Vereinfachen, und gegen ein Rechteck — das ist konvex, also bleibt der Ring
+    geschlossen und das Unsicherheitsband fuellbar.
+    """
+    punkte = list(zip(np.asarray(gx, float), np.asarray(gy, float)))
+    kanten = (
+        (lambda q: q[0] >= 0.0, 0, 0.0),
+        (lambda q: q[0] <= w, 0, w),
+        (lambda q: q[1] >= 0.0, 1, 0.0),
+        (lambda q: q[1] <= h, 1, h),
+    )
+    for drin, achse, grenze in kanten:
+        if not punkte:
+            break
+        aus = []
+        for i, b in enumerate(punkte):
+            a = punkte[i - 1]
+            b_drin, a_drin = drin(b), drin(a)
+            if b_drin != a_drin:
+                d = b[achse] - a[achse]
+                u = 0.0 if d == 0 else (grenze - a[achse]) / d
+                s_ = [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u]
+                s_[achse] = grenze
+                aus.append((s_[0], s_[1]))
+            if b_drin:
+                aus.append(b)
+        punkte = aus
+    if len(punkte) < 3:
+        return np.empty(0), np.empty(0)
+    a = np.asarray(punkte, dtype=np.float64)
+    return a[:, 0], a[:, 1]
 
 
 def lies_dated(g):
@@ -574,7 +655,10 @@ def lies_dated(g):
             for a, b in zip(teile, teile[1:]):
                 if b - a < 3:
                     continue
-                linien.append(vereinfache(gx[a:b], gy[a:b], 0.5))
+                cx, cy = beschneide(gx[a:b], gy[a:b], g["w"], g["h"])
+                if len(cx) < 3:
+                    continue
+                linien.append(vereinfache(cx, cy, 0.5))
         if linien:
             heraus.setdefault(ka, {})[s] = linien
             zugeordnet += 1
@@ -694,24 +778,80 @@ def main():
     # aus, und zwar plausibel falsch.
     kennzahlen = {}
 
-    # Probe 1 — die scharfe. Topo_Diff ist definiert als Topo(t) − Topo(0),
-    # also muss  Topo(t) − Topo(0) − Topo_Diff(t)  **null** sein, auf dem
-    # 10'-Gitter, ohne jede Interpolation. Diese Probe faengt genau die beiden
-    # Fehler, die man hier wirklich macht: ein vertauschtes Vorzeichen und
-    # einen falschen Bezugszeitpunkt. Beides sieht man dem fertigen Bild nicht
-    # an — es sieht nur falsch aus, und zwar plausibel falsch.
+    # Probe 1 — die scharfe, und sie ist beim ersten Lauf mit echten Daten
+    # **umgeschrieben** worden. Gedacht war sie als Identitaet: Topo_Diff ist
+    # definiert als Topo(t) − Topo(0), also muss die Differenz null sein. Das
+    # ist sie auch — aber nicht ueberall.
+    #
+    # `Topo` traegt im Kopf der Datei den Zusatz „(Point-value altitude)",
+    # `Topo_Diff` traegt ihn nicht. Wo das Differenzfeld innerhalb einer Zelle
+    # eine Stufe hat — am Eisrand, an einer wandernden Kueste, in der Antarktis
+    # an der Aufsetzlinie —, sind ein Stichwert im Zellmittelpunkt und ein
+    # Zellmittel zwei verschiedene Zahlen. Gemessen: im Fenster liegt die
+    # Abweichung an allen Zellen, deren Land- und Eisanteil sich gegenueber
+    # heute nicht geaendert hat, unter 3 m — quer durch alle 48 Scheiben und
+    # ausdruecklich auch ueber den Alpen, wo das Gelaende schroff ist, das
+    # Differenzfeld aber glatt. An den uebrigen Zellen wird sie dreistellig.
+    #
+    # Die Probe prueft deshalb die **stufenfreien** Zellen scharf und meldet
+    # die uebrigen daneben, statt sie zu verschweigen. Ein vertauschtes
+    # Vorzeichen und ein falscher Bezugszeitpunkt — die beiden Fehler, gegen
+    # die sie steht — schlagen global durch und faenden hier kein Versteck.
     topo0 = proben[zeiten.index(0.0)]["topo"] if 0.0 in zeiten else None
     if topo0 is not None:
-        schlimm = 0.0
+        lf0 = proben[zeiten.index(0.0)]["lf"]
+        gif0 = proben[zeiten.index(0.0)]["gif"]
+        schlimm = 0.0; schlimm_stufe = 0.0; n_stufe = 0; n_ges = 0
         for p in proben:
             i = zeiten.index(p["ka"])
-            d = float(np.abs(p["topo"] - topo0 - td[i]).max())
-            schlimm = max(schlimm, d)
+            d = np.abs(p["topo"] - topo0 - td[i])
+            # Fehlen sftlf/sftgif, gilt jede Zelle als stufenfrei — dann ist
+            # die Probe wieder die scharfe von vorher, und das ist richtig so:
+            # lieber zu streng als stillschweigend nachsichtig.
+            bekannt = (np.isfinite(p["lf"]) & np.isfinite(lf0)
+                       & np.isfinite(p["gif"]) & np.isfinite(gif0))
+            stufe = ((p["lf"] != lf0) | (p["gif"] != gif0)) & bekannt
+            glatt = ~stufe
+            if glatt.any():
+                schlimm = max(schlimm, float(d[glatt].max()))
+            if stufe.any():
+                schlimm_stufe = max(schlimm_stufe, float(d[stufe].max()))
+            n_stufe += int(stufe.sum()); n_ges += d.size
         kennzahlen["topodiff_identitaet_max_m"] = schlimm
-        log(f"  Probe 1  max |Topo(t) − Topo(0) − Topo_Diff(t)| = {schlimm:.3f} m")
-        if schlimm > 1.0:
+        kennzahlen["topodiff_identitaet_stufenzellen"] = dict(
+            max_m=schlimm_stufe, anteil=n_stufe / max(n_ges, 1))
+        log(f"  Probe 1  max |Topo(t) − Topo(0) − Topo_Diff(t)|")
+        log(f"             an stufenfreien Zellen  {schlimm:8.3f} m")
+        log(f"             an Stufenzellen         {schlimm_stufe:8.3f} m "
+            f"({100*n_stufe/max(n_ges,1):.1f} % der Zellen, Eisrand und Kueste)")
+        if schlimm > 5.0:
             log("  ACHTUNG: Topo_Diff ist nicht Topo(t) − Topo(0). Vorzeichen oder")
             log("           Bezugszeitpunkt pruefen, bevor irgendetwas gezeichnet wird.")
+
+    # Probe 1b — die Frage, an der die ganze Rechnung haengt: **steckt das Eis
+    # in Topo_Diff?** Sie ist an den Zellen mit viel Eis zu beantworten. Steht
+    # dort ein grosser positiver Wert, ist es die Eisoberflaeche; stuende dort
+    # ein negativer, waere es die eingedrueckte Kruste.
+    #
+    # Ohne diese Probe faellt der Fehler nicht auf: die Karte saehe aus wie ein
+    # Gebirge und waere eines — nur keines, das je existiert hat.
+    i21 = min(range(len(zeiten)), key=lambda k: abs(zeiten[k] - 21.0))
+    dick = st[i21] > 1500.0
+    if dick.any():
+        mit = float(np.median(td[i21][dick]))
+        kennzahlen["topodiff_traegt_eis"] = dict(
+            ka=zeiten[i21], zellen=int(dick.sum()), median_topodiff_m=mit,
+            median_stgit_m=float(np.median(st[i21][dick])))
+        log(f"  Probe 1b wo bei {zeiten[i21]:g} ka ueber 1500 m Eis liegt "
+            f"({int(dick.sum())} Zellen):")
+        log(f"             Median Topo_Diff {mit:+8.1f} m, "
+            f"Median stgit {np.median(st[i21][dick]):8.1f} m")
+        if mit > 0:
+            log("             -> positiv: Topo_Diff ist die OBERFLAECHE, Eis inbegriffen.")
+            log("                Fels = DEM + Topo_Diff − stgit. So rechnet die Seite.")
+        else:
+            log("  ACHTUNG: Topo_Diff scheint die eisfreie Kruste zu sein. Dann darf")
+            log("           die Seite stgit nicht abziehen — seite.mjs, paleo().")
 
     # Probe 2 — die weiche. Wie weit liegen das feine DEM und ICE-6G_Cs eigene
     # heutige Topographie auseinander, wenn man das DEM auf 10' mittelt? Das
@@ -751,16 +891,28 @@ def main():
     nm = int(im_fenster.sum())
     je = []
     for i, t in enumerate(zeiten):
-        paleo = dem + bikubisch(td[i], fx, fy)
-        eis = bikubisch(st[i], fx, fy)
-        land = (paleo > 0) & im_fenster
+        # flaeche = DEM + Topo_Diff ist die **Oberflaeche**, Eis inbegriffen
+        # (Probe 1b). Der Fels liegt um die Eismaechtigkeit tiefer.
+        flaeche = dem + bikubisch(td[i], fx, fy)
+        eis = np.maximum(0.0, bikubisch(st[i], fx, fy))
+        # Dieselbe Schranke wie in der Seite: aufliegendes Eis hat seine
+        # Oberflaeche immer ueber dem Meeresspiegel (Begruendung in seite.mjs,
+        # paleo()). Sonst zaehlten die Notizen Eis, das die Karte nicht zeigt.
+        eis = np.where(flaeche > 0, eis, 0.0)
+        fels = flaeche - eis
+        # „Land" heisst hier, was ICE-6G_C selbst Land nennt: nicht Meer. Der
+        # Eisschild zaehlt dazu — deshalb stimmt die Zahl mit sftlf und mit
+        # Probe 3 ueberein, und deshalb steht daneben, wie viel davon Eis ist.
+        land = (flaeche > 0) & im_fenster
         unter_eis = (eis > 1.0) & im_fenster
         je.append(dict(
             ka=t,
             land_anteil=float(land.sum() / nm),
             eis_anteil=float(unter_eis.sum() / nm),
             eis_volumen_km3=float((eis * im_fenster).sum() * zellkm2 / 1000.0),
-            hoechster_m=float(np.nanmax(np.where(im_fenster, paleo, np.nan))),
+            hoechster_m=float(np.nanmax(np.where(im_fenster, flaeche, np.nan))),
+            hoechster_fels_m=float(np.nanmax(np.where(im_fenster, fels, np.nan))),
+            tiefster_fels_m=float(np.nanmin(np.where(im_fenster, fels, np.nan))),
             meeresspiegel_m=sl[i],
         ))
 
@@ -800,8 +952,21 @@ def main():
     #   stgit hat am Eisrand eine Stufe und darf deshalb nicht so weit
     #   heruntergehen. Teiler 4, rund 27 km — feiner als die 18 km, die
     #   ICE-6G_C selbst hat, waere gelogen; 27 km ist knapp darunter.
-    tdt = int(os.environ.get("TD_GROB", "8"))
-    est = int(os.environ.get("EIS_GROB", "4"))
+    # Das Grobgitter darf **nie feiner sein als die Quelle**. Sonst suggeriert
+    # die Karte eine Aufloesung, die in den Daten nicht steht — und genau das
+    # ist der Fehler, gegen den die ganze Konstruktion gebaut ist.
+    #
+    # Gerechnet aus der wirklichen Zellgroesse der Quelle am Mittelbreitengrad,
+    # in der **feineren** der beiden Achsen; darunter die physikalischen Boeden
+    # von vorher (Topo_Diff darf groeber, stgit nicht).
+    km_je_grad = ERDR * math.pi / 180.0
+    quelle_km = min(abs(gmeta["dlon"]) * km_je_grad * math.cos(math.radians(MLAT)),
+                    abs(gmeta["dlat"]) * km_je_grad)
+    nie_feiner = max(1, int(round(quelle_km / g["schritt"])))
+    tdt = int(os.environ.get("TD_GROB", str(max(8, nie_feiner))))
+    est = int(os.environ.get("EIS_GROB", str(max(4, nie_feiner))))
+    log(f"  Quellzelle {quelle_km:.0f} km = {nie_feiner} Zielzellen; "
+        f"Teiler Topo_Diff {tdt}, stgit {est}")
 
     def grobgitter(teiler):
         w = max(4, g["w"] // teiler)

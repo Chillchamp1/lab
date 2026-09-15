@@ -154,8 +154,12 @@ def ice6g_schreiben():
         # Vorwoelbung ringsum
         senke += 40.0 * f * np.exp(-((r - 22.0) ** 2) / 50.0)
         msp = -130.0 * f               # Meeresspiegel
-        topo_diff = senke - msp
-        topo = topo0 + topo_diff
+        # ICE-6G_Cs `Topo` ist die Hoehe der **Oberflaeche**: Fels, wo keiner
+        # liegt, Eisoberflaeche, wo Eis aufliegt. Topo_Diff erbt das. Das
+        # Geruest bildet es nach — sonst prueft es eine Kette, die es in den
+        # echten Dateien nicht gibt, und die Probe 1b liefe ins Leere.
+        topo = topo0 + senke - msp + eis
+        topo_diff = topo - topo0
 
         pfad = ZIEL / "ice6g" / f"I6_C.VM5a_10min.{ka:g}.nc"
         ds = Dataset(pfad, "w", format="NETCDF3_CLASSIC")
@@ -167,7 +171,7 @@ def ice6g_schreiben():
         ds.createVariable("Topo_Diff", "f4", ("lat", "lon"))[:] = topo_diff
         ds.createVariable("stgit", "f4", ("lat", "lon"))[:] = eis
         ds.createVariable("sftlf", "f4", ("lat", "lon"))[:] = (topo > 0).astype("f4")
-        ds.createVariable("stgif", "f4", ("lat", "lon"))[:] = (eis > 1).astype("f4")
+        ds.createVariable("sftgif", "f4", ("lat", "lon"))[:] = (eis > 1).astype("f4")
         ds.pruefgeruest = MARKE
         ds.close()
     log(f"  {len(zeiten)} ICE-6G_C-Scheiben")

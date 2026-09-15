@@ -1,30 +1,27 @@
 # Quellen-Inventur
 
-Stand: 14. September 2026. Wie in der Vorlage gilt: **jede Zeile ist selbst
+Stand: 15. September 2026. Wie in der Vorlage gilt: **jede Zeile ist selbst
 geprüft** — abgerufen, nicht aus dem Gedächtnis notiert. Wo „gesperrt" steht,
 ist das das Ergebnis eines wirklichen Abrufversuchs aus dieser
 Arbeitsumgebung, mit Datum und Fehlercode.
 
 ## 1. Der Befund vorweg
 
-Stand nach der Freigabe der Netzpolitik am 14.09.2026. **Zwei der drei Quellen
-sind geladen, die dritte hängt an einem fehlenden Zwischenzertifikat.**
+**Alle drei Quellen sind geladen.** Die letzte, ICE-6G_C, hing an einem
+fehlenden Zwischenzertifikat; das ist gelöst, ohne die Prüfung abzuschalten.
 
 | Wirt | für | Stand | |
 |---|---|---|---|
 | `www.ngdc.noaa.gov` | ETOPO 2022 | **geladen** | 15 Kacheln, 406 MB |
 | `store.pangaea.de`, `doi.pangaea.de` | DATED-1 | **geladen** | 12 MB, 58 Shapefiles |
-| `www.atmosp.physics.utoronto.ca` | ICE-6G_C | **offen** | CONNECT geht durch, TLS scheitert |
-| `crt.sectigo.com` | das fehlende Zwischenzertifikat | **gesperrt** | 403 auf CONNECT |
-| `pmip4.lsce.ipsl.fr` | Verzeichnisseite ICE-6G_C | **unbrauchbar** | Zertifikat am 4.8.2026 abgelaufen |
+| `www.atmosp.physics.utoronto.ca` | ICE-6G_C | **geladen** | 48 Dateien, 1° |
+| `crt.sectigo.com` | das fehlende Zwischenzertifikat | **erreichbar über CONNECT** | siehe unten |
+| `pmip4.lsce.ipsl.fr` | die 10'-Variante von ICE-6G_C | **unbrauchbar** | Zertifikat ungültig |
 | `www.bodc.ac.uk` | GEBCO | erreichbar, nicht gebraucht | ETOPO tut es |
 
-### Warum ICE-6G_C noch fehlt, und was genau fehlt
+### Wie ICE-6G_C doch noch kam
 
-Der Tunnel zum Toronto-Server steht (CONNECT 200). Das Serverzertifikat ist
-**gültig** — 29.04. bis 13.11.2026 — und deckt `www.atmosp.physics.utoronto.ca`
-in seinen alternativen Namen ab. Der Server sendet nur sein **Zwischen-
-zertifikat nicht mit**:
+Der Toronto-Server sendet sein **Zwischenzertifikat nicht mit**:
 
 ```
 Blatt:  CN = mail.atmosp.physics.utoronto.ca   (SAN enthält www.atmosp…)
@@ -32,28 +29,47 @@ fehlt:  CN = Sectigo Public Server Authentication CA OV R36
 Wurzel: CN = Sectigo Public Server Authentication Root R46   ← liegt im Bundle
 ```
 
-Die Wurzel ist also da, nur das Glied dazwischen nicht. Browser holen es
-stillschweigend über die AIA-Adresse im Zertifikat nach; `curl` tut das nicht.
-Die Adresse steht im Zertifikat:
+Browser holen das fehlende Glied stillschweigend über die AIA-Adresse im
+Zertifikat nach; `curl` tut das nicht. Die Adresse steht im Zertifikat und
+spricht nur **HTTP**, der Netzausgang hier nur CONNECT — also wird CONNECT
+erzwungen:
 
-    http://crt.sectigo.com/SectigoPublicServerAuthenticationCAOVR36.crt
+    curl --proxytunnel -x "$HTTPS_PROXY" \
+         http://crt.sectigo.com/SectigoPublicServerAuthenticationCAOVR36.crt
 
-`crt.sectigo.com` ist gesperrt. Geprüft und erfolglos: ob ein anderer
-erreichbarer Wirt dieselbe Zwischenstelle mitliefert (NOAA nutzt DigiCert,
-PANGAEA und NCEI Let's Encrypt, PyPI und npm etwas anderes), und ob die
-Zwischenstelle schon im Bundle liegt (nein — Bundles führen Wurzeln, keine
-Zwischenstellen).
+Das Glied wird vor dem Gebrauch gegen das Systembundle geprüft
+(`openssl verify -CAfile`) und erst dann angehängt. **Die TLS-Prüfung bleibt
+an.** Ein Zwischenzertifikat nachzuliefern, das der Server hätte senden
+sollen, ändert am Vertrauensanker nichts; die Prüfung auszuschalten schon.
 
-**Die TLS-Prüfung wird dafür nicht abgeschaltet.** Ein Zwischenzertifikat
-nachzuliefern, das der Server hätte senden sollen, ändert am Vertrauensanker
-nichts; die Prüfung auszuschalten schon. Es fehlt also genau ein Wirt in der
-Freigabe: `crt.sectigo.com`.
+Dazu kam eine zweite Hürde, die nichts mit TLS zu tun hat: der Server
+antwortet Nicht-Browsern mit **403**. `holen.sh` schickt deshalb eine
+Browser-Kennung mit — nachzulesen und zu ändern in `ICE6G_KENN`.
 
-### Was daraus folgt
+### Warum 1 Grad und nicht 10 Bogenminuten
 
-`build/holen.sh` trägt jetzt die **geprüften** Adressen: die erratenen von
-vorher waren teils falsch (siehe unten). Ein Lauf meldet 17 Dateien da, 48
-fehlend.
+Die Aufgabe nennt die **10'-Variante**. Die gibt es auf dem Toronto-Server
+nicht: sein Verzeichnis führt `I6_C.VM5a_1deg.<t>.nc.gz`, 48 Dateien, und
+sonst nichts von ICE-6G_C. Die 10'-Variante liegt beim PMIP4-Verzeichnis,
+<https://pmip4.lsce.ipsl.fr/doku.php/data:ice_ice6g_c>, und dessen Zertifikat
+ist aus **zwei** Gründen ungültig — nachgesehen am 15.09.2026:
+
+```
+subject=CN = livreblancpaleo.lsce.ipsl.fr     ← nicht pmip4.lsce.ipsl.fr
+notAfter=Aug  4 09:38:47 2026 GMT             ← seit 41 Tagen abgelaufen
+```
+
+Ein abgelaufenes Zertifikat ist eine Panne; ein abgelaufenes **mit falschem
+Namen** ist von einer Umleitung nicht zu unterscheiden. Das wird nicht
+umgangen. Genommen wird also die 1°-Variante desselben Modells, von der
+Quelle, deren Kette sich prüfen lässt.
+
+Was das kostet, steht in [METHODIK.md](METHODIK.md), Abschnitt 4: die groben
+Felder liegen dann bei 68 km statt 27 km, der Eisrand von ICE-6G_C wird
+entsprechend weich. Der **Fels** verliert dabei nichts — er kommt aus dem
+15″-DEM, und das ist unverändert. Und die Aussage über den Eisrand hängt
+ohnehin nicht an ICE-6G_C, sondern an DATED-1, das in voller Schärfe darüber
+liegt.
 
 ## 2. Was benutzt wird
 
@@ -70,18 +86,33 @@ ohne Belang, für die Zitation nicht):
 Antarctica component of postglacial rebound model ICE-6G_C (VM5a).*
 Geophysical Journal International 198(1), 537–563, doi:10.1093/gji/ggu140.
 
-Bezogen über das PMIP4-Verzeichnis,
-<https://pmip4.lsce.ipsl.fr/doku.php/data:ice_ice6g_c>, Variante **10
-Bogenminuten**, Dateien `I6_C.VM5a_10min.<t>.nc`.
+Bezogen über den Server der Arbeitsgruppe,
+<https://www.atmosp.physics.utoronto.ca/~peltier/data.php>, Variante **1
+Grad**, Dateien `I6_C.VM5a_1deg.<t>.nc.gz` — warum nicht die 10'-Variante der
+Aufgabe, steht in Abschnitt 1.
 
 Gebraucht werden vier Felder:
 
 | Feld | | wofür |
 |---|---|---|
-| `Topo_Diff` | Topographie minus heutige, m | **das Einzige, was ins Relief eingeht** (Schritt 3) |
-| `stgit` | Eismächtigkeit, m | die Eisoberfläche (Schritt 4) |
-| `Topo` | Paläotopographie auf 10', m | nur zur Gegenprobe gegen die eigene Rechnung |
-| `sftlf`, `stgif` | Land- und Eisflächenanteil | **nicht** für die Küstenlinie, siehe unten |
+| `Topo_Diff` | Oberfläche minus heutige, m | geht ins Relief ein (Schritt 3) |
+| `stgit` | Eismächtigkeit, m | trennt Eis vom Fels, siehe gleich |
+| `Topo` | Oberfläche zur Zeit t, m | Gegenprobe gegen die eigene Rechnung |
+| `sftlf`, `sftgif` | Land- und Eisflächenanteil | **nicht** für die Küstenlinie; sie sagen, wo Probe 1 scharf ist |
+
+**`Topo` und `Topo_Diff` enthalten das Eis.** Das steht in keiner Beschreibung
+der Dateien und ist am ersten Lauf mit echten Daten gemessen worden: über dem
+Bottnischen Meerbusen steht bei 21 ka `Topo_Diff` = +1845 m bei 2374 m
+Eismächtigkeit. Das ist nicht die Kruste, die sich hebt — die liegt dort 525 m
+**tiefer** als heute —, das ist das Eis obendrauf. Die Rechnung ist deshalb
+
+    Oberfläche(t) = DEM + Topo_Diff(t)
+    Fels(t)       = Oberfläche(t) − stgit(t)
+
+und nicht, wie es die Aufgabe formuliert, `Fels = DEM + Topo_Diff`. Wer das
+wörtlich nähme, bekäme das Skandinavische Gebirge bei 21 ka als 2000 m hohen
+**Fels** und das Eis noch einmal 2400 m darüber. `quellen.py` misst das als
+Probe 1b und bricht ab, wenn das Vorzeichen kippt.
 
 Die Schrittweite ist ungleichmässig und wird nicht geglättet: **26 bis 21 ka
 in 1-ka-Schritten, 21 ka bis heute in 0,5-ka-Schritten**, zusammen 48
@@ -146,13 +177,14 @@ zeigen, wie wenig eine plausible URL wert ist:
 | `download.pangaea.de/dataset/848117/allfiles.zip` | gibt es nicht (404). Der Datensatz ist eine **Liste von Dateiadressen**; `?format=textfile` nennt sie. Gebraucht wird `store.pangaea.de/Publications/HughesA-etal_2015/DATED-1_TimeSlices_shp.zip`. |
 | ETOPO `15s_bed_elev_netcdf`, Kacheln `N90W030`/`N90E000` | Der bed-Satz hat nur 62 Kacheln — es gibt ihn **nur dort, wo heute Eis liegt**. Für Europa ist `15s_surface_elev_netcdf` der Fels, und es braucht 15 Kacheln. |
 | DATED-1 als Linien in Grad, Dateiname `10ka_maximum` | **Polygone** in polaren Lambert-Azimutal-**Metern** auf WGS84, Dateien heissen `TS20_mc`, und die Zeit steht als Attribut `AV_Time` im DBF. |
-| `I6_C.VM5a_10min.<t>.nc` auf dem Toronto-Server | noch ungeprüft — der Wirt ist erreichbar, aber die TLS-Kette bricht ab. |
+| `I6_C.VM5a_10min.<t>.nc` auf dem Toronto-Server | gibt es dort nicht. Toronto führt **nur** `I6_C.VM5a_1deg.<t>.nc.gz`; die 10'-Variante liegt bei PMIP4 hinter einem ungültigen Zertifikat. Siehe Abschnitt 1. |
+| `Topo_Diff` sei die Bewegung der **Kruste** | es ist die Bewegung der **Oberfläche**, Eis inbegriffen. Gemessen, nicht gelesen. |
 
 ## 3. Was ausdrücklich nicht benutzt wird
 
 **`sftlf` für die Küstenlinie.** Die Aufgabe verlangt die Nulllinie der
 gerechneten Paläotopographie, und das ist auch sachlich richtig: `sftlf` ist
-ein Flächenanteil auf einem 10'-Gitter, also rund 18 km breit. Eine Küste
+ein Flächenanteil auf einem 1°-Gitter, also rund 67 km breit. Eine Küste
 daraus hätte die Auflösung eines Rasters, in dem die ganze Doggerbank vier
 Zellen breit ist, und sie widerspräche dem Relief, das daneben in voller
 Auflösung steht. Aus der Nulllinie gezogen ist die Küste dagegen **dieselbe
@@ -163,11 +195,11 @@ Höhenlinie kommen aus einer einzigen Zahl"), hier auf die Küste angewandt.
 die Gegenprobe. Wo die eigene Nulllinie und `sftlf` weit auseinanderlaufen,
 stimmt etwas nicht.
 
-**ICE-6G_C `Topo` als Relief.** 10 Bogenminuten sind rund 18 km. Die Alpen
+**ICE-6G_C `Topo` als Relief.** Ein Grad ist am 53. Breitengrad rund 67 km. Die Alpen
 wären darin ein Hügel von drei, vier Zellen Breite, das Skandinavische
 Gebirge ein Wall ohne Täler. Deshalb der Umweg über `Topo_Diff` (Schritt 3 der
 Aufgabe). `Topo` wird gelesen, um die eigene Rechnung dagegenzuhalten:
-`DEM_grob + Topo_Diff` muss `Topo` treffen, wenn das DEM auf 10' gemittelt
+`DEM_grob + Topo_Diff` muss `Topo` treffen, wenn das DEM auf 1° gemittelt
 wird. Weicht es ab, ist entweder der Bezugszeitpunkt oder das Vorzeichen
 falsch.
 
