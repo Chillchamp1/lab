@@ -73,27 +73,32 @@ ZWISCHEN = Path(os.environ.get("ZWISCHEN") or (HIER / "zwischen"))
 #
 #   Westen  -2470  Island und der ostgroenlaendische Schelf
 #   Osten   +2900  das Kaspische Meer und die Obmuendung
-#   Sueden  -2100  die afrikanische Seite des Mittelmeers
+#   Sueden  -1850  gerade noch Sizilien (Kap Passero -1807) und Tarifa (-1630)
 #   Norden  +3400  Franz-Josef-Land — und damit 97 Prozent der DATED-1-Raender
+#
+# Der Sueden stand bei -2100 und hielt damit 300 km Sahara, die nichts sagen.
+# Der Norden ist das Thema, und jeder Kilometer, den der Rahmen im Sueden
+# aufgibt, ist einer, den die Karte im Fenster groesser stehen darf.
 #
 # Der Norden ist der Grund fuer das Ganze. Das alte Fenster endete bei 72 N und
 # 45 O und schnitt damit ein Viertel der DATED-1-Rekonstruktion ab: den
 # **barentsisch-karischen Eisschild**, der auf einem Schelfmeer lag, so gross
 # war wie der skandinavische und dessen Rand das Fenster gar nicht mehr zeigte.
 X0, X1 = -2470.0, 2900.0
-Y0, Y1 = -2100.0, 3400.0
+Y0, Y1 = -1850.0, 3400.0
 # Mitte der Projektion. 53 N / 15 O liegt im Schwerpunkt des alten Fensters und
 # bleibt es auch fuer den neuen Rahmen: dort ist die Verzerrung am kleinsten,
 # und dort liegt der skandinavische Eisschild, um den es geht.
 MLON, MLAT = 15.0, 53.0
 ERDR = 6371.0088  # km, Radius der flaechengleichen Kugel
 
-# 760 Zellen Breite, und die Zahl ist gemessen, nicht gegriffen: die Buehne ist
-# auf 900 Bildpunkte gedeckelt, das Reliefgitter liegt bei 55 Prozent davon,
-# also bei rund 460. 760 ist damit gut anderthalbfach ueberabgetastet — mehr
-# waere Nutzlast ohne Bild, denn der Zoom ist ein Vergroesserungsglas und kein
-# neues Rechnen. Die Messreihe steht in ../METHODIK.md, Abschnitt 9.
-BREITE = int(os.environ.get("BREITE", "760"))
+# 900 Zellen Breite, und die Zahl ist gemessen, nicht gegriffen: seit die Karte
+# neben der Leiste steht statt ueber ihr, wird sie auf einem Schirm von 1 440
+# Punkten rund 900 Punkte breit gezeichnet. Bei 5 370 km Rahmenbreite ist das
+# ein Bildpunkt je 6 km — also eine Gitterzelle je Bildpunkt. Es waren 760 (7,1
+# km), solange die Karte halb so gross stand. Die Messreihe steht in
+# ../METHODIK.md, Abschnitt 9.
+BREITE = int(os.environ.get("BREITE", "900"))
 
 log = lambda s: print(s, file=sys.stderr)
 
@@ -313,7 +318,7 @@ MONTBLANC = (6.8652, 45.8326)
 # des groesseren Rahmens. Der eurasische Eiskomplex bestand aus drei Kuppen,
 # die beim Hochstand zusammenwuchsen und beim Abbau wieder auseinanderfielen:
 #
-#   Fennoscandia   die groesste, ueber dem Bottnischen Meerbusen
+#   Scandinavian   die groesste, ueber dem Bottnischen Meerbusen
 #   Barents-Kara   auf einem Schelfmeer, fast so gross — und im alten
 #                  Grad-Fenster gar nicht zu sehen
 #   Britain        die kleinste, mit knapp der halben Hoehe
@@ -330,8 +335,11 @@ MONTBLANC = (6.8652, 45.8326)
 # und mit ihm im Topf saehe man nur noch, dass Groenland hoeher ist. Dass es
 # da ist, ist trotzdem die Pointe: es ist das einzige Eis im Bild, das nie
 # wieder verschwindet.
+# Die Namen sind die, die auf der Karte stehen — die Seite haengt „ice" an:
+# „Scandinavian ice 2 694 m". „Fennoscandia" waere der genauere Begriff und
+# steht in der Methodik; auf der Karte gewinnt das Wort, das jeder kennt.
 KUPPEN = [
-    ("Fennoscandia", dict(lon=(0.0, 60.0), lat=(54.0, 71.5))),
+    ("Scandinavian", dict(lon=(0.0, 60.0), lat=(54.0, 71.5))),
     ("Barents-Kara", dict(lon=(10.0, 80.0), lat=(71.5, 83.5))),
     ("Britain",      dict(lon=(-11.0, 0.0), lat=(49.5, 61.0))),
 ]
@@ -433,8 +441,17 @@ def lies_dem(g, ZLON, ZLAT, maske):
             var = erste(ds, "elevation", "z", "Band1", "bed", "topo", "elev")
             ilon = np.where((lon >= blo0 - 0.3) & (lon <= blo1 + 0.3))[0]
             ilat = np.where((lat >= bla0 - 0.3) & (lat <= bla1 + 0.3))[0]
-            if ilon.size == 0 or ilat.size == 0:
-                ds.close(); continue
+            if ilon.size == 0:
+                # Kein Ueberlapp: **nicht** hier schliessen, das macht das
+                # finally. Zweimal geschlossen wirft netCDF4 „Not a valid ID",
+                # und das ist lange niemandem aufgefallen, weil jede Kachel
+                # der Kachelliste auch gebraucht wurde. Seit der Rahmen im
+                # Sueden knapper steht, liegen die 30-Grad-Kacheln daneben.
+                log(f"  {pfad.name}: kein Ueberlapp, uebersprungen")
+                continue
+            if ilat.size == 0:
+                log(f"  {pfad.name}: kein Ueberlapp, uebersprungen")
+                continue
             xa, xb = int(ilon[0]), int(ilon[-1]) + 1
             ya, yb = int(ilat[0]), int(ilat[-1]) + 1
 

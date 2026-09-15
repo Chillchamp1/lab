@@ -170,7 +170,7 @@ Grönland im Rahmen liegt, ist es keine Verlegenheit mehr, sondern die
 > Grösse sein, sonst stimmt der Bezugspunkt nicht.
 
 Gemessen wird das als Probe 2, und sie fällt über Grönland (Median 76 m)
-genauso aus wie über Europa (58 m). Der Fels kommt danach heraus, nicht
+genauso aus wie über Europa (52 m). Der Fels kommt danach heraus, nicht
 hinein: Fels = Fläche − `stgit`. Mit `bed` läge Grönland drei Kilometer zu
 tief und das eiszeitliche Eis schwebte über einer abgesackten Insel.
 

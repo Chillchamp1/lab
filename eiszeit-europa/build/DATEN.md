@@ -43,7 +43,7 @@ Hier stand einmal das Gegenteil, mit der Begründung, ein Oberflächen-DEM lege
 Grönlands heutiges Eis als Fels in die Karte. Das war falsch, und es ist nie
 aufgefallen, weil im alten Ausschnitt gar kein heutiges Eis lag. Seit der
 Rahmen bis Grönland reicht, entscheidet die Probe: DEM gegen `Topo`(0),
-Median 76 m über Grönland und 58 m über Europa — `surface` trifft, `bed` läge
+Median 76 m über Grönland und 52 m über Europa — `surface` trifft, `bed` läge
 drei Kilometer daneben.
 
 ## Prüfsummen
@@ -84,7 +84,7 @@ bestätigt die Ablage, und `build.mjs` läuft ohne Änderung.
 den vorigen diffen.
 
 Der teure Schritt ist `quellen.py`: 15 Bogensekunden über den Rahmen (in Grad
-64,3° W … 97,6° O und 28,9 … 83,9° N) sind über 500 Millionen Werte, die
+64,3° W … 97,6° O und 31,0 … 83,9° N) sind über 500 Millionen Werte, die
 streifenweise gelesen und auf das Zielgitter heruntergemittelt werden müssen. Das Ergebnis liegt in
 `zwischen/`; löschen erzwingt eine Neurechnung.
 
