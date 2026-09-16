@@ -256,6 +256,29 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
 .msp .wert,.temp .wert{flex:0 0 auto;font-size:11.5px;color:var(--ink2);
   font-variant-numeric:tabular-nums;min-width:5.4em;text-align:right}
 .msp .bahn2,.temp .bahn2{position:relative;flex:1;min-width:0;height:26px}
+/* Die Beschriftung. Bis hierher war das die einzige unbeschriftete Stelle der
+   Oberflaeche: die Farbleitern haben ihre Zeile, die Regler haben "Tilt" und
+   "Turn", die beiden Kurven hatten nur ihre Einheit — und eine Einheit ist
+   keine Bezeichnung. Der Satz, der sie benannte, steht in legText, und der
+   ist auf dem Telefon ausgeblendet (.fuss .klein); ausgerechnet dort fehlte
+   der Name also ganz.
+
+   Feste Breite, nicht min-width, damit **beide Kurven an derselben x-Stelle
+   beginnen**. Zwei Zeitachsen uebereinander, die nicht uebereinanderliegen,
+   sind schlimmer als gar keine Beschriftung — sie laden dazu ein, senkrecht
+   zu vergleichen. Mit min-width wurde die Spalte so breit wie ihr Inhalt:
+   98 px fuer "Global temperature" gegen 62 fuer "Sea level", die Bahnen
+   begannen 36 px versetzt. Und min-width:0 dazu, weil das automatische
+   Minimum eines Flexelements seine Min-Content-Breite ist und "temperature"
+   mit 62,86 px ueber die zuerst gesetzten 6,2 em ging. Gemessen: beide
+   Spalten exakt 66,00 px, in allen drei Lagen.
+
+   10 px und zwei Zeilen statt 11,5 px und einer: so passt "Global
+   temperature" ganz hinein und bleibt schmaler als ein einzeiliges
+   "Temperature". Das Wort global ist hier kein Beiwerk — ohne es liest
+   jemand "nur 7 Grad" und unterschaetzt, was er sieht. */
+.msp .marke,.temp .marke{flex:0 0 6.6em;min-width:0;font-size:10px;
+  line-height:1.15;color:var(--muted)}
 /* Die Temperaturzeile ruecht enger an den Meeresspiegel: die beiden gehoeren
    zusammen — was das Eis dem Meer nahm und was es die Welt an Waerme kostete. */
 .temp{margin-top:1px}
@@ -286,11 +309,13 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
     </div>
   </div>
   <div class="msp">
-    <div class="bahn2"><canvas id="mspBahn"></canvas></div>
+    <span class="marke">Sea level</span>
+    <div class="bahn2"><canvas id="mspBahn" aria-hidden="true"></canvas></div>
     <span class="wert" id="mspWert"></span>
   </div>
   <div class="temp">
-    <div class="bahn2"><canvas id="tempBahn"></canvas></div>
+    <span class="marke">Global temperature</span>
+    <div class="bahn2"><canvas id="tempBahn" aria-hidden="true"></canvas></div>
     <span class="wert" id="tempWert"></span>
   </div>
   <div class="sicht">

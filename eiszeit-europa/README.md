@@ -149,7 +149,9 @@ Abschnitt 8d.
 
 Unter dem Meeresspiegel läuft eine zweite Linie mit: die **globale
 Mitteltemperatur** gegen heute. Beim Hochstand rund **−7 °C**, am tiefsten
-−7,4 °C vor 17 900 Jahren.
+−7,4 °C vor 17 900 Jahren. Beide Kurven tragen ihren Namen links daneben —
+„Sea level" und „Global temperature" —, weil eine Einheit allein keine
+Bezeichnung ist.
 
 Quelle ist die LGMR (Osman u. a. 2021), eine Paläoklima-Datenassimilation aus
 Proxydaten — 24 bis 0 ka in 200-Jahr-Schritten, mit veröffentlichter

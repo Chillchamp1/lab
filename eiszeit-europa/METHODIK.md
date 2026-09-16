@@ -699,6 +699,47 @@ Eisschilden und ihren Vorwölbungen. **Das ist die einzige Stelle, an der diese
 Karte etwas ausserhalb ihres Ausschnitts liest** — die Zahl steht sonst
 nirgends in den Dateien.
 
+### Die Beschriftung der beiden Ticker
+
+Solange nur der Meeresspiegel mitlief, trug er seine Einheit und sonst nichts.
+Mit der Temperatur daneben reichte das nicht mehr: zwei Kurven, eine mit „m",
+eine mit „°C", und kein Name an keiner von beiden. Es war die einzige
+unbeschriftete Stelle der Oberfläche — die Farbleitern haben ihre Zeile, die
+Regler haben „Tilt" und „Turn". Der Satz, der die beiden benannte, stand nur
+in `legText`, und der ist auf dem Telefon ausgeblendet (`.fuss .klein`):
+ausgerechnet auf dem Gerät, auf dem die meisten die Seite sehen, fehlte der
+Name ganz.
+
+Jetzt steht links von jeder Bahn eine Spalte mit „Sea level" und „Global
+temperature", 10 px, gedämpft, nach demselben Muster wie „Tilt" und „Turn".
+Zwei Zeilen bei der Temperatur — so passt das Wort *global* hinein und bleibt
+schmaler als ein einzeiliges „Temperature" bei 11,5 px. Dass es hineingehört,
+ist keine Kosmetik: ohne dieses Wort liest jemand „nur 7 Grad" und
+unterschätzt, was er sieht.
+
+Die Spalte hat eine **feste** Breite (`flex:0 0 6.6em`), keine Mindestbreite.
+Der erste Versuch stand auf `min-width`, und die Messung zeigte, warum das
+nicht reicht: ein Flexelement mit `flex:0 0 auto` wird so breit wie sein
+Inhalt, „Global temperature" blieb also einzeilig auf 98 px, während „Sea
+level" 62 px belegte — die beiden Bahnen begannen 36 px versetzt. **Zwei
+Zeitachsen übereinander, die nicht übereinanderliegen, sind schlimmer als gar
+keine Beschriftung**, denn sie laden dazu ein, senkrecht zu vergleichen.
+
+Auch die feste Breite allein genügte noch nicht: das automatische Minimum
+eines Flexelements ist seine Min-Content-Breite, und „temperature" misst
+62,86 px — ein Pixel mehr als die gesetzten 6,2 em. Erst mit `min-width:0`
+und 6,6 em stehen beide Spalten auf exakt 66,00 px. Gemessen, auf Hundertstel,
+in allen drei Lagen:
+
+| | Spalte | Bahn links | Bahnbreite |
+|---|---|---|---|
+| Telefon 390 px | 66,00 | 84,00 | 225,91 |
+| engste Seitenspalte (1 040 px) | 66,00 | 813,00 | 135,91 |
+| Schirm quer 1 440 px | 66,00 | 1 161,81 | 187,09 |
+
+Die engste Lage ist die Seitenspalte bei `clamp(280px,23vw,390px)`; 136 px
+tragen eine Verlaufslinie, und den Wert liest ohnehin die Zahl rechts.
+
 ## 8. Das Prüfgerüst, und was es gefunden hat
 
 Solange keine der drei Quellen erreichbar war, wäre die ganze Kette
