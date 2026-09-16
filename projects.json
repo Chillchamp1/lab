@@ -52,5 +52,11 @@
     "titel": "Europa unter dem Eis",
     "beschreibung": "Eine animierte Reliefkarte Europas durch die letzte Eiszeit, von 26 000 Jahren vor heute bis in die Gegenwart. Das Gebirgsrelief kommt aus einem 15-Bogensekunden-Höhenmodell, die Bewegung darunter aus ICE-6G_C: die Kruste sinkt unter dem Eis ein und steigt danach wieder, der Meeresspiegel fällt um 135 Meter und legt Doggerland trocken. Darüber die drei Kuppen des eurasischen Eisschildes — Fennoskandien, Barents-Kara und Britannien, jede mit ihrer Höhe zur gezeigten Zeit — und das veröffentlichte Unsicherheitsband ihres Randes aus DATED-1, das breit wird, wo die Datierung dünn ist. In English.",
     "datum": "2026-09"
+  },
+  {
+    "slug": "bahn-zeitkarte",
+    "titel": "Deutschland, gezeichnet von seinen Fahrplänen",
+    "beschreibung": "4.781 Bahnhöfe des Fern- und Regionalverkehrs, nicht nach Kilometern gezeichnet, sondern nach der Reisezeit mit dem Zug: zwischen je zwei Bahnhöfen hängt eine Feder mit der Reisezeit als Ruhelänge, und die Karte ist die Lage, in der alle Federn zusammen am wenigsten ziehen — ein Kilometer Luftlinie ist dabei 1,14 Minuten wert. Die Höhe darüber ist die gemessene Erreichbarkeit, die mittlere Reisezeit von hier zu allem anderen, und ein Regler hebt das Wasser darüber: dann liegt das ICE-Kreuz Frankfurt–Fulda–Kassel–Erfurt–Würzburg als Binnenmeer unter Wasser und Sylt, Rügen und der Zipfel um Konstanz steigen als Gebirge daraus auf. Fahrplan ist ein Mittwoch aus dem offenen DELFI-Datensatz, Abfahrt in der dichtesten Stunde des Tages — die gemessen wurde und 06:36 bis 07:36 liegt.",
+    "datum": "2026-09"
   }
 ]

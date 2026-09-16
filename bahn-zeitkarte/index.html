@@ -1,0 +1,1126 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Deutschland, gezeichnet von seinen Fahrplänen</title>
+<meta name="description" content="Alle Bahnhöfe des deutschen Fern- und Regionalverkehrs, gezeichnet nach Reisezeit statt nach Kilometern — als Reliefkarte der Erreichbarkeit, mit Schnee über den abgehängten Regionen.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23000'/%3E%3Cpath d='M1 25h30' stroke='%232169a0' stroke-width='6'/%3E%3Cpath d='M3 22 12 7l7 8 5-7 5 14z' fill='%23c65c33'/%3E%3Cpath d='M12 7l3 3.4-6 0z' fill='%23fff'/%3E%3C/svg%3E">
+<style>
+:root{
+  --plane:#000; --surface:#0c0c0c; --ink:#fff; --ink2:#bfbeb6; --muted:#7f7d77;
+  --line:#232321; --axis:#33332f;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--plane);color:var(--ink);
+  font:14px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-text-size-adjust:100%}
+body{overflow-x:hidden}
+
+/* Karte links, Tafel rechts — wie in der Vorlage. Die Karte bekommt damit
+   die ganze Fläche, auf der sie etwas zeigen kann, und kein Name muss einem
+   Regler ausweichen. */
+#huelle{display:grid;grid-template-columns:1fr 344px;height:100svh;min-height:560px}
+#buehne{position:relative;overflow:hidden;padding:14px 0 14px 14px}
+#cv{position:absolute;inset:14px 0 14px 14px;width:calc(100% - 14px);
+  height:calc(100% - 28px);display:block;border-radius:10px;touch-action:pan-y}
+#tafel{overflow:auto;padding:20px 20px 40px;border-left:1px solid var(--line);
+  background:#060605}
+#tafel h1{margin:0 0 6px;font-size:21px;font-weight:650;letter-spacing:-.015em;
+  line-height:1.2;text-wrap:balance}
+#unterzeile{margin:0 0 16px;font-size:12.5px;color:var(--ink2)}
+#unterzeile b{color:var(--ink);font-weight:600}
+
+.gruppe{margin:0 0 15px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.gruppe:last-of-type{border-bottom:0}
+.titel{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 7px}
+.reg{margin:0 0 10px}
+.reg:last-child{margin-bottom:0}
+.reg label{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;
+  color:var(--muted);margin-bottom:3px}
+.reg label i{font-style:normal;color:var(--ink2);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;margin:0;accent-color:#9aa07f;height:17px}
+#knoepfe{display:flex;gap:6px;flex-wrap:wrap}
+button{font:inherit;font-size:11px;line-height:1.2;padding:4px 8px;border-radius:6px;
+  color:var(--muted);background:transparent;border:1px solid var(--axis);
+  border-style:dashed;cursor:pointer}
+button[aria-pressed=true],button:hover{color:var(--ink);border-style:solid}
+#band{height:10px;border-radius:2px;margin:0 0 4px;display:flex;overflow:hidden}
+#band div{flex:1}
+#bandtext{display:flex;justify-content:space-between;font-size:10.5px;
+  color:var(--muted);font-variant-numeric:tabular-nums}
+#schneezeile{margin:7px 0 0;font-size:11.5px;color:var(--ink2)}
+#schneezeile b{color:#fff}
+#mstrich{height:1px;background:var(--ink2);margin:5px 0 3px}
+#mtext,#mkm{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+#isozeile{margin:7px 0 0;font-size:11.5px;color:var(--ink2);display:none}
+.tip{position:fixed;pointer-events:none;background:#141412;border:1px solid var(--axis);
+  border-radius:7px;padding:6px 9px;font-size:12px;z-index:6;max-width:250px;
+  opacity:0;transition:opacity .09s;box-shadow:0 6px 22px rgba(0,0,0,.6)}
+.tip b{display:block;font-weight:600;margin-bottom:2px}
+.tip span{color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
+#ueber{position:fixed;inset:0;z-index:8;background:rgba(4,4,4,.97);overflow:auto;
+  padding:24px 20px 60px;display:none}
+#ueber.auf{display:block}
+#ueber .innen{max-width:660px;margin:0 auto}
+#ueber h2{font-size:17px;margin:0 0 4px}
+#ueber h3{font-size:13px;margin:22px 0 5px;color:var(--ink)}
+#ueber p,#ueber li{font-size:13px;color:var(--ink2);margin:0 0 9px}
+#ueber li{margin-bottom:4px}
+#ueber table{border-collapse:collapse;font-size:12.5px;color:var(--ink2);
+  margin:0 0 10px;width:100%}
+#ueber td,#ueber th{border-bottom:1px solid var(--line);padding:4px 8px 4px 0;
+  text-align:left}
+#ueber th{color:var(--muted);font-weight:500;font-size:11px}
+#ueber td.z{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+#ueber a{color:#9aa07f}
+#zu{position:sticky;top:0;float:right}
+#laden{position:absolute;inset:14px;display:grid;place-items:center;
+  color:var(--muted);font-size:13px;z-index:7;background:var(--plane)}
+@media (max-width:900px){
+  #huelle{grid-template-columns:1fr;height:auto;min-height:0}
+  #buehne{height:66svh;min-height:300px;padding:8px 8px 0}
+  #cv{inset:8px 8px 0;width:calc(100% - 16px);height:calc(100% - 8px)}
+  #tafel{border-left:0;border-top:1px solid var(--line);padding:16px 14px 34px;
+    overflow:visible}
+  #tafel h1{font-size:18px}
+  #laden{inset:8px}
+}
+</style>
+</head>
+<body>
+<div id="huelle">
+  <div id="buehne">
+    <canvas id="cv"></canvas>
+    <div id="laden">Fahrplan wird geladen …</div>
+  </div>
+  <div id="tafel">
+    <h1>Deutschland, gezeichnet von seinen Fahrplänen</h1>
+    <p id="unterzeile">…</p>
+
+    <div class="gruppe">
+      <p class="titel">Die Karte verziehen</p>
+      <div class="reg"><label>Landkarte → Zeitkarte <i id="wMorph">Zeitkarte</i></label>
+        <input id="sMorph" type="range" min="0" max="1000" value="1000"></div>
+      <div class="reg"><label>Wasserstand <i id="wWasser">+95 min</i></label>
+        <input id="sWasser" type="range" min="0" max="320" value="95"></div>
+    </div>
+
+    <div class="gruppe">
+      <p class="titel">Höhe: mittlere Reisezeit zu allem</p>
+      <div id="band"></div>
+      <div id="bandtext"><span id="bandmin">+0</span><span id="bandmax">…</span></div>
+      <p id="schneezeile">…</p>
+      <div id="mstrich"></div>
+      <span id="mtext">…</span><br><span id="mkm">…</span>
+      <p id="isozeile">…</p>
+    </div>
+
+    <div class="gruppe">
+      <p class="titel">Anzeigen</p>
+      <div id="knoepfe">
+        <button id="kNamen" aria-pressed="true">Namen</button>
+        <button id="kLinien" aria-pressed="true">Höhenlinien</button>
+        <button id="kPunkte" aria-pressed="false">Bahnhöfe</button>
+        <button id="kIso" aria-pressed="false">Isochronen</button>
+        <button id="kUeber">Über diese Karte</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="tip" id="tip"></div>
+<div id="ueber"><div class="innen"><button id="zu">schließen</button>
+  <div id="ueberinhalt"></div></div></div>
+<script>
+"use strict";
+/* ===========================================================================
+   Eine Karte, auf der der Maßstab nicht der Kilometer ist, sondern die Minute.
+
+   Zwei Zahlen stecken in jedem Bild. Die **Lage** kommt aus einem
+   Federmodell: zwischen je zwei Bahnhöfen hängt eine Feder, deren Ruhelänge
+   die Reisezeit mit dem Zug ist, und die Karte ist die Lage, in der alle
+   Federn zusammen am wenigsten ziehen. Die **Höhe** ist die mittlere
+   Reisezeit von diesem Bahnhof zu allen anderen — gemessen, nicht
+   modelliert. Wer schlecht erreichbar ist, liegt hoch; die Knoten und die
+   schnellen Achsen liegen tief und laufen unter Wasser; über den am
+   schlechtesten erreichbaren Gegenden liegt Schnee.
+
+   Gezeichnet wird das, wie ein Atlas ein Gebirge zeichnet: ein Höhenfeld,
+   fünfunddreißig Farbbänder darüber, auf jeder Bandgrenze eine Höhenlinie,
+   und ein Licht aus Nordwesten, das in die Farbe hineingerechnet wird statt
+   als graue Ebene darüberzuliegen.
+   =========================================================================== */
+
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d', {alpha:false});
+const $ = id => document.getElementById(id);
+
+/* ---------- Die Farbleiter: fünf Blaustufen unter Wasser, vierundzwanzig
+   Höhenstufen eines physischen Atlas darüber — Tiefland satt grün, Gelbgrün,
+   Gelb, Ocker, Orange, Rot, Braun —, und zuoberst sechs Bänder Schnee.
+   Fünfunddreißig Bänder, damit jede Grenze eine Höhenlinie tragen kann und
+   die Karte die gestochene Dichte einer Reliefkarte bekommt. ---------- */
+const WASSER = ['#04182d','#072843','#0b3a5e','#11507c','#186699'];
+const LAND = ['#17682b','#20742c','#2b812e','#388e31','#479a36','#589f3b',
+  '#6cab41','#82b649','#98c052','#aec95b','#c2ce62','#d2cb60','#dcc05a',
+  '#e3b154','#e39f4b','#df8c43','#d7793c','#cc6737','#bf5734','#ae4931',
+  '#9b3d2e','#87362c','#75342d','#6a3b35'];
+const SCHNEE = ['#9c918d','#b4aca9','#c9c2bf','#dcd8d6','#efedec','#ffffff'];
+const RAMPE = WASSER.concat(LAND, SCHNEE);
+const NW = WASSER.length, NL = LAND.length, NS = SCHNEE.length;
+/* Wo im Land-und-Schnee-Teil die Schneegrenze liegt. */
+const SCHNEEANTEIL = NL / (NL + NS);
+
+let P = null, ISO = null;
+let n = 0, nm = [], halte = null;
+let gxx, gyy, fxx, fyy, hh, hmax = 1;
+let wx, wy;
+let umriss = [], laender = [], umrissW = [], laenderW = [];
+let RAHMEN = null;
+
+const Z = {morph:1, wasser:95, namen:true, linien:true, punkte:false,
+           iso:false, isoKnoten:-1};
+
+/* ------------------------------------------------------------------ Laden */
+function entpacke(b64, teiler){
+  const s = atob(b64), u = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);
+  const q = new Int16Array(u.buffer), f = new Float32Array(q.length);
+  for (let i = 0; i < q.length; i++) f[i] = q[i] / teiler;
+  return f;
+}
+
+async function los(){
+  P = await (await fetch('data/karte.json')).json();
+  n = P.namen.length; nm = P.namen; halte = P.halte;
+  const mk = P.minprokm;
+  gxx = entpacke(P.geox, 10); gyy = entpacke(P.geoy, 10);
+  for (let i = 0; i < n; i++){ gxx[i] *= mk; gyy[i] *= mk; }
+  fxx = entpacke(P.flachx, 10); fyy = entpacke(P.flachy, 10);
+  hh  = entpacke(P.zugang, 10);
+  const ring = r => {
+    const X = entpacke(r[0],10), Y = entpacke(r[1],10), o = new Float32Array(X.length*2);
+    for (let i=0;i<X.length;i++){ o[2*i]=X[i]*mk; o[2*i+1]=Y[i]*mk; }
+    return o;
+  };
+  umriss = P.umriss.map(ring); laender = P.laender.map(ring);
+  wx = new Float32Array(n); wy = new Float32Array(n);
+  for (let i=0;i<n;i++) if (hh[i] > hmax) hmax = hh[i];
+  geoGitterBauen();
+  dreieckeBauen();
+  rahmenBestimmen();
+  bauLegende(); bauText(); text();
+  $('laden').remove();
+  addEventListener('resize', () => { messen(); bald(); });
+  messen();
+}
+
+/* Der Rahmen wird **einmal** bestimmt und gilt für jede Reglerstellung:
+   über die Bahnhöfe in beiden Lagen *und* über den Umriss in beiden Lagen.
+   Nur die Bahnhöfe zu nehmen war zu wenig — das Verschiebungsfeld verzieht
+   die Küste über sie hinaus, und dann stand Sylt vor dem Bildrand. Und einen
+   Rahmen je Reglerstellung zu rechnen wäre falsch: dann wandert der Maßstab
+   beim Schieben, und die Verformung wäre nicht mehr zu sehen. */
+function rahmenBestimmen(){
+  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  const nimm = (x,y) => { if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; };
+  for (let i=0;i<n;i++){ nimm(gxx[i],gyy[i]); nimm(fxx[i],fyy[i]); }
+  const merk = Z.morph;
+  for (const m of [0, 1]){
+    Z.morph = m; lage(); umrissVerziehen();
+    for (const rs of [umrissW, laenderW]) for (const r of rs)
+      for (let i=0;i<r.length;i+=2) nimm(r[i], r[i+1]);
+  }
+  Z.morph = merk; lage();
+  RAHMEN = [x0,x1,y0,y1];
+}
+
+/* ----------------------------------------------------- Maße und Projektion */
+let W = 0, H = 0, DPR = 1;
+let FW = 0, FH = 0, ZELLE = 3.0, X0 = 0, Y0 = 0;
+let mitteX = 0, mitteY = 0, skala = 1, zx = 0, zy = 0;
+let FEINHEIT = 3.0;
+
+function messen(){
+  const r = cv.getBoundingClientRect();
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = Math.max(280, Math.round(r.width)); H = Math.max(280, Math.round(r.height));
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  bald();
+}
+
+function lage(){
+  const m = Z.morph;
+  for (let i=0;i<n;i++){
+    wx[i] = gxx[i] + (fxx[i]-gxx[i])*m;
+    wy[i] = gyy[i] + (fyy[i]-gyy[i])*m;
+  }
+}
+const schirmX = v => mitteX + (v - zx) * skala;
+const schirmY = v => mitteY - (v - zy) * skala;
+
+/* ------------------------------------------------- Der Umriss, verzogen
+   Die Grenzen liegen in der Geografie, die Karte liegt irgendwo zwischen
+   Geografie und Zeit. Verschoben wird jeder Grenzpunkt mit dem
+   Verschiebungsfeld der Bahnhöfe selbst — gewichtet mit dem Kehrwert des
+   Quadrats des Abstands. So bleibt die Kieler Förde die Kieler Förde, auch
+   wenn Kiel wegläuft. */
+let gZ=0, gW=0, gH_=0, gX0=0, gY0=0, gKopf=null, gListe=null;
+function geoGitterBauen(){
+  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  for (let i=0;i<n;i++){
+    if(gxx[i]<x0)x0=gxx[i]; if(gxx[i]>x1)x1=gxx[i];
+    if(gyy[i]<y0)y0=gyy[i]; if(gyy[i]>y1)y1=gyy[i];
+  }
+  gZ = 45; gX0 = x0-90; gY0 = y0-90;
+  gW = Math.ceil((x1-x0+180)/gZ); gH_ = Math.ceil((y1-y0+180)/gZ);
+  const anz = new Int32Array(gW*gH_+1), zelle = new Int32Array(n);
+  for (let i=0;i<n;i++){
+    const cx = Math.min(gW-1, Math.max(0, ((gxx[i]-gX0)/gZ)|0));
+    const cy = Math.min(gH_-1, Math.max(0, ((gyy[i]-gY0)/gZ)|0));
+    zelle[i] = cy*gW+cx; anz[zelle[i]+1]++;
+  }
+  for (let k=0;k<gW*gH_;k++) anz[k+1]+=anz[k];
+  gKopf = anz; gListe = new Int32Array(n);
+  const lauf = anz.slice();
+  for (let i=0;i<n;i++) gListe[lauf[zelle[i]]++] = i;
+}
+const WARPEPS = 35*35, WARPMIN = 26;
+function verziehe(px, py, aus){
+  const cx0 = ((px-gX0)/gZ)|0, cy0 = ((py-gY0)/gZ)|0;
+  let sw=0, sx=0, sy=0, gef=0;
+  for (let r=1; r<=9 && gef<WARPMIN; r++){
+    sw=0;sx=0;sy=0;gef=0;
+    for (let dy=-r;dy<=r;dy++) for (let dx=-r;dx<=r;dx++){
+      const jx=cx0+dx, jy=cy0+dy;
+      if (jx<0||jy<0||jx>=gW||jy>=gH_) continue;
+      for (let q=gKopf[jy*gW+jx]; q<gKopf[jy*gW+jx+1]; q++){
+        const i = gListe[q], ex = gxx[i]-px, ey = gyy[i]-py;
+        const w = 1/(ex*ex+ey*ey+WARPEPS);
+        sw += w; sx += w*(wx[i]-gxx[i]); sy += w*(wy[i]-gyy[i]); gef++;
+      }
+    }
+  }
+  aus[0] = px + (sw>0?sx/sw:0); aus[1] = py + (sw>0?sy/sw:0);
+}
+function umrissVerziehen(){
+  const t = [0,0];
+  const eine = rs => rs.map(r => {
+    const o = new Float32Array(r.length);
+    for (let i=0;i<r.length;i+=2){ verziehe(r[i], r[i+1], t); o[i]=t[0]; o[i+1]=t[1]; }
+    return o;
+  });
+  umrissW = eine(umriss); laenderW = eine(laender);
+}
+
+/* ------------------------------------------------- Der Umriss in Dreiecken
+   Ein verzogener Ring lässt sich nicht einfach füllen. Das
+   Verschiebungsfeld schert ihn, und wo er sich dabei selbst überschlägt,
+   heben sich die Umlaufzahlen auf: mit der Nonzero-Regel wird aus der Falte
+   ein **Loch**, und auf der Karte standen kleine schwarze Dreiecke mitten im
+   Land. Mit Evenodd wird es nicht besser, nur anders.
+
+   Darum wird jeder Ring **einmal** in Dreiecke zerlegt — Ohrenschneiden,
+   O(n²) bei 2.528 Punkten, also einmalig nichts — und je Bild werden die
+   Dreiecke gefüllt. Sie überdecken einander in der Falte, statt sich
+   wegzurechnen. Damit das auch bei umgeklappten Dreiecken gilt, wird die
+   Umlaufrichtung nach dem Verziehen geprüft und notfalls gedreht: dann
+   zählen alle positiv, und eine Überlappung ist nie ein Loch. */
+function ohren(r){
+  const m = r.length/2;
+  const idx = []; for (let i=0;i<m;i++) idx.push(i);
+  let flaeche = 0;
+  for (let i=0;i<m;i++){
+    const j=(i+1)%m;
+    flaeche += r[2*i]*r[2*j+1] - r[2*j]*r[2*i+1];
+  }
+  if (flaeche < 0) idx.reverse();
+  const X = i => r[2*idx[i]], Y = i => r[2*idx[i]+1];
+  const kreuz = (a,b,c) => (X(b)-X(a))*(Y(c)-Y(a)) - (Y(b)-Y(a))*(X(c)-X(a));
+  const drin = (a,b,c,p) => {
+    const d1 = kreuz(a,b,p), d2 = kreuz(b,c,p), d3 = kreuz(c,a,p);
+    return (d1>=0 && d2>=0 && d3>=0) || (d1<=0 && d2<=0 && d3<=0);
+  };
+  const tri = [];
+  const lebt = new Uint8Array(m).fill(1);
+  let uebrig = m, wache = 0;
+  let a = 0;
+  const naechst = i => { let j=(i+1)%m; while(!lebt[j]) j=(j+1)%m; return j; };
+  while (uebrig > 3 && wache < 8*m){
+    wache++;
+    const b = naechst(a), c = naechst(b);
+    let ok = kreuz(a,b,c) > 0;
+    if (ok) for (let q=0;q<m;q++){
+      if (!lebt[q] || q===a || q===b || q===c) continue;
+      if (drin(a,b,c,q)){ ok = false; break; }
+    }
+    if (ok){
+      tri.push(idx[a], idx[b], idx[c]);
+      lebt[b] = 0; uebrig--; wache = 0;
+    } else a = b;
+  }
+  {   // der Rest als Fächer — bei einem entarteten Ring besser als nichts
+      const rest = [];
+      for (let q=0;q<m;q++) if (lebt[q]) rest.push(idx[q]);
+      for (let q=1;q+1<rest.length;q++) tri.push(rest[0], rest[q], rest[q+1]);
+  }
+  return tri;
+}
+let dreiecke = null;
+function dreieckeBauen(){
+  dreiecke = [...umriss, ...laender].map(ohren);
+}
+
+/* --------------------------------------------------------- Maske und Feld */
+let maskeC = null, maskeA = null, inseln = 0;
+let fH = null, fD = null, fI = null;
+
+function feldMasseSetzen(){
+  const [x0,x1,y0,y1] = RAHMEN;
+  const rand = 18;
+  ZELLE = FEINHEIT;
+  X0 = x0 - rand; Y0 = y0 - rand;
+  FW = Math.ceil((x1 - x0 + 2*rand) / ZELLE);
+  FH = Math.ceil((y1 - y0 + 2*rand) / ZELLE);
+}
+const feldX = x => (x - X0)/ZELLE;
+const feldY = y => (Y0 + FH*ZELLE - y)/ZELLE;
+
+/* Wo ist Land?
+   Zuerst sagt es der **verzogene Umriss**: Deutschland, mit dem
+   Verschiebungsfeld in die Zeit gezogen. Der reicht aber nicht, denn der
+   Umriss ist ein geglättetes Mittel, und die Federkarte schleudert einzelne
+   Bahnhöfe weit darüber hinaus — die Rügener Bäderbahn liegt in der Zeit
+   zwölf Stunden von allem entfernt und stünde in der reinen Zeitkarte
+   draußen im Schwarzen. Ein Bahnhof gehört immer auf Land.
+   Dazu kommt darum eine zweite Schicht, aber **nur für die Ausgewanderten**:
+   für jeden Bahnhof, der außerhalb des Umrisses liegt, eine weiche Scholle.
+   Das stellt sich von selbst richtig ein — in der Landkarte liegt kein
+   Bahnhof draußen und es kommt nichts hinzu, und je weiter der Regler in die
+   Zeit läuft, desto mehr Inseln lösen sich vom Land. Eine frühere Fassung nahm
+   dafür die Abdeckung *aller* Bahnhöfe und blies damit auch die Landkarte auf
+   eine Wolke auf, zwanzig Kilometer über jede Küste hinaus. */
+const INSELSIG = 13, INSEL0 = 0.14, INSEL1 = 0.34;
+function maskeBauen(){
+  if (!maskeC){ maskeC = document.createElement('canvas'); }
+  if (maskeC.width !== FW || maskeC.height !== FH){
+    maskeC.width = FW; maskeC.height = FH;
+  }
+  const mk = maskeC.getContext('2d', {willReadFrequently:true});
+  mk.clearRect(0,0,FW,FH);
+  mk.fillStyle = '#fff';
+  mk.beginPath();
+  const alle = [...umrissW, ...laenderW];
+  for (let ri=0; ri<alle.length; ri++){
+    const r = alle[ri], tri = dreiecke[ri];
+    for (let q=0;q<tri.length;q+=3){
+      const a=tri[q], b=tri[q+1], c=tri[q+2];
+      let ax=feldX(r[2*a]), ay=feldY(r[2*a+1]);
+      let bx=feldX(r[2*b]), by=feldY(r[2*b+1]);
+      let cx=feldX(r[2*c]), cy=feldY(r[2*c+1]);
+      if ((bx-ax)*(cy-ay) - (by-ay)*(cx-ax) < 0){
+        const tx=bx, ty=by; bx=cx; by=cy; cx=tx; cy=ty;
+      }
+      mk.moveTo(ax, ay); mk.lineTo(bx, by); mk.lineTo(cx, cy); mk.closePath();
+    }
+  }
+  mk.fill();
+
+  const d = mk.getImageData(0,0,FW,FH).data;
+  maskeA = new Uint8Array(FW*FH);
+  for (let k=0;k<FW*FH;k++) maskeA[k] = d[(k<<2)+3];
+  /* Wer liegt draußen? Mit einer Zelle Nachsicht, weil der Umriss auf
+     Zellenkanten gerastert ist und die Bahnhöfe im Grenzsaum sonst alle als
+     ausgewandert gälten. */
+  const sig = INSELSIG / ZELLE, rad = Math.ceil(2.6*sig), inv = -0.5/(sig*sig);
+  let raus = 0;
+  fI.fill(0);
+  for (let i=0;i<n;i++){
+    const cx = feldX(wx[i]), cy = feldY(wy[i]);
+    const ix = cx|0, iy = cy|0;
+    let drin = false;
+    for (let dy=-1;dy<=1 && !drin;dy++) for (let dx=-1;dx<=1;dx++){
+      const jx=ix+dx, jy=iy+dy;
+      if (jx<0||jy<0||jx>=FW||jy>=FH) continue;
+      if (maskeA[jy*FW+jx] > 120){ drin = true; break; }
+    }
+    if (drin) continue;
+    raus++;
+    const ix0 = Math.max(0,(cx-rad)|0), ix1 = Math.min(FW-1,(cx+rad)|0);
+    const iy0 = Math.max(0,(cy-rad)|0), iy1 = Math.min(FH-1,(cy+rad)|0);
+    for (let jy=iy0;jy<=iy1;jy++){
+      const dy = jy+0.5-cy, dy2 = dy*dy, row = jy*FW;
+      for (let jx=ix0;jx<=ix1;jx++){
+        const dx = jx+0.5-cx, w = Math.exp((dx*dx+dy2)*inv);
+        if (w > fI[row+jx]) fI[row+jx] = w;
+      }
+    }
+  }
+  inseln = raus;
+  if (raus) for (let k=0;k<FW*FH;k++){
+    let b = (fI[k] - INSEL0) / (INSEL1 - INSEL0);
+    b = b < 0 ? 0 : b > 1 ? 255 : b * 255;
+    if (b > maskeA[k]) maskeA[k] = b;
+  }
+}
+
+function feldBauen(){
+  fH = new Float32Array(FW*FH); fD = new Float32Array(FW*FH);
+  fI = new Float32Array(FW*FH);
+  /* Aufgetragen wird gespritzt, nicht gesucht: jeder Bahnhof legt eine
+     Glockenkurve ins Feld. Das kostet einmal die Zahl der Bahnhöfe mal die
+     Fläche der Glocke, statt für jede Zelle die nächsten Bahnhöfe zu
+     suchen — gemessen ein Achtel der Zeit, und das Feld wird glatter. */
+  const sig = 15.0 / ZELLE, rad = Math.ceil(3*sig), inv = -0.5/(sig*sig);
+  for (let i=0;i<n;i++){
+    const cx = feldX(wx[i]), cy = feldY(wy[i]);
+    const ix0 = Math.max(0,(cx-rad)|0), ix1 = Math.min(FW-1,(cx+rad)|0);
+    const iy0 = Math.max(0,(cy-rad)|0), iy1 = Math.min(FH-1,(cy+rad)|0);
+    const h = hh[i];
+    for (let iy=iy0; iy<=iy1; iy++){
+      const dy = iy+0.5-cy, dy2 = dy*dy, row = iy*FW;
+      for (let ix=ix0; ix<=ix1; ix++){
+        const dx = ix+0.5-cx, w = Math.exp((dx*dx+dy2)*inv);
+        fD[row+ix] += w; fH[row+ix] += w*h;
+      }
+    }
+  }
+  for (let k=0;k<FW*FH;k++) fH[k] = fD[k] > 1e-6 ? fH[k]/fD[k] : NaN;   /* fD bleibt: die Maske liest es */
+  /* Löcher füllen: wo keine Glocke hinreicht, wird aus den Nachbarn
+     nachgezogen, bis keines mehr offen ist. Ein Loch mit einem gesetzten
+     Ersatzwert zu stopfen war der falsche Weg — es wurde zur weißen Kuppe. */
+  for (let pass=0; pass<40; pass++){
+    let offen = 0;
+    const kopie = fH.slice();
+    for (let iy=0;iy<FH;iy++) for (let ix=0;ix<FW;ix++){
+      const k = iy*FW+ix;
+      if (!Number.isNaN(kopie[k])) continue;
+      let s=0,c=0;
+      for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++){
+        const jx=ix+dx, jy=iy+dy;
+        if (jx<0||jy<0||jx>=FW||jy>=FH) continue;
+        const v = kopie[jy*FW+jx];
+        if (!Number.isNaN(v)){ s+=v; c++; }
+      }
+      if (c) fH[k] = s/c; else offen++;
+    }
+    if (!offen) break;
+  }
+  glaetten(fH, FW, FH);
+}
+
+function glaetten(a, w, h){
+  const t = new Float32Array(a.length);
+  for (let y=0;y<h;y++) for (let x=0;x<w;x++){
+    const l = x>0?a[y*w+x-1]:a[y*w+x], r = x<w-1?a[y*w+x+1]:a[y*w+x];
+    t[y*w+x] = (l + 2*a[y*w+x] + r) * .25;
+  }
+  for (let y=0;y<h;y++) for (let x=0;x<w;x++){
+    const u = y>0?t[(y-1)*w+x]:t[y*w+x], d = y<h-1?t[(y+1)*w+x]:t[y*w+x];
+    a[y*w+x] = (u + 2*t[y*w+x] + d) * .25;
+  }
+}
+
+/* --------------------------------------------------------------- Das Bild */
+let bildC = null, bildX = null, bild = null;
+const R8=[], G8=[], B8=[];
+for (const s of RAMPE){
+  R8.push(parseInt(s.slice(1,3),16));
+  G8.push(parseInt(s.slice(3,5),16));
+  B8.push(parseInt(s.slice(5,7),16));
+}
+let landMax = 1, schneeLinie = 0;
+
+function bildBauen(){
+  if (!bildC || bildC.width !== FW || bildC.height !== FH){
+    bildC = document.createElement('canvas'); bildC.width = FW; bildC.height = FH;
+    bildX = bildC.getContext('2d', {willReadFrequently:true});
+    bild = bildX.createImageData(FW, FH);
+  }
+  const d = bild.data;
+  const see = Z.wasser;
+  landMax = see + 1;
+  {
+    const N = 512, hist = new Int32Array(N + 1);
+    let roh = see + 1, zahl = 0;
+    for (let k=0;k<FW*FH;k++) if (maskeA[k] > 120 && fH[k] > roh) roh = fH[k];
+    for (let k=0;k<FW*FH;k++) if (maskeA[k] > 120){
+      hist[Math.min(N, Math.max(0, Math.round(fH[k] / roh * N)))]++;
+      zahl++;
+    }
+    let bis = Math.floor(zahl * 0.995), s2 = 0, b = N;
+    for (let i=0;i<=N;i++){ s2 += hist[i]; if (s2 >= bis){ b = i; break; } }
+    landMax = Math.max(see + 1, b / N * roh);
+  }
+  const bandL = (landMax - see) / (NL + NS);
+  const bandW = Math.max(1, see) / NW;
+  schneeLinie = see + bandL * NL;
+  /* Licht aus Nordwesten, 45 Grad über dem Horizont. Der Gradient wird im
+     Feldgitter genommen und mit einem festen Faktor überhöht — ohne ihn wäre
+     ein Gelände, dessen Spanne ein Zehntel seiner Breite ist, glatt wie
+     Glas. Das Licht geht in die Farbe hinein und liegt nicht als graue
+     Ebene darüber: soft-light enthält den Faktor C·(1−C) und kann Weiß nicht
+     dunkler machen, käme also genau auf den Gipfeln nicht an. */
+  const vz = 2.7;
+  const lx = -0.5774, ly = -0.5774, lz = 0.5774;
+  const linien = Z.linien;
+  for (let iy=0; iy<FH; iy++){
+    const oben = Math.max(0,iy-1)*FW, unten = Math.min(FH-1,iy+1)*FW, hier = iy*FW;
+    for (let ix=0; ix<FW; ix++){
+      const k = hier+ix, j = k<<2;
+      const h = fH[k];
+      const hx = (fH[hier + Math.min(FW-1,ix+1)] - fH[hier + Math.max(0,ix-1)]) * vz / (2*ZELLE);
+      const hy = (fH[unten + ix] - fH[oben + ix]) * vz / (2*ZELLE);
+      let nx = -hx, ny = hy;
+      const nl = Math.sqrt(nx*nx + ny*ny + 1);
+      let licht = (nx*lx + ny*ly + lz) / nl;
+      licht = (licht - 0.577) * 1.45;
+      const unterWasser = h < see;
+      let bi, stufe, band;
+      if (unterWasser){
+        band = bandW; stufe = h / bandW;
+        bi = Math.min(NW-1, Math.max(0, Math.floor(stufe)));
+        licht *= 0.30;
+      } else {
+        band = bandL; stufe = (h - see) / bandL;
+        bi = NW + Math.min(NL+NS-1, Math.max(0, Math.floor(stufe)));
+      }
+      let r = R8[bi], g = G8[bi], b = B8[bi];
+      if (licht > 0){ r += (255-r)*licht*.52; g += (255-g)*licht*.52; b += (255-b)*licht*.52; }
+      else { const f = Math.max(.47, 1 + licht*.42); r*=f; g*=f; b*=f; }
+      /* Die Höhenlinie liegt auf der Bandgrenze. Gemessen wird der Abstand
+         dorthin **in Zellen**, also durch den Betrag des Gradienten geteilt:
+         damit ist die Linie im Steilen so dünn wie im Flachen. */
+      if (linien){
+        const fr = stufe - Math.floor(stufe);
+        const grad = Math.hypot(hx, hy) / vz / band * ZELLE;
+        const ab = Math.min(fr, 1-fr) / Math.max(grad, 1e-4);
+        if (ab < 0.85){
+          const s = 1 - 0.34*(1 - ab/0.85);
+          r*=s; g*=s; b*=s;
+        }
+      }
+      d[j] = r<0?0:r>255?255:r; d[j+1] = g<0?0:g>255?255:g;
+      d[j+2] = b<0?0:b>255?255:b; d[j+3] = maskeA[k];
+    }
+  }
+  bildX.putImageData(bild, 0, 0);
+}
+
+/* ------------------------------------------------------------- Zeichnen */
+function zeichne(){
+  lage();
+  umrissVerziehen();
+  feldMasseSetzen();
+  feldBauen();
+  maskeBauen();
+  bildBauen();
+
+  const [x0,x1,y0,y1] = RAHMEN;
+  zx = (x0+x1)/2; zy = (y0+y1)/2;
+  skala = Math.min(W / (x1-x0), H / (y1-y0)) * 0.985;
+  mitteX = W/2; mitteY = H/2;
+
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H);
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(bildC, schirmX(X0), schirmY(Y0 + FH*ZELLE),
+                FW*ZELLE*skala, FH*ZELLE*skala);
+  grenzenMalen();
+  if (Z.iso && ISO && Z.isoKnoten >= 0) isoMalen();
+  if (Z.punkte) punkteMalen();
+  if (Z.namen) namenMalen();
+  tafelSetzen();
+}
+
+function grenzenMalen(){
+  const f = 1 - 0.62 * Z.morph;
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  for (const r of laenderW) pfad(r);
+  ctx.strokeStyle = 'rgba(255,255,255,' + (.11*f).toFixed(3) + ')';
+  ctx.lineWidth = .8; ctx.stroke();
+  ctx.beginPath();
+  for (const r of umrissW) pfad(r);
+  ctx.strokeStyle = 'rgba(255,255,255,' + (.34*f).toFixed(3) + ')';
+  ctx.lineWidth = 1.1; ctx.stroke();
+}
+function pfad(r){
+  ctx.moveTo(schirmX(r[0]), schirmY(r[1]));
+  for (let i=2;i<r.length;i+=2) ctx.lineTo(schirmX(r[i]), schirmY(r[i+1]));
+}
+
+function punkteMalen(){
+  ctx.fillStyle = 'rgba(255,255,255,.45)';
+  for (let i=0;i<n;i++) ctx.fillRect(schirmX(wx[i])-.6, schirmY(wy[i])-.6, 1.3, 1.3);
+}
+
+/* Beschriftet werden Orte, nicht Bahnhofsnamen, und zwar so viele, wie ohne
+   Überdeckung hineinpassen: jeder versucht acht Plätze um seinen Punkt, wer
+   keinen findet, wird nicht gezeichnet. Zwei Namen übereinander sind
+   schlechter als ein Name weniger. */
+let abgelegen = null;
+function namenMalen(){
+  const belegt = [];
+  const frei = (x,y,w,h2) => {
+    if (x < 5 || x+w > W-5 || y < 5 || y+h2 > H-5) return false;
+    for (const b of belegt)
+      if (x < b[2] && b[0] < x+w && y < b[3] && b[1] < y+h2) return false;
+    return true;
+  };
+  ctx.font = '600 11.5px ui-sans-serif,system-ui,sans-serif';
+  ctx.textBaseline = 'middle';
+  let gemalt = 0;
+  const wieviele = W < 520 ? 24 : W < 820 ? 42 : 62;
+  /* Und dann die abgelegensten Orte, dazu die abgelegensten *Bahnhöfe* mit
+     ihrem eigenen Namen. In der Zeitkarte lösen sich deren Inseln vom Land,
+     und eine weiße Scholle ohne Namen ist ein Fleck: die Bäderbahn auf
+     Rügen, die Stichbahnen um Konstanz und Freiburg, die Fichtelbergbahn,
+     die Heidekrautbahn. Ortsmarken helfen da nicht, denn Konstanz Hbf liegt
+     gut angebunden am Land und Konstanz-Wollmatingen draußen im Meer. */
+  const fern = W < 520 ? 4 : W < 820 ? 8 : 12;
+  if (!abgelegen){
+    abgelegen = P.marken.slice().sort((a,b) => hh[b[0]] - hh[a[0]]).slice(0, 12);
+    const ord = Array.from({length:n}, (_,i)=>i).sort((a,b) => hh[b] - hh[a]);
+    const weit = [];
+    for (const i of ord){
+      if (weit.length >= 12) break;
+      if (weit.every(j => (wx[i]-wx[j])**2 + (wy[i]-wy[j])**2 > 55*55))
+        weit.push(i);
+    }
+    abgelegen = abgelegen.concat(weit.map(i => [i, nm[i]]));
+  }
+  const reihe = P.marken.slice(0, wieviele)
+    .concat(abgelegen.slice(0, fern), abgelegen.slice(12, 12 + fern));
+  const schon = new Set();
+  for (const [i, t] of reihe){
+    if (schon.has(i)) continue;
+    schon.add(i);
+    const X = schirmX(wx[i]), Y = schirmY(wy[i]);
+    if (X < -40 || X > W+40 || Y < -40 || Y > H+40) continue;
+    const b = ctx.measureText(t).width;
+    let hin = null;
+    for (const [dx,dy] of [[6,0],[-6-b,0],[6,-12],[-6-b,-12],[6,12],[-6-b,12],
+                           [-b/2,-13],[-b/2,13]]){
+      const x = X+dx, y = Y+dy-6;
+      if (frei(x-2, y-1, b+4, 14)){ hin = [x, y+7]; belegt.push([x-2,y-1,x+b+2,y+13]); break; }
+    }
+    if (!hin) continue;
+    ctx.lineWidth = 2.6; ctx.strokeStyle = 'rgba(0,0,0,.62)';
+    ctx.strokeText(t, hin[0], hin[1]);
+    ctx.fillStyle = '#fff'; ctx.fillText(t, hin[0], hin[1]);
+    ctx.beginPath(); ctx.arc(X, Y, 2.1, 0, 6.2832);
+    ctx.fillStyle = '#e8291c'; ctx.fill();
+    ctx.lineWidth = .8; ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.stroke();
+    gemalt++;
+  }
+}
+
+/* ------------------------------------------------------------ Isochronen */
+function isoMalen(){
+  const r0 = Z.isoKnoten * n;
+  const feld = new Float32Array(FW*FH), dich = new Float32Array(FW*FH);
+  const sig = 22.0/ZELLE, rad = Math.ceil(3*sig), inv = -0.5/(sig*sig);
+  for (let i=0;i<n;i++){
+    const v = ISO[r0+i];
+    if (v === 255) continue;
+    const t = v * P.isoschritt;
+    const cx = feldX(wx[i]), cy = feldY(wy[i]);
+    const ix0 = Math.max(0,(cx-rad)|0), ix1 = Math.min(FW-1,(cx+rad)|0);
+    const iy0 = Math.max(0,(cy-rad)|0), iy1 = Math.min(FH-1,(cy+rad)|0);
+    for (let iy=iy0;iy<=iy1;iy++){
+      const dy=iy+.5-cy, dy2=dy*dy, row=iy*FW;
+      for (let ix=ix0;ix<=ix1;ix++){
+        const dx=ix+.5-cx, w=Math.exp((dx*dx+dy2)*inv);
+        dich[row+ix]+=w; feld[row+ix]+=w*t;
+      }
+    }
+  }
+  for (let k=0;k<FW*FH;k++) feld[k] = dich[k]>1e-6 ? feld[k]/dich[k] : NaN;
+  glaetten(feld, FW, FH);
+  /* Marschierende Quadrate: je Zelle die vier Ecken gegen die Stufe, die
+     Schnittpunkte auf den Kanten linear interpoliert und verbunden. Eine
+     Linie, nicht eine Punktreihe — einer Isochrone, der man nicht folgen
+     kann, ist keine. */
+  const w = (a,b,L) => (L-a)/(b-a);
+  for (const stufe of [60,120,180,240,300,360,420,480]){
+    const seg = [];
+    for (let iy=0; iy<FH-1; iy++) for (let ix=0; ix<FW-1; ix++){
+      if (maskeA[iy*FW+ix] < 120) continue;
+      const a = feld[iy*FW+ix], b = feld[iy*FW+ix+1],
+            c = feld[(iy+1)*FW+ix+1], e = feld[(iy+1)*FW+ix];
+      if (Number.isNaN(a)||Number.isNaN(b)||Number.isNaN(c)||Number.isNaN(e)) continue;
+      const kn = [];
+      if ((a-stufe)*(b-stufe) < 0) kn.push([ix + w(a,b,stufe), iy]);
+      if ((b-stufe)*(c-stufe) < 0) kn.push([ix+1, iy + w(b,c,stufe)]);
+      if ((e-stufe)*(c-stufe) < 0) kn.push([ix + w(e,c,stufe), iy+1]);
+      if ((a-stufe)*(e-stufe) < 0) kn.push([ix, iy + w(a,e,stufe)]);
+      if (kn.length === 2) seg.push(kn);
+      else if (kn.length === 4){ seg.push([kn[0],kn[1]]); seg.push([kn[2],kn[3]]); }
+    }
+    if (!seg.length) continue;
+    const zug = (farbe, breite) => {
+      ctx.beginPath();
+      for (const [u,v] of seg){
+        ctx.moveTo(schirmX(X0+u[0]*ZELLE), schirmY(Y0+(FH-u[1])*ZELLE));
+        ctx.lineTo(schirmX(X0+v[0]*ZELLE), schirmY(Y0+(FH-v[1])*ZELLE));
+      }
+      ctx.strokeStyle = farbe; ctx.lineWidth = breite;
+      ctx.lineCap = 'round'; ctx.stroke();
+    };
+    zug('rgba(0,0,0,.6)', 3.2);
+    zug(stufe % 120 === 0 ? 'rgba(255,255,255,.95)' : 'rgba(255,255,255,.5)',
+        stufe % 120 === 0 ? 1.6 : 1.0);
+  }
+  const i0 = P.isoknoten[Z.isoKnoten];
+  ctx.beginPath(); ctx.arc(schirmX(wx[i0]), schirmY(wy[i0]), 5.5, 0, 6.2832);
+  ctx.fillStyle = '#fff'; ctx.fill();
+  ctx.lineWidth = 1.4; ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.stroke();
+}
+
+/* --------------------------------------------------------- Tafel und Text */
+function bauLegende(){
+  const b = $('band'); b.innerHTML = '';
+  for (const c of RAMPE){
+    const d = document.createElement('div'); d.style.background = c; b.appendChild(d);
+  }
+}
+function tafelSetzen(){
+  $('bandmin').textContent = '+0 min';
+  $('bandmax').textContent = '+' + Math.round(landMax) + ' min';
+  $('schneezeile').innerHTML = 'Schnee liegt über <b>+' + Math.round(schneeLinie)
+    + ' Minuten</b> mittlerer Reisezeit, Wasser unter <b>+'
+    + Math.round(Z.wasser) + '</b>.';
+  const px = 60 * skala;
+  $('mstrich').style.width = Math.round(px) + 'px';
+  $('mtext').textContent = '60 Minuten Reisezeit';
+  $('mkm').textContent = 'in der Landkarte ≈ '
+    + Math.round(60 / P.minprokm) + ' km Luftlinie';
+  const iz = $('isozeile');
+  if (Z.iso && ISO && Z.isoKnoten >= 0){
+    iz.style.display = 'block';
+    iz.innerHTML = 'Isochronen um <b>' + nm[P.isoknoten[Z.isoKnoten]]
+      + '</b>, alle 60 Minuten. Anderen Knoten anklicken.';
+  } else iz.style.display = 'none';
+}
+function text(){
+  const hh2 = m => String(Math.floor(m/60)).padStart(2,'0') + ':'
+                 + String(m%60).padStart(2,'0');
+  const t0 = P.spitze[0];
+  $('unterzeile').innerHTML =
+    '<b>' + P.bahnhoefe.toLocaleString('de-DE') + ' Bahnhöfe</b> des Fern- und '
+    + 'Regionalverkehrs, gezeichnet nach der Reisezeit mit dem Zug statt nach '
+    + 'Kilometern. Ein Kilometer Luftlinie ist dabei '
+    + P.minprokm.toFixed(2).replace('.',',') + ' Minuten wert. Die Höhe ist die '
+    + 'mittlere Reisezeit von hier zu allem anderen: die Knoten liegen tief und '
+    + 'unter Wasser, über den abgehängten Gegenden liegt Schnee. Fahrplan: '
+    + 'Mittwoch, 13. Mai 2026, Abfahrt in der dichtesten Stunde des Tages, '
+    + hh2(t0) + '–' + hh2(t0+60) + '.';
+}
+
+/* ------------------------------------------------------------- Bedienung */
+let geplant = false;
+function bald(){
+  if (geplant) return;
+  geplant = true;
+  requestAnimationFrame(() => { geplant = false; zeichne(); });
+}
+function regler(id, feld, faktor, zeige){
+  const e = $(id);
+  const auf = () => { Z[feld] = e.value / faktor; zeige(); bald(); };
+  e.addEventListener('input', () => { FEINHEIT = 4.5; auf(); });
+  e.addEventListener('change', () => { FEINHEIT = 3.0; auf(); });
+  zeige();
+}
+function start(){
+  regler('sMorph','morph',1000, () => {
+    const v = Z.morph;
+    $('wMorph').textContent = v < .02 ? 'Landkarte' : v > .98 ? 'Zeitkarte'
+      : Math.round(v*100) + ' % Zeit';
+  });
+  regler('sWasser','wasser',1, () => {
+    $('wWasser').textContent = '+' + Math.round(Z.wasser) + ' min';
+  });
+  const knopf = (id, feld, nach) => $(id).addEventListener('click', () => {
+    Z[feld] = !Z[feld];
+    $(id).setAttribute('aria-pressed', Z[feld] ? 'true':'false');
+    if (nach) nach();
+    bald();
+  });
+  knopf('kNamen','namen'); knopf('kLinien','linien'); knopf('kPunkte','punkte');
+  knopf('kIso','iso', async () => {
+    if (Z.iso && !ISO){
+      const j = await (await fetch('data/' + P.isodatei)).json();
+      const roh = atob(j.daten);
+      ISO = new Uint8Array(roh.length);
+      for (let i=0;i<roh.length;i++) ISO[i] = roh.charCodeAt(i);
+      if (Z.isoKnoten < 0) Z.isoKnoten = 0;
+      bald();
+    }
+  });
+  $('kUeber').addEventListener('click', () => $('ueber').classList.add('auf'));
+  $('zu').addEventListener('click', () => $('ueber').classList.remove('auf'));
+  addEventListener('keydown', e => {
+    if (e.key === 'Escape') $('ueber').classList.remove('auf');
+  });
+  cv.addEventListener('pointermove', zeigen);
+  cv.addEventListener('pointerleave', () => { $('tip').style.opacity = 0; });
+  cv.addEventListener('click', klick);
+  bald();
+}
+
+function naechster(mx, my){
+  let best = -1, bd = 26*26;
+  for (let i=0;i<n;i++){
+    const dx = schirmX(wx[i])-mx, dy = schirmY(wy[i])-my, d = dx*dx+dy*dy;
+    if (d < bd){ bd = d; best = i; }
+  }
+  return best;
+}
+function zeigen(ev){
+  const r = cv.getBoundingClientRect();
+  const i = naechster(ev.clientX - r.left, ev.clientY - r.top);
+  const t = $('tip');
+  if (i < 0){ t.style.opacity = 0; return; }
+  t.innerHTML = '<b>' + nm[i] + '</b><span>mittlere Reisezeit +'
+    + hh[i].toFixed(0) + ' min über dem besten Bahnhof<br>'
+    + halte[i] + ' Halte am Tag</span>';
+  t.style.opacity = 1;
+  t.style.left = Math.min(innerWidth - t.offsetWidth - 8,
+                          Math.max(8, ev.clientX + 12)) + 'px';
+  t.style.top  = Math.min(innerHeight - t.offsetHeight - 8,
+                          Math.max(8, ev.clientY - t.offsetHeight - 10)) + 'px';
+}
+function klick(ev){
+  if (!Z.iso || !ISO) return;
+  const r = cv.getBoundingClientRect();
+  const i = naechster(ev.clientX - r.left, ev.clientY - r.top);
+  if (i < 0) return;
+  let best = -1, bd = 1e18;
+  P.isoknoten.forEach((k,q) => {
+    const d = (wx[k]-wx[i])**2 + (wy[k]-wy[i])**2;
+    if (d < bd){ bd = d; best = q; }
+  });
+  Z.isoKnoten = best; bald();
+}
+
+function bauText(){
+  const S = P.stress, V = P.verzerrung;
+  const p = x => (x*100).toFixed(1).replace('.',',') + ' %';
+  const hh2 = m => String(Math.floor(m/60)).padStart(2,'0')+':'
+                 + String(m%60).padStart(2,'0');
+  $('ueberinhalt').innerHTML = `
+<h2>Über diese Karte</h2>
+<p>Auf einer Landkarte ist der Maßstab der Kilometer. Hier ist er die Minute:
+gezeichnet wird jeder Bahnhof so weit von jedem anderen entfernt, wie die Bahn
+zwischen beiden braucht. Wer schnell zu erreichen ist, rückt heran; wer lange
+braucht, rückt weg. Der Regler fährt zwischen der Landkarte und dieser
+Zeitkarte hin und her.</p>
+
+<h3>Woher die Zahlen kommen</h3>
+<p>Ein Fahrplantag des offenen DELFI-Datensatzes, <b>Mittwoch, 13. Mai
+2026</b> — derselbe Tag, den <a href="https://chillchamp1.github.io/github.io/#de">Ein
+Tag auf der Schiene</a> abspielt, und von dort auch der Datensatz. Enthalten
+ist <b>Fern- und Regionalverkehr</b>: ICE, IC, EC, Flixtrain, Thalys,
+Nachtzüge, RE, RB, IRE, MEX und die Bahnen der Privatbahnen. <b>Nicht</b>
+enthalten ist der Stadtverkehr: S-Bahn, U-Bahn, Straßenbahn und Bus stehen
+nicht im Datensatz, und das ist Absicht — eine Karte, in der die Berliner
+S-Bahn so zählt wie der ICE, zeigt Ballungsräume und nichts sonst. Was das
+kostet, steht weiter unten.</p>
+<table><tr><th>Größe</th><th>Zahl</th></tr>
+<tr><td>Fahrten am Tag</td><td class="z">${P.fahrten.toLocaleString('de-DE')}</td></tr>
+<tr><td>Fahrplanabschnitte</td><td class="z">${P.verbindungen.toLocaleString('de-DE')}</td></tr>
+<tr><td>Bahnhöfe im Datensatz (mit Ausland)</td><td class="z">${P.bahnhoefe_alle.toLocaleString('de-DE')}</td></tr>
+<tr><td>davon in Deutschland</td><td class="z">${P.bahnhoefe_de.toLocaleString('de-DE')}</td></tr>
+<tr><td>davon auf der Karte</td><td class="z">${P.bahnhoefe.toLocaleString('de-DE')}</td></tr>
+<tr><td>dichteste Stunde (Abfahrten)</td><td class="z">${hh2(P.spitze[0])}–${hh2(P.spitze[0]+60)}, ${P.spitze[1].toLocaleString('de-DE')}</td></tr>
+<tr><td>meiste Züge gleichzeitig unterwegs</td><td class="z">${hh2(P.spitze_unterwegs[0])}–${hh2(P.spitze_unterwegs[0]+60)}, ${Math.round(P.spitze_unterwegs[1]/60).toLocaleString('de-DE')}</td></tr>
+</table>
+
+<h3>Die dichteste Stunde, gemessen</h3>
+<p>Die Spitze ist nicht gesetzt, sondern gesucht: für jede Minute des Tages
+wurde gezählt, wie viele Züge in der folgenden Stunde abfahren. Das Maximum
+liegt <b>${hh2(P.spitze[0])}–${hh2(P.spitze[0]+60)}</b> mit
+${P.spitze[1].toLocaleString('de-DE')} Abfahrten. Der Tag hat zwei Spitzen —
+nach der Zahl der <i>gleichzeitig</i> fahrenden Züge liegt der Abend mit
+${hh2(P.spitze_unterwegs[0])}–${hh2(P.spitze_unterwegs[0]+60)} um ein Prozent
+vorn. Gerechnet wird mit der morgendlichen, aus zwei Gründen: sie hat die
+meisten Abfahrten, also die meisten Anschlüsse, und wer morgens losfährt, hat
+den Tag noch vor sich — abends um sechs ist eine Reise quer durchs Land im
+Fahrplan eines einzelnen Tages nicht mehr zu Ende zu bringen, und eine
+Reisezeit, die am letzten Zug scheitert, misst den Fahrplan nicht mehr.</p>
+
+<h3>Wie die Reisezeit gerechnet wird</h3>
+<p><b>Von Tür zu Tür, ab der Anfragezeit.</b> Die Wartezeit auf den ersten Zug
+zählt mit — das ist der Punkt der ganzen Karte. Ein Knotenbahnhof mit vier
+Zügen je Stunde liegt näher als ein Haltepunkt mit einem alle zwei Stunden,
+auch wenn die Fahrt selbst gleich lang wäre. Gemittelt wird über ${P.proben}
+Abfahrtsminuten im Abstand von ${P.raster} Minuten quer durch die
+Spitzenstunde, damit nicht der Zufall einer einzelnen Minute die Karte formt.
+Umsteigen kostet ${P.minum} Minuten, überall gleich. Gerechnet wird mit dem
+Connection-Scan-Verfahren über alle
+${P.verbindungen.toLocaleString('de-DE')} Fahrplanabschnitte, für jeden
+Bahnhof einzeln: ${(P.bahnhoefe*P.proben).toLocaleString('de-DE')}
+Fahrplanauskünfte, aus denen
+${Math.round(P.bahnhoefe*P.bahnhoefe/2/1e6)} Millionen Bahnhofspaare
+werden.</p>
+
+<h3>Das Federmodell</h3>
+<p>Zwischen je zwei Bahnhöfen hängt eine Feder mit der Reisezeit als
+Ruhelänge, und gesucht ist die Lage, in der alle Federn zusammen am wenigsten
+ziehen. Gelöst wird das mit Stress-Majorisierung; gewichtet wird jede Feder
+mit dem Kehrwert des Quadrats ihrer Ruhelänge, damit der <i>relative</i>
+Fehler gemessen wird und die Fernpaare die Nahbeziehungen nicht platt walzen.
+Der Maßstab kommt aus derselben Rechnung:
+<b>${P.minprokm.toFixed(2).replace('.',',')} Minuten je Kilometer</b>
+Luftlinie, also im Mittel ${Math.round(60/P.minprokm)} km/h von Bahnhof zu
+Bahnhof, Warten und Umsteigen eingerechnet.</p>
+<p>Wie gut das gelingt, sagt der Stress — der bleibende Unterschied zwischen
+gezeichneter Länge und Reisezeit, als Anteil:</p>
+<table><tr><th>Karte</th><th>Stress</th></tr>
+<tr><td>die Landkarte selbst, bestmöglich skaliert</td><td class="z">${p(S.geo)}</td></tr>
+<tr><td>die flache Federkarte</td><td class="z">${p(S.flach)}</td></tr>
+<tr><td>dieselbe Ebene, dazu ein Höhenfeld</td><td class="z">${p(S.nurhoehe)}</td></tr>
+<tr><td>Ebene und Höhe zusammen gesucht</td><td class="z">${p(S.gelaende)}</td></tr>
+</table>
+
+<h3>Warum ein Relief, und welches</h3>
+<p>Die Reisezeit ist keine Geometrie der Ebene. Von einem abgelegenen Ort sind
+es zu allem zwei Stunden, und in der Ebene gibt es keinen Punkt, der von allem
+gleich weit weg ist und trotzdem in der Nähe liegt. Darum bleibt selbst die
+beste flache Federkarte ${p(S.flach)} daneben.</p>
+<p>Eine dritte Zahl je Bahnhof hilft, und zwar messbar. Wird die
+Modelldistanz nicht mehr als Luftlinie, sondern als <b>Weg über ein
+Gelände</b> gerechnet — die kürzeste Kette von Kanten im
+Nachbarschaftsgraphen, jede so lang wie
+<span style="white-space:nowrap">√(Δx² + Δy² + Δh²)</span> —, dann fällt der
+Stress von ${p(S.flach)} auf ${p(S.gelaende)}, ein Drittel des Weges von der
+Landkarte zur perfekten Karte. Und der Grundriss wird dabei <i>nicht</i>
+krummer: er liegt mit ${V.gelaende.toFixed(0)} km im Mittel genauso weit von
+der Geografie wie der der flachen Karte mit ${V.flach.toFixed(0)} km. Die
+Höhe nimmt der Ebene also Arbeit ab, ohne sie zu bezahlen. Genau das war die
+Vermutung, und sie stimmt.</p>
+<p>Nur: die Höhe, die das Modell sich dafür wünscht, ist <b>nicht</b> die
+Erreichbarkeit. Sie kann es nicht sein. Dass Hamburg weiter von allem
+entfernt liegt als Fulda, steht schon im Grundriss — Hamburg liegt am Rand.
+Übrig bleibt für die Höhe nur, was der Grundriss <i>nicht</i> sagen kann, und
+das ist etwas Kleinräumiges: Modellhöhe und gemessene Erreichbarkeit
+korrelieren mit r = −0,06, also gar nicht. Ein Relief aus der Modellhöhe ist
+mathematisch das bessere, aber es erzählt das Falsche; in einer Fassung lag
+Frankfurt Hauptbahnhof darin höher als Westerland auf Sylt.</p>
+<p><b>Gezeichnet wird deshalb die gemessene Erreichbarkeit</b>: die mittlere
+Reisezeit von diesem Bahnhof zu allen
+${(P.bahnhoefe-1).toLocaleString('de-DE')} anderen, hin und zurück gemittelt,
+aufgetragen als Höhe über dem besten Wert. Das ist keine Modellgröße, sondern
+eine Zahl in Minuten — von ${Math.round(P.zugang_min)} Minuten in
+Frankfurt (Main) Hbf bis ${Math.round(P.zugang_max)} in Gottmadingen bei
+Konstanz. Am tiefsten liegen Frankfurt, Fulda,
+Kassel-Wilhelmshöhe, Erfurt, Würzburg, Nürnberg, Göttingen und Hannover: das
+ICE-Kreuz als Flusstal, und es kommt aus der Rechnung, nicht aus einer Liste.
+Am höchsten, unter Schnee, liegen die Bäderbahn auf Rügen, der Zipfel um
+Konstanz und Singen und die Stichbahnen im Freiburger Umland.</p>
+
+<h3>Schnee, und die Inseln im Meer</h3>
+<p>Über den am schlechtesten erreichbaren Gegenden liegt <b>Schnee</b> — die
+obersten sechs der fünfunddreißig Farbbänder. Die Grenze ist nicht gesetzt,
+sondern abgeleitet: die Farbleiter läuft vom Wasserstand bis zum höchsten Wert
+<i>auf dem Land</i> (genauer: bis zu dessen 99,5-Perzentil, sonst walzt ein
+einzelner Haltepunkt mit zwei Zügen am Tag die ganze Leiter platt), und die
+letzten sechs Bänder sind Schnee. In Minuten steht sie in der Tafel links.
+Schnee haben Sylt, die Rügener Bäderbahn, der Zipfel um Konstanz, der
+Bayerische Wald bei Passau — und einzelne Haltepunkte mitten im Land, an denen
+zweimal am Tag ein Zug hält: Demker in der Altmark, Hoppstädten an der Nahe,
+Nistertal im Westerwald.</p>
+<p>Je weiter der Regler in die Zeit läuft, desto mehr <b>Inseln</b> lösen sich
+vom Land, und das ist kein Zeichenfehler. Die Federkarte schleudert die
+abgehängten Orte so weit hinaus, dass der verzogene Umriss ihnen nicht mehr
+folgen kann — in der reinen Zeitkarte liegen 537 der
+${P.bahnhoefe.toLocaleString('de-DE')} Bahnhöfe jenseits der Küste. Ein
+Bahnhof gehört aber immer auf Land, also bekommt jeder Ausgewanderte seine
+eigene Scholle, und was im Meer treibt, ist beschriftet: Granitz Jagdschloß
+und Göhren auf Rügen, Groß Schönebeck an der Heidekrautbahn, Freiburg
+Zähringen, Gottmadingen und Reichenau am Bodensee.</p>
+
+<h3>Was fehlt, und was es kostet</h3>
+<ul>
+<li><b>Kein Stadtverkehr.</b> S-Bahn, U-Bahn, Straßenbahn und Bus fehlen. Für
+die Ballungsräume heißt das: die Karte zeigt, wie gut sie mit
+<i>Regionalzügen</i> erschlossen sind, nicht wie gut sie erschlossen
+sind.</li>
+<li><b>${P.raus} Bahnhöfe fehlen ganz</b>, weil ihre einzige Verbindung zum
+Netz eine S-Bahn-Station ist und sie damit in diesem Datensatz frei in der
+Luft hängen: die Strohgäubahn bei Stuttgart, die Gräfenbergbahn bei Nürnberg,
+die Müglitztalbahn bei Dresden und einige Stichstrecken mehr.</li>
+<li><b>${P.busfahrten} Fahrten auf ${P.buslinien.length} Linien</b> hat der
+Quelldatensatz als Schiene geführt, obwohl es Busse sind — Regionalbusnetze im
+Oberhavel und Havelland, um Crailsheim und Schwäbisch Hall, Rufbusse um
+Dillingen und Memmingen, Ulmer Stadtlinien und die Coburger Linie 1408. Sie
+sind heraus.</li>
+<li><b>${P.strassenhalte} Straßenhalte</b> der Chemnitzer Zweisystemwagen
+(${Object.keys(P.engelinien).join(', ')}) sind heraus: draußen Eisenbahn, in
+der Stadt Straßenbahn. Etwa fünfzehn davon sind wirkliche Haltepunkte und
+gehen mit — der Datensatz trennt sie nicht. Die Bahnhöfe auf diesen Linien,
+Stollberg, Aue, Hainichen, Mittweida, bleiben.</li>
+<li><b>Ein Fahrplantag, kein Mittel über viele Mittwoche.</b> Der 13. Mai 2026
+ist der Tag vor Christi Himmelfahrt. Der Regionalfahrplan ist der eines
+normalen Mittwochs; im Fernverkehr des Abends kann ein Brückentag ein paar
+Züge mehr bedeuten.</li>
+<li><b>Fahrplan, nicht Wirklichkeit.</b> Verspätungen, Ausfälle und Baustellen
+stehen nicht im Soll-Fahrplan.</li>
+<li><b>Umsteigen kostet überall ${P.minum} Minuten.</b> In Wirklichkeit ist
+die Mindestumsteigezeit je Bahnhof verschieden; die Quelle führt sie
+nicht.</li>
+<li><b>Die Erreichbarkeit ist nach Bahnhöfen gewichtet, nicht nach
+Menschen.</b> Ein Haltepunkt mit dreißig Einwohnern zählt wie Köln. Warum das
+bewusst so bleibt, steht in STAND.md.</li>
+<li><b>Der Grenzsaum trennt Deutschland nicht sauber ab.</b> Die Landesgrenze
+ist auf 2.100 Punkte vereinfacht; ein Saum von 0,6 km rettet Kehl, Gronau und
+Warnemünde, holt aber auch acht Auslandsbahnhöfe herein, und Lindau-Insel,
+Herten und Rheinfelden (Baden) fehlen dafür.</li>
+<li><b>${(P.ohne_feder*100).toFixed(3).replace('.',',')} % der
+Bahnhofspaare</b> sind an diesem Tag ab dieser Stunde überhaupt nicht zu
+verbinden. Sie bekommen keine Feder.</li>
+</ul>
+
+<h3>Bedienung</h3>
+<ul>
+<li><b>Landkarte → Zeitkarte</b> verzieht die Karte von der Geografie in die
+Reisezeit. Umriss und Ländergrenzen laufen mit, verschoben mit dem
+Verschiebungsfeld der Bahnhöfe selbst. Der Bildausschnitt steht dabei fest und
+umfasst beide Lagen — sonst wanderte beim Schieben der Maßstab mit, und genau
+die Verformung wäre nicht mehr zu sehen.</li>
+<li><b>Wasserstand</b> hebt den Meeresspiegel in Minuten. Er verschiebt die
+Farbleiter mit: was darunter liegt, läuft unter Wasser, und die Schneegrenze
+rückt nach.</li>
+<li><b>Isochronen</b> zeichnet die Linien gleicher Reisezeit um einen der
+${P.isoknoten.length} vorgerechneten Knoten, anzuklicken auf der Karte. Das
+ist die Probe aufs Ganze: auf der Landkarte sind das ausgefranste Sterne, auf
+der Zeitkarte müssen daraus Kreise werden.</li>
+</ul>
+
+<h3>Quellen</h3>
+<ul>
+<li>Fahrplan: <a href="https://www.delfi.de/">DELFI e. V.</a>, offener
+Datensatz Deutschland, Fahrplantag 13. Mai 2026 — über den aufbereiteten
+Tagesauszug von <a href="https://github.com/Chillchamp1/github.io">Ein Tag auf
+der Schiene</a> (MIT).</li>
+<li>Umriss und Ländergrenzen: derselbe Datensatz, in Lambert-kegelkonformer
+Projektion mit den Normalparallelen 48,67° und 53,67° N.</li>
+<li>Rechenwege: Connection Scan (Dibbelt, Pajor, Strasser, Wagner 2013),
+Stress-Majorisierung/SMACOF (de Leeuw 1977), Adam (Kingma und Ba 2015).</li>
+</ul>
+<p style="color:#7f7d77;font-size:12px">Alles zum Nachrechnen liegt neben
+dieser Seite: <a href="README.md">README</a>,
+<a href="METHODIK.md">Methodik</a>, <a href="QUELLEN.md">Quellen</a>,
+<a href="STAND.md">Stand</a>.</p>`;
+}
+
+los().then(start).catch(e => {
+  const l = $('laden');
+  if (l) l.textContent = 'Fehler beim Laden: ' + e.message;
+  console.error(e);
+});
+</script>
+</body>
+</html>
