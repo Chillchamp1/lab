@@ -17,13 +17,24 @@ html,body{margin:0;padding:0;background:var(--plane);color:var(--ink);
   -webkit-text-size-adjust:100%}
 body{overflow-x:hidden}
 
-/* Karte links, Tafel rechts — wie in der Vorlage. Die Karte bekommt damit
-   die ganze Fläche, auf der sie etwas zeigen kann, und kein Name muss einem
-   Regler ausweichen. */
+/* Karte links, Tafel rechts — wie in der Vorlage. Unter der Karte liegt der
+   Reglerstreifen. Die Regler haben in der Seitenspalte gestanden, und das war
+   falsch: man schaut beim Schieben auf die Karte und nicht auf den Regler, und
+   wenn beide 900 Pixel auseinanderliegen, schiebt man blind. Jetzt liegt der
+   Griff direkt unter dem, was er bewegt. */
 #huelle{display:grid;grid-template-columns:1fr 344px;height:100svh;min-height:560px}
-#buehne{position:relative;overflow:hidden;padding:14px 0 14px 14px}
-#cv{position:absolute;inset:14px 0 14px 14px;width:calc(100% - 14px);
-  height:calc(100% - 28px);display:block;border-radius:10px;touch-action:pan-y}
+#links{display:flex;flex-direction:column;min-width:0;overflow:hidden}
+#buehne{position:relative;overflow:hidden;flex:1 1 auto;min-height:200px;
+  padding:14px 0 0 14px}
+#cv{position:absolute;inset:14px 0 0 14px;width:calc(100% - 14px);
+  height:calc(100% - 14px);display:block;border-radius:10px;touch-action:pan-y}
+/* Der Streifen ist **eine** Zeile hoch, und das ist keine Kosmetik: jede
+   Zeile, die er sich nimmt, nimmt er der Karte weg, und die Karte sollte
+   gerade größer werden. Darum liegen hier nur die drei Regler; die
+   Anzeigeschalter bleiben in der Tafel, wo sie niemanden etwas kosten. */
+#regler{flex:0 0 auto;padding:9px 16px 11px 14px;display:grid;
+  grid-template-columns:repeat(3,1fr);gap:7px 24px;align-items:end}
+#regler .reg{margin:0}
 #tafel{overflow:auto;padding:20px 20px 40px;border-left:1px solid var(--line);
   background:#060605}
 #tafel h1{margin:0 0 6px;font-size:21px;font-weight:650;letter-spacing:-.015em;
@@ -41,6 +52,16 @@ body{overflow-x:hidden}
   color:var(--muted);margin-bottom:3px}
 .reg label i{font-style:normal;color:var(--ink2);font-variant-numeric:tabular-nums}
 input[type=range]{width:100%;margin:0;accent-color:#9aa07f;height:17px}
+/* Regler und Abspielknopf in einer Zeile. Der Wasserstand hat keinen
+   Abspieler und bekommt statt dessen eine Lücke in derselben Breite, damit
+   die drei Reglerbahnen untereinander an derselben Stelle anfangen. */
+.schub{display:flex;align-items:center;gap:9px}
+.schub input[type=range]{flex:1 1 auto;min-width:0;width:auto}
+.schub.ohne::before{content:'';flex:0 0 27px}
+button.spiel{flex:0 0 auto;width:27px;height:20px;padding:0;font-size:9px;
+  line-height:1;display:grid;place-items:center;border-style:solid;
+  border-color:var(--line)}
+button.spiel[aria-pressed=true]{color:#9aa07f;border-color:#9aa07f}
 #knoepfe{display:flex;gap:6px;flex-wrap:wrap}
 button{font:inherit;font-size:11px;line-height:1.2;padding:4px 8px;border-radius:6px;
   color:var(--muted);background:transparent;border:1px solid var(--axis);
@@ -82,39 +103,63 @@ button[aria-pressed=true],button:hover{color:var(--ink);border-style:solid}
   color:var(--muted);font-size:13px;z-index:7;background:var(--plane)}
 @media (max-width:900px){
   #huelle{grid-template-columns:1fr;height:auto;min-height:0}
-  #buehne{height:66svh;min-height:300px;padding:8px 8px 0}
+  #links{overflow:visible}
+  /* Hochkant ist die Karte breitenbegrenzt: der Rahmen ist fast quadratisch,
+     das Telefon ist es nicht. 62 svh hoch stünde darum ein Drittel schwarz
+     unter der Karte — also höchstens so hoch, wie die Karte breit ist. */
+  #buehne{flex:0 0 auto;height:min(62svh, 104vw);min-height:280px;padding:8px 8px 0}
   #cv{inset:8px 8px 0;width:calc(100% - 16px);height:calc(100% - 8px)}
+  #regler{padding:9px 12px 2px}
   #tafel{border-left:0;border-top:1px solid var(--line);padding:16px 14px 34px;
     overflow:visible}
   #tafel h1{font-size:18px}
   #laden{inset:8px}
 }
+@media (max-width:640px){
+  #regler{grid-template-columns:1fr 1fr}
+}
+@media (max-width:440px){
+  #regler{grid-template-columns:1fr;gap:8px}
+}
 </style>
 </head>
 <body>
 <div id="huelle">
-  <div id="buehne">
-    <canvas id="cv"></canvas>
-    <div id="laden">Fahrplan wird geladen …</div>
+  <div id="links">
+    <div id="buehne">
+      <canvas id="cv"></canvas>
+      <div id="laden">Fahrplan wird geladen …</div>
+    </div>
+    <div id="regler">
+      <div class="reg">
+        <label>Landkarte → Zeitkarte <i id="wMorph">Zeitkarte</i></label>
+        <div class="schub">
+          <button class="spiel" id="pMorph" aria-pressed="false"
+            aria-label="Zwischen Landkarte und Zeitkarte hin- und herfahren"
+            title="Zwischen Landkarte und Zeitkarte hin- und herfahren">▶</button>
+          <input id="sMorph" type="range" min="0" max="1000" value="1000">
+        </div>
+      </div>
+      <div class="reg">
+        <label>Anteil Deutschlands in Reichweite <i id="wAnteil">…</i></label>
+        <div class="schub">
+          <button class="spiel" id="pAnteil" aria-pressed="false"
+            aria-label="Vom Ballungsraum bis zur Geografie durchfahren"
+            title="Vom Ballungsraum bis zur Geografie durchfahren">▶</button>
+          <input id="sAnteil" type="range" min="0" max="1000" value="663">
+        </div>
+      </div>
+      <div class="reg">
+        <label>Wasserstand <i id="wWasser">…</i></label>
+        <div class="schub ohne">
+          <input id="sWasser" type="range" min="0" max="400" value="90">
+        </div>
+      </div>
+    </div>
   </div>
   <div id="tafel">
     <h1>Deutschland, gezeichnet von seinen Fahrplänen</h1>
     <p id="unterzeile">…</p>
-
-    <div class="gruppe">
-      <p class="titel">Die Karte verziehen</p>
-      <div class="reg"><label>Landkarte → Zeitkarte <i id="wMorph">Zeitkarte</i></label>
-        <input id="sMorph" type="range" min="0" max="1000" value="1000"></div>
-      <div class="reg"><label>Wasserstand <i id="wWasser">…</i></label>
-        <input id="sWasser" type="range" min="0" max="400" value="90"></div>
-    </div>
-
-    <div class="gruppe">
-      <p class="titel">Wie viel soll in Reichweite sein?</p>
-      <div class="reg"><label>Anteil Deutschlands <i id="wAnteil">…</i></label>
-        <input id="sAnteil" type="range" min="0" max="1000" value="663"></div>
-      <p id="polzeile">…</p>
-    </div>
 
     <div class="gruppe">
       <p class="titel" id="hoehetitel">Höhe</p>
@@ -124,6 +169,11 @@ button[aria-pressed=true],button:hover{color:var(--ink);border-style:solid}
       <div id="mstrich"></div>
       <span id="mtext">…</span><br><span id="mkm">…</span>
       <p id="isozeile">…</p>
+    </div>
+
+    <div class="gruppe">
+      <p class="titel">Wo der Anteilsregler gerade steht</p>
+      <p id="polzeile">…</p>
     </div>
 
     <div class="gruppe">
@@ -190,7 +240,7 @@ let n = 0, nm = [], halte = null;
 let gxx, gyy, fxx, fyy, hh, roh, REICH, einzug, hmax = 1, rmin = 0;
 let wx, wy;
 let umriss = [], laender = [], umrissW = [], laenderW = [];
-let RAHMEN = null;
+let RAHMEN = null, ZUSCHNITT = 1;
 
 const Z = {morph:1, wasser:90, anteil:0.25, namen:true, linien:true,
            punkte:false, iso:false, isoKnoten:-1};
@@ -264,26 +314,79 @@ function stufeSetzen(){
    Nur die Bahnhöfe zu nehmen war zu wenig — das Verschiebungsfeld verzieht
    die Küste über sie hinaus, und dann stand Sylt vor dem Bildrand. Und einen
    Rahmen je Reglerstellung zu rechnen wäre falsch: dann wandert der Maßstab
-   beim Schieben, und die Verformung wäre nicht mehr zu sehen. */
+   beim Schieben, und die Verformung wäre nicht mehr zu sehen.
+
+   Dieser Rahmen war aber zu weit, und zwar **ganz** durch die Zeitkarte:
+   die Lage nach Reisezeit spannt 1.274 × 1.302 Minuten, die Landkarte nur
+   715 × 956. Ein paar Enden von Nebenbahnen — Oberwiesenthal, Rügen,
+   Westerland — fahren in der Zeitkarte so weit hinaus, dass Deutschland in
+   der Mitte des Bildes auf drei Viertel der Bildhöhe schrumpft und dort
+   sitzt wie eine Briefmarke auf einem Bogen.
+
+   Also wird der Rahmen zugeschnitten, und zwar **so weit, wie die Landkarte
+   es zulässt**: bis sie in der engeren Achse mit einem Saum von ZOOMSAUM
+   Minuten genau hineinpasst. Der Faktor ist damit nicht gesetzt, sondern
+   gemessen — bei diesen Daten 1,29. Der Reglerstreifen unter der Karte
+   kostet auch noch Höhe, und nachgemessen gegen die Fassung davor bleibt:
+   +23 % auf 1440 × 900 (Maßstab 0,809 gegen 0,660 Pixel je Minute), +21 %
+   auf 1280 × 720, +24 % auf 1920 × 1080, +29 % hochkant auf dem Telefon, wo
+   die Breite begrenzt und der Zuschnitt voll durchkommt. Verschoben wird
+   danach nur noch, nie gedehnt, sonst wäre der Gewinn wieder weg.
+
+   Bei morph = 0 geht damit garantiert nichts verloren. In der Zeitkarte
+   fliegen die weit hinausgefahrenen Enden aus dem Bild: 108 von 4.781
+   Bahnhöfen, 2,3 % — aber nur 0,9 % aller Halte, Median 20 Halte am Tag
+   gegen 42 im ganzen Netz. Das ist der Handel, und er ist billig: die
+   Bodenseerunde, die Rügener Kleinbahn, die Erzgebirgs- und
+   Zittauer Schmalspur, Sylt und Dagebüll, der Bayerische Wald, die
+   Heidekrautbahn. Halte mit acht Zügen am Tag haben kaum Federn, die sie
+   halten — ihre Lage ist die unsicherste der ganzen Rechnung. */
+const ZOOMSAUM = 8;
 function rahmenBestimmen(){
-  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;          /* alles, beide Lagen */
+  let a0=1e9,a1=-1e9,b0=1e9,b1=-1e9;          /* nur die Landkarte */
   const nimm = (x,y) => { if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; };
-  for (let i=0;i<n;i++){ nimm(gxx[i],gyy[i]); nimm(fxx[i],fyy[i]); }
+  const heim = (x,y) => { if(x<a0)a0=x; if(x>a1)a1=x; if(y<b0)b0=y; if(y>b1)b1=y; };
+  for (let i=0;i<n;i++){ nimm(gxx[i],gyy[i]); nimm(fxx[i],fyy[i]); heim(gxx[i],gyy[i]); }
   const merk = Z.morph;
   for (const m of [0, 1]){
     Z.morph = m; lage(); umrissVerziehen();
     for (const rs of [umrissW, laenderW]) for (const r of rs)
-      for (let i=0;i<r.length;i+=2) nimm(r[i], r[i+1]);
+      for (let i=0;i<r.length;i+=2){
+        nimm(r[i], r[i+1]);
+        if (m === 0) heim(r[i], r[i+1]);
+      }
   }
   Z.morph = merk; lage();
-  RAHMEN = [x0,x1,y0,y1];
+
+  /* Der größte Zuschnitt, bei dem die Landkarte noch ganz hineinpasst. */
+  const zoom = Math.max(1, Math.min((x1-x0) / (a1-a0 + 2*ZOOMSAUM),
+                                    (y1-y0) / (b1-b0 + 2*ZOOMSAUM)));
+  /* Zugeschnitten wird um die Mitte der Landkarte — dort soll der Gewinn an. */
+  const cx = (a0+a1)/2, cy = (b0+b1)/2, f = 1/zoom;
+  /* Schieben, bis [c0,c1] drin liegt; die Länge bleibt, was sie ist. */
+  const passe = (u0, u1, c0, c1) => {
+    const L = u1 - u0;
+    if (c1 - c0 >= L){ const m = (c0+c1)/2; return [m - L/2, m + L/2]; }
+    const d = c0 < u0 ? c0 - u0 : c1 > u1 ? c1 - u1 : 0;
+    return [u0 + d, u1 + d];
+  };
+  const X = passe(cx + (x0-cx)*f, cx + (x1-cx)*f, a0 - ZOOMSAUM, a1 + ZOOMSAUM);
+  const Y = passe(cy + (y0-cy)*f, cy + (y1-cy)*f, b0 - ZOOMSAUM, b1 + ZOOMSAUM);
+  RAHMEN = [X[0], X[1], Y[0], Y[1]];
+  ZUSCHNITT = zoom;
 }
 
 /* ----------------------------------------------------- Maße und Projektion */
 let W = 0, H = 0, DPR = 1;
 let FW = 0, FH = 0, ZELLE = 3.0, X0 = 0, Y0 = 0;
 let mitteX = 0, mitteY = 0, skala = 1, zx = 0, zy = 0;
-let FEINHEIT = 3.0;
+/* Wie grob das Höhenfeld gerastert wird: in Ruhe fein, beim Ziehen gröber,
+   beim Abspielen noch gröber — ein Bild, das ruckelt, zeigt weniger als ein
+   Bild, das eine Rasterstufe verliert. */
+const FEIN_RUHE = 3.0, FEIN_ZIEH = 4.5, FEIN_SPIEL = 5.5;
+let FEINHEIT = FEIN_RUHE;
+let spiel = null;
 
 function messen(){
   const r = cv.getBoundingClientRect();
@@ -695,15 +798,25 @@ function pfad(r){
   for (let i=2;i<r.length;i+=2) ctx.lineTo(schirmX(r[i]), schirmY(r[i+1]));
 }
 
+/* Seit der Rahmen zugeschnitten ist, fahren in der Zeitkarte gut hundert
+   Halte darüber hinaus. Gezeichnet werden sie dort nicht mehr: ein roter
+   Punkt mit Namen, der allein im schwarzen Rand steht, sieht nicht nach „aus
+   der Karte gefallen" aus, sondern nach einem Fehler. Wer draußen ist, ist
+   draußen. */
+const imRahmen = (x, y) =>
+  x >= RAHMEN[0] && x <= RAHMEN[1] && y >= RAHMEN[2] && y <= RAHMEN[3];
+
 function punkteMalen(){
   ctx.fillStyle = 'rgba(255,255,255,.45)';
-  for (let i=0;i<n;i++) ctx.fillRect(schirmX(wx[i])-.6, schirmY(wy[i])-.6, 1.3, 1.3);
+  for (let i=0;i<n;i++) if (imRahmen(wx[i], wy[i]))
+    ctx.fillRect(schirmX(wx[i])-.6, schirmY(wy[i])-.6, 1.3, 1.3);
 }
 
 /* Beschriftet werden Orte, nicht Bahnhofsnamen, und zwar so viele, wie ohne
    Überdeckung hineinpassen: jeder versucht acht Plätze um seinen Punkt, wer
    keinen findet, wird nicht gezeichnet. Zwei Namen übereinander sind
    schlechter als ein Name weniger. */
+const FERNVORRAT = 22;
 let abgelegen = null;
 function namenMalen(){
   const belegt = [];
@@ -715,7 +828,6 @@ function namenMalen(){
   };
   ctx.font = '600 11.5px ui-sans-serif,system-ui,sans-serif';
   ctx.textBaseline = 'middle';
-  let gemalt = 0;
   const wieviele = W < 520 ? 24 : W < 820 ? 42 : 62;
   /* Und dann die abgelegensten Orte, dazu die abgelegensten *Bahnhöfe* mit
      ihrem eigenen Namen. In der Zeitkarte lösen sich deren Inseln vom Land,
@@ -725,24 +837,32 @@ function namenMalen(){
      gut angebunden am Land und Konstanz-Wollmatingen draußen im Meer. */
   const fern = W < 520 ? 4 : W < 820 ? 8 : 12;
   if (!abgelegen){
-    abgelegen = P.marken.slice().sort((a,b) => hh[b[0]] - hh[a[0]]).slice(0, 12);
+    abgelegen = P.marken.slice().sort((a,b) => hh[b[0]] - hh[a[0]]).slice(0, FERNVORRAT);
     const ord = Array.from({length:n}, (_,i)=>i).sort((a,b) => hh[b] - hh[a]);
     const weit = [];
     for (const i of ord){
-      if (weit.length >= 12) break;
+      if (weit.length >= FERNVORRAT) break;
       if (weit.every(j => (wx[i]-wx[j])**2 + (wy[i]-wy[j])**2 > 55*55))
         weit.push(i);
     }
     abgelegen = abgelegen.concat(weit.map(i => [i, nm[i]]));
   }
-  const reihe = P.marken.slice(0, wieviele)
-    .concat(abgelegen.slice(0, fern), abgelegen.slice(12, 12 + fern));
+  /* Aus dem Vorrat kommen mehr Kandidaten als Plätze: in der Zeitkarte sind
+     die abgelegensten oft genau die, die über den Rand hinausgefahren sind,
+     und ohne Nachrücker bliebe dann keine Scholle beschriftet. Gezählt wird
+     darum, was **gemalt** wurde, nicht was angeboten war — sonst rücken mit
+     jedem Ausfall zwei neue Namen nach und die Karte wird ein Register. */
+  const reihe = P.marken.slice(0, wieviele).map(m => [m[0], m[1], 0])
+    .concat(abgelegen.slice(0, fern + 10).map(m => [m[0], m[1], 1]),
+            abgelegen.slice(FERNVORRAT, FERNVORRAT + fern + 10)
+              .map(m => [m[0], m[1], 2]));
+  const platz = [wieviele, fern, fern];
   const schon = new Set();
-  for (const [i, t] of reihe){
-    if (schon.has(i)) continue;
+  for (const [i, t, g] of reihe){
+    if (schon.has(i) || platz[g] <= 0) continue;
     schon.add(i);
+    if (!imRahmen(wx[i], wy[i])) continue;
     const X = schirmX(wx[i]), Y = schirmY(wy[i]);
-    if (X < -40 || X > W+40 || Y < -40 || Y > H+40) continue;
     const b = ctx.measureText(t).width;
     let hin = null;
     for (const [dx,dy] of [[6,0],[-6-b,0],[6,-12],[-6-b,-12],[6,12],[-6-b,12],
@@ -757,7 +877,7 @@ function namenMalen(){
     ctx.beginPath(); ctx.arc(X, Y, 2.1, 0, 6.2832);
     ctx.fillStyle = '#e8291c'; ctx.fill();
     ctx.lineWidth = .8; ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.stroke();
-    gemalt++;
+    platz[g]--;
   }
 }
 
@@ -905,9 +1025,54 @@ function bald(){
 function regler(id, feld, faktor, zeige){
   const e = $(id);
   const auf = () => { Z[feld] = e.value / faktor; zeige(); bald(); };
-  e.addEventListener('input', () => { FEINHEIT = 4.5; auf(); });
-  e.addEventListener('change', () => { FEINHEIT = 3.0; auf(); });
+  e.addEventListener('input', () => { FEINHEIT = spiel ? FEIN_SPIEL : FEIN_ZIEH; auf(); });
+  e.addEventListener('change', () => { FEINHEIT = spiel ? FEIN_SPIEL : FEIN_RUHE; auf(); });
+  haendeDran(e);
   zeige();
+}
+
+/* ---------- Der Abspielknopf. Ein Regler, den man nicht anfasst, sieht wie
+   eine Behauptung aus; ein Regler, der von selbst durchfährt, ist ein
+   Beweis — man sieht die Verformung als Bewegung statt sie aus zwei
+   Standbildern zusammenzudenken. Am Ende des Wegs kehrt die Fahrt um, statt
+   zu springen, weil ein Sprung wie ein Schnitt aussieht und alles, was man
+   gerade verfolgt hat, verliert. Es läuft immer nur einer: zwei gleichzeitige
+   Bewegungen würden dieselbe Verformung erklären, und dann ordnet man keine
+   von beiden mehr zu. Wer selbst an einen Regler greift, hat Vorrang. */
+function haendeDran(e){
+  e.addEventListener('pointerdown', spielAus);
+  e.addEventListener('keydown', spielAus);
+}
+function spielAus(){
+  if (!spiel) return;
+  const k = $(spiel.knopf);
+  k.setAttribute('aria-pressed','false'); k.textContent = '▶';
+  spiel = null;
+  FEINHEIT = FEIN_RUHE;
+  bald();
+}
+function spielAn(sid, dauer){
+  spielAus();
+  const e = $(sid), knopf = 'p' + sid.slice(1);
+  const lo = +e.min, hi = +e.max;
+  /* zuerst in die weitere Richtung — dort ist mehr zu sehen */
+  spiel = {sid, knopf, dauer, hin: (+e.value - lo) < (hi - +e.value),
+           t: performance.now()};
+  const k = $(knopf);
+  k.setAttribute('aria-pressed','true'); k.textContent = '■';
+  requestAnimationFrame(spielSchritt);
+}
+function spielSchritt(t){
+  if (!spiel) return;
+  const e = $(spiel.sid), lo = +e.min, hi = +e.max;
+  const dt = Math.min(100, t - spiel.t);      /* nach einem Aussetzer nicht springen */
+  spiel.t = t;
+  let v = +e.value + (spiel.hin ? 1 : -1) * (hi - lo) * dt / spiel.dauer;
+  if (v >= hi){ v = hi; spiel.hin = false; }
+  else if (v <= lo){ v = lo; spiel.hin = true; }
+  e.value = v;
+  e.dispatchEvent(new Event('input'));
+  requestAnimationFrame(spielSchritt);
 }
 function start(){
   regler('sMorph','morph',1000, () => {
@@ -944,10 +1109,21 @@ function start(){
           + 'viel, dass es auf die Ecken ankommt. Hier zählt das Netz.';
       bald();
     };
-    e.addEventListener('input', () => { FEINHEIT = 4.5; auf(); });
-    e.addEventListener('change', () => { FEINHEIT = 3.0; auf(); });
+    e.addEventListener('input', () => { FEINHEIT = spiel ? FEIN_SPIEL : FEIN_ZIEH; auf(); });
+    e.addEventListener('change', () => { FEINHEIT = spiel ? FEIN_SPIEL : FEIN_RUHE; auf(); });
+    haendeDran(e);
     auf();
   }
+  /* Eine Fahrt der Verformung dauert sechs Sekunden, eine Fahrt durch die
+     Anteile acht: dort liegen achtzehn gemessene Stufen hintereinander, und
+     jede soll man einen Augenblick lang sehen. */
+  const abspieler = (id, sid, dauer) => $(id).addEventListener('click', () => {
+    if (spiel && spiel.sid === sid) spielAus(); else spielAn(sid, dauer);
+  });
+  abspieler('pMorph','sMorph', 6000);
+  abspieler('pAnteil','sAnteil', 8000);
+  /* Im Hintergrund weiterrechnen wäre reine Verschwendung. */
+  addEventListener('visibilitychange', () => { if (document.hidden) spielAus(); });
   const knopf = (id, feld, nach) => $(id).addEventListener('click', () => {
     Z[feld] = !Z[feld];
     $(id).setAttribute('aria-pressed', Z[feld] ? 'true':'false');
@@ -979,6 +1155,7 @@ function start(){
 function naechster(mx, my){
   let best = -1, bd = 26*26;
   for (let i=0;i<n;i++){
+    if (!imRahmen(wx[i], wy[i])) continue;      /* draußen ist nicht anklickbar */
     const dx = schirmX(wx[i])-mx, dy = schirmY(wy[i])-my, d = dx*dx+dy*dy;
     if (d < bd){ bd = d; best = i; }
   }
@@ -1209,19 +1386,20 @@ sondern abgeleitet: die Farbleiter läuft vom Wasserstand bis zum höchsten Wert
 <i>auf dem Land</i> (genauer: bis zu dessen 99,5-Perzentil, sonst walzt ein
 einzelner Haltepunkt mit zwei Zügen am Tag die ganze Leiter platt), und die
 letzten sechs Bänder sind Schnee. In Minuten steht sie in der Tafel links.
-Schnee haben Sylt, die Rügener Bäderbahn, der Zipfel um Konstanz, der
-Bayerische Wald bei Passau — und einzelne Haltepunkte mitten im Land, an denen
+Schnee haben der Zipfel um Konstanz, der Bayerische Wald bei Passau,
+Oberstdorf und Garmisch — und einzelne Haltepunkte mitten im Land, an denen
 zweimal am Tag ein Zug hält: Demker in der Altmark, Hoppstädten an der Nahe,
-Nistertal im Westerwald.</p>
+Nistertal im Westerwald. Sylt und die Rügener Bäderbahn sind in der Zeitkarte
+über den Bildrand hinaus.</p>
 <p>Je weiter der Regler in die Zeit läuft, desto mehr <b>Inseln</b> lösen sich
 vom Land, und das ist kein Zeichenfehler. Die Federkarte schleudert die
 abgehängten Orte so weit hinaus, dass der verzogene Umriss ihnen nicht mehr
 folgen kann — in der reinen Zeitkarte liegen 537 der
 ${P.bahnhoefe.toLocaleString('de-DE')} Bahnhöfe jenseits der Küste. Ein
 Bahnhof gehört aber immer auf Land, also bekommt jeder Ausgewanderte seine
-eigene Scholle, und was im Meer treibt, ist beschriftet: Granitz Jagdschloß
-und Göhren auf Rügen, Groß Schönebeck an der Heidekrautbahn, Freiburg
-Zähringen, Gottmadingen und Reichenau am Bodensee.</p>
+eigene Scholle, und was im Meer treibt und noch im Bild ist, ist beschriftet:
+Freiburg Herdern, Kennelgarten in der Pfalz, Nistertal-Büdingen im
+Westerwald, Dienheim am Rhein, Demker in der Altmark.</p>
 
 <h3>Was fehlt, und was es kostet</h3>
 <ul>
@@ -1274,9 +1452,12 @@ verbinden. Sie bekommen keine Feder.</li>
 <ul>
 <li><b>Landkarte → Zeitkarte</b> verzieht die Karte von der Geografie in die
 Reisezeit. Umriss und Ländergrenzen laufen mit, verschoben mit dem
-Verschiebungsfeld der Bahnhöfe selbst. Der Bildausschnitt steht dabei fest und
-umfasst beide Lagen — sonst wanderte beim Schieben der Maßstab mit, und genau
-die Verformung wäre nicht mehr zu sehen.</li>
+Verschiebungsfeld der Bahnhöfe selbst. Der <b>Abspielknopf</b> fährt hin und
+her: die Verformung als Bewegung statt als zwei Standbilder.</li>
+<li><b>Anteil Deutschlands</b> ist der Regler, der die Höhe überhaupt
+definiert — er schiebt zwischen Ballungsraum und Geografie. Achtzehn Stufen
+liegen vorgerechnet in der Seite, dazwischen wird gemischt. Auch er hat einen
+Abspielknopf.</li>
 <li><b>Wasserstand</b> hebt den Meeresspiegel in Minuten. Er verschiebt die
 Farbleiter mit: was darunter liegt, läuft unter Wasser, und die Schneegrenze
 rückt nach.</li>
@@ -1285,6 +1466,22 @@ ${P.isoknoten.length} vorgerechneten Knoten, anzuklicken auf der Karte. Das
 ist die Probe aufs Ganze: auf der Landkarte sind das ausgefranste Sterne, auf
 der Zeitkarte müssen daraus Kreise werden.</li>
 </ul>
+<p>Der <b>Bildausschnitt</b> steht fest und wandert beim Schieben nicht mit —
+sonst wäre genau die Verformung, um die es geht, nicht mehr zu sehen. Er kommt
+aber ganz von der Zeitkarte: die Federkarte spannt 1.274 × 1.302 Minuten, die
+Landkarte nur 715 × 956, und ein paar Enden von Nebenbahnen fahren so weit
+hinaus, dass Deutschland in der Mitte saß wie eine Briefmarke auf einem Bogen.
+Darum ist er <b>zugeschnitten</b>, so weit die Landkarte es zulässt: bis sie
+mit einem Saum von acht Minuten genau hineinpasst. Der Faktor ist nicht
+gesetzt, sondern gemessen — 1,29 —, und Deutschland wird damit gut zwanzig
+Prozent größer gezeichnet als vorher: nachgemessen +23 % auf 1440 × 900 und
++29 % hochkant auf dem Telefon. In der Landkarte geht dabei garantiert nichts
+verloren; in der reinen Zeitkarte fliegen <b>108 der
+${P.bahnhoefe.toLocaleString('de-DE')} Bahnhöfe</b> aus dem Bild: 2,3 % der
+Bahnhöfe, aber nur 0,9 % aller Halte am Tag — die Bodenseerunde, die Rügener
+Bäderbahn, die Erzgebirgs- und Zittauer Schmalspur, Sylt und Dagebüll, der
+Bayerische Wald, die Heidekrautbahn. Wer draußen liegt, wird nicht
+gezeichnet.</p>
 
 <h3>Quellen</h3>
 <ul>

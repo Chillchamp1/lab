@@ -201,17 +201,19 @@ offen bleibt in [STAND.md](STAND.md).
 
 ## Bedienung
 
+Die drei Regler liegen **direkt unter der Karte**, nicht in der Seitenspalte:
+man schaut beim Schieben auf die Karte und nicht auf den Regler. Der Streifen
+ist eine Zeile hoch, weil jede Zeile, die er sich nimmt, der Karte fehlt.
+
 - **Landkarte → Zeitkarte** verzieht die Karte von der Geografie in die
   Reisezeit. Umriss und Ländergrenzen laufen mit — verschoben mit dem
   Verschiebungsfeld der Bahnhöfe selbst, damit die Kieler Förde die Kieler
-  Förde bleibt, auch wenn Kiel wegläuft. Der Bildausschnitt steht dabei fest
-  und umfasst beide Lagen: die Zeitkarte ist **1.274 × 1.302 Minuten** groß,
-  die Landkarte nur 715 × 956, und dass die Karte beim Schieben aufgeht statt
-  sich nur zu verbiegen, ist selbst die Aussage. Ein Ausschnitt, der
-  mitwandert, hätte sie verschluckt.
+  Förde bleibt, auch wenn Kiel wegläuft. Der **Abspielknopf** fährt hin und
+  her: die Verformung als Bewegung statt als zwei Standbilder.
 - **Anteil Deutschlands** ist der Regler, der die Höhe *definiert*: von einem
   Fünfzigstel (Dichtekarte) bis zu neun Zehnteln (Geografiekarte). Achtzehn
-  Stufen liegen vorgerechnet in der Nutzlast, dazwischen wird gemischt.
+  Stufen liegen vorgerechnet in der Nutzlast, dazwischen wird gemischt. Auch
+  er hat einen Abspielknopf.
 - **Wasserstand** hebt den Meeresspiegel, beschriftet in absoluten Minuten —
   bei einem Viertel liegt die Voreinstellung bei 250 Minuten. Die Farbleiter
   rückt mit, die Schneegrenze also auch.
@@ -221,6 +223,30 @@ offen bleibt in [STAND.md](STAND.md).
   müssen daraus Kreise werden.
 - Zeiger über einen Punkt zeigt Name, Erreichbarkeit und Zahl der Halte.
 
+### Der Bildausschnitt
+
+Er steht **fest** und wandert beim Schieben nicht mit — sonst wäre genau die
+Verformung, um die es geht, nicht mehr zu sehen. Er kommt aber ganz von der
+Zeitkarte: die Federkarte ist 1.274 × 1.302 Minuten groß, die Landkarte nur
+715 × 956, und ein paar Enden von Nebenbahnen fahren so weit hinaus, dass
+Deutschland in der Mitte saß wie eine Briefmarke auf einem Bogen.
+
+Darum ist er **zugeschnitten**, und zwar so weit, wie die Landkarte es
+zulässt: bis sie mit einem Saum von 8 Minuten genau hineinpasst. Der Faktor
+ist nicht gesetzt, sondern gemessen — 1,29, also 985 × 1.006 Minuten. Der
+Reglerstreifen kostet auch noch Höhe; nachgemessen bleibt gegenüber vorher
+**+23 %** auf 1440 × 900, +21 % auf 1280 × 720, +24 % auf 1920 × 1080 und
++29 % hochkant auf dem Telefon, wo die Karte breitenbegrenzt ist und der
+Zuschnitt voll durchkommt.
+
+Bei `morph = 0` geht dabei garantiert nichts verloren. In der reinen Zeitkarte
+fliegen **108 von 4.781 Bahnhöfen** aus dem Bild (2,3 %) — aber nur 0,9 %
+aller Halte, Median 20 Halte am Tag gegen 42 im ganzen Netz. Es sind die
+Bodenseerunde, die Rügener Bäderbahn, die Erzgebirgs- und Zittauer Schmalspur,
+Sylt und Dagebüll, der Bayerische Wald, die Heidekrautbahn. Wer draußen liegt,
+wird nicht gezeichnet: ein roter Punkt mit Namen allein im schwarzen Rand
+sieht nicht nach „aus der Karte gefallen" aus, sondern nach einem Fehler.
+
 ## Schnee, und die Inseln im Meer
 
 Über den am schlechtesten erreichbaren Gegenden liegt **Schnee** — die
@@ -228,20 +254,21 @@ obersten sechs der fünfunddreißig Farbbänder. Die Grenze ist nicht gesetzt,
 sondern abgeleitet: sie liegt dort, wo die Leiter vom Wasserstand bis zum
 höchsten Wert **auf dem Land** ihre letzten sechs Bänder erreicht, und steht
 in absoluten Minuten in der Tafel. Bei einem Viertel und Wasser auf 250
-Minuten liegt sie bei 571, und Schnee haben dann Sylt, die Rügener Bäderbahn,
-der Zipfel um Konstanz, der Bayerische Wald bei Passau, die Heidekrautbahn bei
-Groß Schönebeck und einzelne Haltepunkte, an denen zweimal am Tag ein Zug
-hält.
+Minuten liegt sie in der Zeitkarte bei 524 Minuten, in der Landkarte bei 435,
+und Schnee haben dann der Zipfel um Konstanz, der Bayerische Wald bei Passau,
+die Heidekrautbahn bei Groß Schönebeck, Oberstdorf, Garmisch und einzelne
+Haltepunkte, an denen zweimal am Tag ein Zug hält. Sylt und die Rügener
+Bäderbahn sind in der Zeitkarte über den Rand hinaus.
 
 Und je weiter der Regler in die Zeit läuft, desto mehr **Inseln** lösen sich
 vom Land. Das ist kein Zeichenfehler: die Federkarte schleudert die
 abgehängten Orte so weit hinaus, dass der verzogene Umriss ihnen nicht mehr
 folgen kann — 537 von 4.781 Bahnhöfen liegen in der reinen Zeitkarte jenseits
-der Küste. Ein Bahnhof gehört aber immer auf Land, also bekommt jeder
-Ausgewanderte seine eigene Scholle. Was dann im Meer treibt, ist beschriftet:
-Granitz Jagdschloß und Göhren auf Rügen, Groß Schönebeck an der
-Heidekrautbahn, Freiburg Zähringen, Gottmadingen und Reichenau am
-Bodensee.
+der Küste, 108 davon sogar jenseits des Bildausschnitts. Ein Bahnhof gehört
+aber immer auf Land, also bekommt jeder Ausgewanderte seine eigene Scholle.
+Was dann im Meer treibt und noch im Bild ist, ist beschriftet: Freiburg
+Herdern, Kennelgarten in der Pfalz, Nistertal-Büdingen im Westerwald,
+Dienheim am Rhein, Demker in der Altmark.
 
 ## Bauen
 

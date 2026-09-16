@@ -572,7 +572,7 @@ zählen alle positiv, und eine Überlappung ist nie ein Loch. Nachgezählt bleib
 zwei Löcher im Land — und die sind echt: die Bodden hinter Rügen und das
 Wattenmeer bei Husum.
 
-### 4.6 Der Bildausschnitt steht fest
+### 4.6 Der Bildausschnitt steht fest — und ist zugeschnitten
 
 Er wird **einmal** bestimmt und gilt für jede Reglerstellung: über die
 Bahnhöfe in beiden Lagen und über den Umriss in beiden Lagen. Das hat zwei
@@ -581,11 +581,63 @@ Gründe.
 Nur die Bahnhöfe zu nehmen war zu wenig, denn das Verschiebungsfeld verzieht
 die Küste über sie hinaus. Und einen Ausschnitt je Reglerstellung zu rechnen
 wäre falsch, denn dann wanderte der Maßstab beim Schieben mit — und genau die
-Verformung, um die es geht, wäre nicht mehr zu sehen. Der Preis ist, dass die
-Landkarte den Schirm nicht ausfüllt: die Federkarte ist **1.274 × 1.302
-Minuten** groß, die Landkarte nur 715 × 956. Dass die Karte beim Schieben
-aufgeht statt sich nur zu verbiegen, ist selbst eine Aussage — die Zeit macht
-Deutschland größer.
+Verformung, um die es geht, wäre nicht mehr zu sehen. Dass die Karte beim
+Schieben aufgeht statt sich nur zu verbiegen, ist selbst eine Aussage — die
+Zeit macht Deutschland größer.
+
+Der Preis war, dass die Landkarte den Schirm nicht ausfüllte, und er war zu
+hoch. Der Ausschnitt kommt nämlich **ganz** von der Zeitkarte: die Federkarte
+ist 1.274 × 1.302 Minuten groß, die Landkarte nur 715 × 956. Ein paar Enden
+von Nebenbahnen — Oberwiesenthal, die Rügener Bäderbahn, Westerland — fahren
+so weit hinaus, dass Deutschland in der Mitte des Bildes auf drei Viertel der
+Bildhöhe schrumpfte und dort saß wie eine Briefmarke auf einem Bogen.
+
+Also wird der Ausschnitt zugeschnitten, und zwar **so weit, wie die Landkarte
+es zulässt**: bis sie in der engeren Achse mit einem Saum von 8 Minuten genau
+hineinpasst. Der Faktor ist damit nicht gesetzt, sondern gemessen — bei diesen
+Daten **1,29**, also 985 × 1.006 Minuten. Verschoben wird danach nur noch, nie
+gedehnt, sonst wäre der Gewinn wieder weg.
+
+Der Reglerstreifen unter der Karte (4.10) kostet auch noch Höhe. Nachgemessen
+gegen die Fassung davor bleibt:
+
+| Fenster | Maßstab vorher | nachher | Deutschland |
+| --- | --- | --- | --- |
+| 1920 × 1080 | 0,796 | 0,985 | **+24 %** |
+| 1440 × 900 | 0,660 | 0,809 | **+23 %** |
+| 1280 × 720 | 0,524 | 0,632 | **+21 %** |
+| 400 × 860 (hochkant) | 0,297 | 0,384 | **+29 %** |
+
+(Maßstab in Pixeln je Minute.) Hochkant kommt der Zuschnitt voll durch, weil
+die Karte dort breitenbegrenzt ist und der Streifen keine Bildhöhe wegnimmt,
+die der Maßstab überhaupt nutzen könnte.
+
+Bei `morph = 0` geht dabei garantiert nichts verloren — das ist die Bedingung,
+aus der der Faktor kommt. In der reinen Zeitkarte fliegen die weit
+hinausgefahrenen Enden aus dem Bild, und das ist der Handel:
+
+| | |
+| --- | --- |
+| Bahnhöfe außerhalb des Ausschnitts, `morph = 0` | 0 |
+| Bahnhöfe außerhalb des Ausschnitts, `morph = 1` | 108 von 4.781 = **2,3 %** |
+| … deren Anteil an allen Halten | 2.656 von 295.476 = **0,9 %** |
+| Median Halte am Tag, hinausgefallen / alle | 20 / 42 |
+
+Es sind erwartbare Namen: die Bodenseerunde von Friedrichshafen bis
+Überlingen, die Rügener Bäderbahn, die Erzgebirgs- und Zittauer Schmalspur,
+Sylt und Dagebüll, der Bayerische Wald um Grafenau, die Heidekrautbahn, die
+Schwäbische Alb um Münsingen. Ein Halt mit acht Zügen am Tag hat kaum Federn,
+die ihn halten; seine Lage ist die unsicherste der ganzen Rechnung, und ihn zu
+verlieren kostet die Karte am wenigsten.
+
+Wer außerhalb liegt, wird **nicht gezeichnet** — kein Punkt, kein Name, keine
+Kurzinfo unter dem Zeiger. Eine Beschriftung, die allein im schwarzen Rand
+steht, sieht nicht nach „aus der Karte gefallen" aus, sondern nach einem
+Fehler. Weil in der Zeitkarte gerade die *abgelegensten* Halte die sind, die
+hinausfahren, und weil genau die die Beschriftung der treibenden Schollen
+liefern (4.8), kommen die Fernmarken jetzt aus einem größeren Vorrat, und
+gezählt wird, was **gemalt** wurde — nicht, was angeboten war. Sonst rückten
+mit jedem Ausfall zwei neue Namen nach und die Karte würde ein Register.
 
 ### 4.7 Farbe, Licht, Höhenlinien, Schnee
 
@@ -604,7 +656,8 @@ Reliefkarte bekommt.
 Die **Schneegrenze** ist nicht gesetzt, sondern abgeleitet: die Leiter läuft
 vom Wasserstand bis zum höchsten Wert **auf dem Land**, und die letzten sechs
 Bänder sind Schnee. In Minuten steht sie in der Tafel — bei einem Viertel und
-Wasser auf 250 Minuten liegt sie bei 571. Weil der Anteilsregler die ganze
+Wasser auf 250 Minuten liegt sie in der Zeitkarte bei 524 Minuten, in der
+Landkarte bei 435. Weil der Anteilsregler die ganze
 Leiter verschiebt, wird der Wasserstand intern als Aufschlag auf den besten
 Bahnhof geführt und nur absolut beschriftet: sonst würde ein Zug am
 Anteilsregler die halbe Karte fluten oder trockenlegen. Als oberes Ende dient das
@@ -644,8 +697,13 @@ abgelegensten Bahnhöfen unter ihrem eigenen Namen**. Ortsmarken helfen dort
 nicht: Konstanz Hbf liegt gut angebunden am Land, und was in der Zeitkarte als
 weiße Scholle im Meer treibt, heißt Konstanz-Wollmatingen. Ohne diesen
 Durchgang bleiben die Inseln namenlos, und eine weiße Scholle ohne Namen ist
-ein Fleck. Mit ihm stehen dort Granitz Jagdschloß, Göhren, Groß Schönebeck,
-Freiburg Zähringen, Gottmadingen, Reichenau (Baden).
+ein Fleck. Mit ihm stehen in der reinen Zeitkarte dort Freiburg Herdern,
+Kennelgarten (Pfalz), Nistertal-Büdingen (Westerwald), Dienheim (Rhein) und
+Demker (Altmark). Die *allerschlimmsten* — Granitz Jagdschloß, Göhren,
+Gottmadingen, Reichenau (Baden) — sind es nicht mehr: sie liegen jenseits des
+zugeschnittenen Ausschnitts (4.6) und werden gar nicht gezeichnet. Deshalb
+kommen die Kandidaten aus einem größeren Vorrat und das Budget zählt, was
+gemalt wurde.
 
 ### 4.9 Isochronen
 
@@ -658,6 +716,37 @@ Das ist die Probe aufs Ganze, und sie ist der Grund, warum die Isochronen
 bedienbar sind statt fest: auf der Landkarte sind das ausgefranste Sterne,
 auf der Zeitkarte müssen daraus Kreise werden. Sie werden es nicht ganz — es
 bleiben ja 23 % Stress —, aber sichtbar viel mehr als vorher.
+
+### 4.10 Die Regler liegen unter der Karte
+
+Sie haben in der Seitenspalte gestanden, und das war falsch: man schaut beim
+Schieben auf die Karte und nicht auf den Regler, und wenn beide 900 Pixel
+auseinanderliegen, schiebt man blind. Jetzt liegen die drei Griffe direkt
+unter dem, was sie bewegen.
+
+Der Streifen ist **eine** Zeile hoch, und das ist keine Kosmetik: jede Zeile,
+die er sich nimmt, nimmt er der Karte weg, und die Karte sollte gerade größer
+werden (4.6). Darum liegen dort nur die drei Regler; die Anzeigeschalter —
+Namen, Höhenlinien, Bahnhöfe, Isochronen — bleiben in der Tafel, wo sie keine
+Bildhöhe kosten. Unter 640 Pixeln Breite wird der Streifen zweispaltig, unter
+440 einspaltig.
+
+**Landkarte → Zeitkarte** und **Anteil Deutschlands** haben je einen
+Abspielknopf. Ein Regler, den man nicht anfasst, sieht wie eine Behauptung
+aus; ein Regler, der von selbst durchfährt, ist ein Beweis — man sieht die
+Verformung als Bewegung, statt sie aus zwei Standbildern zusammenzudenken. Am
+Ende des Wegs kehrt die Fahrt um statt zu springen, weil ein Sprung wie ein
+Schnitt aussieht und alles verliert, was man gerade verfolgt hat. Eine Fahrt
+der Verformung dauert 6 Sekunden, eine Fahrt durch die Anteile 8 — dort liegen
+achtzehn gemessene Stufen hintereinander, und jede soll man einen Augenblick
+lang sehen.
+
+Es läuft immer nur **einer**: zwei gleichzeitige Bewegungen würden dieselbe
+Verformung erklären, und dann ordnet man keine von beiden mehr zu. Wer selbst
+an einen Regler greift, hat Vorrang und stoppt die Fahrt. Während sie läuft,
+wird das Höhenfeld gröber gerastert (5,5 statt 3,0 Minuten je Zelle) — ein
+Bild, das ruckelt, zeigt weniger als ein Bild, das eine Rasterstufe verliert.
+Im verdeckten Tab hält die Fahrt an.
 
 ## 5. Was fehlt
 
