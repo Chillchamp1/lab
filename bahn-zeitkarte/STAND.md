@@ -11,7 +11,8 @@ Läufe — nicht von Hand übertragen.
 
 ```
 python3 build/01_netz.py && python3 build/02_zeiten.py \
-  && python3 build/03_lage.py && python3 build/04_seite.py
+  && python3 build/03_lage.py && python3 build/04_menschen.py \
+  && python3 build/05_seite.py
 ```
 
 Geprüft wurde dabei:
@@ -29,6 +30,25 @@ Geprüft wurde dabei:
   einen Knoten sind auf der Landkarte ausgefranste Sterne und auf der
   Zeitkarte annähernd Kreise. Nicht ganz — es bleiben 23 % Stress —, aber
   sichtbar.
+
+## Was die Gewichtung nach Menschen ergeben hat
+
+Die Frage war: nach Menschen gewichten statt nach Bahnhöfen, um das Gefühl von
+Angebundenheit zu treffen. Die Antwort ist zweiteilig und stand nicht zu
+erwarten.
+
+**Die Gewichtung allein bringt fast nichts.** „Mittlere Reisezeit zu allen
+Menschen" und „zu allen Bahnhöfen" korrelieren mit **r = 0,973** — es ist
+dieselbe Karte. Ein Mittelwert über ein großes Land wird von der fernen Hälfte
+bestimmt, und die hängt daran, wo ein Ort liegt, nicht daran, wie er
+angeschlossen ist. München steht in beiden so schlecht wie Ulm.
+
+**Was die Karte ändert, ist die andere Frage.** Nicht „wie weit ist das
+Mittel", sondern „wie viel ist in Reichweite": die Minuten, bis ein Zehntel
+Deutschlands erreichbar ist. Damit liegt das Ruhrgebiet bei 81 bis 92 Minuten,
+Frankfurt bei 115, Berlin und München bei 144 und 142, und die Stichbahnen um
+Freiburg bei 630. Das ist das Relief, das jetzt gezeichnet wird; die
+Begründung steht in [METHODIK 4.1](METHODIK.md).
 
 ## Sechs Fehler, die im Laufen gefunden wurden
 
@@ -72,16 +92,22 @@ Jetzt ist das obere Ende das 99,5-Perzentil des Landes.
 
 ## Was offen ist
 
-**Die Erreichbarkeit ist nach Bahnhöfen gewichtet, nicht nach Menschen.** Das
-ist die größte offene Stelle. „Mittlere Reisezeit zu allen 4.814 anderen
-Bahnhöfen" zählt einen Haltepunkt mit dreißig Einwohnern so wie Köln — und
-weil die Haltepunkte in der Fläche liegen, zieht das die Karte nach außen.
-Richtiger wäre „mittlere Reisezeit zu allen Menschen". Die Einwohnerzahlen
-liegen im Nachbarprojekt [bevoelkerung-kreise](../bevoelkerung-kreise/) auf
-Kreisebene; sie auf Bahnhöfe zu verteilen (Kreisbevölkerung anteilig nach
-Nähe) ist eine halbe Stunde Arbeit und würde die Karte messbar verändern. Es
-ist bewusst nicht getan: dann wären es zwei Karten in einer, und die zweite
-wäre eine Bevölkerungskarte.
+**Die Bevölkerung ist innerhalb eines Kreises gleichmäßig verteilt.** Das ist
+jetzt die gröbste Annahme in der Kette. Die Einzugsgebiete entstehen, indem
+jeder Kreis mit 2 km gerastert und jede Zelle dem nächsten Bahnhof zugeschlagen
+wird — mit der Kreisbevölkerung als einziger Dichteangabe. In einem Landkreis
+mit einer Stadt und viel Wald sitzt damit zu viel Bevölkerung im Wald, und der
+Haltepunkt am Waldrand bekommt ein Einzugsgebiet, das es nicht gibt. Die
+Antwort wäre der Zensus-100-m-Raster oder wenigstens die Gemeindeebene; beides
+liegt hier nicht (siehe [QUELLEN.md](QUELLEN.md)).
+
+**Die größten Einzugsgebiete liegen an den falschen Bahnhöfen.** München Ost
+bekommt 476.000 Menschen, München Hbf weniger — weil in den Städten die
+S-Bahn fehlt und die Stadtbevölkerung an den wenigen verbliebenen
+Regionalbahnhöfen landet, und welcher davon der nächste ist, entscheidet die
+Geometrie. Für das gezeichnete Maß ist das ohne Belang (diese Bahnhöfe liegen
+Minuten voneinander entfernt), im Zeiger steht die Zahl trotzdem, und dort
+ist sie irreführend.
 
 **Der Stadtverkehr fehlt, und das verzerrt die Ballungsräume.** Die Quelle
 führt keine S-Bahn. Hamburg, München und das Rheinland liegen dadurch höher,
@@ -116,9 +142,17 @@ her (siehe [QUELLEN.md](QUELLEN.md)).
 
 ## Was bewusst so bleibt
 
-- **Die gezeichnete Höhe ist die gemessene Erreichbarkeit, nicht die
-  Modellhöhe.** Warum, steht in [METHODIK 3.4](METHODIK.md). Kurz: die
-  Modellhöhe trifft die Zahlen besser und erzählt das Falsche.
+- **Die gezeichnete Höhe ist eine gemessene Größe, nicht die Modellhöhe.**
+  Warum, steht in [METHODIK 3.4](METHODIK.md). Kurz: die Modellhöhe trifft die
+  Zahlen besser und erzählt das Falsche.
+- **Ein Zehntel als Schwelle, nicht eine Million.** Bei einer Million misst
+  das Maß im Grunde, wie lange man braucht, um die eigene Stadt zu
+  durchqueren — Berlin 18 Minuten, München 24 —, und das Relief wäre eine
+  Karte der Großstädte. Ein Zehntel zwingt über die eigene Agglomeration
+  hinaus.
+- **Nur ein Relief, kein Umschalter.** Alle drei Kandidaten sind gerechnet und
+  stehen in der Nutzlast nicht: gezeichnet wird einer. Eine Seite, die eine
+  Sache gut zeigt, ist mehr wert als eine mit drei Knöpfen.
 - **Der Grundriss ist die flache Federkarte, nicht die Geländelage.** Damit
   der Satz stimmt, der die Karte erklärt: der Abstand auf der Karte ist die
   Reisezeit.

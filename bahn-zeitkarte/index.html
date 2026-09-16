@@ -103,12 +103,12 @@ button[aria-pressed=true],button:hover{color:var(--ink);border-style:solid}
       <p class="titel">Die Karte verziehen</p>
       <div class="reg"><label>Landkarte → Zeitkarte <i id="wMorph">Zeitkarte</i></label>
         <input id="sMorph" type="range" min="0" max="1000" value="1000"></div>
-      <div class="reg"><label>Wasserstand <i id="wWasser">+95 min</i></label>
-        <input id="sWasser" type="range" min="0" max="320" value="95"></div>
+      <div class="reg"><label>Wasserstand <i id="wWasser">…</i></label>
+        <input id="sWasser" type="range" min="0" max="400" value="100"></div>
     </div>
 
     <div class="gruppe">
-      <p class="titel">Höhe: mittlere Reisezeit zu allem</p>
+      <p class="titel">Höhe: bis ein Zehntel Deutschlands erreichbar ist</p>
       <div id="band"></div>
       <div id="bandtext"><span id="bandmin">+0</span><span id="bandmax">…</span></div>
       <p id="schneezeile">…</p>
@@ -140,11 +140,11 @@ button[aria-pressed=true],button:hover{color:var(--ink);border-style:solid}
    Zwei Zahlen stecken in jedem Bild. Die **Lage** kommt aus einem
    Federmodell: zwischen je zwei Bahnhöfen hängt eine Feder, deren Ruhelänge
    die Reisezeit mit dem Zug ist, und die Karte ist die Lage, in der alle
-   Federn zusammen am wenigsten ziehen. Die **Höhe** ist die mittlere
-   Reisezeit von diesem Bahnhof zu allen anderen — gemessen, nicht
-   modelliert. Wer schlecht erreichbar ist, liegt hoch; die Knoten und die
-   schnellen Achsen liegen tief und laufen unter Wasser; über den am
-   schlechtesten erreichbaren Gegenden liegt Schnee.
+   Federn zusammen am wenigsten ziehen. Die **Höhe** ist, wie lange es
+   dauert, bis von hier ein Zehntel Deutschlands — 8,4 Millionen Menschen —
+   mit dem Zug in Reichweite ist. Gemessen, nicht modelliert. Wer schnell
+   Menschen erreicht, liegt tief und läuft unter Wasser; über den
+   abgehängten Gegenden liegt Schnee.
 
    Gezeichnet wird das, wie ein Atlas ein Gebirge zeichnet: ein Höhenfeld,
    fünfunddreißig Farbbänder darüber, auf jeder Bandgrenze eine Höhenlinie,
@@ -164,7 +164,7 @@ const WASSER = ['#04182d','#072843','#0b3a5e','#11507c','#186699'];
 const LAND = ['#17682b','#20742c','#2b812e','#388e31','#479a36','#589f3b',
   '#6cab41','#82b649','#98c052','#aec95b','#c2ce62','#d2cb60','#dcc05a',
   '#e3b154','#e39f4b','#df8c43','#d7793c','#cc6737','#bf5734','#ae4931',
-  '#9b3d2e','#87362c','#75342d','#6a3b35'];
+  '#9b3d2e','#8d3b2d','#7f3f33','#77483f'];
 const SCHNEE = ['#9c918d','#b4aca9','#c9c2bf','#dcd8d6','#efedec','#ffffff'];
 const RAMPE = WASSER.concat(LAND, SCHNEE);
 const NW = WASSER.length, NL = LAND.length, NS = SCHNEE.length;
@@ -173,12 +173,12 @@ const SCHNEEANTEIL = NL / (NL + NS);
 
 let P = null, ISO = null;
 let n = 0, nm = [], halte = null;
-let gxx, gyy, fxx, fyy, hh, hmax = 1;
+let gxx, gyy, fxx, fyy, hh, einzug, hmax = 1;
 let wx, wy;
 let umriss = [], laender = [], umrissW = [], laenderW = [];
 let RAHMEN = null;
 
-const Z = {morph:1, wasser:95, namen:true, linien:true, punkte:false,
+const Z = {morph:1, wasser:100, namen:true, linien:true, punkte:false,
            iso:false, isoKnoten:-1};
 
 /* ------------------------------------------------------------------ Laden */
@@ -198,6 +198,7 @@ async function los(){
   for (let i = 0; i < n; i++){ gxx[i] *= mk; gyy[i] *= mk; }
   fxx = entpacke(P.flachx, 10); fyy = entpacke(P.flachy, 10);
   hh  = entpacke(P.zugang, 10);
+  einzug = entpacke(P.einzug, 0.01);
   const ring = r => {
     const X = entpacke(r[0],10), Y = entpacke(r[1],10), o = new Float32Array(X.length*2);
     for (let i=0;i<X.length;i++){ o[2*i]=X[i]*mk; o[2*i+1]=Y[i]*mk; }
@@ -472,7 +473,7 @@ function feldBauen(){
      Glockenkurve ins Feld. Das kostet einmal die Zahl der Bahnhöfe mal die
      Fläche der Glocke, statt für jede Zelle die nächsten Bahnhöfe zu
      suchen — gemessen ein Achtel der Zeit, und das Feld wird glatter. */
-  const sig = 15.0 / ZELLE, rad = Math.ceil(3*sig), inv = -0.5/(sig*sig);
+  const sig = 11.0 / ZELLE, rad = Math.ceil(3*sig), inv = -0.5/(sig*sig);
   for (let i=0;i<n;i++){
     const cx = feldX(wx[i]), cy = feldY(wy[i]);
     const ix0 = Math.max(0,(cx-rad)|0), ix1 = Math.min(FW-1,(cx+rad)|0);
@@ -787,11 +788,15 @@ function bauLegende(){
   }
 }
 function tafelSetzen(){
-  $('bandmin').textContent = '+0 min';
-  $('bandmax').textContent = '+' + Math.round(landMax) + ' min';
-  $('schneezeile').innerHTML = 'Schnee liegt über <b>+' + Math.round(schneeLinie)
-    + ' Minuten</b> mittlerer Reisezeit, Wasser unter <b>+'
-    + Math.round(Z.wasser) + '</b>.';
+  /* Beschriftet wird **absolut**, nicht als Aufschlag auf den besten
+     Bahnhof: „Wasser unter 181 Minuten" ist eine Aussage, „unter +100" ist
+     eine Rechenaufgabe. Gerechnet wird intern weiter über dem Besten, weil
+     die Farbleiter dort ihren Nullpunkt hat. */
+  const abs = v => Math.round(P.reich_min + v);
+  $('bandmin').textContent = abs(0) + ' min';
+  $('bandmax').textContent = abs(landMax) + ' min';
+  $('schneezeile').innerHTML = 'Wasser unter <b>' + abs(Z.wasser)
+    + ' Minuten</b>, Schnee über <b>' + abs(schneeLinie) + '</b>.';
   const px = 60 * skala;
   $('mstrich').style.width = Math.round(px) + 'px';
   $('mtext').textContent = '60 Minuten Reisezeit';
@@ -812,11 +817,15 @@ function text(){
     '<b>' + P.bahnhoefe.toLocaleString('de-DE') + ' Bahnhöfe</b> des Fern- und '
     + 'Regionalverkehrs, gezeichnet nach der Reisezeit mit dem Zug statt nach '
     + 'Kilometern. Ein Kilometer Luftlinie ist dabei '
-    + P.minprokm.toFixed(2).replace('.',',') + ' Minuten wert. Die Höhe ist die '
-    + 'mittlere Reisezeit von hier zu allem anderen: die Knoten liegen tief und '
-    + 'unter Wasser, über den abgehängten Gegenden liegt Schnee. Fahrplan: '
-    + 'Mittwoch, 13. Mai 2026, Abfahrt in der dichtesten Stunde des Tages, '
-    + hh2(t0) + '–' + hh2(t0+60) + '.';
+    + P.minprokm.toFixed(2).replace('.',',') + ' Minuten wert. Die Höhe ist, wie '
+    + 'lange es dauert, bis von hier <b>ein Zehntel Deutschlands</b> in '
+    + 'Reichweite ist — 8,4 Millionen Menschen: '
+    + Math.round(P.reich_min) + ' Minuten im Ruhrgebiet, '
+    + Math.round(P.reich_median) + ' im Mittel, und über zehn Stunden dort, wo '
+    + 'zweimal am Tag ein Zug hält. '
+    + 'Wer schnell Menschen erreicht, liegt unter Wasser; über den abgehängten '
+    + 'Gegenden liegt Schnee. Fahrplan: Mittwoch, 13. Mai 2026, Abfahrt in der '
+    + 'dichtesten Stunde des Tages, ' + hh2(t0) + '–' + hh2(t0+60) + '.';
 }
 
 /* ------------------------------------------------------------- Bedienung */
@@ -840,7 +849,7 @@ function start(){
       : Math.round(v*100) + ' % Zeit';
   });
   regler('sWasser','wasser',1, () => {
-    $('wWasser').textContent = '+' + Math.round(Z.wasser) + ' min';
+    $('wWasser').textContent = Math.round(P.reich_min + Z.wasser) + ' min';
   });
   const knopf = (id, feld, nach) => $(id).addEventListener('click', () => {
     Z[feld] = !Z[feld];
@@ -883,9 +892,11 @@ function zeigen(ev){
   const i = naechster(ev.clientX - r.left, ev.clientY - r.top);
   const t = $('tip');
   if (i < 0){ t.style.opacity = 0; return; }
-  t.innerHTML = '<b>' + nm[i] + '</b><span>mittlere Reisezeit +'
-    + hh[i].toFixed(0) + ' min über dem besten Bahnhof<br>'
-    + halte[i] + ' Halte am Tag</span>';
+  t.innerHTML = '<b>' + nm[i] + '</b><span>'
+    + Math.round(P.reich_min + hh[i]) + ' min, bis ein Zehntel Deutschlands '
+    + 'erreichbar ist<br>' + halte[i] + ' Halte am Tag · Einzugsgebiet '
+    + (einzug[i] >= 10000 ? Math.round(einzug[i]/1000) + '.000'
+       : Math.round(einzug[i]/100)*100) + ' Menschen</span>';
   t.style.opacity = 1;
   t.style.left = Math.min(innerWidth - t.offsetWidth - 8,
                           Math.max(8, ev.clientX + 12)) + 'px';
@@ -906,7 +917,7 @@ function klick(ev){
 }
 
 function bauText(){
-  const S = P.stress, V = P.verzerrung;
+  const S = P.stress, V = P.verzerrung, K = P.kandidaten;
   const p = x => (x*100).toFixed(1).replace('.',',') + ' %';
   const hh2 = m => String(Math.floor(m/60)).padStart(2,'0')+':'
                  + String(m%60).padStart(2,'0');
@@ -985,41 +996,86 @@ gezeichneter Länge und Reisezeit, als Anteil:</p>
 <tr><td>Ebene und Höhe zusammen gesucht</td><td class="z">${p(S.gelaende)}</td></tr>
 </table>
 
-<h3>Warum ein Relief, und welches</h3>
+<h3>Warum ein Relief</h3>
 <p>Die Reisezeit ist keine Geometrie der Ebene. Von einem abgelegenen Ort sind
 es zu allem zwei Stunden, und in der Ebene gibt es keinen Punkt, der von allem
 gleich weit weg ist und trotzdem in der Nähe liegt. Darum bleibt selbst die
 beste flache Federkarte ${p(S.flach)} daneben.</p>
-<p>Eine dritte Zahl je Bahnhof hilft, und zwar messbar. Wird die
-Modelldistanz nicht mehr als Luftlinie, sondern als <b>Weg über ein
-Gelände</b> gerechnet — die kürzeste Kette von Kanten im
-Nachbarschaftsgraphen, jede so lang wie
+<p>Eine dritte Zahl je Bahnhof hilft, und zwar messbar. Wird die Modelldistanz
+nicht mehr als Luftlinie, sondern als <b>Weg über ein Gelände</b> gerechnet —
+die kürzeste Kette von Kanten im Nachbarschaftsgraphen, jede so lang wie
 <span style="white-space:nowrap">√(Δx² + Δy² + Δh²)</span> —, dann fällt der
 Stress von ${p(S.flach)} auf ${p(S.gelaende)}, ein Drittel des Weges von der
 Landkarte zur perfekten Karte. Und der Grundriss wird dabei <i>nicht</i>
 krummer: er liegt mit ${V.gelaende.toFixed(0)} km im Mittel genauso weit von
-der Geografie wie der der flachen Karte mit ${V.flach.toFixed(0)} km. Die
-Höhe nimmt der Ebene also Arbeit ab, ohne sie zu bezahlen. Genau das war die
-Vermutung, und sie stimmt.</p>
-<p>Nur: die Höhe, die das Modell sich dafür wünscht, ist <b>nicht</b> die
-Erreichbarkeit. Sie kann es nicht sein. Dass Hamburg weiter von allem
-entfernt liegt als Fulda, steht schon im Grundriss — Hamburg liegt am Rand.
-Übrig bleibt für die Höhe nur, was der Grundriss <i>nicht</i> sagen kann, und
-das ist etwas Kleinräumiges: Modellhöhe und gemessene Erreichbarkeit
-korrelieren mit r = −0,06, also gar nicht. Ein Relief aus der Modellhöhe ist
-mathematisch das bessere, aber es erzählt das Falsche; in einer Fassung lag
-Frankfurt Hauptbahnhof darin höher als Westerland auf Sylt.</p>
-<p><b>Gezeichnet wird deshalb die gemessene Erreichbarkeit</b>: die mittlere
-Reisezeit von diesem Bahnhof zu allen
-${(P.bahnhoefe-1).toLocaleString('de-DE')} anderen, hin und zurück gemittelt,
-aufgetragen als Höhe über dem besten Wert. Das ist keine Modellgröße, sondern
-eine Zahl in Minuten — von ${Math.round(P.zugang_min)} Minuten in
-Frankfurt (Main) Hbf bis ${Math.round(P.zugang_max)} in Gottmadingen bei
-Konstanz. Am tiefsten liegen Frankfurt, Fulda,
-Kassel-Wilhelmshöhe, Erfurt, Würzburg, Nürnberg, Göttingen und Hannover: das
-ICE-Kreuz als Flusstal, und es kommt aus der Rechnung, nicht aus einer Liste.
-Am höchsten, unter Schnee, liegen die Bäderbahn auf Rügen, der Zipfel um
-Konstanz und Singen und die Stichbahnen im Freiburger Umland.</p>
+der Geografie wie der der flachen Karte mit ${V.flach.toFixed(0)} km.</p>
+<p>Nur: die Höhe, die das Modell sich dafür wünscht, taugt nicht als Aussage.
+Sie kann es nicht. Dass Hamburg weiter von allem entfernt liegt als Fulda,
+steht schon im Grundriss — Hamburg liegt am Rand. Übrig bleibt für die Höhe
+nur, was der Grundriss <i>nicht</i> sagen kann, und das ist etwas
+Kleinräumiges; mit der gemessenen Erreichbarkeit korreliert sie mit r = −0,06,
+also gar nicht. In einer Fassung lag Frankfurt Hauptbahnhof darin höher als
+Westerland auf Sylt. Mathematisch richtig, erzählerisch falsch. Gezeichnet
+wird deshalb eine <b>gemessene</b> Größe.</p>
+
+<h3>Und welche — drei Kandidaten</h3>
+<p>Die Frage dahinter ist: was fühlt sich als <i>angebunden</i> an? Drei
+Größen sind gerechnet und gegeneinander gehalten worden, alle in Minuten:</p>
+<table><tr><th>Relief-Kandidat</th><th>Spanne</th><th>Median</th></tr>
+<tr><td><b>A</b> mittlere Reisezeit zu allen Bahnhöfen</td><td class="z">${Math.round(K.a_min)}–${Math.round(K.a_max)}</td><td class="z">${Math.round(K.a_median)}</td></tr>
+<tr><td><b>B</b> mittlere Reisezeit zu allen Menschen</td><td class="z">${Math.round(K.b_min)}–${Math.round(K.b_max)}</td><td class="z">${Math.round(K.b_median)}</td></tr>
+<tr><td><b>C</b> bis ein Zehntel Deutschlands erreichbar ist</td><td class="z">${Math.round(P.reich_min)}–${Math.round(P.reich_max)}</td><td class="z">${Math.round(P.reich_median)}</td></tr>
+</table>
+<p><b>A war die erste Fassung, und A ist falsch gewichtet:</b> ein Haltepunkt
+mit dreißig Einwohnern zählt darin wie Köln, und weil die Haltepunkte in der
+Fläche liegen, sieht gut angebunden aus, wer viele kleine Halte um sich hat.</p>
+<p><b>B behebt das — und ändert die Karte fast nicht.</b> A und B korrelieren
+mit <b>r = ${K.r_ab.toFixed(3).replace('.',',')}</b>. Das ist das Ergebnis,
+mit dem am wenigsten zu rechnen war, und es hat einen einfachen Grund: ein
+Mittelwert über ein großes Land wird von der fernen Hälfte bestimmt. Er misst,
+wie weit es bis zum anderen Ende ist — also Geografie. München liegt darin so
+schlecht wie Ulm, und München fühlt sich nicht so an.</p>
+<p><b>C ist die andere Frage.</b> Nicht „wie weit ist das Mittel", sondern
+„wie viel ist in Reichweite": wie lange dauert es, bis von hier
+<b>${(P.reich_schwelle/1e6).toFixed(1).replace('.',',')} Millionen Menschen</b>
+— ein Zehntel Deutschlands — mit dem Zug zu erreichen sind. Ein Zehntel, weil
+das keine einzelne Stadt allein schafft: wer es erreichen will, muss über die
+eigene Agglomeration hinaus, und genau das misst das Netz. Mit A korreliert
+diese Größe nur noch mit r = ${K.r_ac.toFixed(3).replace('.',',')} — es ist
+eine andere Karte, und sie ist die, die auf dem Schirm steht.</p>
+<p>Am tiefsten liegt das <b>Ruhrgebiet</b>: Düsseldorf 81 Minuten, Duisburg
+82, Essen 84, Dortmund 90, Bochum 92 — dort ist man mit einem Achtzig-Minuten-
+Radius an acht Millionen Menschen angeschlossen. Dann Köln 97, Frankfurt 115,
+Stuttgart 130, München 142, Berlin 144, Nürnberg 146, Hamburg 158: gut
+angebunden, aber jede dieser Städte muss weiter greifen als das Ruhrgebiet,
+weil um sie herum weniger wohnt. Am höchsten, unter Schnee, liegen die
+Stichbahnen um Freiburg (630 Minuten), Gottmadingen und Reichenau am
+Hochrhein, die Bäderbahn auf Rügen und die Heidekrautbahn bei Groß
+Schönebeck.</p>
+
+<h3>Woher die Menschen kommen</h3>
+<p>Ein Bevölkerungsgewicht je Bahnhof, aus drei Schritten:</p>
+<ul>
+<li><b>Kreisbevölkerung</b> zum ${P.menschen_jahr === '2024' ? '31. Dezember 2024' : P.menschen_jahr}
+aus dem Nachbarprojekt
+<a href="../bevoelkerung-kreise/">Deutschland, gezeichnet von seinen
+Menschen</a> — 400 Kreise, zusammen
+${(P.menschen/1e6).toFixed(1).replace('.',',')} Millionen.</li>
+<li><b>Kreisgeometrie</b> aus derselben Seite. Sie liegt dort in einem
+Zickzack-Varint über einem 64-Zeichen-Alphabet und wird hier entpackt: 400
+Kreise, 12.000 Knoten, in einer flächentreuen Projektion
+(ETRS89-LAEA). Weil die flächentreu ist, lässt sich der Maßstab gegen die
+<i>amtlichen</i> Kreisflächen prüfen — 1 Gittereinheit =
+${P.gitter_meter.toFixed(1).replace('.',',')} m, und die Abweichung je Kreis
+liegt im Median bei ${(P.flaeche_fehler*100).toFixed(2).replace('.',',')} %.
+Neun Städte mit bekannter Lage landen alle neun im Ring ihres eigenen
+Kreises.</li>
+<li><b>Einzugsgebiete.</b> Jeder Kreis wird mit
+${P.raster_km.toFixed(0)} km gerastert, jede Zelle trägt ihren Anteil an der
+Kreisbevölkerung, und dieser Anteil geht an den <b>nächstgelegenen
+Bahnhof</b> — über Kreisgrenzen hinweg, denn Menschen fahren zum nächsten
+Bahnhof und nicht zum nächsten im eigenen Kreis.</li>
+</ul>
 
 <h3>Schnee, und die Inseln im Meer</h3>
 <p>Über den am schlechtesten erreichbaren Gegenden liegt <b>Schnee</b> — die
@@ -1071,9 +1127,15 @@ stehen nicht im Soll-Fahrplan.</li>
 <li><b>Umsteigen kostet überall ${P.minum} Minuten.</b> In Wirklichkeit ist
 die Mindestumsteigezeit je Bahnhof verschieden; die Quelle führt sie
 nicht.</li>
-<li><b>Die Erreichbarkeit ist nach Bahnhöfen gewichtet, nicht nach
-Menschen.</b> Ein Haltepunkt mit dreißig Einwohnern zählt wie Köln. Warum das
-bewusst so bleibt, steht in STAND.md.</li>
+<li><b>Die Bevölkerung ist innerhalb eines Kreises gleichmäßig verteilt.</b>
+In einem Landkreis mit einer Stadt und viel Wald sitzt damit zu viel
+Bevölkerung im Wald. Feiner geht es nur mit Gemeinde- oder Rasterdaten, und
+die liegen hier nicht.</li>
+<li><b>Die größten Einzugsgebiete liegen an Vorortbahnhöfen</b> — München Ost,
+Leverkusen Mitte, Berlin Schöneweide —, weil in den Städten die S-Bahn fehlt
+und die Bevölkerung an den wenigen verbliebenen Regionalbahnhöfen landet.
+Für das Maß ist das ohne Belang, weil diese Bahnhöfe Minuten voneinander
+entfernt liegen; als Zahl je Bahnhof gelesen ist es irreführend.</li>
 <li><b>Der Grenzsaum trennt Deutschland nicht sauber ab.</b> Die Landesgrenze
 ist auf 2.100 Punkte vereinfacht; ein Saum von 0,6 km rettet Kehl, Gronau und
 Warnemünde, holt aber auch acht Auslandsbahnhöfe herein, und Lindau-Insel,
