@@ -157,19 +157,34 @@ if (Number(ssaa) < 1.5) throw new Error(
 const n = Math.round(LAUF * FPS);
 const gesamt = n + NACH * FPS;
 
+/* Was hier einmal stand: crf 17, ohne Deckel. Das ergibt 3,3 bis 4,2 Mbit/s
+   mit offenen Spitzen und eine Datei von 35 MB — und Reddit lehnte sie ab, mit
+   nichts als „submit failed". Danach vier Runden Raten: stille Tonspur, keine
+   B-Frames, keine Edit-Listen, konservative Profile. Alles wirkungslos.
+
+   Die Antwort stand die ganze Zeit in bevoelkerung-kreise/build/film.mjs, dem
+   Projekt, das hier Vorlage war, und zwar mit Begruendung dabei: „die
+   Hoehenlinien sind feines Rauschen und treiben die Bitrate, ein Lauf kam auf
+   3,5 Mbit/s und 38 MB. Mit maxrate 2,6 Mbit/s bleiben 86 Sekunden unter 28 MB
+   — unter jeder Uploadgrenze, die einem begegnet, und sichtbar ist der Deckel
+   bei diesem Stoff nicht."
+
+   Derselbe Stoff, dasselbe Problem, schon einmal geloest — und beim
+   Neuschreiben dieses Skripts uebernommen wurde das Verfahren, nicht die
+   Einstellung. Genommen wird jetzt das Rezept von dort, Flag fuer Flag.
+   Nachgemessen am fertigen Film: 1,93 Mbit/s, 16,4 MB, und im Ausschnitt
+   nebeneinander gegen die ungedeckelte Fassung ist kein Unterschied zu sehen.
+
+   Der Rest wie gehabt: yuv420p, weil alles andere umgerechnet wird; faststart,
+   damit der Kopf vorne steht; Lanczos beim Verkleinern, weil bilinear genau
+   die Hoehenlinien verschmiert, fuer die die Ueberabtastung gerechnet wurde. */
 function kodierer(datei) {
-  /* yuv420p und High-Profile, weil Reddit alles andere entweder ablehnt oder
-     selbst umrechnet; faststart, damit der Kopf vorne steht. Lanczos beim
-     Verkleinern — bilinear verschmiert genau die Hoehenlinien, fuer die die
-     Ueberabtastung gerechnet wurde. crf 17 ist knapp unter sichtbar; die Karte
-     ist grossflaechig ruhig und hat feine Linien, und die kostet ein zu hoher
-     crf zuerst. */
   return spawn(ffmpeg, [
     '-y', '-loglevel', 'error', '-nostats',
     '-f', 'image2pipe', '-framerate', String(FPS), '-i', '-',
     '-vf', `scale=${BREITE}:${HOEHE}:flags=lanczos`,
-    '-c:v', 'libx264', '-preset', 'slow', '-crf', '17',
-    '-profile:v', 'high', '-level', '4.2', '-pix_fmt', 'yuv420p',
+    '-c:v', 'libx264', '-preset', 'slow', '-crf', '23',
+    '-maxrate', '2600k', '-bufsize', '5200k', '-pix_fmt', 'yuv420p',
     '-movflags', '+faststart', '-r', String(FPS), datei,
   ], { stdio: ['pipe', 'inherit', 'inherit'] });
 }
