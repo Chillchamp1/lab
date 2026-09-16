@@ -285,15 +285,38 @@ hole_dem() {
 }
 
 # ===================================================================== Lauf
+# =====================================================================
+#  (d) Globale Mitteltemperatur: LGMR (Osman u. a. 2021)
+#
+#  Die einzige Quelle hier, die etwas ueber das **Klima** sagt statt ueber
+#  Geometrie. Palaeoklima-Datenassimilation: Proxydaten gegen iCESM-
+#  Zeitscheiben gerechnet, 24 bis 0 ka in 200-Jahr-Schritten, mit einem
+#  Ensemble von 500 Laeufen und damit einer veroeffentlichten Streuung.
+#
+#  Geholt wird nur die Klimatologie des globalen Mittels — 16 kB. Dieselbe
+#  Studie liefert auch Gitterfelder (SAT, 12,7 MB), aus denen sich ein Mittel
+#  ueber den Kartenausschnitt rechnen liesse; genommen wird das globale
+#  Mittel, weil es neben dem Meeresspiegel steht und der auch global ist.
+LGMR_BASIS="${LGMR_BASIS:-https://www.ncei.noaa.gov/pub/data/paleo/reconstructions/osman2021}"
+LGMR_DOI="${LGMR_DOI:-10.25921/njxd-hg08}"
+
+hole_temp() {
+  sagt ""
+  sagt "(d) LGMR globale Mitteltemperatur, 24-0 ka (doi:$LGMR_DOI)"
+  hole "$LGMR_BASIS/LGMR_GMST_climo.nc" "$ROH/lgmr/LGMR_GMST_climo.nc" "lgmr/LGMR_GMST_climo.nc"
+  hole "$LGMR_BASIS/readme-osman2021.txt" "$ROH/lgmr/readme-osman2021.txt" "lgmr/readme-osman2021.txt"
+}
+
 WAS="${1:-alles}"
 [ "$WAS" = "pruefen" ] && { NURPRUEFEN=1; WAS=alles; }
 
 sagt "Rohdaten nach $(cd "$ROH" && pwd)"
 case "$WAS" in
-  alles) hole_ice6g; hole_dated; hole_dem ;;
+  alles) hole_ice6g; hole_dated; hole_dem; hole_temp ;;
   ice6g) hole_ice6g ;;
   dated) hole_dated ;;
   dem)   hole_dem ;;
+  temp)  hole_temp ;;
   *) rot "kenne ich nicht: $WAS"; exit 2 ;;
 esac
 

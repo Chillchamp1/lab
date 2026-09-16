@@ -13,6 +13,7 @@ fehlenden Zwischenzertifikat; das ist gelöst, ohne die Prüfung abzuschalten.
 | Wirt | für | Stand | |
 |---|---|---|---|
 | `www.ngdc.noaa.gov` | ETOPO 2022 | **geladen** | 34 Kacheln, 680 MB |
+| `www.ncei.noaa.gov` | LGMR (Temperatur) | **geladen** | 1 Datei, 16 kB |
 | `store.pangaea.de`, `doi.pangaea.de` | DATED-1 | **geladen** | 12 MB, 58 Shapefiles |
 | `www.atmosp.physics.utoronto.ca` | ICE-6G_C | **geladen** | 48 Dateien, 1° |
 | `crt.sectigo.com` | das fehlende Zwischenzertifikat | **erreichbar über CONNECT** | siehe unten |
@@ -176,6 +177,39 @@ tief und das eiszeitliche Eis schwebte über einer abgesackten Insel.
 
 GEBCO bleibt die Vorgabe der Aufgabe und ist gleichwertig; ETOPO ist genommen,
 weil sein gekachelter Satz 680 MB statt 7,5 GB überträgt.
+
+### (d) Die Temperatur: LGMR
+
+**Osman, M. B., Tierney, J. E., Zhu, J., Tardif, R., Hakim, G. J., King, J. &
+Poulsen, C. J. (2021):** *Globally resolved surface temperatures since the Last
+Glacial Maximum.* Nature 599, 239–244.
+
+Datensatz: **doi:10.25921/njxd-hg08**, NOAA-Paläoklimaarchiv. Geholt wird eine
+einzige Datei, `LGMR_GMST_climo.nc`, **16 kB** — gegen die 680 MB des DEM ist
+das nichts.
+
+Die vierte Quelle, und die einzige, die eine Aussage über **Klima** macht statt
+über Geometrie. Paläoklima-Datenassimilation: Proxydaten (δ¹⁸O, Mg/Ca, TEX86,
+UK37) werden gegen iCESM-Zeitscheiben gerechnet, mit einem Ensemble von 500
+Läufen — daher gibt es eine veröffentlichte Streuung und nicht nur eine Zahl.
+
+| | |
+|---|---|
+| Abdeckung | 24 000 bis 0 Jahre vor heute |
+| Auflösung | 200-Jahr-Bins, 120 Stück |
+| Variablen | `age`, `gmst` (Ensemblemittel, °C), `gmst_std` (Streuung) |
+| Streuung | Median 0,27 °C, grösste 0,50 °C |
+
+**Genommen wird das globale Mittel**, obwohl dieselbe Studie auch Gitterfelder
+liefert (`LGMR_SAT_climo.nc`, 1,9° × 2,5°, 12,7 MB), aus denen sich ein Mittel
+über den Kartenausschnitt rechnen liesse. Zwei Gründe: es steht neben dem
+Meeresspiegel, und der ist auch global — zwei Zahlen derselben Art. Und ein
+Ausschnittsmittel würde vom Eisschild selbst nach unten gezogen, also teils
+dessen Höhe messen statt des Klimas.
+
+Der Preis dafür steht im Legendensatz: **Europa kühlte deutlich stärker ab als
+das globale Mittel.** Wer „−7 °C" liest und das für Berlin hält, unterschätzt,
+was die Karte zeigt.
 
 ## 2b. Was an den erratenen Adressen falsch war
 

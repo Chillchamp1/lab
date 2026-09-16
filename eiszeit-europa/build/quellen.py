@@ -754,6 +754,92 @@ def beschneide(gx, gy, w, h):
     return a[:, 0], a[:, 1]
 
 
+def lies_temperatur(zeiten):
+    """Die globale Mitteltemperatur als Anomalie gegen heute, je Zeitscheibe.
+
+    Quelle ist die LGMR (Osman u. a. 2021, doi:10.25921/njxd-hg08): eine
+    Palaeoklima-Datenassimilation, 24 bis 0 ka in 200-Jahr-Bins, mit einem
+    Ensemble von 500 Laeufen. Geliefert wird die **absolute** globale
+    Mitteltemperatur; gezeigt wird die Anomalie, weil der Meeresspiegel
+    daneben auch gegen heute misst. Zwei Zahlen, die sich gleich lesen.
+
+    Gemittelt statt abgetastet: die Quelle steht auf 200 Jahren, die
+    Zeitscheiben auf 1 000 bzw. 500. Ein Stichwert aus einer 200-Jahr-Reihe
+    verschenkt Information und zittert — dasselbe Argument wie beim DEM
+    (Abschnitt 2 der METHODIK).
+
+    Ein Wert entsteht nur, wenn das **ganze** Fenster der Zeitscheibe von
+    Daten gedeckt ist. Der juengste Bin liegt bei 23 900 Jahren, das Fenster
+    der 24-ka-Scheibe reicht bis 24 500 — also faengt die Reihe bei 23 ka an.
+    Halb gedeckte Fenster zu mitteln hiesse, den Rand waermer zu machen, als
+    er ist.
+    """
+    pfad = ROH / "lgmr" / "LGMR_GMST_climo.nc"
+    if not pfad.exists():
+        log("  LGMR fehlt — keine Temperaturreihe")
+        return None, None, {}
+
+    ds = oeffne(pfad)
+    try:
+        age = np.asarray(erste(ds, "age")[:], dtype=np.float64)
+        gm = np.asarray(erste(ds, "gmst")[:], dtype=np.float64)
+        sd = np.asarray(erste(ds, "gmst_std")[:], dtype=np.float64)
+    finally:
+        ds.close()
+
+    o = np.argsort(age)
+    age, gm, sd = age[o], gm[o], sd[o]
+    bezug = float(gm[0])          # juengster Bin = heute
+    ano = gm - bezug
+
+    z = np.asarray(zeiten, dtype=np.float64) * 1000.0
+    # Fensterkanten auf halbem Weg zwischen den Nachbarscheiben.
+    kanten = np.concatenate([
+        [z[0] + (z[0] - z[1]) / 2.0],
+        (z[:-1] + z[1:]) / 2.0,
+        [max(0.0, z[-1] - (z[-2] - z[-1]) / 2.0)],
+    ])
+    temp, tsd = [], []
+    for i in range(len(z)):
+        hi, lo = kanten[i], kanten[i + 1]
+        # Am **alten** Ende ist ein ungedecktes Fenster eine echte Luecke: die
+        # Reihe reicht nicht so weit zurueck, und halb zu mitteln machte den
+        # Rand waermer, als er ist. Am **jungen** Ende ist es keine: unter dem
+        # juengsten Bin liegt nicht fehlende Information, sondern die
+        # Gegenwart. Dort wird geklemmt, sonst bliebe ausgerechnet die
+        # 0-ka-Scheibe leer — der Bezugspunkt selbst.
+        if hi > age.max():
+            temp.append(None); tsd.append(None); continue
+        lo = max(lo, age.min())
+        m = (age <= hi) & (age >= lo)
+        if not m.any():
+            temp.append(None); tsd.append(None); continue
+        temp.append(round(float(ano[m].mean()), 2))
+        tsd.append(round(float(sd[m].mean()), 2))
+
+    # ---- Probe 4: trifft die Reihe den veroeffentlichten Hochstand? -------
+    # Osman u. a. nennen fuer den Hochstand eine Abkuehlung von rund 7 Grad.
+    # Faellt die Zahl deutlich daneben, stimmt der Bezugspunkt nicht oder die
+    # Achse laeuft verkehrt herum.
+    lgm = float(ano[(age >= 19000) & (age <= 23000)].mean())
+    kaelt = float(ano.min())
+    probe = dict(lgm_23_19ka=round(lgm, 2), kaeltester=round(kaelt, 2),
+                 kaeltester_a=float(age[int(np.argmin(ano))]),
+                 streuung_median=round(float(np.median(sd)), 2),
+                 bezug_c=round(bezug, 2), bezug_a=float(age[0]))
+    log(f"(d) LGMR globale Mitteltemperatur")
+    log(f"  {len(age)} Bins, {age.min():.0f} bis {age.max():.0f} Jahre vor heute, "
+        f"Bezug {bezug:.2f} C bei {age[0]:.0f} a")
+    log(f"  Probe 4  Hochstand 23-19 ka {lgm:+.2f} C, kaeltester Bin {kaelt:+.2f} C "
+        f"bei {age[int(np.argmin(ano))]:.0f} a")
+    log(f"           Ensemble-Streuung Median {np.median(sd):.2f} C, "
+        f"groesste {sd.max():.2f} C")
+    fehlt = sum(1 for v in temp if v is None)
+    log(f"  {len(temp) - fehlt} von {len(temp)} Zeitscheiben belegt, "
+        f"{fehlt} vor dem Beginn der Reihe")
+    return temp, tsd, probe
+
+
 def lies_dated(g):
     """Die drei Umrisse je Zeitscheibe, projiziert und in Gitterkoordinaten."""
     import shapefile
@@ -1139,10 +1225,21 @@ def main():
         log(f"  Probe 3  {p['ka']:>5} ka  Land/Wasser stimmt mit ICE-6G_C Topo "
             f"auf {100*gleich:.1f} % der Zellen ueberein")
     kennzahlen["kueste_gegen_ice6g"] = kp
+
+    # ---- Die Temperaturreihe ---------------------------------------------
+    temp, temp_sd, temp_probe = lies_temperatur(zeiten)
+    if temp_probe:
+        kennzahlen["temperatur"] = temp_probe
+    if temp:
+        for i, e in enumerate(je):
+            e["temperatur_c"] = temp[i]
+
     for e in je[:: max(1, len(je) // 8)]:
+        tt = e.get("temperatur_c")
         log(f"  {e['ka']:>5} ka  Land {100*e['land_anteil']:5.1f} %  "
             f"Eis {100*e['eis_anteil']:5.1f} %  "
-            f"MSp {e['meeresspiegel_m']:7.1f} m")
+            f"MSp {e['meeresspiegel_m']:7.1f} m  "
+            + (f"T {tt:+5.2f} C" if tt is not None else "T      —"))
 
     # ---- Orte und der Mont Blanc, in Gitterkoordinaten ---------------------
     # Projiziert wird hier, weil hier die Projektion steht. Die Seite bekommt
@@ -1255,6 +1352,7 @@ def main():
         ausschnitt=[round(float(ZLON.min()), 1), round(float(ZLON.max()), 1),
                     round(float(ZLAT.min()), 1), round(float(ZLAT.max()), 1)],
         zeiten=zeiten, takt=tk, meeresspiegel=sl,
+        temperatur=temp, temperatur_sd=temp_sd,
         topodiff=dict(w=tw, h=th, teiler=tdt),
         stgit=dict(w=ew, h=eh, teiler=est),
         g90_m_je_zelle=g90,
