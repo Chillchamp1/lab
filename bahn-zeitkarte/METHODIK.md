@@ -11,10 +11,11 @@ zwischen allen Bahnhöfen, aus der Matrix eine Lage in der Ebene, und über die
 Lage kommt ein Relief.
 
 ```
-trains.json  →  01_netz.py   →  Bahnhöfe, Verbindungen, Spitzenstunde
-             →  02_zeiten.py →  4.781 × 4.781 Reisezeiten (C, 13 s)
-             →  03_lage.py   →  Federkarte und Geländekarte (C, 5 min)
-             →  04_seite.py  →  data/karte.json
+trains.json  →  01_netz.py      →  Bahnhöfe, Verbindungen, Spitzenstunde
+             →  02_zeiten.py    →  4.781 × 4.781 Reisezeiten (C, 13 s)
+             →  03_lage.py      →  Federkarte und Geländekarte (C, 5 min)
+             →  04_menschen.py  →  Bevölkerungsgewicht je Bahnhof
+             →  05_seite.py     →  data/karte.json
 ```
 
 ## 1. Vom Fahrplan zum Netz
@@ -314,8 +315,8 @@ Die Modellhöhe ist **nicht die Erreichbarkeit**, und sie kann es nicht sein.
 Dass Hamburg weiter von allem entfernt liegt als Fulda, steht schon im
 Grundriss — Hamburg liegt am Rand des Landes. Was der Grundriss ausdrücken
 kann, braucht die Höhe nicht auszudrücken; für sie bleibt nur der Rest, und
-der ist kleinräumig. Gemessen: Modellhöhe und gemessene Erreichbarkeit
-korrelieren mit **r = −0,06**, also gar nicht.
+der ist kleinräumig. Gemessen: Modellhöhe und die mittlere Reisezeit zu allen
+Bahnhöfen korrelieren mit **r = −0,06**, also gar nicht.
 
 Wie das aussieht, ist der eigentliche Befund. Die Modellhöhe wird am tiefsten
 an den Rändern — Westerland, Ostseebad Binz, Zittau liegen bei 0 —, weil die
@@ -340,22 +341,127 @@ in die Zeit, mit einem Regler dazwischen. Die flache und nicht die
 Geländelage, weil die Aussage dann so einfach ist, wie sie klingt: *der
 Abstand auf der Karte ist die Reisezeit.*
 
-**Die Höhe** ist die **gemessene Erreichbarkeit**: die mittlere Reisezeit von
-diesem Bahnhof zu allen 4.780 anderen, hin und zurück gemittelt, aufgetragen
-über dem besten Wert. Kein Modellwert, eine Zahl in Minuten.
+**Die Höhe** ist eine gemessene Größe, kein Modellwert — welche, ist die
+Frage dieses Abschnitts.
 
-Sie reicht von **260 Minuten** (Frankfurt (Main) Hbf) bis **718** (Gottmadingen
-im Landkreis Konstanz), Spanne 458 Minuten. Die zehn tiefsten Bahnhöfe sind
-Frankfurt Hbf, Fulda, Kassel-Wilhelmshöhe, Erfurt, Frankfurt Flughafen,
-Würzburg, Nürnberg, Frankfurt Süd, Hanau, Göttingen — das ICE-Kreuz, und es
-kommt aus der Rechnung, nicht aus einer Liste. Am höchsten liegen die
-Rügener Bäderbahn (Göhren, Baabe, Sellin), der Zipfel um Konstanz und
-Singen und die Stichbahnen im Freiburger Umland.
+### 4.1 Drei Kandidaten, und warum der naheliegende nicht taugt
 
-### Das Höhenfeld
+Gefragt ist nicht Entfernung, sondern das Gefühl, angebunden zu sein. Drei
+Größen sind gerechnet, alle in Minuten:
 
+| Kandidat | Spanne | Median | r gegen A |
+|---|---:|---:|---:|
+| **A** mittlere Reisezeit zu allen 4.780 anderen Bahnhöfen | 260–718 | 380 | — |
+| **B** mittlere Reisezeit zu allen 83,6 Mio Menschen | 241–712 | 364 | **+0,973** |
+| **C** bis ein Zehntel Deutschlands erreichbar ist | 81–630 | 217 | +0,860 |
+
+**A war die erste Fassung, und A ist falsch gewichtet.** Ein Haltepunkt mit
+dreißig Einwohnern zählt darin wie Köln. Weil die Haltepunkte in der Fläche
+liegen und die Städte wenige Bahnhöfe haben, zieht das die Karte nach außen:
+gut angebunden sieht aus, wer viele kleine Halte um sich hat.
+
+**B behebt genau das — und ändert die Karte fast nicht.** A und B korrelieren
+mit **r = 0,973**. Das war das überraschendste Ergebnis dieses Projekts, und
+der Grund ist einfach, sobald man ihn sieht: ein Mittelwert über ein großes
+Land wird von der *fernen Hälfte* bestimmt. Für jeden Ort in Deutschland ist
+die größte Summe in diesem Mittel die Strecke zum anderen Ende, und die hängt
+davon ab, wo er liegt, nicht davon, wie er angeschlossen ist. B misst also
+weiter Geografie. An den Zahlen: München 316 Minuten in A, 316 in B; Nürnberg
+272 und 271. Nur der Westen rutscht etwas (Dortmund 315 → 270, Düsseldorf
+307 → 265), weil dort die Menschen wohnen. München liegt in beiden so
+schlecht wie Ulm, und München fühlt sich nicht so an.
+
+**C ist die andere Frage.** Nicht „wie weit ist das Mittel", sondern „wie viel
+ist in Reichweite": die Bahnhöfe werden nach ihrer Reisezeit sortiert, ihre
+Einzugsgebiete aufsummiert, und genommen wird die Zeit, bei der die Summe
+**ein Zehntel der Bevölkerung** überschreitet — 8.357.714 Menschen.
+
+Warum ein Zehntel: weil das keine einzelne Stadt allein schafft. Bei einer
+Million misst die Größe im Grunde, wie lange man braucht, um die eigene Stadt
+zu durchqueren (Berlin 18 Minuten, München 24) — dann ist das Relief eine
+Karte der Großstädte. Bei einem Zehntel muss man über die eigene
+Agglomeration hinaus, und genau das misst das Netz. Gerechnet wurde von einer
+Million bis zu einem Drittel; die Spanne bleibt in derselben Größenordnung,
+und ein Zehntel ist die runde Zahl mit dem klarsten Satz dazu.
+
+Gerechnet wird auf der **hin und zurück gemittelten** Matrix, wie A und B. Die
+Richtung „von hier weg" allein wäre näher an der Formulierung, aber
+anfälliger: eine einzelne glückliche Morgenverbindung kann sie um eine halbe
+Stunde verschieben.
+
+**Ergebnis.** Am tiefsten liegt das Ruhrgebiet: Düsseldorf 81 Minuten,
+Duisburg 82, Essen 84, Düsseldorf Flughafen 87, Dortmund 90, Mülheim 91,
+Bochum 92. Dann Köln 97, Frankfurt 115, Stuttgart 130, Ulm 141, München 142,
+Berlin 144, Nürnberg 146, Hamburg 158. Am höchsten: Freiburg Herdern und
+Freiburg Zähringen mit 630 Minuten, Gottmadingen 624, Reichenau (Baden) 609,
+Konstanz-Wollmatingen 606 — dazu die Bäderbahn auf Rügen und die
+Heidekrautbahn.
+
+Zwischen Nachbarn unter 15 km springt C im Median um 40 Minuten und im
+90. Perzentil um 131 — das ist überwiegend echt (Freiburg Hbf gegen Freiburg
+Zähringen sind Stunden) und wird vom Höhenfeld (4.3) geglättet.
+
+### 4.2 Das Bevölkerungsgewicht
+
+Gebraucht wird eine Zahl je Bahnhof: wie viele Menschen über ihn an das Netz
+kommen. Drei Schritte, jeder geprüft.
+
+**Die Kreisbevölkerung** kommt zum 31. Dezember 2024 aus dem Nachbarprojekt
+[bevoelkerung-kreise](../bevoelkerung-kreise/) — 400 Kreise, zusammen 83,6
+Millionen, letztlich aus der German Local Population Database (GPOP).
+
+**Die Kreisgeometrie** kommt aus derselben Seite, wo sie in der Nutzlast
+liegt: ein Zickzack-Varint über einem 64-Zeichen-Alphabet, fünf Bit je
+Zeichen, Bit 32 als Fortsetzung. Entpackt sind das 400 Kreise mit 12.000
+Knoten in einem 8000 × 10213 großen Gitter über einer Lambert-azimutal
+flächentreuen Projektion (ETRS89-LAEA, Bezugsmeridian 10° O,
+Bezugsbreite 52° N).
+
+Weil die Projektion **flächentreu** ist, lässt sich das Ganze gegen die
+amtlichen Kreisflächen prüfen, und das ist die eigentliche Absicherung dieser
+Kette:
+
+| Probe | Ergebnis |
+|---|---|
+| Maßstab aus den amtlichen Flächen | 1 Gittereinheit = 86,06 m |
+| Maßstab aus dem Rahmen gegen den Umriss | 85,85 m in x, 85,85 m in y |
+| Unterschied zwischen den Achsen | 0,00 % |
+| Abweichung der Kreisflächen, Median | 0,71 % |
+| — 90. Perzentil | 4,56 % |
+| — Maximum | 23,9 % (Bremerhaven) |
+| Gesamtfläche | 357.677 km², amtlich wie gerastert |
+| neun Städte bekannter Lage im Ring ihres Kreises | 9 von 9 |
+
+Die y-Achse des Gitters läuft übrigens nach **Süden** — Flensburg liegt bei
+qy 472, München bei 9052. Die Nutzlast des Nachbarprojekts steht also schon in
+Bildschirmrichtung, nicht in Projektionsrichtung. Ohne diese Probe wäre die
+Karte oben-unten vertauscht in die Kreise gelaufen, und niemand hätte es
+gesehen, weil die Summen gestimmt hätten.
+
+**Die Einzugsgebiete** entstehen durch Rastern: jeder Kreis wird mit 2 km
+abgetastet (89.089 Zellen), jede Zelle trägt ihren Anteil an der
+Kreisbevölkerung, und dieser Anteil geht an den **nächstgelegenen Bahnhof** —
+über Kreisgrenzen hinweg, denn Menschen fahren zum nächsten Bahnhof und nicht
+zum nächsten im eigenen Kreis. Verteilt werden alle 83,6 Millionen, keine
+bleibt liegen; 41 Bahnhöfe bekommen null, weil ein größerer Nachbar ihnen
+jede Rasterzelle abnimmt.
+
+Zwei Dinge kann das nicht:
+
+- **Innerhalb eines Kreises ist die Bevölkerung gleichmäßig verteilt.** In
+  einem Landkreis mit einer Stadt und viel Wald sitzt damit zu viel
+  Bevölkerung im Wald. Feiner geht es nur mit Gemeinde- oder Rasterdaten, und
+  die liegen hier nicht (siehe [QUELLEN.md](QUELLEN.md)).
+- **Die größten Einzugsgebiete liegen an Vorortbahnhöfen** — München Ost
+  476.000, Leverkusen Mitte 408.000, Berlin Schöneweide 370.000 —, weil in den
+  Städten die S-Bahn fehlt und die Stadtbevölkerung an den wenigen
+  verbliebenen Regionalbahnhöfen landet. Für das Maß C ist das ohne Belang,
+  weil diese Bahnhöfe Minuten voneinander entfernt liegen; als Zahl je Bahnhof
+  gelesen ist es irreführend, und im Zeiger steht sie trotzdem.
+
+### 4.3 Das Höhenfeld
 Aufgetragen wird **gespritzt, nicht gesucht**: jeder Bahnhof legt eine
-Glockenkurve mit σ = 15 Minuten (etwa 13 km) ins Feldgitter, danach wird durch
+Glockenkurve mit σ = 11 Minuten (etwa 10 km) ins Feldgitter, danach wird durch
 die Summe der Gewichte geteilt. Das kostet einmal die Zahl der Bahnhöfe mal
 die Fläche der Glocke, statt für jede Feldzelle die nächsten Bahnhöfe zu
 suchen — gemessen ein Achtel der Zeit, und das Feld wird glatter. Löcher, wo
@@ -364,7 +470,11 @@ offen ist; eine frühere Fassung stopfte sie nach vier Durchgängen mit einem
 festen Ersatzwert, und aus dem wurde eine weiße Kuppe im Nirgendwo. Zuletzt
 zwei Durchgänge Binomialglättung.
 
-### Wo ist Land?
+σ war eine Fassung lang 15 Minuten. Das neue Maß springt zwischen Nachbarn
+stärker als das alte, und bei 15 wusch das Feld die Knoten weg: Frankfurt
+Hauptbahnhof lag über dem Wasserstand, obwohl der Bahnhof darunter liegt.
+
+### 4.4 Wo ist Land?
 
 Zwei Schichten, und die zweite ist der Punkt.
 
@@ -392,7 +502,7 @@ Je weiter der Regler läuft, desto mehr Inseln lösen sich. Eine Zwischenfassung
 nahm stattdessen die Abdeckung **aller** Bahnhöfe und blies damit auch die
 Landkarte zu einer Wolke auf, zwanzig Kilometer über jede Küste hinaus.
 
-### Der Umriss in Dreiecken
+### 4.5 Der Umriss in Dreiecken
 
 Ein verzogener Ring lässt sich nicht einfach füllen. Das Verschiebungsfeld
 schert ihn, und wo er sich dabei selbst überschlägt, heben sich die
@@ -411,7 +521,7 @@ zählen alle positiv, und eine Überlappung ist nie ein Loch. Nachgezählt bleib
 zwei Löcher im Land — und die sind echt: die Bodden hinter Rügen und das
 Wattenmeer bei Husum.
 
-### Der Bildausschnitt steht fest
+### 4.6 Der Bildausschnitt steht fest
 
 Er wird **einmal** bestimmt und gilt für jede Reglerstellung: über die
 Bahnhöfe in beiden Lagen und über den Umriss in beiden Lagen. Das hat zwei
@@ -426,7 +536,12 @@ Minuten** groß, die Landkarte nur 715 × 956. Dass die Karte beim Schieben
 aufgeht statt sich nur zu verbiegen, ist selbst eine Aussage — die Zeit macht
 Deutschland größer.
 
-### Farbe, Licht, Höhenlinien, Schnee
+### 4.7 Farbe, Licht, Höhenlinien, Schnee
+
+Die Farbleiter ist in **absoluten Minuten** beschriftet, nicht als Aufschlag
+auf den besten Bahnhof: „Wasser unter 181 Minuten" ist eine Aussage, „unter
++100" ist eine Rechenaufgabe. Gerechnet wird intern über dem Besten, weil die
+Leiter dort ihren Nullpunkt hat.
 
 **Fünfunddreißig Bänder**: fünf Blaustufen unter Wasser, vierundzwanzig
 Landbänder darüber — die Höhenstufen eines physischen Atlas, Tiefland satt
@@ -437,8 +552,8 @@ Reliefkarte bekommt.
 
 Die **Schneegrenze** ist nicht gesetzt, sondern abgeleitet: die Leiter läuft
 vom Wasserstand bis zum höchsten Wert **auf dem Land**, und die letzten sechs
-Bänder sind Schnee. In Minuten steht sie in der Tafel — auf der Landkarte bei
-+95 Minuten Wasser etwa +266 Minuten. Als oberes Ende dient das
+Bänder sind Schnee. In Minuten steht sie in der Tafel — auf der Landkarte mit
+Wasser bei 181 Minuten liegt sie bei 351. Als oberes Ende dient das
 **99,5-Perzentil** des Landes, nicht das Maximum: ein einzelner Ausreißer
 walzt sonst die ganze Leiter platt, und dann liegt nirgends Schnee. Was
 darüber liegt, wird auf das oberste Band geklemmt.
@@ -458,7 +573,7 @@ gezogen: der Abstand zur Bandgrenze wird durch den Betrag des Gradienten
 geteilt, also in Zellen gemessen statt in Minuten. Damit ist die Linie im
 Steilen so dünn wie im Flachen.
 
-### Die Beschriftung
+### 4.8 Die Beschriftung
 
 Beschriftet werden **Orte, nicht Bahnhofsnamen**. Der Fahrplan kennt „Pasing"
 und „Oberkotzau" mit vielen Halten und Karlsruhe mit wenigen; und er nennt
@@ -478,7 +593,7 @@ Durchgang bleiben die Inseln namenlos, und eine weiße Scholle ohne Namen ist
 ein Fleck. Mit ihm stehen dort Granitz Jagdschloß, Göhren, Groß Schönebeck,
 Freiburg Zähringen, Gottmadingen, Reichenau (Baden).
 
-### Isochronen
+### 4.9 Isochronen
 
 Für 54 Knoten liegt die Reisezeit zu allen 4.815 Bahnhöfen in der Seite
 (als 8-Bit-Werte in Schritten von 3 Minuten). Daraus wird dasselbe
@@ -496,7 +611,11 @@ bleiben ja 23 % Stress —, aber sichtbar viel mehr als vorher.
   Ballungsräume heißt das: die Karte zeigt, wie gut sie mit *Regionalzügen*
   erschlossen sind, nicht wie gut sie erschlossen sind. Hamburg, München und
   das Rheinland liegen dadurch höher, als sie liegen müssten.
-- **227 Bahnhöfe fehlen ganz** (siehe 2).
+- **221 Bahnhöfe fehlen ganz** (siehe 2).
+- **Die Bevölkerung ist innerhalb eines Kreises gleichmäßig verteilt** (siehe
+  4.2). Das ist die gröbste Annahme in der ganzen Kette.
+- **Die Bevölkerung ist die von 2024, der Fahrplan der von 2026.** Zwei Jahre
+  Unterschied; an der Rangfolge der Kreise ändert das nichts.
 - **Ein Fahrplantag, kein Mittel über viele Mittwoche.** Der 13. Mai 2026 ist
   der Tag vor Christi Himmelfahrt. Der Regionalfahrplan ist der eines normalen
   Mittwochs, im abendlichen Fernverkehr kann ein Brückentag ein paar Züge mehr
@@ -509,3 +628,6 @@ bleiben ja 23 % Stress —, aber sichtbar viel mehr als vorher.
   und von Messe/Deutz weiterfahren will, muss im Modell fahren.
 - **Ein Reisender ohne Gepäck und ohne Vorlieben.** Gerechnet wird die
   früheste Ankunft, ohne Rücksicht auf die Zahl der Umstiege oder den Preis.
+- **Wie die Menschen zum Bahnhof kommen, steht nicht im Modell.** Das
+  Einzugsgebiet nimmt an, wer am nächsten wohnt, fährt von dort — ob das zehn
+  Minuten zu Fuß sind oder zwanzig mit dem Auto, macht keinen Unterschied.

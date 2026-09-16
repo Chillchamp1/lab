@@ -1,6 +1,18 @@
 #!/usr/bin/env python3
 """Aus den Zwischenergebnissen die Nutzlast der Seite.
 
+Hier entsteht auch die Groesse, die das Relief traegt. Drei Kandidaten sind
+gerechnet und gegeneinander gehalten worden (siehe METHODIK 4):
+
+  A  mittlere Reisezeit zu allen **Bahnhoefen**
+  B  mittlere Reisezeit zu allen **Menschen**
+  C  **Minuten, bis ein Zehntel Deutschlands erreichbar ist**
+
+A und B korrelieren mit r = 0,97 — nach Menschen zu gewichten aendert die
+Karte also fast nicht, weil ein Mittelwert ueber ein grosses Land von der
+fernen Haelfte bestimmt wird und damit Geografie misst, nicht Angebundenheit.
+Gezeichnet wird C.
+
 Alles, was die Karte braucht, in eine Datei: die Bahnhoefe mit ihren drei
 Lagen (Geografie, flache Federkarte, Gelaendekarte) und ihrer Hoehe, der
 Umriss samt Laendergrenzen in derselben Projektion, die Kennzahlen und eine
@@ -218,29 +230,75 @@ def main():
     print("Maßstab: Gelaende %.4f, flach %.4f Minuten je Kilometer"
           % (mkm_t, mkm_f))
 
-    # Erreichbarkeit: die mittlere Reisezeit von hier zu allen anderen
-    # Bahnhoefen des Kerns, hin und zurueck gemittelt. Kein Modell, eine
-    # Messung — und die zweite Lesart des Reliefs.
+    # ---- Die Reisezeitmatrix des Kerns, hin und zurueck gemittelt.
     zraw = open(os.path.join(Z, "zeiten.bin"), "rb").read()
     nz = struct.unpack("<I", zraw[4:8])[0]
     ZM = np.frombuffer(zraw, dtype=np.uint16, offset=12).reshape(nz, nz)
     ki = np.array(kern["kern"])
     sub = ZM[np.ix_(ki, ki)].astype(np.float32)
     sub[sub == 65535] = np.nan
-    np.fill_diagonal(sub, np.nan)
-    # 1.304 Paare sind in beiden Richtungen unverbunden; fuer die ist das
-    # Mittel aus zwei NaN erwartungsgemaess NaN, und numpy warnt darueber.
+    np.fill_diagonal(sub, 0.0)
+    # Ein Teil der Paare ist in beiden Richtungen unverbunden; fuer die ist
+    # das Mittel aus zwei NaN erwartungsgemaess NaN, und numpy warnt darueber.
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", RuntimeWarning)
         mittel = np.nanmean(np.stack([sub, sub.T]), axis=0)
-    zugang = np.nanmean(mittel, axis=1)
-    roh_min = float(np.nanmin(np.nanmean(mittel, axis=1)))
-    roh_max = float(np.nanmax(np.nanmean(mittel, axis=1)))
-    zugang = zugang - np.nanmin(zugang)
-    print("Erreichbarkeit: %.0f bis %.0f Minuten mittlere Reisezeit, "
-          "Spanne %.0f Minuten"
-          % (np.nanmin(np.nanmean(mittel, axis=1)),
-             np.nanmax(np.nanmean(mittel, axis=1)), zugang.max()))
+
+    # ---- Bevoelkerungsgewicht je Bahnhof (04_menschen.py)
+    mp = os.path.join(Z, "menschen.json")
+    if not os.path.exists(mp):
+        sys.exit("zwischen/menschen.json fehlt — erst 04_menschen.py laufen lassen")
+    MEN = json.load(open(mp))
+    G = np.array(MEN["gewicht"], dtype=float)
+    assert len(G) == len(kd), "Gewichte passen nicht zum Kern"
+    ges = G.sum()
+
+    # ---- A: mittlere Reisezeit zu allen Bahnhoefen
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        A = np.nanmean(np.where(np.eye(len(kd), dtype=bool), np.nan, mittel), axis=1)
+        # ---- B: mittlere Reisezeit zu allen Menschen
+        da = np.isfinite(mittel)
+        gw = np.where(da, G[None, :], 0.0)
+        B = np.nansum(np.where(da, mittel, 0.0) * gw, axis=1) / gw.sum(axis=1)
+
+    # ---- C: Minuten, bis ein Zehntel Deutschlands erreichbar ist.
+    # Das ist die Groesse, die auf der Karte steht. Ein Mittelwert ueber das
+    # ganze Land misst, wie weit die ferne Haelfte weg ist — also Geografie.
+    # Muenchen liegt darin so schlecht wie Ulm, und Muenchen fuehlt sich nicht
+    # so an. Die Frage, die Angebundenheit trifft, ist nicht "wie weit ist das
+    # Mittel" sondern "wie viel ist in Reichweite": wie lange dauert es, bis
+    # von hier genug Land in Reichweite ist? Ein Zehntel, weil keine einzelne
+    # Stadt das allein schafft — wer es erreichen will, muss ueber die eigene
+    # Agglomeration hinaus, und genau das misst das Netz.
+    SCHWELLE = ges / 10.0
+    ordn = np.argsort(mittel, axis=1)
+    C = np.full(len(kd), np.nan)
+    for i in range(len(kd)):
+        o = ordn[i]
+        t = mittel[i][o]
+        gut = np.isfinite(t)
+        t = t[gut]
+        kum = np.cumsum(G[o][gut])
+        k = int(np.searchsorted(kum, SCHWELLE))
+        if k < len(t):
+            C[i] = t[k]
+    if not np.isfinite(C).all():
+        sys.exit("%d Bahnhoefe erreichen kein Zehntel des Landes" %
+                 int((~np.isfinite(C)).sum()))
+    r_ab = float(np.corrcoef(A, B)[0, 1])
+    r_ac = float(np.corrcoef(A, C)[0, 1])
+    r_bc = float(np.corrcoef(B, C)[0, 1])
+    print("Relief-Kandidaten (Minuten):")
+    print("  A zu allen Bahnhoefen : %3.0f .. %3.0f, Median %3.0f"
+          % (A.min(), A.max(), np.median(A)))
+    print("  B zu allen Menschen   : %3.0f .. %3.0f, Median %3.0f"
+          % (B.min(), B.max(), np.median(B)))
+    print("  C bis ein Zehntel     : %3.0f .. %3.0f, Median %3.0f  <- gezeichnet"
+          % (C.min(), C.max(), np.median(C)))
+    print("  r(A,B) = %+.3f   r(A,C) = %+.3f   r(B,C) = %+.3f" % (r_ab, r_ac, r_bc))
+    reichweite = C
+    zugang = C - C.min()
 
     # Ortsmarken: der naechste Bahnhof mit den meisten Halten
     marken = []
@@ -310,7 +368,15 @@ def main():
         verzerrung=dict(flach=kenn[4], gelaende=kenn[5]),
         proben=12, raster=5, minum=5,
         minprokm=mkm_t, minprokm_flach=mkm_f, isoschritt=3,
-        zugang_min=roh_min, zugang_max=roh_max,
+        reich_min=float(C.min()), reich_max=float(C.max()),
+        reich_median=float(np.median(C)), reich_schwelle=float(SCHWELLE),
+        menschen=float(ges), menschen_jahr=MEN["jahr"],
+        raster_km=MEN["raster_km"], gitter_meter=MEN["gitter_meter"],
+        flaeche_fehler=MEN["flaeche_median_fehler"],
+        kandidaten=dict(
+            a_min=float(A.min()), a_max=float(A.max()), a_median=float(np.median(A)),
+            b_min=float(B.min()), b_max=float(B.max()), b_median=float(np.median(B)),
+            r_ab=r_ab, r_ac=r_ac, r_bc=r_bc),
         isoknoten=wahl, isodatei="isochronen.json", marken=marken,
         namen=name,
         halte=[int(v) for v in halte],
@@ -318,13 +384,16 @@ def main():
         flachx=i16(fx, 10), flachy=i16(fy, 10),
         zeitx=i16(tx, 10), zeity=i16(ty, 10), hoehe=i16(th_, 10),
         zugang=i16(zugang, 10),
+        einzug=i16(np.rint(G / 100.0), 1),
         umriss=ringe(geo["outline"]), laender=ringe(geo["states"]),
     )
     p = os.path.join(AUS, "karte.json")
     json.dump(d, open(p, "w"), ensure_ascii=False, separators=(",", ":"))
     print("geschrieben: %s (%.0f kB)" % (p, os.path.getsize(p) / 1000))
-    print("Hoehe: Mittel %.1f, Median %.1f, Max %.0f Minuten"
+    print("Modellhoehe: Mittel %.1f, Median %.1f, Max %.0f Minuten"
           % (th_.mean(), np.median(th_), th_.max()))
+    print("gezeichnetes Relief: 0 .. %.0f Minuten ueber dem besten Bahnhof"
+          % zugang.max())
     print("Stress %.4f -> %.4f -> %.4f -> %.4f | Grundriss %.1f / %.1f km"
           % tuple(kenn))
 
