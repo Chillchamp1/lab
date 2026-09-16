@@ -109,33 +109,39 @@ aufgestellt hat.
 
 ## Die Städte unter dem Eis
 
-Achtzehn Städte stehen als Anker in der Gegenwart auf der Karte. Die, über
+Fünfzehn Städte stehen als Anker in der Gegenwart auf der Karte. Die, über
 denen gerade Eis liegt, tragen darunter in Klammern dessen Mächtigkeit —
 **live**, nicht als Höchstwert. Sie wächst und fällt mit dem Lauf, und das ist
 die Aussage: nicht „hier lag mal Eis", sondern „hier liegen gerade 2 374 Meter
 davon".
 
-Gewählt sind sie nach Einwohnerzahl *innerhalb* des vereisten Gebiets: Sankt
-Petersburg als grösste überhaupt, Manchester als grösste britische (London und
-Birmingham lagen südlich des Randes, in Frosttundra — nicht unter Eis), dazu
-Oslo, Kopenhagen, Helsinki und das schon vorhandene Stockholm.
-
-Berlin ist der Grenzfall, den man sehen will: der Brandenburger Rand *ist*
-dort das Maximum, die Stadt liegt also kurz und knapp unter Eis, wo Stockholm
-kilometertief darunter verschwindet.
+Gewählt sind sie nach Einwohnerzahl *innerhalb* des vereisten Gebiets:
+Manchester als grösste britische (London und Birmingham lagen südlich des
+Randes, in Frosttundra — nicht unter Eis), dazu Oslo und Kopenhagen. Berlin
+stand schon da und ist der Grenzfall, den man sehen will: der Brandenburger
+Rand *ist* dort das Maximum, die Stadt liegt also kurz und knapp unter Eis.
 
 | | tiefstes Eis darüber |
 |---|---|
 | Oslo | 2 676 m |
-| Stockholm | 1 898 m |
-| Sankt Petersburg | 1 504 m |
-| Helsinki | 1 492 m |
 | Reykjavík | 1 280 m |
 | Kopenhagen | 849 m |
 | Berlin | 409 m |
 | Manchester | 328 m |
 
-Dass sich achtzehn Namen mit zweiter Zeile nicht ins Gehege kommen, besorgt
+**Diese Zahlen ersetzen zwei Beschriftungen, die es vorher gab.** Über
+Skandinavien und Britannien stand je ein Schild mit der Höhe der Eiskuppe;
+jetzt steht dort eine Stadt, und die sagt dasselbe konkreter. Nur
+**Barents-Kara** behält sein Schild — dort liegt keine Stadt und kann keine
+liegen, es war ein Schelfmeer.
+
+Ein Vorbehalt gehört dazu: was dasteht, ist die **Dicke über dem Boden**, und
+die Eisoberfläche liegt um die Höhe dieses Bodens höher. Unter dickem Eis ist
+die Kruste eingedrückt (Oslo lag bei 22 ka auf −280 m), am Rand steht sie über
+dem Meer (Berlin +104 m). Der Fehler bleibt unter 300 Metern, weil alle fünf
+Städte tief liegen — als Grössenordnung taugt die Zahl, auf den Meter nicht.
+
+Dass sich fünfzehn Namen mit zweiter Zeile nicht ins Gehege kommen, besorgt
 eine Platzvergabe je Bild — Details in [METHODIK.md](METHODIK.md),
 Abschnitt 8d.
 

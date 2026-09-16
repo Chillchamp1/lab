@@ -2145,6 +2145,15 @@ function gipfelUeber() {
      Bildes ist: es gehoert nicht zum eurasischen Komplex. Dass es als
      einziges Eis am Ende noch dasteht, sagt das Bild von selbst. */
   for (let k = 0; k < KUPPEN.length; k++) {
+    /* Gemessen werden alle drei Kuppen, beschriftet wird nur, wer ein Schild
+       hat — und das ist nur noch Barents-Kara. Ueber Skandinavien und
+       Britannien stehen inzwischen Staedte mit ihrer Eismaechtigkeit, und die
+       sagen dasselbe konkreter: „Oslo (2 374 m under ice)" ist eine Aussage,
+       an der ein Mensch etwas hat, „Scandinavian ice 2 773 m" eine Zahl ueber
+       einen Punkt, den niemand zeigen kann. Ueber Barents-Kara liegt keine
+       Stadt und kann keine liegen — es war ein Schelfmeer —, also bleibt dort
+       das Schild die einzige Moeglichkeit, ueberhaupt eine Hoehe zu nennen. */
+    if (KUPPEN[k].schild === false) continue;
     if (!(kuppeHoch[k] > 0) || kuppeWo[k] < 0) continue;
     const gx = (kuppeWo[k] % rW) / rW * GW, gy = ((kuppeWo[k] / rW) | 0) / rH * GH;
     const [sx, sy] = projRand(gx, gy);
