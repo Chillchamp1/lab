@@ -342,64 +342,115 @@ Geländelage, weil die Aussage dann so einfach ist, wie sie klingt: *der
 Abstand auf der Karte ist die Reisezeit.*
 
 **Die Höhe** ist eine gemessene Größe, kein Modellwert — welche, ist die
-Frage dieses Abschnitts.
+Frage dieses Abschnitts, und die Antwort ist ein Regler statt einer Zahl.
 
-### 4.1 Drei Kandidaten, und warum der naheliegende nicht taugt
+### 4.1 Eine Familie, kein einzelnes Maß
 
-Gefragt ist nicht Entfernung, sondern das Gefühl, angebunden zu sein. Drei
-Größen sind gerechnet, alle in Minuten:
+Gefragt ist nicht Entfernung, sondern das Gefühl, angebunden zu sein. Zwei
+naheliegende Antworten sind beide schief, und zwar in entgegengesetzte
+Richtungen.
 
 | Kandidat | Spanne | Median | r gegen A |
 |---|---:|---:|---:|
 | **A** mittlere Reisezeit zu allen 4.780 anderen Bahnhöfen | 260–718 | 380 | — |
-| **B** mittlere Reisezeit zu allen 83,6 Mio Menschen | 241–712 | 364 | **+0,973** |
-| **C** bis ein Zehntel Deutschlands erreichbar ist | 81–630 | 217 | +0,860 |
+| **B** dasselbe, nach Menschen gewichtet | 241–712 | 364 | **+0,973** |
 
-**A war die erste Fassung, und A ist falsch gewichtet.** Ein Haltepunkt mit
-dreißig Einwohnern zählt darin wie Köln. Weil die Haltepunkte in der Fläche
-liegen und die Städte wenige Bahnhöfe haben, zieht das die Karte nach außen:
-gut angebunden sieht aus, wer viele kleine Halte um sich hat.
+**A ist falsch gewichtet.** Ein Haltepunkt mit dreißig Einwohnern zählt darin
+wie Köln. Weil die Haltepunkte in der Fläche liegen und die Städte wenige
+Bahnhöfe haben, zieht das die Karte nach außen.
 
 **B behebt genau das — und ändert die Karte fast nicht.** A und B korrelieren
-mit **r = 0,973**. Das war das überraschendste Ergebnis dieses Projekts, und
-der Grund ist einfach, sobald man ihn sieht: ein Mittelwert über ein großes
-Land wird von der *fernen Hälfte* bestimmt. Für jeden Ort in Deutschland ist
-die größte Summe in diesem Mittel die Strecke zum anderen Ende, und die hängt
-davon ab, wo er liegt, nicht davon, wie er angeschlossen ist. B misst also
-weiter Geografie. An den Zahlen: München 316 Minuten in A, 316 in B; Nürnberg
-272 und 271. Nur der Westen rutscht etwas (Dortmund 315 → 270, Düsseldorf
-307 → 265), weil dort die Menschen wohnen. München liegt in beiden so
+mit **r = 0,973**. Der Grund ist einfach, sobald man ihn sieht: ein Mittelwert
+über ein großes Land wird von der *fernen Hälfte* bestimmt. Für jeden Ort in
+Deutschland ist die größte Summe in diesem Mittel die Strecke zum anderen
+Ende, und die hängt davon ab, wo er liegt, nicht davon, wie er angeschlossen
+ist. An den Zahlen: München 316 Minuten in A, 316 in B; Nürnberg 272 und 271.
+Nur der Westen rutscht (Dortmund 315 → 270). München liegt in beiden so
 schlecht wie Ulm, und München fühlt sich nicht so an.
 
-**C ist die andere Frage.** Nicht „wie weit ist das Mittel", sondern „wie viel
-ist in Reichweite": die Bahnhöfe werden nach ihrer Reisezeit sortiert, ihre
-Einzugsgebiete aufsummiert, und genommen wird die Zeit, bei der die Summe
-**ein Zehntel der Bevölkerung** überschreitet — 8.357.714 Menschen.
+**Der umgekehrte Fehler ist genauso leicht zu machen.** Eine erste Fassung
+dieser Karte fragte „wie lange, bis ein Zehntel Deutschlands erreichbar ist",
+und das Ruhrgebiet wurde darin ein einziger blauer See. Bei einer Million ist
+es noch deutlicher: dann misst die Größe im Grunde, wie lange man braucht, um
+die eigene Stadt zu durchqueren — Berlin 18 Minuten, München 24 — und die
+Karte ist eine Karte der Ballungsräume.
 
-Warum ein Zehntel: weil das keine einzelne Stadt allein schafft. Bei einer
-Million misst die Größe im Grunde, wie lange man braucht, um die eigene Stadt
-zu durchqueren (Berlin 18 Minuten, München 24) — dann ist das Relief eine
-Karte der Großstädte. Bei einem Zehntel muss man über die eigene
-Agglomeration hinaus, und genau das misst das Netz. Gerechnet wurde von einer
-Million bis zu einem Drittel; die Spanne bleibt in derselben Größenordnung,
-und ein Zehntel ist die runde Zahl mit dem klarsten Satz dazu.
+#### Beides ist dieselbe Größe
+
+Sortiert man von einem Bahnhof aus alle anderen nach Reisezeit und summiert
+ihre Einzugsgebiete auf, entsteht eine Verteilung F_i(t): welcher Anteil
+Deutschlands nach t Minuten in Reichweite ist. Dann ist
+
+    A_i = ∫ t dF_i(t)              der Mittelwert dieser Verteilung
+    C_i(q) = F_i⁻¹(q)              ihr q-Quantil
+
+Beide Pole sind Funktionale **derselben** Verteilung, und der Anteil q ist der
+Parameter, der zwischen ihnen schiebt: kleines q schaut nur auf die nächste
+Bevölkerung (Dichte), großes q verlangt, bis in die Ecken zu kommen
+(Geografie). Darum ist der Anteil in der Seite ein **Regler** und keine
+gesetzte Zahl. Achtzehn Stufen von 2 bis 90 Prozent liegen vorgerechnet in der
+Nutzlast — logarithmisch gelegt, weil sich das Bild unten schnell und oben
+langsam ändert —, und die Seite mischt linear in log q zwischen den beiden
+benachbarten Stufen. Der Unterschied zwischen Nachbarstufen ist klein gegen
+die Glättung des Höhenfeldes (4.3), die Mischung also nicht zu sehen.
+
+| Anteil | Minuten | Median | die drei tiefsten | r gegen A |
+|---:|---:|---:|---|---:|
+| 2 % | 28–597 | 136 | Berlin Hbf, Köln, Düsseldorf | 0,760 |
+| 3 % | 38–604 | 152 | Köln, Düsseldorf, Berlin Ostbahnhof | 0,767 |
+| 4 % | 48–608 | 164 | Düsseldorf, Duisburg, Düsseldorf Flughafen | 0,775 |
+| 6 % | 58–617 | 186 | Düsseldorf, Duisburg, Mülheim | 0,811 |
+| 8 % | 70–626 | 204 | Duisburg, Düsseldorf, Essen | 0,845 |
+| 10 % | 81–630 | 216 | Düsseldorf, Duisburg, Essen | 0,860 |
+| 13 % | 100–640 | 236 | Duisburg, Essen, Düsseldorf | 0,878 |
+| 17 % | 126–650 | 256 | Dortmund, Essen, Düsseldorf | 0,895 |
+| 21 % | 149–656 | 272 | Frankfurt Flughafen, Köln, Frankfurt Hbf | 0,906 |
+| **25 %** | **160–665** | **288** | **Frankfurt Flughafen, Frankfurt Hbf, Köln** | **0,916** |
+| 30 % | 175–672 | 305 | Frankfurt Flughafen, Frankfurt Hbf, Mannheim | 0,927 |
+| 36 % | 192–702 | 324 | Frankfurt Flughafen, Frankfurt Hbf, Frankfurt Süd | 0,934 |
+| 43 % | 214–716 | 344 | Frankfurt Flughafen, Frankfurt Hbf, Mannheim | 0,944 |
+| 50 % | 232–744 | 364 | Frankfurt Hbf, Frankfurt Flughafen, Kassel-Wilhelmshöhe | 0,954 |
+| 58 % | 254–774 | 388 | Frankfurt Hbf, Kassel-Wilhelmshöhe, Fulda | 0,968 |
+| 67 % | 272–790 | 415 | Fulda, Kassel-Wilhelmshöhe, Frankfurt Hbf | 0,978 |
+| 78 % | 298–806 | 451 | Fulda, Kassel-Wilhelmshöhe, Göttingen | 0,980 |
+| 90 % | 353–863 | 509 | Fulda, Kassel-Wilhelmshöhe, Göttingen | 0,964 |
+
+Von unten nach oben ist das der ganze Weg von der Dichte- zur Geografiekarte,
+und die Korrelation mit A steigt monoton von 0,76 auf 0,98. Bei keiner Stufe
+bleibt ein Bahnhof übrig, der den Anteil im Suchhorizont nicht erreicht.
+
+#### Warum ein Viertel voreingestellt ist
+
+Die Wahl hat eine gemessene Grenze. Eine Erreichbarkeitskarte ist genau so
+lange eine Dichtekarte, wie die **eigene Agglomeration den geforderten Anteil
+allein hergibt** — dann muss niemand das Netz benutzen. Nachgezählt, mit der
+Bevölkerung aus 4.2:
+
+| von | in 45 min | in 60 min | in 90 min |
+|---|---:|---:|---:|
+| Essen Hbf | 3,3 % | 5,2 % | **11,6 %** |
+| Frankfurt (Main) Hbf | 1,3 % | 2,6 % | 5,6 % |
+| Berlin Hbf | 3,2 % | 4,1 % | 5,4 % |
+| München Hbf | 1,9 % | 2,8 % | 4,9 % |
+
+Rhein-Ruhr ist die größte zusammenhängende Ballung des Landes, und sie ist
+rund ein Achtel davon wert. Oberhalb von etwa einem Siebtel kann also keine
+Region mehr aus sich selbst schöpfen — und genau dort kippt die Tabelle: bei
+17 % führt noch das Ruhrgebiet, bei 21 % Frankfurt. Am oberen Ende friert die
+Rangfolge ab etwa zwei Dritteln ein, weil es dann nur noch darauf ankommt, wie
+schnell man Sylt und Rügen erreicht.
+
+Das brauchbare Fenster liegt zwischen einem Sechstel und der Hälfte, und **ein
+Viertel** — 20,9 Millionen, etwa das Doppelte der größten Ballung — ist die
+runde Zahl darin. Die Probe auf die Wahl: die zehn tiefsten Bahnhöfe sind dann
+Frankfurt Flughafen 160, Frankfurt Hbf 164, Köln 171, Mannheim 172, Frankfurt
+Süd 175, Köln Messe/Deutz 176, Düsseldorf 178, Hamm 180, Hannover 180,
+Dortmund 180. Das ist nicht eine Region, das ist die ICE-Achse.
 
 Gerechnet wird auf der **hin und zurück gemittelten** Matrix, wie A und B. Die
 Richtung „von hier weg" allein wäre näher an der Formulierung, aber
 anfälliger: eine einzelne glückliche Morgenverbindung kann sie um eine halbe
 Stunde verschieben.
-
-**Ergebnis.** Am tiefsten liegt das Ruhrgebiet: Düsseldorf 81 Minuten,
-Duisburg 82, Essen 84, Düsseldorf Flughafen 87, Dortmund 90, Mülheim 91,
-Bochum 92. Dann Köln 97, Frankfurt 115, Stuttgart 130, Ulm 141, München 142,
-Berlin 144, Nürnberg 146, Hamburg 158. Am höchsten: Freiburg Herdern und
-Freiburg Zähringen mit 630 Minuten, Gottmadingen 624, Reichenau (Baden) 609,
-Konstanz-Wollmatingen 606 — dazu die Bäderbahn auf Rügen und die
-Heidekrautbahn.
-
-Zwischen Nachbarn unter 15 km springt C im Median um 40 Minuten und im
-90. Perzentil um 131 — das ist überwiegend echt (Freiburg Hbf gegen Freiburg
-Zähringen sind Stunden) und wird vom Höhenfeld (4.3) geglättet.
 
 ### 4.2 Das Bevölkerungsgewicht
 
@@ -539,8 +590,8 @@ Deutschland größer.
 ### 4.7 Farbe, Licht, Höhenlinien, Schnee
 
 Die Farbleiter ist in **absoluten Minuten** beschriftet, nicht als Aufschlag
-auf den besten Bahnhof: „Wasser unter 181 Minuten" ist eine Aussage, „unter
-+100" ist eine Rechenaufgabe. Gerechnet wird intern über dem Besten, weil die
+auf den besten Bahnhof: „Wasser unter 250 Minuten" ist eine Aussage, „unter
++90" ist eine Rechenaufgabe. Gerechnet wird intern über dem Besten, weil die
 Leiter dort ihren Nullpunkt hat.
 
 **Fünfunddreißig Bänder**: fünf Blaustufen unter Wasser, vierundzwanzig
@@ -552,8 +603,11 @@ Reliefkarte bekommt.
 
 Die **Schneegrenze** ist nicht gesetzt, sondern abgeleitet: die Leiter läuft
 vom Wasserstand bis zum höchsten Wert **auf dem Land**, und die letzten sechs
-Bänder sind Schnee. In Minuten steht sie in der Tafel — auf der Landkarte mit
-Wasser bei 181 Minuten liegt sie bei 351. Als oberes Ende dient das
+Bänder sind Schnee. In Minuten steht sie in der Tafel — bei einem Viertel und
+Wasser auf 250 Minuten liegt sie bei 571. Weil der Anteilsregler die ganze
+Leiter verschiebt, wird der Wasserstand intern als Aufschlag auf den besten
+Bahnhof geführt und nur absolut beschriftet: sonst würde ein Zug am
+Anteilsregler die halbe Karte fluten oder trockenlegen. Als oberes Ende dient das
 **99,5-Perzentil** des Landes, nicht das Maximum: ein einzelner Ausreißer
 walzt sonst die ganze Leiter platt, und dann liegt nirgends Schnee. Was
 darüber liegt, wird auf das oberste Band geklemmt.
@@ -614,6 +668,9 @@ bleiben ja 23 % Stress —, aber sichtbar viel mehr als vorher.
 - **221 Bahnhöfe fehlen ganz** (siehe 2).
 - **Die Bevölkerung ist innerhalb eines Kreises gleichmäßig verteilt** (siehe
   4.2). Das ist die gröbste Annahme in der ganzen Kette.
+- **Die Höhe hängt von einer Wahl ab**, und die Karte sagt das auch: der
+  Anteilsregler *ist* diese Wahl. Eine Karte mit einer Zahl darin hätte
+  dieselbe Abhängigkeit, nur unsichtbar.
 - **Die Bevölkerung ist die von 2024, der Fahrplan der von 2026.** Zwei Jahre
   Unterschied; an der Rangfolge der Kreise ändert das nichts.
 - **Ein Fahrplantag, kein Mittel über viele Mittwoche.** Der 13. Mai 2026 ist
