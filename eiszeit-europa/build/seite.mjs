@@ -1889,18 +1889,55 @@ function scheibenMalen() {
 /* ================================================== Heute, und zwei Gipfel
    Zwei Ebenen mit verschiedenen Aussagen, deshalb getrennt behandelt:
 
-   **Heute** — die moderne Kuestenlinie und zehn Staedte. Sie gehoeren nicht
-   in die Karte, sie gehoeren daneben: sie sagen nichts ueber die Eiszeit,
-   sondern geben dem Auge einen Anker. Abschaltbar, und im Ton so weit zurueck,
-   dass sie das Relief nicht stoeren.
+   **Heute** — die moderne Kuestenlinie und achtzehn Staedte. Sie gehoeren
+   nicht in die Karte, sie gehoeren daneben: sie sagen nichts ueber die
+   Eiszeit, sondern geben dem Auge einen Anker. Abschaltbar, und im Ton so
+   weit zurueck, dass sie das Relief nicht stoeren.
+
+   Eine Ausnahme: die Staedte, die unter dem Eis lagen, tragen darunter in
+   Klammern dessen Maechtigkeit — live, nicht als Hoechstwert. Das *ist* eine
+   Aussage ueber die Eiszeit, und zwar die greifbarste, die die Karte machen
+   kann: nicht „hier lag mal Eis", sondern „ueber Oslo liegen gerade 2 374
+   Meter davon".
 
    **Die Gipfel** — der hoechste Punkt des Eises und der Mont Blanc, beide mit
    ihrer Hoehe zur gezeigten Zeit. Der Vergleich ist die Aussage: der
    Eisschild ueber Skandinavien misst sich am hoechsten Berg der Alpen, und
    zwar an dem, der damals dastand, nicht an dem von heute. Immer sichtbar. */
+/* ---------- Wer zuerst da ist, behaelt den Platz ----------
+   Achtzehn Staedte, drei Eiskuppen und der Mont Blanc, und die Haelfte davon
+   draengt sich auf Skandinavien. Solange jede Stadt nur ihren Namen trug, ging
+   das gerade noch; seit die vereisten eine zweite Zeile bekommen, ist
+   „Helsinki (1 331 m under ice)" doppelt so breit wie vorher und liegt quer
+   ueber Sankt Petersburg.
+
+   Also eine Belegungsliste je Bild: ein flaches Feld aus Rechtecken, in der
+   Reihenfolge gefuellt, in der die Beschriftungen ihren Anspruch anmelden.
+   Wer keinen freien Platz findet, weicht auf die andere Seite aus; wer auch
+   dort keinen findet, gibt zuerst die zweite Zeile auf und dann den Namen.
+   Der Punkt bleibt immer stehen — er ist der Anker, der Name ist der Komfort.
+
+   Die Reihenfolge ist die Rangfolge:
+     1. die Eiskuppen und der Mont Blanc  — sie sind die Aussage der Karte
+     2. die Staedte **unter** Eis         — sie sind die Aussage dieser Ebene
+     3. alle uebrigen Staedte             — Anker fuers Auge, sonst nichts */
+const belegt = [];
+function frei(x0, y0, x1, y1) {
+  for (let i = 0; i < belegt.length; i += 4)
+    if (x0 < belegt[i + 2] && x1 > belegt[i]
+     && y0 < belegt[i + 3] && y1 > belegt[i + 1]) return false;
+  return true;
+}
+function belege(x0, y0, x1, y1) { belegt.push(x0, y0, x1, y1); }
+
 const HEUTEFARBE = 'rgba(255,255,255,.22)';
 const ORTFARBE = 'rgba(255,255,255,.52)';
 const ORTPUNKT = 'rgba(255,255,255,.62)';
+/* Die zweite Zeile unter den Staedten, die gerade unter Eis liegen. Ein
+   Hauch blau — es ist eine Aussage ueber das Eis, nicht ueber die Stadt —,
+   und kleiner gesetzt: der Name ist der Anker, die Zahl der Zusatz. */
+const UNTEREIS = 'rgba(200,226,255,.72)';
+const UNTERKLEIN = 7.5 / 8.5;   // Groessenverhaeltnis der beiden Zeilen
 let HEUTE = true;
 
 function heuteUeber() {
@@ -1934,27 +1971,99 @@ function heuteUeber() {
   ctx.font = '600 ' + (breite < 460 ? 7.5 : 8.5) + 'px system-ui,sans-serif';
   ctx.textBaseline = 'middle';
   ctx.lineJoin = 'round';
-  for (const o of ORTE) {
+  /* Erst die unter Eis, dann die uebrigen — beide in ihrer bisherigen
+     Reihenfolge. Sortiert wird ueber einen Index, nicht ueber eine Kopie der
+     Liste: ORTE steht fest, und je Bild ein Feld anzulegen waere Abfall. */
+  const reihe = ORTE.map((o, i) => i);
+  const dickeVon = new Float32Array(ORTE.length);
+  for (let i = 0; i < ORTE.length; i++) {
+    const o = ORTE[i];
+    const fx = Math.max(0, Math.min(rW - 1, Math.round(o.x / GW * rW)));
+    const fy = Math.max(0, Math.min(rH - 1, Math.round(o.y / GH * rH)));
+    const fi = fy * rW + fx;
+    dickeVon[i] = maskeR[fi] && eisD[fi] >= EISSCHWELLE ? eisD[fi] : 0;
+  }
+  reihe.sort((a, b) => (dickeVon[b] > 0) - (dickeVon[a] > 0) || a - b);
+
+  const gross = breite < 460 ? 7.5 : 8.5, klein = breite < 460 ? 6.5 : 7.5;
+  for (const oi of reihe) {
+    const o = ORTE[oi];
     const [sx, sy] = projRand(o.x, o.y);
     if (sx < -20 || sy < -20 || sx > breite + 20 || sy > hoehe + 20) continue;
-    // Am rechten Rand nach links setzen, sonst haengt der Name halb draussen
-    // — auf dem Telefon war Moskau auf „Mosco" verkuerzt. Gemessen wird am
-    // **Kartenrand**, nicht am Rand der Leinwand: die Karte steht seit dem
-    // Kilometer-Rahmen fast quadratisch in einem breiteren Feld, und ein Name,
-    // der rechts neben ihr im Schwarzen haengt, sieht aus wie ein Versehen.
+    const dick = dickeVon[oi];
+    const zweite = dick ? '(' + nfm.format(Math.round(dick)) + ' m under ice)' : '';
+
+    // Gemessen wird am **Kartenrand**, nicht am Rand der Leinwand: die Karte
+    // steht in einem breiteren Feld, und ein Name, der rechts neben ihr im
+    // Schwarzen haengt, sieht aus wie ein Versehen.
     const [randX] = projRand(GW, o.y);
     const ende = Math.min(breite, randX) - 4;
-    const rechts = sx + 6 + ctx.measureText(o.name).width > ende;
-    ctx.textAlign = rechts ? 'right' : 'left';
-    const dx = rechts ? -4 : 4;
+    const bName = ctx.measureText(o.name).width;
+    ctx.font = '600 ' + klein + 'px system-ui,sans-serif';
+    const bZweite = zweite ? ctx.measureText(zweite).width : 0;
+    ctx.font = '600 ' + gross + 'px system-ui,sans-serif';
+
+    /* Die Platzsuche. Zuerst variiert die **Lage**, zuletzt der Inhalt: eine
+       Stadt, die etwas zu sagen hat, soll lieber zehn Punkte tiefer stehen
+       als ihre Zahl verlieren.
+
+       Sechs Lagen — neben dem Punkt, darueber, darunter, jeweils rechts und
+       links —, und erst wenn keine davon passt, faellt die zweite Zeile weg
+       und dieselben sechs werden noch einmal probiert. Mittig zuerst, weil
+       dort die Zuordnung zum Punkt am klarsten ist. */
+    let gewaehlt = null;
+    for (const mitZweiter of zweite ? [true, false] : [false]) {
+      const w = mitZweiter ? Math.max(bName, bZweite) : bName;
+      const tief = mitZweiter ? 10 : 0;          // Abstand der zweiten Zeile
+      const lagen = mitZweiter
+        ? [sy - 4.5, sy - 15, sy + 6]
+        : [sy - 0.5, sy - 10, sy + 9];
+      for (const ny of lagen) {
+        const y0 = ny - gross / 2 - 1;
+        const y1 = ny + tief + (mitZweiter ? klein / 2 : gross / 2) + 1;
+        for (const r of [false, true]) {
+          const x0 = r ? sx - 4 - w : sx + 4, x1 = x0 + w;
+          if (!r && x1 > ende) continue;
+          if (r && x0 < 4) continue;
+          if (y0 < 2 || y1 > hoehe - 2) continue;
+          if (!frei(x0, y0, x1, y1)) continue;
+          gewaehlt = { rechts: r, mitZweiter, ny, x0, y0, x1, y1 };
+          break;
+        }
+        if (gewaehlt) break;
+      }
+      if (gewaehlt) break;
+    }
+
+    // Der Punkt steht immer — er ist der Anker, der Name ist der Komfort.
     ctx.strokeStyle = 'rgba(0,0,0,.62)';
     ctx.lineWidth = 2.6;
     ctx.beginPath(); ctx.arc(sx, sy, 1.5, 0, 7); ctx.stroke();
-    ctx.strokeText(o.name, sx + dx, sy - 0.5);
     ctx.fillStyle = ORTPUNKT;
     ctx.beginPath(); ctx.arc(sx, sy, 1.5, 0, 7); ctx.fill();
+    if (!gewaehlt) continue;
+    belege(gewaehlt.x0, gewaehlt.y0, gewaehlt.x1, gewaehlt.y1);
+
+    ctx.textAlign = gewaehlt.rechts ? 'right' : 'left';
+    const dx = gewaehlt.rechts ? -4 : 4;
+    const oben = gewaehlt.ny;
+    ctx.strokeStyle = 'rgba(0,0,0,.62)';
+    ctx.lineWidth = 2.6;
+    ctx.strokeText(o.name, sx + dx, oben);
     ctx.fillStyle = ORTFARBE;
-    ctx.fillText(o.name, sx + dx, sy - 0.5);
+    ctx.fillText(o.name, sx + dx, oben);
+    if (gewaehlt.mitZweiter) {
+      /* Kleiner und leiser als der Name: die Stadt ist der Anker, die Zahl
+         der Zusatz. Beide gleich laut zu setzen hiesse, die Karte traegt
+         achtzehn gleich wichtige Beschriftungen. */
+      ctx.font = '600 ' + klein + 'px system-ui,sans-serif';
+      ctx.strokeStyle = 'rgba(0,0,0,.62)';
+      ctx.lineWidth = 2.4;
+      ctx.strokeText(zweite, sx + dx, oben + 10);
+      ctx.fillStyle = UNTEREIS;
+      ctx.fillText(zweite, sx + dx, oben + 10);
+      ctx.font = '600 ' + gross + 'px system-ui,sans-serif';
+    }
     ctx.textAlign = 'left';
   }
   ctx.restore();
@@ -1981,7 +2090,27 @@ function marke(sx, sy, text, farbe, unten, lieberLinks) {
   // sind doppelt so breit. Eine feste Schwelle von 90 Punkten liess sie am
   // rechten Rand halb draussen haengen.
   const tb = ctx.measureText(text).width;
-  const rechts = lieberLinks ? sx - 6 - tb > 4 : sx + 6 + tb > breite - 4;
+  /* Die Seite wird nicht nur nach dem Bildrand gewaehlt, sondern auch nach
+     dem, was schon dasteht. Diese Schilder haben Vorrang — sie melden ihren
+     Anspruch vor den Staedten an —, aber untereinander weichen sie sich aus:
+     bei 26 ka liegen Barents-Kara und Skandinavien nah beieinander.
+     Findet sich gar kein Platz, wird trotzdem gesetzt: eine Eiskuppe ohne
+     Schild ist schlimmer als ein Schild, das sich ueberschneidet. */
+  const hk = 11;
+  const seiten = lieberLinks ? [true, false] : [false, true];
+  let rechts = seiten[0];
+  for (const r of seiten) {
+    const x0 = r ? sx - 6 - tb : sx + 6, x1 = x0 + tb;
+    if (x0 < 4 || x1 > breite - 4) continue;
+    const y0 = unten ? sy + 5 : sy - 5 - hk;
+    if (!frei(x0, y0, x1, y0 + hk)) continue;
+    rechts = r; break;
+  }
+  {
+    const x0 = rechts ? sx - 6 - tb : sx + 6;
+    const y0 = unten ? sy + 5 : sy - 5 - hk;
+    belege(x0, y0, x0 + tb, y0 + hk);
+  }
   ctx.textAlign = rechts ? 'right' : 'left';
   const dx = rechts ? -6 : 6, dy = unten ? 5 : -5;
   // Erst das Kreuz und die Schrift dunkel umranden, dann hell fuellen: auf
@@ -2328,9 +2457,15 @@ function zeichne() {
     linienUeber(ctx);
     ctx.restore();
   }
-  heuteUeber();
+  /* Die Beschriftungen in der Rangfolge ihres Anspruchs, nicht in der der
+     Ebenen: erst das Band ganz unten, dann die Gipfelschilder, die sich den
+     Platz zuerst nehmen, dann die Staedte, die ausweichen. Dass die Staedte
+     damit zuoberst liegen, ist ohne Folge — sie ueberschneiden ja nichts
+     mehr. */
+  belegt.length = 0;
   datedUeber();
   gipfelUeber();
+  heuteUeber();
   schreibe();
   sichtMarken();
 }

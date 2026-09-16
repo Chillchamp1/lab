@@ -312,6 +312,22 @@ STAEDTE = [
     # trafen.
     ("Perm",        56.250, 58.000),
     ("Arkhangelsk", 40.530, 64.540),
+    # Und die Staedte, die unter dem Eis lagen — die Karte sagt neben ihrem
+    # Namen, wie viel Eis gerade ueber ihnen steht, solange welches da ist.
+    # Ausgewaehlt nach Einwohnerzahl **innerhalb** des vereisten Gebiets:
+    #   Sankt Petersburg  die groesste ueberhaupt, 5,6 Mio
+    #   Manchester        die groesste britische; London und Birmingham lagen
+    #                     suedlich des Randes, in Frosttundra, nicht unter Eis
+    #   Oslo, Kopenhagen, Helsinki   Skandinavien und Daenemark
+    # Stockholm und Berlin stehen schon oben. Berlin ist der Grenzfall, den
+    # man sehen will: der Brandenburger Rand ist dort das Maximum, die Stadt
+    # liegt also nur kurz und knapp unter Eis, wo Stockholm kilometertief
+    # darunter verschwindet.
+    ("Saint Petersburg", 30.361, 59.931),
+    ("Manchester",       -2.243, 53.481),
+    ("Oslo",             10.752, 59.914),
+    ("Copenhagen",       12.568, 55.676),
+    ("Helsinki",         24.938, 60.170),
 ]
 
 # Der Mont Blanc als Massstab fuer die Eiskuppe. Seine Hoehe wird **nicht**

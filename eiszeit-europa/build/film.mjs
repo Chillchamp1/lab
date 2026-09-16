@@ -17,8 +17,9 @@
 //   npm install playwright-core ffmpeg-static
 
 import { spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { resolve, dirname, join } from 'node:path';
-import { mkdirSync, existsSync, writeFileSync, rmSync, statSync } from 'node:fs';
+import { mkdirSync, existsSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 
 const [, , seite = '../index.html', ziel = 'film.mp4', fpsArg = '30'] = process.argv;
 const FPS = Number(fpsArg);
@@ -77,8 +78,29 @@ const { chromium } = await import('playwright-core');
 const ffmpeg = (await import('ffmpeg-static')).default;
 
 const CSSB = SATZ, CSSH = Math.round(SATZ * HOEHE / BREITE);
-const teile = join(dirname(resolve(ziel)), '.film-teile');
+
+/* ------------------------------------------------ Woran ein Abschnitt haengt
+   Die Wiederaufnahme hat einmal stillschweigend Abschnitte uebernommen, die
+   aus einem **anderen Stand der Seite** stammten: geprueft wurde nur, ob eine
+   Datei da ist und ueber ein Kilobyte wiegt. Der Film war danach vorne alt und
+   hinten neu, und zwar ohne ein Wort im Protokoll.
+
+   Also haengt der Ordner jetzt an einem Abdruck von allem, was das Bild
+   bestimmt — die Seite selbst und jede Einstellung. Aendert sich eine davon,
+   ist es ein anderer Ordner, und es gibt nichts zu uebernehmen. Aendert sich
+   nichts, findet ein Neustart seine Arbeit wieder.
+
+   Und je fertigem Abschnitt liegt eine Quittung daneben, die erst **nach**
+   dem Schliessen des Kodierers geschrieben wird und die Bildzahl nennt. Ein
+   abgebrochener Lauf hinterlaesst eine halbe mp4-Datei, aber keine Quittung —
+   und eine halbe Datei ohne Quittung zaehlt nicht. */
+const abdruck = createHash('sha256')
+  .update(readFileSync(resolve(seite)))
+  .update(JSON.stringify({ BREITE, HOEHE, FPS, LAUF, NACH, SATZ, UEBER, FEIN }))
+  .digest('hex').slice(0, 12);
+const teile = join(dirname(resolve(ziel)), '.film-teile-' + abdruck);
 mkdirSync(teile, { recursive: true });
+console.error(`Abschnitte in ${teile}`);
 
 /* Playwright bringt seine eigenen Browser mit und sucht sie an einer Stelle,
    die zur eingebauten Versionsnummer passt. Steht daneben schon ein Chromium
@@ -157,9 +179,11 @@ const liste = [];
 for (let von = 0; von <= gesamt; von += ABSCHNITT) {
   const bis = Math.min(gesamt, von + ABSCHNITT - 1);
   const datei = join(teile, `t${String(von).padStart(5, '0')}.mp4`);
+  const quittung = datei + '.fertig';
   liste.push(datei);
-  if (existsSync(datei) && statSync(datei).size > 1024) {
-    console.error(`  Abschnitt ${von}..${bis} steht schon`);
+  if (existsSync(datei) && existsSync(quittung)
+      && readFileSync(quittung, 'utf8').trim() === String(bis - von + 1)) {
+    console.error(`  Abschnitt ${von}..${bis} steht schon (${bis - von + 1} Bilder)`);
     continue;
   }
   const proc = kodierer(datei);
@@ -179,6 +203,7 @@ for (let von = 0; von <= gesamt; von += ABSCHNITT) {
   }
   proc.stdin.end();
   await new Promise(r => proc.on('close', r));
+  writeFileSync(quittung, String(bis - von + 1) + '\n');
 }
 await browser.close();
 

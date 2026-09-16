@@ -1059,7 +1059,7 @@ Bahn liesse die halbe Fläche im blassen Teil der Leiter.
 
 Zwei Ebenen mit verschiedenen Aussagen, deshalb getrennt behandelt.
 
-**Heute** — die moderne Küstenlinie und zwölf Städte. Die Linie ist die
+**Heute** — die moderne Küstenlinie und achtzehn Städte. Die Linie ist die
 Nulllinie des **modernen** Höhenmodells, ohne Differenzfeld: sie ändert sich
 nie, wird einmal geschnitten und behalten. Die Städte sind in `quellen.py`
 projiziert und reisen als Gitterpunkte mit; die Seite muss von Länge und
@@ -1074,6 +1074,74 @@ zusammenfällt. Abschaltbar über „Today".
 Geschrieben wird **mit dunklem Umriss**, nicht mit Schlagschatten: die Karte
 hat weisses Eis und dunkles Wasser, und ein Schatten trägt nur auf einem von
 beiden. Stockholm stand auf der Eiskuppe und war nicht zu lesen.
+
+### Wie viel Eis über einer Stadt steht
+
+Achtzehn Städte statt dreizehn, und die fünf neuen sind nach einem einzigen
+Kriterium gewählt: **Einwohnerzahl innerhalb des vereisten Gebiets.**
+
+| | warum diese |
+|---|---|
+| Sankt Petersburg | die grösste Stadt überhaupt, die unter dem eurasischen Schild lag |
+| Manchester | die grösste britische. London und Birmingham lagen *südlich* des Randes, in Frosttundra — nicht unter Eis |
+| Oslo, Kopenhagen, Helsinki | Skandinavien und Dänemark |
+
+Stockholm und Berlin standen schon da. Berlin ist der Grenzfall, den man sehen
+will: der Brandenburger Rand *ist* dort das Maximum, die Stadt liegt also kurz
+und knapp unter Eis, wo Stockholm kilometertief darunter verschwindet.
+
+Unter dem Namen steht, solange Eis über der Stadt liegt, dessen Mächtigkeit in
+Klammern — **live**, nicht als Höchstwert. Sie wächst und fällt mit dem Lauf,
+und das ist die Aussage: nicht „hier lag mal Eis", sondern „hier liegen gerade
+2 374 Meter davon". Abgelesen wird dieselbe Feldzelle, aus der auch das Relief
+unter der Stadt kommt; gerechnet wird nichts zusätzlich.
+
+Gemessen über den Lauf:
+
+| | 26 ka | 22 ka | 18 ka | 15 ka | 12 ka |
+|---|---|---|---|---|---|
+| Oslo | 2 676 | 2 378 | 2 197 | 1 970 | 521 |
+| Stockholm | 1 898 | 1 678 | 1 536 | 1 407 | 399 |
+| Sankt Petersburg | 1 504 | 1 240 | 1 049 | 852 | — |
+| Helsinki | 1 492 | 1 320 | 1 180 | 1 034 | — |
+| Reykjavík | 1 280 | 1 216 | 1 176 | 936 | 522 |
+| Kopenhagen | 849 | 728 | 925 | — | — |
+| Berlin | 409 | 378 | — | — | — |
+| Manchester | 328 | 237 | 28 | — | — |
+
+### Achtzehn Beschriftungen, und die Hälfte drängt sich auf Skandinavien
+
+Solange jede Stadt nur ihren Namen trug, ging das gerade noch. Mit der zweiten
+Zeile ist „Helsinki (1 331 m under ice)" doppelt so breit wie vorher und liegt
+quer über Sankt Petersburg — im ersten Wurf war Helsinki ganz verschwunden und
+Sankt Petersburg hatte seine Zahl verloren.
+
+Also eine **Belegungsliste je Bild**: ein flaches Feld aus Rechtecken, in der
+Reihenfolge gefüllt, in der die Beschriftungen ihren Anspruch anmelden. Die
+Reihenfolge *ist* die Rangfolge:
+
+1. die Eiskuppen und der Mont Blanc — sie sind die Aussage der Karte
+2. die Städte **unter** Eis — sie sind die Aussage dieser Ebene
+3. alle übrigen Städte — Anker fürs Auge, sonst nichts
+
+Jede Beschriftung probiert sechs Lagen durch: neben dem Punkt, darüber,
+darunter, jeweils rechts und links. Erst wenn keine davon frei ist, fällt die
+zweite Zeile weg und dieselben sechs werden noch einmal probiert. Variiert wird
+also zuerst die **Lage** und zuletzt der **Inhalt** — eine Stadt, die etwas zu
+sagen hat, soll lieber zehn Punkte tiefer stehen als ihre Zahl verlieren. Der
+Punkt selbst bleibt immer stehen: er ist der Anker, der Name ist der Komfort.
+
+Die Gipfelschilder weichen einander auch aus (bei 26 ka liegen Barents-Kara und
+Skandinavien nah beieinander), werden aber notfalls trotzdem gesetzt: eine
+Eiskuppe ohne Schild ist schlimmer als ein Schild, das sich überschneidet.
+
+**Und flackert das im Film?** Das war die Sorge: eine Beschriftung, die von
+Bild zu Bild an- und ausgeht, ist im Lauf ein Zucken. Nachgemessen über alle
+2 071 Bilder wechselt die Menge der gesetzten Namen **fünfmal**, und der engste
+Abstand zwischen zwei Wechseln liegt bei 54 Bildern, also 1,8 Sekunden. Es ist
+immer dasselbe: Warschau weicht Berlins zweiter Zeile, wenn dort Eis
+ankommt, und kommt zurück, wenn es geht. Das ist kein Flackern, sondern die
+Karte, die sagt, dass sich etwas geändert hat.
 
 **Die Gipfel** — der höchste Punkt des Eises und der Mont Blanc, beide mit
 ihrer Höhe zur gezeigten Zeit. Der Vergleich ist die Aussage: der Eisschild
@@ -1368,6 +1436,34 @@ mp4, am Ende ohne Neukodieren aneinandergehängt. Drei Stunden an einem Stück
 sind drei Stunden, in denen nichts schiefgehen darf; so ist die teuerste
 verlorene Arbeit ein Abschnitt, und ein Neustart überspringt, was schon
 dasteht.
+
+#### Und woran ein Abschnitt hängt
+
+Die Wiederaufnahme prüfte anfangs nur, ob eine Datei da ist und über ein
+Kilobyte wiegt. Damit hat sie **stillschweigend fünf Abschnitte aus einem
+anderen Stand der Seite übernommen** — der Film wäre vorne ohne und hinten mit
+den neuen Stadtbeschriftungen gelaufen, und im Protokoll stand nur „steht
+schon". Der fünfte davon war obendrein ein halb geschriebener Abschnitt aus
+einem abgebrochenen Lauf: 1 MB statt 5, aber eben mehr als ein Kilobyte.
+
+Zwei Änderungen, und beide sind dasselbe Prinzip — *woran* etwas hängt, muss
+im Namen oder im Nachweis stehen, nicht im Vertrauen:
+
+- **Der Ordner hängt an einem Abdruck** aus der Seite selbst und jeder
+  Einstellung (`SHA-256` über `index.html` plus Grösse, Bildrate, Laufzeit,
+  Satz, Über, Fein). Ändert sich eine davon, ist es ein anderer Ordner, und es
+  gibt nichts zu übernehmen. Ändert sich nichts, findet ein Neustart seine
+  Arbeit wieder.
+- **Je fertigem Abschnitt liegt eine Quittung daneben**, geschrieben erst
+  *nach* dem Schliessen des Kodierers, mit der Bildzahl darin. Ein Abbruch
+  hinterlässt eine halbe mp4-Datei, aber keine Quittung — und eine halbe Datei
+  ohne Quittung zählt nicht.
+
+Nachgeprüft, indem ein Lauf mitten im zweiten Abschnitt hart abgeschossen
+wurde: der Neustart übernahm den ersten (mit Quittung), rechnete den zweiten
+neu, und der fertige Film war exakt 5,03 Sekunden lang — die 151 Bilder, die
+er haben sollte. Ein Byte an der Seite geändert, und der Ordnername sprang von
+`d9c7708c974c` auf `f4c5cd3cbaf1`.
 
 #### Was im Film anders aussieht als auf der Seite
 
