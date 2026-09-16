@@ -101,6 +101,47 @@ Feldwert. Ein einzelner Haltepunkt mit zwei Zügen am Tag reicht bis +458
 Minuten, und damit lag die Schneegrenze so hoch, dass nirgends Schnee lag.
 Jetzt ist das obere Ende das 99,5-Perzentil des Landes.
 
+## Der Bildausschnitt, und was er kostet
+
+Die Karte saß zu klein im Bild, und der Grund war messbar: der Ausschnitt muss
+beide Lagen fassen, und er kommt damit **ganz** von der Zeitkarte. Die
+Federkarte spannt 1.274 × 1.302 Minuten, die Landkarte nur 715 × 956 — ein
+paar Enden von Nebenbahnen fahren so weit hinaus, dass Deutschland auf drei
+Viertel der Bildhöhe schrumpfte.
+
+Der Zuschnitt ist jetzt **gemessen statt gesetzt**: er geht so weit, wie die
+Landkarte es zulässt, bis sie in der engeren Achse mit einem Saum von 8
+Minuten genau hineinpasst. Bei diesen Daten ist das der Faktor 1,29 (985 ×
+1.006 Minuten). Der Reglerstreifen unter der Karte kostet auch noch Höhe;
+nachgemessen gegen die Fassung davor bleibt +24 % auf 1920 × 1080, +23 % auf
+1440 × 900 (Maßstab 0,809 gegen 0,660 Pixel je Minute), +21 % auf 1280 × 720
+und +29 % hochkant auf dem Telefon, wo die Karte breitenbegrenzt ist und der
+Zuschnitt voll durchkommt.
+
+Der Preis, nachgezählt:
+
+| | |
+| --- | --- |
+| Bahnhöfe außerhalb, Landkarte | 0 — das ist die Bedingung, aus der der Faktor kommt |
+| Bahnhöfe außerhalb, reine Zeitkarte | 108 von 4.781 = 2,3 % |
+| … deren Anteil an allen Halten | 2.656 von 295.476 = 0,9 % |
+| Median Halte am Tag, hinausgefallen / alle | 20 / 42 |
+
+Es sind erwartbare Namen: die Bodenseerunde von Friedrichshafen bis
+Überlingen, die Rügener Bäderbahn, die Erzgebirgs- und Zittauer Schmalspur,
+Sylt und Dagebüll, der Bayerische Wald um Grafenau, die Heidekrautbahn, die
+Schwäbische Alb um Münsingen. Wer draußen liegt, wird nicht mehr gezeichnet —
+kein Punkt, kein Name, keine Kurzinfo: eine Beschriftung allein im schwarzen
+Rand sieht nicht nach „aus der Karte gefallen" aus, sondern nach einem Fehler.
+
+Zwei Zahlen in der Seite haben sich dadurch verschoben, weil das Höhenfeld
+jetzt eine kleinere Fläche und damit ein anderes 99,5-Perzentil hat: die
+Schneegrenze liegt bei einem Viertel und Wasser auf 250 Minuten nun bei 524
+Minuten in der Zeitkarte (vorher 571) und bei 435 in der Landkarte. Und die
+beschrifteten Schollen sind andere, weil die schlimmsten von ihnen jetzt
+draußen liegen — darum kommen die Fernmarken aus einem größeren Vorrat, und
+das Budget zählt, was gemalt wurde, statt was angeboten war.
+
 ## Was offen ist
 
 **Die Bevölkerung ist innerhalb eines Kreises gleichmäßig verteilt.** Das ist
