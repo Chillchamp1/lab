@@ -487,7 +487,7 @@ function setzeZeit(p) {
    haengen an der Zahl der Feldzellen, und gekippt wird der Scheibenstapel je
    Bild neu geschnitten. FELDMAX ist gemessen (METHODIK 8f), nicht gegriffen. */
 let RAUF = 0.9, FELDMAX = 680, DPRMAX = 2.5;  // let, damit der Film sie hochdreht
-let rW = 0, rH = 0;
+let rW = 0, rH = 0, randF = null;
 let demR = null, maskeR = null, rock = null, eisD = null, flaeche = null;
 let bild = null, licht = null, lichtBild = null;
 // Vorberechnete Gewichte fuers Hochrechnen — sie haengen nur an der Feldgroesse.
@@ -547,6 +547,7 @@ function feldAnlegen() {
   lichtBild = hcL.createImageData(w, h);
   demR = new Float32Array(w * h); maskeR = new Uint8Array(w * h);
   rock = new Float32Array(w * h); eisD = new Float32Array(w * h);
+  randF = new Float32Array(w * h);
   flaeche = new Float32Array(w * h); licht = new Float32Array(w * h);
   [wxT, ixT] = crGewichte(4, TD.w, w); [wyT, iyT] = crGewichte(4, TD.h, h);
   [wxE, ixE] = crGewichte(4, EIS.w, w); [wyE, iyE] = crGewichte(4, EIS.h, h);
@@ -605,6 +606,7 @@ function feldAnlegen() {
    bewegt. Stetig soll die Geschwindigkeit dort sein, wo das Auge sie sieht. */
 const tdJetzt = new Float32Array(TD.w * TD.h);
 const eisJetzt = new Float32Array(EIS.w * EIS.h);
+const eisMaske = new Float32Array(EIS.w * EIS.h);
 
 /* Die Randbedingung an beiden Enden ist die einseitige Sekante: Tm = T0 setzt
    dm = d0, und das gewichtete harmonische Mittel zweier gleicher Zahlen ist
@@ -713,8 +715,37 @@ function paleo() {
   zeitFelder();
   hochrechnen(tdJetzt, TD.w, TD.h, rock, rW, rH, wxT, ixT, wyT, iyT, tmpT);
   hochrechnen(eisJetzt, EIS.w, EIS.h, eisD, rW, rH, wxE, ixE, wyE, iyE, tmpE);
+  /* ---- und wo das grobe Feld ueberhaupt Eis hat ----
+     Die Maechtigkeit wird bikubisch hochgerechnet, und eine glatte Kurve durch
+     eine Kante laeuft ein Stueck weiter, als die Daten reichen. Auf dem Meer
+     faengt die Aufschwimm-Schranke unten das ab; an Land fing es nichts.
+
+     Also dieselbe Hochrechnung noch einmal ueber eine **Ja-Nein-Maske** des
+     groben Feldes: wo die unter der Haelfte bleibt, liegt kein Eis. Der Rand
+     landet damit auf der Mitte zwischen der letzten Eiszelle und der ersten
+     leeren — dort, wo er bei diesem Raster hingehoert.
+
+     **Es bringt wenig, und das gehoert dazugeschrieben.** Der Anlass war die
+     Frage, warum Eis ausserhalb der DATED-1-Linie steht; die Vermutung war,
+     die Interpolation trage den Rand weit hinaus. Nachgemessen sind es
+     bei 21 ka 2,0 Prozent der Eisflaeche, und der Anteil ausserhalb der
+     DATED-1-Maximallinie faellt von 13 auf 12 Prozent (bei 16 ka von 28 auf
+     27). Der Rand rueckt im Mittel um rund sechs Kilometer herein, nicht um
+     die vermutete halbe Quellzelle.
+
+     Der weit groessere Teil des Unterschieds ist **kein Artefakt**: ICE-6G_C
+     ist an Meeresspiegelmarken und GPS angepasst und rekonstruiert die Last,
+     DATED-1 an datiertes Material und rekonstruiert den Rand. Dass die beiden
+     auseinanderlaufen, ist der Befund, nicht der Fehler — und genau deshalb
+     liegen beide in derselben Karte.
+
+     Bleibt trotzdem drin: 27 ms je Bild (2,5 Prozent) dafuer, dass die Karte
+     kein Eis zeigt, wo die Quelle keines hat. */
+  for (let i = 0; i < eisJetzt.length; i++)
+    eisMaske[i] = eisJetzt[i] >= EISSCHWELLE ? 1 : 0;
+  hochrechnen(eisMaske, EIS.w, EIS.h, randF, rW, rH, wxE, ixE, wyE, iyE, tmpE);
   for (let i = 0; i < rock.length; i++) {
-    if (eisD[i] < 0) eisD[i] = 0;
+    if (eisD[i] < 0 || randF[i] < 0.5) eisD[i] = 0;
     flaeche[i] = rock[i] + demR[i];   // DEM + Topo_Diff = Oberflaeche
     /* ---- nur aufliegendes Eis ----
        Das grobe stgit-Feld wird bikubisch hochgerechnet und laeuft dabei ueber
