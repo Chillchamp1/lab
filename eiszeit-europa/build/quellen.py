@@ -299,7 +299,6 @@ STAEDTE = [
     ("Rome",       12.496,  41.903),
     ("Vienna",     16.373,  48.208),
     ("Warsaw",     21.012,  52.230),
-    ("Stockholm",  18.069,  59.329),
     ("Moscow",     37.617,  55.756),
     ("Istanbul",   28.978,  41.008),
     # Zwei dazu, seit der Rahmen in Kilometern steht: Island liegt jetzt ganz
@@ -315,19 +314,19 @@ STAEDTE = [
     # Und die Staedte, die unter dem Eis lagen — die Karte sagt neben ihrem
     # Namen, wie viel Eis gerade ueber ihnen steht, solange welches da ist.
     # Ausgewaehlt nach Einwohnerzahl **innerhalb** des vereisten Gebiets:
-    #   Sankt Petersburg  die groesste ueberhaupt, 5,6 Mio
     #   Manchester        die groesste britische; London und Birmingham lagen
     #                     suedlich des Randes, in Frosttundra, nicht unter Eis
-    #   Oslo, Kopenhagen, Helsinki   Skandinavien und Daenemark
-    # Stockholm und Berlin stehen schon oben. Berlin ist der Grenzfall, den
-    # man sehen will: der Brandenburger Rand ist dort das Maximum, die Stadt
-    # liegt also nur kurz und knapp unter Eis, wo Stockholm kilometertief
-    # darunter verschwindet.
-    ("Saint Petersburg", 30.361, 59.931),
+    #   Oslo, Kopenhagen  Skandinavien und Daenemark
+    # Berlin steht schon oben und ist der Grenzfall, den man sehen will: der
+    # Brandenburger Rand ist dort das Maximum, die Stadt liegt also nur kurz
+    # und knapp unter Eis.
+    #
+    # Stockholm, Helsinki und Sankt Petersburg standen hier auch und sind
+    # wieder raus: sechs Zahlen dicht beieinander auf derselben Kuppe sind
+    # fuenf zu viel, und die Karte soll nicht zur Tabelle werden.
     ("Manchester",       -2.243, 53.481),
     ("Oslo",             10.752, 59.914),
     ("Copenhagen",       12.568, 55.676),
-    ("Helsinki",         24.938, 60.170),
 ]
 
 # Der Mont Blanc als Massstab fuer die Eiskuppe. Seine Hoehe wird **nicht**
@@ -365,10 +364,21 @@ MONTBLANC = (6.8652, 45.8326)
 # Die Namen sind die, die auf der Karte stehen — die Seite haengt „ice" an:
 # „Scandinavian ice 2 694 m". „Fennoscandia" waere der genauere Begriff und
 # steht in der Methodik; auf der Karte gewinnt das Wort, das jeder kennt.
+# Der dritte Eintrag sagt, ob die Kuppe ein Schild auf der Karte bekommt.
+# Gemessen werden alle drei — die Zahlenreihe in METHODIK 8d haengt daran —,
+# beschriftet wird nur Barents-Kara.
+#
+# Der Grund: ueber Skandinavien und Britannien stehen inzwischen Staedte mit
+# ihrer Eismaechtigkeit, und die sagen dasselbe konkreter. „Oslo (2 374 m
+# under ice)" ist eine Aussage, an der ein Mensch etwas hat; „Scandinavian ice
+# 2 773 m" ist eine Zahl ueber einen Punkt, den niemand zeigen kann. Ueber
+# Barents-Kara liegt keine Stadt und kann keine liegen — es war ein
+# Schelfmeer —, also bleibt dort das Schild die einzige Moeglichkeit,
+# ueberhaupt eine Hoehe zu nennen.
 KUPPEN = [
-    ("Scandinavian", dict(lon=(0.0, 60.0), lat=(54.0, 71.5))),
-    ("Barents-Kara", dict(lon=(10.0, 80.0), lat=(71.5, 83.5))),
-    ("Britain",      dict(lon=(-11.0, 0.0), lat=(49.5, 61.0))),
+    ("Scandinavian", dict(lon=(0.0, 60.0), lat=(54.0, 71.5)), False),
+    ("Barents-Kara", dict(lon=(10.0, 80.0), lat=(71.5, 83.5)), True),
+    ("Britain",      dict(lon=(-11.0, 0.0), lat=(49.5, 61.0)), False),
 ]
 
 
@@ -1151,7 +1161,7 @@ def main():
     # Das Lon/Lat-Fenster wird an seinen Raendern abgetastet und projiziert —
     # unter dieser Projektion ist ein Gradnetz-Rechteck kein Rechteck mehr.
     kuppen = []
-    for name, kasten in KUPPEN:
+    for name, kasten, schild in KUPPEN:
         rand = []
         lo0, lo1 = kasten["lon"]; la0, la1 = kasten["lat"]
         n = 12
@@ -1163,9 +1173,10 @@ def main():
             rand.append(auf_gitter(lo1 - (lo1 - lo0) * k / n, la1))
         for k in range(n):
             rand.append(auf_gitter(lo0, la1 - (la1 - la0) * k / n))
-        kuppen.append(dict(name=name,
+        kuppen.append(dict(name=name, schild=bool(schild),
                            rand=[[round(x, 1), round(y, 1)] for x, y in rand]))
-    log("  Kuppen: " + ", ".join(k["name"] for k in kuppen))
+    log("  Kuppen: " + ", ".join(
+        k["name"] + ("" if k["schild"] else " (ohne Schild)") for k in kuppen))
 
     mbx, mby = auf_gitter(*MONTBLANC)
     mbh = gipfelhoehe(*MONTBLANC)

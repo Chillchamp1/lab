@@ -1059,7 +1059,7 @@ Bahn liesse die halbe Fläche im blassen Teil der Leiter.
 
 Zwei Ebenen mit verschiedenen Aussagen, deshalb getrennt behandelt.
 
-**Heute** — die moderne Küstenlinie und achtzehn Städte. Die Linie ist die
+**Heute** — die moderne Küstenlinie und fünfzehn Städte. Die Linie ist die
 Nulllinie des **modernen** Höhenmodells, ohne Differenzfeld: sie ändert sich
 nie, wird einmal geschnitten und behalten. Die Städte sind in `quellen.py`
 projiziert und reisen als Gitterpunkte mit; die Seite muss von Länge und
@@ -1075,20 +1075,23 @@ Geschrieben wird **mit dunklem Umriss**, nicht mit Schlagschatten: die Karte
 hat weisses Eis und dunkles Wasser, und ein Schatten trägt nur auf einem von
 beiden. Stockholm stand auf der Eiskuppe und war nicht zu lesen.
 
-### Wie viel Eis über einer Stadt steht
+### Wie viel Eis über einer Stadt steht — und wer dafür weichen musste
 
-Achtzehn Städte statt dreizehn, und die fünf neuen sind nach einem einzigen
-Kriterium gewählt: **Einwohnerzahl innerhalb des vereisten Gebiets.**
+Zwei Städte dazu, drei weg, zwei Eiskuppenschilder weg. Alle drei Schritte
+gehören zusammen, denn sie ersetzen **eine** Art von Aussage durch eine
+andere.
+
+Die neuen sind nach einem einzigen Kriterium gewählt: **Einwohnerzahl
+innerhalb des vereisten Gebiets.**
 
 | | warum diese |
 |---|---|
-| Sankt Petersburg | die grösste Stadt überhaupt, die unter dem eurasischen Schild lag |
 | Manchester | die grösste britische. London und Birmingham lagen *südlich* des Randes, in Frosttundra — nicht unter Eis |
-| Oslo, Kopenhagen, Helsinki | Skandinavien und Dänemark |
+| Oslo, Kopenhagen | Skandinavien und Dänemark |
 
-Stockholm und Berlin standen schon da. Berlin ist der Grenzfall, den man sehen
-will: der Brandenburger Rand *ist* dort das Maximum, die Stadt liegt also kurz
-und knapp unter Eis, wo Stockholm kilometertief darunter verschwindet.
+Berlin stand schon da und ist der Grenzfall, den man sehen will: der
+Brandenburger Rand *ist* dort das Maximum, die Stadt liegt also kurz und knapp
+unter Eis.
 
 Unter dem Namen steht, solange Eis über der Stadt liegt, dessen Mächtigkeit in
 Klammern — **live**, nicht als Höchstwert. Sie wächst und fällt mit dem Lauf,
@@ -1096,20 +1099,62 @@ und das ist die Aussage: nicht „hier lag mal Eis", sondern „hier liegen gera
 2 374 Meter davon". Abgelesen wird dieselbe Feldzelle, aus der auch das Relief
 unter der Stadt kommt; gerechnet wird nichts zusätzlich.
 
-Gemessen über den Lauf:
-
 | | 26 ka | 22 ka | 18 ka | 15 ka | 12 ka |
 |---|---|---|---|---|---|
 | Oslo | 2 676 | 2 378 | 2 197 | 1 970 | 521 |
-| Stockholm | 1 898 | 1 678 | 1 536 | 1 407 | 399 |
-| Sankt Petersburg | 1 504 | 1 240 | 1 049 | 852 | — |
-| Helsinki | 1 492 | 1 320 | 1 180 | 1 034 | — |
 | Reykjavík | 1 280 | 1 216 | 1 176 | 936 | 522 |
 | Kopenhagen | 849 | 728 | 925 | — | — |
 | Berlin | 409 | 378 | — | — | — |
 | Manchester | 328 | 237 | 28 | — | — |
 
-### Achtzehn Beschriftungen, und die Hälfte drängt sich auf Skandinavien
+**Sankt Petersburg, Helsinki und Stockholm sind wieder raus.** Sie lagen alle
+drei auf derselben Kuppe, dicht beieinander, mit ähnlichen Zahlen — sechs
+Beschriftungen auf einem Fleck, von denen fünf dasselbe sagen. Eine Karte, die
+das tut, ist eine Tabelle.
+
+**Und die Schilder „Scandinavian ice" und „Britain ice" sind weg.** Über
+beiden Kuppen steht jetzt eine Stadt mit ihrer Mächtigkeit, und die sagt
+dasselbe konkreter: „Oslo (2 374 m under ice)" ist eine Aussage, an der ein
+Mensch etwas hat; „Scandinavian ice 2 773 m" ist eine Zahl über einen Punkt,
+den niemand zeigen kann. **Barents-Kara behält sein Schild** — dort liegt
+keine Stadt und kann keine liegen, es war ein Schelfmeer. Ohne das Schild
+stünde die auffälligste Kuppe der Karte ohne jede Höhenangabe da.
+
+Gemessen werden weiterhin alle drei Kuppen; die Tabelle unten hängt daran. Was
+sich geändert hat, ist ein Schalter in den Daten (`schild`), nicht die
+Rechnung.
+
+### Taugt die Mächtigkeit als Mass für die Eishöhe?
+
+Nicht ganz, und es lohnt zu wissen, um wie viel sie danebenliegt. Was
+dasteht, ist die **Dicke über dem Boden**; was man ablesen möchte, ist die
+**Höhe der Eisoberfläche**. Die beiden unterscheiden sich um die Höhe des
+Bodens — und der liegt unter einem Eisschild nicht da, wo er heute liegt,
+sondern eingedrückt.
+
+Gemessen bei 22 ka:
+
+| | Boden | Dicke (steht da) | Oberfläche | Unterschied |
+|---|---|---|---|---|
+| Oslo | −280 m | 2 378 m | 2 098 m | Dicke ist **280 m zu hoch** |
+| Reykjavík | −163 m | 1 216 m | 1 054 m | 162 m zu hoch |
+| Kopenhagen | −38 m | 728 m | 690 m | 38 m zu hoch |
+| Berlin | +104 m | 378 m | 483 m | 105 m zu **niedrig** |
+| Manchester | +132 m | 237 m | 368 m | 131 m zu niedrig |
+
+Das Vorzeichen ist systematisch und lehrreich: **unter dem dicken Eis ist die
+Kruste eingedrückt**, der Boden liegt unter Null, und die Dicke überschätzt die
+Oberfläche. **Am Rand** steht der Boden über dem Meer, und sie unterschätzt
+sie. Beides bleibt unter 300 Metern, weil alle fünf Städte tief liegen — hätte
+eine davon auf 800 m Gebirge gestanden, wäre ihre Zahl als Höhenangabe
+wertlos.
+
+Zum Vergleich: die skandinavische Kuppe hatte bei 22 ka eine Oberfläche von
+2 732 m, Oslos Dicke sagt 2 378 m. Wer die Zahl als „ungefähr so hoch war das
+Eis hier" liest, liegt für die Karte richtig genug; wer sie auf den Meter
+nimmt, liest sie falsch.
+
+### Fünfzehn Beschriftungen, und ein Teil drängt sich auf Skandinavien
 
 Solange jede Stadt nur ihren Namen trug, ging das gerade noch. Mit der zweiten
 Zeile ist „Helsinki (1 331 m under ice)" doppelt so breit wie vorher und liegt
@@ -1179,11 +1224,17 @@ und eine Marke, die auf Grönland zeigt, sagt über Europa nichts.
 Also drei benannte Kuppen statt eines anonymen Maximums — die drei, aus denen
 der eurasische Eiskomplex bestand:
 
-| Kuppe | Kasten | |
-|---|---|---|
-| Scandinavian | 0 … 60° O, 54 … 71,5° N | die grösste, über dem Bottnischen Meerbusen |
-| Barents-Kara | 10 … 80° O, 71,5 … 83,5° N | auf einem Schelfmeer, und im alten Fenster gar nicht zu sehen |
-| Britain | 11° W … 0°, 49,5 … 61° N | die kleinste, mit gut der halben Höhe |
+| Kuppe | Kasten | | Schild |
+|---|---|---|---|
+| Scandinavian | 0 … 60° O, 54 … 71,5° N | die grösste, über dem Bottnischen Meerbusen | — |
+| Barents-Kara | 10 … 80° O, 71,5 … 83,5° N | auf einem Schelfmeer, und im alten Fenster gar nicht zu sehen | **ja** |
+| Britain | 11° W … 0°, 49,5 … 61° N | die kleinste, mit gut der halben Höhe | — |
+
+Beschriftet wird nur noch Barents-Kara; gemessen weiterhin alle drei. Über
+Skandinavien und Britannien steht inzwischen eine Stadt mit ihrer
+Eismächtigkeit, und die sagt dasselbe konkreter (Abschnitt 8d). Über
+Barents-Kara kann keine Stadt stehen — es war ein Schelfmeer —, und ohne das
+Schild stünde die auffälligste Kuppe der Karte ohne Höhenangabe da.
 
 Die Grenzen sind **Setzungen, keine Befunde**: beim Hochstand berührten sich
 die Schilde, und wo genau, ist selbst Gegenstand der Forschung. Gezogen sind
