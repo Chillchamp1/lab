@@ -471,6 +471,91 @@ alle 1 000 Jahre von 25 bis 10 ka; gezeigt wird die nächstgelegene, wenn sie
 höchstens 500 Jahre entfernt ist, und sonst keine. Eine Linie, die zwischen
 zwei Datierungen schwebt, wäre eine Behauptung, die niemand aufgestellt hat.
 
+## 6b. Die Temperatur
+
+Ein Leser fragte danach, und die Frage war berechtigt: die Karte zeigte, was
+die Eiszeit mit dem Land machte und mit dem Meer, aber nicht, was sie mit dem
+Klima machte. Die naheliegendste Zahl fehlte.
+
+Quelle ist die **LGMR** (Osman u. a. 2021, doi:10.25921/njxd-hg08), eine
+Paläoklima-Datenassimilation: 24 bis 0 ka in 200-Jahr-Bins, mit einem Ensemble
+von 500 Läufen und damit einer veröffentlichten Streuung (Median 0,27 °C).
+
+### Global, nicht regional — und warum das eine Zumutung ist
+
+Genommen ist das **globale Mittel**, obwohl dieselbe Studie Gitterfelder
+liefert, aus denen sich ein Mittel über den Kartenausschnitt rechnen liesse.
+Zwei Gründe:
+
+- Es steht neben dem Meeresspiegel, und der ist auch global. Zwei Zahlen
+  derselben Art, die zusammen sagen, was das Eis die Welt gekostet hat.
+- Ein Ausschnittsmittel würde vom Eisschild selbst nach unten gezogen — es
+  mässe teils dessen **Höhe** statt des Klimas, und wäre damit eine Zahl, die
+  sich mit der Kartenfläche ändert statt mit dem Wetter.
+
+Der Preis ist real und steht deshalb im Legendensatz: **Europa kühlte
+deutlich stärker ab als das globale Mittel.** Die Karte zeigt eine Gegend, die
+neben einem Eisschild lag; wer die −7 °C für Berlin hält, unterschätzt sie um
+ein Vielfaches.
+
+### Anomalie, nicht Absolutwert
+
+Die Quelle liefert die absolute globale Mitteltemperatur (13,49 °C im jüngsten
+Bin, 6,07 °C im kältesten). Gezeigt wird die Differenz gegen heute, weil der
+Meeresspiegel daneben es auch so macht. „−7,0 °C" und „−117 m" lesen sich
+gleich; „6,4 °C" und „−117 m" nicht.
+
+### Gemittelt, nicht abgetastet
+
+Die Quelle steht auf 200 Jahren, die Zeitscheiben auf 1 000 bzw. 500. Gemittelt
+wird über das **ganze Fenster** der Zeitscheibe — dasselbe Argument wie beim
+DEM (Abschnitt 2): ein Stichwert aus einer 200-Jahr-Reihe verschenkt
+Information und zittert.
+
+### Wo die Reihe anfängt, und warum nicht bei 24 ka
+
+Die Karte beginnt bei 26 ka, die Quelle bei 24. Naheliegend wäre, die Linie bei
+24 ka anfangen zu lassen — sie fängt aber bei **23** an, und das ist kein
+Schnitzer:
+
+Der jüngste Bin der Quelle liegt bei 23 900 Jahren. Das Fenster der
+24-ka-Scheibe reicht bis 24 500, ist also nur zur Hälfte gedeckt. Über eine
+halb gedeckte Spanne zu mitteln hiesse, den Rand wärmer zu machen, als er ist —
+die gedeckte Hälfte ist die jüngere. Ein Wert entsteht deshalb nur bei **voll
+gedecktem Fenster**.
+
+Am **jungen** Ende gilt das Gegenteil, und das ist der Fehler, der hier zuerst
+drinstand: dort wurde ebenso streng geprüft, und die 0-ka-Scheibe blieb leer —
+ausgerechnet der Bezugspunkt, der per Definition 0,0 °C ist. Unter dem jüngsten
+Bin liegt eben keine fehlende Information, sondern die Gegenwart. Dort wird
+geklemmt statt verworfen.
+
+### Was eine Lücke in der Zeitkurve anrichtet
+
+Die monotone Zeitkurve (Abschnitt 7) rechnet ihre Steigungen aus den
+**Nachbarscheiben**. Der Meeresspiegel ist lückenlos, die Temperaturreihe nicht
+— und JavaScript liest ein fehlendes `null` beim Rechnen als **0 °C**. Die
+Kurve bekam am Anfang der Reihe damit eine Steigung, die aus einer Lücke
+gerechnet war.
+
+Behoben, indem ein fehlender Nachbar wie **gar kein** Nachbar zählt: dann
+greift die einseitige Sekante, genau wie am Rand des Feldes. Und auf dem ersten
+belegten Knoten gilt sein Wert, statt dass die Scheibe leer bleibt, weil ihr
+Segment von der leeren davor kommt.
+
+### Gegenprobe 4
+
+| | |
+|---|---|
+| Hochstand, Mittel 23–19 ka | **−6,94 °C** |
+| kältester Bin | −7,41 °C bei 17 900 Jahren |
+| Bezug (jüngster Bin, 100 a) | 13,49 °C |
+| bei 0 ka | **0,00 °C** |
+| belegte Zeitscheiben | 45 von 48 |
+
+Die erste Zahl ist die Wache: fällt sie deutlich daneben, stimmt der
+Bezugspunkt nicht oder die Achse läuft verkehrt herum.
+
 ## 7. Die Zeitachse
 
 48 Zeitscheiben: 26 bis 21 ka in 1-ka-Schritten, 21 bis 0 ka in 0,5-ka-

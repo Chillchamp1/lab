@@ -217,12 +217,52 @@ def dated_schreiben():
     log("  DATED-1: 16 Zeitscheiben x 3 Linien")
 
 
+def temp_schreiben():
+    """Eine erfundene Temperaturreihe in der Form der LGMR.
+
+    Das Geruest muss jede Quelle nachbilden, sonst prueft es die Kette nicht,
+    sondern nur den Teil davon, der zufaellig ohne sie laeuft. Beim
+    Rahmenwechsel ist genau das schon einmal schiefgegangen (METHODIK 8).
+
+    Form: kalt und flach im Hochstand, Anstieg ab 18 ka, ein Ruecksetzer in
+    der Art der Juengeren Dryas, dann Holozaen. Die Zahlen sind gewaehlt,
+    damit die Kurve etwas zu zeigen hat — richtig sind sie nicht und sollen
+    es nicht sein, dafuer traegt die Seite ihr Wasserzeichen.
+    """
+    ZIEL.joinpath("lgmr").mkdir(parents=True, exist_ok=True)
+    age = np.arange(23900.0, -1.0, -200.0)          # wie die Quelle: 200-Jahr-Bins
+    heute = 13.5
+    t = np.empty_like(age)
+    for i, a in enumerate(age):
+        if a >= 18000:   f = 0.0
+        elif a >= 12900: f = (18000 - a) / 5100 * 0.75
+        elif a >= 11700: f = 0.55                   # Ruecksetzer
+        elif a >= 9000:  f = 0.55 + (11700 - a) / 2700 * 0.45
+        else:            f = 1.0
+        t[i] = heute - 7.0 * (1.0 - f)
+    sd = np.full_like(age, 0.3)
+
+    pfad = ZIEL / "lgmr" / "LGMR_GMST_climo.nc"
+    ds = Dataset(pfad, "w", format="NETCDF4")
+    ds.createDimension("age", len(age))
+    va = ds.createVariable("age", "f8", ("age",)); va[:] = age
+    va.units = "years BP"
+    vg = ds.createVariable("gmst", "f8", ("age",)); vg[:] = t
+    vg.units = "degrees Celsius"
+    vs = ds.createVariable("gmst_std", "f8", ("age",)); vs[:] = sd
+    vs.units = "degrees Celsius"
+    ds.pruefgeruest = MARKE
+    ds.close()
+    log(f"  LGMR {len(age)} Bins, {t.min():.1f} bis {t.max():.1f} C")
+
+
 def main():
     log("PRUEFGERUEST — erfundene Rohdaten, nur zum Pruefen der Kette")
     log(f"nach {ZIEL}")
     dem_schreiben()
     ice6g_schreiben()
     dated_schreiben()
+    temp_schreiben()
     (ZIEL / "PRUEFGERUEST").write_text(
         MARKE + "\n\nDieser Ordner enthaelt keine echten Daten. Er dient dazu,\n"
         "die Verarbeitungskette zu pruefen, solange die Quellen nicht\n"

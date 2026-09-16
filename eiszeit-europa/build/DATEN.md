@@ -17,7 +17,8 @@ Drei Schritte, nicht zwei — wie in der Vorlage, wo `quellen.py` die Tabelle
 baut und `build.mjs` die Seite. Python liest NetCDF und Shapefiles (GEBCO und
 ETOPO sind NetCDF-4, also HDF5), Node kodiert und schreibt.
 
-Einzeln geht auch: `./holen.sh ice6g`, `./holen.sh dated`, `./holen.sh dem`.
+Einzeln geht auch: `./holen.sh ice6g`, `./holen.sh dated`, `./holen.sh dem`,
+`./holen.sh temp`.
 
 ## Was geholt wird
 
@@ -26,6 +27,7 @@ Einzeln geht auch: `./holen.sh ice6g`, `./holen.sh dated`, `./holen.sh dem`.
 | `data/raw/ice6g/I6_C.VM5a_1deg.<t>.nc` | [Peltier, ICE-6G_C (VM5a), 1°](https://www.atmosp.physics.utoronto.ca/~peltier/data.php) | 48 Dateien, 26 … 0 ka, als `.nc.gz` geladen und entpackt |
 | `data/raw/dated1/allfiles.zip` → `entpackt/` | [PANGAEA doi:10.1594/PANGAEA.848117](https://doi.pangaea.de/10.1594/PANGAEA.848117) | 25 … 10 ka, je 3 Linien |
 | `data/raw/dem/…` | [ETOPO 2022, 15", `15s_surface_elev_netcdf`](https://www.ngdc.noaa.gov/thredds/fileServer/global/ETOPO2022/15s/15s_surface_elev_netcdf/) | 34 Kacheln, 680 MB |
+| `data/raw/lgmr/LGMR_GMST_climo.nc` | [LGMR, Osman u. a. 2021, doi:10.25921/njxd-hg08](https://www.ncei.noaa.gov/pub/data/paleo/reconstructions/osman2021/) | globale Mitteltemperatur, 24–0 ka, 16 kB |
 
 Das DEM ist der grosse Posten. Wer den globalen GEBCO-Satz nicht will:
 

@@ -126,7 +126,7 @@ body{background:var(--plane);color:var(--ink);
      Scrollen ein, die Schirmhoehe aendert sich, und alles darueber wandert
      mit. contain haelt das Scrollen in der Notiz. */
   .text{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain}
-  .schild,.fuss,.regler,.msp,.sicht,.text{padding-inline:10px}
+  .schild,.fuss,.regler,.msp,.temp,.sicht,.text{padding-inline:10px}
   .schild{padding-top:8px}
   /* Die Zeitangabe steht hochkant **immer** in ihrer eigenen Zeile. Neben der
      Jahreszahl passt sie mal (auf einer Zeitscheibe: „ICE-6G_C time slice 21
@@ -176,15 +176,16 @@ canvas{position:absolute;left:0;top:0}
   .wrap{max-width:none;padding:8px}
   .buehne{display:grid;height:calc(100vh - 16px);height:calc(100svh - 16px);max-height:none;
     grid-template-columns:minmax(0,1fr) clamp(280px,23vw,390px);
-    grid-template-rows:auto auto auto auto auto minmax(0,1fr);
+    grid-template-rows:auto auto auto auto auto auto minmax(0,1fr);
     column-gap:16px}
   .feld{grid-column:1;grid-row:1/-1;min-width:0;aspect-ratio:auto}
   .schild{grid-column:2;grid-row:1}
   .fuss{grid-column:2;grid-row:2}
   .regler{grid-column:2;grid-row:3}
   .msp{grid-column:2;grid-row:4}
-  .sicht{grid-column:2;grid-row:5}
-  .text{grid-column:2;grid-row:6;overflow:hidden;min-height:0}
+  .temp{grid-column:2;grid-row:5}
+  .sicht{grid-column:2;grid-row:6}
+  .text{grid-column:2;grid-row:7;overflow:hidden;min-height:0}
   /* In einer schmalen Spalte steht der Faden wieder untereinander. */
   .faden{flex-direction:column;gap:2px}
   .fuss .klein{white-space:normal;max-height:4em}
@@ -261,11 +262,14 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
 #farben[aria-pressed=true]{color:var(--ink);border-style:solid}
 /* Der Meeresspiegel-Ticker. Eine Kurve, die mitlaeuft — sie steht unter der
    Karte, weil sie die eine Zahl ist, die den ganzen Vorgang zusammenfasst. */
-.msp{display:flex;align-items:center;gap:8px;margin-top:4px}
-.msp canvas{position:static;width:100%;height:26px;display:block}
-.msp .wert{flex:0 0 auto;font-size:11.5px;color:var(--ink2);
+.msp,.temp{display:flex;align-items:center;gap:8px;margin-top:4px}
+.msp canvas,.temp canvas{position:static;width:100%;height:26px;display:block}
+.msp .wert,.temp .wert{flex:0 0 auto;font-size:11.5px;color:var(--ink2);
   font-variant-numeric:tabular-nums;min-width:5.4em;text-align:right}
-.msp .bahn2{position:relative;flex:1;min-width:0;height:26px}
+.msp .bahn2,.temp .bahn2{position:relative;flex:1;min-width:0;height:26px}
+/* Die Temperaturzeile ruecht enger an den Meeresspiegel: die beiden gehoeren
+   zusammen — was das Eis dem Meer nahm und was es die Welt an Waerme kostete. */
+.temp{margin-top:1px}
 </style>
 </head><body>
 <div class="wrap">
@@ -295,6 +299,10 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
   <div class="msp">
     <div class="bahn2"><canvas id="mspBahn"></canvas></div>
     <span class="wert" id="mspWert"></span>
+  </div>
+  <div class="temp">
+    <div class="bahn2"><canvas id="tempBahn"></canvas></div>
+    <span class="wert" id="tempWert"></span>
   </div>
   <div class="sicht">
     <label><span>Tilt</span><input type="range" id="kipp" min="0" max="100" value="0" step="1" aria-label="Tilt"></label>
@@ -651,8 +659,15 @@ function kurveWert(reihe, a, b, u) {
   const T1 = b < NT - 1 ? (TAKT[b] || T0) : T0;
   const v0 = reihe[a], v1 = reihe[b];
   const d0 = (v1 - v0) / T0;
-  const dm = a > 0 ? (v0 - reihe[a - 1]) / Tm : d0;
-  const d1 = b < NT - 1 ? (reihe[b + 1] - v1) / T1 : d0;
+  /* Ein **fehlender** Nachbar zaehlt wie gar kein Nachbar, nicht wie eine
+     Null. Der Meeresspiegel ist lueckenlos, die Temperaturreihe nicht: sie
+     beginnt erst bei 23 ka. Ohne diese Bedingung liest JavaScript das null
+     der Scheibe davor als 0 Grad, und die Kurve bekaeme am Anfang eine
+     Steigung, die aus einer Luecke gerechnet ist. Am Rand der Reihe gilt
+     dasselbe wie am Rand des Feldes: die einseitige Sekante. */
+  const hat = v => v !== null && v !== undefined;
+  const dm = a > 0 && hat(reihe[a - 1]) ? (v0 - reihe[a - 1]) / Tm : d0;
+  const d1 = b < NT - 1 && hat(reihe[b + 1]) ? (reihe[b + 1] - v1) / T1 : d0;
   const wm1 = 2 * T0 + Tm, wm2 = T0 + 2 * Tm;
   const wp1 = 2 * T1 + T0, wp2 = T1 + 2 * T0;
   const m0 = dm * d0 > 0 ? (wm1 + wm2) / (wm1 / dm + wm2 / d0) : 0;
@@ -2656,11 +2671,81 @@ function mspJetzt() {
   const a = abschnitt, b = Math.min(NT - 1, a + 1);
   return kurveWert(D.msp, a, b, uAbschnitt);
 }
+
+/* ---------------------------------------- Die globale Mitteltemperatur
+   Zweite Zeile, eigene Leinwand, **eigene Skala**. Beide Kurven in ein Bild
+   zu legen waere der naheliegende Platzspargriff und der klassische Fehler:
+   zwei Achsen in einem Rahmen behaupten eine Deckung, die man nicht gezeigt
+   hat. Hier laufen die beiden ohnehin fast parallel — und genau deshalb darf
+   man sie nicht uebereinanderlegen, sonst liest man die Parallele als Beweis
+   statt als Beobachtung.
+
+   Die Reihe beginnt bei 23 ka: weiter zurueck reicht die Quelle nicht. Vor
+   dem ersten Wert steht kein Strich und keine Zahl, so wie das
+   Unsicherheitsband vor 25 ka fehlt. */
+const TEMPFARBE = '#c08a5a';
+const tempCv = document.getElementById('tempBahn'), tempCtx = tempCv.getContext('2d');
+const TEMP = D.temp || [];
+const tempDa = TEMP.some(v => v !== null && v !== undefined);
+
+function tempMalen() {
+  if (!tempDa) return;
+  const b = tempCv.parentElement.clientWidth, h = 26;
+  const dpr = Math.min(2.5, devicePixelRatio || 1);
+  tempCv.width = Math.round(b * dpr); tempCv.height = Math.round(h * dpr);
+  tempCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  tempCtx.clearRect(0, 0, b, h);
+  const werte = TEMP.filter(v => v !== null && v !== undefined);
+  const lo = Math.min(...werte), hi = Math.max(...werte, 0);
+  const y = v => h - 2 - (v - lo) / Math.max(0.1, hi - lo) * (h - 6);
+  // Wie beim Meeresspiegel laeuft die Kurve ueber die **Spielzeit**, nicht
+  // ueber die Jahre — sonst stuende der Zeiger nicht dort, wo die Zeitleiste
+  // steht.
+  tempCtx.beginPath();
+  let erst = true;
+  for (let i = 0; i < NT; i++) {
+    const v = TEMP[i];
+    if (v === null || v === undefined) { erst = true; continue; }
+    const x = TAKTKUM[i] * b;
+    if (erst) { tempCtx.moveTo(x, y(v)); erst = false; } else tempCtx.lineTo(x, y(v));
+  }
+  tempCtx.strokeStyle = TEMPFARBE; tempCtx.lineWidth = 1.4; tempCtx.stroke();
+  // Die Nulllinie: heutiger Stand.
+  tempCtx.beginPath();
+  tempCtx.moveTo(0, y(0)); tempCtx.lineTo(b, y(0));
+  tempCtx.strokeStyle = 'rgba(255,255,255,.18)'; tempCtx.lineWidth = 1; tempCtx.stroke();
+  const x = spiel * b;
+  tempCtx.beginPath(); tempCtx.moveTo(x, 0); tempCtx.lineTo(x, h);
+  tempCtx.strokeStyle = 'rgba(255,255,255,.55)'; tempCtx.lineWidth = 1; tempCtx.stroke();
+}
+
+function tempJetzt() {
+  const a = abschnitt, b = Math.min(NT - 1, a + 1);
+  const va = TEMP[a], vb = TEMP[b];
+  const daA = va !== null && va !== undefined;
+  const daB = vb !== null && vb !== undefined;
+  if (daA && daB) return kurveWert(TEMP, a, b, uAbschnitt);
+  /* An der Kante der Reihe: **auf** dem belegten Knoten gilt sein Wert, sonst
+     steht nichts da. Zwischen einer leeren und einer belegten Scheibe zu
+     interpolieren hiesse, einen Wert aus Daten zu rechnen, die es nicht
+     gibt — und ohne diesen Fall bliebe ausgerechnet die erste belegte
+     Scheibe leer, weil ihr Segment von der leeren davor kommt. */
+  if (daB && uAbschnitt > 1 - 1e-6) return vb;
+  if (daA && uAbschnitt < 1e-6) return va;
+  return null;
+}
+
 function tickerSchreiben() {
   const v = mspJetzt();
   document.getElementById('mspWert').textContent =
     (v >= -0.5 ? '0' : Math.round(v)) + ' m';
   tickerMalen();
+  if (tempDa) {
+    const t = tempJetzt();
+    document.getElementById('tempWert').textContent =
+      t === null ? '' : (t > -0.05 && t < 0.05 ? '0.0' : t.toFixed(1)) + ' \u00b0C';
+    tempMalen();
+  }
 }
 
 /* ================================================================ Legende */
@@ -2715,6 +2800,9 @@ function legende() {
 function legendeText() {
   document.getElementById('legText').innerHTML =
     'Rock elevation and ice-surface elevation, metres. Every contour is a colour boundary.'
+    + (tempDa
+      ? ' Below: sea level, and global mean temperature against today &#8212; global, so Europe cooled a good deal more.'
+      : '')
     + (BAND
       ? ' The orange line is the DATED-1 most-credible ice margin, the band around it its maximum and minimum.'
       : ' Press Band for the DATED-1 dated ice margins.');
@@ -3159,6 +3247,10 @@ footer a{color:var(--muted)}
     <div><b>Coastline</b><p>the zero line of that sum — the same number as the
       relief, so it is a contour like any other.</p></div>
     <div><b>Ice</b><p>rock + ice thickness, its own layer and its own ramp.</p></div>
+    <div><b>Temperature</b><p>global mean surface temperature against today,
+      from a proxy data assimilation. <b>Global</b> is the word that matters:
+      Europe beside the ice cooled far more than the global figure. The series
+      starts at 23,000 years ago, where its source begins.</p></div>
     <div><b>The band</b><p>maximum against minimum, from the dated margins.
       Where it widens, the reconstruction is weak. Off by default, because it
       is a different kind of statement from everything else in the picture —

@@ -145,6 +145,21 @@ Dass sich fünfzehn Namen mit zweiter Zeile nicht ins Gehege kommen, besorgt
 eine Platzvergabe je Bild — Details in [METHODIK.md](METHODIK.md),
 Abschnitt 8d.
 
+## Die Temperatur
+
+Unter dem Meeresspiegel läuft eine zweite Linie mit: die **globale
+Mitteltemperatur** gegen heute. Beim Hochstand rund **−7 °C**, am tiefsten
+−7,4 °C vor 17 900 Jahren.
+
+Quelle ist die LGMR (Osman u. a. 2021), eine Paläoklima-Datenassimilation aus
+Proxydaten — 24 bis 0 ka in 200-Jahr-Schritten, mit veröffentlichter
+Ensemble-Streuung von 0,27 °C. Die Reihe beginnt im Bild bei 23 ka: weiter
+zurück reicht sie nicht, und wo keine Daten sind, steht keine Linie.
+
+**Global heisst global.** Europa lag neben einem Eisschild und kühlte
+erheblich stärker ab als das weltweite Mittel. Die Zahl sagt, was das Eis den
+Planeten kostete — nicht, wie kalt es in Berlin war.
+
 ## Die Zeitachse
 
 Abspielbar von 26 ka bis 0, in 48 Zeitscheiben. Die Schrittweite der Daten ist

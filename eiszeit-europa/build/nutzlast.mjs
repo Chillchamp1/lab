@@ -146,6 +146,10 @@ export function baueNutzlast(zwischen, log) {
     g: { w: g.w, h: g.h, s: g.schritt, x0: g.x0, y0: g.y0 },
     mitte: meta.mitte, erdr: meta.erdradius, fenster: meta.ausschnitt,
     t: meta.zeiten, takt: meta.takt, msp: meta.meeresspiegel.map(v => Math.round(v * 10) / 10),
+    // Die globale Mitteltemperatur als Anomalie gegen heute, eine Zahl je
+    // Zeitscheibe. null, wo die Quelle nicht zurueckreicht — die Seite malt
+    // dort keine Linie. 48 Zahlen, unter einem Kilobyte.
+    temp: (meta.temperatur || []).map(v => v === null ? null : Math.round(v * 10) / 10),
     qdem: QDEM, qtd: QTD, qeis: QEIS,
     // Die gemessene Gelaendesteigung (90-Prozent-Quantil, Meter je
     // Gitterzelle). Aus ihr rechnet die Seite die Hoehe des Scheibenstapels —

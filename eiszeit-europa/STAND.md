@@ -120,6 +120,15 @@ Download, ein zweiter Regler. Das ist ein eigenes Projekt.
   Wasser. Deshalb sind sie eine **eigene, abschaltbare Ebene** („Today") und
   liegen im Ton so weit zurück, dass sie das Relief nicht stören.
 - **Keine Interpolation der DATED-Ränder.** Siehe METHODIK, Abschnitt 6.
+- **Die Temperatur ist global, nicht europäisch.** Sie steht neben dem
+  Meeresspiegel und ist wie er eine weltweite Zahl; Europa lag neben einem
+  Eisschild und kühlte erheblich stärker ab. Dieselbe Studie (Osman u. a. 2021)
+  liefert Gitterfelder, aus denen sich ein Ausschnittsmittel rechnen liesse —
+  das würde aber vom Eisschild selbst nach unten gezogen und mässe teils dessen
+  Höhe statt des Klimas (METHODIK 6b).
+- **Die Temperaturreihe beginnt bei 23 ka, die Karte bei 26.** Der jüngste Bin
+  der Quelle liegt bei 23 900 Jahren; ein Wert entsteht nur bei voll gedecktem
+  Fenster. Wo keine Daten sind, steht keine Linie.
 - **Kein Beschneiden der Ränder auf den Eisschild.** Wo die DATED-Linie und
   ICE-6G_Cs Eisrand auseinanderlaufen, ist das der Befund und kein Fehler, den
   man wegrechnet.
