@@ -51,6 +51,8 @@ button[aria-pressed=true],button:hover{color:var(--ink);border-style:solid}
 #bandtext{display:flex;justify-content:space-between;font-size:10.5px;
   color:var(--muted);font-variant-numeric:tabular-nums}
 #schneezeile{margin:7px 0 0;font-size:11.5px;color:var(--ink2)}
+#polzeile{margin:6px 0 0;font-size:11px;color:var(--muted);line-height:1.35}
+#polzeile b{color:var(--ink2);font-weight:600}
 #schneezeile b{color:#fff}
 #mstrich{height:1px;background:var(--ink2);margin:5px 0 3px}
 #mtext,#mkm{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -104,11 +106,18 @@ button[aria-pressed=true],button:hover{color:var(--ink);border-style:solid}
       <div class="reg"><label>Landkarte → Zeitkarte <i id="wMorph">Zeitkarte</i></label>
         <input id="sMorph" type="range" min="0" max="1000" value="1000"></div>
       <div class="reg"><label>Wasserstand <i id="wWasser">…</i></label>
-        <input id="sWasser" type="range" min="0" max="400" value="100"></div>
+        <input id="sWasser" type="range" min="0" max="400" value="90"></div>
     </div>
 
     <div class="gruppe">
-      <p class="titel">Höhe: bis ein Zehntel Deutschlands erreichbar ist</p>
+      <p class="titel">Wie viel soll in Reichweite sein?</p>
+      <div class="reg"><label>Anteil Deutschlands <i id="wAnteil">…</i></label>
+        <input id="sAnteil" type="range" min="0" max="1000" value="663"></div>
+      <p id="polzeile">…</p>
+    </div>
+
+    <div class="gruppe">
+      <p class="titel" id="hoehetitel">Höhe</p>
       <div id="band"></div>
       <div id="bandtext"><span id="bandmin">+0</span><span id="bandmax">…</span></div>
       <p id="schneezeile">…</p>
@@ -140,11 +149,16 @@ button[aria-pressed=true],button:hover{color:var(--ink);border-style:solid}
    Zwei Zahlen stecken in jedem Bild. Die **Lage** kommt aus einem
    Federmodell: zwischen je zwei Bahnhöfen hängt eine Feder, deren Ruhelänge
    die Reisezeit mit dem Zug ist, und die Karte ist die Lage, in der alle
-   Federn zusammen am wenigsten ziehen. Die **Höhe** ist, wie lange es
-   dauert, bis von hier ein Zehntel Deutschlands — 8,4 Millionen Menschen —
-   mit dem Zug in Reichweite ist. Gemessen, nicht modelliert. Wer schnell
-   Menschen erreicht, liegt tief und läuft unter Wasser; über den
-   abgehängten Gegenden liegt Schnee.
+   Federn zusammen am wenigsten ziehen.
+
+   Die **Höhe** ist, wie lange es dauert, bis von hier ein bestimmter Anteil
+   der Bevölkerung mit dem Zug in Reichweite ist — und dieser Anteil ist ein
+   Regler, weil er zwischen den beiden Polen jeder Erreichbarkeitskarte
+   schiebt. Bei einem kleinen Anteil zählt nur, wer in der Nähe wohnt, und die
+   Karte wird eine Dichtekarte: das Ruhrgebiet gewinnt, weil es sich selbst
+   genügt. Bei einem großen muss man bis in die Ecken des Landes, und die
+   Karte wird eine Geografiekarte: Fulda und Kassel gewinnen, weil sie in der
+   Mitte liegen. Dazwischen liegt, was sich als angebunden anfühlt.
 
    Gezeichnet wird das, wie ein Atlas ein Gebirge zeichnet: ein Höhenfeld,
    fünfunddreißig Farbbänder darüber, auf jeder Bandgrenze eine Höhenlinie,
@@ -173,13 +187,13 @@ const SCHNEEANTEIL = NL / (NL + NS);
 
 let P = null, ISO = null;
 let n = 0, nm = [], halte = null;
-let gxx, gyy, fxx, fyy, hh, einzug, hmax = 1;
+let gxx, gyy, fxx, fyy, hh, roh, REICH, einzug, hmax = 1, rmin = 0;
 let wx, wy;
 let umriss = [], laender = [], umrissW = [], laenderW = [];
 let RAHMEN = null;
 
-const Z = {morph:1, wasser:100, namen:true, linien:true, punkte:false,
-           iso:false, isoKnoten:-1};
+const Z = {morph:1, wasser:90, anteil:0.25, namen:true, linien:true,
+           punkte:false, iso:false, isoKnoten:-1};
 
 /* ------------------------------------------------------------------ Laden */
 function entpacke(b64, teiler){
@@ -197,8 +211,11 @@ async function los(){
   gxx = entpacke(P.geox, 10); gyy = entpacke(P.geoy, 10);
   for (let i = 0; i < n; i++){ gxx[i] *= mk; gyy[i] *= mk; }
   fxx = entpacke(P.flachx, 10); fyy = entpacke(P.flachy, 10);
-  hh  = entpacke(P.zugang, 10);
+  REICH = entpacke(P.reichweite, 1);          /* STUFEN x n, ganze Minuten */
+  hh = new Float32Array(n); roh = new Float32Array(n);
   einzug = entpacke(P.einzug, 0.01);
+  Z.anteil = P.stufen[P.stufe_vor];
+  stufeSetzen();
   const ring = r => {
     const X = entpacke(r[0],10), Y = entpacke(r[1],10), o = new Float32Array(X.length*2);
     for (let i=0;i<X.length;i++){ o[2*i]=X[i]*mk; o[2*i+1]=Y[i]*mk; }
@@ -206,7 +223,6 @@ async function los(){
   };
   umriss = P.umriss.map(ring); laender = P.laender.map(ring);
   wx = new Float32Array(n); wy = new Float32Array(n);
-  for (let i=0;i<n;i++) if (hh[i] > hmax) hmax = hh[i];
   geoGitterBauen();
   dreieckeBauen();
   rahmenBestimmen();
@@ -214,6 +230,33 @@ async function los(){
   $('laden').remove();
   addEventListener('resize', () => { messen(); bald(); });
   messen();
+}
+
+/* Der Anteil ist stufenlos, die Rechnung nicht: in der Nutzlast liegen
+   achtzehn Stufen von 2 bis 90 Prozent, logarithmisch gelegt, weil sich das
+   Bild unten schnell und oben langsam ändert. Zwischen den beiden
+   benachbarten Stufen wird linear in log q gemischt — der Unterschied
+   zwischen zwei Nachbarstufen ist klein gegen die Glättung des Höhenfeldes,
+   also ist die Mischung nicht zu sehen. */
+function stufeSetzen(){
+  const Q = P.stufen, lq = Math.log(Z.anteil);
+  let a = 0;
+  while (a < Q.length - 2 && Math.log(Q[a+1]) < lq) a++;
+  const f = Math.max(0, Math.min(1,
+    (lq - Math.log(Q[a])) / (Math.log(Q[a+1]) - Math.log(Q[a]))));
+  const o0 = a*n, o1 = (a+1)*n;
+  rmin = Infinity;
+  for (let i=0;i<n;i++){
+    const v = REICH[o0+i] + (REICH[o1+i] - REICH[o0+i]) * f;
+    roh[i] = v;
+    if (v < rmin) rmin = v;
+  }
+  hmax = 1;
+  for (let i=0;i<n;i++){
+    hh[i] = roh[i] - rmin;
+    if (hh[i] > hmax) hmax = hh[i];
+  }
+  abgelegen = null;        /* die abgelegensten Orte sind jetzt andere */
 }
 
 /* Der Rahmen wird **einmal** bestimmt und gilt für jede Reglerstellung:
@@ -787,12 +830,35 @@ function bauLegende(){
     const d = document.createElement('div'); d.style.background = c; b.appendChild(d);
   }
 }
+/* „ein Viertel" liest sich besser als „25 %", wo es passt. */
+const BRUCH = [[1,2],[1,3],[2,3],[1,4],[3,4],[1,5],[2,5],[1,6],[1,8],[1,10],
+               [1,12],[1,16],[1,20],[1,25],[1,32],[1,50]];
+const BRUCHWORT = {'1/2':'die Hälfte','1/3':'ein Drittel','2/3':'zwei Drittel',
+  '1/4':'ein Viertel','3/4':'drei Viertel','1/5':'ein Fünftel',
+  '2/5':'zwei Fünftel','1/6':'ein Sechstel','1/8':'ein Achtel',
+  '1/10':'ein Zehntel','1/12':'ein Zwölftel','1/16':'ein Sechzehntel',
+  '1/20':'ein Zwanzigstel','1/25':'ein Fünfundzwanzigstel',
+  '1/32':'ein Zweiunddreißigstel','1/50':'ein Fünfzigstel'};
+function anteilWort(q){
+  for (const [z,nn] of BRUCH)
+    if (Math.abs(q - z/nn) < 0.006) return BRUCHWORT[z+'/'+nn];
+  return (q*100).toFixed(q < 0.1 ? 1 : 0).replace('.',',') + ' %';
+}
+/* Fuer die Tabelle im Panel: der Name so kurz, dass die Spalte nicht bricht. */
+function kurzname(t){
+  return t.replace(' Flughafen Fernbahnhof', ' Flughafen')
+          .replace(' Hauptbahnhof', ' Hbf').replace(' Bahnhof', '')
+          .replace(', Hbf', ' Hbf').replace('D-Flughafen Bf', 'Düsseldorf Flughafen');
+}
+function anteilKurz(q){
+  return (q*100).toFixed(q < 0.1 ? 1 : 0).replace('.',',') + ' %';
+}
 function tafelSetzen(){
   /* Beschriftet wird **absolut**, nicht als Aufschlag auf den besten
      Bahnhof: „Wasser unter 181 Minuten" ist eine Aussage, „unter +100" ist
      eine Rechenaufgabe. Gerechnet wird intern weiter über dem Besten, weil
      die Farbleiter dort ihren Nullpunkt hat. */
-  const abs = v => Math.round(P.reich_min + v);
+  const abs = v => Math.round(rmin + v);
   $('bandmin').textContent = abs(0) + ' min';
   $('bandmax').textContent = abs(landMax) + ' min';
   $('schneezeile').innerHTML = 'Wasser unter <b>' + abs(Z.wasser)
@@ -802,6 +868,8 @@ function tafelSetzen(){
   $('mtext').textContent = '60 Minuten Reisezeit';
   $('mkm').textContent = 'in der Landkarte ≈ '
     + Math.round(60 / P.minprokm) + ' km Luftlinie';
+  $('hoehetitel').textContent = 'Höhe: bis ' + anteilWort(Z.anteil)
+    + ' Deutschlands erreichbar ist';
   const iz = $('isozeile');
   if (Z.iso && ISO && Z.isoKnoten >= 0){
     iz.style.display = 'block';
@@ -818,14 +886,13 @@ function text(){
     + 'Regionalverkehrs, gezeichnet nach der Reisezeit mit dem Zug statt nach '
     + 'Kilometern. Ein Kilometer Luftlinie ist dabei '
     + P.minprokm.toFixed(2).replace('.',',') + ' Minuten wert. Die Höhe ist, wie '
-    + 'lange es dauert, bis von hier <b>ein Zehntel Deutschlands</b> in '
-    + 'Reichweite ist — 8,4 Millionen Menschen: '
-    + Math.round(P.reich_min) + ' Minuten im Ruhrgebiet, '
-    + Math.round(P.reich_median) + ' im Mittel, und über zehn Stunden dort, wo '
-    + 'zweimal am Tag ein Zug hält. '
-    + 'Wer schnell Menschen erreicht, liegt unter Wasser; über den abgehängten '
-    + 'Gegenden liegt Schnee. Fahrplan: Mittwoch, 13. Mai 2026, Abfahrt in der '
-    + 'dichtesten Stunde des Tages, ' + hh2(t0) + '–' + hh2(t0+60) + '.';
+    + 'lange es dauert, bis von hier ein <b>Anteil Deutschlands</b> in '
+    + 'Reichweite ist — und dieser Anteil ist ein Regler, weil er zwischen den '
+    + 'beiden Polen jeder Erreichbarkeitskarte schiebt: Ballungsraum oder '
+    + 'Geografie. Wer schnell Menschen erreicht, liegt unter Wasser; über den '
+    + 'abgehängten Gegenden liegt Schnee. Fahrplan: Mittwoch, 13. Mai 2026, '
+    + 'Abfahrt in der dichtesten Stunde des Tages, '
+    + hh2(t0) + '–' + hh2(t0+60) + '.';
 }
 
 /* ------------------------------------------------------------- Bedienung */
@@ -849,8 +916,38 @@ function start(){
       : Math.round(v*100) + ' % Zeit';
   });
   regler('sWasser','wasser',1, () => {
-    $('wWasser').textContent = Math.round(P.reich_min + Z.wasser) + ' min';
+    $('wWasser').textContent = Math.round(rmin + Z.wasser) + ' min';
   });
+  /* Der Anteilsregler läuft logarithmisch von der ersten bis zur letzten
+     Stufe: unten, wo zwei Prozentpunkte die Karte umwerfen, hat er die
+     Auflösung, oben braucht er sie nicht. */
+  {
+    const e = $('sAnteil'), Q = P.stufen;
+    const l0 = Math.log(Q[0]), l1 = Math.log(Q[Q.length-1]);
+    const auf = () => {
+      Z.anteil = Math.exp(l0 + (l1 - l0) * e.value / 1000);
+      stufeSetzen();
+      const mio = (P.menschen * Z.anteil / 1e6);
+      $('wAnteil').textContent = anteilKurz(Z.anteil) + ' · '
+        + mio.toFixed(mio < 10 ? 1 : 0).replace('.',',') + ' Mio';
+      const p = (Z.anteil - Q[0]) / (Q[Q.length-1] - Q[0]);
+      $('polzeile').innerHTML = Z.anteil < 0.11
+        ? '<b>Nah.</b> Es zählt nur, wer in der Nachbarschaft wohnt — die '
+          + 'Karte wird eine Dichtekarte, und das Ruhrgebiet gewinnt, weil es '
+          + 'sich selbst genügt.'
+        : Z.anteil > 0.55
+        ? '<b>Weit.</b> Man muss bis in die Ecken des Landes — die Karte wird '
+          + 'eine Geografiekarte, und Fulda und Kassel gewinnen, weil sie in '
+          + 'der Mitte liegen.'
+        : '<b>Dazwischen.</b> Mehr, als eine einzelne Agglomeration hergibt '
+          + '(das Ruhrgebiet erreicht 11,6 % in 90 Minuten), und noch nicht so '
+          + 'viel, dass es auf die Ecken ankommt. Hier zählt das Netz.';
+      bald();
+    };
+    e.addEventListener('input', () => { FEINHEIT = 4.5; auf(); });
+    e.addEventListener('change', () => { FEINHEIT = 3.0; auf(); });
+    auf();
+  }
   const knopf = (id, feld, nach) => $(id).addEventListener('click', () => {
     Z[feld] = !Z[feld];
     $(id).setAttribute('aria-pressed', Z[feld] ? 'true':'false');
@@ -893,8 +990,9 @@ function zeigen(ev){
   const t = $('tip');
   if (i < 0){ t.style.opacity = 0; return; }
   t.innerHTML = '<b>' + nm[i] + '</b><span>'
-    + Math.round(P.reich_min + hh[i]) + ' min, bis ein Zehntel Deutschlands '
-    + 'erreichbar ist<br>' + halte[i] + ' Halte am Tag · Einzugsgebiet '
+    + Math.round(roh[i]) + ' min, bis ' + anteilWort(Z.anteil)
+    + ' Deutschlands erreichbar ist<br>'
+    + halte[i] + ' Halte am Tag · Einzugsgebiet '
     + (einzug[i] >= 10000 ? Math.round(einzug[i]/1000) + '.000'
        : Math.round(einzug[i]/100)*100) + ' Menschen</span>';
   t.style.opacity = 1;
@@ -1018,40 +1116,67 @@ also gar nicht. In einer Fassung lag Frankfurt Hauptbahnhof darin höher als
 Westerland auf Sylt. Mathematisch richtig, erzählerisch falsch. Gezeichnet
 wird deshalb eine <b>gemessene</b> Größe.</p>
 
-<h3>Und welche — drei Kandidaten</h3>
-<p>Die Frage dahinter ist: was fühlt sich als <i>angebunden</i> an? Drei
-Größen sind gerechnet und gegeneinander gehalten worden, alle in Minuten:</p>
-<table><tr><th>Relief-Kandidat</th><th>Spanne</th><th>Median</th></tr>
+<h3>Und welche Höhe — ein Regler statt einer Zahl</h3>
+<p>Die Frage dahinter ist: was fühlt sich als <i>angebunden</i> an? Zwei
+naheliegende Antworten sind beide schief, und zwar in entgegengesetzte
+Richtungen.</p>
+<table><tr><th></th><th>Spanne</th><th>Median</th></tr>
 <tr><td><b>A</b> mittlere Reisezeit zu allen Bahnhöfen</td><td class="z">${Math.round(K.a_min)}–${Math.round(K.a_max)}</td><td class="z">${Math.round(K.a_median)}</td></tr>
-<tr><td><b>B</b> mittlere Reisezeit zu allen Menschen</td><td class="z">${Math.round(K.b_min)}–${Math.round(K.b_max)}</td><td class="z">${Math.round(K.b_median)}</td></tr>
-<tr><td><b>C</b> bis ein Zehntel Deutschlands erreichbar ist</td><td class="z">${Math.round(P.reich_min)}–${Math.round(P.reich_max)}</td><td class="z">${Math.round(P.reich_median)}</td></tr>
+<tr><td><b>B</b> dasselbe, nach Menschen gewichtet</td><td class="z">${Math.round(K.b_min)}–${Math.round(K.b_max)}</td><td class="z">${Math.round(K.b_median)}</td></tr>
 </table>
-<p><b>A war die erste Fassung, und A ist falsch gewichtet:</b> ein Haltepunkt
-mit dreißig Einwohnern zählt darin wie Köln, und weil die Haltepunkte in der
-Fläche liegen, sieht gut angebunden aus, wer viele kleine Halte um sich hat.</p>
-<p><b>B behebt das — und ändert die Karte fast nicht.</b> A und B korrelieren
-mit <b>r = ${K.r_ab.toFixed(3).replace('.',',')}</b>. Das ist das Ergebnis,
-mit dem am wenigsten zu rechnen war, und es hat einen einfachen Grund: ein
-Mittelwert über ein großes Land wird von der fernen Hälfte bestimmt. Er misst,
-wie weit es bis zum anderen Ende ist — also Geografie. München liegt darin so
-schlecht wie Ulm, und München fühlt sich nicht so an.</p>
-<p><b>C ist die andere Frage.</b> Nicht „wie weit ist das Mittel", sondern
-„wie viel ist in Reichweite": wie lange dauert es, bis von hier
-<b>${(P.reich_schwelle/1e6).toFixed(1).replace('.',',')} Millionen Menschen</b>
-— ein Zehntel Deutschlands — mit dem Zug zu erreichen sind. Ein Zehntel, weil
-das keine einzelne Stadt allein schafft: wer es erreichen will, muss über die
-eigene Agglomeration hinaus, und genau das misst das Netz. Mit A korreliert
-diese Größe nur noch mit r = ${K.r_ac.toFixed(3).replace('.',',')} — es ist
-eine andere Karte, und sie ist die, die auf dem Schirm steht.</p>
-<p>Am tiefsten liegt das <b>Ruhrgebiet</b>: Düsseldorf 81 Minuten, Duisburg
-82, Essen 84, Dortmund 90, Bochum 92 — dort ist man mit einem Achtzig-Minuten-
-Radius an acht Millionen Menschen angeschlossen. Dann Köln 97, Frankfurt 115,
-Stuttgart 130, München 142, Berlin 144, Nürnberg 146, Hamburg 158: gut
-angebunden, aber jede dieser Städte muss weiter greifen als das Ruhrgebiet,
-weil um sie herum weniger wohnt. Am höchsten, unter Schnee, liegen die
-Stichbahnen um Freiburg (630 Minuten), Gottmadingen und Reichenau am
-Hochrhein, die Bäderbahn auf Rügen und die Heidekrautbahn bei Groß
-Schönebeck.</p>
+<p><b>A ist falsch gewichtet:</b> ein Haltepunkt mit dreißig Einwohnern zählt
+darin wie Köln. <b>B behebt das — und ändert die Karte fast nicht.</b> A und B
+korrelieren mit <b>r = ${K.r_ab.toFixed(3).replace('.',',')}</b>. Der Grund
+ist einfach, sobald man ihn sieht: ein Mittelwert über ein großes Land wird
+von der <i>fernen Hälfte</i> bestimmt. Er misst, wie weit es bis zum anderen
+Ende ist — also Geografie. München steht in beiden so schlecht wie Ulm, und
+München fühlt sich nicht so an.</p>
+<p>Der umgekehrte Fehler ist genauso leicht zu machen. Fragt man „wie lange,
+bis eine Million Menschen erreichbar sind", misst man im Grunde, wie lange man
+braucht, um die eigene Stadt zu durchqueren — Berlin 18 Minuten, München 24 —,
+und die Karte wird eine Karte der Ballungsräume.</p>
+<p><b>Beides ist dieselbe Größe mit zwei verschiedenen Parametern.</b> Sortiert
+man von einem Bahnhof aus alle anderen nach Reisezeit und summiert ihre
+Einzugsgebiete auf, entsteht eine Verteilung: welcher Anteil Deutschlands nach
+wie vielen Minuten in Reichweite ist. „Minuten bis zum Anteil q" ist ihr
+q-Quantil, und die beiden Pole sind seine beiden Enden — kleines q ist der
+Ballungsraum, großes q die Geografie. Darum ist der Anteil hier ein
+<b>Regler</b> und keine gesetzte Zahl. Was er tut, steht in den Zahlen:</p>
+<table><tr><th>Anteil</th><th>Minuten</th><th>Median</th><th>die drei tiefsten</th><th>r&nbsp;zu&nbsp;A</th></tr>
+${P.stufe_kennzahlen.filter((_,i)=>i%2===0 || P.stufen[i]===0.25).map(k =>
+  '<tr' + (Math.abs(k.q-0.25)<1e-9 ? ' style="color:#fff"' : '') + '>'
+  + '<td class="z">' + (k.q*100).toFixed(k.q<0.1?1:0).replace('.',',') + ' %</td>'
+  + '<td class="z">' + Math.round(k.min) + '–' + Math.round(k.max) + '</td>'
+  + '<td class="z">' + Math.round(k.median) + '</td>'
+  + '<td>' + k.tief.map(kurzname).join(', ') + '</td>'
+  + '<td class="z">' + k.r_a.toFixed(2).replace('.',',') + '</td></tr>').join('')}
+</table>
+<p>Von unten nach oben gelesen ist das der ganze Weg: bei 2 % gewinnen Berlin
+und Köln, bei 4 bis 17 % das <b>Ruhrgebiet</b>, ab 21 % <b>Frankfurt</b>, und
+ab zwei Dritteln <b>Fulda, Kassel-Wilhelmshöhe und Göttingen</b> — die
+geometrische Mitte des Landes. Die Korrelation mit A steigt dabei von 0,76 auf
+0,98: am oberen Ende <i>ist</i> die Karte die Geografiekarte.</p>
+
+<h3>Warum ein Viertel voreingestellt ist</h3>
+<p>Die Wahl ist nicht Geschmack, sondern hat eine gemessene Grenze. Eine
+Erreichbarkeitskarte ist genau so lange eine Dichtekarte, wie die <b>eigene
+Agglomeration den geforderten Anteil allein hergibt</b> — dann muss niemand
+das Netz benutzen. Nachgezählt: von Essen aus sind in 90 Minuten
+<b>11,6 %</b> Deutschlands erreichbar, von Frankfurt 5,6 %, von Berlin 5,4 %,
+von München 4,9 %. Rhein-Ruhr ist die größte zusammenhängende Ballung des
+Landes, und sie ist rund ein Achtel davon wert.</p>
+<p>Oberhalb von etwa einem Siebtel kann also keine Region mehr aus sich selbst
+schöpfen — und genau dort kippt die Tabelle oben: bei 17 % führt noch das
+Ruhrgebiet, bei 21 % Frankfurt. Am anderen Ende friert die Rangfolge ab etwa
+zwei Dritteln ein, weil es dann nur noch darauf ankommt, wie schnell man Sylt
+und Rügen erreicht.</p>
+<p>Damit liegt das brauchbare Fenster zwischen einem Sechstel und der Hälfte,
+und <b>ein Viertel</b> — 20,9 Millionen Menschen, etwa das Doppelte der
+größten Ballung — ist die runde Zahl darin. Die Probe: die zehn tiefsten
+Bahnhöfe sind dann Frankfurt Flughafen, Frankfurt Hbf, Köln, Mannheim,
+Frankfurt Süd, Köln Messe/Deutz, Düsseldorf, Hamm, Hannover und Dortmund. Das
+ist nicht eine Region, das ist die ICE-Achse — und es kommt aus der Rechnung,
+nicht aus einer Liste.</p>
 
 <h3>Woher die Menschen kommen</h3>
 <p>Ein Bevölkerungsgewicht je Bahnhof, aus drei Schritten:</p>

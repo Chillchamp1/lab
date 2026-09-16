@@ -34,21 +34,32 @@ Geprüft wurde dabei:
 ## Was die Gewichtung nach Menschen ergeben hat
 
 Die Frage war: nach Menschen gewichten statt nach Bahnhöfen, um das Gefühl von
-Angebundenheit zu treffen. Die Antwort ist zweiteilig und stand nicht zu
-erwarten.
+Angebundenheit zu treffen. Die Antwort kam in drei Schritten, und keiner davon
+war der erwartete.
 
-**Die Gewichtung allein bringt fast nichts.** „Mittlere Reisezeit zu allen
-Menschen" und „zu allen Bahnhöfen" korrelieren mit **r = 0,973** — es ist
-dieselbe Karte. Ein Mittelwert über ein großes Land wird von der fernen Hälfte
-bestimmt, und die hängt daran, wo ein Ort liegt, nicht daran, wie er
+**Erstens: die Gewichtung allein bringt fast nichts.** „Mittlere Reisezeit zu
+allen Menschen" und „zu allen Bahnhöfen" korrelieren mit **r = 0,973** — es
+ist dieselbe Karte. Ein Mittelwert über ein großes Land wird von der fernen
+Hälfte bestimmt, und die hängt daran, wo ein Ort liegt, nicht daran, wie er
 angeschlossen ist. München steht in beiden so schlecht wie Ulm.
 
-**Was die Karte ändert, ist die andere Frage.** Nicht „wie weit ist das
-Mittel", sondern „wie viel ist in Reichweite": die Minuten, bis ein Zehntel
-Deutschlands erreichbar ist. Damit liegt das Ruhrgebiet bei 81 bis 92 Minuten,
-Frankfurt bei 115, Berlin und München bei 144 und 142, und die Stichbahnen um
-Freiburg bei 630. Das ist das Relief, das jetzt gezeichnet wird; die
-Begründung steht in [METHODIK 4.1](METHODIK.md).
+**Zweitens: die andere Frage schießt über.** „Wie lange, bis ein Zehntel
+Deutschlands erreichbar ist" ändert die Karte deutlich — und zwar zu weit. Das
+Ruhrgebiet wurde ein einziger blauer See, weil es ein Zehntel des Landes aus
+sich selbst schöpft und dafür kein Netz braucht. Aus der Geografiekarte war
+eine Dichtekarte geworden.
+
+**Drittens: beides ist dieselbe Größe mit zwei Parametern.** „Minuten bis zum
+Anteil q" ist das q-Quantil der Reisezeitverteilung unter dem
+Bevölkerungsmaß; der Mittelwert ist ihr erstes Moment. Kleines q ist die
+Dichtekarte, großes q die Geografiekarte, und die Korrelation mit dem
+Mittelwert steigt monoton von 0,76 bei 2 % auf 0,98 bei 78 %. Darum ist der
+Anteil in der Seite ein **Regler** und keine gesetzte Zahl — und die
+Voreinstellung, ein Viertel, hat eine gemessene Grenze hinter sich: von Essen
+aus sind in 90 Minuten 11,6 % Deutschlands erreichbar, von Frankfurt 5,6 %.
+Oberhalb eines Siebtels kann keine Region mehr aus sich selbst schöpfen, und
+genau dort kippt die Rangfolge. Die ganze Begründung steht in
+[METHODIK 4.1](METHODIK.md).
 
 ## Sechs Fehler, die im Laufen gefunden wurden
 
@@ -140,6 +151,20 @@ zu trennen — Gubin liegt 0,08 km von der Grenze, Kehl 0,29. Sauber ginge es
 nur mit einer ungefähren Landesgrenze, und die gibt der Netzausgang hier nicht
 her (siehe [QUELLEN.md](QUELLEN.md)).
 
+## Der nächste Schritt, wenn einer kommt
+
+**Die Netzqualität von der Lage trennen.** Alles auf dieser Karte ist absolut
+gemessen, und das ist richtig für ein Gefühl: wer in Göhren wohnt, ist
+abgehängt, und dass dort auch niemand in der Nähe wohnt, gehört dazu. Man kann
+aber die andere Frage stellen — *leistet das Netz hier, was seine Lage
+hergibt?* — indem man die gemessene Reichweite gegen die rechnet, die bei
+Luftlinie und Landesdurchschnittsgeschwindigkeit herauskäme. Die Höhe wäre
+dann der **Zeitverlust gegenüber der Luftlinie**, und die Karte zeigte nicht
+mehr, wo wenig Leute wohnen, sondern wo das Netz unter seinen Möglichkeiten
+bleibt: die Eifel, Mecklenburg, der Bayerische Wald, die Querverbindungen
+überhaupt. Das ist eine andere Karte und eine eigene Seite wert, keine dritte
+Lesart auf dieser.
+
 ## Was bewusst so bleibt
 
 - **Die gezeichnete Höhe ist eine gemessene Größe, nicht die Modellhöhe.**
@@ -150,9 +175,13 @@ her (siehe [QUELLEN.md](QUELLEN.md)).
   durchqueren — Berlin 18 Minuten, München 24 —, und das Relief wäre eine
   Karte der Großstädte. Ein Zehntel zwingt über die eigene Agglomeration
   hinaus.
-- **Nur ein Relief, kein Umschalter.** Alle drei Kandidaten sind gerechnet und
-  stehen in der Nutzlast nicht: gezeichnet wird einer. Eine Seite, die eine
-  Sache gut zeigt, ist mehr wert als eine mit drei Knöpfen.
+- **Ein Regler für den Anteil, aber kein Umschalter zwischen Maßen.** A und B
+  sind gerechnet und stehen als Kennzahlen in der Nutzlast, nicht als Ansicht.
+  Der Anteilsregler deckt beide Pole ohnehin ab — bei 90 % *ist* die Karte die
+  Geografiekarte —, und drei Knöpfe für dasselbe wären zwei zu viel.
+- **Ein Viertel als Voreinstellung, nicht ein Fünftel oder ein Drittel.** Alle
+  drei liegen im brauchbaren Fenster; das Viertel ist die runde Zahl mit dem
+  klarsten Satz dazu.
 - **Der Grundriss ist die flache Federkarte, nicht die Geländelage.** Damit
   der Satz stimmt, der die Karte erklärt: der Abstand auf der Karte ist die
   Reisezeit.

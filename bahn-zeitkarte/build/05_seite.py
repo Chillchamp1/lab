@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 """Aus den Zwischenergebnissen die Nutzlast der Seite.
 
-Hier entsteht auch die Groesse, die das Relief traegt. Drei Kandidaten sind
-gerechnet und gegeneinander gehalten worden (siehe METHODIK 4):
+Hier entsteht auch die Groesse, die das Relief traegt, und die ist nicht eine
+Zahl, sondern eine **Familie**: die Minuten, bis von hier ein Anteil q der
+Bevoelkerung Deutschlands erreichbar ist. Das ist das q-Quantil der
+Reisezeitverteilung unter dem Bevoelkerungsmass, und die beiden Pole, zwischen
+denen jede Erreichbarkeitskarte steht, sind genau seine beiden Enden:
 
-  A  mittlere Reisezeit zu allen **Bahnhoefen**
-  B  mittlere Reisezeit zu allen **Menschen**
-  C  **Minuten, bis ein Zehntel Deutschlands erreichbar ist**
+  q klein  ->  nur was in der Naehe wohnt zaehlt          ->  Dichtekarte
+  q gross  ->  man muss bis in die Ecken des Landes       ->  Geografiekarte
 
-A und B korrelieren mit r = 0,97 — nach Menschen zu gewichten aendert die
-Karte also fast nicht, weil ein Mittelwert ueber ein grosses Land von der
-fernen Haelfte bestimmt wird und damit Geografie misst, nicht Angebundenheit.
-Gezeichnet wird C.
+Gerechnet werden STUFEN Werte von 2 bis 90 Prozent; die Seite schiebt
+stufenlos dazwischen. Voreingestellt ist ein Viertel — die Begruendung dafuer
+steht in METHODIK 4.1 und ist gemessen, nicht gesetzt.
 
 Alles, was die Karte braucht, in eine Datei: die Bahnhoefe mit ihren drei
 Lagen (Geografie, flache Federkarte, Gelaendekarte) und ihrer Hoehe, der
@@ -182,6 +183,13 @@ def lambert(lon, lat, p1=48.6666667, p2=53.6666667, p0=51.0, l0=10.5):
     return rho * np.sin(th), rho0 - rho * np.cos(th)
 
 
+# Die Stufen der Reichweite-Familie, logarithmisch gelegt: unten aendert
+# sich das Bild schnell, oben langsam. VORGABE muss eine davon sein.
+STUFEN = [0.02, 0.03, 0.04, 0.06, 0.08, 0.10, 0.13, 0.17, 0.21, 0.25,
+          0.30, 0.36, 0.43, 0.50, 0.58, 0.67, 0.78, 0.90]
+VORGABE = 0.25
+
+
 def i16(a, faktor):
     v = np.rint(np.asarray(a, dtype=float) * faktor)
     if v.min() < -32768 or v.max() > 32767:
@@ -218,7 +226,6 @@ def main():
     for a in (fx, fy, tx, ty, ggx, ggy):
         a -= a.mean()
 
-    name = [NAMEN.get(S[i]["name"], S[i]["name"]) for i in kd]
     halte = np.array([S[i]["halte"] for i in kd])
 
     # Der Maßstab: wie viele Minuten der Kilometer Luftlinie im Mittel wert
@@ -253,6 +260,8 @@ def main():
     assert len(G) == len(kd), "Gewichte passen nicht zum Kern"
     ges = G.sum()
 
+    name = [NAMEN.get(S[i]["name"], S[i]["name"]) for i in kd]
+
     # ---- A: mittlere Reisezeit zu allen Bahnhoefen
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", RuntimeWarning)
@@ -262,43 +271,52 @@ def main():
         gw = np.where(da, G[None, :], 0.0)
         B = np.nansum(np.where(da, mittel, 0.0) * gw, axis=1) / gw.sum(axis=1)
 
-    # ---- C: Minuten, bis ein Zehntel Deutschlands erreichbar ist.
-    # Das ist die Groesse, die auf der Karte steht. Ein Mittelwert ueber das
-    # ganze Land misst, wie weit die ferne Haelfte weg ist — also Geografie.
-    # Muenchen liegt darin so schlecht wie Ulm, und Muenchen fuehlt sich nicht
-    # so an. Die Frage, die Angebundenheit trifft, ist nicht "wie weit ist das
-    # Mittel" sondern "wie viel ist in Reichweite": wie lange dauert es, bis
-    # von hier genug Land in Reichweite ist? Ein Zehntel, weil keine einzelne
-    # Stadt das allein schafft — wer es erreichen will, muss ueber die eigene
-    # Agglomeration hinaus, und genau das misst das Netz.
-    SCHWELLE = ges / 10.0
+    # ---- C: die Familie. Minuten, bis ein Anteil q der Bevoelkerung
+    # erreichbar ist — das q-Quantil der Reisezeitverteilung unter dem
+    # Bevoelkerungsmass. Gerechnet wird sie einmal ueber die sortierte Zeile
+    # und die kumulierten Gewichte; alle Stufen fallen dabei aus demselben
+    # Durchgang.
     ordn = np.argsort(mittel, axis=1)
-    C = np.full(len(kd), np.nan)
+    R = np.full((len(STUFEN), len(kd)), np.nan)
     for i in range(len(kd)):
         o = ordn[i]
         t = mittel[i][o]
         gut = np.isfinite(t)
         t = t[gut]
         kum = np.cumsum(G[o][gut])
-        k = int(np.searchsorted(kum, SCHWELLE))
-        if k < len(t):
-            C[i] = t[k]
-    if not np.isfinite(C).all():
-        sys.exit("%d Bahnhoefe erreichen kein Zehntel des Landes" %
-                 int((~np.isfinite(C)).sum()))
+        for si, q in enumerate(STUFEN):
+            k = int(np.searchsorted(kum, ges * q))
+            if k < len(t):
+                R[si, i] = t[k]
+    for si, q in enumerate(STUFEN):
+        fehlt = int((~np.isfinite(R[si])).sum())
+        if fehlt:
+            sys.exit("bei q = %.2f erreichen %d Bahnhoefe den Anteil nicht"
+                     % (q, fehlt))
     r_ab = float(np.corrcoef(A, B)[0, 1])
-    r_ac = float(np.corrcoef(A, C)[0, 1])
-    r_bc = float(np.corrcoef(B, C)[0, 1])
-    print("Relief-Kandidaten (Minuten):")
-    print("  A zu allen Bahnhoefen : %3.0f .. %3.0f, Median %3.0f"
+    print("Relief: die Familie (Minuten, bis ein Anteil erreichbar ist)")
+    print("  A mittlere Reisezeit zu allen Bahnhoefen: %3.0f .. %3.0f, Median %3.0f"
           % (A.min(), A.max(), np.median(A)))
-    print("  B zu allen Menschen   : %3.0f .. %3.0f, Median %3.0f"
+    print("  B dasselbe, nach Menschen gewichtet    : %3.0f .. %3.0f, Median %3.0f"
           % (B.min(), B.max(), np.median(B)))
-    print("  C bis ein Zehntel     : %3.0f .. %3.0f, Median %3.0f  <- gezeichnet"
-          % (C.min(), C.max(), np.median(C)))
-    print("  r(A,B) = %+.3f   r(A,C) = %+.3f   r(B,C) = %+.3f" % (r_ab, r_ac, r_bc))
-    reichweite = C
-    zugang = C - C.min()
+    print("  r(A,B) = %+.3f — die Gewichtung allein aendert die Karte nicht" % r_ab)
+    print("  %5s %6s %6s %6s  %-46s %s" % ("q", "min", "Median", "max",
+                                           "die drei tiefsten", "r gegen A"))
+    kerne = []
+    for si, q in enumerate(STUFEN):
+        v = R[si]
+        o = np.argsort(v)
+        rq = float(np.corrcoef(A, v)[0, 1])
+        kerne.append(dict(q=q, min=float(v.min()), median=float(np.median(v)),
+                          max=float(v.max()), r_a=rq,
+                          tief=[name[i] for i in o[:3]]))
+        print("  %5.2f %6.0f %6.0f %6.0f  %-46s %+.3f"
+              % (q, v.min(), np.median(v), v.max(),
+                 ", ".join(name[i][:14] for i in o[:3]), rq))
+    vor = STUFEN.index(VORGABE)
+    print("  voreingestellt: q = %.0f %% (%.1f Millionen Menschen)"
+          % (VORGABE * 100, ges * VORGABE / 1e6))
+    reichweite = R[vor]
 
     # Ortsmarken: der naechste Bahnhof mit den meisten Halten
     marken = []
@@ -368,22 +386,24 @@ def main():
         verzerrung=dict(flach=kenn[4], gelaende=kenn[5]),
         proben=12, raster=5, minum=5,
         minprokm=mkm_t, minprokm_flach=mkm_f, isoschritt=3,
-        reich_min=float(C.min()), reich_max=float(C.max()),
-        reich_median=float(np.median(C)), reich_schwelle=float(SCHWELLE),
         menschen=float(ges), menschen_jahr=MEN["jahr"],
         raster_km=MEN["raster_km"], gitter_meter=MEN["gitter_meter"],
         flaeche_fehler=MEN["flaeche_median_fehler"],
         kandidaten=dict(
             a_min=float(A.min()), a_max=float(A.max()), a_median=float(np.median(A)),
             b_min=float(B.min()), b_max=float(B.max()), b_median=float(np.median(B)),
-            r_ab=r_ab, r_ac=r_ac, r_bc=r_bc),
+            r_ab=r_ab),
         isoknoten=wahl, isodatei="isochronen.json", marken=marken,
         namen=name,
         halte=[int(v) for v in halte],
         geox=i16(ggx, 10), geoy=i16(ggy, 10),
         flachx=i16(fx, 10), flachy=i16(fy, 10),
         zeitx=i16(tx, 10), zeity=i16(ty, 10), hoehe=i16(th_, 10),
-        zugang=i16(zugang, 10),
+        # Alle Stufen hintereinander, ganze Minuten. Die Seite schiebt
+        # stufenlos dazwischen, indem sie zwischen zwei Stufen mischt.
+        reichweite=i16(R.ravel(), 1),
+        stufen=[float(q) for q in STUFEN], stufe_vor=int(vor),
+        stufe_kennzahlen=kerne,
         einzug=i16(np.rint(G / 100.0), 1),
         umriss=ringe(geo["outline"]), laender=ringe(geo["states"]),
     )
@@ -392,8 +412,8 @@ def main():
     print("geschrieben: %s (%.0f kB)" % (p, os.path.getsize(p) / 1000))
     print("Modellhoehe: Mittel %.1f, Median %.1f, Max %.0f Minuten"
           % (th_.mean(), np.median(th_), th_.max()))
-    print("gezeichnetes Relief: 0 .. %.0f Minuten ueber dem besten Bahnhof"
-          % zugang.max())
+    print("gezeichnetes Relief bei q = %.0f %%: %.0f .. %.0f Minuten"
+          % (VORGABE * 100, reichweite.min(), reichweite.max()))
     print("Stress %.4f -> %.4f -> %.4f -> %.4f | Grundriss %.1f / %.1f km"
           % tuple(kenn))
 
