@@ -208,8 +208,9 @@ ist eine Zeile hoch, weil jede Zeile, die er sich nimmt, der Karte fehlt.
 - **Landkarte → Zeitkarte** verzieht die Karte von der Geografie in die
   Reisezeit. Umriss und Ländergrenzen laufen mit — verschoben mit dem
   Verschiebungsfeld der Bahnhöfe selbst, damit die Kieler Förde die Kieler
-  Förde bleibt, auch wenn Kiel wegläuft. Der **Abspielknopf** fährt hin und
-  her: die Verformung als Bewegung statt als zwei Standbilder.
+  Förde bleibt, auch wenn Kiel wegläuft. Der **Abspielknopf** fährt hin und her
+  und hält an beiden Enden eine Dreiviertelsekunde an: sonst kehrt die Fahrt im
+  Endzustand um, ohne ihn gezeigt zu haben.
 - **Anteil Deutschlands** ist der Regler, der die Höhe *definiert*: von einem
   Fünfzigstel (Dichtekarte) bis zu neun Zehnteln (Geografiekarte). Achtzehn
   Stufen liegen vorgerechnet in der Nutzlast, dazwischen wird gemischt. Auch
@@ -222,6 +223,25 @@ ist eine Zeile hoch, weil jede Zeile, die er sich nimmt, der Karte fehlt.
   Ganze: auf der Landkarte sind das ausgefranste Sterne, auf der Zeitkarte
   müssen daraus Kreise werden.
 - Zeiger über einen Punkt zeigt Name, Erreichbarkeit und Zahl der Halte.
+
+### Auflösung und Kanten
+
+Das Höhenfeld wird mit **einer Zelle je Bildschirmpixel** gerastert, nicht mit
+einer festen Minutenzahl: `ZELLE = Feinheit / Maßstab`. Drei Minuten waren auf
+einem großen Schirm zweieinhalb Pixel, und alles, was ins Raster gezeichnet
+wird — Farbbänder, Höhenlinien, Licht —, war um diesen Faktor verwaschen; auf
+dem Telefon waren dieselben drei Minuten Verschwendung. Das ruhende Bild ist
+damit zweieinhalbmal feiner je Achse und sechsmal so zellenreich wie vorher.
+
+Bezahlt ist das mit einem anderen Rechenweg: das Feld entsteht nicht mehr
+Glocke für Glocke, sondern aus Impulsen plus **drei Kastenfiltern**
+hintereinander — eine Glocke auf drei Prozent genau, aber O(Zellen) statt
+O(n · r²). Bei 1,5 Minuten je Zelle sind das 118 ms statt 647.
+
+Und die Küste wird **beschnitten statt ausmaskiert**: dieselben Dreiecke und
+Inselscheiben, aber als Pfad in Bildschirmkoordinaten. Ein Pfad hat keine
+Auflösung — eine Maske im Feldraster wurde beim Hochskalieren bilinear
+weichgezeichnet, und die Küste war ein Verlauf über zweieinhalb Pixel.
 
 ### Der Bildausschnitt
 
@@ -254,7 +274,7 @@ obersten sechs der fünfunddreißig Farbbänder. Die Grenze ist nicht gesetzt,
 sondern abgeleitet: sie liegt dort, wo die Leiter vom Wasserstand bis zum
 höchsten Wert **auf dem Land** ihre letzten sechs Bänder erreicht, und steht
 in absoluten Minuten in der Tafel. Bei einem Viertel und Wasser auf 250
-Minuten liegt sie in der Zeitkarte bei 524 Minuten, in der Landkarte bei 435,
+Minuten liegt sie in der Zeitkarte bei 467 Minuten, in der Landkarte bei 435,
 und Schnee haben dann der Zipfel um Konstanz, der Bayerische Wald bei Passau,
 die Heidekrautbahn bei Groß Schönebeck, Oberstdorf, Garmisch und einzelne
 Haltepunkte, an denen zweimal am Tag ein Zug hält. Sylt und die Rügener
@@ -263,12 +283,16 @@ Bäderbahn sind in der Zeitkarte über den Rand hinaus.
 Und je weiter der Regler in die Zeit läuft, desto mehr **Inseln** lösen sich
 vom Land. Das ist kein Zeichenfehler: die Federkarte schleudert die
 abgehängten Orte so weit hinaus, dass der verzogene Umriss ihnen nicht mehr
-folgen kann — 537 von 4.781 Bahnhöfen liegen in der reinen Zeitkarte jenseits
+folgen kann — 593 von 4.781 Bahnhöfen liegen in der reinen Zeitkarte jenseits
 der Küste, 108 davon sogar jenseits des Bildausschnitts. Ein Bahnhof gehört
-aber immer auf Land, also bekommt jeder Ausgewanderte seine eigene Scholle.
-Was dann im Meer treibt und noch im Bild ist, ist beschriftet: Freiburg
-Herdern, Kennelgarten in der Pfalz, Nistertal-Büdingen im Westerwald,
-Dienheim am Rhein, Demker in der Altmark.
+aber immer auf Land, also bekommt jeder Ausgewanderte seine eigene **Scholle**:
+eine Kreisscheibe mit hartem Rand und 11,5 Minuten Radius. Sie war eine
+Glockenkurve mit weichem Saum und doppeltem Radius, und daraus wurde auf dem
+Bildschirm ein ausgefranster Nebelfleck; wo mehrere Ausgewanderte dicht
+beieinander liegen, laufen die Scheiben jetzt zu einem Archipel zusammen statt
+zu einer Wolke. Was im Meer treibt und noch im Bild ist, ist beschriftet:
+Freiburg Herdern, Kennelgarten in der Pfalz, Nistertal-Büdingen im
+Westerwald, Dienheim am Rhein, Demker in der Altmark.
 
 ## Bauen
 

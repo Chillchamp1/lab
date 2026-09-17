@@ -136,11 +136,65 @@ Rand sieht nicht nach „aus der Karte gefallen" aus, sondern nach einem Fehler.
 
 Zwei Zahlen in der Seite haben sich dadurch verschoben, weil das Höhenfeld
 jetzt eine kleinere Fläche und damit ein anderes 99,5-Perzentil hat: die
-Schneegrenze liegt bei einem Viertel und Wasser auf 250 Minuten nun bei 524
+Schneegrenze liegt bei einem Viertel und Wasser auf 250 Minuten nun bei 467
 Minuten in der Zeitkarte (vorher 571) und bei 435 in der Landkarte. Und die
 beschrifteten Schollen sind andere, weil die schlimmsten von ihnen jetzt
 draußen liegen — darum kommen die Fernmarken aus einem größeren Vorrat, und
 das Budget zählt, was gemalt wurde, statt was angeboten war.
+
+## Die Kanten, die Auflösung, und was sie gekostet haben
+
+Die Karte war weich, und zwar aus zwei Gründen gleichzeitig.
+
+**Erstens die Maske.** Land und Meer wurden über einen Alphakanal im
+Feldraster getrennt, und das Feldbild wird auf den Bildschirm hochskaliert —
+dabei wird der Alphakanal bilinear mitinterpoliert. Bei drei Minuten je Zelle
+war eine Zelle zweieinhalb Pixel breit, und die Küste damit unvermeidlich ein
+Verlauf über zweieinhalb Pixel. Jetzt ist dieselbe Geometrie ein **Pfad in
+Bildschirmkoordinaten** und das Bild wird damit beschnitten. Ein Pfad hat
+keine Auflösung.
+
+**Zweitens das Raster selbst**, und hier steckte die eigentliche Arbeit. Es
+sollte deutlich feiner werden, ging aber nicht: das Feld entstand Glocke für
+Glocke, jeder Bahnhof legte seine Kurve mit σ = 11 Minuten ins Raster, und
+die Glockenfläche wächst mit dem *Quadrat* der Feinheit. Gemessen:
+
+| | Glocke für Glocke | Impulse + drei Kastenfilter |
+| --- | --- | --- |
+| ZELLE = 3,0 | 149 ms | 21 ms |
+| ZELLE = 1,5 | 647 ms | 118 ms |
+
+Der Ausweg ist alt und gut: drei Kastenfilter hintereinander sind eine Glocke
+auf drei Prozent genau, und ein Kastenfilter mit laufender Summe kostet je
+Zelle zwei Additionen, ganz gleich wie breit er ist. Jeder Bahnhof kommt als
+Impuls ins Raster (bilinear auf vier Zellen), Zähler und Nenner werden
+getrennt verwischt, der Quotient ist derselbe gewichtete Mittelwert wie vorher.
+
+Der zweitteuerste Posten war das **Löcherfüllen**: vierzig Durchgänge über das
+ganze Raster, jeder mit einer Kopie des Feldes — und zwar gerade bei der
+Landkarte, wo die halbe Bildfläche leer ist und nie ein Loch zuging. Darum war
+die Landkarte langsamer als die Zeitkarte (310 gegen 117 ms), was erst
+auffiel, als die Stufen einzeln gemessen wurden. Jetzt stehen die Löcher in
+einer Liste, die mit jeder Runde kürzer wird.
+
+Erst damit ließ sich das Raster **in Bildschirmpixeln** statt in Minuten
+setzen: eine Zelle je Pixel im Ruhezustand. Das ruhende Bild ist
+zweieinhalbmal feiner je Achse und sechsmal so zellenreich wie vorher — und
+dank der beiden Eingriffe trotzdem schneller zu rechnen als früher das grobe.
+
+Das gleiche Verfahren trägt das Isochronenfeld, und die marschierenden
+Quadrate laufen jetzt einmal über die Zellen statt achtmal: Kleinst- und
+Größtwert der vier Ecken sagen sofort, welche Stufen durch die Zelle laufen
+können, und bei den meisten keine.
+
+**Was der scharfe Schnitt sichtbar gemacht hat:** Umriss und Ländergrenzen
+sind zwei unabhängig vereinfachte Polygonzüge und stimmen nicht genau
+überein — 0,47 % der Landfläche deckt nur der Länderzug, 0,40 % nur der
+Umriss. Wo so ein Splitter weit von jedem Bahnhof liegt, steht er nun als
+kleine weiße Zunge im Meer, wo er vorher im Verlauf unterging. Gezeichnet
+wird trotzdem die Vereinigung: jede der beiden allein lässt Lücken, und dem
+reinen Umriss fielen neun Bahnhöfe aus dem Land. Das wäre in den Daten zu
+beheben, nicht im Zeichner.
 
 ## Was offen ist
 

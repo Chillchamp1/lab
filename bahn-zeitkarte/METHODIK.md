@@ -511,15 +511,47 @@ Zwei Dinge kann das nicht:
   gelesen ist es irreführend, und im Zeiger steht sie trotzdem.
 
 ### 4.3 Das Höhenfeld
-Aufgetragen wird **gespritzt, nicht gesucht**: jeder Bahnhof legt eine
-Glockenkurve mit σ = 11 Minuten (etwa 10 km) ins Feldgitter, danach wird durch
-die Summe der Gewichte geteilt. Das kostet einmal die Zahl der Bahnhöfe mal
-die Fläche der Glocke, statt für jede Feldzelle die nächsten Bahnhöfe zu
-suchen — gemessen ein Achtel der Zeit, und das Feld wird glatter. Löcher, wo
-keine Glocke hinreicht, werden aus den Nachbarn nachgezogen, bis keines mehr
-offen ist; eine frühere Fassung stopfte sie nach vier Durchgängen mit einem
-festen Ersatzwert, und aus dem wurde eine weiße Kuppe im Nirgendwo. Zuletzt
-zwei Durchgänge Binomialglättung.
+
+Das Feld ist ein mit einer Glocke gewichteter Mittelwert der Bahnhofshöhen,
+σ = 11 Minuten (etwa 10 km).
+
+Gerechnet wurde das lange **Glocke für Glocke**: jeder Bahnhof legte seine
+Kurve ins Raster, danach wurde durch die Summe der Gewichte geteilt. Das
+kostet die Zahl der Bahnhöfe mal die Fläche der Glocke, mit je einem `exp()`
+darin — und die Glockenfläche wächst mit dem *Quadrat* der Feinheit. Bei drei
+Minuten je Zelle waren es zweieinhalb Millionen `exp()` und 149 ms; bei
+anderthalb Minuten zehn Millionen und 647 ms. Damit war das Raster nicht
+feiner zu machen, und genau das sollte es werden (4.11).
+
+Jetzt kommt jeder Bahnhof als **Impuls** ins Raster — bilinear auf vier Zellen
+verteilt, damit seine Lage im Bruchteil einer Zelle nicht verloren geht —, und
+dann werden Zähler und Nenner **getrennt verwischt**. Der Quotient ist
+derselbe gewichtete Mittelwert wie vorher, nur kostet er O(Zellen) statt
+O(n · r²). Verwischt wird mit **drei Kastenfiltern hintereinander**: das ist
+eine Glocke auf drei Prozent genau (Kovesi), und ein Kastenfilter mit
+laufender Summe kostet je Zelle zwei Additionen, ganz gleich wie breit er ist.
+Aus drei Durchgängen mit Radius r wird σ² = r² + r, also ist r die positive
+Wurzel davon. Am Rand wird mit Null gerechnet, was man hier darf, weil Zähler
+und Nenner denselben Filter sehen und sich der Rand im Quotienten
+heraushebt.
+
+| | Glocke für Glocke | drei Kastenfilter |
+| --- | --- | --- |
+| ZELLE = 3,0 | 149 ms | 21 ms |
+| ZELLE = 1,5 | 647 ms | 118 ms |
+
+**Löcher**, wo kein Filter mehr hinreicht, werden aus den Nachbarn
+nachgezogen. Sie liegen immer *außerhalb* des Landes — ein Bahnhof ist selbst
+ein Impuls und hat damit Abdeckung —, und das Land wird ohnehin beschnitten
+(4.5); gebraucht wird ihr Wert nur für den Saum, über den beim Hochskalieren
+interpoliert wird. Vierzig Durchgänge über das **ganze** Raster, jeder mit
+einer Kopie des Feldes, waren darum der zweitteuerste Posten der Rechnung —
+und zwar gerade bei der Landkarte, wo die halbe Bildfläche leer ist und nie
+ein Loch zuging. Jetzt stehen die Löcher in einer Liste, die mit jeder Runde
+kürzer wird; nach acht Runden bekommt der Rest das Mittel des Feldes, weil er
+nie gezeigt wird, NaN sich aber durch die Glättung frisst. Eine sehr frühe
+Fassung stopfte alle Löcher mit einem festen Wert, und aus dem wurde eine
+weiße Kuppe im Nirgendwo. Zuletzt zwei Durchgänge Binomialglättung.
 
 σ war eine Fassung lang 15 Minuten. Das neue Maß springt zwischen Nachbarn
 stärker als das alte, und bei 15 wusch das Feld die Knoten weg: Frankfurt
@@ -540,12 +572,20 @@ Zacken in die Küste.
 
 Die zweite Schicht gilt **nur für die Ausgewanderten**. Der verzogene Umriss
 ist ein geglättetes Mittel, und die Federkarte schleudert einzelne Bahnhöfe
-weit darüber hinaus: **537 von 4.781** liegen in der reinen Zeitkarte jenseits
+weit darüber hinaus: **593 von 4.781** liegen in der reinen Zeitkarte jenseits
 der Küste, die Rügener Bäderbahn zwölf Stunden von allem entfernt. Ein Bahnhof
 gehört aber immer auf Land, sonst steht er im Schwarzen neben der Karte — und
 genau das war zu sehen. Also bekommt jeder Bahnhof, der außerhalb des
-Umrisses liegt, eine weiche Scholle von etwa 20 Minuten Radius; benachbarte
-Schollen wachsen zusammen.
+Umrisses liegt, eine eigene **Scholle**; benachbarte Schollen wachsen
+zusammen.
+
+Die Scholle war eine Glockenkurve mit weichem Saum und gut zwanzig Minuten
+Radius, und auf dem Bildschirm wurde daraus ein ausgefranster Nebelfleck.
+Jetzt ist sie eine **Kreisscheibe mit hartem Rand und 11,5 Minuten Radius** —
+halb so groß. Das ist zweimal besser: der Rand ist eine Kante statt eines
+Verlaufs, und die Scheibe hat eine Zahl, an der man sie fassen kann. Wo
+mehrere Ausgewanderte dicht beieinander liegen, laufen die Scheiben zu einer
+Gruppe zusammen, und aus der Wolke wird ein Archipel.
 
 Das stellt sich von selbst richtig ein: in der Landkarte liegt kein deutscher
 Bahnhof draußen, es kommt nichts hinzu, und die Karte ist genau Deutschland.
@@ -571,6 +611,36 @@ Umlaufrichtung **nach** dem Verziehen geprüft und notfalls gedreht: dann
 zählen alle positiv, und eine Überlappung ist nie ein Loch. Nachgezählt bleiben
 zwei Löcher im Land — und die sind echt: die Bodden hinter Rügen und das
 Wattenmeer bei Husum.
+
+**Beschnitten, nicht maskiert.** Aus diesen Dreiecken und den Inselscheiben
+(4.4) wurde lange eine Maske im Feldraster: ein Alphakanal je Zelle, den das
+Bild mitführte. Der hat die Küste weich gemacht, und zwar unvermeidlich — das
+Feldbild wird auf den Bildschirm hochskaliert, und dabei wird der Alphakanal
+bilinear mitinterpoliert. Bei drei Minuten je Zelle war eine Zelle zweieinhalb
+Pixel breit, und die Küste damit ein Verlauf über zweieinhalb Pixel.
+
+Jetzt ist dieselbe Geometrie ein **Pfad in Bildschirmkoordinaten**, und das
+Bild wird damit beschnitten (`clip`) statt ausmaskiert. Ein Pfad hat keine
+Auflösung; die Kante ist so scharf, wie der Bildschirm kann. Der Nonzero-Umlauf
+trägt weiter, weil die Dreiecke nach dem Verziehen auf positive
+Umlaufrichtung gedreht werden und ein `arc()` mit wachsendem Winkel dieselbe
+hat — eine Überlappung addiert also, sie hebt sich nicht auf. Im Bild selbst
+steht nun überall Alpha 255, auch außerhalb des Landes: dort gibt das
+Höhenfeld trotzdem eine sinnvolle Farbe her, und darum blutet an der
+Schnittkante kein Schwarz ein.
+
+Das Raster braucht die Maske weiter, aber nur noch als *Statistik* — für die
+Frage, welche Zellen beim 99,5-Perzentil der Farbleiter mitzählen (4.7), und
+für die Frage, wer außerhalb des Umrisses liegt (4.4). Gezeichnet wird sie
+nicht mehr.
+
+Der scharfe Schnitt zeigt eine Eigenheit der Daten, die der Verlauf verdeckt
+hat: Umriss und Ländergrenzen sind zwei unabhängig vereinfachte Polygonzüge
+und stimmen nicht genau überein. 0,47 % der Landfläche deckt nur der
+Länderzug, 0,40 % nur der Umriss. Wo so ein Splitter weit von jedem Bahnhof
+liegt, steht er jetzt als kleine weiße Zunge im Meer. Gezeichnet wird trotzdem
+die **Vereinigung**, denn jede der beiden allein lässt Lücken, und dem reinen
+Umriss fielen neun Bahnhöfe aus dem Land.
 
 ### 4.6 Der Bildausschnitt steht fest — und ist zugeschnitten
 
@@ -656,7 +726,7 @@ Reliefkarte bekommt.
 Die **Schneegrenze** ist nicht gesetzt, sondern abgeleitet: die Leiter läuft
 vom Wasserstand bis zum höchsten Wert **auf dem Land**, und die letzten sechs
 Bänder sind Schnee. In Minuten steht sie in der Tafel — bei einem Viertel und
-Wasser auf 250 Minuten liegt sie in der Zeitkarte bei 524 Minuten, in der
+Wasser auf 250 Minuten liegt sie in der Zeitkarte bei 467 Minuten, in der
 Landkarte bei 435. Weil der Anteilsregler die ganze
 Leiter verschiebt, wird der Wasserstand intern als Aufschlag auf den besten
 Bahnhof geführt und nur absolut beschriftet: sonst würde ein Zug am
@@ -681,6 +751,16 @@ geteilt, also in Zellen gemessen statt in Minuten. Damit ist die Linie im
 Steilen so dünn wie im Flachen.
 
 ### 4.8 Die Beschriftung
+
+Die Schrift ist **8 Pixel** groß, auf schmalen Schirmen 9. Sie war 11,5 und
+damit für eine Karte zu laut: sie hat die Karte gelesen statt sie zu
+beschriften, und mit dem feineren Raster (4.11) stand nun ein gestochenes
+Relief unter einem Plakat. Dreißig Prozent kleiner ist das schonende Ende der
+Spanne, die gewünscht war — eine Beschriftung, die man nicht mehr liest, ist
+keine. Was sie an Größe verliert, bekommt sie an Kontrast zurück: der schwarze
+Saum um jeden Namen bleibt anteilig dicker als vorher, und der rote Punkt
+schrumpft mit (1,7 Pixel Radius statt 2,1). Alle Abstände hängen an der
+Schriftgröße, damit ein anderer Wert die Halterei nicht durcheinanderbringt.
 
 Beschriftet werden **Orte, nicht Bahnhofsnamen**. Der Fahrplan kennt „Pasing"
 und „Oberkotzau" mit vielen Halten und Karlsruhe mit wenigen; und er nennt
@@ -708,9 +788,13 @@ gemalt wurde.
 ### 4.9 Isochronen
 
 Für 54 Knoten liegt die Reisezeit zu allen 4.815 Bahnhöfen in der Seite
-(als 8-Bit-Werte in Schritten von 3 Minuten). Daraus wird dasselbe
-Glockenfeld gebaut und mit marschierenden Quadraten in Linien gleicher
-Reisezeit geschnitten, alle 60 Minuten.
+(als 8-Bit-Werte in Schritten von 3 Minuten). Daraus wird dasselbe Feld wie in
+4.3 gebaut — Impulse, dann Zähler und Nenner getrennt verwischt, hier mit
+σ = 22 Minuten, weil eine Isochrone eine Linie sein soll und kein Zickzack —
+und mit marschierenden Quadraten in Linien gleicher Reisezeit geschnitten,
+alle 60 Minuten. Die Zellen werden dafür **einmal** durchlaufen und nicht
+achtmal: Kleinst- und Größtwert der vier Ecken sagen sofort, welche Stufen
+überhaupt durch die Zelle laufen können, und bei den meisten keine.
 
 Das ist die Probe aufs Ganze, und sie ist der Grund, warum die Isochronen
 bedienbar sind statt fest: auf der Landkarte sind das ausgefranste Sterne,
@@ -741,12 +825,48 @@ der Verformung dauert 6 Sekunden, eine Fahrt durch die Anteile 8 — dort liegen
 achtzehn gemessene Stufen hintereinander, und jede soll man einen Augenblick
 lang sehen.
 
+An beiden Enden **hält die Fahrt kurz an**, eine Dreiviertelsekunde. Ohne den
+Halt kehrt sie im Endzustand um, ohne ihn gezeigt zu haben — und die beiden
+Endzustände sind gerade das, was die Karte behauptet: hier die Geografie, dort
+die Zeit. Dreiviertel einer Sekunde reicht, um das Bild stehen zu sehen, und
+ist kurz genug, dass es nicht nach einem Hänger aussieht.
+
 Es läuft immer nur **einer**: zwei gleichzeitige Bewegungen würden dieselbe
 Verformung erklären, und dann ordnet man keine von beiden mehr zu. Wer selbst
-an einen Regler greift, hat Vorrang und stoppt die Fahrt. Während sie läuft,
-wird das Höhenfeld gröber gerastert (5,5 statt 3,0 Minuten je Zelle) — ein
-Bild, das ruckelt, zeigt weniger als ein Bild, das eine Rasterstufe verliert.
-Im verdeckten Tab hält die Fahrt an.
+an einen Regler greift, hat Vorrang und stoppt die Fahrt. Im verdeckten Tab
+hält sie an.
+
+### 4.11 Wie fein das Raster ist
+
+Nicht in Minuten, sondern in **Bildschirmpixeln**: eine Zelle soll etwa so
+groß sein wie ein Pixel, also `ZELLE = Feinheit / Maßstab`. Eine feste
+Minutenzahl war beides falsch — auf dem großen Schirm zu grob (drei Minuten
+waren dort zweieinhalb Pixel, und alles, was ins Raster gezeichnet wird, also
+Farbbänder, Höhenlinien und Licht, war um diesen Faktor verwaschen) und auf
+dem Telefon Verschwendung, weil dieselbe Minute dort ein Drittel so breit ist.
+So bleibt die Schärfe auf jedem Gerät dieselbe und die Rechenlast auch. Nach
+oben deckelt eine Höchstzahl von 700.000 Zellen die Rechnung, damit ein sehr
+großes Fenster sie nicht sprengt.
+
+Vier Stufen, in Pixeln je Zelle:
+
+| | Pixel je Zelle | bei 1440 × 900 | Bild |
+| --- | --- | --- | --- |
+| in Ruhe | 1,0 | 1,24 min, 696.000 Zellen | 241–367 ms |
+| im Halt an den Enden | 1,5 | 1,85 min | |
+| beim Ziehen | 3,0 | 3,71 min, 78.000 Zellen | 83–100 ms |
+| in der Fahrt | 3,8 | 4,70 min, 48.000 Zellen | 63–71 ms |
+
+(Gemessen ohne Beschleunigung in einem Container; auf einem gewöhnlichen
+Rechner deutlich schneller.) Vorher war es fest 3,0 / 4,5 / 5,5 Minuten: das
+ruhende Bild ist jetzt also zweieinhalbmal feiner je Achse und sechsmal so
+zellenreich — und dank 4.3 trotzdem schneller zu rechnen als früher das grobe.
+Im Halt nicht ganz das Feinste, denn ein Bild, das eine halbe Sekunde zum
+Rechnen braucht, sieht mitten in einer Fahrt nicht nach einer Pause aus,
+sondern nach einem Hänger.
+
+Ein Bild, das ruckelt, zeigt weniger als ein Bild, das eine Rasterstufe
+verliert; ein Bild, das steht, soll die feinste haben.
 
 ## 5. Was fehlt
 
