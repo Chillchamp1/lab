@@ -441,7 +441,12 @@ function kodierer(datei, breite, hoehe, mehr) {
 const FASSUNGEN = [
   { name: 'reddit', b: BREITE, h: HOEHE,
     mehr: ['-crf', '18', '-maxrate', '2600k', '-bufsize', '5200k'] },
-  { name: 'hoch', b: HOCH_B, h: HOCH_H, mehr: ['-crf', '16'] },
+  /* CRF 16 gab bei 34 Sekunden 42,8 MB, und damit passte die Datei durch
+     keinen der Kanaele, ueber die sie danach verschickt werden sollte (30 MB).
+     Eine zweite Kodierung rettet das, kostet aber eine Generation. 19 landet
+     bei 30 MB, 20 bei 27 — genommen ist 20, und der Unterschied zu 16 ist bei
+     diesem Stoff nicht zu sehen. Die Auflösung bleibt voll. */
+  { name: 'hoch', b: HOCH_B, h: HOCH_H, mehr: ['-crf', '20'] },
 ];
 
 const t0 = Date.now();

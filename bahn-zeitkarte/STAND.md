@@ -668,8 +668,18 @@ Potsdam reicht.
 
 Zwei Fassungen fallen aus **einem** Bilddurchgang, weil das Rechnen der Bilder
 das Teure ist und die Kodierer nebenherlaufen: `film.mp4` mit 1080 × 1920 und
-dem gedeckelten Rezept für Reddit, `film-hoch.mp4` mit 1440 × 2560 und CRF 16
-ohne Deckel für alles andere. Die hohe Fassung ist zugleich die Rückversicherung:
+dem gedeckelten Rezept für Reddit, `film-hoch.mp4` mit 1440 × 2560 ohne Deckel
+für alles andere.
+
+Die hohe Fassung stand zuerst auf CRF 16 und kam damit bei 34 Sekunden auf
+**42,8 MB** — und passte durch keinen der Kanäle, über die sie danach
+verschickt werden sollte (30 MB). Eine zweite Kodierung rettet das, kostet aber
+eine Generation; gemessen landet CRF 19 bei 30 MB und 20 bei 27. Jetzt steht
+20 im Rezept: die Auflösung bleibt voll, und bei diesem Stoff ist der
+Unterschied zu 16 nicht zu sehen. Die Lehre ist dieselbe wie beim
+Bitratendeckel, nur eine Stufe später — **eine Datei, die niemand
+weiterschicken kann, ist keine fertige Datei.** Die Grenze gehört ins Rezept
+und nicht in eine Nachbearbeitung. Die hohe Fassung ist zugleich die Rückversicherung:
 Sollte Reddit die gedeckelte doch abweisen, lässt sich daraus in einer Minute
 eine vorsichtigere rechnen, ohne die zwei Stunden neu zu rendern.
 
