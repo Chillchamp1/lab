@@ -510,6 +510,13 @@ Nachgemessen treffen alle 75 Kästen des Anfangsbildes ihren eigenen Bahnhof.
 Reglerstellung schwarzer Grund, und der Blick muss nicht in die Seitenspalte.
 In welcher Ecke, sagt der gewählte Bahnhof: in der von ihm entferntesten. Die
 erste Fassung stand immer unten links und lag damit bei München auf München.
+
+Hochkant war der Kasten zu groß: 129 Punkte auf einer Karte von 416, fast ein
+Drittel, und damit mehr im Weg als die Auskunft wert war. Unter 560 Punkten
+Fensterbreite stehen die vier Zahlen jetzt mit Trennpunkten statt in Sätzen und
+der Hinweis in fünf Wörtern — zwei Zeilen statt vier, nachgemessen **78 Punkte**
+statt 129, ein Fünftel der Karte statt einem Drittel. Am Schirm bleibt der
+ausgeschriebene Text.
 Sie nennt Minuten bis zum Anteil, Aufschlag auf den besten Bahnhof im Land,
 Halte am Tag, Einzugsgebiet. Zwei der vier Zahlen wandern mit den Reglern, sie
 hängt also an jedem Bild; neu geschrieben wird sie nur, wenn sich etwas darin
