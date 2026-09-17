@@ -83,33 +83,45 @@ const CSSB = SATZ, CSSH = Math.round(SATZ * HOEHE / BREITE);
 const weich = u => u * u * (3 - 2 * u);                  // sanft an und ab
 const misch = (a, b, u) => a + (b - a) * weich(u);
 const HELD = 'Berlin Hbf';   /* siehe unten, Akt 8 */
-/* Die Kamera geht beim Verziehen auf. Die Landkarte spannt 715 x 956 Minuten,
-   die Zeitkarte 1 274 x 1 302 — bei festem Zoom steht am Anfang die Haelfte
-   des Bildes schwarz oder am Ende fliegen die Enden hinaus. ZNAH fuellt die
-   Landkarte, ZWEIT fasst die Zeitkarte. */
-const ZNAH = 1.26, ZWEIT = 0.86, ZNAHE = 1.5;
+/* Der Wasserstand wird intern als Aufschlag auf den besten Bahnhof gefuehrt,
+   und gewaehlt ist er so, dass Berlin **gerade so** ein See ist.
+   Nicht nach Berlins eigener Hoehe: die liegt bei 293 Minuten, also 61 ueber
+   dem besten Bahnhof — bei 62 Aufschlag blieb Berlin trocken. Ueberflutet wird
+   nicht der Bahnhof, sondern das **gemalte Feld** an seinem Ort, und das liegt
+   dort 35 Minuten hoeher (96 Aufschlag, 329 absolut): Berlin ist eine Insel
+   guter Anbindung in einem schlecht angebundenen Brandenburg, und die Glaettung
+   zieht es hoch. Einen Zaehler darueber, und der Punkt geht unter, ohne dass
+   der See schon bis Potsdam reicht. Nachgemessen, nicht geraten. */
+const WASSER = 97;
+/* Zoom und Mitte werden **nicht gesetzt, sondern gerechnet** — je Bild aus
+   dem, was gerade zu sehen ist (siehe `stellen`). Von Hand gesetzt war beides
+   falsch: der Rahmen der Seite kommt ganz von der Zeitkarte und liegt 58
+   Minuten westlich der Mitte der Landkarte, also stand Sachsen im ersten Bild
+   halb draussen. Fuer die Kamerafahrt am Ende bleibt ein Zoom stehen, weil
+   dort der Bahnhof den Rahmen gibt und nicht das Land. */
+const ZNAHE = 1.5;
 const AKTE = [
   { s: 3.5, t: '<b>Height is time.</b> How long until half of Germany is '
               + 'within reach by train — from every one of 4,781 stations.',
-    f: () => ({ morph: 0, zoom: ZNAH }) },
+    f: () => ({ morph: 0 }) },
   { s: 13, t: '<b>Now distance becomes travel time.</b> Every station moves to '
              + 'where the timetable puts it, and the coastline comes along.',
-    f: u => ({ morph: weich(u), zoom: misch(ZNAH, ZWEIT, u) }) },
+    f: u => ({ morph: weich(u) }) },
   { s: 4.5, t: '<b>The time map.</b> The high-speed cross pulls together; '
               + 'branch lines fly out to sea and become islands.',
-    f: () => ({ morph: 1, zoom: ZWEIT }) },
+    f: () => ({ morph: 1 }) },
   { s: 4, t: '<b>And back.</b> Same heights, same stations — only the places '
             + 'return to their coordinates.',
-    f: u => ({ morph: 1 - weich(u), zoom: misch(ZWEIT, ZNAH, u) }) },
+    f: u => ({ morph: 1 - weich(u) }) },
   { s: 7, t: '<b>Who has to be in reach?</b> Turn the share down to a few per '
             + 'cent and the Ruhr wins: it is big enough for itself.',
-    f: u => ({ morph: 0, zoom: ZNAH, anteil: Math.exp(misch(Math.log(0.5), Math.log(0.03), u)) }) },
+    f: u => ({ morph: 0, anteil: Math.exp(misch(Math.log(0.5), Math.log(0.03), u)) }) },
   { s: 8.5, t: '<b>Nine tenths of the country,</b> and the map turns back into '
               + 'a geography map: now it measures where a place is.',
-    f: u => ({ morph: 0, zoom: ZNAH, anteil: Math.exp(misch(Math.log(0.03), Math.log(0.9), u)) }) },
+    f: u => ({ morph: 0, anteil: Math.exp(misch(Math.log(0.03), Math.log(0.9), u)) }) },
   { s: 4.5, t: '<b>Half of Germany</b> is the setting in between — real '
               + 'distance, and a central position starts to pay.',
-    f: u => ({ morph: 0, zoom: ZNAH, anteil: Math.exp(misch(Math.log(0.9), Math.log(0.5), u)) }) },
+    f: u => ({ morph: 0, anteil: Math.exp(misch(Math.log(0.9), Math.log(0.5), u)) }) },
   /* Und zuletzt die Kamera an einem einzelnen Bahnhof. Der Held darf nicht
      hinausfliegen: Göhren auf Rügen wandert 182 Minuten und landet weit im
      Meer — die Kamera stand dann mit ihm im Schwarzen und das Land in einer
@@ -118,8 +130,7 @@ const AKTE = [
      Akt zeigen soll. */
   { s: 4, t: '<b>Berlin Hbf.</b> A hundred and fifty-two minutes lie between '
             + 'where it is and where the timetable puts it.',
-    f: u => ({ morph: 0, wahl: HELD, folgt: true,
-               zoom: misch(ZNAH, ZNAHE, u) }) },
+    f: u => ({ morph: 0, wahl: HELD, nah: ZNAHE, nahU: weich(u) }) },
   { s: 12, t: '<b>Hold the camera on one station</b> and it stands still while '
              + 'the whole country warps past it.',
     f: u => ({ morph: weich(u), wahl: HELD, folgt: true, zoom: ZNAHE }) },
@@ -149,9 +160,25 @@ function bildZustand(i) {
   const nachText = a < AKTE.length - 1 ? AKTE[a + 1].t : null;
   const raus = nachText === akt.t ? 1
              : Math.min(1, (v + akt.s - t) / BLENDE);
-  const z = { morph: 0, anteil: 0.5, zoom: ZNAH, wahl: null, folgt: false,
-              ...akt.f(u) };
+  const z = { morph: 0, anteil: 0.5, zoom: null, wahl: null, folgt: false,
+              nah: null, nahU: 0, wasser: WASSER, ...akt.f(u) };
   z.text = akt.t;
+  /* „distance **is** travel time" stimmt erst, wenn die Karte fertig verzogen
+     ist. Am Anfang ist es eine Landkarte, dazwischen wird sie eine — und ein
+     Untertitel, der schon im ersten Bild die Zeitkarte behauptet, macht genau
+     die Aussage, die die Karte an dieser Stelle noch nicht macht. */
+  /* Und in welche Richtung sie es tut, sagt der Akt selbst — einen Wimpernschlag
+     weiter gefragt. „turning into" im Rueckweg waere wieder dieselbe Sorte
+     kleiner Unwahrheit. */
+  const spaeter = akt.f(Math.min(1, u + 0.01)).morph;
+  const hin = spaeter === undefined || spaeter >= z.morph;
+  z.unter = z.morph < 0.015
+    ? '4,781 stations · a map of Germany, coloured by how far its trains get'
+    : z.morph > 0.985
+    ? '4,781 stations · distance on this map <b>is</b> travel time by train'
+    : hin
+    ? '4,781 stations · distance is <b>turning into</b> travel time'
+    : '4,781 stations · and <b>turning back</b> into geography';
   z.deck = Math.max(0, Math.min(1, Math.min(vorText === akt.t ? 1 : rein, raus)));
   return z;
 }
@@ -221,7 +248,7 @@ await page.waitForTimeout(1200);
 const KOPF = `
   <div id="filmkopf">
     <h2>Germany, drawn by its timetables</h2>
-    <p>4,781 stations · distance on this map <b>is</b> travel time by train</p>
+    <p id="filmunter">&nbsp;</p>
   </div>`;
 const FUSS = `<div id="filmfuss"><p id="filmtext">&nbsp;</p></div>`;
 const FILMCSS = `
@@ -276,12 +303,48 @@ if (lage.hoehe > CSSH + 2) throw new Error(
 async function stellen(z) {
   await page.evaluate(w => {
     if (Math.abs(Z.anteil - w.anteil) > 1e-9) { Z.anteil = w.anteil; stufeSetzen(); }
+    Z.wasser = w.wasser;
     Z.morph = w.morph;
-    V.zoom = w.zoom;
     const i = w.wahl === null ? -1 : nm.indexOf(w.wahl);
     if (i !== Z.wahl) waehlen(i);
     folgt = w.folgt && i >= 0;
-    if (!folgt) { V.cx = (RAHMEN[0] + RAHMEN[1]) / 2; V.cy = (RAHMEN[2] + RAHMEN[3]) / 2; }
+    /* **Deutschland muss ganz im Bild sein**, bei jeder Reglerstellung — und
+       welcher Zoom das leistet, weiss nur das Bild selbst. Gerechnet wird der
+       Rahmen aus dem verzogenen Umriss und den Bahnhofsorten ohne die
+       aeussersten halben Prozent: der Umriss allein liesse die Schollen
+       abschneiden, alle Bahnhoefe zusammen zwingen wegen einer Handvoll
+       Aussenseiter (Sylt, Mittenwald) die ganze Karte auf Briefmarkengroesse.
+       `lage` und `umrissVerziehen` haengen nur am Morph und nicht an der
+       Ansicht, laufen hier also vorweg; `zeichne` rechnet sie danach noch
+       einmal, mit demselben Ergebnis. */
+    lage(); umrissVerziehen();
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+    for (const r of umrissW) for (let k = 0; k < r.length; k += 2) {
+      if (r[k] < x0) x0 = r[k];       if (r[k] > x1) x1 = r[k];
+      if (r[k+1] < y0) y0 = r[k+1];   if (r[k+1] > y1) y1 = r[k+1];
+    }
+    const xs = Array.from(wx.slice(0, n)).sort((a, c) => a - c);
+    const ys = Array.from(wy.slice(0, n)).sort((a, c) => a - c);
+    const q = (a, t2) => a[Math.floor(t2 * (a.length - 1))];
+    x0 = Math.min(x0, q(xs, 0.005)); x1 = Math.max(x1, q(xs, 0.995));
+    y0 = Math.min(y0, q(ys, 0.005)); y1 = Math.max(y1, q(ys, 0.995));
+    const saum = 1.04;
+    const wcx = (x0 + x1) / 2, wcy = (y0 + y1) / 2;
+    const wz = Math.min(W / ((x1 - x0) * saum), H / ((y1 - y0) * saum)) / skalaBasis;
+    if (w.nah !== null && i >= 0) {
+      /* Das Heranfahren an den Bahnhof: Mitte und Zoom wandern vom gerechneten
+         Rahmen auf ihn zu. Die Mitte wird hier selbst gesetzt und nicht dem
+         Folgen ueberlassen, sonst sprang sie im ersten Bild des Akts. */
+      folgt = false;
+      V.zoom = wz + (w.nah - wz) * w.nahU;
+      V.cx = wcx + (wx[i] - wcx) * w.nahU;
+      V.cy = wcy + (wy[i] - wcy) * w.nahU;
+    } else if (w.zoom !== null) {
+      V.zoom = w.zoom;                      /* die Mitte macht `folgt` */
+    } else {
+      V.cx = wcx; V.cy = wcy; V.zoom = wz;
+    }
+    document.getElementById('filmunter').innerHTML = w.unter;
     const t = document.getElementById('filmtext');
     t.innerHTML = w.text;
     t.style.opacity = w.deck;
