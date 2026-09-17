@@ -593,18 +593,48 @@ mit drei Reglern. Zehn Akte über 65 Sekunden stellen Morph, Anteil, Zoom und
 den gewählten Bahnhof — ein Filmdrehbuch in einer Seite, die niemand als Film
 benutzt, wäre totes Gewicht für jeden Besucher.
 
-Zwei Fassungen des Drehbuchs sind verworfen worden, beide aus demselben Grund
-— die Kamera stand im Schwarzen:
+**Zoom und Mitte werden gerechnet, nicht gesetzt.** Drei Fassungen haben das
+von Hand versucht, und alle drei waren falsch:
 
 - **Fester Zoom.** Die Landkarte spannt 715 × 956 Minuten, die Zeitkarte
   1.274 × 1.302. Bei einem Zoom, der die Landkarte füllt, fliegt die Zeitkarte
   hinaus; bei einem, der die Zeitkarte fasst, steht am Anfang die Hälfte des
-  Bildes schwarz. Jetzt geht die Kamera beim Verziehen von 1,26 auf 0,86 auf.
+  Bildes schwarz.
+- **Zoom von Hand auf- und zufahren** (1,26 → 0,86). Besser, aber die Mitte
+  blieb die des **Rahmens** — und der kommt ganz von der Zeitkarte und liegt
+  58 Minuten westlich der Mitte der Landkarte. Sachsen stand im ersten Bild
+  halb draußen: Dresden am Rand, Görlitz weg. Ein Film über Deutschland, auf
+  dem Deutschland nicht ganz drauf ist.
 - **Göhren als Held des Kamera-Akts.** Göhren wandert 182 Minuten und landet
   weit im Meer: die Kamera stand mit ihm im Schwarzen und Deutschland in einer
   Ecke. Berlin Hbf wandert 152 Minuten und landet **im** Land — es steht still,
   und Deutschland zieht darum herum vorbei. Das ist der Satz, den der Akt
   zeigen soll, und der Held muss ihn erlauben.
+
+Jetzt rechnet jedes Bild seinen Rahmen selbst: aus dem **verzogenen Umriss**
+zusammen mit den Bahnhofsorten **ohne die äußersten halben Prozent**. Der
+Umriss allein ließe die Schollen abschneiden; alle Bahnhöfe zusammen zwingen
+wegen einer Handvoll Außenseiter (Sylt, Mittenwald) die ganze Karte auf
+Briefmarkengröße — 1.274 × 1.302 Minuten gegen 893 × 1.032 ohne sie. Daraus
+Mitte und Zoom, mit vier Prozent Saum. Gemessen ergibt das 1,27 am Anfang und
+1,08 in der Zeitkarte, also fast dieselben Zahlen wie von Hand — nur mit der
+richtigen Mitte, und ohne dass sie jemand pflegen muss.
+
+**Der Untertitel hängt am Morph.** „distance on this map **is** travel time"
+stimmt erst, wenn die Karte fertig verzogen ist; im ersten Bild ist sie eine
+Landkarte. Drei Fassungen, und die Richtung kommt aus dem Akt selbst, einen
+Wimpernschlag weiter gefragt: „a map of Germany, coloured by how far its trains
+get" bei Morph 0, „distance is **turning into** travel time" hin, „and
+**turning back** into geography" zurück, und die Behauptung erst am Ende.
+
+**Der Wasserstand ist so gewählt, dass Berlin gerade so ein See ist** — und
+zwar nachgemessen, nicht nach Berlins eigener Höhe. Die liegt bei 293 Minuten,
+61 über dem besten Bahnhof; bei 62 Minuten Aufschlag blieb Berlin trocken.
+Überflutet wird nicht der Bahnhof, sondern das **gemalte Feld** an seinem Ort,
+und das liegt dort 35 Minuten höher (96 Aufschlag, 329 absolut): Berlin ist eine
+Insel guter Anbindung in einem schlecht angebundenen Brandenburg, und die
+Glättung zieht es hoch. Bei 97 geht der Punkt unter, ohne dass der See schon bis
+Potsdam reicht.
 
 Zwei Fassungen fallen aus **einem** Bilddurchgang, weil das Rechnen der Bilder
 das Teure ist und die Kodierer nebenherlaufen: `film.mp4` mit 1080 × 1920 und
