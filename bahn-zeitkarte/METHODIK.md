@@ -1201,6 +1201,90 @@ Markierung und keine vierte Farbe — und seinen Namen außerhalb des Budgets,
 damit er beschriftet ist, auch wenn er es in der Rangliste nie so weit nach
 oben geschafft hätte.
 
+### 4.15 Das Netz als zwei Lagen
+
+Die Karte zeigt Orte und Höhen, aber nicht das Netz, das beides macht. Zwei
+Schaltflächen blenden es ein — und die Frage, die dabei zu beantworten war,
+ist nicht das Zeichnen, sondern **was der Datensatz überhaupt an Netz
+hergibt.**
+
+Er kennt genau eine Sorte Kante: **zwei Bahnhöfe, zwischen denen ein Zug ohne
+Zwischenhalt fährt.** Das ist ein *Verbindungsgraph* und keine Gleiskarte. Wo
+die Gleise liegen, steht in diesen Daten nirgends; die Gerade
+Berlin Spandau–Frankfurt ist der Sprung eines ICE, nicht der Verlauf der
+Strecke über Braunschweig, Kassel und Fulda.
+
+Damit ist auch entschieden, wie geteilt wird. Ein Schwellenwert — Züge am Tag,
+Kantenlänge — wäre gesetzt und nicht gemessen. Die Produktklasse aber steht in
+der Quelle, und sie trennt genau dort, wo die Kanten ihre Natur ändern:
+
+| | Paare | Median | P90 | P99 | Max |
+| --- | --- | --- | --- | --- | --- |
+| Hauptachsen (ICE, IC/EC, Nachtzug) | 490 | 31 km | 102 km | 252 km | 415 km |
+| Nebennetz (nur Regionalverkehr) | 6.062 | 4,5 km | 13 km | 29 km | 117 km |
+
+Im Fernverkehr *sind* die Kanten Sprünge — das ist keine Ungenauigkeit der
+Darstellung, sondern die Aussage: dazwischen hält der Zug nicht. Im
+Regionalverkehr folgen sie der Strecke, und zwar so eng, dass die Lage über
+6.062 Striche das Streckennetz wirklich nachzeichnet; ganze **drei** Kanten
+liegen über 60 km, die längste ist Hamburg-Altona–Husum mit *einer* Fahrt am
+Tag.
+
+Gezählt wird ungerichtet: gezeichnet wird ein Strich, und der kennt keine
+Richtung. Von den 7.452 ungerichteten Paaren des ganzen Netzes bleiben 6.552,
+weil beide Endpunkte im Kern liegen müssen — das sind 900 Paare weniger, aber
+nur 4 Prozent der 279.680 Abschnitte, denn was herausfällt, liegt im Ausland
+oder an unverbundenen Enden.
+
+In der Nutzlast sind das zwei Int16-Indizes je Paar, Hauptachsen zuerst, und
+eine Zahl (`kanten_haupt`) trennt die beiden Lagen — 26 kB roh, 35 kB als
+base64, die Datei wächst von 467 auf 502 kB (gezippt 236 auf 257 kB). Das
+Zeichnen kostet nichts Messbares: 6.552 Striche sind vier `stroke`-Aufrufe,
+gegen ein Höhenfeld von Millionen Zellen.
+
+**Und beide Lagen werden mitverzogen** — sie hängen an `wx`/`wy`, denselben
+Koordinaten wie die Punkte. Das ist der Grund, sie überhaupt einzublenden: in
+der Zeitkarte ist die Länge eines Strichs keine Entfernung mehr, sondern eine
+Dauer. Die Achse Hamburg–Hannover–Göttingen zieht sich zu einem kurzen Stück
+zusammen, die Nebenbahn nach Oberwiesenthal bleibt lang. Man sieht, welche
+Linien das Land zusammenziehen.
+
+Zwei Kleinigkeiten zur Darstellung: die Strichbreiten stehen in CSS-Pixeln,
+sind also zoomunabhängig wie Grenzen und Isochronen, und die Hauptachsen sind
+**bernsteinfarben**. Weiß hat diese Karte schon dreifach vergeben — Grenzen,
+Höhenlinien, Isochronen —, und eine vierte weiße Linienart wäre keine mehr.
+
+### 4.16 Der Auftakt: die Seite fährt einmal von selbst
+
+Die Seite schlägt auf der **Landkarte** auf und fährt in fünfeinhalb Sekunden
+von selbst in die Zeitkarte. Der Grund ist derselbe wie beim Abspielknopf (4.10),
+nur dass hier niemand erst darauf kommen muss: wer die Zeitkarte ohne die
+Landkarte daneben sieht, hält sie für eine schlechte Landkarte. Die Bewegung
+sagt ohne einen Satz Text, was diese Karte ist.
+
+Vier Festlegungen:
+
+- **Einmal, nicht hin und her.** Der Abspielknopf pendelt, weil ein Sprung
+  wie ein Schnitt aussieht. Der Auftakt endet dagegen am fernen Ende und
+  hört auf — eine Karte, die weiterwackelt, während man sie zu lesen
+  anfängt, ist nicht zu lesen.
+- **Er endet in der Zeitkarte**, der Ruhestellung der Seite. Deshalb stehen
+  der Regler im HTML und `Z.morph` weiterhin auf der Zeitkarte: es gibt eine
+  Voreinstellung und nicht zwei, und der Auftakt ist die Ausnahme, die zu ihr
+  zurückführt.
+- **Achthundert Millisekunden Halt vor dem ersten Schritt**, und sie werden
+  scharf gerastert. Ohne den Halt beginnt die Verformung, bevor man den
+  Ausgangszustand gesehen hat, und dann fehlt der Vergleich, um den es geht.
+- **Wer anfasst, hat Vorrang.** Der erste Zeigerdruck auf die Karte, das erste
+  Rad, die erste Taste brechen ab. Erkannt wird der Auftakt an seinem
+  Einmal-Kennzeichen; danach greifen die Abbrecher ins Leere.
+
+Bei `prefers-reduced-motion: reduce` bleibt es beim Standbild — und zwar beim
+**Endstand**, nicht beim Anfangsstand: angesehen werden soll die Zeitkarte.
+Für den Film wird der Auftakt über eine Flagge abgeschaltet (`KEINAUFTAKT`),
+weil dort das Filmskript den Regler führt und beide sonst dasselbe Feld
+schreiben.
+
 ## 5. Was fehlt
 
 - **Kein Stadtverkehr.** S-Bahn, U-Bahn, Straßenbahn, Bus fehlen. Für die
@@ -1223,6 +1307,10 @@ oben geschafft hätte.
   stehen nicht im Soll-Fahrplan.
 - **Eine Mindestumsteigezeit für alle.** Fünf Minuten überall; in Wirklichkeit
   ist sie je Bahnhof verschieden, und die Quelle führt sie nicht.
+- **Keine Gleisgeometrie.** Der Datensatz kennt Halte, nicht Strecken. Die
+  eingeblendeten Linien (4.15) sind Verbindungen zwischen aufeinander
+  folgenden Halten — im Regionalverkehr fällt das mit der Strecke praktisch
+  zusammen, im Fernverkehr ausdrücklich nicht.
 - **Keine Fußwege zwischen Bahnhöfen.** Wer in Köln am Hauptbahnhof ankommt
   und von Messe/Deutz weiterfahren will, muss im Modell fahren.
 - **Ein Reisender ohne Gepäck und ohne Vorlieben.** Gerechnet wird die

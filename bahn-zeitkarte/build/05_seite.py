@@ -197,6 +197,58 @@ def i16(a, faktor):
     return base64.b64encode(v.astype("<i2").tobytes()).decode()
 
 
+# ---------------------------------------------------------------- Die Kanten
+# Die Karte zeigt Orte und Hoehen, aber nicht das Netz, das beides erklaert.
+# Was der Fahrplan dafuer hergibt, ist genau eine Sorte Kante: **zwei
+# Bahnhoefe, zwischen denen ein Zug ohne Zwischenhalt fahrt.** Das ist ein
+# Verbindungsgraph und keine Gleiskarte — die Gerade Berlin–Frankfurt ist der
+# Sprung eines ICE, nicht der Verlauf der Strecke.
+#
+# Genau deshalb ist die Trennung nach Produktklasse hier die richtige, und
+# nicht irgendein Schwellenwert: im Fernverkehr *sind* die Kanten Spruenge
+# (Median 31 km, bis 415 km), im Regionalverkehr folgen sie der Strecke
+# (Median 4,5 km, 99 Prozent unter 29 km, nur drei ueber 60 km). Zwei Lagen
+# also — was ein ICE, IC/EC oder Nachtzug ohne Halt verbindet, und alles
+# andere —, und was die eine als Gerade quer durchs Land zeichnet, ist in ihr
+# keine Ungenauigkeit, sondern die Aussage.
+def kanten_lesen(S, kd, klassen, klasse_je_fahrt):
+    raw = open(os.path.join(Z, "netz.bin"), "rb").read()
+    magie, nb, nf, nv, _maxmin = struct.unpack("<4sIIII", raw[:20])
+    if magie != b"ZKN1" or nb != len(S):
+        sys.exit("netz.bin passt nicht zu stationen.json")
+    satz = np.dtype([("ab", "<u2"), ("an", "<u2"),
+                     ("a", "<u4"), ("b", "<u4"), ("fi", "<u4")])
+    rec = np.frombuffer(raw, dtype=satz, offset=20, count=nv)
+
+    # Bahnhofsnummer -> Nutzlastindex, die Rueckrichtung von kd. Fuer die
+    # Bahnhoefe ausserhalb des Kerns bleibt sie undefiniert, und deren Kanten
+    # fallen heraus: 900 von 7.452 Paaren, aber nur 4 Prozent der Abschnitte.
+    pos = np.full(len(S), -1, dtype=np.int64)
+    pos[np.asarray(kd, dtype=np.int64)] = np.arange(len(kd))
+    pa = pos[rec["a"].astype(np.int64)]
+    pb = pos[rec["b"].astype(np.int64)]
+    gut = (pa >= 0) & (pb >= 0)
+    lo = np.minimum(pa[gut], pb[gut])
+    hi = np.maximum(pa[gut], pb[gut])
+    kl = np.asarray(klasse_je_fahrt, dtype=np.int64)[rec["fi"][gut].astype(np.int64)]
+    fern_kl = [klassen.index(k) for k in ("ice", "intercity", "night")
+               if k in klassen]
+
+    # Richtung weg: gezeichnet wird ein Strich, und der kennt keine.
+    schluessel = lo * len(kd) + hi
+    paar, wohin = np.unique(schluessel, return_inverse=True)
+    fern = np.zeros(len(paar), dtype=bool)
+    fern[wohin.ravel()[np.isin(kl, fern_kl)]] = True
+
+    # Hauptachsen zuerst: dann trennt eine einzige Zahl die beiden Lagen, und
+    # die Seite braucht kein zweites Feld.
+    p = paar[np.concatenate([np.nonzero(fern)[0], np.nonzero(~fern)[0]])]
+    flach = np.empty(2 * len(p), dtype=np.int64)
+    flach[0::2] = p // len(kd)
+    flach[1::2] = p % len(kd)
+    return flach, int(fern.sum())
+
+
 def main():
     os.makedirs(AUS, exist_ok=True)
     netz = json.load(open(os.path.join(Z, "stationen.json")))
@@ -363,6 +415,11 @@ def main():
     print("geschrieben: %s (%d Knoten x %d Bahnhoefe, %.0f kB)"
           % (pz, len(wahl), len(kd), os.path.getsize(pz) / 1000))
 
+    kant, kant_haupt = kanten_lesen(S, kd, netz["klassen"],
+                                    netz["klasse_je_fahrt"])
+    print("Kanten: %d Paare im Kern, davon %d Hauptachsen (%.0f kB)"
+          % (len(kant) // 2, kant_haupt, len(kant) * 2 / 1000))
+
     # Umriss und Laendergrenzen in dieselbe Projektion
     geo = json.load(open(os.path.join(HIER, "roh", "germany.json")))
     def ringe(rs):
@@ -405,6 +462,8 @@ def main():
         stufen=[float(q) for q in STUFEN], stufe_vor=int(vor),
         stufe_kennzahlen=kerne,
         einzug=i16(np.rint(G / 100.0), 1),
+        # Das Netz: Paare von Nutzlastindizes, Hauptachsen zuerst.
+        kanten=i16(kant, 1), kanten_haupt=kant_haupt,
         umriss=ringe(geo["outline"]), laender=ringe(geo["states"]),
     )
     p = os.path.join(AUS, "karte.json")

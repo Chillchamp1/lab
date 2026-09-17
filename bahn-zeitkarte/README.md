@@ -218,7 +218,11 @@ ist eine Zeile hoch, weil jede Zeile, die er sich nimmt, der Karte fehlt.
   Verschiebungsfeld der Bahnhöfe selbst, damit die Kieler Förde die Kieler
   Förde bleibt, auch wenn Kiel wegläuft. Der **Abspielknopf** fährt hin und her
   und hält an beiden Enden eine Dreiviertelsekunde an: sonst kehrt die Fahrt im
-  Endzustand um, ohne ihn gezeigt zu haben.
+  Endzustand um, ohne ihn gezeigt zu haben. **Diese Fahrt läuft beim
+  Aufschlagen von selbst**, einmal, von der Landkarte in die Zeitkarte — wer
+  die Zeitkarte ohne die Landkarte daneben sieht, hält sie für eine schlechte
+  Landkarte. Wer die Karte anfasst, bricht ab; bei
+  `prefers-reduced-motion` bleibt es beim Standbild der Zeitkarte.
 - **Anteil Deutschlands** ist der Regler, der die Höhe *definiert*: von einem
   Fünfzigstel (Dichtekarte) bis zu neun Zehnteln (Geografiekarte). Achtzehn
   Stufen liegen vorgerechnet in der Nutzlast, dazwischen wird gemischt. Auch
@@ -230,6 +234,17 @@ ist eine Zeile hoch, weil jede Zeile, die er sich nimmt, der Karte fehlt.
   vorgerechneten Knoten, anzuklicken auf der Karte. Das ist die Probe aufs
   Ganze: auf der Landkarte sind das ausgefranste Sterne, auf der Zeitkarte
   müssen daraus Kreise werden.
+- **Hauptachsen** blendet die 490 Bahnhofspaare ein, die ein ICE, IC/EC oder
+  Nachtzug **ohne Zwischenhalt** verbindet, **Nebennetz** die übrigen 6.062
+  Paare des Kerns — Regionalverkehr. Das ist ein Verbindungsgraph und keine
+  Gleiskarte: die Gerade Berlin–Frankfurt ist der Sprung eines ICE und nicht
+  der Verlauf der Strecke. Genau deshalb wird nach Produktklasse geteilt und
+  nicht nach einem gesetzten Schwellenwert — im Fernverkehr *sind* die Kanten
+  Sprünge (Median 31 km, bis 415 km), im Regionalverkehr folgen sie der
+  Strecke (Median 4,5 km, drei von 6.062 über 60 km). Beide Lagen werden
+  mitverzogen, und das ist der Witz daran: in der Zeitkarte ist die Länge
+  eines Strichs eine Dauer, die Hauptachsen ziehen sich zusammen, die
+  Nebenbahnen bleiben lang.
 - **Zoom** mit Rad oder zwei Fingern, Ziehen zum Verschieben, Doppelklick
   zurück. Zoomen *verfeinert* das Raster statt es zu vergrößern, weil das Feld
   nur für den sichtbaren Ausschnitt gerechnet wird — beim Hineinzoomen wächst

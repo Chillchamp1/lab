@@ -264,6 +264,12 @@ button[aria-pressed=true],button:hover{color:var(--ink);border-style:solid}
         <button id="kNamen" aria-pressed="true">Names</button>
         <button id="kLinien" aria-pressed="true">Contours</button>
         <button id="kPunkte" aria-pressed="true">Stations</button>
+        <button id="kHaupt" aria-pressed="false" title="Pairs of stations that a
+long-distance train (ICE, IC/EC, Nightjet) links without stopping in between.
+Straight lines between stations, not track geometry.">Main axes</button>
+        <button id="kNeben" aria-pressed="false" title="Every other directly
+linked pair, regional trains only. These do follow the line: half of them are
+under 4.5 km.">Branch network</button>
         <button id="kIso" aria-pressed="false">Isochrones</button>
         <button id="zoomzurueck" style="display:none">Reset zoom</button>
         <button id="kUeber">About this map</button>
@@ -325,10 +331,14 @@ let n = 0, nm = [], halte = null;
 let gxx, gyy, fxx, fyy, hh, roh, REICH, einzug, hmax = 1, rmin = 0;
 let wx, wy;
 let umriss = [], laender = [], umrissW = [], laenderW = [];
+/* Das Netz als Paare von Bahnhofsindizes, Hauptachsen zuerst — `kantenHaupt`
+   ist die Grenze zwischen den beiden Lagen. */
+let kanten = null, kantenHaupt = 0;
 let RAHMEN = null, WELT = null, ZUSCHNITT = 1, ansichtGesetzt = false;
 
 const Z = {morph:1, wasser:90, anteil:0.50, namen:true, linien:true,
-           punkte:true, iso:false, isoKnoten:-1, wahl:-1};
+           punkte:true, iso:false, isoKnoten:-1, wahl:-1,
+           haupt:false, neben:false};
 /* Läuft die Kamera dem gewählten Bahnhof nach? Das wird beim Abspielen
    gesetzt und endet, sobald die Fahrt endet oder jemand selbst schiebt. */
 let folgt = false;
@@ -367,6 +377,10 @@ async function los(){
     return o;
   };
   umriss = P.umriss.map(ring); laender = P.laender.map(ring);
+  if (P.kanten){
+    kanten = new Int32Array(entpacke(P.kanten, 1));
+    kantenHaupt = P.kanten_haupt | 0;
+  }
   wx = new Float32Array(n); wy = new Float32Array(n);
   geoGitterBauen();
   dreieckeBauen();
@@ -1460,6 +1474,7 @@ function zeichne(){
                 FW*ZELLE*skala, FH*ZELLE*skala);
   ctx.restore();
   grenzenMalen();
+  if (kanten && (Z.haupt || Z.neben)) netzMalen();
   if (Z.iso && ISO && Z.isoKnoten >= 0) isoMalen();
   if (Z.punkte) punkteMalen();
   if (Z.namen) ortePunkteMalen(W < 520 ? 24 : W < 820 ? 42 : 62);
@@ -1496,6 +1511,53 @@ function grenzenMalen(){
 function pfad(r){
   ctx.moveTo(schirmX(r[0]), schirmY(r[1]));
   for (let i=2;i<r.length;i+=2) ctx.lineTo(schirmX(r[i]), schirmY(r[i+1]));
+}
+
+/* ---------- Das Netz, das die Karte erklärt.
+
+   Bis hierher zeigt die Karte Orte und Höhen, aber nicht das, was beides
+   macht. Was der Fahrplan an Netz hergibt, ist genau eine Sorte Kante: **zwei
+   Bahnhöfe, zwischen denen ein Zug ohne Zwischenhalt fährt.** Das ist ein
+   Verbindungsgraph und **keine Gleiskarte** — die Gerade Berlin–Frankfurt ist
+   der Sprung eines ICE, nicht der Verlauf der Strecke, und die Gleise liegen
+   in diesen Daten nirgends.
+
+   Darum ist die Trennung nach Produktklasse hier die ehrliche und nicht
+   irgendein Schwellenwert: im Fernverkehr *sind* die Kanten Sprünge (Median
+   31 km, bis 415 km), im Regionalverkehr folgen sie der Strecke (Median
+   4,5 km, 99 Prozent unter 29 km, ganze drei über 60 km). Die Hauptachsen
+   sind also als Geraden richtig gelesen, das Nebennetz zeichnet nebenbei
+   wirklich das Streckennetz nach.
+
+   Und beide werden mitverzogen. In der Zeitkarte ist die Länge eines Strichs
+   keine Entfernung mehr, sondern eine Dauer: die Achse Berlin–Hannover
+   schrumpft, die Nebenbahn dahinter bleibt lang. Das ist der Grund, sie
+   überhaupt einzublenden — man sieht, welche Linien das Land zusammenziehen.
+
+   Gezeichnet wird wie die Isochronen: dunkle Unterlage, helle Mitte, beide
+   in CSS-Pixeln, also zoomunabhängig. Die Hauptachsen kommen zuletzt und in
+   Bernstein, damit sie nicht mit den weißen Höhenlinien, Grenzen und
+   Isochronen verwechselt werden. */
+function netzMalen(){
+  const alle = kanten.length / 2;
+  const zug = (von, bis, farbe, breite) => {
+    ctx.beginPath();
+    for (let k = von; k < bis; k++){
+      const a = kanten[2*k], b = kanten[2*k+1];
+      ctx.moveTo(schirmX(wx[a]), schirmY(wy[a]));
+      ctx.lineTo(schirmX(wx[b]), schirmY(wy[b]));
+    }
+    ctx.strokeStyle = farbe; ctx.lineWidth = breite; ctx.stroke();
+  };
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  if (Z.neben){
+    zug(kantenHaupt, alle, 'rgba(0,0,0,.34)', 1.9);
+    zug(kantenHaupt, alle, 'rgba(255,255,255,.42)', .7);
+  }
+  if (Z.haupt){
+    zug(0, kantenHaupt, 'rgba(0,0,0,.52)', 3.6);
+    zug(0, kantenHaupt, 'rgba(255,214,122,.92)', 1.6);
+  }
 }
 
 /* Gezeichnet wird, wo es Karte gibt — und das ist WELT, der ganze Umfang, und
@@ -2054,13 +2116,17 @@ function spielAus(){
   FEINHEIT = FEIN_RUHE;
   bald();
 }
-function spielAn(sid, dauer){
+/* `wie` ist für den Auftakt beim Laden da (siehe `auftakt`): `einmal` lässt
+   die Fahrt am fernen Ende aufhören statt umzukehren, `vor` hält sie vor dem
+   ersten Schritt noch einen Moment an. Ohne Angabe pendelt sie wie bisher. */
+function spielAn(sid, dauer, wie){
   spielAus();
   const e = $(sid), knopf = 'p' + sid.slice(1);
   const lo = +e.min, hi = +e.max;
   /* zuerst in die weitere Richtung — dort ist mehr zu sehen */
   spiel = {sid, knopf, dauer, hin: (+e.value - lo) < (hi - +e.value),
-           halt: 0, t: performance.now()};
+           halt: (wie && wie.vor) || 0, t: performance.now(),
+           einmal: !!(wie && wie.einmal)};
   /* Ist ein Bahnhof gewählt, nimmt ihn die Kamera mit. Das ist der Grund,
      einen zu wählen: man sieht nicht mehr das Land sich verziehen und muss
      sich dabei merken, wo ein Ort war — der Ort steht still und das Land
@@ -2088,9 +2154,15 @@ function spielSchritt(t){
     return;
   }
   let v = +e.value + (spiel.hin ? 1 : -1) * (hi - lo) * dt / spiel.dauer;
+  const fertig = spiel.einmal && (spiel.hin ? v >= hi : v <= lo);
   if (v >= hi){ v = hi; spiel.hin = false; spiel.halt = HALT; }
   else if (v <= lo){ v = lo; spiel.hin = true; spiel.halt = HALT; }
   e.value = v;
+  /* Eine Einmal-Fahrt endet hier. Erst das Ereignis, damit der Endzustand
+     gezeichnet wird, dann aus — `spielAus` stellt die Rasterstufe zurück auf
+     fein, und weil `bald` je Bild nur einmal malt, ist das letzte Bild schon
+     das scharfe. */
+  if (fertig){ e.dispatchEvent(new Event('input')); spielAus(); return; }
   /* Der Halt wird **vor** dem Ereignis gesetzt, damit das Bild des
      Endzustands schon das feine ist. */
   e.dispatchEvent(new Event('input'));
@@ -2157,6 +2229,7 @@ function start(){
     bald();
   });
   knopf('kNamen','namen'); knopf('kLinien','linien'); knopf('kPunkte','punkte');
+  knopf('kHaupt','haupt'); knopf('kNeben','neben');
   knopf('kIso','iso', async () => {
     if (Z.iso && !ISO){
       const j = await (await fetch('data/' + P.isodatei)).json();
@@ -2557,7 +2630,11 @@ back and forth and pauses for three quarters of a second at each end:
 otherwise the sweep turns round in the end state without having shown it — and
 the two end states are precisely what the map claims. The map does not go soft
 during the sweep: the raster step is measured rather than set, so it runs at
-the resting step and only coarsens if the machine could not keep up.</li>
+the resting step and only coarsens if the machine could not keep up. <b>That
+sweep runs by itself when the page opens</b>, once, from the map into the time
+map — seen without the map beside it, the time map just looks like a bad map.
+Touching the map stops it, and under <code>prefers-reduced-motion</code> the
+page opens on the time map and stays there.</li>
 <li><b>Share of population</b> is the slider that defines the height in the
 first place — it moves between conurbation and geography. Eighteen steps are
 precomputed in the page and blended in between. It has a play button too.</li>
@@ -2567,6 +2644,18 @@ with it: what lies below runs under water, and the snow line follows.</li>
 ${P.isoknoten.length} precomputed hubs, clickable on the map. That is the test
 of the whole thing: on the geographic map they are ragged stars, on the time
 map they have to become circles.</li>
+<li><b>Main axes</b> and <b>Branch network</b> draw the network itself. And
+here is what the data actually holds: pairs of stations that a train links
+<i>without stopping in between</i> — a connection graph, not a track map. The
+straight line from Berlin Spandau to Frankfurt is one ICE leg, not the route
+via Kassel and Fulda. That is why the split follows the product class rather
+than some threshold we picked: for long distance the edges genuinely <i>are</i>
+leaps (490 pairs, median 31 km, up to 415 km), for regional they follow the
+line closely enough to draw it (6,062 pairs, median 4.5 km, three of them over
+60 km). Both layers warp with everything else, and that is the point — in the
+time map the length of a line is a duration, so the main axes contract into a
+knot while the branch lines out to Oberwiesenthal or Kennelgarten stay
+long.</li>
 <li><b>Zoom</b> with the wheel or two fingers, drag to pan, double-click to
 return to the starting view. Zooming refines the raster instead of magnifying
 it, because the field is only computed for what is on screen — so the detail
@@ -2630,7 +2719,52 @@ computation sits next to this page: <a href="README.md">README</a>,
 <a href="STAND.md">Stand</a>. Those four are in German.</p>`;
 }
 
-los().then(start).catch(e => {
+/* ---------- Der Auftakt.
+
+   Die Seite schlägt auf der **Landkarte** auf und fährt einmal von selbst in
+   die Zeitkarte hinüber. Der Grund ist derselbe wie beim Abspielknopf, nur
+   dass hier niemand erst darauf kommen muss: wer die Zeitkarte ohne die
+   Landkarte daneben sieht, hält sie für eine schlechte Landkarte. Die
+   Bewegung sagt in fünf Sekunden, was diese Karte ist, und sie endet dort,
+   wo die Seite ruht — in der Zeitkarte. Zurück geht es über den Knopf; der
+   Auftakt fährt nur einmal, denn eine Karte, die immer weiter wackelt, kann
+   man nicht lesen.
+
+   Vor dem ersten Schritt steht das Bild einen Moment still. Ohne diesen Halt
+   fängt die Verformung an, bevor man den Ausgangszustand gesehen hat, und
+   dann hat man nichts, womit man das Ergebnis vergleichen könnte.
+
+   Wer die Karte anfasst, hat Vorrang: der erste Zeigerdruck, das erste Rad,
+   die erste Taste brechen ab. Erkannt wird der Auftakt an `spiel.einmal` —
+   das trägt nur er, und danach greifen die Abbrecher ins Leere.
+
+   Bei `prefers-reduced-motion` bleibt es beim Standbild, und zwar beim
+   **Endstand**: angesehen werden soll die Zeitkarte, nicht die Landkarte.
+   Deshalb stehen der Regler im HTML und `Z.morph` auch auf der Zeitkarte —
+   eine Voreinstellung, nicht zwei. */
+const AUFTAKT = 5600, AUFTAKTHALT = 800;
+function auftakt(){
+  /* `build/film.mjs` fährt den Regler selbst und darf den Auftakt nicht
+     gleichzeitig laufen haben. */
+  if (window.KEINAUFTAKT) return;
+  if (matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const abbruch = () => { if (spiel && spiel.einmal) spielAus(); };
+  cv.addEventListener('pointerdown', abbruch);
+  addEventListener('wheel', abbruch, {passive:true});
+  addEventListener('keydown', abbruch);
+  const e = $('sMorph');
+  e.value = e.min;
+  /* Das Ereignis und nicht nur der Wert: `Z.morph` und die Beschriftung
+     daneben hängen am Reglerereignis. */
+  e.dispatchEvent(new Event('input'));
+  /* Das Ereignis hat die Rasterstufe auf „wird gezogen" gestellt; hier wird
+     aber ein Bild gehalten, und das soll scharf sein. `bald` malt je Bild
+     nur einmal, also ist das erste Bild schon das feine. */
+  FEINHEIT = FEIN_RUHE;
+  spielAn('sMorph', AUFTAKT, {einmal:true, vor:AUFTAKTHALT});
+}
+
+los().then(start).then(auftakt).catch(e => {
   const l = $('laden');
   if (l) l.textContent = 'Could not load: ' + e.message;
   console.error(e);

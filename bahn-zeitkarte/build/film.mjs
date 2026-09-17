@@ -207,6 +207,10 @@ const page = await browser.newPage({
   viewport: { width: CSSB, height: CSSH }, deviceScaleFactor: UEBER,
 });
 page.on('pageerror', e => { console.error('SEITENFEHLER ' + e.message); });
+/* Die Seite fährt beim Aufschlagen von selbst einmal in die Zeitkarte
+   (`auftakt`). Hier führt der Film den Regler, also wird der Auftakt vor dem
+   Laden abgeschaltet — sonst schreiben beide dieselbe Reglerstellung. */
+await page.addInitScript(() => { window.KEINAUFTAKT = true; });
 await page.goto(`http://127.0.0.1:${tor}/index.html`);
 await page.waitForFunction(() => typeof n !== 'undefined' && n > 0, null,
                            { timeout: 120000 });
