@@ -165,11 +165,9 @@ button[aria-pressed=true],button:hover{color:var(--ink);border-style:solid}
     overflow:visible}
   #tafel h1{font-size:18px}
   #laden{inset:8px}
-  /* Hochkant ist die Karte zu schmal für zwei Spalten: dann entscheidet nur
-     noch oben oder unten. */
-  #wahlfeld{max-width:none;padding:7px 9px 8px}
-  #wahlfeld.l, #wahlfeld.r{left:16px;right:16px}
-  #wahlfeld.o{top:16px} #wahlfeld.u{bottom:8px}
+  /* Die Leinwand liegt hier acht Punkte vom Rand statt vierzehn. */
+  #wahlfeld.l{left:18px} #wahlfeld.r{right:8px}
+  #wahlfeld.o{top:18px}  #wahlfeld.u{bottom:8px}
 }
 @media (max-width:700px){
   /* Drei Angaben in einer Zeile gehen hier nicht mehr auf. Umbrechen ist
@@ -181,6 +179,22 @@ button[aria-pressed=true],button:hover{color:var(--ink);border-style:solid}
 }
 @media (max-width:640px){
   #regler{grid-template-columns:1fr 1fr}
+}
+/* Hochkant und schmal wird der Kasten knapp. Er liegt dort auf einer Karte,
+   die nur noch ein Drittel so hoch ist wie am Schirm, und nahm mit 129 Punkten
+   fast ein Drittel davon ein — er war mehr im Weg als die Auskunft wert war.
+   Jetzt zwei Zeilen statt vier: die vier Zahlen mit Trennpunkten statt in
+   Sätzen, der Hinweis in fünf Wörtern. Nachgemessen 78 Punkte, also ein
+   Fünftel der Karte. Die Schwelle ist dieselbe, ab der die Beschriftung einen
+   Punkt größer setzt (520 Punkte Leinwandbreite, hier 560 Fensterbreite). */
+@media (max-width:560px){
+  #wahlfeld{max-width:none;padding:5px 8px 6px}
+  #wahlfeld.l, #wahlfeld.r{left:8px;right:8px}
+  #wahlfeld.o{top:8px} #wahlfeld.u{bottom:6px}
+  #wahlfeld h2{font-size:12px;margin:0 16px 1px 0}
+  #wahlfeld p{font-size:10.5px;line-height:1.35}
+  #wahlfeld .folgt{margin-top:3px;padding-top:3px;font-size:10px}
+  #wahlzu{top:2px;right:3px;font-size:12px}
 }
 @media (max-width:440px){
   #regler{grid-template-columns:1fr;gap:8px}
@@ -2171,7 +2185,7 @@ function wahlSetzen(){
   const oben = drin && Y > H*0.52, rechts = drin && X < W*0.42;
   const kennung = i + '|' + Math.round(roh[i]) + '|' + Math.round(rmin)
                 + '|' + Z.anteil.toFixed(4) + '|' + folgt + '|' + drin
-                + '|' + oben + rechts;
+                + '|' + oben + rechts + '|' + (W < 520);
   if (kennung === wahlStand) return;
   wahlStand = kennung;
   f.classList.add('auf');
@@ -2179,18 +2193,30 @@ function wahlSetzen(){
   f.classList.toggle('r', rechts); f.classList.toggle('l', !rechts);
   $('wahlname').textContent = nm[i];
   const auf = Math.round(roh[i] - rmin);
-  $('wahlzahlen').innerHTML =
-    '<b>' + Math.round(roh[i]) + ' min</b> until ' + anteilWort(Z.anteil)
-    + ' of Germany is within reach — '
-    + (auf === 0 ? '<b>the best station in the country</b>'
-                 : '<b>+' + auf + ' min</b> over the best')
-    + '<br>' + halte[i].toLocaleString('en-GB') + ' calls a day · catchment '
-    + menschen(einzug[i]) + ' people';
+  /* Hochkant in Trennpunkten statt in Sätzen: der Kasten liegt dort auf einer
+     Karte, die nur ein Drittel so hoch ist, und vier Zeilen Prosa nahmen ein
+     Drittel von ihr. Dieselben vier Zahlen, zwei Zeilen. */
+  const eng = W < 520;
+  $('wahlzahlen').innerHTML = eng
+    ? '<b>' + Math.round(roh[i]) + ' min</b> to '
+      + anteilKurz(Z.anteil).replace(' ', '') + ' of Germany'
+      + (auf === 0 ? ' · <b>the best</b>' : ' · <b>+' + auf + '</b>')
+      + '<br>' + halte[i].toLocaleString('en-GB') + ' calls/day · '
+      + menschen(einzug[i]) + ' people'
+    : '<b>' + Math.round(roh[i]) + ' min</b> until ' + anteilWort(Z.anteil)
+      + ' of Germany is within reach — '
+      + (auf === 0 ? '<b>the best station in the country</b>'
+                   : '<b>+' + auf + ' min</b> over the best')
+      + '<br>' + halte[i].toLocaleString('en-GB') + ' calls a day · catchment '
+      + menschen(einzug[i]) + ' people';
   $('wahlfolgt').innerHTML = !drin
-    ? '<b>Off screen.</b> Press <b>▶</b> and the view comes back to it.'
+    ? (eng ? '<b>Off screen</b> — <b>▶</b> brings the view back.'
+           : '<b>Off screen.</b> Press <b>▶</b> and the view comes back to it.')
     : folgt
-    ? '<b>Following.</b> The view stays on it while the map morphs.'
-    : 'Press <b>▶</b> by the time slider and the view travels with it.';
+    ? (eng ? '<b>Following.</b>'
+           : '<b>Following.</b> The view stays on it while the map morphs.')
+    : (eng ? '<b>▶</b> below makes the view travel with it.'
+           : 'Press <b>▶</b> by the time slider and the view travels with it.');
 }
 function zeigen(ev){
   const r = cv.getBoundingClientRect();

@@ -1142,6 +1142,13 @@ hängt an jedem Bild, weil zwei der vier Zahlen mit den Reglern wandern. Neu
 geschrieben wird sie nur, wenn sich etwas darin geändert hat; sonst kostete sie
 in der Fahrt drei `innerHTML` je Bild für nichts.
 
+Hochkant war sie zu groß: dort liegt sie auf einer Karte, die nur ein Drittel
+so hoch ist, und nahm mit 129 Punkten von 416 fast ein Drittel davon ein — mehr
+im Weg als die Auskunft wert war. Unter 560 Punkten Fensterbreite stehen
+dieselben vier Zahlen mit Trennpunkten statt in Sätzen und der Hinweis in fünf
+Wörtern: zwei Zeilen statt vier, nachgemessen **78 Punkte** statt 129. Am
+Schirm bleibt der ausgeschriebene Text — dort ist der Platz da.
+
 **Und dann nimmt die Kamera ihn mit.** Ist ein Bahnhof gewählt und drückt man
 ▶, bleibt er in der Bildmitte stehen und das Land verzieht sich um ihn. Das ist
 der Grund, einen zu wählen: sonst sieht man die Verformung des *Bildes* und muss
