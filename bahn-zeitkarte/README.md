@@ -235,6 +235,21 @@ ist eine Zeile hoch, weil jede Zeile, die er sich nimmt, der Karte fehlt.
   nur für den sichtbaren Ausschnitt gerechnet wird — beim Hineinzoomen wächst
   also das Detail und nicht die Zellzahl. Während der Geste wird absichtlich
   gröber gerastert, und sobald man loslässt, wieder fein.
+  - Die Ansicht **startet bei 1,15** und nicht bei 1. Das kostet oben und
+    unten je rund fünfzig Minuten — die Spitze von Sylt, der Zipfel um
+    Konstanz —, und zwar unvermeidlich: Deutschland ist hoch (990 Minuten) und
+    der Schirm ist breit, die Ansicht also höhenbegrenzt. Das Land füllt schon
+    bei Zoom 1 die Bildhöhe, und die halbe Breite bleibt leer; größer geht nur
+    durch Beschneiden.
+  - Nach unten reicht der Zoom **bis 0,69**, und dort passt der ganze Umfang
+    ins Bild: 1.322 × 1.350 Minuten statt der 985 × 1.006 des Rahmens. Wer die
+    hinausgefahrenen Enden ansehen will — Rügener Bäderbahn, Sylt, den Zipfel
+    um Singen, Mittenwald —, zoomt heraus; sie liegen dort mit Scholle und
+    Namen.
+- **Die Bahnhöfe sind von Anfang an eingeblendet**, und beim Hineinzoomen
+  kommen **neue Namen** dazu: mit jedem Zoomschritt wird ein Budget frei, das
+  aus einer Rangliste nach Halten am Tag gefüllt wird — der größte Bahnhof im
+  Bild kommt zuerst. Beim Herauszoomen verschwinden sie von selbst wieder.
 - Zeiger über einen Punkt zeigt Name, Erreichbarkeit und Zahl der Halte.
 
 ### Die Legende liegt unter der Karte
@@ -333,7 +348,7 @@ obersten sechs der fünfunddreißig Farbbänder. Die Grenze ist nicht gesetzt,
 sondern abgeleitet: sie liegt dort, wo die Leiter vom Wasserstand bis zum
 höchsten Wert **auf dem Land** ihre letzten sechs Bänder erreicht, und steht
 in absoluten Minuten in der Tafel. Bei einem Viertel und Wasser auf 250
-Minuten liegt sie in der Zeitkarte bei 467 Minuten, in der Landkarte bei 435,
+Minuten liegt sie in der Zeitkarte bei 530 Minuten, in der Landkarte bei 520,
 und Schnee haben dann der Zipfel um Konstanz, der Bayerische Wald bei Passau,
 die Heidekrautbahn bei Groß Schönebeck, Oberstdorf, Garmisch und einzelne
 Haltepunkte, an denen zweimal am Tag ein Zug hält. Sylt und die Rügener
@@ -342,7 +357,7 @@ Bäderbahn sind in der Zeitkarte über den Rand hinaus.
 Und je weiter der Regler in die Zeit läuft, desto mehr **Inseln** lösen sich
 vom Land. Das ist kein Zeichenfehler: die Federkarte schleudert die
 abgehängten Orte so weit hinaus, dass der verzogene Umriss ihnen nicht mehr
-folgen kann — 593 von 4.781 Bahnhöfen liegen in der reinen Zeitkarte jenseits
+folgen kann — 539 von 4.781 Bahnhöfen liegen in der reinen Zeitkarte jenseits
 der Küste, 108 davon sogar jenseits des Bildausschnitts. Ein Bahnhof gehört
 aber immer auf Land, also bekommt jeder Ausgewanderte seine eigene **Scholle**:
 eine Kreisscheibe mit hartem Rand und 11,5 Minuten Radius. Sie war eine
