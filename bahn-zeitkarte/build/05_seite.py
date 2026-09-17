@@ -11,8 +11,8 @@ denen jede Erreichbarkeitskarte steht, sind genau seine beiden Enden:
   q gross  ->  man muss bis in die Ecken des Landes       ->  Geografiekarte
 
 Gerechnet werden STUFEN Werte von 2 bis 90 Prozent; die Seite schiebt
-stufenlos dazwischen. Voreingestellt ist ein Viertel — die Begruendung dafuer
-steht in METHODIK 4.1 und ist gemessen, nicht gesetzt.
+stufenlos dazwischen. Voreingestellt ist die Haelfte — das obere Ende des
+brauchbaren Fensters, das in METHODIK 4.1 gemessen wird.
 
 Alles, was die Karte braucht, in eine Datei: die Bahnhoefe mit ihren drei
 Lagen (Geografie, flache Federkarte, Gelaendekarte) und ihrer Hoehe, der
@@ -187,7 +187,7 @@ def lambert(lon, lat, p1=48.6666667, p2=53.6666667, p0=51.0, l0=10.5):
 # sich das Bild schnell, oben langsam. VORGABE muss eine davon sein.
 STUFEN = [0.02, 0.03, 0.04, 0.06, 0.08, 0.10, 0.13, 0.17, 0.21, 0.25,
           0.30, 0.36, 0.43, 0.50, 0.58, 0.67, 0.78, 0.90]
-VORGABE = 0.25
+VORGABE = 0.50
 
 
 def i16(a, faktor):

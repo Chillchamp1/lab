@@ -267,6 +267,81 @@ einen WebGL-Fragmentshader verlegen — dieselbe Rechnung, nur auf der
 Grafikkarte, und ohne npm oder Bündler, also verträglich mit den Regeln
 dieses Repos. Das ist der nächste Schritt, wenn einer kommt.
 
+## Englisch, Legende, halbes Land, Zoom
+
+Vier Wünsche in einer Runde, und der vierte hat den Zeichner umgebaut.
+
+**Die Seite ist auf Englisch** — alles, was man sieht: Titel, Regler,
+Legende, Kurzinfo, der ganze Text hinter „About this map". Die vier Dokumente
+neben der Seite (README, Methodik, Quellen, Stand) und die Kommentare im Code
+bleiben deutsch: sie sind die Rechenakte und nicht das Produkt. Die Bahnhofs-
+und Ortsnamen bleiben natürlich, wie sie heißen.
+
+**Die Legende liegt unter der Karte** statt in der Tafel, mit Teilstrichen in
+absoluten Minuten statt nur den beiden Endpunkten. Die brauchte es, weil die
+Farbleiter zwischen ihnen nicht linear ist — fünf ihrer fünfunddreißig Bänder
+liegen unter Wasser und dehnen die Minuten bis zum Meeresspiegel über ein
+Siebtel der Breite. Ein Strich muss darum stückweise gesetzt werden. Zwei sind
+benannt (Meeresspiegel, Schneegrenze), und ein runder Strich, der einem von
+beiden zu nah kommt, fällt aus.
+
+**Voreingestellt ist jetzt die Hälfte** statt eines Viertels: 41,8 Millionen
+Menschen, das obere Ende des brauchbaren Fensters. Die Messung dahinter ist
+dieselbe und steht unverändert in METHODIK 4.1 — das Fenster liegt zwischen
+einem Sechstel und der Hälfte, weil unterhalb eines Siebtels jede Region noch
+aus sich selbst schöpft und oberhalb von zwei Dritteln nur noch Sylt und Rügen
+zählen. Ein Viertel ist die runde Zahl in der Mitte, die Hälfte das obere
+Ende; die eine zeigt das Netz, die andere das Land. `VORGABE` in
+`build/05_seite.py` sagt nur, wo der Regler beim Aufschlagen steht, und der
+Regler in der Seite wird aus der Nutzlast gestellt, damit nicht zwei
+Voreinstellungen in der Seite stehen und eine davon irgendwann die falsche ist.
+
+## Zoomen, ohne dass die Farben wandern
+
+Zoom am Rad und mit zwei Fingern war der Wunsch, mit ausdrücklicher Erlaubnis,
+während der Geste an der Auflösung zu sparen. Die Erlaubnis wird genutzt — 3,4
+Pixel je Zelle während der Bewegung, wieder fein 220 Millisekunden nach dem
+letzten Ereignis —, aber das war der kleinere Teil.
+
+Der größere: Zoomen soll **Detail hinzufügen** und nicht ein Bild vergrößern,
+und es soll nicht teurer werden. Beides geht nur, wenn das Feld allein für den
+sichtbaren Ausschnitt gerechnet wird; dann schrumpft der Ausschnitt mit
+demselben Faktor, mit dem die Auflösung wächst, und die Zellzahl bleibt
+stehen. Gemessen bei Zoom 5,2: 700.000 Bildzellen wie bei Zoom 1, dazu 99.000
+Zellen Rechengitter.
+
+Dabei gibt es aber zwei Größen, die gerade **nicht** am Zoom hängen dürfen:
+das obere Ende der Farbleiter und die Liste der Ausgewanderten. Eine Farbe
+oder eine Insel, die sich beim Heranzoomen ändert, ist eine Lüge über die
+Daten. Beide kamen bisher aus demselben Raster wie das Bild.
+
+Also drei Gitter statt einem:
+
+| | Ausdehnung | Weite | Aufgabe |
+| --- | --- | --- | --- |
+| Grundgitter | ganzer Ausschnitt | fest 3 min | Landmaske, Perzentil, Ausgewanderte, Isochronen |
+| Rechengitter | Sichtbares + 2,5 σ | ≈ 3 px | Höhenfeld, sobald hineingezoomt ist |
+| Bildgitter | Sichtbares | 1 px | das Bild |
+
+Das Grundgitter hängt nur an Lage und Anteil, und ein Zähler sagt, wann es neu
+muss. Nachgemessen: Meeresspiegel 322 und Schneegrenze 557 Minuten stehen bei
+Zoom 1 und bei Zoom 5,2 auf derselben Zahl.
+
+Zwei Dinge sind dabei nebenbei besser geworden. Die Nachsicht, mit der ein
+Bahnhof noch als „an Land" gilt, stand in **Zellen** und hing damit an der
+Auflösung — die Zahl der Inseln war 537 bei drei Minuten je Zelle und 593 bei
+1,24. Jetzt steht sie in Minuten (zwei) und die Karte hat immer dieselben
+Inseln. Und die Isochronen liegen auf dem Grundgitter: bei σ = 22 Minuten sind
+das über sieben Zellen, die Linien kommen als Pfad in Weltkoordinaten heraus
+und sind bei jedem Zoom scharf — auf dem Bildgitter waren sie zwanzigmal so
+teuer.
+
+Was noch auffiel, weil das Grundgitter es sichtbar machte: die Anzeige am
+Wasserstandsregler stand auf einer anderen Zahl als die Legende. Der
+Wasserstand ist intern ein Aufschlag auf den besten Bahnhof, angezeigt wird er
+absolut — und der beste Bahnhof wandert mit dem Anteilsregler. Die Anzeige
+gehört darum zu jedem Bild und nicht nur zum eigenen Regler.
+
 ## Was offen ist
 
 **Die Bevölkerung ist innerhalb eines Kreises gleichmäßig verteilt.** Das ist
@@ -345,9 +420,11 @@ Lesart auf dieser.
   sind gerechnet und stehen als Kennzahlen in der Nutzlast, nicht als Ansicht.
   Der Anteilsregler deckt beide Pole ohnehin ab — bei 90 % *ist* die Karte die
   Geografiekarte —, und drei Knöpfe für dasselbe wären zwei zu viel.
-- **Ein Viertel als Voreinstellung, nicht ein Fünftel oder ein Drittel.** Alle
-  drei liegen im brauchbaren Fenster; das Viertel ist die runde Zahl mit dem
-  klarsten Satz dazu.
+- **Die Hälfte als Voreinstellung.** Sie ist das obere Ende des gemessenen
+  Fensters und zeigt das Land statt des Ballungsraums. Ein Viertel, ein
+  Fünftel und ein Drittel liegen genauso darin und zeigen dieselbe Familie von
+  weiter unten; die Wahl sagt, wo der Regler aufschlägt, und nicht, welche
+  Lesart richtig ist.
 - **Der Grundriss ist die flache Federkarte, nicht die Geländelage.** Damit
   der Satz stimmt, der die Karte erklärt: der Abstand auf der Karte ist die
   Reisezeit.
