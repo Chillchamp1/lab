@@ -813,23 +813,41 @@ Steilen so dünn wie im Flachen.
 ### 4.8 Die Beschriftung
 
 **Beim Hineinzoomen kommen neue Namen dazu**, und zwar die der kleineren
-Bahnhöfe. Bei der Anfangsstellung stehen die Ortsmarken; mit jedem
-Zoomschritt wird ein Budget für Bahnhofsnamen frei (dreißig je Zoomstufe,
-höchstens 260), das aus einer **Rangliste nach Halten am Tag** gefüllt wird —
-der größte Bahnhof im Bild kommt also zuerst. Angeboten wird dabei die ganze
-Rangliste und nicht ihr Kopf: wer in den Harz hineinzoomt, soll dort Namen
-sehen und nicht die von Hannover, das national weiter oben steht, aber
-außerhalb des Bildes liegt. Teuer ist das nicht, weil eine Zeile, deren Budget
-aufgebraucht ist, nur noch einen Vergleich kostet. Gebremst wird doppelt: von
-diesem Budget und vom Kollisionstest, der ohnehin nur unterbringt, was Platz
-hat — beim Herauszoomen verschwinden die Namen damit von selbst wieder.
-Gemessen auf 1440 × 900 über der Mitte des Landes: 11 Bahnhofsnamen bei 1,15,
-26 bei Zoom 2, 85 bei 4, 184 bei 8.
+Bahnhöfe, aus einer **Rangliste nach Halten am Tag** — der größte Bahnhof im
+Bild kommt zuerst. Angeboten wird dabei die ganze Rangliste und nicht ihr
+Kopf: wer in den Harz hineinzoomt, soll dort Namen sehen und nicht die von
+Hannover, das national weiter oben steht, aber außerhalb des Bildes liegt.
+Teuer ist das nicht, weil eine Zeile, deren Budget aufgebraucht ist, nur noch
+einen Vergleich kostet.
+
+Wie viele dazukommen, sagt **nicht der Zoom, sondern der Platz**: die
+Gesamtzahl der Namen im Bild bleibt ungefähr gleich. Beim Hineinzoomen fallen
+die Ortsmarken aus dem Bild — von 62 sind bei Zoom 8 noch drei übrig —, und
+genau diese Lücke füllen die Bahnhofsnamen auf. Eine Zahl, die am Zoom hing
+(dreißig je Stufe), gab bei Zoom 8 einhundertvierundachtzig Bahnhofsnamen:
+das war kein Kartenbild mehr, sondern ein Register. Gemessen auf 1440 × 900:
+
+| Zoom | Namen gesamt | davon Bahnhöfe |
+| --- | --- | --- |
+| 1,15 | 81 | 11 |
+| 2 | 62 | 6 |
+| 4 | 62 | 37 |
+| 8 | 62 | 59 |
 
 **Die Bahnhofspunkte sind von Anfang an eingeblendet.** Sie sind das, woraus
 die Karte gemacht ist, und ohne sie sieht ein Relief aus wie eine Behauptung.
 Beim Hineinzoomen werden sie etwas größer, mit der Wurzel des Zooms und
 gedeckelt — linear lägen sie schon bei Zoom 4 wie Murmeln.
+
+**Alle Punkte sehen gleich aus**, und das ist die Behebung eines Fehlers. Den
+roten Punkt bekam, wessen Name gerade daneben passte — und weil beim
+Verziehen der Karte andere Namen passen als vorher, wechselten die Punkte
+dabei zwischen Weiß und Rot. Es sah aus, als sagte die Farbe etwas über den
+Bahnhof, und sie sagte nur etwas über den Platz. Rot bekommen jetzt die
+**Ortsmarken**, unabhängig davon, ob ihr Name untergebracht werden konnte:
+eine feste Liste, also bleibt rot, was rot ist, wie weit man auch schiebt. Ein
+Name zeichnet keinen eigenen Punkt mehr — außer wenn die Punktebene
+ausgeschaltet ist, denn dann braucht er einen Anker.
 
 Die Schrift ist **8 Pixel** groß, auf schmalen Schirmen 9. Sie war 11,5 und
 damit für eine Karte zu laut: sie hat die Karte gelesen statt sie zu

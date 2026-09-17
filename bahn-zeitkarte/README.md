@@ -247,9 +247,16 @@ ist eine Zeile hoch, weil jede Zeile, die er sich nimmt, der Karte fehlt.
     um Singen, Mittenwald —, zoomt heraus; sie liegen dort mit Scholle und
     Namen.
 - **Die Bahnhöfe sind von Anfang an eingeblendet**, und beim Hineinzoomen
-  kommen **neue Namen** dazu: mit jedem Zoomschritt wird ein Budget frei, das
-  aus einer Rangliste nach Halten am Tag gefüllt wird — der größte Bahnhof im
-  Bild kommt zuerst. Beim Herauszoomen verschwinden sie von selbst wieder.
+  kommen **neue Namen** dazu, aus einer Rangliste nach Halten am Tag — der
+  größte Bahnhof im Bild kommt zuerst. Wie viele, sagt nicht der Zoom, sondern
+  der Platz: die Gesamtzahl der Namen bleibt ungefähr gleich, und die
+  Bahnhofsnamen füllen die Lücke, die die aus dem Bild gefallenen Ortsmarken
+  lassen.
+- **Alle Punkte sehen gleich aus.** Rot sind die Ortsmarken — eine feste
+  Liste, unabhängig davon, ob ihr Name untergebracht werden konnte. Vorher
+  bekam den roten Punkt, wessen Name gerade daneben passte, und weil beim
+  Verziehen andere Namen passen als vorher, wechselten die Punkte dabei die
+  Farbe.
 - Zeiger über einen Punkt zeigt Name, Erreichbarkeit und Zahl der Halte.
 
 ### Die Legende liegt unter der Karte
