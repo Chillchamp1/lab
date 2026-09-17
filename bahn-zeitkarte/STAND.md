@@ -791,6 +791,67 @@ einer Schleife läuft ohnehin jeder Akt wieder vorbei, und ein Akt, der nur eine
 Adresse zeigt, kostet Sekunden, in denen die Karte stillsteht. Länge jetzt
 **26 Sekunden**, 780 Bilder.
 
+## Der Auftakt, und das Netz in zwei Lagen
+
+Zwei Dinge, die die Seite vorher nicht konnte, und beide gehen auf dieselbe
+Beobachtung zurück: die Karte *behauptet* etwas, und der Beweis lag hinter
+einem Knopf, den man erst finden musste.
+
+**Der Auftakt.** Die Seite stand beim Aufschlagen in der Zeitkarte. Wer die
+ohne die Landkarte daneben sieht, hält sie für eine schlechte Landkarte — das
+Ruhrgebiet ein Klumpen, die Ostsee zu weit im Norden, und nichts sagt, dass
+das so gemeint ist. Jetzt schlägt sie auf der Landkarte auf, hält
+achthundert Millisekunden scharf, und fährt in fünfeinhalb Sekunden einmal
+hinüber. Dieselbe Bewegung wie im Film, nur kürzer.
+
+Die vier Festlegungen dazu stehen in METHODIK 4.16; die eine, die im Laufen
+nachgezogen wurde, ist die Rasterstufe: das Reglerereignis stellt sie auf
+„wird gezogen" und damit grob, weil normalerweise eine Hand am Regler liegt.
+Im Auftakt hält aber ein Bild acht Zehntelsekunden still, und ein grobes
+Standbild als erstes Bild der Seite ist das falsche Versprechen. Also wird
+nach dem Ereignis und vor der Fahrt zurück auf die Ruhestufe gestellt — `bald`
+malt je Bild nur einmal, also ist das erste Bild schon das feine. Gemessen:
+`FEINHEIT` 1,0 beim Aufschlagen, 1,35 unterwegs, 1,0 wieder am Ende.
+
+Für den Film musste der Auftakt abschaltbar werden (`window.KEINAUFTAKT`, von
+`film.mjs` vor dem Laden gesetzt): dort führt das Skript den Regler, und beide
+hätten dasselbe Feld geschrieben.
+
+**Das Netz.** Die eigentliche Arbeit war nicht das Zeichnen, sondern
+festzustellen, was der Datensatz an Netz hergibt — nämlich Kanten zwischen
+**aufeinander folgenden Halten**, und keine Gleise. Die Zahlen dazu, aus
+`netz.bin` gemessen:
+
+| | Paare | Median | P90 | P99 | Max |
+| --- | --- | --- | --- | --- | --- |
+| Hauptachsen (ICE, IC/EC, Nachtzug) | 490 | 31 km | 102 km | 252 km | 415 km |
+| Nebennetz (nur Regionalverkehr) | 6.062 | 4,5 km | 13 km | 29 km | 117 km |
+
+Das ist die Rechtfertigung für die Teilung nach Produktklasse: die beiden
+Verteilungen sind nicht dasselbe mit anderem Umfang, sie sind
+verschiedene Dinge. Die Hauptachsen *sind* Sprünge — der ICE hält zwischen
+Berlin Spandau und Frankfurt nicht —, das Nebennetz zeichnet mit seinen 6.062
+Strichen das Streckennetz nach, mit ganzen drei Kanten über 60 km. Ein
+Schwellenwert auf Züge am Tag (Median 36, P90 71, Max 519 je Paar) hätte
+dieselben beiden Haufen schlechter getrennt und wäre gesetzt statt gemessen.
+
+Herausgefallen sind 900 der 7.452 ungerichteten Paare, weil beide Endpunkte im
+Kern liegen müssen: 242 mit einem Endpunkt außerhalb, 658 mit keinem — das ist
+viel an Paaren und wenig an Verkehr, nur 4 Prozent der 279.680 Abschnitte.
+
+Nebenbefund beim Bauen: die Umkehrabbildung *Bahnhofsnummer → Nutzlastindex*
+gab es im Repo nirgends. `kern.json` führt `kern` (Index der Reisezeitmatrix)
+und `kern_de` (Bahnhofsnummer), und die ganze Nutzlast wird in der Reihenfolge
+von `kern_de` erzeugt — die Rückrichtung brauchte vorher niemand. Sie steht
+jetzt in `05_seite.py` und ist für die 683 Bahnhöfe außerhalb des Kerns
+undefiniert.
+
+Kosten: Nutzlast 467 → 502 kB (gezippt 236 → 257 kB), Zeichnen unter der
+Messschwelle — vier `stroke`-Aufrufe gegen ein Höhenfeld aus Millionen Zellen.
+Nachgerechnet, dass der neue Lauf von `05_seite.py` die Datei sonst
+**byteweise** reproduziert: nur die zwei neuen Schlüssel kommen hinzu, kein
+alter ändert sich.
+
 ## Was offen ist
 
 **Die Bevölkerung ist innerhalb eines Kreises gleichmäßig verteilt.** Das ist
