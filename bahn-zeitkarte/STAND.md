@@ -408,6 +408,9 @@ Der Fehler ist mit dem Einblenden der Punkte entstanden. Vorher waren die
 Punkte aus, und der rote Kreis war die *einzige* Marke — dann fällt nicht auf,
 dass er kommt und geht, weil dort vorher nichts war.
 
+*Nachtrag: zurückgenommen, siehe „Rot heißt: hier steht ein Name" weiter
+unten.*
+
 ## Zu viele Namen beim Hineinzoomen
 
 Die Zahl der Bahnhofsnamen hing am Zoom (dreißig je Stufe, höchstens 260), und
@@ -466,6 +469,28 @@ das kleine σ trifft die Punkte fast genau, damit steht die *geografische*
 Nachbarschaft im Bild, und der glatte Trichter der Zeitkarte bekommt eine
 Kräuselung. Der glatte Trichter ist das Bild. Die Rechnung steht in
 [METHODIK 4.13](METHODIK.md).
+
+## Rot heißt: hier steht ein Name
+
+Der rote Punkt an beschrifteten Bahnhöfen war beliebt und ist wieder da.
+
+Weggenommen wurde er, weil er beim Verziehen kam und ging: rot bekam, wessen
+Name gerade daneben passte, und beim Verziehen passen andere Namen. Das war zu
+vorsichtig gerechnet. Der rote Punkt ist der **Anker der Beschriftung** — er
+sagt nicht „dieser Bahnhof ist wichtig", er sagt „dieser Name gehört hierher",
+und ohne ihn schwebt ein Name im Gelände. Dass sich die Auswahl mit dem Zoom
+ändert, *soll* so sein: beim Hineinzoomen kommen neue Namen dazu, und die
+brauchen ihren Punkt.
+
+Der Preis ist nachgezählt und klein: über den ganzen Morph kommen und gehen
+eine Handvoll Punkte, 86 in der Landkarte gegen 79 in der Zeitkarte. Über den
+Zoom sind es 79 bei der Anfangsstellung und 63 bis 64 weiter drinnen — die
+Ortsmarken fallen aus dem Bild, die Bahnhofsnamen füllen nach.
+
+Die Ortsmarken bleiben zusätzlich rot, auch wenn ihr Name keinen Platz fand;
+sonst verschwände beim Hineinzoomen die Mitte einer Stadt ganz. Alle roten
+Punkte haben jetzt dieselbe Größe (Radius 1,55 · √Zoom, gedeckelt bei 2,0) —
+vorher waren der Ankerpunkt und die Ortsmarke verschieden groß.
 
 ## Was offen ist
 

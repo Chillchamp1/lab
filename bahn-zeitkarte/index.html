@@ -1395,14 +1395,32 @@ const imRahmen = (x, y) =>
    Beim Hineinzoomen werden die Punkte etwas größer — nicht linear, sondern
    mit der Wurzel, weil sie sonst schon bei Zoom 4 wie Murmeln lägen.
 
-   Alle Punkte sehen **gleich** aus, und das ist keine Sparsamkeit, sondern
-   die Behebung eines Fehlers: den roten Punkt bekam bisher, wessen Name
-   gerade daneben passte. Weil beim Verziehen der Karte andere Namen passen
-   als vorher, wechselten die Punkte dabei zwischen Weiß und Rot — es sah
-   aus, als sagte die Farbe etwas über den Bahnhof, und sie sagte nur etwas
-   über den Platz. Rot bekommen jetzt die **Ortsmarken**, und die sind eine
-   feste Liste: was rot ist, bleibt rot, wie weit man auch schiebt. */
+   **Rot heißt: hier steht ein Name.** Das ist der Kern der Sache — der rote
+   Punkt ist der Anker der Beschriftung, und er gehört zu ihr. Weiß sind die
+   übrigen viertausendsiebenhundert, aus denen das Relief gemacht ist.
+
+   Eine Fassung lang war Rot der **Ortsmarken** vorbehalten, weil das eine
+   feste Liste ist und sich beim Verziehen nichts umfärbt. Das war zu
+   vorsichtig: welche Bahnhöfe rot sind, *soll* sich mit dem Zoom ändern, denn
+   beim Hineinzoomen kommen neue Namen dazu, und ohne Anker schwebt ein Name
+   im Gelände. Der Preis ist, dass mitten in der Bewegung ein paar Punkte
+   kommen und gehen, weil dann andere Namen Platz finden — nachgezählt 86 in
+   der Landkarte gegen 79 in der Zeitkarte, also eine Handvoll von achtzig.
+   Dafür sagt die Farbe wieder etwas Lesbares: rot ist, was benannt ist.
+
+   Die Ortsmarken bleiben zusätzlich rot, auch wenn ihr Name keinen Platz
+   fand — sonst verschwände beim Hineinzoomen die Mitte einer Stadt ganz. */
 const ORTROT = '#e8291c';
+/* Ein roter Punkt mit dunklem Saum: derselbe für die Ortsmarke und für den
+   beschrifteten Bahnhof, damit die Karte eine Sorte roter Punkte hat. */
+function rotPunkt(X, Y, r){
+  ctx.beginPath(); ctx.arc(X, Y, r, 0, 6.2832);
+  ctx.fillStyle = ORTROT; ctx.fill();
+  ctx.lineWidth = .7; ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.stroke();
+}
+/* So groß wie früher der Ankerpunkt (Radius 1,7 bei der Anfangsstellung) und
+   beim Hineinzoomen ein wenig mitwachsend, wie die weißen Punkte auch. */
+const rotR = () => Math.min(2.0, 1.55 * Math.sqrt(Math.min(2, V.zoom)));
 function punkteMalen(){
   const r = Math.min(2.2, 1.3 * Math.sqrt(V.zoom));
   ctx.fillStyle = 'rgba(255,255,255,' + (V.zoom > 1.6 ? .62 : .45) + ')';
@@ -1411,14 +1429,12 @@ function punkteMalen(){
 }
 /* Die Ortsmarken, unabhängig davon, ob ihr Name untergebracht werden konnte. */
 function ortePunkteMalen(anzahl){
-  const rr = Math.min(3.0, 2.1 * Math.sqrt(Math.min(2, V.zoom)));
+  const rr = rotR();
   for (const [i] of P.marken.slice(0, anzahl)){
     if (!imRahmen(wx[i], wy[i])) continue;
     const X = schirmX(wx[i]), Y = schirmY(wy[i]);
     if (X < -8 || X > W+8 || Y < -8 || Y > H+8) continue;
-    ctx.beginPath(); ctx.arc(X, Y, rr/2, 0, 6.2832);
-    ctx.fillStyle = ORTROT; ctx.fill();
-    ctx.lineWidth = .7; ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.stroke();
+    rotPunkt(X, Y, rr);
   }
 }
 
@@ -1435,7 +1451,7 @@ let abgelegen = null, rangliste = null;
    verliert, bekommt sie an Kontrast zurück: der schwarze Saum bleibt
    anteilig dicker als vorher. Alle Abstände hängen an SCHRIFT, damit ein
    anderer Wert nicht die Halterei durcheinanderbringt. */
-const SCHRIFT = 8, SCHRIFT_ENG = 9, SAUMSTRICH = 2.2, PUNKTR = 1.7;
+const SCHRIFT = 8, SCHRIFT_ENG = 9, SAUMSTRICH = 2.2;
 
 function namenMalen(){
   /* Auf dem Telefon einen Punkt größer: dort stehen ohnehin nur zwei Dutzend
@@ -1534,14 +1550,9 @@ function namenMalen(){
     ctx.lineWidth = SAUMSTRICH; ctx.strokeStyle = 'rgba(0,0,0,.68)';
     ctx.strokeText(t, hin[0], hin[1]);
     ctx.fillStyle = '#fff'; ctx.fillText(t, hin[0], hin[1]);
-    /* Ein eigener Punkt nur, wenn die Punktebene aus ist — sonst stünden
-       zwei Marken auf demselben Bahnhof, und die obere wechselte mit dem
-       Namen die Farbe. */
-    if (!Z.punkte && g !== 0){
-      ctx.beginPath(); ctx.arc(X, Y, PUNKTR, 0, 6.2832);
-      ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.fill();
-      ctx.lineWidth = .7; ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.stroke();
-    }
+    /* Der Anker: rot, weil hier ein Name steht. Die Ortsmarken (g = 0)
+       haben ihren schon, die zeichnet ortePunkteMalen ohnehin. */
+    if (g !== 0) rotPunkt(X, Y, rotR());
     platz[g]--; gesamt++;
   }
 }
@@ -2343,9 +2354,9 @@ around Singen, Mittenwald — are there with their floe and their name.</li>
 names</b> with it, taken from a ranking by calls per day — so the largest
 station in view is named first. How many is decided not by the zoom but by the
 room: the total number of names stays about the same, and the station names
-fill the gap left by the place marks that have dropped out of view. All dots
-look alike; the red ones are the place marks, a fixed list, so nothing changes
-colour as the map moves.</li>
+fill the gap left by the place marks that have dropped out of view. A
+<b>red dot</b> means a name stands here — it is the label's anchor, so which
+stations are red changes as you zoom; the other 4,781 are white.</li>
 </ul>
 <p>The <b>frame</b> is fixed and does not travel along as you slide —
 otherwise the very deformation the map is about would no longer be visible. But

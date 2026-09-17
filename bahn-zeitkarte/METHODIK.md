@@ -831,15 +831,19 @@ die Karte gemacht ist, und ohne sie sieht ein Relief aus wie eine Behauptung.
 Beim Hineinzoomen werden sie etwas größer, mit der Wurzel des Zooms und
 gedeckelt — linear lägen sie schon bei Zoom 4 wie Murmeln.
 
-**Alle Punkte sehen gleich aus**, und das ist die Behebung eines Fehlers. Den
-roten Punkt bekam, wessen Name gerade daneben passte — und weil beim
-Verziehen der Karte andere Namen passen als vorher, wechselten die Punkte
-dabei zwischen Weiß und Rot. Es sah aus, als sagte die Farbe etwas über den
-Bahnhof, und sie sagte nur etwas über den Platz. Rot bekommen jetzt die
-**Ortsmarken**, unabhängig davon, ob ihr Name untergebracht werden konnte:
-eine feste Liste, also bleibt rot, was rot ist, wie weit man auch schiebt. Ein
-Name zeichnet keinen eigenen Punkt mehr — außer wenn die Punktebene
-ausgeschaltet ist, denn dann braucht er einen Anker.
+**Rot heißt: hier steht ein Name.** Der rote Punkt ist der Anker der
+Beschriftung und gehört zu ihr; weiß sind die übrigen viertausendsiebenhundert,
+aus denen das Relief gemacht ist. Welche Bahnhöfe rot sind, ändert sich mit dem
+Zoom, und das ist der Sinn der Sache: beim Hineinzoomen kommen neue Namen dazu,
+und ein Name ohne Anker schwebt im Gelände.
+
+Eine Fassung lang war Rot den **Ortsmarken** vorbehalten — eine feste Liste,
+damit sich beim Verziehen nichts umfärbt. Das war zu vorsichtig: es nahm der
+Beschriftung ihren Anker, um ein Flackern zu vermeiden, das klein ist.
+Nachgezählt kommen und gehen über den ganzen Morph eine Handvoll Punkte, 86 in
+der Landkarte gegen 79 in der Zeitkarte, weil dann andere Namen Platz finden.
+Die Ortsmarken bleiben zusätzlich rot, auch wenn ihr Name keinen Platz fand —
+sonst verschwände beim Hineinzoomen die Mitte einer Stadt ganz.
 
 Die Schrift ist **8 Pixel** groß, auf schmalen Schirmen 9. Sie war 11,5 und
 damit für eine Karte zu laut: sie hat die Karte gelesen statt sie zu
@@ -848,8 +852,9 @@ Relief unter einem Plakat. Dreißig Prozent kleiner ist das schonende Ende der
 Spanne, die gewünscht war — eine Beschriftung, die man nicht mehr liest, ist
 keine. Was sie an Größe verliert, bekommt sie an Kontrast zurück: der schwarze
 Saum um jeden Namen bleibt anteilig dicker als vorher, und der rote Punkt
-schrumpft mit (1,7 Pixel Radius statt 2,1). Alle Abstände hängen an der
-Schriftgröße, damit ein anderer Wert die Halterei nicht durcheinanderbringt.
+schrumpft mit (1,55 · √Zoom Pixel Radius, gedeckelt bei 2,0, statt 2,1). Alle
+Abstände hängen an der Schriftgröße, damit ein anderer Wert die Halterei nicht
+durcheinanderbringt.
 
 Beschriftet werden **Orte, nicht Bahnhofsnamen**. Der Fahrplan kennt „Pasing"
 und „Oberkotzau" mit vielen Halten und Karlsruhe mit wenigen; und er nennt
