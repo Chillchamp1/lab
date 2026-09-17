@@ -490,6 +490,10 @@ function rahmenBestimmen(){
 
 /* ----------------------------------------------------- Maße und Projektion */
 let W = 0, H = 0, DPR = 1;
+/* Der Deckel für die Punktdichte. Zwei genügen auf jedem Schirm, den es gibt,
+   und alles darüber kostet nur. `let`, weil `build/film.mjs` ihn hochdreht:
+   ein Film darf sich Überabtastung leisten, die Seite nicht. */
+let DPRMAX = 2;
 let FW = 0, FH = 0, ZELLE = 3.0, X0 = 0, Y0 = 0;          /* Bildgitter */
 let GW = 0, GH = 0, GZELLE = 3.6, GX0 = 0, GY0 = 0;       /* Rechengitter */
 let SW = 0, SH = 0, SX0 = 0, SY0 = 0;                     /* Grundgitter */
@@ -553,7 +557,7 @@ let spiel = null;
 
 function messen(){
   const r = cv.getBoundingClientRect();
-  DPR = Math.min(2, window.devicePixelRatio || 1);
+  DPR = Math.min(DPRMAX, window.devicePixelRatio || 1);
   W = Math.max(280, Math.round(r.width)); H = Math.max(280, Math.round(r.height));
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -722,7 +726,10 @@ let fH = null;
    braucht einen Saum von zweieinhalb σ über den sichtbaren Ausschnitt
    hinaus, weil die Glocke so weit trägt; ohne ihn stünde am Bildrand ein
    falscher Wert. */
-const ZELLMAX = 700000, SZELLE = 3.0, GSAUM = 2.5 * 11.0;
+/* Auch dieser Deckel ist `let` und aus demselben Grund: der Film rechnet
+   Bilder in Minuten statt in Millisekunden und darf das Gitter sprengen. */
+let ZELLMAX = 700000;
+const SZELLE = 3.0, GSAUM = 2.5 * 11.0;
 function feldMasseSetzen(){
   const [x0,x1,y0,y1] = WELT;
   /* Grundgitter: der ganze Umfang, feste Weite. Nicht nur der Rahmen, denn

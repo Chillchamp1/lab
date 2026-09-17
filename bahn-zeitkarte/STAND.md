@@ -542,6 +542,85 @@ Bahnhof bekommt einen weißen Ring — eine Markierung, keine vierte Farbe — u
 seinen Namen außerhalb des Budgets, damit er beschriftet ist, auch wenn er es
 in der Rangliste nie so weit nach oben geschafft hätte.
 
+## Ein hochkantes mp4 aus der Seite
+
+`build/film.mjs` macht aus der fertigen Seite ein Video für die Stellen, an
+denen eine Webseite nicht hingeht. Der Inhalt ist der der Seite, nichts
+nachgebaut: sie wird geladen, die Regler ausgeblendet, dann Bild für Bild
+weitergestellt und in eine Röhre an ffmpeg geschoben.
+
+**Was aus der Vorlage übernommen wurde, ist die Einstellung, nicht nur das
+Verfahren.** Bei `eiszeit-europa` hat genau das einmal gefehlt und vier
+Rechenläufe gekostet: Reddit wies ein hochkantes mp4 wiederholt ab, mit nichts
+als „submit failed", und die Ursache war die **Spitzenbitrate**. Nicht die
+Tonspur — die funktionierende Fassung hat gar keine —, nicht B-Frames, nicht
+Edit-Listen, nicht das Profil. Was hilft, ist `-maxrate 2600k -bufsize 5200k`
+neben dem CRF. Diese Flags stehen hier unverändert.
+
+Geändert ist nur **CRF: 18 statt 23**. Bei 23 kam der Lauf dort auf
+1,93 Mbit/s — anderthalb Mbit/s Luft unter einem Deckel, den niemand nutzte.
+Der Deckel begrenzt die Spitze, nicht den Durchschnitt; ein kleineres CRF füllt
+also die Luft aus, ohne das Risiko anzufassen, um das es ging.
+
+**Gerechnet wird groß und verkleinert.** Die Seite deckelt die Punktdichte bei
+2 und das Feldgitter bei 700.000 Zellen, weil dort jedes Bild in Echtzeit
+fallen muss; beides ist dafür jetzt `let` statt `const`. Der Film dreht auf:
+
+| | Seite | Vorlage (eiszeit) | hier |
+| --- | --- | --- | --- |
+| Leinwand | 1× Zielbreite | 2160 (2× überabgetastet) | **3240 (3×)** |
+| Feldgitter | 540 Zellen quer | ~1.620 | **2.704 = 9,56 M Zellen** |
+
+Die Überabtastung ist auf Höhenlinien und Acht-Punkt-Schrift der sichtbarste
+Unterschied überhaupt — und der Film kann sie sich leisten, die Seite nicht.
+
+**Gemessen, bevor gerechnet wurde** (`MESSEN=1`, Bildzeit bei 3× Leinwand):
+
+| Feldzellen | Bildzeit | Lauf |
+| --- | --- | --- |
+| 0,35 M (FEIN 1,0) | 1,35 s | 45 min |
+| 1,38 M (FEIN 0,5) | 1,31 s | 44 min |
+| 2,98 M (FEIN 0,34) | 2,70 s | 91 min |
+| 8,58 M (FEIN 0,20) | 3,63 s | 122 min |
+
+Zwischen FEIN 1,0 und 0,5 **kostet das feinere Gitter nichts** — der
+Screenshot einer 3.240 Punkte breiten Leinwand dominiert. Wer hier am Gitter
+spart, spart an der falschen Stelle. Genommen wurde die feinste Zeile.
+
+**Das Drehbuch steht im Skript, nicht in der Seite.** Die Vorlagen sind
+Zeitreihen mit einer Uhr und einem `setzeZeit(p)`; diese Seite ist ein Werkzeug
+mit drei Reglern. Zehn Akte über 65 Sekunden stellen Morph, Anteil, Zoom und
+den gewählten Bahnhof — ein Filmdrehbuch in einer Seite, die niemand als Film
+benutzt, wäre totes Gewicht für jeden Besucher.
+
+Zwei Fassungen des Drehbuchs sind verworfen worden, beide aus demselben Grund
+— die Kamera stand im Schwarzen:
+
+- **Fester Zoom.** Die Landkarte spannt 715 × 956 Minuten, die Zeitkarte
+  1.274 × 1.302. Bei einem Zoom, der die Landkarte füllt, fliegt die Zeitkarte
+  hinaus; bei einem, der die Zeitkarte fasst, steht am Anfang die Hälfte des
+  Bildes schwarz. Jetzt geht die Kamera beim Verziehen von 1,26 auf 0,86 auf.
+- **Göhren als Held des Kamera-Akts.** Göhren wandert 182 Minuten und landet
+  weit im Meer: die Kamera stand mit ihm im Schwarzen und Deutschland in einer
+  Ecke. Berlin Hbf wandert 152 Minuten und landet **im** Land — es steht still,
+  und Deutschland zieht darum herum vorbei. Das ist der Satz, den der Akt
+  zeigen soll, und der Held muss ihn erlauben.
+
+Zwei Fassungen fallen aus **einem** Bilddurchgang, weil das Rechnen der Bilder
+das Teure ist und die Kodierer nebenherlaufen: `film.mp4` mit 1080 × 1920 und
+dem gedeckelten Rezept für Reddit, `film-hoch.mp4` mit 1440 × 2560 und CRF 16
+ohne Deckel für alles andere. Die hohe Fassung ist zugleich die Rückversicherung:
+Sollte Reddit die gedeckelte doch abweisen, lässt sich daraus in einer Minute
+eine vorsichtigere rechnen, ohne die zwei Stunden neu zu rendern.
+
+Gerechnet wird in Abschnitten von 240 Bildern, jeder für sich ein mp4, mit einer
+Quittung daneben, die erst nach dem Schließen des Kodierers geschrieben wird.
+Der Ordner hängt an einem Abdruck von Seite, Skript und allen Einstellungen: ein
+Neustart findet seine Arbeit wieder, ein anderer Stand fängt neu an. Das ist
+gegen den Fehler gebaut, der bei der Vorlage passiert ist — dort wurden
+stillschweigend Abschnitte aus einem anderen Stand der Seite übernommen, und der
+Film war vorne alt und hinten neu, ohne ein Wort im Protokoll.
+
 ## Was offen ist
 
 **Die Bevölkerung ist innerhalb eines Kreises gleichmäßig verteilt.** Das ist

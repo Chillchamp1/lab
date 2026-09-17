@@ -47,6 +47,9 @@ counties-10m.json
 # Werkzeug fuer den Film, nicht Teil der Seite (siehe eiszeit-europa/build/film.mjs)
 eiszeit-europa/build/node_modules
 eiszeit-europa/build/.film-teile/
+bahn-zeitkarte/build/node_modules
+.film-teile-*
+probe-*.png
 *.mp4
 # Rohdaten und Zwischenergebnisse der Bahn-Zeitkarte, siehe bahn-zeitkarte/build/DATEN.md
 bahn-zeitkarte/build/roh/
