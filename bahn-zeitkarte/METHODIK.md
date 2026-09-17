@@ -419,7 +419,7 @@ Von unten nach oben ist das der ganze Weg von der Dichte- zur Geografiekarte,
 und die Korrelation mit A steigt monoton von 0,76 auf 0,98. Bei keiner Stufe
 bleibt ein Bahnhof übrig, der den Anteil im Suchhorizont nicht erreicht.
 
-#### Warum ein Viertel voreingestellt ist
+#### Wo die Voreinstellung sitzt, und warum
 
 Die Wahl hat eine gemessene Grenze. Eine Erreichbarkeitskarte ist genau so
 lange eine Dichtekarte, wie die **eigene Agglomeration den geforderten Anteil
@@ -440,12 +440,17 @@ Region mehr aus sich selbst schöpfen — und genau dort kippt die Tabelle: bei
 Rangfolge ab etwa zwei Dritteln ein, weil es dann nur noch darauf ankommt, wie
 schnell man Sylt und Rügen erreicht.
 
-Das brauchbare Fenster liegt zwischen einem Sechstel und der Hälfte, und **ein
-Viertel** — 20,9 Millionen, etwa das Doppelte der größten Ballung — ist die
-runde Zahl darin. Die Probe auf die Wahl: die zehn tiefsten Bahnhöfe sind dann
-Frankfurt Flughafen 160, Frankfurt Hbf 164, Köln 171, Mannheim 172, Frankfurt
-Süd 175, Köln Messe/Deutz 176, Düsseldorf 178, Hamm 180, Hannover 180,
-Dortmund 180. Das ist nicht eine Region, das ist die ICE-Achse.
+Damit liegt das brauchbare Fenster zwischen einem Sechstel und der Hälfte. Ein
+**Viertel** — 20,9 Millionen, etwa das Doppelte der größten Ballung — ist die
+runde Zahl in seiner Mitte. Voreingestellt ist inzwischen aber **die Hälfte**, 41,8
+Millionen, also das *obere* Ende des Fensters: das ist das Land und nicht der
+Ballungsraum. Bei der Hälfte zahlt sich eine mittige Lage aus, und am tiefsten
+liegen Frankfurt Hbf, Frankfurt Flughafen und Kassel-Wilhelmshöhe; das Relief
+spannt von 232 bis 744 Minuten. Schiebt man zum Sechstel hinunter, bekommt man
+die andere Lesart, in der das Netz entscheidet und nicht der Ort. Beide sind
+wahre Aussagen über dieselben Daten — der Regler ist da, weil keine von beiden
+die einzige ist, und `VORGABE` in `build/05_seite.py` sagt nur, wo er beim
+Aufschlagen steht.
 
 Gerechnet wird auf der **hin und zurück gemittelten** Matrix, wie A und B. Die
 Richtung „von hier weg" allein wäre näher an der Formulierung, aber
@@ -757,9 +762,25 @@ Reliefkarte bekommt.
 
 Die **Schneegrenze** ist nicht gesetzt, sondern abgeleitet: die Leiter läuft
 vom Wasserstand bis zum höchsten Wert **auf dem Land**, und die letzten sechs
-Bänder sind Schnee. In Minuten steht sie in der Tafel — bei einem Viertel und
-Wasser auf 250 Minuten liegt sie in der Zeitkarte bei 467 Minuten, in der
-Landkarte bei 435. Weil der Anteilsregler die ganze
+Bänder sind Schnee. In Minuten steht sie in der **Legende unter der Karte** —
+bei der Hälfte und Wasser auf 322 Minuten liegt sie in der Zeitkarte bei 557
+Minuten.
+
+Die Legende lag eine Fassung lang in der Tafel und trug nur ihre beiden
+Endpunkte. Farben liest man aber am Bild und nicht in einer Seitenspalte, und
+zwei Endpunkte sind zu wenig, weil die Leiter zwischen ihnen **nicht linear**
+ist: fünf ihrer fünfunddreißig Bänder liegen unter Wasser und dehnen die
+Minuten bis zum Meeresspiegel über ein Siebtel der Breite. Ein Teilstrich muss
+darum stückweise gesetzt werden, sonst steht er an der falschen Stelle. Zwei
+Striche sind benannt — der Meeresspiegel und die Schneegrenze —, und ein
+runder Strich, der einem von beiden näher als 46 Pixel kommt, fällt aus: zwei
+Zahlen übereinander sind schlechter als eine Zahl weniger, dasselbe Argument
+wie bei der Beschriftung (4.8).
+
+Das obere Ende der Leiter kommt aus dem **Grundgitter** (4.12) und nicht aus
+dem sichtbaren Ausschnitt. Sonst wanderte die Farbleiter beim Heranzoomen mit,
+und dieselbe Höhe hätte je nach Ansicht eine andere Farbe — eine Legende, die
+das tut, ist keine. Weil der Anteilsregler die ganze
 Leiter verschiebt, wird der Wasserstand intern als Aufschlag auf den besten
 Bahnhof geführt und nur absolut beschriftet: sonst würde ein Zug am
 Anteilsregler die halbe Karte fluten oder trockenlegen. Als oberes Ende dient das
@@ -921,6 +942,61 @@ Im Halt nicht ganz das Feinste, denn ein Bild, das eine halbe Sekunde zum
 Rechnen braucht, sieht mitten in einer Fahrt nicht nach einer Pause aus,
 sondern nach einem Hänger. Ein Bild, das steht, soll die feinste Stufe haben —
 und eines, das läuft, soll trotzdem scharf sein.
+
+### 4.12 Zoomen, und die drei Gitter
+
+Am Rad, mit zwei Fingern, Ziehen zum Verschieben, Doppelklick zurück. Zoom und
+Verschiebung sind eine Sache des Betrachtens und nicht der Karte: sie ändern
+nur, welcher Weltausschnitt auf den Schirm kommt. Die Mitte wird so
+festgehalten, dass nie ein leerer Rand entsteht — passt der Bildausschnitt
+(4.6) ganz ins Bild, sitzt er mittig; sonst darf die Mitte nur so weit
+wandern, wie der Rand es zulässt. Gezoomt wird **um einen Punkt**: der
+Weltpunkt unter dem Finger bleibt unter dem Finger, sonst zoomt man ins
+Nichts und muss hinterher suchen. Und hochkant gehört die Wischbewegung bei
+Zoom 1 der Seite und nicht der Karte, sonst kann man nicht mehr scrollen —
+`touch-action` schaltet mit dem Zoom um.
+
+Der eigentliche Eingriff steckt aber darunter. Zoomen soll **Detail
+hinzufügen**, nicht ein Bild vergrößern, und es soll nicht teurer werden. Beides
+geht nur, wenn das Feld nur für den sichtbaren Ausschnitt gerechnet wird; dann
+schrumpft der Ausschnitt mit demselben Faktor, mit dem die Auflösung wächst,
+und die Zellzahl bleibt stehen. Zwei Dinge dürfen dabei aber gerade **nicht**
+am Zoom hängen — das obere Ende der Farbleiter (4.7) und die Liste der
+Ausgewanderten (4.4) —, denn eine Farbe oder eine Insel, die sich beim
+Heranzoomen ändert, ist eine Lüge über die Daten.
+
+Also drei Gitter, und jedes hat genau eine Aufgabe:
+
+| | Ausdehnung | Weite | Aufgabe |
+| --- | --- | --- | --- |
+| **Grundgitter** | ganzer Bildausschnitt | fest 3 min | Landmaske, Perzentil der Farbleiter, Liste der Ausgewanderten, Isochronenfeld |
+| **Rechengitter** | Sichtbares + 2,5 σ | ≈ 3 px | das Höhenfeld, sobald hineingezoomt ist |
+| **Bildgitter** | Sichtbares | 1 px | das gezeichnete Bild |
+
+Das Grundgitter hängt nur an Lage und Anteil. Ein Zähler wird hochgesetzt,
+sobald sich einer von beiden ändert; solange er stillsteht, werden Grundfeld
+und Maske beim Zoomen und Schieben **nicht neu gerechnet**. Eine Zoomgeste
+kostet damit kaum mehr als ein einzelnes Bild.
+
+Das Rechengitter braucht seinen Saum von zweieinhalb σ über den sichtbaren
+Rand hinaus, weil die Glocke so weit trägt; ohne ihn stünde am Bildrand ein
+falscher Wert, weil die Bahnhöfe knapp außerhalb fehlten. Es entsteht nur,
+wenn das Grundgitter für ein Bild zu grob wäre, also ab etwa Zoom 1,7.
+
+Die **Isochronen** (4.9) liegen jetzt ebenfalls auf dem Grundgitter. Bei
+σ = 22 Minuten sind das mehr als sieben Zellen, also reichlich aufgelöst; die
+Linien kommen als Pfad in Weltkoordinaten heraus und sind darum bei jedem Zoom
+scharf. Auf dem Bildgitter gerechnet wären sie zwanzigmal so teuer, und beim
+Hineinzoomen fehlte der Glocke am Bildrand der halbe Saum.
+
+**Während der Geste** wird absichtlich gröber gerastert (3,4 Pixel je Zelle)
+und nach 220 Millisekunden ohne Ereignis wieder fein. Das ist hier anders
+gelöst als bei der Fahrt (4.11), wo gemessen wird: eine Zoomgeste ist kurz,
+ihr Ende ist ein klarer Zeitpunkt, und ein Bild, das während des Ziehens
+hinterherhinkt, macht das Zielen unmöglich.
+
+Ein Klick, der eigentlich ein Schieben war, wählt keinen Isochronenknoten: der
+zurückgelegte Weg wird mitgezählt, und über acht Pixel gilt es als Wischen.
 
 ## 5. Was fehlt
 

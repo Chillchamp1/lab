@@ -12,9 +12,12 @@ Darüber liegt ein Relief, und es misst nicht Entfernung, sondern
 **Reichweite**: wie lange es dauert, bis von hier ein **Anteil Deutschlands**
 mit dem Zug erreichbar ist. Dieser Anteil ist ein Regler, und das ist keine
 Bequemlichkeit — er schiebt zwischen den beiden Polen, zwischen denen jede
-Erreichbarkeitskarte steht. Voreingestellt ist **ein Viertel**, 20,9 Millionen
-Menschen: dann liegen Frankfurt bei 164 Minuten, Köln bei 171, Düsseldorf bei
-178, Hannover und Dortmund bei 180 — und die Stichbahnen um Freiburg bei 660.
+Erreichbarkeitskarte steht. Voreingestellt ist **die Hälfte**, 41,8 Millionen
+Menschen: dann liegen Frankfurt Hbf und Frankfurt Flughafen am tiefsten, dahinter
+Kassel-Wilhelmshöhe — das Relief spannt von 232 bis 744 Minuten.
+
+> Die Seite ist **auf Englisch**. Diese vier Dokumente — README, Methodik,
+> Quellen, Stand — sind die Rechenakte und bleiben deutsch.
 Wer schnell Menschen erreicht, liegt tief und läuft unter Wasser; über den
 abgehängten Gegenden liegt Schnee.
 
@@ -144,7 +147,7 @@ Dritteln **Fulda, Kassel-Wilhelmshöhe und Göttingen** — die geometrische Mit
 des Landes. Die Korrelation mit A steigt dabei von 0,76 auf 0,98: am oberen
 Ende *ist* die Karte die Geografiekarte.
 
-## Warum ein Viertel voreingestellt ist
+## Wo die Voreinstellung sitzt, und warum
 
 Die Wahl ist nicht Geschmack, sondern hat eine gemessene Grenze. Eine
 Erreichbarkeitskarte ist genau so lange eine Dichtekarte, wie die **eigene
@@ -166,12 +169,17 @@ die Rangfolge ab etwa zwei Dritteln ein, weil es dann nur noch darauf ankommt,
 wie schnell man Sylt und Rügen erreicht.
 
 Das brauchbare Fenster liegt damit zwischen einem Sechstel und der Hälfte, und
-**ein Viertel** — 20,9 Millionen, etwa das Doppelte der größten Ballung — ist
-die runde Zahl darin. Die Probe: die zehn tiefsten Bahnhöfe sind dann
-Frankfurt Flughafen, Frankfurt Hbf, Köln, Mannheim, Frankfurt Süd, Köln
-Messe/Deutz, Düsseldorf, Hamm, Hannover und Dortmund. Das ist nicht eine
-Region, das ist die ICE-Achse — und es kommt aus der Rechnung, nicht aus einer
-Liste.
+die Voreinstellung sitzt an dessen **oberem Rand: der Hälfte** — 41,8
+Millionen, viermal die größte Ballung. Das ist das Land und nicht der
+Ballungsraum: bei der Hälfte zahlt sich eine mittige Lage aus, und am tiefsten
+liegen Frankfurt Hbf, Frankfurt Flughafen und Kassel-Wilhelmshöhe. Schiebt man
+zum Sechstel hinunter, bekommt man die andere Lesart, in der das Netz
+entscheidet und nicht der Ort. Beide sind wahre Aussagen über dieselben Daten;
+der Regler ist da, weil keine von beiden die einzige ist.
+
+Ein Viertel war eine Fassung lang voreingestellt, mit demselben Argument aus
+derselben Messung — es ist die runde Zahl in der Mitte des Fensters. Die
+Hälfte zeigt dieselbe Familie von ihrem anderen Ende.
 
 ## Woher die Menschen kommen
 
@@ -216,13 +224,50 @@ ist eine Zeile hoch, weil jede Zeile, die er sich nimmt, der Karte fehlt.
   Stufen liegen vorgerechnet in der Nutzlast, dazwischen wird gemischt. Auch
   er hat einen Abspielknopf.
 - **Wasserstand** hebt den Meeresspiegel, beschriftet in absoluten Minuten —
-  bei einem Viertel liegt die Voreinstellung bei 250 Minuten. Die Farbleiter
+  bei der Hälfte liegt die Voreinstellung bei 322 Minuten. Die Farbleiter
   rückt mit, die Schneegrenze also auch.
 - **Isochronen** zeichnet die Linien gleicher Reisezeit um einen von 54
   vorgerechneten Knoten, anzuklicken auf der Karte. Das ist die Probe aufs
   Ganze: auf der Landkarte sind das ausgefranste Sterne, auf der Zeitkarte
   müssen daraus Kreise werden.
+- **Zoom** mit Rad oder zwei Fingern, Ziehen zum Verschieben, Doppelklick
+  zurück. Zoomen *verfeinert* das Raster statt es zu vergrößern, weil das Feld
+  nur für den sichtbaren Ausschnitt gerechnet wird — beim Hineinzoomen wächst
+  also das Detail und nicht die Zellzahl. Während der Geste wird absichtlich
+  gröber gerastert, und sobald man loslässt, wieder fein.
 - Zeiger über einen Punkt zeigt Name, Erreichbarkeit und Zahl der Halte.
+
+### Die Legende liegt unter der Karte
+
+Farben liest man am Bild und nicht in einer Seitenspalte, also steht die
+Farbleiter unter der Karte — mit **Teilstrichen in absoluten Minuten** statt
+nur den beiden Endpunkten. Die brauchte es, weil die Leiter zwischen ihnen
+nicht linear ist: fünf ihrer fünfunddreißig Bänder liegen unter Wasser und
+dehnen die Minuten bis zum Meeresspiegel über ein Siebtel der Breite. Zwei
+Striche sind benannt — der Meeresspiegel und die Schneegrenze —, und ein
+runder Strich, der einem von beiden zu nah kommt, fällt aus.
+
+Was die Legende **nicht** tut: sich beim Zoomen ändern. Das obere Ende der
+Leiter kommt aus einem Gitter über dem ganzen Bildausschnitt, nicht aus dem
+sichtbaren Teil; dieselbe Höhe hat darum dieselbe Farbe, ganz gleich wie nah
+man herangeht.
+
+### Drei Gitter, und jedes hat eine Aufgabe
+
+Damit Zoomen billig bleibt und die Legende trotzdem stillhält, liegen drei
+Gitter übereinander:
+
+| | Ausdehnung | Weite | Aufgabe |
+| --- | --- | --- | --- |
+| **Grundgitter** | ganzer Ausschnitt | fest 3 min | Landmaske, oberes Ende der Farbleiter, Liste der Ausgewanderten, Isochronen |
+| **Rechengitter** | Sichtbares + 2,5 σ | ~3 px | das Höhenfeld, wenn hineingezoomt ist |
+| **Bildgitter** | Sichtbares | 1 px | das gezeichnete Bild |
+
+Das Grundgitter hängt nur an Lage und Anteil, nicht an der Ansicht: beim Zoomen
+und Schieben wird es nicht neu gerechnet, und genau deshalb kostet eine
+Zoomgeste kaum mehr als ein Bild. Das Rechengitter braucht seinen Saum von
+zweieinhalb σ über den Rand hinaus, weil die Glocke so weit trägt — ohne ihn
+stünde am Bildrand ein falscher Wert.
 
 ### Auflösung und Kanten
 
