@@ -692,11 +692,19 @@ function dreieckeBauen(){
 
 /* --------------------------------------------------------- Maske und Feld */
 let maskeC = null, maskeA = null, inseln = 0, maskeTakt = 0;
+/* Acht Richtungen für die Nachsicht am Rand, einmal gerechnet. */
+const RINGX = new Float64Array(8), RINGY = new Float64Array(8);
+for (let k=0;k<8;k++){
+  RINGX[k] = Math.cos(k*Math.PI/4); RINGY[k] = Math.sin(k*Math.PI/4);
+}
 /* `statStand` zählt hoch, sobald sich Lage oder Anteil ändern — also alles,
    was das Grundgitter betrifft. Zoom und Verschiebung ändern ihn **nicht**,
    und darum werden Grundfeld und Maske beim Betrachten nicht neu gerechnet. */
 let maskeStand = -1, statStand = 0, statGerechnet = -1, statAnteil = 0;
 const inselIdx = [];
+/* Und je Scholle, wie weit ihr Bahnhof draußen liegt: 0 an der Küstenlinie,
+   1 klar im Meer. Daran hängt ihr Radius (siehe maskeBauen). */
+const inselF = [];
 let fH = null;
 
 /* Die Rasterweite wird nicht in Minuten gesetzt, sondern in
@@ -825,25 +833,60 @@ const INSELR = 11.5;function maskeBauen(){
   /* Wer liegt draußen? Mit zwei Minuten Nachsicht, weil der Umriss auf
      Zellenkanten gerastert ist und die Bahnhöfe im Grenzsaum sonst alle als
      ausgewandert gälten. Die Nachsicht steht in **Minuten** und nicht in
-     Zellen, damit dieselbe Karte immer dieselben Inseln hat. */
-  const tol = Math.max(1, Math.round(2.0 / SZELLE));
-  inselIdx.length = 0;
+     Zellen, damit dieselbe Karte immer dieselben Inseln hat.
+
+     Gegriffen wird **bilinear** und an einem Ring statt ganzzahlig über ein
+     Zellenfenster. Der alte Test lag auf der Zelle, *in* der der Bahnhof
+     liegt, und sein Prüffenster sprang darum bei jeder Zellgrenze um eine
+     ganze Zelle weiter — an der Küste kippte die Entscheidung dabei hin und
+     her. Im Film war das als Flackern zu sehen: die Zahl der Schollen lief
+     durch die Verformung nicht monoton (240, 236, 238, 237, 242, 242, 244,
+     242, 241 …), also 80 Wechsel in 29 Bildern, und weiße Scheiben poppten am
+     Kartenrand an und aus. Ein bilinearer Griff ist **stetig in der Lage des
+     Bahnhofs**; eine Scholle wechselt damit einmal, wenn die Küste über sie
+     hinwegzieht, statt im Wechsel. */
+  const tolz = 2.0 / SZELLE;
+  const maskeBei = (fx, fy) => {
+    let jx = Math.floor(fx - 0.5), jy = Math.floor(fy - 0.5);
+    const gx = fx - 0.5 - jx, gy = fy - 0.5 - jy;
+    if (jx < 0) jx = 0; else if (jx > SW-2) jx = SW-2;
+    if (jy < 0) jy = 0; else if (jy > SH-2) jy = SH-2;
+    const r0 = jy*SW + jx, r1 = r0 + SW;
+    return (maskeA[r0] + (maskeA[r0+1]-maskeA[r0])*gx) * (1-gy)
+         + (maskeA[r1] + (maskeA[r1+1]-maskeA[r1])*gx) * gy;
+  };
+  /* **Die Scholle wächst, sie poppt nicht.** Ihr Radius hängt daran, wie weit
+     der Bahnhof draußen liegt, und geht an der Küstenlinie auf null. Das war
+     der zweite Teil des Flackerns, und der größere: eine Entscheidung ist
+     immer ja oder nein, und mit ihr erschien bisher schlagartig eine Scheibe
+     von 23 Minuten Durchmesser. Über zwei Sekunden Film traten 101 Bahnhöfe
+     **einmal** über die Küste — das ist richtig so, aber bei jedem sprang eine
+     weiße Scheibe ins Bild.
+
+     Der Nebeneffekt ist der eigentliche Gewinn: die 34 Bahnhöfe, die genau auf
+     der Schwelle liegen und dort hin und her kippen, haben jetzt eine Scholle
+     von nahezu null Radius. Ihr Kippen ist damit nicht mehr zu sehen, ohne
+     dass die Entscheidung selbst geglättet oder mit einem Gedächtnis versehen
+     werden müsste — beides hätte gekostet, dass dieselbe Reglerstellung
+     dieselbe Karte zeigt. */
+  inselIdx.length = 0; inselF.length = 0;
   for (let i=0;i<n;i++){
-    const ix = grundX(wx[i])|0, iy = grundY(wy[i])|0;
-    let drin = false;
-    for (let dy=-tol;dy<=tol && !drin;dy++) for (let dx=-tol;dx<=tol;dx++){
-      const jx=ix+dx, jy=iy+dy;
-      if (jx<0||jy<0||jx>=SW||jy>=SH) continue;
-      if (maskeA[jy*SW+jx] > 120){ drin = true; break; }
-    }
-    if (!drin) inselIdx.push(i);
+    const cx = grundX(wx[i]), cy = grundY(wy[i]);
+    let best = maskeBei(cx, cy);
+    for (let k=0; k<8 && best <= 120; k++)
+      best = Math.max(best, maskeBei(cx + RINGX[k]*tolz, cy + RINGY[k]*tolz));
+    if (best > 120) continue;
+    const u = (120 - best) / 120;              /* 0 an der Linie, 1 weit raus */
+    inselIdx.push(i); inselF.push(u*u*(3 - 2*u));
   }
   inseln = inselIdx.length;
   /* Die Scheiben kommen ins Raster, damit die Statistik dasselbe Land sieht
      wie das Bild — gezeichnet werden sie aber als Pfad in
      Bildschirmauflösung (landPfad), nicht aus diesem Raster. */
-  const rz = INSELR / SZELLE, rad = Math.ceil(rz + 1);
-  for (const i of inselIdx){
+  const rad = Math.ceil(INSELR / SZELLE + 1);
+  for (let q=0;q<inselIdx.length;q++){
+    const i = inselIdx[q], rz = INSELR * inselF[q] / SZELLE;
+    if (rz <= 0.05) continue;
     const cx = grundX(wx[i]), cy = grundY(wy[i]);
     const ix0 = Math.max(0,(cx-rad)|0), ix1 = Math.min(SW-1,(cx+rad)|0);
     const iy0 = Math.max(0,(cy-rad)|0), iy1 = Math.min(SH-1,(cy+rad)|0);
@@ -884,8 +927,9 @@ function landPfad(){
       ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.lineTo(cx, cy); ctx.closePath();
     }
   }
-  const rs = INSELR * skala;
-  for (const i of inselIdx){
+  for (let q=0;q<inselIdx.length;q++){
+    const i = inselIdx[q], rs = INSELR * inselF[q] * skala;
+    if (rs <= 0.15) continue;
     const x = schirmX(wx[i]), y = schirmY(wy[i]);
     ctx.moveTo(x + rs, y);
     ctx.arc(x, y, rs, 0, 6.28318530718);
@@ -2456,7 +2500,7 @@ Altmark.</p>
 <p>The further the slider runs into time, the more <b>islands</b> break away
 from the land, and that is not a drawing error. The spring map flings the
 places left behind so far out that the warped outline can no longer follow
-them — in the pure time map, 539 of the ${nz(P.bahnhoefe)} stations lie beyond
+them — in the pure time map, 585 of the ${nz(P.bahnhoefe)} stations lie beyond
 the coast. But a station always belongs on land, so every emigrant gets its own
 <b>floe</b>: a disc with a hard edge and a radius of 11.5 minutes. Where
 several lie close together the discs merge into an archipelago.</p>

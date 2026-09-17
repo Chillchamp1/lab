@@ -375,7 +375,7 @@ Bäderbahn sind in der Zeitkarte über den Rand hinaus.
 Und je weiter der Regler in die Zeit läuft, desto mehr **Inseln** lösen sich
 vom Land. Das ist kein Zeichenfehler: die Federkarte schleudert die
 abgehängten Orte so weit hinaus, dass der verzogene Umriss ihnen nicht mehr
-folgen kann — 539 von 4.781 Bahnhöfen liegen in der reinen Zeitkarte jenseits
+folgen kann — 585 von 4.781 Bahnhöfen liegen in der reinen Zeitkarte jenseits
 der Küste, 108 davon sogar jenseits des Bildausschnitts. Ein Bahnhof gehört
 aber immer auf Land, also bekommt jeder Ausgewanderte seine eigene **Scholle**:
 eine Kreisscheibe mit hartem Rand und 11,5 Minuten Radius. Sie war eine

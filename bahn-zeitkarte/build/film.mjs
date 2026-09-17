@@ -93,22 +93,26 @@ const weich = u => u * u * (3 - 2 * u);                  // sanft an und ab
    zieht es hoch. Einen Zaehler darueber, und der Punkt geht unter, ohne dass
    der See schon bis Potsdam reicht. Nachgemessen, nicht geraten. */
 const WASSER = 97;
+/* Die Standbilder sind kurz, und das hat mit der Schleife zu tun. Der Film
+   endet dort, wo er anfaengt — bei Morph 0 —, also **addiert** sich ein
+   Standbild am Ende zu dem am Anfang. Zwei mal 3,5 Sekunden waren an der Naht
+   sieben Sekunden Stillstand, und die fielen auf. Jetzt gibt es am Ende gar
+   keines: das Standbild am Anfang **ist** das der Naht, und es dauert 1,6
+   Sekunden. Der Halt in der Zeitkarte liegt mitten im Film und braucht die
+   Zugabe nicht, also 2,4 statt 5. */
 const AKTE = [
-  { s: 3.5, t: '<b>Height is time.</b> How long until half of Germany is '
+  { s: 1.6, t: '<b>Height is time.</b> How long until half of Germany is '
               + 'within reach by train — from every one of 4,781 stations.',
     f: () => ({ morph: 0 }) },
   { s: 13, t: '<b>Now distance becomes travel time.</b> Every station moves to '
              + 'where the timetable puts it, and the coastline comes along.',
     f: u => ({ morph: weich(u) }) },
-  { s: 5, t: '<b>The time map.</b> The high-speed cross pulls together; branch '
-            + 'lines fly out to sea and become islands.',
+  { s: 2.4, t: '<b>The time map.</b> The high-speed cross pulls together; '
+              + 'branch lines fly out to sea and become islands.',
     f: () => ({ morph: 1 }) },
   { s: 9, t: '<b>And back.</b> Same heights, same stations — only the places '
             + 'return to their coordinates.',
     f: u => ({ morph: 1 - weich(u) }) },
-  { s: 3.5, t: '<b>chillchamp1.github.io/lab/bahn-zeitkarte</b> — three '
-              + 'sliders, 4,781 stations, and the method written out.',
-    f: () => ({ morph: 0 }) },
 ];
 
 const KURZ = Number(process.env.KURZ || 1);
@@ -118,7 +122,11 @@ const LAUF = AKTE.reduce((a, k) => a + k.s, 0);
 /* Aus den Akten ein Bild: welcher Akt, wie weit hinein, und wie stark der Text
    gerade steht. Der Text blendet nur dann aus, wenn der naechste Akt einen
    anderen hat — sonst blinkte er an jeder Aktgrenze. */
-const BLENDE = 0.45;                                     // Sekunden
+/* Kurz, weil der Halt kurz ist: an der Naht der Schleife kreuzen sich die
+   Blenden des letzten und des ersten Akts, das Bild bei t = 0 ist also der
+   Kreuzungspunkt und zeigt keinen Text. Bei 0,45 Sekunden gingen davon mehr
+   als ein Viertel des 1,6-Sekunden-Halts drauf. */
+const BLENDE = 0.3;                                      // Sekunden
 function bildZustand(i) {
   const t = Math.min(i / FPS, LAUF - 1e-6);
   let a = 0, v = 0;
@@ -218,7 +226,11 @@ const KOPF = `
     <h2>Germany, drawn by its timetables</h2>
     <p id="filmunter">&nbsp;</p>
   </div>`;
-const FUSS = `<div id="filmfuss"><p id="filmtext">&nbsp;</p></div>`;
+/* Die Quelle steht dauerhaft unten und nicht in einem Schlussakt: in einer
+   Schleife laeuft jeder Akt ohnehin wieder vorbei, und ein Akt, der nur eine
+   Adresse zeigt, kostet Sekunden, in denen die Karte stillsteht. */
+const FUSS = `<div id="filmfuss"><p id="filmtext">&nbsp;</p>
+  <p id="filmquelle">chillchamp1.github.io/lab/bahn-zeitkarte</p></div>`;
 const FILMCSS = `
   html,body{overflow:hidden}
   #huelle{display:block;height:auto;min-height:0}
@@ -231,10 +243,12 @@ const FILMCSS = `
   #buehne{height:HOEHEpx;padding:0;flex:0 0 auto}
   #cv{inset:0;width:100%;height:100%;border-radius:0}
   #legende{padding:9px 16px 4px}
-  #filmfuss{padding:8px 16px 10px;min-height:76px}
-  #filmfuss p{margin:0;font-size:13px;line-height:1.4;color:var(--ink2);
+  #filmfuss{padding:8px 16px 9px;min-height:78px}
+  #filmfuss #filmtext{margin:0;font-size:13px;line-height:1.4;color:var(--ink2);
     text-wrap:pretty}
-  #filmfuss p b{color:var(--ink);font-weight:600}
+  #filmfuss #filmtext b{color:var(--ink);font-weight:600}
+  #filmquelle{margin:5px 0 0;font-size:10.5px;color:var(--muted);
+    letter-spacing:.02em}
   /* Die Kurzinfo steht im Film nicht in der Ecke, sondern gar nicht: der Text
      unter der Karte sagt dasselbe und deckt nichts zu. */
   #wahlfeld{display:none !important}`;
@@ -249,7 +263,7 @@ await page.evaluate(([css, kopf, fuss, ueber, fein, hoehe]) => {
   DPRMAX = ueber; FEINHEIT = fein; ZELLMAX = 40e6;
   Z.punkte = true; Z.namen = true; Z.linien = true;
   messen();
-}, [FILMCSS, KOPF, FUSS, UEBER, FEIN, Math.round(CSSH * 0.735)]);
+}, [FILMCSS, KOPF, FUSS, UEBER, FEIN, Math.round(CSSH * 0.72)]);
 await page.waitForTimeout(400);
 
 const lage = await page.evaluate(() => ({
@@ -404,7 +418,10 @@ console.error(`Laufzeit ${LAUF.toFixed(1)} s + ${NACH} s Standbild `
   + `= ${Math.round((LAUF + NACH) * FPS)} Bilder`);
 
 const n = Math.round(LAUF * FPS);
-const gesamt = n + NACH * FPS;
+/* Bis n-1 und nicht bis n: das Bild bei t = LAUF ist dasselbe wie das bei
+   t = 0, und in der Schleife stotterte es dort ein Bild lang. Wer doch ein
+   Standbild am Ende bestellt (NACH), bekommt es dahinter. */
+const gesamt = n - 1 + NACH * FPS;
 
 /* --------------------------------------------------------------- Die Kodierer
    Zwei Fassungen aus **einem** Bilddurchgang: das Rechnen der Bilder ist das

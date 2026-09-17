@@ -609,7 +609,7 @@ Zacken in die Küste.
 
 Die zweite Schicht gilt **nur für die Ausgewanderten**. Der verzogene Umriss
 ist ein geglättetes Mittel, und die Federkarte schleudert einzelne Bahnhöfe
-weit darüber hinaus: **539 von 4.781** liegen in der reinen Zeitkarte jenseits
+weit darüber hinaus: **585 von 4.781** liegen in der reinen Zeitkarte jenseits
 der Küste, die Rügener Bäderbahn zwölf Stunden von allem entfernt. Ein Bahnhof
 gehört aber immer auf Land, sonst steht er im Schwarzen neben der Karte — und
 genau das war zu sehen. Also bekommt jeder Bahnhof, der außerhalb des
@@ -745,6 +745,33 @@ hinausfahren, und weil genau die die Beschriftung der treibenden Schollen
 liefern (4.8), kommen die Fernmarken jetzt aus einem größeren Vorrat, und
 gezählt wird, was **gemalt** wurde — nicht, was angeboten war. Sonst rückten
 mit jedem Ausfall zwei neue Namen nach und die Karte würde ein Register.
+
+Die **Scholle wächst, sie poppt nicht.** Ihr Radius hängt daran, wie weit der
+Bahnhof draußen liegt, und geht an der Küstenlinie auf null. Das kam aus dem
+Film (siehe [STAND.md](STAND.md)), wo beim Verziehen weiße Scheiben am
+Kartenrand an- und ausgingen. Zwei Ursachen, beide messbar:
+
+Erstens lag der Auswanderer-Test auf der **ganzzahligen** Rasterzelle und nahm
+das Maximum über drei mal drei Zellen. Sein Prüffenster sprang damit bei jeder
+Zellgrenze um eine ganze Zelle weiter, und an der Küste kippte die Entscheidung
+hin und her: über 60 Bilder kippten 34 Bahnhöfe mehrfach, einer zwölfmal.
+Gegriffen wird jetzt **bilinear** und an einem Ring von acht Richtungen — das
+ist stetig in der Lage des Bahnhofs, und die Nachsicht von zwei Minuten bleibt.
+
+Zweitens ist eine Entscheidung immer ja oder nein, und mit ihr erschien
+schlagartig eine Scheibe von 23 Minuten Durchmesser. In zwei Sekunden Film
+traten 101 Bahnhöfe **einmal** über die Küste — richtig so, aber jeder
+Übertritt war ein Aufblitzen. Mit dem wachsenden Radius ist der Sprung beim
+Erscheinen im Mittel **0,2 statt 6,9 Pixel**; von 231 Übertritten springen acht
+um mehr als einen Pixel und zwei um mehr als drei.
+
+Der Nebeneffekt ist der eigentliche Gewinn: die Bahnhöfe, die genau auf der
+Schwelle hin und her kippen, haben jetzt eine Scholle von nahezu null Radius.
+Ihr Kippen ist damit unsichtbar, ohne dass die Entscheidung geglättet oder mit
+einem Gedächtnis versehen werden müsste — beides hätte gekostet, dass dieselbe
+Reglerstellung dieselbe Karte zeigt. Nachgezählt sind es 585 Schollen in der
+reinen Zeitkarte, davon 558 mit mehr als halbem und 11 mit weniger als einem
+Zehntel Radius; bei jedem Zoom dieselbe Zahl.
 
 ### 4.7 Farbe, Licht, Höhenlinien, Schnee
 
