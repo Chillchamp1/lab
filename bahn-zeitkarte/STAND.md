@@ -315,7 +315,8 @@ das obere Ende der Farbleiter und die Liste der Ausgewanderten. Eine Farbe
 oder eine Insel, die sich beim Heranzoomen ändert, ist eine Lüge über die
 Daten. Beide kamen bisher aus demselben Raster wie das Bild.
 
-Also drei Gitter statt einem:
+Also drei Gitter statt einem (ein viertes kam später dazu, siehe „Die Höhe
+wandert nicht"):
 
 | | Ausdehnung | Weite | Aufgabe |
 | --- | --- | --- | --- |
@@ -424,6 +425,47 @@ genau diese Lücke füllen die Bahnhofsnamen auf.
 | 2 | 62 | 6 |
 | 4 | 62 | 37 |
 | 8 | 62 | 59 |
+
+## Die Höhe wandert nicht, die Leiter wanderte
+
+Die Frage war, warum die Bahnhöfe beim Verziehen manchmal ihre Höhe wechseln —
+und die Erwartung dabei, dass sie das nicht tun. Die Erwartung ist richtig,
+und sie ist jetzt nachgemessen: die Höhe eines Bahnhofs unterscheidet sich
+zwischen Landkarte und Zeitkarte um **null Minuten**.
+
+Gewandert war die **Farbleiter**. Ihr oberes Ende, das 99,5-Perzentil der Höhe
+auf dem Land, kam aus dem gezeichneten Feld — und das hängt an der Lage:
+
+| | oberes Ende | Schneegrenze |
+| --- | --- | --- |
+| Landkarte | 337 min | 520 min |
+| Zeitkarte | 349 min | 530 min |
+
+Ein Farbband ist elf Minuten breit. Die ganze Leiter verschob sich also im Lauf
+der Bewegung um ein Band: dieselbe Höhe bekam eine andere Farbe, über die
+gesamte Fläche zugleich. Dieselbe Verwechslung wie beim Zoom eine Fassung
+vorher — eine Eigenschaft der Ansicht war in eine Aussage über das Land
+geraten.
+
+Das Perzentil hat darum ein **viertes Gitter** bekommen: 196 × 256 Zellen von
+je vier Minuten über der *unverzogenen* Geografie, mit der Landmaske aus dem
+unverzogenen Umriss. Gitter und Maske stehen ein für alle Mal fest, das Feld
+darauf wird nur neu gerechnet, wenn der Anteilsregler sich bewegt; im
+Morphbild kostet es nichts (166 gegen 161 Millisekunden, also Rauschen).
+Nachgemessen: **336,55 Minuten in allen elf Morphstellungen und bei jedem Zoom
+von 0,69 bis 16**, Schneegrenze 519. Am Anteil hängt es weiter, und das soll
+es — 284 Minuten bei drei Prozent, 350 bei zweiundsechzig.
+
+Ein Rest bleibt und ist kein Fehler: das Relief ist die geglättete Fläche
+*zwischen* den Bahnhöfen, und wer neben einem Bahnhof liegt, ist in der
+Zeitkarte ein anderer als in der Landkarte. Der gemalte Wert am Bahnhof
+wandert dadurch im Median um acht Minuten, zwei Drittel Farbband. Der Versuch,
+auch das wegzurechnen — jeder Ort trägt seine geglättete Höhe mit sich, die
+Glättung zerlegt in 9,2 ⊕ 6,0 — kommt auf vier Minuten und ist wieder heraus:
+das kleine σ trifft die Punkte fast genau, damit steht die *geografische*
+Nachbarschaft im Bild, und der glatte Trichter der Zeitkarte bekommt eine
+Kräuselung. Der glatte Trichter ist das Bild. Die Rechnung steht in
+[METHODIK 4.13](METHODIK.md).
 
 ## Was offen ist
 
