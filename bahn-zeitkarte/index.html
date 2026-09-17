@@ -354,6 +354,7 @@ function stufeSetzen(){
   }
   abgelegen = null;        /* die abgelegensten Orte sind jetzt andere */
   statStand++;             /* und das Grundfeld muss neu */
+  statAnteil++;            /* das Leitergitter auch */
 }
 
 /* Der Rahmen wird **einmal** bestimmt und gilt für jede Reglerstellung:
@@ -641,7 +642,7 @@ let maskeC = null, maskeA = null, inseln = 0, maskeTakt = 0;
 /* `statStand` zählt hoch, sobald sich Lage oder Anteil ändern — also alles,
    was das Grundgitter betrifft. Zoom und Verschiebung ändern ihn **nicht**,
    und darum werden Grundfeld und Maske beim Betrachten nicht neu gerechnet. */
-let maskeStand = -1, statStand = 0, statGerechnet = -1;
+let maskeStand = -1, statStand = 0, statGerechnet = -1, statAnteil = 0;
 const inselIdx = [];
 let fH = null;
 
@@ -927,13 +928,14 @@ let sH = null, sD = null, sT = null;
 /* Ein Gitter mit Impulsen bestreuen und Zähler und Nenner verwischen — der
    Kern aus 4.3, hier einmal geschrieben und von Grund- und Rechengitter
    gemeinsam benutzt. `ziel` nimmt das Höhenfeld auf, `dich` den Nenner. */
-function feldAuf(ziel, dich, hilf, w, h, zelle, ax, ayOben, werte, sig){
+function feldAuf(ziel, dich, hilf, w, h, zelle, ax, ayOben, werte, sig, px, py){
   ziel.fill(0); dich.fill(0);
+  const ox = px || wx, oy = py || wy;
   const inv = 1/zelle;
   for (let i=0;i<n;i++){
     const v = werte(i);
     if (v !== v) continue;                    /* unerreichbar: kein Impuls */
-    const cx = (wx[i] - ax) * inv - 0.5, cy = (ayOben - wy[i]) * inv - 0.5;
+    const cx = (ox[i] - ax) * inv - 0.5, cy = (ayOben - oy[i]) * inv - 0.5;
     const ix = Math.floor(cx), iy = Math.floor(cy);
     const gx = cx - ix, gy = cy - iy;
     for (let dy=0;dy<2;dy++){
@@ -1082,6 +1084,90 @@ function glaetten(a, w, h, hilf){
 /* --------------------------------------------------------------- Das Bild */
 let bildC = null, bildX = null, bild = null;
 let sZx = null, sZy = null;
+
+/* ------------------------------------------------- Das Ende der Farbleiter
+   Die Farbleiter läuft vom Wasserstand bis zum 99,5-Perzentil der Höhe auf
+   dem Land. Es darf an genau einem Ding hängen, am Anteilsregler, der die
+   Höhen selbst verschiebt — und an nichts sonst: nicht am Zoom, nicht am
+   Verziehen. Sonst bekommt dieselbe Höhe je nach Ansicht eine andere Farbe,
+   und die Legende wäre keine.
+
+   Gerechnet wird es darum auf einem eigenen, kleinen Gitter über der
+   **Geografie**: die Bahnhöfe an ihren geografischen Orten, das Land aus dem
+   unverzogenen Umriss. Das ist auch die richtige Bezugsfläche: „das
+   Perzentil über dem Land“ meint Deutschland und nicht die verzogene
+   Zeitkarte. Das Gitter selbst und die Maske stehen damit ein für alle Mal
+   fest; neu gerechnet wird nur das Feld, und nur wenn sich der Anteil
+   ändert. */
+const LZELLE = 4.0;
+let lH = null, lD = null, lT = null, lM = null;
+let LW = 0, LH = 0, LX0 = 0, LY0 = 0, lStand = -1, lRoh = 1;
+function leiterMaske(){
+  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  for (let i=0;i<n;i++){
+    if(gxx[i]<x0)x0=gxx[i]; if(gxx[i]>x1)x1=gxx[i];
+    if(gyy[i]<y0)y0=gyy[i]; if(gyy[i]>y1)y1=gyy[i];
+  }
+  const rand = 3*FELDSIG;
+  LX0 = x0 - rand; LY0 = y0 - rand;
+  LW = Math.ceil((x1-x0 + 2*rand) / LZELLE);
+  LH = Math.ceil((y1-y0 + 2*rand) / LZELLE);
+  const anz = LW*LH;
+  lH = new Float32Array(anz); lD = new Float32Array(anz);
+  lT = new Float32Array(anz); lM = new Uint8Array(anz);
+  /* Die Landmaske aus dem **unverzogenen** Umriss — dieselben Dreiecke wie
+     in 4.6, nur ohne Verziehen. */
+  const c = document.createElement('canvas');
+  c.width = LW; c.height = LH;
+  const mk = c.getContext('2d', {willReadFrequently:true});
+  mk.fillStyle = '#fff'; mk.beginPath();
+  const alle = [...umriss, ...laender];
+  const lx = x => (x - LX0)/LZELLE, ly = y => (LY0 + LH*LZELLE - y)/LZELLE;
+  for (let ri=0; ri<alle.length; ri++){
+    const r = alle[ri], tri = dreiecke[ri];
+    for (let q=0;q<tri.length;q+=3){
+      const a=tri[q], b=tri[q+1], cc=tri[q+2];
+      let ax=lx(r[2*a]), ay=ly(r[2*a+1]);
+      let bx=lx(r[2*b]), by=ly(r[2*b+1]);
+      let cx=lx(r[2*cc]), cy=ly(r[2*cc+1]);
+      if ((bx-ax)*(cy-ay) - (by-ay)*(cx-ax) < 0){
+        const tx=bx, ty=by; bx=cx; by=cy; cx=tx; cy=ty;
+      }
+      mk.moveTo(ax,ay); mk.lineTo(bx,by); mk.lineTo(cx,cy); mk.closePath();
+    }
+  }
+  mk.fill();
+  const d = mk.getImageData(0,0,LW,LH).data;
+  for (let k=0;k<anz;k++) lM[k] = d[(k<<2)+3];
+}
+function leiterBauen(){
+  if (!lM) leiterMaske();
+  /* Das Feld über der Geografie: dieselbe Rechnung wie in 4.3, nur mit den
+     geografischen Orten statt den gezeichneten. */
+  feldAuf(lH, lD, lT, LW, LH, LZELLE, LX0, LY0 + LH*LZELLE, i => hh[i],
+          FELDSIG, gxx, gyy);
+  lRoh = 1;
+  const anz = LW*LH;
+  for (let k=0;k<anz;k++) if (lM[k] > 120 && lH[k] > lRoh) lRoh = lH[k];
+}
+function leiterFrisch(){
+  if (lStand !== statAnteil){ leiterBauen(); lStand = statAnteil; }
+}
+function leiterEnde(see){
+  leiterFrisch();
+  const N = 512, hist = new Int32Array(N + 1), anz = LW*LH;
+  const roh = Math.max(see + 1, lRoh), inv = N / roh;
+  let zahl = 0;
+  for (let k=0;k<anz;k++){
+    if (lM[k] <= 120) continue;
+    let b = (lH[k] * inv + 0.5) | 0;
+    hist[b < 0 ? 0 : b > N ? N : b]++;
+    zahl++;
+  }
+  let bis = Math.floor(zahl * 0.995), s2 = 0, b2 = N;
+  for (let i=0;i<=N;i++){ s2 += hist[i]; if (s2 >= bis){ b2 = i; break; } }
+  return Math.max(see + 1, b2 / N * roh);
+}
 const R8=[], G8=[], B8=[];
 for (const s of RAMPE){
   R8.push(parseInt(s.slice(1,3),16));
@@ -1099,39 +1185,33 @@ function bildBauen(){
   const d = bild.data;
   const see = Z.wasser;
   landMax = see + 1;
-  {
-    /* Das 99,5-Perzentil der Höhe **auf Land** — aus dem Grundgitter, das
-       nicht am Zoom hängt. Sonst wanderte die Farbleiter beim Heranzoomen
-       mit, und dieselbe Höhe hätte je nach Ansicht eine andere Farbe.
+  /* Das 99,5-Perzentil der Höhe **auf Land** — und zwar aus dem
+     Leitergitter (leiterEnde), das über der **Geografie** liegt und darum
+     weder am Zoom noch am Verziehen hängt.
 
-       Gezählt wird dabei nur innerhalb des **Rahmens** und nicht über den
-       ganzen Umfang, obwohl das Gitter so weit reicht. Der Rahmen ist die
-       Karte; was jenseits davon liegt, sind die Enden, die der Zuschnitt
-       hinausgeworfen hat, und die sind so extrem, dass sie das obere Ende der
-       Leiter allein bestimmen würden — die Schneegrenze stieg von 557 auf 629
-       Minuten, und auf dem Land lag dann nirgends mehr Schnee. */
-    const N = 512, hist = new Int32Array(N + 1);
-    const rx0 = Math.max(0, Math.floor(grundX(RAHMEN[0]))),
-          rx1 = Math.min(SW-1, Math.ceil(grundX(RAHMEN[1]))),
-          ry0 = Math.max(0, Math.floor(grundY(RAHMEN[3]))),
-          ry1 = Math.min(SH-1, Math.ceil(grundY(RAHMEN[2])));
-    let roh = see + 1, zahl = 0;
-    for (let iy=ry0; iy<=ry1; iy++) for (let ix=rx0; ix<=rx1; ix++){
-      const k = iy*SW+ix;
-      if (maskeA[k] > 120 && sH[k] > roh) roh = sH[k];
-    }
-    const inv = N / roh;
-    for (let iy=ry0; iy<=ry1; iy++) for (let ix=rx0; ix<=rx1; ix++){
-      const k = iy*SW+ix;
-      if (maskeA[k] <= 120) continue;
-      let b2 = (sH[k] * inv + 0.5) | 0;
-      hist[b2 < 0 ? 0 : b2 > N ? N : b2]++;
-      zahl++;
-    }
-    let bis = Math.floor(zahl * 0.995), s2 = 0, b = N;
-    for (let i=0;i<=N;i++){ s2 += hist[i]; if (s2 >= bis){ b = i; break; } }
-    landMax = Math.max(see + 1, b / N * roh);
-  }
+     Das war zweimal falsch, und beide Male aus demselben Grund. Die Höhe
+     eines Bahnhofs ist eine Eigenschaft des Ortes: wie lange es von dort
+     dauert, bis ein Anteil des Landes in Reichweite ist. Sie ändert sich
+     nicht, wenn man die Karte verzieht — nachgemessen um genau null Minuten.
+     Das obere Ende der Farbleiter kam aber aus dem *gezeichneten* Feld, und
+     das hängt an der Lage: es stand bei 337 Minuten in der Landkarte und bei
+     349 in der Zeitkarte, die Schneegrenze bei 520 gegen 530. Ein Farbband
+     ist elf Minuten breit, also verschob das Verziehen die ganze Leiter um
+     ein Band — jede Höhe bekam mitten in der Bewegung eine andere Farbe, und
+     das war eine Aussage über den Regler und nicht über das Land.
+
+     Was danach übrig bleibt, ist kein Fehler, sondern die Rechnung selbst:
+     das Relief ist die geglättete Fläche **zwischen** den Bahnhöfen (4.3),
+     und wer neben einem Bahnhof liegt, ist in der Zeitkarte ein anderer als
+     in der Landkarte. Der Wert am Bahnhof wandert dadurch im Median um acht
+     Minuten, also um zwei Drittel Farbband. Das ließe sich wegrechnen, indem
+     jeder Ort seine geglättete Höhe mit sich trägt statt sie aus den
+     gezeichneten Nachbarn zu ziehen — nachgemessen blieben dann noch vier
+     Minuten. Nur wird die Zeitkarte davon welliger: die geografische
+     Nachbarschaft ist dort die falsche, und sie steht dann als Kräuselung im
+     sonst glatten Trichter. Der glatte Trichter ist das Bild; die acht
+     Minuten bleiben. */
+  landMax = leiterEnde(see);
   const bandL = (landMax - see) / (NL + NS);
   const bandW = Math.max(1, see) / NW;
   schneeLinie = see + bandL * NL;
@@ -2165,10 +2245,14 @@ thirty-five colour bands. The line is not set but derived: the ramp runs from
 the sea level to the highest value <i>on land</i> (more precisely: to its
 99.5th percentile, or a single halt with two trains a day flattens the whole
 ramp), and the last six bands are snow. In minutes it stands in the legend
-below the map. Snow lies on the tip around Constance, the Bavarian Forest near
-Passau, Oberstdorf and Garmisch — and on single halts in the middle of the
-country where a train stops twice a day: Demker in the Altmark, Hoppstädten on
-the Nahe, Nistertal in the Westerwald.</p>
+below the map — and it stays on that number while the map morphs, because the
+percentile is computed over the undistorted geography rather than over
+whatever is currently drawn. At half the population it sits at 519 minutes,
+and 179 stations lie above it: the tip around Constance, the Bavarian Forest
+around Grafenau, the Rügen seaside railway, the Heidekrautbahn at Groß
+Schönebeck, Loßburg-Rodt in the Black Forest — and single halts in the middle
+of the country where a train stops twice a day, such as Demker in the
+Altmark.</p>
 <p>The further the slider runs into time, the more <b>islands</b> break away
 from the land, and that is not a drawing error. The spring map flings the
 places left behind so far out that the warped outline can no longer follow
@@ -2244,8 +2328,9 @@ return to the starting view. Zooming refines the raster instead of magnifying
 it, because the field is only computed for what is on screen — so the detail
 grows as you go in. During the gesture the raster is coarser on purpose, and
 it sharpens again the moment you let go. What does <i>not</i> change is the
-colour ramp: it is computed on a grid over the whole map, so the same height
-keeps the same colour however close you go.</li>
+colour ramp: it is computed on its own grid over the undistorted geography, so
+the same height keeps the same colour however close you go — and whatever the
+time slider is doing.</li>
 <li><b>Zoom out</b> to see what the crop left behind. The starting view sits at
 1.15 and cuts about fifty minutes off the top and bottom — the tip of Sylt, the
 corner around Constance — and that is unavoidable: Germany is tall (990

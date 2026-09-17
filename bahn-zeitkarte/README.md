@@ -353,12 +353,16 @@ sieht nicht nach „aus der Karte gefallen" aus, sondern nach einem Fehler.
 Über den am schlechtesten erreichbaren Gegenden liegt **Schnee** — die
 obersten sechs der fünfunddreißig Farbbänder. Die Grenze ist nicht gesetzt,
 sondern abgeleitet: sie liegt dort, wo die Leiter vom Wasserstand bis zum
-höchsten Wert **auf dem Land** ihre letzten sechs Bänder erreicht, und steht
-in absoluten Minuten in der Tafel. Bei einem Viertel und Wasser auf 250
-Minuten liegt sie in der Zeitkarte bei 530 Minuten, in der Landkarte bei 520,
-und Schnee haben dann der Zipfel um Konstanz, der Bayerische Wald bei Passau,
-die Heidekrautbahn bei Groß Schönebeck, Oberstdorf, Garmisch und einzelne
-Haltepunkte, an denen zweimal am Tag ein Zug hält. Sylt und die Rügener
+99,5-Perzentil der Höhe **auf dem Land** ihre letzten sechs Bänder erreicht,
+und steht in absoluten Minuten in der Legende unter der Karte. Bei der Hälfte
+und Wasser auf 322 Minuten liegt sie bei 519 Minuten — in der Landkarte wie in
+der Zeitkarte, denn das obere Ende wird über der unverzogenen Geografie
+gerechnet und wandert beim Verziehen nicht mehr mit (siehe
+[STAND.md](STAND.md)). Schnee haben dann 179 Bahnhöfe: der Zipfel um
+Konstanz, der Bayerische Wald um Grafenau, die Heidekrautbahn bei Groß
+Schönebeck, die Rügener Bäderbahn, Loßburg-Rodt im Schwarzwald — und einzelne
+Haltepunkte mitten im Land, an denen zweimal am Tag ein Zug hält, etwa Demker
+in der Altmark. Sylt und die Rügener
 Bäderbahn sind in der Zeitkarte über den Rand hinaus.
 
 Und je weiter der Regler in die Zeit läuft, desto mehr **Inseln** lösen sich

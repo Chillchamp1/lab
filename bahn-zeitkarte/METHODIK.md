@@ -761,17 +761,10 @@ eine Höhenlinie tragen kann und die Karte die gestochene Dichte einer
 Reliefkarte bekommt.
 
 Die **Schneegrenze** ist nicht gesetzt, sondern abgeleitet: die Leiter läuft
-vom Wasserstand bis zum höchsten Wert **auf dem Land**, und die letzten sechs
-Bänder sind Schnee. In Minuten steht sie in der **Legende unter der Karte** —
-bei der Hälfte und Wasser auf 322 Minuten liegt sie in der Zeitkarte bei 530
-Minuten, in der Landkarte bei 520.
-
-Gezählt wird für das Perzentil nur innerhalb des **Rahmens**, obwohl das
-Grundgitter über den ganzen Umfang reicht (4.12). Der Rahmen ist die Karte;
-was jenseits davon liegt, sind die Enden, die der Zuschnitt hinausgeworfen hat,
-und die sind so extrem, dass sie das obere Ende der Leiter allein bestimmen
-würden — nachgemessen stieg die Schneegrenze von 530 auf 629 Minuten, und auf
-dem Land lag dann nirgends mehr Schnee.
+vom Wasserstand bis zum 99,5-Perzentil der Höhe **auf dem Land**, und die
+letzten sechs Bänder sind Schnee. In Minuten steht sie in der **Legende unter
+der Karte** — bei der Hälfte und Wasser auf 322 Minuten liegt sie bei 519
+Minuten, und zwar in jeder Reglerstellung (4.13).
 
 Die Legende lag eine Fassung lang in der Tafel und trug nur ihre beiden
 Endpunkte. Farben liest man aber am Bild und nicht in einer Seitenspalte, und
@@ -784,10 +777,9 @@ runder Strich, der einem von beiden näher als 46 Pixel kommt, fällt aus: zwei
 Zahlen übereinander sind schlechter als eine Zahl weniger, dasselbe Argument
 wie bei der Beschriftung (4.8).
 
-Das obere Ende der Leiter kommt aus dem **Grundgitter** (4.12) und nicht aus
-dem sichtbaren Ausschnitt. Sonst wanderte die Farbleiter beim Heranzoomen mit,
-und dieselbe Höhe hätte je nach Ansicht eine andere Farbe — eine Legende, die
-das tut, ist keine. Weil der Anteilsregler die ganze
+Das obere Ende der Leiter hängt an der Höhe und an nichts sonst — nicht am
+Zoom und nicht am Verziehen. Das kostete zwei Anläufe und hat ein eigenes
+Gitter bekommen; 4.13 rechnet es nach. Weil der Anteilsregler die ganze
 Leiter verschiebt, wird der Wasserstand intern als Aufschlag auf den besten
 Bahnhof geführt und nur absolut beschriftet: sonst würde ein Zug am
 Anteilsregler die halbe Karte fluten oder trockenlegen. Als oberes Ende dient das
@@ -987,7 +979,7 @@ Rechnen braucht, sieht mitten in einer Fahrt nicht nach einer Pause aus,
 sondern nach einem Hänger. Ein Bild, das steht, soll die feinste Stufe haben —
 und eines, das läuft, soll trotzdem scharf sein.
 
-### 4.12 Zoomen, und die drei Gitter
+### 4.12 Zoomen, und die vier Gitter
 
 Am Rad, mit zwei Fingern, Ziehen zum Verschieben, Doppelklick zurück in die
 Anfangsstellung.
@@ -1023,17 +1015,18 @@ hinzufügen**, nicht ein Bild vergrößern, und es soll nicht teurer werden. Bei
 geht nur, wenn das Feld nur für den sichtbaren Ausschnitt gerechnet wird; dann
 schrumpft der Ausschnitt mit demselben Faktor, mit dem die Auflösung wächst,
 und die Zellzahl bleibt stehen. Zwei Dinge dürfen dabei aber gerade **nicht**
-am Zoom hängen — das obere Ende der Farbleiter (4.7) und die Liste der
+am Zoom hängen — das obere Ende der Farbleiter (4.7, 4.13) und die Liste der
 Ausgewanderten (4.4) —, denn eine Farbe oder eine Insel, die sich beim
 Heranzoomen ändert, ist eine Lüge über die Daten.
 
-Also drei Gitter, und jedes hat genau eine Aufgabe:
+Also vier Gitter, und jedes hat genau eine Aufgabe:
 
 | | Ausdehnung | Weite | Aufgabe |
 | --- | --- | --- | --- |
-| **Grundgitter** | ganzer Bildausschnitt | fest 3 min | Landmaske, Perzentil der Farbleiter, Liste der Ausgewanderten, Isochronenfeld |
+| **Grundgitter** | ganzer Bildausschnitt | fest 3 min | Landmaske, Liste der Ausgewanderten, Isochronenfeld |
 | **Rechengitter** | Sichtbares + 2,5 σ | ≈ 3 px | das Höhenfeld, sobald hineingezoomt ist |
 | **Bildgitter** | Sichtbares | 1 px | das gezeichnete Bild |
+| **Leitergitter** | Deutschland, unverzogen | fest 4 min | das obere Ende der Farbleiter (4.13) |
 
 Das Grundgitter hängt nur an Lage und Anteil. Ein Zähler wird hochgesetzt,
 sobald sich einer von beiden ändert; solange er stillsteht, werden Grundfeld
@@ -1063,6 +1056,57 @@ zurückgelegte Weg wird mitgezählt, und über acht Pixel gilt es als Wischen.
 Mit der Maus wird geschoben, sobald es etwas zu schieben gibt; mit dem Finger
 erst oberhalb der Anfangsstellung. Sonst nähme die Karte der Seite das
 Wischen ab, und man käme auf dem Telefon nicht mehr an den Text darunter.
+
+### 4.13 Die Farbleiter darf nur an der Höhe hängen
+
+Beim Verziehen wechselten die Farben. Nicht die Höhen — die stehen fest, und
+das ist nachgemessen: die Höhe eines Bahnhofs ist die Zeit, bis von dort ein
+Anteil des Landes in Reichweite ist, und zwischen Landkarte und Zeitkarte
+unterscheidet sie sich um **genau null Minuten**. Die Bahnhöfe wandern, ihre
+Höhe wandert nicht.
+
+Was wanderte, war die **Leiter**. Ihr oberes Ende ist das 99,5-Perzentil der
+Höhe auf dem Land, und das wurde bis zuletzt aus dem *gezeichneten* Feld
+gezogen. Das Feld hängt aber an der Lage: in der Landkarte stand das Ende bei
+337 Minuten, in der Zeitkarte bei 349, die Schneegrenze bei 520 gegen 530. Ein
+Farbband ist elf Minuten breit — die ganze Leiter verschob sich also im Lauf
+der Bewegung um ein Band, und das sah man als Flackern über die gesamte Fläche.
+Es war dieselbe Verwechslung wie beim Zoom eine Fassung vorher, nur mit dem
+Verziehen statt dem Ausschnitt: eine Eigenschaft der *Ansicht* war in eine
+Aussage über das *Land* geraten.
+
+Das Perzentil hat darum ein eigenes, viertes Gitter bekommen — **196 × 256
+Zellen von je vier Minuten über der unverzogenen Geografie**, die Bahnhöfe an
+ihren geografischen Orten, die Landmaske aus dem unverzogenen Umriss. Das ist
+zugleich die richtige Bezugsfläche: „das Perzentil über dem Land" meint
+Deutschland und nicht die verzogene Zeitkarte. Gitter und Maske stehen damit
+ein für alle Mal fest, das Feld darauf wird nur neu gerechnet, wenn der
+Anteilsregler sich bewegt — im Morphbild kostet es nichts (166 gegen 161
+Millisekunden je Bild, also Rauschen). Nachgemessen steht das obere Ende jetzt
+bei 336,55 Minuten in allen elf Morphstellungen von 0 bis 1 und bei jedem Zoom
+von 0,69 bis 16, die Schneegrenze bei 519. Am Anteil hängt es weiter, und das
+soll es: 284 Minuten bei drei Prozent, 350 bei zweiundsechzig.
+
+Ein Rest bleibt, und der ist kein Fehler, sondern die Rechnung aus 4.3. Das
+Relief ist die geglättete Fläche **zwischen** den Bahnhöfen, und wer neben
+einem Bahnhof liegt, ist in der Zeitkarte ein anderer als in der Landkarte —
+dort liegt neben einem Ort, was von ihm aus schnell zu erreichen ist, nicht
+was neben ihm liegt. Der gemalte Wert am Bahnhof wandert dadurch über den
+ganzen Morph im Median um **acht Minuten**, im 90. Perzentil um 27: etwa zwei
+Drittel Farbband, in Einzelfällen mehr.
+
+Das ließe sich wegrechnen, und der Versuch steht hier, weil sein Ergebnis
+lehrreich ist. Man zerlegt die Glättung — σ² addiert sich, also ist
+9,2 ⊕ 6,0 = 11 —, glättet den ersten Teil über der Geografie und lässt jeden
+Bahnhof seine geglättete Höhe **mit sich tragen**; gezeichnet wird nur noch
+mit dem kleinen σ, das die Fläche zwischen den Orten füllt. Der Rest fällt
+damit von acht auf **vier Minuten**. Nur: eine Glättung mit kleinem σ über
+einem Punkthaufen trifft die Punkte fast genau, und damit steht in der
+Zeitkarte plötzlich die *geografische* Nachbarschaft im Bild — der glatte
+Trichter bekommt eine Kräuselung, jeder Bahnhof eine kleine eigene Delle. Die
+Zeitkarte lebt aber davon, dass Lage und Höhe dort übereinstimmen und der
+Trichter glatt ist. Vier Minuten sind das nicht wert; die Fassung ist wieder
+heraus, und die acht Minuten bleiben stehen.
 
 ## 5. Was fehlt
 
