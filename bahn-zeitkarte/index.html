@@ -381,10 +381,12 @@ function rahmenBestimmen(){
 let W = 0, H = 0, DPR = 1;
 let FW = 0, FH = 0, ZELLE = 3.0, X0 = 0, Y0 = 0;
 let mitteX = 0, mitteY = 0, skala = 1, zx = 0, zy = 0;
-/* Wie grob das Höhenfeld gerastert wird: in Ruhe fein, beim Ziehen gröber,
-   beim Abspielen noch gröber — ein Bild, das ruckelt, zeigt weniger als ein
-   Bild, das eine Rasterstufe verliert. */
-const FEIN_RUHE = 3.0, FEIN_ZIEH = 4.5, FEIN_SPIEL = 5.5;
+/* Wie grob das Höhenfeld gerastert wird — in **Pixeln je Zelle**, nicht in
+   Minuten (siehe feldMasseSetzen): in Ruhe eine Zelle je Pixel, beim Ziehen
+   gröber, in der Fahrt noch gröber. Ein Bild, das ruckelt, zeigt weniger als
+   ein Bild, das eine Rasterstufe verliert; ein Bild, das steht, soll die
+   feinste haben. */
+const FEIN_RUHE = 1.0, FEIN_HALT = 1.5, FEIN_ZIEH = 3.0, FEIN_SPIEL = 3.8;
 let FEINHEIT = FEIN_RUHE;
 let spiel = null;
 
@@ -521,15 +523,29 @@ function dreieckeBauen(){
 
 /* --------------------------------------------------------- Maske und Feld */
 let maskeC = null, maskeA = null, inseln = 0;
-let fH = null, fD = null, fI = null;
+const inselIdx = [];
+let fH = null, fD = null;
 
+/* Die Rasterweite wird nicht in Minuten gesetzt, sondern in
+   **Bildschirmpixeln**: eine Zelle soll etwa so groß sein wie ein Pixel.
+   Eine feste Minutenzahl war beides falsch — auf dem großen Schirm zu grob
+   (drei Minuten waren dort zweieinhalb Pixel, und alles, was ins Raster
+   gezeichnet wird, also Farbbänder, Höhenlinien und Licht, war um diesen
+   Faktor verwaschen) und auf dem Telefon Verschwendung, weil dieselbe Minute
+   dort ein Drittel so breit ist. So bleibt die Schärfe auf jedem Gerät
+   dieselbe und die Rechenlast auch. Nach oben deckelt ZELLMAX die Zellzahl,
+   damit ein sehr großes Fenster die Rechnung nicht sprengt. */
+const ZELLMAX = 700000;
 function feldMasseSetzen(){
   const [x0,x1,y0,y1] = RAHMEN;
   const rand = 18;
-  ZELLE = FEINHEIT;
+  const bx = x1 - x0 + 2*rand, by = y1 - y0 + 2*rand;
+  ZELLE = Math.max(0.8, FEINHEIT / skala);
+  const zellen = (bx/ZELLE) * (by/ZELLE);
+  if (zellen > ZELLMAX) ZELLE *= Math.sqrt(zellen / ZELLMAX);
   X0 = x0 - rand; Y0 = y0 - rand;
-  FW = Math.ceil((x1 - x0 + 2*rand) / ZELLE);
-  FH = Math.ceil((y1 - y0 + 2*rand) / ZELLE);
+  FW = Math.ceil(bx / ZELLE);
+  FH = Math.ceil(by / ZELLE);
 }
 const feldX = x => (x - X0)/ZELLE;
 const feldY = y => (Y0 + FH*ZELLE - y)/ZELLE;
@@ -547,8 +563,16 @@ const feldY = y => (Y0 + FH*ZELLE - y)/ZELLE;
    Bahnhof draußen und es kommt nichts hinzu, und je weiter der Regler in die
    Zeit läuft, desto mehr Inseln lösen sich vom Land. Eine frühere Fassung nahm
    dafür die Abdeckung *aller* Bahnhöfe und blies damit auch die Landkarte auf
-   eine Wolke auf, zwanzig Kilometer über jede Küste hinaus. */
-const INSELSIG = 13, INSEL0 = 0.14, INSEL1 = 0.34;
+   eine Wolke auf, zwanzig Kilometer über jede Küste hinaus.
+
+   Die Scholle war eine Glockenkurve mit einem weichen Saum, und aus ihr wurde
+   auf dem Bildschirm ein ausgefranster Nebelfleck von gut zwanzig Minuten
+   Radius. Jetzt ist sie eine **Kreisscheibe** mit hartem Rand und halbem
+   Radius. Das ist zweimal besser: der Rand ist eine Kante statt eines
+   Verlaufs, und die Scheibe hat eine Zahl, an der man sie fassen kann. Wo
+   mehrere Ausgewanderte dicht liegen, laufen die Scheiben zu einer Gruppe
+   zusammen — ein Archipel statt einer Wolke. */
+const INSELR = 11.5;
 function maskeBauen(){
   if (!maskeC){ maskeC = document.createElement('canvas'); }
   if (maskeC.width !== FW || maskeC.height !== FH){
@@ -580,9 +604,7 @@ function maskeBauen(){
   /* Wer liegt draußen? Mit einer Zelle Nachsicht, weil der Umriss auf
      Zellenkanten gerastert ist und die Bahnhöfe im Grenzsaum sonst alle als
      ausgewandert gälten. */
-  const sig = INSELSIG / ZELLE, rad = Math.ceil(2.6*sig), inv = -0.5/(sig*sig);
-  let raus = 0;
-  fI.fill(0);
+  inselIdx.length = 0;
   for (let i=0;i<n;i++){
     const cx = feldX(wx[i]), cy = feldY(wy[i]);
     const ix = cx|0, iy = cy|0;
@@ -592,73 +614,193 @@ function maskeBauen(){
       if (jx<0||jy<0||jx>=FW||jy>=FH) continue;
       if (maskeA[jy*FW+jx] > 120){ drin = true; break; }
     }
-    if (drin) continue;
-    raus++;
+    if (!drin) inselIdx.push(i);
+  }
+  inseln = inselIdx.length;
+  /* Die Scheiben kommen ins Raster, damit die Statistik unten dasselbe Land
+     sieht wie das Bild — gezeichnet werden sie aber als Pfad in
+     Bildschirmauflösung (landPfad), nicht aus diesem Raster. */
+  const rz = INSELR / ZELLE, rad = Math.ceil(rz + 1);
+  for (const i of inselIdx){
+    const cx = feldX(wx[i]), cy = feldY(wy[i]);
     const ix0 = Math.max(0,(cx-rad)|0), ix1 = Math.min(FW-1,(cx+rad)|0);
     const iy0 = Math.max(0,(cy-rad)|0), iy1 = Math.min(FH-1,(cy+rad)|0);
     for (let jy=iy0;jy<=iy1;jy++){
       const dy = jy+0.5-cy, dy2 = dy*dy, row = jy*FW;
       for (let jx=ix0;jx<=ix1;jx++){
-        const dx = jx+0.5-cx, w = Math.exp((dx*dx+dy2)*inv);
-        if (w > fI[row+jx]) fI[row+jx] = w;
+        const dx = jx+0.5-cx;
+        const t = rz + 0.5 - Math.sqrt(dx*dx+dy2);   /* eine Zelle Saum */
+        if (t <= 0) continue;
+        const b = t >= 1 ? 255 : t * 255;
+        if (b > maskeA[row+jx]) maskeA[row+jx] = b;
       }
     }
-  }
-  inseln = raus;
-  if (raus) for (let k=0;k<FW*FH;k++){
-    let b = (fI[k] - INSEL0) / (INSEL1 - INSEL0);
-    b = b < 0 ? 0 : b > 1 ? 255 : b * 255;
-    if (b > maskeA[k]) maskeA[k] = b;
   }
 }
 
+/* Dieselbe Geometrie — Dreiecke und Inselscheiben —, aber in
+   Bildschirmkoordinaten und als Pfad. Damit wird die Küste **beschnitten**
+   statt ausmaskiert, und das ist der ganze Unterschied zwischen einer Kante
+   und einem Verlauf: die Maske lag im Feldraster und wurde beim Hochskalieren
+   bilinear über zwei, drei Bildschirmpixel verschmiert. Ein Pfad hat keine
+   Auflösung. Nonzero-Umlauf trägt, weil die Dreiecke nach dem Verziehen auf
+   positive Umlaufrichtung gedreht werden und ein arc() mit wachsendem Winkel
+   dieselbe hat — eine Überlappung addiert also, sie hebt sich nicht auf. */
+function landPfad(){
+  ctx.beginPath();
+  const alle = [...umrissW, ...laenderW];
+  for (let ri=0; ri<alle.length; ri++){
+    const r = alle[ri], tri = dreiecke[ri];
+    for (let q=0;q<tri.length;q+=3){
+      const a=tri[q], b=tri[q+1], c=tri[q+2];
+      let ax=schirmX(r[2*a]), ay=schirmY(r[2*a+1]);
+      let bx=schirmX(r[2*b]), by=schirmY(r[2*b+1]);
+      let cx=schirmX(r[2*c]), cy=schirmY(r[2*c+1]);
+      if ((bx-ax)*(cy-ay) - (by-ay)*(cx-ax) < 0){
+        const tx=bx, ty=by; bx=cx; by=cy; cx=tx; cy=ty;
+      }
+      ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.lineTo(cx, cy); ctx.closePath();
+    }
+  }
+  const rs = INSELR * skala;
+  for (const i of inselIdx){
+    const x = schirmX(wx[i]), y = schirmY(wy[i]);
+    ctx.moveTo(x + rs, y);
+    ctx.arc(x, y, rs, 0, 6.28318530718);
+    ctx.closePath();
+  }
+}
+
+/* Ein Kastenfilter mit laufender Summe: zwei Additionen je Zelle, ganz
+   gleich wie breit der Kasten ist. Außerhalb wird mit Null gerechnet, und
+   das darf man hier, weil Zähler und Nenner denselben Filter sehen und sich
+   der Rand im Quotienten wieder herauskürzt. */
+function kastenX(a, b, w, h, r){
+  const inv = 1/(2*r+1);
+  for (let y=0;y<h;y++){
+    const o = y*w;
+    let s = 0;
+    for (let x=0;x<=r && x<w;x++) s += a[o+x];
+    for (let x=0;x<w;x++){
+      b[o+x] = s * inv;
+      const zu = x+r+1, ab = x-r;
+      if (zu < w) s += a[o+zu];
+      if (ab >= 0) s -= a[o+ab];
+    }
+  }
+}
+function kastenY(a, b, w, h, r){
+  const inv = 1/(2*r+1);
+  for (let x=0;x<w;x++){
+    let s = 0;
+    for (let y=0;y<=r && y<h;y++) s += a[y*w+x];
+    for (let y=0;y<h;y++){
+      b[y*w+x] = s * inv;
+      const zu = y+r+1, ab = y-r;
+      if (zu < h) s += a[zu*w+x];
+      if (ab >= 0) s -= a[ab*w+x];
+    }
+  }
+}
+/* Drei Kastenfilter hintereinander sind eine Glocke auf drei Prozent genau
+   (Kovesi). Aus drei Durchgängen mit Radius r wird σ² = r² + r, also ist der
+   Radius zu einem gewünschten σ die positive Wurzel davon. */
+function glockeRadius(sig){
+  return Math.max(1, Math.round((Math.sqrt(1 + 4*sig*sig) - 1) / 2));
+}
+function verwischen(a, hilf, w, h, r){
+  for (let k=0;k<3;k++){ kastenX(a, hilf, w, h, r); kastenY(hilf, a, w, h, r); }
+}
+
+/* Das Höhenfeld: ein mit einer Glocke gewichteter Mittelwert der
+   Bahnhofshöhen, σ = FELDSIG Minuten.
+
+   Gerechnet wurde das lange Glocke für Glocke — jeder Bahnhof legte seine
+   Kurve ins Raster. Das kostet n mal Glockenfläche Schritte mit je einem
+   exp() darin, und die Glockenfläche wächst mit dem Quadrat der Feinheit:
+   bei 3 Minuten je Zelle waren es zweieinhalb Millionen exp(), bei 1,5 schon
+   zehn Millionen, und ein Bild dauerte 650 ms. Damit war das Raster nicht
+   feiner zu machen, und genau das sollte es werden.
+
+   Jetzt kommt jeder Bahnhof als **Impuls** ins Raster — bilinear auf vier
+   Zellen verteilt, damit seine Lage im Bruchteil einer Zelle nicht verloren
+   geht —, und dann werden Zähler und Nenner **getrennt verwischt**. Der
+   Quotient ist derselbe gewichtete Mittelwert wie vorher, nur kostet er
+   O(Zellen) statt O(n · r²): das Raster darf jetzt dreimal feiner sein und
+   ist dabei schneller als vorher das grobe. */
+const FELDSIG = 11.0, LOCHRUNDEN = 8;
+let fT = null;
 function feldBauen(){
-  fH = new Float32Array(FW*FH); fD = new Float32Array(FW*FH);
-  fI = new Float32Array(FW*FH);
-  /* Aufgetragen wird gespritzt, nicht gesucht: jeder Bahnhof legt eine
-     Glockenkurve ins Feld. Das kostet einmal die Zahl der Bahnhöfe mal die
-     Fläche der Glocke, statt für jede Zelle die nächsten Bahnhöfe zu
-     suchen — gemessen ein Achtel der Zeit, und das Feld wird glatter. */
-  const sig = 11.0 / ZELLE, rad = Math.ceil(3*sig), inv = -0.5/(sig*sig);
+  const anz = FW*FH;
+  if (!fH || fH.length !== anz){
+    fH = new Float32Array(anz); fD = new Float32Array(anz); fT = new Float32Array(anz);
+  } else { fH.fill(0); fD.fill(0); }
   for (let i=0;i<n;i++){
-    const cx = feldX(wx[i]), cy = feldY(wy[i]);
-    const ix0 = Math.max(0,(cx-rad)|0), ix1 = Math.min(FW-1,(cx+rad)|0);
-    const iy0 = Math.max(0,(cy-rad)|0), iy1 = Math.min(FH-1,(cy+rad)|0);
-    const h = hh[i];
-    for (let iy=iy0; iy<=iy1; iy++){
-      const dy = iy+0.5-cy, dy2 = dy*dy, row = iy*FW;
-      for (let ix=ix0; ix<=ix1; ix++){
-        const dx = ix+0.5-cx, w = Math.exp((dx*dx+dy2)*inv);
-        fD[row+ix] += w; fH[row+ix] += w*h;
+    const cx = feldX(wx[i]) - 0.5, cy = feldY(wy[i]) - 0.5;
+    const ix = Math.floor(cx), iy = Math.floor(cy);
+    const gx = cx - ix, gy = cy - iy, h = hh[i];
+    for (let dy=0;dy<2;dy++){
+      const jy = iy+dy;
+      if (jy<0 || jy>=FH) continue;
+      const wv = dy ? gy : 1-gy, row = jy*FW;
+      for (let dx=0;dx<2;dx++){
+        const jx = ix+dx;
+        if (jx<0 || jx>=FW) continue;
+        const w = wv * (dx ? gx : 1-gx);
+        fD[row+jx] += w; fH[row+jx] += w*h;
       }
     }
   }
-  for (let k=0;k<FW*FH;k++) fH[k] = fD[k] > 1e-6 ? fH[k]/fD[k] : NaN;   /* fD bleibt: die Maske liest es */
-  /* Löcher füllen: wo keine Glocke hinreicht, wird aus den Nachbarn
-     nachgezogen, bis keines mehr offen ist. Ein Loch mit einem gesetzten
-     Ersatzwert zu stopfen war der falsche Weg — es wurde zur weißen Kuppe. */
-  for (let pass=0; pass<40; pass++){
-    let offen = 0;
-    const kopie = fH.slice();
-    for (let iy=0;iy<FH;iy++) for (let ix=0;ix<FW;ix++){
-      const k = iy*FW+ix;
-      if (!Number.isNaN(kopie[k])) continue;
-      let s=0,c=0;
-      for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++){
-        const jx=ix+dx, jy=iy+dy;
-        if (jx<0||jy<0||jx>=FW||jy>=FH) continue;
-        const v = kopie[jy*FW+jx];
-        if (!Number.isNaN(v)){ s+=v; c++; }
+  const r = glockeRadius(FELDSIG / ZELLE);
+  verwischen(fD, fT, FW, FH, r);
+  verwischen(fH, fT, FW, FH, r);
+  for (let k=0;k<anz;k++) fH[k] = fD[k] > 1e-12 ? fH[k]/fD[k] : NaN;   /* fD bleibt: die Maske liest es */
+  /* Löcher: Zellen, die keine Glocke mehr erreicht. Sie liegen immer
+     **außerhalb** des Landes — ein Bahnhof ist selbst ein Impuls und hat
+     damit Abdeckung —, und das Land wird ohnehin beschnitten. Gebraucht
+     wird ihr Wert nur für den Saum, über den beim Hochskalieren interpoliert
+     wird, und dafür genügen ein paar Runden.
+
+     Vierzig Runden über das **ganze** Raster waren der teuerste Posten der
+     ganzen Rechnung, und zwar genau bei der Landkarte, wo die halbe
+     Bildfläche leer ist und nie ein Loch zuging: vierzig Durchgänge über
+     eine halbe Million Zellen, jeder mit einer Kopie des Feldes. Jetzt
+     stehen die Löcher in einer Liste, und die wird mit jeder Runde kürzer. */
+  let loch = [];
+  for (let k=0;k<anz;k++) if (Number.isNaN(fH[k])) loch.push(k);
+  for (let runde=0; runde<LOCHRUNDEN && loch.length; runde++){
+    const rest = [];
+    for (const k of loch){
+      const ix = k % FW, iy = (k - ix) / FW;
+      let sm=0,c=0;
+      for (let dy=-1;dy<=1;dy++){
+        const jy = iy+dy;
+        if (jy<0 || jy>=FH) continue;
+        for (let dx=-1;dx<=1;dx++){
+          const jx = ix+dx;
+          if (jx<0 || jx>=FW) continue;
+          const v = fH[jy*FW+jx];
+          if (!Number.isNaN(v)){ sm+=v; c++; }
+        }
       }
-      if (c) fH[k] = s/c; else offen++;
+      if (c) fH[k] = sm/c; else rest.push(k);
     }
-    if (!offen) break;
+    loch = rest;
+  }
+  /* Was dann noch offen ist, liegt weit draußen im Schwarzen und wird nie
+     gezeigt. Eine Zahl braucht es trotzdem, weil NaN sich durch die
+     Glättung frisst. */
+  if (loch.length){
+    let sm=0, c=0;
+    for (let k=0;k<anz;k++) if (!Number.isNaN(fH[k])){ sm+=fH[k]; c++; }
+    const ersatz = c ? sm/c : 0;
+    for (const k of loch) fH[k] = ersatz;
   }
   glaetten(fH, FW, FH);
 }
 
-function glaetten(a, w, h){
-  const t = new Float32Array(a.length);
+function glaetten(a, w, h, hilf){
+  const t = hilf || ((fT && fT.length === a.length) ? fT : new Float32Array(a.length));
   for (let y=0;y<h;y++) for (let x=0;x<w;x++){
     const l = x>0?a[y*w+x-1]:a[y*w+x], r = x<w-1?a[y*w+x+1]:a[y*w+x];
     t[y*w+x] = (l + 2*a[y*w+x] + r) * .25;
@@ -749,7 +891,12 @@ function bildBauen(){
         }
       }
       d[j] = r<0?0:r>255?255:r; d[j+1] = g<0?0:g>255?255:g;
-      d[j+2] = b<0?0:b>255?255:b; d[j+3] = maskeA[k];
+      /* Deckend. Die Küste schneidet der Pfad (landPfad); stünde die Maske
+         hier im Alphakanal, würde sie beim Hochskalieren mitinterpoliert und
+         genau die weiche Kante erzeugen, die weg soll. Außerhalb des Landes
+         steht trotzdem eine sinnvolle Farbe — das Höhenfeld ist überall
+         gefüllt —, und darum blutet an der Schnittkante kein Schwarz ein. */
+      d[j+2] = b<0?0:b>255?255:b; d[j+3] = 255;
     }
   }
   bildX.putImageData(bild, 0, 0);
@@ -757,6 +904,12 @@ function bildBauen(){
 
 /* ------------------------------------------------------------- Zeichnen */
 function zeichne(){
+  /* Der Maßstab zuerst: das Raster hängt an ihm (feldMasseSetzen). */
+  const [x0,x1,y0,y1] = RAHMEN;
+  zx = (x0+x1)/2; zy = (y0+y1)/2;
+  skala = Math.min(W / (x1-x0), H / (y1-y0)) * 0.985;
+  mitteX = W/2; mitteY = H/2;
+
   lage();
   umrissVerziehen();
   feldMasseSetzen();
@@ -764,16 +917,20 @@ function zeichne(){
   maskeBauen();
   bildBauen();
 
-  const [x0,x1,y0,y1] = RAHMEN;
-  zx = (x0+x1)/2; zy = (y0+y1)/2;
-  skala = Math.min(W / (x1-x0), H / (y1-y0)) * 0.985;
-  mitteX = W/2; mitteY = H/2;
-
   ctx.setTransform(DPR,0,0,DPR,0,0);
   ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H);
   ctx.imageSmoothingEnabled = true;
+  ctx.save();
+  /* erst der Rahmen — das Feld reicht 18 Minuten darüber hinaus, und das
+     soll nicht in den schwarzen Rand lappen —, dann das Land selbst */
+  ctx.beginPath();
+  ctx.rect(schirmX(x0), schirmY(y1), (x1-x0)*skala, (y1-y0)*skala);
+  ctx.clip();
+  landPfad();
+  ctx.clip();
   ctx.drawImage(bildC, schirmX(X0), schirmY(Y0 + FH*ZELLE),
                 FW*ZELLE*skala, FH*ZELLE*skala);
+  ctx.restore();
   grenzenMalen();
   if (Z.iso && ISO && Z.isoKnoten >= 0) isoMalen();
   if (Z.punkte) punkteMalen();
@@ -818,7 +975,23 @@ function punkteMalen(){
    schlechter als ein Name weniger. */
 const FERNVORRAT = 22;
 let abgelegen = null;
+/* Die Schrift war 11,5 Pixel groß und damit für eine Karte zu laut: sie hat
+   die Karte gelesen statt sie zu beschriften. Jetzt sind es 8 — dreißig
+   Prozent kleiner, das schonende Ende der gewünschten Spanne, weil eine
+   Beschriftung, die man nicht mehr liest, keine ist. Was sie an Größe
+   verliert, bekommt sie an Kontrast zurück: der schwarze Saum bleibt
+   anteilig dicker als vorher. Alle Abstände hängen an SCHRIFT, damit ein
+   anderer Wert nicht die Halterei durcheinanderbringt. */
+const SCHRIFT = 8, SCHRIFT_ENG = 9, SAUMSTRICH = 2.2, PUNKTR = 1.7;
+
 function namenMalen(){
+  /* Auf dem Telefon einen Punkt größer: dort stehen ohnehin nur zwei Dutzend
+     Namen, Platz ist also da, und acht Pixel auf einem kleinen Schirm sind
+     die Grenze des Lesbaren. */
+  const sr = W < 520 ? SCHRIFT_ENG : SCHRIFT;
+  const NAHX = Math.round(sr * 0.55);           /* seitlicher Abstand zum Punkt */
+  const NAHY = Math.round(sr * 1.1);            /* Zeilensprung nach oben/unten */
+  const KASTH = Math.round(sr * 1.3);           /* Höhe des Belegtkastens */
   const belegt = [];
   const frei = (x,y,w,h2) => {
     if (x < 5 || x+w > W-5 || y < 5 || y+h2 > H-5) return false;
@@ -826,7 +999,7 @@ function namenMalen(){
       if (x < b[2] && b[0] < x+w && y < b[3] && b[1] < y+h2) return false;
     return true;
   };
-  ctx.font = '600 11.5px ui-sans-serif,system-ui,sans-serif';
+  ctx.font = '600 ' + sr + 'px ui-sans-serif,system-ui,sans-serif';
   ctx.textBaseline = 'middle';
   const wieviele = W < 520 ? 24 : W < 820 ? 42 : 62;
   /* Und dann die abgelegensten Orte, dazu die abgelegensten *Bahnhöfe* mit
@@ -865,64 +1038,98 @@ function namenMalen(){
     const X = schirmX(wx[i]), Y = schirmY(wy[i]);
     const b = ctx.measureText(t).width;
     let hin = null;
-    for (const [dx,dy] of [[6,0],[-6-b,0],[6,-12],[-6-b,-12],[6,12],[-6-b,12],
-                           [-b/2,-13],[-b/2,13]]){
-      const x = X+dx, y = Y+dy-6;
-      if (frei(x-2, y-1, b+4, 14)){ hin = [x, y+7]; belegt.push([x-2,y-1,x+b+2,y+13]); break; }
+    for (const [dx,dy] of [[NAHX,0],[-NAHX-b,0],[NAHX,-NAHY],[-NAHX-b,-NAHY],
+                           [NAHX,NAHY],[-NAHX-b,NAHY],
+                           [-b/2,-NAHY-1],[-b/2,NAHY+1]]){
+      const x = X+dx, y = Y+dy-KASTH/2;
+      if (frei(x-2, y-1, b+4, KASTH)){
+        hin = [x, y + KASTH/2]; belegt.push([x-2,y-1,x+b+2,y+KASTH-1]); break;
+      }
     }
     if (!hin) continue;
-    ctx.lineWidth = 2.6; ctx.strokeStyle = 'rgba(0,0,0,.62)';
+    ctx.lineWidth = SAUMSTRICH; ctx.strokeStyle = 'rgba(0,0,0,.68)';
     ctx.strokeText(t, hin[0], hin[1]);
     ctx.fillStyle = '#fff'; ctx.fillText(t, hin[0], hin[1]);
-    ctx.beginPath(); ctx.arc(X, Y, 2.1, 0, 6.2832);
+    ctx.beginPath(); ctx.arc(X, Y, PUNKTR, 0, 6.2832);
     ctx.fillStyle = '#e8291c'; ctx.fill();
-    ctx.lineWidth = .8; ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.stroke();
+    ctx.lineWidth = .7; ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.stroke();
     platz[g]--;
   }
 }
 
 /* ------------------------------------------------------------ Isochronen */
+let isoF = null, isoD = null, isoT = null;
 function isoMalen(){
   const r0 = Z.isoKnoten * n;
-  const feld = new Float32Array(FW*FH), dich = new Float32Array(FW*FH);
-  const sig = 22.0/ZELLE, rad = Math.ceil(3*sig), inv = -0.5/(sig*sig);
+  /* Dasselbe Verfahren wie beim Höhenfeld: Impulse ins Raster, dann Zähler
+     und Nenner getrennt verwischen. σ ist hier 22 Minuten — die Isochrone
+     soll eine Linie sein und kein Zickzack. */
+  const anz = FW*FH;
+  if (!isoF || isoF.length !== anz){
+    isoF = new Float32Array(anz); isoD = new Float32Array(anz);
+    isoT = new Float32Array(anz);
+  } else { isoF.fill(0); isoD.fill(0); }
+  const feld = isoF, dich = isoD, hilf = isoT;
   for (let i=0;i<n;i++){
     const v = ISO[r0+i];
     if (v === 255) continue;
     const t = v * P.isoschritt;
-    const cx = feldX(wx[i]), cy = feldY(wy[i]);
-    const ix0 = Math.max(0,(cx-rad)|0), ix1 = Math.min(FW-1,(cx+rad)|0);
-    const iy0 = Math.max(0,(cy-rad)|0), iy1 = Math.min(FH-1,(cy+rad)|0);
-    for (let iy=iy0;iy<=iy1;iy++){
-      const dy=iy+.5-cy, dy2=dy*dy, row=iy*FW;
-      for (let ix=ix0;ix<=ix1;ix++){
-        const dx=ix+.5-cx, w=Math.exp((dx*dx+dy2)*inv);
-        dich[row+ix]+=w; feld[row+ix]+=w*t;
+    const cx = feldX(wx[i]) - 0.5, cy = feldY(wy[i]) - 0.5;
+    const ix = Math.floor(cx), iy = Math.floor(cy);
+    const gx = cx-ix, gy = cy-iy;
+    for (let dy=0;dy<2;dy++){
+      const jy = iy+dy;
+      if (jy<0 || jy>=FH) continue;
+      const wv = dy?gy:1-gy, row = jy*FW;
+      for (let dx=0;dx<2;dx++){
+        const jx = ix+dx;
+        if (jx<0 || jx>=FW) continue;
+        const w = wv*(dx?gx:1-gx);
+        dich[row+jx]+=w; feld[row+jx]+=w*t;
       }
     }
   }
-  for (let k=0;k<FW*FH;k++) feld[k] = dich[k]>1e-6 ? feld[k]/dich[k] : NaN;
-  glaetten(feld, FW, FH);
+  const rk = glockeRadius(22.0/ZELLE);
+  verwischen(dich, hilf, FW, FH, rk);
+  verwischen(feld, hilf, FW, FH, rk);
+  for (let k=0;k<anz;k++) feld[k] = dich[k]>1e-12 ? feld[k]/dich[k] : NaN;
+  glaetten(feld, FW, FH, hilf);
   /* Marschierende Quadrate: je Zelle die vier Ecken gegen die Stufe, die
      Schnittpunkte auf den Kanten linear interpoliert und verbunden. Eine
      Linie, nicht eine Punktreihe — einer Isochrone, der man nicht folgen
      kann, ist keine. */
   const w = (a,b,L) => (L-a)/(b-a);
-  for (const stufe of [60,120,180,240,300,360,420,480]){
-    const seg = [];
-    for (let iy=0; iy<FH-1; iy++) for (let ix=0; ix<FW-1; ix++){
-      if (maskeA[iy*FW+ix] < 120) continue;
-      const a = feld[iy*FW+ix], b = feld[iy*FW+ix+1],
-            c = feld[(iy+1)*FW+ix+1], e = feld[(iy+1)*FW+ix];
-      if (Number.isNaN(a)||Number.isNaN(b)||Number.isNaN(c)||Number.isNaN(e)) continue;
+  const STUFEN2 = [60,120,180,240,300,360,420,480];
+  /* Ein Durchgang über die Zellen für **alle** Stufen, nicht acht. Bei
+     einer Zelle je Pixel sind das siebenhunderttausend Zellen, und sie
+     achtmal zu lesen, um jedes Mal festzustellen, dass keine Stufe durch
+     sie läuft, war die Hälfte der Rechenzeit. Jetzt sagen Kleinst- und
+     Größtwert der vier Ecken sofort, welche Stufen überhaupt in Frage
+     kommen — bei den meisten Zellen keine. */
+  const segs = STUFEN2.map(() => []);
+  for (let iy=0; iy<FH-1; iy++) for (let ix=0; ix<FW-1; ix++){
+    if (maskeA[iy*FW+ix] < 120) continue;
+    const a = feld[iy*FW+ix], b = feld[iy*FW+ix+1],
+          c = feld[(iy+1)*FW+ix+1], e = feld[(iy+1)*FW+ix];
+    if (Number.isNaN(a)||Number.isNaN(b)||Number.isNaN(c)||Number.isNaN(e)) continue;
+    let lo = a, hi = a;
+    if (b<lo) lo=b; else if (b>hi) hi=b;
+    if (c<lo) lo=c; else if (c>hi) hi=c;
+    if (e<lo) lo=e; else if (e>hi) hi=e;
+    for (let si=0; si<STUFEN2.length; si++){
+      const stufe = STUFEN2[si];
+      if (stufe <= lo || stufe >= hi) continue;
       const kn = [];
       if ((a-stufe)*(b-stufe) < 0) kn.push([ix + w(a,b,stufe), iy]);
       if ((b-stufe)*(c-stufe) < 0) kn.push([ix+1, iy + w(b,c,stufe)]);
       if ((e-stufe)*(c-stufe) < 0) kn.push([ix + w(e,c,stufe), iy+1]);
       if ((a-stufe)*(e-stufe) < 0) kn.push([ix, iy + w(a,e,stufe)]);
-      if (kn.length === 2) seg.push(kn);
-      else if (kn.length === 4){ seg.push([kn[0],kn[1]]); seg.push([kn[2],kn[3]]); }
+      if (kn.length === 2) segs[si].push(kn);
+      else if (kn.length === 4){ segs[si].push([kn[0],kn[1]]); segs[si].push([kn[2],kn[3]]); }
     }
+  }
+  for (let si=0; si<STUFEN2.length; si++){
+    const stufe = STUFEN2[si], seg = segs[si];
     if (!seg.length) continue;
     const zug = (farbe, breite) => {
       ctx.beginPath();
@@ -1025,10 +1232,21 @@ function bald(){
 function regler(id, feld, faktor, zeige){
   const e = $(id);
   const auf = () => { Z[feld] = e.value / faktor; zeige(); bald(); };
-  e.addEventListener('input', () => { FEINHEIT = spiel ? FEIN_SPIEL : FEIN_ZIEH; auf(); });
-  e.addEventListener('change', () => { FEINHEIT = spiel ? FEIN_SPIEL : FEIN_RUHE; auf(); });
+  e.addEventListener('input', () => { FEINHEIT = ziehFein(); auf(); });
+  e.addEventListener('change', () => { FEINHEIT = spiel ? ziehFein() : FEIN_RUHE; auf(); });
   haendeDran(e);
   zeige();
+}
+
+/* Wie fein das nächste Bild wird: in Ruhe am feinsten, beim Ziehen gröber,
+   in der Fahrt am gröbsten — und im Halt an den Endpunkten wieder fein, weil
+   das Bild dort steht und genau dann angesehen wird. Im Halt nicht ganz das
+   Feinste: ein Bild, das eine halbe Sekunde zum Rechnen braucht, sieht
+   mitten in einer Fahrt nicht nach einer Pause aus, sondern nach einem
+   Hänger. Bleibt die Fahrt stehen, kommt über den Reglerwechsel ohnehin
+   FEIN_RUHE nach. */
+function ziehFein(){
+  return !spiel ? FEIN_ZIEH : spiel.halt > 0 ? FEIN_HALT : FEIN_SPIEL;
 }
 
 /* ---------- Der Abspielknopf. Ein Regler, den man nicht anfasst, sieht wie
@@ -1057,20 +1275,34 @@ function spielAn(sid, dauer){
   const lo = +e.min, hi = +e.max;
   /* zuerst in die weitere Richtung — dort ist mehr zu sehen */
   spiel = {sid, knopf, dauer, hin: (+e.value - lo) < (hi - +e.value),
-           t: performance.now()};
+           halt: 0, t: performance.now()};
   const k = $(knopf);
   k.setAttribute('aria-pressed','true'); k.textContent = '■';
   requestAnimationFrame(spielSchritt);
 }
+/* An beiden Enden hält die Fahrt kurz an. Ohne den Halt kehrt sie im
+   Endzustand um, ohne ihn gezeigt zu haben — und die beiden Endzustände sind
+   gerade das, was die Karte behauptet: hier die Geografie, dort die Zeit.
+   Eine Dreiviertelsekunde reicht, um das Bild stehen zu sehen, und ist kurz
+   genug, dass es nicht nach einem Hänger aussieht. Während des Halts wird
+   einmal fein gerastert, weil das Bild ja steht. */
+const HALT = 750;
 function spielSchritt(t){
   if (!spiel) return;
   const e = $(spiel.sid), lo = +e.min, hi = +e.max;
   const dt = Math.min(100, t - spiel.t);      /* nach einem Aussetzer nicht springen */
   spiel.t = t;
+  if (spiel.halt > 0){                        /* stehen bleiben, nichts neu malen */
+    spiel.halt = Math.max(0, spiel.halt - dt);
+    requestAnimationFrame(spielSchritt);
+    return;
+  }
   let v = +e.value + (spiel.hin ? 1 : -1) * (hi - lo) * dt / spiel.dauer;
-  if (v >= hi){ v = hi; spiel.hin = false; }
-  else if (v <= lo){ v = lo; spiel.hin = true; }
+  if (v >= hi){ v = hi; spiel.hin = false; spiel.halt = HALT; }
+  else if (v <= lo){ v = lo; spiel.hin = true; spiel.halt = HALT; }
   e.value = v;
+  /* Der Halt wird **vor** dem Ereignis gesetzt, damit das Bild des
+     Endzustands schon das feine ist. */
   e.dispatchEvent(new Event('input'));
   requestAnimationFrame(spielSchritt);
 }
@@ -1109,8 +1341,8 @@ function start(){
           + 'viel, dass es auf die Ecken ankommt. Hier zählt das Netz.';
       bald();
     };
-    e.addEventListener('input', () => { FEINHEIT = spiel ? FEIN_SPIEL : FEIN_ZIEH; auf(); });
-    e.addEventListener('change', () => { FEINHEIT = spiel ? FEIN_SPIEL : FEIN_RUHE; auf(); });
+    e.addEventListener('input', () => { FEINHEIT = ziehFein(); auf(); });
+    e.addEventListener('change', () => { FEINHEIT = spiel ? ziehFein() : FEIN_RUHE; auf(); });
     haendeDran(e);
     auf();
   }
@@ -1394,10 +1626,12 @@ Nistertal im Westerwald. Sylt und die Rügener Bäderbahn sind in der Zeitkarte
 <p>Je weiter der Regler in die Zeit läuft, desto mehr <b>Inseln</b> lösen sich
 vom Land, und das ist kein Zeichenfehler. Die Federkarte schleudert die
 abgehängten Orte so weit hinaus, dass der verzogene Umriss ihnen nicht mehr
-folgen kann — in der reinen Zeitkarte liegen 537 der
+folgen kann — in der reinen Zeitkarte liegen 593 der
 ${P.bahnhoefe.toLocaleString('de-DE')} Bahnhöfe jenseits der Küste. Ein
 Bahnhof gehört aber immer auf Land, also bekommt jeder Ausgewanderte seine
-eigene Scholle, und was im Meer treibt und noch im Bild ist, ist beschriftet:
+eigene <b>Scholle</b>: eine Kreisscheibe mit hartem Rand und 11,5 Minuten
+Radius. Wo mehrere dicht beieinander liegen, laufen die Scheiben zu einem
+Archipel zusammen. Was im Meer treibt und noch im Bild ist, ist beschriftet:
 Freiburg Herdern, Kennelgarten in der Pfalz, Nistertal-Büdingen im
 Westerwald, Dienheim am Rhein, Demker in der Altmark.</p>
 
@@ -1453,7 +1687,9 @@ verbinden. Sie bekommen keine Feder.</li>
 <li><b>Landkarte → Zeitkarte</b> verzieht die Karte von der Geografie in die
 Reisezeit. Umriss und Ländergrenzen laufen mit, verschoben mit dem
 Verschiebungsfeld der Bahnhöfe selbst. Der <b>Abspielknopf</b> fährt hin und
-her: die Verformung als Bewegung statt als zwei Standbilder.</li>
+her und hält an beiden Enden eine Dreiviertelsekunde an: sonst kehrt die
+Fahrt im Endzustand um, ohne ihn gezeigt zu haben — und die beiden
+Endzustände sind gerade das, was die Karte behauptet.</li>
 <li><b>Anteil Deutschlands</b> ist der Regler, der die Höhe überhaupt
 definiert — er schiebt zwischen Ballungsraum und Geografie. Achtzehn Stufen
 liegen vorgerechnet in der Seite, dazwischen wird gemischt. Auch er hat einen
@@ -1475,7 +1711,11 @@ Darum ist er <b>zugeschnitten</b>, so weit die Landkarte es zulässt: bis sie
 mit einem Saum von acht Minuten genau hineinpasst. Der Faktor ist nicht
 gesetzt, sondern gemessen — 1,29 —, und Deutschland wird damit gut zwanzig
 Prozent größer gezeichnet als vorher: nachgemessen +23 % auf 1440 × 900 und
-+29 % hochkant auf dem Telefon. In der Landkarte geht dabei garantiert nichts
++29 % hochkant auf dem Telefon. Das Höhenfeld wird dabei mit **einer Zelle je
+Bildschirmpixel** gerastert statt mit festen drei Minuten — zweieinhalbmal
+feiner je Achse —, und die Küste wird <b>beschnitten</b> statt ausmaskiert:
+ein Pfad hat keine Auflösung, eine Maske im Raster wird beim Hochskalieren
+weichgezeichnet. In der Landkarte geht dabei garantiert nichts
 verloren; in der reinen Zeitkarte fliegen <b>108 der
 ${P.bahnhoefe.toLocaleString('de-DE')} Bahnhöfe</b> aus dem Bild: 2,3 % der
 Bahnhöfe, aber nur 0,9 % aller Halte am Tag — die Bodenseerunde, die Rügener
