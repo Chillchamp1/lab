@@ -257,6 +257,14 @@ ist eine Zeile hoch, weil jede Zeile, die er sich nimmt, der Karte fehlt.
   übrigen 4.781 sind weiß. Rot bleiben außerdem die Ortsmarken, auch wenn ihr
   Name keinen Platz fand.
 - Zeiger über einen Punkt zeigt Name, Erreichbarkeit und Zahl der Halte.
+- **Ein Klick auf einen Bahnhof — auf den Punkt *oder* auf seinen Namen** —
+  stellt seine Zahlen in die Ecke der Karte: Minuten bis zum Anteil, Aufschlag
+  auf den besten Bahnhof im Land, Halte am Tag, Einzugsgebiet. Der Name ist die
+  größere Fläche und auf dem Telefon die einzige, die man verlässlich trifft.
+  Der Kasten geht in die Ecke, die am weitesten von dem Bahnhof weg ist, damit
+  er ihn nicht zudeckt.
+- Danach **▶**, und die Ansicht **fährt mit diesem Bahnhof**: er steht in der
+  Mitte still, das Land verzieht sich um ihn. Wer selbst schiebt, führt wieder.
 
 ### Die Legende liegt unter der Karte
 

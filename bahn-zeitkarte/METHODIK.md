@@ -1113,6 +1113,60 @@ Zeitkarte lebt aber davon, dass Lage und Höhe dort übereinstimmen und der
 Trichter glatt ist. Vier Minuten sind das nicht wert; die Fassung ist wieder
 heraus, und die acht Minuten bleiben stehen.
 
+### 4.14 Einen Bahnhof anfassen, und die Kamera mitnehmen
+
+**Der Name zählt wie der Punkt.** Anklickbar war bisher der Punkt, und der ist
+drei Pixel breit; der Name daneben ist fünfzig und im Blick das Auffälligere.
+Wer „Göttingen" liest und darauf zeigt, hat Göttingen gemeint — eine Fläche,
+die aussieht wie ein Ziel und keines ist, ist eine stille Fehlfunktion, und auf
+dem Telefon ist der Name die einzige Fläche, die ein Finger verlässlich trifft.
+
+Die Namenskästen werden beim Zeichnen ohnehin geführt: die Beschriftung prüft
+jeden gegen die schon belegten, damit sich keine zwei überdecken (4.8). Diese
+Liste wird jetzt mit dem Bahnhof, zu dem sie gehört, aufbewahrt, um zwei Pixel
+großzügiger vermerkt als gemalt, und beim Klicken **zuerst** geprüft. Zuerst,
+weil sie das Genauere ist: der Umkreis von 26 Pixeln um einen Punkt erwischt
+im Ruhrgebiet ein halbes Dutzend Bahnhöfe, ein Namenskasten trifft genau einen.
+Nachgemessen treffen alle 75 Kästen des Anfangsbildes ihren eigenen Bahnhof.
+
+**Die Kurzinfo steht in der Karte, in der Ecke.** Dort ist bei jeder
+Reglerstellung schwarzer Grund, und der Blick muss nicht zwischen Karte und
+Seitenspalte wechseln. In *welcher* Ecke, sagt der gewählte Bahnhof: in der
+vom ihm entferntesten, sonst deckt der Kasten gerade das zu, was man
+angeklickt hat — bei München lag er auf München. Hochkant ist die Karte zu
+schmal für zwei Spalten, dort entscheidet nur oben oder unten. Nachgemessen
+über fünf Bahnhöfe in vier Himmelsrichtungen und zwei Fenstergrößen: keiner
+verdeckt. Sie nennt die Minuten bis zum Anteil, den Aufschlag auf
+den besten Bahnhof im Land, die Halte am Tag und das Einzugsgebiet — und sie
+hängt an jedem Bild, weil zwei der vier Zahlen mit den Reglern wandern. Neu
+geschrieben wird sie nur, wenn sich etwas darin geändert hat; sonst kostete sie
+in der Fahrt drei `innerHTML` je Bild für nichts.
+
+**Und dann nimmt die Kamera ihn mit.** Ist ein Bahnhof gewählt und drückt man
+▶, bleibt er in der Bildmitte stehen und das Land verzieht sich um ihn. Das ist
+der Grund, einen zu wählen: sonst sieht man die Verformung des *Bildes* und muss
+sich dabei merken, wo ein Ort vorher lag. Steht der Ort still, liest man
+unmittelbar ab, was mit ihm geschieht. Der Weg von der Landkarte in die
+Zeitkarte ist im Median 57 Minuten lang, im 90. Perzentil 143 und im Äußersten
+566: Frankfurt Hbf rückt 24 Minuten, Göttingen 45, Berlin Hbf 152, Göhren auf
+Rügen 182.
+
+Geklemmt wird dabei anders als sonst. Die normale Klemmung hält das *Bild* im
+Umfang; bei der Anfangsstellung zöge sie den Bahnhof sofort wieder in die
+Bildmitte des Landes, und die Kamera bewegte sich gar nicht. Beim Folgen wird
+darum nur die *Mitte* in den Umfang geklemmt: der Bahnhof steht genau in der
+Mitte, auch wenn dafür schwarzer Grund an den Rand kommt. Ein Bahnhof jenseits
+des Umfangs kann nicht vorkommen — WELT ist als Hülle über alle
+Reglerstellungen gebaut, nachgezählt null Bahnhöfe draußen bei jedem Morphwert
+—, die Klemmung ist also nur der Gürtel.
+
+Das Folgen endet, sobald die Fahrt endet oder jemand selbst schiebt oder
+kneift: wer die Karte anfasst, führt. Ein Klick ins Leere hebt die Wahl auf,
+Escape auch, und der gewählte Bahnhof bekommt einen weißen Ring — eine
+Markierung und keine vierte Farbe — und seinen Namen außerhalb des Budgets,
+damit er beschriftet ist, auch wenn er es in der Rangliste nie so weit nach
+oben geschafft hätte.
+
 ## 5. Was fehlt
 
 - **Kein Stadtverkehr.** S-Bahn, U-Bahn, Straßenbahn, Bus fehlen. Für die

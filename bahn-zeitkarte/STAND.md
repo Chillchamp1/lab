@@ -492,6 +492,49 @@ sonst verschwände beim Hineinzoomen die Mitte einer Stadt ganz. Alle roten
 Punkte haben jetzt dieselbe Größe (Radius 1,55 · √Zoom, gedeckelt bei 2,0) —
 vorher waren der Ankerpunkt und die Ortsmarke verschieden groß.
 
+## Einen Bahnhof anfassen, und die Kamera mitnehmen
+
+Drei Dinge, und das erste war eine stille Fehlfunktion.
+
+**Der Name zählt jetzt wie der Punkt.** Anklickbar war der Punkt, drei Pixel
+breit; der Name daneben ist fünfzig und im Blick das Auffälligere. Eine Fläche,
+die aussieht wie ein Ziel und keines ist, ist schlimmer als keine — und auf dem
+Telefon ist der Name die einzige, die ein Finger verlässlich trifft. Die
+Namenskästen werden beim Zeichnen ohnehin geführt (die Beschriftung prüft jeden
+gegen die belegten), sie werden jetzt mit ihrem Bahnhof aufbewahrt und beim
+Klicken **zuerst** geprüft: ein Kasten trifft genau einen Bahnhof, der Umkreis
+von 26 Pixeln um einen Punkt erwischt im Ruhrgebiet ein halbes Dutzend.
+Nachgemessen treffen alle 75 Kästen des Anfangsbildes ihren eigenen Bahnhof.
+
+**Die Kurzinfo steht in der Karte, in der Ecke** — dort ist bei jeder
+Reglerstellung schwarzer Grund, und der Blick muss nicht in die Seitenspalte.
+In welcher Ecke, sagt der gewählte Bahnhof: in der von ihm entferntesten. Die
+erste Fassung stand immer unten links und lag damit bei München auf München.
+Sie nennt Minuten bis zum Anteil, Aufschlag auf den besten Bahnhof im Land,
+Halte am Tag, Einzugsgebiet. Zwei der vier Zahlen wandern mit den Reglern, sie
+hängt also an jedem Bild; neu geschrieben wird sie nur, wenn sich etwas darin
+geändert hat.
+
+**Und dann nimmt die Kamera den Bahnhof mit.** Ist einer gewählt und drückt man
+▶, bleibt er in der Bildmitte stehen und das Land verzieht sich um ihn. Das ist
+der Grund, einen zu wählen: sonst sieht man die Verformung des Bildes und muss
+sich dabei merken, wo ein Ort vorher lag. Der Weg von der Landkarte in die
+Zeitkarte ist im Median 57 Minuten lang, im 90. Perzentil 143 — Frankfurt Hbf
+rückt 24, Göttingen 45, Berlin Hbf 152, Göhren 182.
+
+Die Klemmung musste dafür anders sein. Die normale hält das *Bild* im Umfang
+und zöge den Bahnhof bei der Anfangsstellung sofort wieder in die Bildmitte des
+Landes — die Kamera bewegte sich gar nicht. Beim Folgen wird nur die *Mitte* in
+den Umfang geklemmt: der Bahnhof steht genau in der Mitte, auch wenn dafür
+schwarzer Grund an den Rand kommt. Nachgemessen bleibt der Abstand zwischen
+Bildmitte und Bahnhof über die ganze Fahrt bei null Minuten.
+
+Das Folgen endet, sobald die Fahrt endet oder jemand selbst schiebt oder
+kneift. Ein Klick ins Leere hebt die Wahl auf, Escape auch. Der gewählte
+Bahnhof bekommt einen weißen Ring — eine Markierung, keine vierte Farbe — und
+seinen Namen außerhalb des Budgets, damit er beschriftet ist, auch wenn er es
+in der Rangliste nie so weit nach oben geschafft hätte.
+
 ## Was offen ist
 
 **Die Bevölkerung ist innerhalb eines Kreises gleichmäßig verteilt.** Das ist

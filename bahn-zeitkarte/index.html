@@ -108,6 +108,29 @@ button[aria-pressed=true],button:hover{color:var(--ink);border-style:solid}
 .tip{position:fixed;pointer-events:none;background:#141412;border:1px solid var(--axis);
   border-radius:7px;padding:6px 9px;font-size:12px;z-index:6;max-width:250px;
   opacity:0;transition:opacity .09s;box-shadow:0 6px 22px rgba(0,0,0,.6)}
+/* Die Kurzinfo des gewählten Bahnhofs liegt **in** der Karte, unten links:
+   dort ist bei jeder Reglerstellung schwarzer Grund, und der Blick muss
+   nicht zwischen Karte und Seitenspalte hin und her. */
+/* In welche Ecke, sagt der gewählte Bahnhof: in die von ihm entfernteste.
+   Sonst deckt der Kasten gerade das zu, was man angeklickt hat — bei einem
+   Bahnhof im Süden liegt er auf ihm. */
+#wahlfeld{position:absolute;z-index:5;display:none;
+  max-width:min(300px, calc(100% - 48px));background:rgba(12,12,11,.9);
+  border:1px solid var(--axis);border-radius:9px;padding:9px 11px 10px;
+  box-shadow:0 8px 28px rgba(0,0,0,.65);backdrop-filter:blur(6px)}
+#wahlfeld.auf{display:block}
+#wahlfeld.l{left:24px} #wahlfeld.r{right:10px}
+#wahlfeld.o{top:26px}  #wahlfeld.u{bottom:12px}
+#wahlfeld h2{margin:0 14px 3px 0;font-size:13px;font-weight:650;line-height:1.25}
+#wahlfeld p{margin:0;font-size:11.5px;color:var(--ink2);
+  font-variant-numeric:tabular-nums;line-height:1.45}
+#wahlfeld p b{color:var(--ink);font-weight:600}
+#wahlfeld .folgt{margin-top:5px;padding-top:5px;border-top:1px solid var(--line);
+  color:var(--muted);font-size:11px}
+#wahlfeld .folgt b{color:var(--ink2);font-weight:600}
+#wahlzu{position:absolute;top:5px;right:6px;background:none;border:0;padding:2px 4px;
+  color:var(--muted);font:inherit;font-size:13px;line-height:1;cursor:pointer}
+#wahlzu:hover{color:var(--ink)}
 .tip b{display:block;font-weight:600;margin-bottom:2px}
 .tip span{color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
 #ueber{position:fixed;inset:0;z-index:8;background:rgba(4,4,4,.97);overflow:auto;
@@ -142,6 +165,11 @@ button[aria-pressed=true],button:hover{color:var(--ink);border-style:solid}
     overflow:visible}
   #tafel h1{font-size:18px}
   #laden{inset:8px}
+  /* Hochkant ist die Karte zu schmal für zwei Spalten: dann entscheidet nur
+     noch oben oder unten. */
+  #wahlfeld{max-width:none;padding:7px 9px 8px}
+  #wahlfeld.l, #wahlfeld.r{left:16px;right:16px}
+  #wahlfeld.o{top:16px} #wahlfeld.u{bottom:8px}
 }
 @media (max-width:700px){
   /* Drei Angaben in einer Zeile gehen hier nicht mehr auf. Umbrechen ist
@@ -164,6 +192,10 @@ button[aria-pressed=true],button:hover{color:var(--ink);border-style:solid}
   <div id="links">
     <div id="buehne">
       <canvas id="cv"></canvas>
+      <div id="wahlfeld"><button id="wahlzu" aria-label="Clear selection"
+        title="Clear selection">×</button>
+        <h2 id="wahlname">…</h2><p id="wahlzahlen">…</p>
+        <p class="folgt" id="wahlfolgt">…</p></div>
       <div id="laden">Loading timetable …</div>
     </div>
     <div id="regler">
@@ -282,7 +314,10 @@ let umriss = [], laender = [], umrissW = [], laenderW = [];
 let RAHMEN = null, WELT = null, ZUSCHNITT = 1, ansichtGesetzt = false;
 
 const Z = {morph:1, wasser:90, anteil:0.50, namen:true, linien:true,
-           punkte:true, iso:false, isoKnoten:-1};
+           punkte:true, iso:false, isoKnoten:-1, wahl:-1};
+/* Läuft die Kamera dem gewählten Bahnhof nach? Das wird beim Abspielen
+   gesetzt und endet, sobald die Fahrt endet oder jemand selbst schiebt. */
+let folgt = false;
 
 /* ------------------------------------------------------------------ Laden */
 function entpacke(b64, teiler){
@@ -1315,6 +1350,19 @@ function zeichne(){
   mitteX = W/2; mitteY = H/2;
 
   lage();
+  /* Die Kamera am gewählten Bahnhof. Geklemmt wird auf den **Umfang** und
+     nicht wie sonst auf „Bild ganz im Umfang": der Bahnhof soll genau in der
+     Mitte stehen, auch wenn dafür schwarzer Grund an den Rand kommt — sonst
+     zieht die Klemmung ihn bei der Anfangsstellung sofort wieder in die
+     Bildmitte des Landes, und dann bewegt sich die Kamera gar nicht. Fährt er
+     über den Umfang hinaus, bleibt sie an seiner Kante stehen, statt ins
+     Schwarze zu laufen. */
+  if (folgt && Z.wahl >= 0){
+    const [fx0,fx1,fy0,fy1] = WELT;
+    V.cx = Math.max(fx0, Math.min(fx1, wx[Z.wahl]));
+    V.cy = Math.max(fy0, Math.min(fy1, wy[Z.wahl]));
+    zx = V.cx; zy = V.cy;
+  }
   umrissVerziehen();
   feldMasseSetzen();
   feldBauen();
@@ -1350,7 +1398,11 @@ function zeichne(){
   if (Z.iso && ISO && Z.isoKnoten >= 0) isoMalen();
   if (Z.punkte) punkteMalen();
   if (Z.namen) ortePunkteMalen(W < 520 ? 24 : W < 820 ? 42 : 62);
-  if (Z.namen) namenMalen();
+  if (Z.namen) namenMalen(); else namensFelder = [];
+  /* Der Ring hängt nicht an der Beschriftung: er soll auch stehen, wenn die
+     Namen ausgeschaltet sind oder für diesen einen kein Platz war. */
+  if (Z.wahl >= 0 && imRahmen(wx[Z.wahl], wy[Z.wahl]))
+    wahlRing(schirmX(wx[Z.wahl]), schirmY(wy[Z.wahl]));
   tafelSetzen();
 
   /* Der Regelkreis für die Fahrt: nachsehen, wie lange dieses Bild
@@ -1421,6 +1473,14 @@ function rotPunkt(X, Y, r){
 /* So groß wie früher der Ankerpunkt (Radius 1,7 bei der Anfangsstellung) und
    beim Hineinzoomen ein wenig mitwachsend, wie die weißen Punkte auch. */
 const rotR = () => Math.min(2.0, 1.55 * Math.sqrt(Math.min(2, V.zoom)));
+/* Der gewählte Bahnhof bekommt einen Ring statt einer weiteren Farbe: eine
+   vierte Farbe wäre eine vierte Behauptung, ein Ring ist eine Markierung. */
+function wahlRing(X, Y){
+  const r = rotR() + 3.4;
+  ctx.beginPath(); ctx.arc(X, Y, r, 0, 6.2832);
+  ctx.lineWidth = 2.6; ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.stroke();
+  ctx.lineWidth = 1.3; ctx.strokeStyle = '#fff'; ctx.stroke();
+}
 function punkteMalen(){
   const r = Math.min(2.2, 1.3 * Math.sqrt(V.zoom));
   ctx.fillStyle = 'rgba(255,255,255,' + (V.zoom > 1.6 ? .62 : .45) + ')';
@@ -1444,6 +1504,10 @@ function ortePunkteMalen(anzahl){
    schlechter als ein Name weniger. */
 const FERNVORRAT = 22;
 let abgelegen = null, rangliste = null;
+/* Wo welcher Name steht — gefüllt beim Zeichnen, gelesen beim Klicken.
+   Ein Name ist die größere Fläche und das, worauf man zeigt: ein Punkt von
+   drei Pixeln ist ein Ziel für die Maus, aber keines für einen Finger. */
+let namensFelder = [];
 /* Die Schrift war 11,5 Pixel groß und damit für eine Karte zu laut: sie hat
    die Karte gelesen statt sie zu beschriften. Jetzt sind es 8 — dreißig
    Prozent kleiner, das schonende Ende der gewünschten Spanne, weil eine
@@ -1462,6 +1526,7 @@ function namenMalen(){
   const NAHY = Math.round(sr * 1.1);            /* Zeilensprung nach oben/unten */
   const KASTH = Math.round(sr * 1.3);           /* Höhe des Belegtkastens */
   const belegt = [];
+  namensFelder = [];
   const frei = (x,y,w,h2) => {
     if (x < 5 || x+w > W-5 || y < 5 || y+h2 > H-5) return false;
     for (const b of belegt)
@@ -1522,12 +1587,16 @@ function namenMalen(){
      von 62 noch drei übrig —, und genau diese Lücke füllen die Bahnhofsnamen
      auf. Eine Zahl, die am Zoom hing, gab bei Zoom 8 zweihundert Namen: das
      war kein Kartenbild mehr, sondern ein Register. */
-  const reihe = P.marken.slice(0, wieviele).map(m => [m[0], m[1], 0])
-    .concat(abgelegen.slice(0, fern + 10).map(m => [m[0], m[1], 1]),
+  /* Der gewählte Bahnhof steht **vorn** und hat seinen eigenen Platz: wer
+     ihn angeklickt hat, soll seinen Namen sehen, auch wenn er es im Budget
+     der Rangliste nie so weit nach oben geschafft hätte. */
+  const reihe = (Z.wahl >= 0 ? [[Z.wahl, nm[Z.wahl], 4]] : [])
+    .concat(P.marken.slice(0, wieviele).map(m => [m[0], m[1], 0]),
+            abgelegen.slice(0, fern + 10).map(m => [m[0], m[1], 1]),
             abgelegen.slice(FERNVORRAT, FERNVORRAT + fern + 10)
               .map(m => [m[0], m[1], 2]),
             rangliste);
-  const platz = [wieviele, fern, fern, 1e9];
+  const platz = [wieviele, fern, fern, 1e9, 1];
   let gesamt = 0;
   const schon = new Set();
   for (const [i, t, g] of reihe){
@@ -1549,7 +1618,11 @@ function namenMalen(){
     if (!hin) continue;
     ctx.lineWidth = SAUMSTRICH; ctx.strokeStyle = 'rgba(0,0,0,.68)';
     ctx.strokeText(t, hin[0], hin[1]);
-    ctx.fillStyle = '#fff'; ctx.fillText(t, hin[0], hin[1]);
+    ctx.fillStyle = i === Z.wahl ? ORTROT : '#fff';
+    ctx.fillText(t, hin[0], hin[1]);
+    /* Der Kasten wird um zwei Pixel großzügiger vermerkt als gemalt: wer auf
+       den Rand eines Buchstabens zeigt, hat den Namen gemeint. */
+    namensFelder.push([i, hin[0]-3, hin[1]-KASTH/2-2, hin[0]+b+3, hin[1]+KASTH/2+2]);
     /* Der Anker: rot, weil hier ein Name steht. Die Ortsmarken (g = 0)
        haben ihren schon, die zeichnet ortePunkteMalen ohnehin. */
     if (g !== 0) rotPunkt(X, Y, rotR());
@@ -1729,6 +1802,7 @@ function tafelSetzen(){
     + ' of Germany is within reach';
   wasserWort();
   legendeSetzen();
+  if (Z.wahl >= 0) wahlSetzen();
   const iz = $('isozeile');
   if (Z.iso && ISO && Z.isoKnoten >= 0){
     iz.style.display = 'block';
@@ -1858,12 +1932,17 @@ function zoomBinden(){
       const d = Math.hypot(a.x-b.x, a.y-b.y);
       if (kneif && d > 4 && kneif > 4){
         const r = cv.getBoundingClientRect();
+        folgt = false;             /* wer selbst kneift, führt */
         greifAn();
         zoomUm((a.x+b.x)/2 - r.left, (a.y+b.y)/2 - r.top, d / kneif);
         zoomTasten(); bald();
       }
       kneif = d;
     } else if (zieh){
+      /* Nicht beim ersten Pixel: ein Klick zittert, und ein Klick soll das
+         Folgen nicht beenden. Geschoben wird dagegen sofort — eine Karte mit
+         acht Pixeln Totgang fühlt sich klebrig an. */
+      if (gewischt > 8) folgt = false;
       greifAn();
       V.cx = zieh.cx - (ev.clientX - (cv.getBoundingClientRect().left + zieh.px)) / skala;
       V.cy = zieh.cy + (ev.clientY - (cv.getBoundingClientRect().top + zieh.py)) / skala;
@@ -1878,10 +1957,12 @@ function zoomBinden(){
   cv.addEventListener('pointerup', los);
   cv.addEventListener('pointercancel', los);
   cv.addEventListener('dblclick', ev => { ev.preventDefault(); zoomZurueck(); });
+  $('wahlzu').addEventListener('click', () => waehlen(-1));
   zoomTasten();
 }
 let kneif = 0;
 function zoomZurueck(){
+  folgt = false;
   V.zoom = ZOOMSTART; V.cx = (RAHMEN[0]+RAHMEN[1])/2; V.cy = (RAHMEN[2]+RAHMEN[3])/2;
   ansichtKlemmen(); zoomTasten();
   FEINHEIT = FEIN_RUHE; bald();
@@ -1904,6 +1985,7 @@ function spielAus(){
   const k = $(spiel.knopf);
   k.setAttribute('aria-pressed','false'); k.textContent = '▶';
   spiel = null;
+  folgt = false;
   FEINHEIT = FEIN_RUHE;
   bald();
 }
@@ -1914,6 +1996,11 @@ function spielAn(sid, dauer){
   /* zuerst in die weitere Richtung — dort ist mehr zu sehen */
   spiel = {sid, knopf, dauer, hin: (+e.value - lo) < (hi - +e.value),
            halt: 0, t: performance.now()};
+  /* Ist ein Bahnhof gewählt, nimmt ihn die Kamera mit. Das ist der Grund,
+     einen zu wählen: man sieht nicht mehr das Land sich verziehen und muss
+     sich dabei merken, wo ein Ort war — der Ort steht still und das Land
+     bewegt sich um ihn. */
+  folgt = Z.wahl >= 0;
   const k = $(knopf);
   k.setAttribute('aria-pressed','true'); k.textContent = '■';
   requestAnimationFrame(spielSchritt);
@@ -2018,7 +2105,10 @@ function start(){
   $('kUeber').addEventListener('click', () => $('ueber').classList.add('auf'));
   $('zu').addEventListener('click', () => $('ueber').classList.remove('auf'));
   addEventListener('keydown', e => {
-    if (e.key === 'Escape') $('ueber').classList.remove('auf');
+    if (e.key !== 'Escape') return;
+    /* Erst der Kasten, dann die Wahl: Escape schließt das Oberste. */
+    if ($('ueber').classList.contains('auf')) $('ueber').classList.remove('auf');
+    else waehlen(-1);
   });
   cv.addEventListener('pointermove', zeigen);
   cv.addEventListener('pointerleave', () => { $('tip').style.opacity = 0; });
@@ -2038,9 +2128,74 @@ function naechster(mx, my){
   }
   return best;
 }
+/* **Der Name zählt wie der Punkt.** Ein Punkt ist drei Pixel breit; der Name
+   daneben ist fünfzig. Wer „Göttingen" liest und darauf zeigt, hat Göttingen
+   gemeint, und dass die Karte darauf nicht reagierte, war eine Fläche, die
+   aussah wie ein Ziel und keines war. Die Namenskästen kommen zuerst, weil
+   sie das Genauere sind: sie treffen einen bestimmten Bahnhof, während der
+   Umkreis von 26 Pixeln in einem Ballungsraum ein halbes Dutzend erwischt. */
+function getroffen(mx, my){
+  for (const [i, x0, y0, x1, y1] of namensFelder)
+    if (mx >= x0 && mx <= x1 && my >= y0 && my <= y1) return i;
+  return naechster(mx, my);
+}
+/* ------------------------------------------------- Der gewählte Bahnhof */
+function menschen(v){
+  return v >= 10000 ? Math.round(v/1000).toLocaleString('en-GB') + ',000'
+                    : (Math.round(v/100)*100).toLocaleString('en-GB');
+}
+function waehlen(i){
+  if (i === Z.wahl) return;
+  Z.wahl = i;
+  if (i < 0) folgt = false;
+  wahlStand = '';
+  wahlSetzen();
+  bald();
+}
+/* Das Feld hängt an jedem Bild — Erreichbarkeit und Anteil wandern mit den
+   Reglern, und ein Kasten mit alten Zahlen ist schlechter als keiner. Neu
+   geschrieben wird es aber nur, wenn sich etwas darin geändert hat: drei
+   innerHTML je Bild sind in der Fahrt nicht nötig. */
+let wahlStand = '';
+function wahlSetzen(){
+  const f = $('wahlfeld'), i = Z.wahl;
+  if (i < 0){ f.classList.remove('auf'); wahlStand = ''; return; }
+  /* Ob er gerade im Bild steht — man kann ihn wählen und dann wegschieben,
+     und ein Kasten über etwas Unsichtbares soll das sagen. Jenseits von WELT
+     kommt keiner: WELT ist als Hülle über *alle* Reglerstellungen gebaut,
+     nachgezählt null Bahnhöfe draußen bei jedem Morphwert. */
+  const X = schirmX(wx[i]), Y = schirmY(wy[i]);
+  const drin = X >= 0 && X <= W && Y >= 0 && Y <= H;
+  /* Die Ecke gehört in die Kennung, sonst bliebe der Kasten beim Schieben
+     liegen, wo er war, und geriete unter den Bahnhof. */
+  const oben = drin && Y > H*0.52, rechts = drin && X < W*0.42;
+  const kennung = i + '|' + Math.round(roh[i]) + '|' + Math.round(rmin)
+                + '|' + Z.anteil.toFixed(4) + '|' + folgt + '|' + drin
+                + '|' + oben + rechts;
+  if (kennung === wahlStand) return;
+  wahlStand = kennung;
+  f.classList.add('auf');
+  f.classList.toggle('o', oben);   f.classList.toggle('u', !oben);
+  f.classList.toggle('r', rechts); f.classList.toggle('l', !rechts);
+  $('wahlname').textContent = nm[i];
+  const auf = Math.round(roh[i] - rmin);
+  $('wahlzahlen').innerHTML =
+    '<b>' + Math.round(roh[i]) + ' min</b> until ' + anteilWort(Z.anteil)
+    + ' of Germany is within reach — '
+    + (auf === 0 ? '<b>the best station in the country</b>'
+                 : '<b>+' + auf + ' min</b> over the best')
+    + '<br>' + halte[i].toLocaleString('en-GB') + ' calls a day · catchment '
+    + menschen(einzug[i]) + ' people';
+  $('wahlfolgt').innerHTML = !drin
+    ? '<b>Off screen.</b> Press <b>▶</b> and the view comes back to it.'
+    : folgt
+    ? '<b>Following.</b> The view stays on it while the map morphs.'
+    : 'Press <b>▶</b> by the time slider and the view travels with it.';
+}
 function zeigen(ev){
   const r = cv.getBoundingClientRect();
-  const i = naechster(ev.clientX - r.left, ev.clientY - r.top);
+  const i = getroffen(ev.clientX - r.left, ev.clientY - r.top);
+  cv.style.cursor = i < 0 ? '' : 'pointer';
   const t = $('tip');
   if (i < 0){ t.style.opacity = 0; return; }
   t.innerHTML = '<b>' + nm[i] + '</b><span>'
@@ -2057,10 +2212,11 @@ function zeigen(ev){
 }
 function klick(ev){
   if (gewischt > 8) return;          /* das war ein Schieben, kein Klick */
-  if (!Z.iso || !ISO) return;
   const r = cv.getBoundingClientRect();
-  const i = naechster(ev.clientX - r.left, ev.clientY - r.top);
-  if (i < 0) return;
+  const i = getroffen(ev.clientX - r.left, ev.clientY - r.top);
+  /* Ein Klick ins Leere hebt die Wahl auf — sonst bräuchte man das Kreuz. */
+  waehlen(i);
+  if (i < 0 || !Z.iso || !ISO) return;
   let best = -1, bd = 1e18;
   P.isoknoten.forEach((k,q) => {
     const d = (wx[k]-wx[i])**2 + (wy[k]-wy[i])**2;
@@ -2357,6 +2513,14 @@ room: the total number of names stays about the same, and the station names
 fill the gap left by the place marks that have dropped out of view. A
 <b>red dot</b> means a name stands here — it is the label's anchor, so which
 stations are red changes as you zoom; the other 4,781 are white.</li>
+<li><b>Click a station</b> — the dot <i>or</i> its name — and its numbers stand
+in the corner of the map: minutes until the share is within reach, how far that
+is above the best station in the country, calls a day, catchment. The name is
+the larger target, and on a phone it is the only one you can hit reliably, so
+it counts as a click on the station. Press <b>▶</b> afterwards and the view
+<b>travels with that station</b>: it stays dead centre while the country warps
+around it, which is the only way to see what happens to one place rather than
+to the whole picture. Take hold of the map yourself and the following stops.</li>
 </ul>
 <p>The <b>frame</b> is fixed and does not travel along as you slide —
 otherwise the very deformation the map is about would no longer be visible. But
