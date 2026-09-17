@@ -421,6 +421,9 @@ MESSEN=1 node film.mjs              # Bildzeit je Einstellung, schreibt nichts
 BILDER=0,0.3,0.9 node film.mjs      # einzelne Standbilder zur Ansicht
 KURZ=20 node film.mjs probe.mp4     # die ganze Kette in drei Minuten
 UEBER=6 FEIN=0.20 node film.mjs film.mp4    # der Lauf, rund zwei Stunden
+
+# und waehrend der laeuft: ein spielbares mp4 aus dem, was schon fertig ist
+node zwischenstand.mjs .film-teile-<abdruck> stand.mp4
 ```
 
 Das Drehbuch steht im Skript (`AKTE`), die Begründung der Einstellungen in

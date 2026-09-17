@@ -613,6 +613,15 @@ ohne Deckel für alles andere. Die hohe Fassung ist zugleich die Rückversicheru
 Sollte Reddit die gedeckelte doch abweisen, lässt sich daraus in einer Minute
 eine vorsichtigere rechnen, ohne die zwei Stunden neu zu rendern.
 
+**Der Zwischenstand fällt dabei ab.** `build/zwischenstand.mjs` hängt die
+Abschnitte zusammen, die eine Quittung haben, und gibt ein spielbares mp4 —
+während der Lauf am nächsten Abschnitt weiterrechnet. Das ist keine Vorschau,
+sondern buchstäblich der Anfang des endgültigen Films in endgültiger Qualität.
+Möglich macht es allein die Quittung: der Abschnitt, an dem gerade gerechnet
+wird, liegt als halbe Datei daneben und würde den Zusammenschnitt zerreißen.
+Die Quittung war gegen einen anderen Fehler gebaut (siehe unten) und trägt
+diesen Nutzen kostenlos mit.
+
 Gerechnet wird in Abschnitten von 240 Bildern, jeder für sich ein mp4, mit einer
 Quittung daneben, die erst nach dem Schließen des Kodierers geschrieben wird.
 Der Ordner hängt an einem Abdruck von Seite, Skript und allen Einstellungen: ein
