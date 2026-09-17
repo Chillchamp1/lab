@@ -30,7 +30,9 @@ const [, , ziel = 'film.mp4'] = process.argv;
 const FPS = Number(process.env.FPS || 30);
 const BREITE = 1080, HOEHE = 1920;        // was auf Reddit hochgeht
 const HOCH_B = 1440, HOCH_H = 2560;       // die zweite, ungedeckelte Fassung
-const NACH = 2;                           // Sekunden Standbild am Ende
+/* Kein Standbild am Ende: der Film endet auf seinem Anfangsbild, damit die
+   Schleife, in der solche Videos laufen, ohne Schnitt zusammengeht. */
+const NACH = Number(process.env.NACH || 0);
 
 /* ---------------------------------------------------- Wie gross gerechnet wird
    Drei Groessen, und es ist wichtig, sie auseinanderzuhalten:
@@ -81,8 +83,6 @@ const CSSB = SATZ, CSSH = Math.round(SATZ * HOEHE / BREITE);
    Anteilsregler, der erklaert, woher die Hoehe kommt; zuletzt die Kamera an
    einem einzelnen Bahnhof, weil man da schon weiss, was man sieht. */
 const weich = u => u * u * (3 - 2 * u);                  // sanft an und ab
-const misch = (a, b, u) => a + (b - a) * weich(u);
-const HELD = 'Berlin Hbf';   /* siehe unten, Akt 8 */
 /* Der Wasserstand wird intern als Aufschlag auf den besten Bahnhof gefuehrt,
    und gewaehlt ist er so, dass Berlin **gerade so** ein See ist.
    Nicht nach Berlins eigener Hoehe: die liegt bei 293 Minuten, also 61 ueber
@@ -93,13 +93,6 @@ const HELD = 'Berlin Hbf';   /* siehe unten, Akt 8 */
    zieht es hoch. Einen Zaehler darueber, und der Punkt geht unter, ohne dass
    der See schon bis Potsdam reicht. Nachgemessen, nicht geraten. */
 const WASSER = 97;
-/* Zoom und Mitte werden **nicht gesetzt, sondern gerechnet** — je Bild aus
-   dem, was gerade zu sehen ist (siehe `stellen`). Von Hand gesetzt war beides
-   falsch: der Rahmen der Seite kommt ganz von der Zeitkarte und liegt 58
-   Minuten westlich der Mitte der Landkarte, also stand Sachsen im ersten Bild
-   halb draussen. Fuer die Kamerafahrt am Ende bleibt ein Zoom stehen, weil
-   dort der Bahnhof den Rahmen gibt und nicht das Land. */
-const ZNAHE = 1.5;
 const AKTE = [
   { s: 3.5, t: '<b>Height is time.</b> How long until half of Germany is '
               + 'within reach by train — from every one of 4,781 stations.',
@@ -107,41 +100,17 @@ const AKTE = [
   { s: 13, t: '<b>Now distance becomes travel time.</b> Every station moves to '
              + 'where the timetable puts it, and the coastline comes along.',
     f: u => ({ morph: weich(u) }) },
-  { s: 4.5, t: '<b>The time map.</b> The high-speed cross pulls together; '
-              + 'branch lines fly out to sea and become islands.',
+  { s: 5, t: '<b>The time map.</b> The high-speed cross pulls together; branch '
+            + 'lines fly out to sea and become islands.',
     f: () => ({ morph: 1 }) },
-  { s: 4, t: '<b>And back.</b> Same heights, same stations — only the places '
+  { s: 9, t: '<b>And back.</b> Same heights, same stations — only the places '
             + 'return to their coordinates.',
     f: u => ({ morph: 1 - weich(u) }) },
-  { s: 7, t: '<b>Who has to be in reach?</b> Turn the share down to a few per '
-            + 'cent and the Ruhr wins: it is big enough for itself.',
-    f: u => ({ morph: 0, anteil: Math.exp(misch(Math.log(0.5), Math.log(0.03), u)) }) },
-  { s: 8.5, t: '<b>Nine tenths of the country,</b> and the map turns back into '
-              + 'a geography map: now it measures where a place is.',
-    f: u => ({ morph: 0, anteil: Math.exp(misch(Math.log(0.03), Math.log(0.9), u)) }) },
-  { s: 4.5, t: '<b>Half of Germany</b> is the setting in between — real '
-              + 'distance, and a central position starts to pay.',
-    f: u => ({ morph: 0, anteil: Math.exp(misch(Math.log(0.9), Math.log(0.5), u)) }) },
-  /* Und zuletzt die Kamera an einem einzelnen Bahnhof. Der Held darf nicht
-     hinausfliegen: Göhren auf Rügen wandert 182 Minuten und landet weit im
-     Meer — die Kamera stand dann mit ihm im Schwarzen und das Land in einer
-     Ecke. Berlin Hbf wandert 152 Minuten und landet **im** Land: es steht
-     still, und Deutschland zieht darum herum vorbei. Das ist der Satz, den der
-     Akt zeigen soll. */
-  { s: 4, t: '<b>Berlin Hbf.</b> A hundred and fifty-two minutes lie between '
-            + 'where it is and where the timetable puts it.',
-    f: u => ({ morph: 0, wahl: HELD, nah: ZNAHE, nahU: weich(u) }) },
-  { s: 12, t: '<b>Hold the camera on one station</b> and it stands still while '
-             + 'the whole country warps past it.',
-    f: u => ({ morph: weich(u), wahl: HELD, folgt: true, zoom: ZNAHE }) },
-  { s: 4, t: '<b>chillchamp1.github.io/lab/bahn-zeitkarte</b> — every slider, '
-            + 'every station, and the method written out.',
-    f: () => ({ morph: 1, wahl: HELD, folgt: true, zoom: ZNAHE }) },
+  { s: 3.5, t: '<b>chillchamp1.github.io/lab/bahn-zeitkarte</b> — three '
+              + 'sliders, 4,781 stations, and the method written out.',
+    f: () => ({ morph: 0 }) },
 ];
-/* KURZ=20 staucht alle Akte auf ein Zwanzigstel. Damit laeuft die ganze Kette
-   — zwei Kodierer, Abschnitte, Quittungen, Aneinanderhaengen — in drei Minuten
-   durch, und man sieht vorher, ob sie durchlaeuft. Zwei Stunden zu rechnen und
-   dann am Zusammenfuegen zu scheitern ist der teuerste Weg zu dieser Auskunft. */
+
 const KURZ = Number(process.env.KURZ || 1);
 for (const k of AKTE) k.s /= KURZ;
 const LAUF = AKTE.reduce((a, k) => a + k.s, 0);
@@ -160,8 +129,7 @@ function bildZustand(i) {
   const nachText = a < AKTE.length - 1 ? AKTE[a + 1].t : null;
   const raus = nachText === akt.t ? 1
              : Math.min(1, (v + akt.s - t) / BLENDE);
-  const z = { morph: 0, anteil: 0.5, zoom: null, wahl: null, folgt: false,
-              nah: null, nahU: 0, wasser: WASSER, ...akt.f(u) };
+  const z = { morph: 0, anteil: 0.5, wasser: WASSER, ...akt.f(u) };
   z.text = akt.t;
   /* „distance **is** travel time" stimmt erst, wenn die Karte fertig verzogen
      ist. Am Anfang ist es eine Landkarte, dazwischen wird sie eine — und ein
@@ -271,6 +239,7 @@ const FILMCSS = `
      unter der Karte sagt dasselbe und deckt nichts zu. */
   #wahlfeld{display:none !important}`;
 await page.evaluate(([css, kopf, fuss, ueber, fein, hoehe]) => {
+  window.FILMCX = 0; window.FILMCY = 0; window.FILMZOOM = 1;
   const s = document.createElement('style');
   s.textContent = css.replace('HOEHE', String(hoehe));
   document.head.appendChild(s);
@@ -299,51 +268,90 @@ if (lage.hoehe > CSSH + 2) throw new Error(
   `Die Seite ist ${lage.hoehe} statt ${CSSH} Punkte hoch — unten wird `
   + `abgeschnitten. Kopf, Karte, Legende und Fuss passen nicht.`);
 
+/* ------------------------------------------------------------- Der Rahmen
+   **Einer, fuer den ganzen Film.** Er muss den verzogenen Umriss bei *jeder*
+   Reglerstellung fassen — die Grenzen des Zeit-Deutschlands duerfen nicht aus
+   dem Bild, die weissen Bahnhofspunkte schon: von denen fliegen in der
+   Zeitkarte 539 jenseits der Kueste, und wer die alle fassen will, druckt
+   Deutschland auf Briefmarkengroesse.
+
+   Gerechnet wird er aus **zwei** Bildern, nicht aus einundzwanzig. `verziehe`
+   mittelt die Verschiebungen der Bahnhoefe mit Gewichten, die nur an der
+   Geografie haengen; die Verschiebung selbst ist `(fxx - gxx) * morph`. Jeder
+   Umrisspunkt laeuft damit **linear** im Morph, und eine Strecke hat ihre
+   Extreme an den Enden. Der Umschlag der Enden ist also exakt der Umschlag
+   ueber alles dazwischen — nachgemessen an neun Zwischenstellungen, groesste
+   Ueberschreitung 0,000 Minuten.
+
+   Bei diesen Daten ist die Vereinigung schlicht der Umriss der Zeitkarte:
+   852 x 1 062 Minuten um (-17 / 60). Die Landkarte liegt ganz darin und steht
+   deshalb etwas kleiner im Bild — das ist der Preis dafuer, dass sie sich
+   nicht bewegt, und er ist der guenstigere. */
+async function rahmenSetzen() {
+  const r = await page.evaluate(() => {
+    const kasten = m => {
+      Z.morph = m; lage(); umrissVerziehen();
+      let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+      for (const ring of umrissW) for (let k = 0; k < ring.length; k += 2) {
+        if (ring[k] < x0) x0 = ring[k];       if (ring[k] > x1) x1 = ring[k];
+        if (ring[k+1] < y0) y0 = ring[k+1];   if (ring[k+1] > y1) y1 = ring[k+1];
+      }
+      return [x0, x1, y0, y1];
+    };
+    const a = kasten(0), z = kasten(1);
+    const u = [Math.min(a[0], z[0]), Math.max(a[1], z[1]),
+               Math.min(a[2], z[2]), Math.max(a[3], z[3])];
+    const saum = 1.05;
+    window.FILMCX = (u[0] + u[1]) / 2; window.FILMCY = (u[2] + u[3]) / 2;
+    window.FILMZOOM = Math.min(W / ((u[1] - u[0]) * saum),
+                               H / ((u[3] - u[2]) * saum)) / skalaBasis;
+    /* Und nachsehen, ob es stimmt — mit den Werten, die **nach** dem Zeichnen
+       gelten. `ansichtKlemmen` haelt das Bild im Umfang und kann die Mitte
+       noch verschieben; ein Rahmen, der das nicht beruecksichtigt, schneidet
+       unten drei Pixel ab, und niemand merkt es vor dem fertigen Film. */
+    const pruef = m => {
+      Z.morph = m; V.cx = window.FILMCX; V.cy = window.FILMCY;
+      V.zoom = window.FILMZOOM; zeichne();
+      let luft = 1e9;
+      for (const ring of umrissW) for (let k = 0; k < ring.length; k += 2) {
+        const X = schirmX(ring[k]), Y = schirmY(ring[k+1]);
+        luft = Math.min(luft, X, W - X, Y, H - Y);
+      }
+      return +luft.toFixed(1);
+    };
+    return { union: u.map(v => +v.toFixed(1)),
+             cx: window.FILMCX, cy: window.FILMCY,
+             zoom: +window.FILMZOOM.toFixed(4), luft0: pruef(0), luft1: pruef(1) };
+  });
+  /* Gerundet zurueckschreiben, damit Skript und Seite genau dieselbe Zahl
+     benutzen und der Rahmen nicht in der vierten Stelle atmet. */
+  await page.evaluate(([cx, cy, z]) => {
+    window.FILMCX = cx; window.FILMCY = cy; window.FILMZOOM = z;
+  }, [r.cx, r.cy, r.zoom]);
+  console.error(`Rahmen fest: ${Math.round(r.union[1]-r.union[0])} x `
+    + `${Math.round(r.union[3]-r.union[2])} min um `
+    + `(${r.cx.toFixed(0)} / ${r.cy.toFixed(0)}), Zoom ${r.zoom} — `
+    + `Luft zum Bildrand ${r.luft0} Punkte in der Landkarte, ${r.luft1} in der `
+    + `Zeitkarte`);
+  if (Math.min(r.luft0, r.luft1) < 0) throw new Error(
+    `Der Umriss haengt ${(-Math.min(r.luft0, r.luft1)).toFixed(1)} Punkte aus `
+    + `dem Bild. Saum erhoehen.`);
+}
+await rahmenSetzen();
+
 /* ---------------------------------------------------------- Ein Bild stellen */
 async function stellen(z) {
   await page.evaluate(w => {
     if (Math.abs(Z.anteil - w.anteil) > 1e-9) { Z.anteil = w.anteil; stufeSetzen(); }
     Z.wasser = w.wasser;
     Z.morph = w.morph;
-    const i = w.wahl === null ? -1 : nm.indexOf(w.wahl);
-    if (i !== Z.wahl) waehlen(i);
-    folgt = w.folgt && i >= 0;
-    /* **Deutschland muss ganz im Bild sein**, bei jeder Reglerstellung — und
-       welcher Zoom das leistet, weiss nur das Bild selbst. Gerechnet wird der
-       Rahmen aus dem verzogenen Umriss und den Bahnhofsorten ohne die
-       aeussersten halben Prozent: der Umriss allein liesse die Schollen
-       abschneiden, alle Bahnhoefe zusammen zwingen wegen einer Handvoll
-       Aussenseiter (Sylt, Mittenwald) die ganze Karte auf Briefmarkengroesse.
-       `lage` und `umrissVerziehen` haengen nur am Morph und nicht an der
-       Ansicht, laufen hier also vorweg; `zeichne` rechnet sie danach noch
-       einmal, mit demselben Ergebnis. */
-    lage(); umrissVerziehen();
-    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
-    for (const r of umrissW) for (let k = 0; k < r.length; k += 2) {
-      if (r[k] < x0) x0 = r[k];       if (r[k] > x1) x1 = r[k];
-      if (r[k+1] < y0) y0 = r[k+1];   if (r[k+1] > y1) y1 = r[k+1];
-    }
-    const xs = Array.from(wx.slice(0, n)).sort((a, c) => a - c);
-    const ys = Array.from(wy.slice(0, n)).sort((a, c) => a - c);
-    const q = (a, t2) => a[Math.floor(t2 * (a.length - 1))];
-    x0 = Math.min(x0, q(xs, 0.005)); x1 = Math.max(x1, q(xs, 0.995));
-    y0 = Math.min(y0, q(ys, 0.005)); y1 = Math.max(y1, q(ys, 0.995));
-    const saum = 1.04;
-    const wcx = (x0 + x1) / 2, wcy = (y0 + y1) / 2;
-    const wz = Math.min(W / ((x1 - x0) * saum), H / ((y1 - y0) * saum)) / skalaBasis;
-    if (w.nah !== null && i >= 0) {
-      /* Das Heranfahren an den Bahnhof: Mitte und Zoom wandern vom gerechneten
-         Rahmen auf ihn zu. Die Mitte wird hier selbst gesetzt und nicht dem
-         Folgen ueberlassen, sonst sprang sie im ersten Bild des Akts. */
-      folgt = false;
-      V.zoom = wz + (w.nah - wz) * w.nahU;
-      V.cx = wcx + (wx[i] - wcx) * w.nahU;
-      V.cy = wcy + (wy[i] - wcy) * w.nahU;
-    } else if (w.zoom !== null) {
-      V.zoom = w.zoom;                      /* die Mitte macht `folgt` */
-    } else {
-      V.cx = wcx; V.cy = wcy; V.zoom = wz;
-    }
+    /* Der Rahmen steht **fest** und wird hier nur wieder eingesetzt. Eine
+       Kamera, die je Bild neu rahmt, faehrt die ganze Zeit mit — der Umriss
+       wird beim Verziehen groesser, also ging der Zoom auf und die Mitte
+       wanderte, und im Bild sah es aus, als wackle das Land. Gewollt ist das
+       Gegenteil: die Landschaft verzieht sich, ihre Lage im Bild nicht. Wie
+       der Rahmen zustande kommt, steht bei `rahmenSetzen`. */
+    V.cx = window.FILMCX; V.cy = window.FILMCY; V.zoom = window.FILMZOOM;
     document.getElementById('filmunter').innerHTML = w.unter;
     const t = document.getElementById('filmtext');
     t.innerHTML = w.text;
