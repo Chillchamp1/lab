@@ -136,7 +136,7 @@ Rand sieht nicht nach „aus der Karte gefallen" aus, sondern nach einem Fehler.
 
 Zwei Zahlen in der Seite haben sich dadurch verschoben, weil das Höhenfeld
 jetzt eine kleinere Fläche und damit ein anderes 99,5-Perzentil hat: die
-Schneegrenze liegt bei einem Viertel und Wasser auf 250 Minuten nun bei 467
+Schneegrenze lag damals bei einem Viertel und Wasser auf 250 Minuten bei 467
 Minuten in der Zeitkarte (vorher 571) und bei 435 in der Landkarte. Und die
 beschrifteten Schollen sind andere, weil die schlimmsten von ihnen jetzt
 draußen liegen — darum kommen die Fernmarken aus einem größeren Vorrat, und
@@ -324,13 +324,13 @@ Also drei Gitter statt einem:
 | Bildgitter | Sichtbares | 1 px | das Bild |
 
 Das Grundgitter hängt nur an Lage und Anteil, und ein Zähler sagt, wann es neu
-muss. Nachgemessen: Meeresspiegel 322 und Schneegrenze 557 Minuten stehen bei
-Zoom 1 und bei Zoom 5,2 auf derselben Zahl.
+muss. Nachgemessen: Meeresspiegel 322 und Schneegrenze 530 Minuten stehen über
+den ganzen Zoombereich auf derselben Zahl.
 
 Zwei Dinge sind dabei nebenbei besser geworden. Die Nachsicht, mit der ein
 Bahnhof noch als „an Land" gilt, stand in **Zellen** und hing damit an der
 Auflösung — die Zahl der Inseln war 537 bei drei Minuten je Zelle und 593 bei
-1,24. Jetzt steht sie in Minuten (zwei) und die Karte hat immer dieselben
+1,24; jetzt sind es 539, und zwar bei jeder Auflösung. Jetzt steht sie in Minuten (zwei) und die Karte hat immer dieselben
 Inseln. Und die Isochronen liegen auf dem Grundgitter: bei σ = 22 Minuten sind
 das über sieben Zellen, die Linien kommen als Pfad in Weltkoordinaten heraus
 und sind bei jedem Zoom scharf — auf dem Bildgitter waren sie zwanzigmal so
@@ -341,6 +341,52 @@ Wasserstandsregler stand auf einer anderen Zahl als die Legende. Der
 Wasserstand ist intern ein Aufschlag auf den besten Bahnhof, angezeigt wird er
 absolut — und der beste Bahnhof wandert mit dem Anteilsregler. Die Anzeige
 gehört darum zu jedem Bild und nicht nur zum eigenen Regler.
+
+## Größer anfangen, weiter herauszoomen
+
+Der Wunsch war: Anfangszoom größer, aber auch herauszoomen können, um die
+entlegenen Stationen zu erkunden. Beides zusammen geht nur, weil es zwei
+verschiedene Rechtecke gibt.
+
+**Anfangszoom 1,15**, und das kostet oben und unten je rund fünfzig Minuten —
+die Spitze von Sylt, der Zipfel um Konstanz. Unvermeidlich: Deutschland ist
+990 Minuten hoch, der Schirm ist breit, die Ansicht also höhenbegrenzt. Das
+Land füllte schon bei Zoom 1 die Bildhöhe, während die halbe Breite leer blieb;
+größer geht nur durch Beschneiden. Die Ansicht startet dabei in der Mitte des
+**Rahmens** und nicht des Umfangs — die liegt gut achtzig Minuten weiter
+südlich, weil die Zeitkarte nach Süden weiter ausgreift, und der Anschnitt
+wäre einseitig gewesen.
+
+**Herausgezoomt wird bis 0,69**, und dort passt der ganze Umfang ins Bild:
+1.322 × 1.350 Minuten statt der 985 × 1.006 des Rahmens. Dafür gibt es jetzt
+zwei Rechtecke statt einem — RAHMEN sagt nur, wohin die Ansicht beim
+Aufschlagen zeigt, WELT ist der Umfang, in dem es überhaupt Karte gibt.
+Gerechnet, maskiert und gezeichnet wird bis WELT; die Grenze des Zooms folgt
+daraus und ist nicht gesetzt.
+
+Ein Fehler, der dabei entstand und gleich wieder weg musste: mit dem
+Grundgitter über WELT zählte auch das 99,5-Perzentil der Farbleiter die
+hinausgefahrenen Enden mit, und die sind so extrem, dass sie das obere Ende
+allein bestimmten — die Schneegrenze stieg von 530 auf 629 Minuten, und auf
+dem Land lag nirgends mehr Schnee. Gezählt wird darum nur **innerhalb des
+Rahmens**, obwohl das Gitter weiter reicht: der Rahmen ist die Karte.
+
+**Beim Hineinzoomen kommen neue Namen dazu.** Mit jedem Zoomschritt wird ein
+Budget für Bahnhofsnamen frei, gefüllt aus einer Rangliste nach Halten am Tag;
+gemessen über der Mitte des Landes 11 Bahnhofsnamen bei 1,15, 26 bei Zoom 2,
+85 bei 4, 184 bei 8. Angeboten wird die **ganze** Rangliste und nicht ihr
+Kopf — das war der erste Versuch, und er brachte fast nichts: wer in den Harz
+zoomt, bekam die Namen von Hannover angeboten, das national weiter oben steht,
+aber außerhalb des Bildes liegt.
+
+**Die Bahnhofspunkte sind von Anfang an eingeblendet** und werden mit der
+Wurzel des Zooms etwas größer, gedeckelt — linear lägen sie schon bei Zoom 4
+wie Murmeln.
+
+Nebenbei: die Zahl der Inseln liegt jetzt bei 539 statt 593, weil die
+Nachsicht in Minuten statt in Zellen steht und das Grundgitter drei Minuten
+weit ist. Das ist derselbe Wert wie in der Fassung mit drei Minuten je Zelle
+(537) — er hängt eben nicht mehr an der Auflösung.
 
 ## Was offen ist
 

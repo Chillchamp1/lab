@@ -609,7 +609,7 @@ Zacken in die Küste.
 
 Die zweite Schicht gilt **nur für die Ausgewanderten**. Der verzogene Umriss
 ist ein geglättetes Mittel, und die Federkarte schleudert einzelne Bahnhöfe
-weit darüber hinaus: **593 von 4.781** liegen in der reinen Zeitkarte jenseits
+weit darüber hinaus: **539 von 4.781** liegen in der reinen Zeitkarte jenseits
 der Küste, die Rügener Bäderbahn zwölf Stunden von allem entfernt. Ein Bahnhof
 gehört aber immer auf Land, sonst steht er im Schwarzen neben der Karte — und
 genau das war zu sehen. Also bekommt jeder Bahnhof, der außerhalb des
@@ -763,8 +763,15 @@ Reliefkarte bekommt.
 Die **Schneegrenze** ist nicht gesetzt, sondern abgeleitet: die Leiter läuft
 vom Wasserstand bis zum höchsten Wert **auf dem Land**, und die letzten sechs
 Bänder sind Schnee. In Minuten steht sie in der **Legende unter der Karte** —
-bei der Hälfte und Wasser auf 322 Minuten liegt sie in der Zeitkarte bei 557
-Minuten.
+bei der Hälfte und Wasser auf 322 Minuten liegt sie in der Zeitkarte bei 530
+Minuten, in der Landkarte bei 520.
+
+Gezählt wird für das Perzentil nur innerhalb des **Rahmens**, obwohl das
+Grundgitter über den ganzen Umfang reicht (4.12). Der Rahmen ist die Karte;
+was jenseits davon liegt, sind die Enden, die der Zuschnitt hinausgeworfen hat,
+und die sind so extrem, dass sie das obere Ende der Leiter allein bestimmen
+würden — nachgemessen stieg die Schneegrenze von 530 auf 629 Minuten, und auf
+dem Land lag dann nirgends mehr Schnee.
 
 Die Legende lag eine Fassung lang in der Tafel und trug nur ihre beiden
 Endpunkte. Farben liest man aber am Bild und nicht in einer Seitenspalte, und
@@ -804,6 +811,25 @@ geteilt, also in Zellen gemessen statt in Minuten. Damit ist die Linie im
 Steilen so dünn wie im Flachen.
 
 ### 4.8 Die Beschriftung
+
+**Beim Hineinzoomen kommen neue Namen dazu**, und zwar die der kleineren
+Bahnhöfe. Bei der Anfangsstellung stehen die Ortsmarken; mit jedem
+Zoomschritt wird ein Budget für Bahnhofsnamen frei (dreißig je Zoomstufe,
+höchstens 260), das aus einer **Rangliste nach Halten am Tag** gefüllt wird —
+der größte Bahnhof im Bild kommt also zuerst. Angeboten wird dabei die ganze
+Rangliste und nicht ihr Kopf: wer in den Harz hineinzoomt, soll dort Namen
+sehen und nicht die von Hannover, das national weiter oben steht, aber
+außerhalb des Bildes liegt. Teuer ist das nicht, weil eine Zeile, deren Budget
+aufgebraucht ist, nur noch einen Vergleich kostet. Gebremst wird doppelt: von
+diesem Budget und vom Kollisionstest, der ohnehin nur unterbringt, was Platz
+hat — beim Herauszoomen verschwinden die Namen damit von selbst wieder.
+Gemessen auf 1440 × 900 über der Mitte des Landes: 11 Bahnhofsnamen bei 1,15,
+26 bei Zoom 2, 85 bei 4, 184 bei 8.
+
+**Die Bahnhofspunkte sind von Anfang an eingeblendet.** Sie sind das, woraus
+die Karte gemacht ist, und ohne sie sieht ein Relief aus wie eine Behauptung.
+Beim Hineinzoomen werden sie etwas größer, mit der Wurzel des Zooms und
+gedeckelt — linear lägen sie schon bei Zoom 4 wie Murmeln.
 
 Die Schrift ist **8 Pixel** groß, auf schmalen Schirmen 9. Sie war 11,5 und
 damit für eine Karte zu laut: sie hat die Karte gelesen statt sie zu
@@ -945,7 +971,25 @@ und eines, das läuft, soll trotzdem scharf sein.
 
 ### 4.12 Zoomen, und die drei Gitter
 
-Am Rad, mit zwei Fingern, Ziehen zum Verschieben, Doppelklick zurück. Zoom und
+Am Rad, mit zwei Fingern, Ziehen zum Verschieben, Doppelklick zurück in die
+Anfangsstellung.
+
+**Die Anfangsstellung ist 1,15** und nicht 1, und das kostet etwas, und zwar
+unvermeidlich. Deutschland ist hoch — 990 Minuten — und der Schirm ist breit,
+die Ansicht also **höhenbegrenzt**: das Land füllt schon bei Zoom 1 die
+Bildhöhe, während die halbe Breite leer bleibt. Größer geht darum nur, indem
+oben und unten etwas abgeschnitten wird; bei 1,15 sind das rund fünfzig
+Minuten je Seite, also die Spitze von Sylt und der Zipfel um Konstanz. Der
+Handel ist zu vertreten, seit man herauszoomen kann — und die Ansicht startet
+in der Mitte des **Rahmens** und nicht des Umfangs, sonst läge der Anschnitt
+einseitig: die Mitte des Umfangs liegt gut achtzig Minuten weiter südlich,
+weil die Zeitkarte nach Süden weiter ausgreift.
+
+**Nach unten reicht der Zoom bis 0,69.** Dort passt der ganze Umfang ins Bild,
+1.322 × 1.350 Minuten statt der 985 × 1.006 des Rahmens: die Enden, die der
+Zuschnitt (4.6) hinausgeworfen hat, liegen dann samt Scholle und Namen im
+Bild. Das ist der Grund, warum die Grenze gerechnet und nicht gesetzt ist —
+sie folgt aus WELT und dem Fenster, nicht aus einer Zahl. Zoom und
 Verschiebung sind eine Sache des Betrachtens und nicht der Karte: sie ändern
 nur, welcher Weltausschnitt auf den Schirm kommt. Die Mitte wird so
 festgehalten, dass nie ein leerer Rand entsteht — passt der Bildausschnitt
@@ -997,6 +1041,10 @@ hinterherhinkt, macht das Zielen unmöglich.
 
 Ein Klick, der eigentlich ein Schieben war, wählt keinen Isochronenknoten: der
 zurückgelegte Weg wird mitgezählt, und über acht Pixel gilt es als Wischen.
+
+Mit der Maus wird geschoben, sobald es etwas zu schieben gibt; mit dem Finger
+erst oberhalb der Anfangsstellung. Sonst nähme die Karte der Seite das
+Wischen ab, und man käme auf dem Telefon nicht mehr an den Text darunter.
 
 ## 5. Was fehlt
 
