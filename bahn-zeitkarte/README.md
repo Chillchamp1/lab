@@ -236,7 +236,21 @@ damit zweieinhalbmal feiner je Achse und sechsmal so zellenreich wie vorher.
 Bezahlt ist das mit einem anderen Rechenweg: das Feld entsteht nicht mehr
 Glocke für Glocke, sondern aus Impulsen plus **drei Kastenfiltern**
 hintereinander — eine Glocke auf drei Prozent genau, aber O(Zellen) statt
-O(n · r²). Bei 1,5 Minuten je Zelle sind das 118 ms statt 647.
+O(n · r²). Und gerechnet wird **gröber, als gezeichnet wird**: das Feld ist
+mit σ = 11 Minuten geglättet und bei 1,2 Minuten je Zelle neunfach
+überabgetastet, also läuft die Kette auf einem Gitter von 3,6 Minuten und
+wird bilinear aufs Bildgitter gesetzt. Scharf sein muss nicht das Feld,
+sondern was daraus gezeichnet wird — Farbbänder, Höhenlinien, Licht. Von 647
+auf 33 bis 53 ms.
+
+**In der Fahrt bleibt die Karte scharf.** Die Rasterstufe wird dort nicht
+gesetzt, sondern gemessen: die Fahrt läuft auf der Ruhestufe, und nur wenn ein
+Bild länger als 110 ms braucht, geht sie schrittweise gröber — höchstens bis
+1,35 Pixel je Zelle. Vorher standen dort fest 3,8, und das sah man.
+Nebenbei fällt in der Fahrt weg, was nicht je Bild neu sein muss: die
+Rastermaske wird jedes zweite Bild gerechnet, das Perzentil der Farbleiter
+zählt jede vierte Zelle, und schattiert wird nur, was der Beschnitt auch
+zeigt.
 
 Und die Küste wird **beschnitten statt ausmaskiert**: dieselben Dreiecke und
 Inselscheiben, aber als Pfad in Bildschirmkoordinaten. Ein Pfad hat keine

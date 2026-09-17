@@ -530,15 +530,40 @@ derselbe gewichtete Mittelwert wie vorher, nur kostet er O(Zellen) statt
 O(n · r²). Verwischt wird mit **drei Kastenfiltern hintereinander**: das ist
 eine Glocke auf drei Prozent genau (Kovesi), und ein Kastenfilter mit
 laufender Summe kostet je Zelle zwei Additionen, ganz gleich wie breit er ist.
-Aus drei Durchgängen mit Radius r wird σ² = r² + r, also ist r die positive
-Wurzel davon. Am Rand wird mit Null gerechnet, was man hier darf, weil Zähler
-und Nenner denselben Filter sehen und sich der Rand im Quotienten
-heraushebt.
+Am Rand wird mit Null gerechnet, was man hier darf, weil Zähler und Nenner
+denselben Filter sehen und sich der Rand im Quotienten heraushebt. Gefiltert
+wird nur **waagerecht**: für die senkrechten Durchgänge wird das Feld
+blockweise transponiert. Eine Spaltenschleife springt bei
+siebenhunderttausend Zellen einmal je Spalte durch knapp drei Megabyte, und
+das hält kein Cache aus.
 
-| | Glocke für Glocke | drei Kastenfilter |
-| --- | --- | --- |
-| ZELLE = 3,0 | 149 ms | 21 ms |
-| ZELLE = 1,5 | 647 ms | 118 ms |
+**Gerechnet wird gröber, als gezeichnet wird**, und das ist der zweite
+Eingriff. Beides sind verschiedene Dinge: das Feld ist mit σ = 11 Minuten
+geglättet und bei 1,2 Minuten je Zelle also neunfach überabgetastet — feiner
+gerechnet wird es nicht genauer. Scharf sein muss nicht das Feld, sondern was
+daraus gezeichnet wird: Farbbänder, Höhenlinien, Licht. Die sind
+nichtlineare Funktionen der Höhe und brauchen jede Bildzelle. Also läuft die
+ganze Kette — Impulse, Verwischen, Teilen, Löcher — auf einem Gitter von
+etwa 3,6 Minuten je Zelle, wird bilinear aufs Bildgitter gesetzt und einmal
+nachgeglättet. Das Rechengitter hat damit ein Neuntel der Zellen.
+
+Drei Kastenfilter mit **ganzzahligem** Radius treffen aber nicht jedes σ. Auf
+dem feinen Gitter fällt das nicht auf; auf dem gröberen liegen zwischen r = 2
+und r = 3 volle vier Minuten, und die Karte wäre entweder zu scharf oder um
+ein Sechstel zu weich gewaschen. Darum **gemischte Radien**: ein Teil der
+Durchgänge einen Schritt breiter, und gesucht wird das Tripel, dessen
+Varianzsumme der Zielvarianz am nächsten kommt. Die Zielvarianz ist dabei
+nicht σ² selbst, denn das bilineare Hochsetzen (Varianz (s²−1)/12) und die
+Nachglättung verwischen mit; ihre Varianz wird **abgezogen**, statt sie oben
+draufzulegen. Nachgemessen bleibt σ über alle Rasterstufen bei 10,6 bis 10,8
+Minuten — gleich genug, dass ein Wechsel der Stufe das Gelände nicht
+verändert.
+
+| | Glocke für Glocke | Kastenfilter, feines Gitter | Kastenfilter, gröberes Gitter |
+| --- | --- | --- | --- |
+| ZELLE = 3,0 | 149 ms | 21 ms | — |
+| ZELLE = 1,5 | 647 ms | 118 ms | — |
+| ZELLE = 1,24 | — | 93–135 ms | **33–53 ms** |
 
 **Löcher**, wo kein Filter mehr hinreicht, werden aus den Nachbarn
 nachgezogen. Sie liegen immer *außerhalb* des Landes — ein Bahnhof ist selbst
@@ -547,11 +572,18 @@ ein Impuls und hat damit Abdeckung —, und das Land wird ohnehin beschnitten
 interpoliert wird. Vierzig Durchgänge über das **ganze** Raster, jeder mit
 einer Kopie des Feldes, waren darum der zweitteuerste Posten der Rechnung —
 und zwar gerade bei der Landkarte, wo die halbe Bildfläche leer ist und nie
-ein Loch zuging. Jetzt stehen die Löcher in einer Liste, die mit jeder Runde
-kürzer wird; nach acht Runden bekommt der Rest das Mittel des Feldes, weil er
-nie gezeigt wird, NaN sich aber durch die Glättung frisst. Eine sehr frühe
-Fassung stopfte alle Löcher mit einem festen Wert, und aus dem wurde eine
-weiße Kuppe im Nirgendwo. Zuletzt zwei Durchgänge Binomialglättung.
+ein Loch zuging. Eine *Liste* der Löcher war dann der nächste Fehler: bei der
+Landkarte sind das dreihunderttausend Einträge, und ein JavaScript-Array
+verpackt jede Zahl einzeln — das allein kostete mehr als das ganze
+Verwischen. Jetzt ist die Liste ein `Int32Array`, wird einmal angelegt und in
+jeder Runde an derselben Stelle zusammengeschoben; nach acht Runden bekommt
+der Rest das Mittel des Feldes, weil er nie gezeigt wird, NaN sich aber durch
+die Glättung frisst. Eine sehr frühe Fassung stopfte alle Löcher mit einem
+festen Wert, und aus dem wurde eine weiße Kuppe im Nirgendwo. Zuletzt
+Binomialglättung — bei gröberem Rechengitter zweimal, weil eine bilineare
+Vergrößerung knickige Ableitungen hat und die Ableitung hier das Licht ist:
+ohne diesen Durchgang bekäme der Hang Facetten auf den Zellgrenzen des
+Rechengitters.
 
 σ war eine Fassung lang 15 Minuten. Das neue Maß springt zwischen Nachbarn
 stärker als das alte, und bei 15 wusch das Feld die Knoten weg: Frankfurt
@@ -848,25 +880,47 @@ So bleibt die Schärfe auf jedem Gerät dieselbe und die Rechenlast auch. Nach
 oben deckelt eine Höchstzahl von 700.000 Zellen die Rechnung, damit ein sehr
 großes Fenster sie nicht sprengt.
 
-Vier Stufen, in Pixeln je Zelle:
+| | Pixel je Zelle | bei 1440 × 900 |
+| --- | --- | --- |
+| in Ruhe | 1,0 | 1,24 min, 696.000 Zellen |
+| im Halt an den Enden | 1,5 | 1,86 min |
+| beim Ziehen | 3,0 | 3,71 min, 78.000 Zellen |
+| in der Fahrt | gemessen, 1,0 … 1,35 | 1,24 … 1,67 min |
 
-| | Pixel je Zelle | bei 1440 × 900 | Bild |
-| --- | --- | --- | --- |
-| in Ruhe | 1,0 | 1,24 min, 696.000 Zellen | 241–367 ms |
-| im Halt an den Enden | 1,5 | 1,85 min | |
-| beim Ziehen | 3,0 | 3,71 min, 78.000 Zellen | 83–100 ms |
-| in der Fahrt | 3,8 | 4,70 min, 48.000 Zellen | 63–71 ms |
+Vorher war es fest 3,0 / 4,5 / 5,5 Minuten: das ruhende Bild ist jetzt also
+zweieinhalbmal feiner je Achse und sechsmal so zellenreich — und dank 4.3
+trotzdem schneller zu rechnen als früher das grobe (134 ms statt 235 auf
+1440 × 900, gemessen ohne Beschleunigung in einem Container; auf einem
+gewöhnlichen Rechner deutlich schneller).
 
-(Gemessen ohne Beschleunigung in einem Container; auf einem gewöhnlichen
-Rechner deutlich schneller.) Vorher war es fest 3,0 / 4,5 / 5,5 Minuten: das
-ruhende Bild ist jetzt also zweieinhalbmal feiner je Achse und sechsmal so
-zellenreich — und dank 4.3 trotzdem schneller zu rechnen als früher das grobe.
+**In der Fahrt wird die Stufe nicht gesetzt, sondern gemessen.** Weich werden
+soll die Karte dort nämlich nicht, und eine vorsorglich gröbere Stufe ist
+genau das: eine Wette gegen die Maschine, die man auch verliert, wenn die
+Maschine schnell ist. Also läuft die Fahrt auf der Ruhestufe, und nur wenn ein
+Bild länger braucht als 110 ms, geht sie schrittweise gröber — höchstens bis
+1,35 Pixel je Zelle, was einer sehr milden Weichheit entspricht und weit von
+den 3,8 entfernt ist, die hier einmal fest standen. Wird es wieder schnell,
+kommt die Schärfe von selbst zurück. Auf einem gewöhnlichen Rechner kommt die
+Stufe gar nicht zum Tragen.
+
+Drei weitere Posten fallen in der Fahrt weg oder kleiner aus:
+
+- Die **Rastermaske** wird nur noch als Statistik gebraucht (4.5) und in der
+  Fahrt jedes zweite Bild neu gerechnet. Ein Bahnhof, der gerade die Küste
+  überquert, bekommt seine Scholle einen Wimpernschlag zu früh oder zu spät;
+  das kostet nichts und spart dreißig Millisekunden je Bild.
+- Das **99,5-Perzentil** der Farbleiter (4.7) zählt jede vierte Zelle statt
+  jeder. Die Schneegrenze weicht dadurch um eine Minute ab.
+- **Schattiert wird nur, was gezeichnet wird.** Das Bild deckt den ganzen
+  Ausschnitt ab, gezeigt wird davon aber nur das Land, und das ist bei der
+  Landkarte nicht die Hälfte. Eine Zelle Nachsicht in alle vier Richtungen,
+  weil beim Hochskalieren über die Schnittkante interpoliert wird. Das halbiert
+  den Posten (30–53 ms statt 72–88).
+
 Im Halt nicht ganz das Feinste, denn ein Bild, das eine halbe Sekunde zum
 Rechnen braucht, sieht mitten in einer Fahrt nicht nach einer Pause aus,
-sondern nach einem Hänger.
-
-Ein Bild, das ruckelt, zeigt weniger als ein Bild, das eine Rasterstufe
-verliert; ein Bild, das steht, soll die feinste haben.
+sondern nach einem Hänger. Ein Bild, das steht, soll die feinste Stufe haben —
+und eines, das läuft, soll trotzdem scharf sein.
 
 ## 5. Was fehlt
 
