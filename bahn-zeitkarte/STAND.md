@@ -593,32 +593,62 @@ mit drei Reglern. Zehn Akte über 65 Sekunden stellen Morph, Anteil, Zoom und
 den gewählten Bahnhof — ein Filmdrehbuch in einer Seite, die niemand als Film
 benutzt, wäre totes Gewicht für jeden Besucher.
 
-**Zoom und Mitte werden gerechnet, nicht gesetzt.** Drei Fassungen haben das
-von Hand versucht, und alle drei waren falsch:
+**Der Film zeigt nur den Morph, und der Rahmen steht fest.** Vier Fassungen
+des Drehbuchs sind verworfen, und die letzte war die lehrreichste.
 
-- **Fester Zoom.** Die Landkarte spannt 715 × 956 Minuten, die Zeitkarte
-  1.274 × 1.302. Bei einem Zoom, der die Landkarte füllt, fliegt die Zeitkarte
-  hinaus; bei einem, der die Zeitkarte fasst, steht am Anfang die Hälfte des
-  Bildes schwarz.
-- **Zoom von Hand auf- und zufahren** (1,26 → 0,86). Besser, aber die Mitte
-  blieb die des **Rahmens** — und der kommt ganz von der Zeitkarte und liegt
-  58 Minuten westlich der Mitte der Landkarte. Sachsen stand im ersten Bild
-  halb draußen: Dresden am Rand, Görlitz weg. Ein Film über Deutschland, auf
-  dem Deutschland nicht ganz drauf ist.
+Zuerst standen Zoom und Mitte von Hand, dann rechnete **jedes Bild** seinen
+Rahmen neu — und das war wieder falsch, nur anders. Der Umriss wird beim
+Verziehen größer, also ging der Zoom auf und die Mitte wanderte; im Bild sah
+es aus, als wackle das Land. Gewollt ist das Gegenteil: die Landschaft verzieht
+sich, ihre Lage im Bild nicht.
+
+Jetzt gilt **ein** Rahmen für den ganzen Film, und er muss den verzogenen
+Umriss bei jeder Reglerstellung fassen. Die weißen Bahnhofspunkte dürfen
+hinausfliegen — in der Zeitkarte liegen 539 jenseits der Küste, und wer die
+alle fassen will, druckt Deutschland auf Briefmarkengröße —, die Grenzen des
+Zeit-Deutschlands nicht.
+
+Gerechnet wird er aus **zwei** Bildern, nicht aus einundzwanzig: `verziehe`
+mittelt die Verschiebungen der Bahnhöfe mit Gewichten, die nur an der
+Geografie hängen, und die Verschiebung selbst ist `(fxx − gxx) · morph`. Jeder
+Umrisspunkt läuft damit **linear** im Morph, und eine Strecke hat ihre Extreme
+an den Enden. Nachgemessen an neun Zwischenstellungen: größte Überschreitung
+der Vereinigung der beiden Enden **0,000 Minuten**.
+
+Bei diesen Daten ist die Vereinigung schlicht der Umriss der Zeitkarte,
+852 × 1.062 Minuten um (−17 / 60), Zoom 1,118. Die Landkarte liegt ganz darin
+und steht deshalb etwas kleiner im Bild — der Preis dafür, dass sie sich nicht
+bewegt, und der günstigere. Geprüft wird es auch: das Skript rechnet nach dem
+Setzen für beide Endzustände die Luft zwischen Umriss und Bildrand aus (25,5
+und 12,9 Punkte) und bricht ab, wenn sie negativ wird. Die Klemmung, die das
+Bild im Umfang hält, kann die Mitte nämlich noch verschieben — ein Rahmen, der
+das nicht nachprüft, schneidet unten drei Pixel ab, und es fällt erst am
+fertigen Film auf.
+
+Die Akte des Anteilsreglers und die Kamerafahrt an Berlin sind damit heraus:
+beide brachten Bewegung ins Bild, die nicht die der Karte ist. Übrig bleiben
+fünf Akte über 34 Sekunden — Landkarte, hin, Zeitkarte, zurück, Landkarte —,
+und der Film endet auf seinem Anfangsbild, damit die Schleife, in der solche
+Videos laufen, ohne Schnitt zusammengeht.
+
+Was die verworfenen Fassungen gelehrt haben, bleibt hier stehen:
+
+- **Ein Zoom von Hand, fest.** Die Landkarte spannt 715 × 956 Minuten, die
+  Zeitkarte 1.274 × 1.302. Bei einem Zoom, der die Landkarte füllt, fliegt die
+  Zeitkarte hinaus; bei einem, der die Zeitkarte fasst, steht am Anfang die
+  Hälfte des Bildes schwarz. Die Lösung war nicht mehr Bewegung, sondern der
+  richtige Bezug: nicht die Bahnhöfe rahmen, sondern den Umriss.
+- **Zoom von Hand auf- und zufahren** (1,26 → 0,86). Die Mitte blieb die des
+  **Rahmens** — und der kommt ganz von der Zeitkarte und liegt 58 Minuten
+  westlich der Mitte der Landkarte. Sachsen stand im ersten Bild halb draußen:
+  Dresden am Rand, Görlitz weg. Ein Film über Deutschland, auf dem Deutschland
+  nicht ganz drauf ist.
 - **Göhren als Held des Kamera-Akts.** Göhren wandert 182 Minuten und landet
   weit im Meer: die Kamera stand mit ihm im Schwarzen und Deutschland in einer
   Ecke. Berlin Hbf wandert 152 Minuten und landet **im** Land — es steht still,
-  und Deutschland zieht darum herum vorbei. Das ist der Satz, den der Akt
-  zeigen soll, und der Held muss ihn erlauben.
-
-Jetzt rechnet jedes Bild seinen Rahmen selbst: aus dem **verzogenen Umriss**
-zusammen mit den Bahnhofsorten **ohne die äußersten halben Prozent**. Der
-Umriss allein ließe die Schollen abschneiden; alle Bahnhöfe zusammen zwingen
-wegen einer Handvoll Außenseiter (Sylt, Mittenwald) die ganze Karte auf
-Briefmarkengröße — 1.274 × 1.302 Minuten gegen 893 × 1.032 ohne sie. Daraus
-Mitte und Zoom, mit vier Prozent Saum. Gemessen ergibt das 1,27 am Anfang und
-1,08 in der Zeitkarte, also fast dieselben Zahlen wie von Hand — nur mit der
-richtigen Mitte, und ohne dass sie jemand pflegen muss.
+  und Deutschland zieht darum herum vorbei. Der Akt ist mit der Kamerafahrt
+  zusammen heraus, die Lehre bleibt: wer die Kamera an etwas bindet, muss
+  prüfen, ob das Etwas im Bild bleibt.
 
 **Der Untertitel hängt am Morph.** „distance on this map **is** travel time"
 stimmt erst, wenn die Karte fertig verzogen ist; im ersten Bild ist sie eine
