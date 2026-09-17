@@ -196,6 +196,77 @@ wird trotzdem die Vereinigung: jede der beiden allein lässt Lücken, und dem
 reinen Umriss fielen neun Bahnhöfe aus dem Land. Das wäre in den Daten zu
 beheben, nicht im Zeichner.
 
+## Scharf bleiben in der Fahrt
+
+Die Fahrt lief auf einer festen, gröberen Rasterstufe — 3,8 Pixel je Zelle —,
+und das war eine Wette gegen die Maschine, die man auch dann verliert, wenn
+die Maschine schnell ist. Jetzt wird die Stufe **gemessen statt gesetzt**: die
+Fahrt läuft auf der Ruhestufe, und nur wenn ein Bild länger als 110 ms
+braucht, geht sie schrittweise gröber, höchstens bis 1,35 Pixel je Zelle. Wird
+es wieder schnell, kommt die Schärfe von selbst zurück.
+
+Damit die Regelung meistens gar nicht eingreifen muss, ist das Bild billiger
+geworden. Vier Posten, alle gemessen auf 1440 × 900 bei 1,24 Minuten je Zelle:
+
+| | vorher | nachher |
+| --- | --- | --- |
+| Höhenfeld | 93–135 ms | **33–53 ms** |
+| Schattieren | 72–88 ms | **30–53 ms** |
+| Isochronenbild | 445 ms | **253 ms** |
+| ganzes Bild | 235 ms | **134 ms** |
+
+Woher das kommt, von groß nach klein:
+
+**Gerechnet wird gröber, als gezeichnet wird.** Das ist die eigentliche
+Einsicht. Das Feld ist mit σ = 11 Minuten geglättet und bei 1,24 Minuten je
+Zelle also neunfach überabgetastet — feiner gerechnet wird es nicht genauer.
+Scharf sein muss nicht das Feld, sondern was daraus gezeichnet wird:
+Farbbänder, Höhenlinien, Licht, alles nichtlineare Funktionen der Höhe. Also
+läuft die ganze Kette auf einem Gitter von 3,6 Minuten und wird bilinear aufs
+Bildgitter gesetzt.
+
+Der Preis dafür wäre ein gerastertes σ gewesen: drei Kastenfilter mit
+ganzzahligem Radius treffen auf dem gröberen Gitter nur 9,1 oder 12,9 Minuten,
+nicht 11. Darum gemischte Radien, ein Teil der Durchgänge einen Schritt
+breiter, und die Varianz des bilinearen Hochsetzens und der Nachglättung wird
+vom Ziel **abgezogen** statt oben draufgelegt. Nachgemessen sitzt σ über alle
+Rasterstufen bei 10,6 bis 10,8 Minuten — gleich genug, dass ein Wechsel der
+Stufe das Gelände nicht verändert, und das ist die Bedingung dafür, dass eine
+geregelte Stufe überhaupt zulässig ist.
+
+**Schattiert wird nur, was gezeichnet wird.** Das Bild deckt den ganzen
+Ausschnitt ab, gezeigt wird davon aber nur das Land (der Beschnitt), und das
+ist bei der Landkarte nicht die Hälfte. Eine Zelle Nachsicht in alle vier
+Richtungen, weil beim Hochskalieren über die Schnittkante interpoliert wird.
+
+**Die Rastermaske jedes zweite Bild**, in der Fahrt. Sie ist nur noch
+Statistik — Perzentil der Farbleiter und Liste der Ausgewanderten —, und beides
+ändert sich von Bild zu Bild kaum.
+
+**Und drei Kleinigkeiten, die zusammen ein Drittel brachten:** `Math.sqrt`
+statt `Math.hypot` in der Höhenlinienrechnung (hypot skaliert gegen Überlauf,
+den hier niemand braucht, und kostet in V8 ein Vielfaches); der senkrechte
+Kastenfilter durch blockweises Transponieren ersetzt, weil eine
+Spaltenschleife bei siebenhunderttausend Zellen einmal je Spalte durch drei
+Megabyte springt; und das Perzentil der Farbleiter auf jeder vierten Zelle
+statt jeder, was die Schneegrenze um eine Minute verschiebt.
+
+Gemessen wurde das stufenweise und nicht geraten, und zweimal war die
+Vermutung falsch. Die Löcherliste war teurer als das ganze Verwischen — ein
+JavaScript-Array verpackt jede Zahl einzeln, jetzt ist es ein `Int32Array`.
+Und bei den Isochronen hielt ich die marschierenden Quadrate für den Posten:
+sie einmal statt achtmal über die Zellen laufen zu lassen brachte 41 der 445
+Millisekunden, das Wiederverwenden der drei Drei-Megabyte-Puffer 80, und die
+eigentlichen 192 kamen dann von der Feldrechnung, die alle teilen.
+
+Was bleibt: in diesem Container ohne Beschleunigung sind es 8 Bilder je
+Sekunde auf 1440 × 900 und 14 auf einem Telefonformat. Auf einem
+gewöhnlichen Rechner deutlich mehr, aber das ist von hier aus nicht zu messen.
+Wer es wirklich flüssig **und** scharf braucht, müsste das Schattieren in
+einen WebGL-Fragmentshader verlegen — dieselbe Rechnung, nur auf der
+Grafikkarte, und ohne npm oder Bündler, also verträglich mit den Regeln
+dieses Repos. Das ist der nächste Schritt, wenn einer kommt.
+
 ## Was offen ist
 
 **Die Bevölkerung ist innerhalb eines Kreises gleichmäßig verteilt.** Das ist

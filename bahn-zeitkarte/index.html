@@ -386,7 +386,17 @@ let mitteX = 0, mitteY = 0, skala = 1, zx = 0, zy = 0;
    gröber, in der Fahrt noch gröber. Ein Bild, das ruckelt, zeigt weniger als
    ein Bild, das eine Rasterstufe verliert; ein Bild, das steht, soll die
    feinste haben. */
-const FEIN_RUHE = 1.0, FEIN_HALT = 1.5, FEIN_ZIEH = 3.0, FEIN_SPIEL = 3.8;
+const FEIN_RUHE = 1.0, FEIN_HALT = 1.5, FEIN_ZIEH = 3.0;
+/* In der Fahrt soll die Karte **nicht** weich werden. Also wird nicht
+   vorsorglich gröber gerastert, sondern gemessen: die Fahrt läuft auf der
+   Ruhestufe, und nur wenn ein Bild länger braucht als SPIELBUDGET, geht sie
+   schrittweise gröber — nie gröber als FEIN_GROB, was einer sehr milden
+   Weichheit entspricht und weit von den 3,8 Pixeln je Zelle entfernt ist,
+   die hier einmal fest eingestellt waren. Wird es wieder schnell, kommt die
+   Schärfe zurück. Auf einem gewöhnlichen Rechner kommt die Stufe gar nicht
+   zum Tragen. */
+const SPIELBUDGET = 110, FEIN_GROB = 1.35;
+let spielFein = FEIN_RUHE;
 let FEINHEIT = FEIN_RUHE;
 let spiel = null;
 
@@ -522,9 +532,9 @@ function dreieckeBauen(){
 }
 
 /* --------------------------------------------------------- Maske und Feld */
-let maskeC = null, maskeA = null, inseln = 0;
+let maskeC = null, maskeA = null, inseln = 0, maskeTakt = 0;
 const inselIdx = [];
-let fH = null, fD = null;
+let fH = null;
 
 /* Die Rasterweite wird nicht in Minuten gesetzt, sondern in
    **Bildschirmpixeln**: eine Zelle soll etwa so groß sein wie ein Pixel.
@@ -689,27 +699,54 @@ function kastenX(a, b, w, h, r){
     }
   }
 }
-function kastenY(a, b, w, h, r){
-  const inv = 1/(2*r+1);
-  for (let x=0;x<w;x++){
-    let s = 0;
-    for (let y=0;y<=r && y<h;y++) s += a[y*w+x];
-    for (let y=0;y<h;y++){
-      b[y*w+x] = s * inv;
-      const zu = y+r+1, ab = y-r;
-      if (zu < h) s += a[zu*w+x];
-      if (ab >= 0) s -= a[ab*w+x];
+/* Blockweise transponieren. Der senkrechte Kastenfilter lief einmal je
+   Spalte durch den ganzen Speicher — bei siebenhunderttausend Zellen sind das
+   siebenhunderttausend Sprünge über 2,8 MB, und kein Cache hält das aus.
+   Transponieren und waagerecht filtern liest dagegen der Reihe nach. Die
+   32er-Blöcke sind dafür da, dass auch das Transponieren selbst nicht
+   springt. */
+function umlegen(a, b, w, h){
+  const B = 32;
+  for (let y0=0;y0<h;y0+=B){
+    const y1 = Math.min(h, y0+B);
+    for (let x0=0;x0<w;x0+=B){
+      const x1 = Math.min(w, x0+B);
+      for (let y=y0;y<y1;y++){
+        const o = y*w;
+        for (let x=x0;x<x1;x++) b[x*h+y] = a[o+x];
+      }
     }
   }
 }
 /* Drei Kastenfilter hintereinander sind eine Glocke auf drei Prozent genau
-   (Kovesi). Aus drei Durchgängen mit Radius r wird σ² = r² + r, also ist der
-   Radius zu einem gewünschten σ die positive Wurzel davon. */
-function glockeRadius(sig){
-  return Math.max(1, Math.round((Math.sqrt(1 + 4*sig*sig) - 1) / 2));
+   (Kovesi). Ein Kasten mit Radius r hat die Varianz (r²+r)/3, drei
+   gleiche also r²+r — aber r ist ganzzahlig, und damit ist auch σ
+   gerastert. Auf dem feinen Gitter fällt das nicht auf; auf dem gröberen
+   Rechengitter (FELDGROB) liegen zwischen r = 2 und r = 3 volle vier
+   Minuten, und die Karte wäre entweder zu scharf oder um ein Sechstel zu
+   weich gewaschen.
+
+   Darum **gemischte** Radien: ein Teil der Durchgänge einen Schritt breiter.
+   Gesucht wird das Tripel, dessen Varianzsumme der Zielvarianz am nächsten
+   kommt — ein Dutzend Vergleiche, einmal je Bild. Damit sitzt σ auf jedem
+   Raster auf ein Prozent. */
+function kastenRadien(sig){
+  const ziel = sig*sig;
+  let best = null;
+  for (let r=1; r<=96; r++) for (let m=0; m<=3; m++){
+    const v = (m*(r*r+r) + (3-m)*((r+1)*(r+1)+(r+1))) / 3;
+    const d = Math.abs(v - ziel);
+    if (!best || d < best.d) best = {d, radien: [0,1,2].map(i => i < m ? r : r+1)};
+  }
+  return best.radien;
 }
-function verwischen(a, hilf, w, h, r){
-  for (let k=0;k<3;k++){ kastenX(a, hilf, w, h, r); kastenY(hilf, a, w, h, r); }
+function verwischen(a, hilf, w, h, rr){
+  kastenX(a, hilf, w, h, rr[0]); kastenX(hilf, a, w, h, rr[1]);
+  kastenX(a, hilf, w, h, rr[2]);
+  umlegen(hilf, a, w, h);                     /* a ist jetzt h × w */
+  kastenX(a, hilf, h, w, rr[0]); kastenX(hilf, a, h, w, rr[1]);
+  kastenX(a, hilf, h, w, rr[2]);
+  umlegen(hilf, a, h, w);                     /* und wieder w × h */
 }
 
 /* Das Höhenfeld: ein mit einer Glocke gewichteter Mittelwert der
@@ -728,75 +765,127 @@ function verwischen(a, hilf, w, h, r){
    Quotient ist derselbe gewichtete Mittelwert wie vorher, nur kostet er
    O(Zellen) statt O(n · r²): das Raster darf jetzt dreimal feiner sein und
    ist dabei schneller als vorher das grobe. */
-const FELDSIG = 11.0, LOCHRUNDEN = 8;
-let fT = null;
-function feldBauen(){
-  const anz = FW*FH;
-  if (!fH || fH.length !== anz){
-    fH = new Float32Array(anz); fD = new Float32Array(anz); fT = new Float32Array(anz);
-  } else { fH.fill(0); fD.fill(0); }
+const FELDSIG = 11.0, LOCHRUNDEN = 8, FELDGROB = 3.6;
+let fT = null, fL = null, gH = null, gD = null, gT = null;function feldBauen(){
+  /* Wie grob wird gerechnet? So grob, wie das Feld es zulässt. s ist der
+     ganzzahlige Faktor zwischen Rechen- und Bildgitter; bei einem Telefon,
+     wo eine Zelle ohnehin 2,6 Minuten groß ist, ist er 1 und es passiert
+     nichts Besonderes. */
+  const s = Math.max(1, Math.ceil(FELDGROB / ZELLE));
+  const GW = s === 1 ? FW : Math.ceil(FW / s) + 1;
+  const GH = s === 1 ? FH : Math.ceil(FH / s) + 1;
+  const ganz = GW*GH, anz = FW*FH;
+  if (!gH || gH.length !== ganz){
+    gH = new Float32Array(ganz); gD = new Float32Array(ganz); gT = new Float32Array(ganz);
+  } else { gH.fill(0); gD.fill(0); }
+  if (!fH || fH.length !== anz){ fH = new Float32Array(anz); fT = new Float32Array(anz); }
+  /* Impulse ins Rechengitter, bilinear auf vier Zellen. */
+  const inv = 1/s;
   for (let i=0;i<n;i++){
-    const cx = feldX(wx[i]) - 0.5, cy = feldY(wy[i]) - 0.5;
+    const cx = (feldX(wx[i]) + 0.5) * inv - 0.5, cy = (feldY(wy[i]) + 0.5) * inv - 0.5;
     const ix = Math.floor(cx), iy = Math.floor(cy);
     const gx = cx - ix, gy = cy - iy, h = hh[i];
     for (let dy=0;dy<2;dy++){
       const jy = iy+dy;
-      if (jy<0 || jy>=FH) continue;
-      const wv = dy ? gy : 1-gy, row = jy*FW;
+      if (jy<0 || jy>=GH) continue;
+      const wv = dy ? gy : 1-gy, row = jy*GW;
       for (let dx=0;dx<2;dx++){
         const jx = ix+dx;
-        if (jx<0 || jx>=FW) continue;
+        if (jx<0 || jx>=GW) continue;
         const w = wv * (dx ? gx : 1-gx);
-        fD[row+jx] += w; fH[row+jx] += w*h;
+        gD[row+jx] += w; gH[row+jx] += w*h;
       }
     }
   }
-  const r = glockeRadius(FELDSIG / ZELLE);
-  verwischen(fD, fT, FW, FH, r);
-  verwischen(fH, fT, FW, FH, r);
-  for (let k=0;k<anz;k++) fH[k] = fD[k] > 1e-12 ? fH[k]/fD[k] : NaN;   /* fD bleibt: die Maske liest es */
+  /* σ soll am Ende FELDSIG Minuten sein — und am Ende heißt: nach dem
+     Verwischen **und** nach dem bilinearen Hochsetzen **und** nach der
+     Nachglättung. Die beiden letzten verwischen mit, also wird ihre Varianz
+     vom Ziel abgezogen, statt sie oben draufzulegen. Eine bilineare
+     Vergrößerung um s wirkt wie ein Kasten der Breite s (Varianz
+     (s²−1)/12), die Binomialglättung wie 0,5 Zellen² je Aufruf. */
+  const dazu = ZELLE*ZELLE * ((s*s - 1)/12 + (s > 1 ? 1.0 : 0.5));
+  const zielMin = Math.sqrt(Math.max(1, FELDSIG*FELDSIG - dazu));
+  const rr = kastenRadien(zielMin / (ZELLE*s));
+  verwischen(gD, gT, GW, GH, rr);
+  verwischen(gH, gT, GW, GH, rr);
+  let summe = 0, gedeckt = 0;
+  for (let k=0;k<ganz;k++){
+    if (gD[k] > 1e-12){ const v = gH[k]/gD[k]; gH[k] = v; summe += v; gedeckt++; }
+    else gH[k] = NaN;
+  }
   /* Löcher: Zellen, die keine Glocke mehr erreicht. Sie liegen immer
      **außerhalb** des Landes — ein Bahnhof ist selbst ein Impuls und hat
      damit Abdeckung —, und das Land wird ohnehin beschnitten. Gebraucht
      wird ihr Wert nur für den Saum, über den beim Hochskalieren interpoliert
      wird, und dafür genügen ein paar Runden.
 
-     Vierzig Runden über das **ganze** Raster waren der teuerste Posten der
-     ganzen Rechnung, und zwar genau bei der Landkarte, wo die halbe
-     Bildfläche leer ist und nie ein Loch zuging: vierzig Durchgänge über
-     eine halbe Million Zellen, jeder mit einer Kopie des Feldes. Jetzt
-     stehen die Löcher in einer Liste, und die wird mit jeder Runde kürzer. */
-  let loch = [];
-  for (let k=0;k<anz;k++) if (Number.isNaN(fH[k])) loch.push(k);
-  for (let runde=0; runde<LOCHRUNDEN && loch.length; runde++){
-    const rest = [];
-    for (const k of loch){
-      const ix = k % FW, iy = (k - ix) / FW;
+     Vierzig Runden über das ganze Raster, jede mit einer Kopie des Feldes,
+     waren einmal der teuerste Posten der ganzen Rechnung — und zwar genau
+     bei der Landkarte, wo die halbe Bildfläche leer ist und nie ein Loch
+     zuging. Eine Liste der Löcher war der nächste Fehler: ein
+     JavaScript-Array verpackt jede Zahl einzeln, und das allein kostete mehr
+     als das ganze Verwischen. Jetzt ist die Liste ein Int32Array, wird
+     einmal angelegt und in jeder Runde an derselben Stelle
+     zusammengeschoben. */
+  if (!fL || fL.length !== ganz) fL = new Int32Array(ganz);
+  let nl = 0;
+  for (let k=0;k<ganz;k++) if (Number.isNaN(gH[k])) fL[nl++] = k;
+  for (let runde=0; runde<LOCHRUNDEN && nl; runde++){
+    let m = 0;
+    for (let q=0;q<nl;q++){
+      const k = fL[q];
+      const ix = k % GW, iy = (k - ix) / GW;
       let sm=0,c=0;
       for (let dy=-1;dy<=1;dy++){
         const jy = iy+dy;
-        if (jy<0 || jy>=FH) continue;
+        if (jy<0 || jy>=GH) continue;
+        const row = jy*GW;
         for (let dx=-1;dx<=1;dx++){
           const jx = ix+dx;
-          if (jx<0 || jx>=FW) continue;
-          const v = fH[jy*FW+jx];
+          if (jx<0 || jx>=GW) continue;
+          const v = gH[row+jx];
           if (!Number.isNaN(v)){ sm+=v; c++; }
         }
       }
-      if (c) fH[k] = sm/c; else rest.push(k);
+      if (c) gH[k] = sm/c; else fL[m++] = k;
     }
-    loch = rest;
+    nl = m;
   }
   /* Was dann noch offen ist, liegt weit draußen im Schwarzen und wird nie
-     gezeigt. Eine Zahl braucht es trotzdem, weil NaN sich durch die
-     Glättung frisst. */
-  if (loch.length){
-    let sm=0, c=0;
-    for (let k=0;k<anz;k++) if (!Number.isNaN(fH[k])){ sm+=fH[k]; c++; }
-    const ersatz = c ? sm/c : 0;
-    for (const k of loch) fH[k] = ersatz;
+     gezeigt. Eine Zahl braucht es trotzdem, weil NaN sich durch die Glättung
+     frisst; das Mittel der gedeckten Zellen ist oben schon mitgezählt. */
+  if (nl){
+    const ersatz = gedeckt ? summe/gedeckt : 0;
+    for (let q=0;q<nl;q++) gH[fL[q]] = ersatz;
   }
+
+  if (s === 1){
+    fH.set(gH);
+  } else {
+    /* Bilinear aufs Bildgitter setzen. */
+    for (let iy=0; iy<FH; iy++){
+      const cy = (iy + 0.5) * inv - 0.5;
+      let jy = Math.floor(cy);
+      const gy = cy - jy;
+      if (jy < 0) jy = 0; else if (jy > GH-2) jy = GH-2;
+      const r0 = jy*GW, r1 = r0+GW, w0 = 1-gy, w1 = gy, ziel = iy*FW;
+      for (let ix=0; ix<FW; ix++){
+        const cx = (ix + 0.5) * inv - 0.5;
+        let jx = Math.floor(cx);
+        const gx = cx - jx;
+        if (jx < 0) jx = 0; else if (jx > GW-2) jx = GW-2;
+        const a = gH[r0+jx], b = gH[r0+jx+1], c = gH[r1+jx], e = gH[r1+jx+1];
+        fH[ziel+ix] = (a + (b-a)*gx) * w0 + (c + (e-c)*gx) * w1;
+      }
+    }
+  }
+  /* Einmal mit Radius 1 nachwischen. Eine bilineare Vergrößerung hat
+     knickige Ableitungen, und die Ableitung ist hier das Licht — ohne diesen
+     Durchgang bekäme der Hang kleine Facetten auf den Zellgrenzen des
+     Rechengitters. Bei s = 1 ist es die Binomialglättung, die hier immer
+     stand. */
   glaetten(fH, FW, FH);
+  if (s > 1) glaetten(fH, FW, FH);
 }
 
 function glaetten(a, w, h, hilf){
@@ -831,11 +920,18 @@ function bildBauen(){
   const see = Z.wasser;
   landMax = see + 1;
   {
-    const N = 512, hist = new Int32Array(N + 1);
+    /* Das 99,5-Perzentil des Landes braucht keine siebenhunderttausend
+       Stichproben; jede vierte Zelle gibt dieselbe Zahl auf eine Minute
+       genau und kostet ein Viertel. Der Höchstwert wird dabei voll gezählt,
+       denn er ist ein einzelner Punkt und würde beim Überspringen gerade
+       verloren gehen. */
+    const N = 512, hist = new Int32Array(N + 1), anz2 = FW*FH;
     let roh = see + 1, zahl = 0;
-    for (let k=0;k<FW*FH;k++) if (maskeA[k] > 120 && fH[k] > roh) roh = fH[k];
-    for (let k=0;k<FW*FH;k++) if (maskeA[k] > 120){
-      hist[Math.min(N, Math.max(0, Math.round(fH[k] / roh * N)))]++;
+    for (let k=0;k<anz2;k++) if (maskeA[k] > 120 && fH[k] > roh) roh = fH[k];
+    const inv = N / roh;
+    for (let k=0;k<anz2;k+=4) if (maskeA[k] > 120){
+      let b2 = (fH[k] * inv + 0.5) | 0;
+      hist[b2 < 0 ? 0 : b2 > N ? N : b2]++;
       zahl++;
     }
     let bis = Math.floor(zahl * 0.995), s2 = 0, b = N;
@@ -854,10 +950,19 @@ function bildBauen(){
   const vz = 2.7;
   const lx = -0.5774, ly = -0.5774, lz = 0.5774;
   const linien = Z.linien;
+  /* Gerechnet wird nur, was auch gezeichnet wird. Das Bild deckt den ganzen
+     Rahmen ab, gezeigt wird davon aber nur das Land (der Beschnitt in 4.5),
+     und das ist bei der Landkarte nicht einmal die Hälfte. Eine Zelle
+     Nachsicht in alle vier Richtungen, weil beim Hochskalieren über die
+     Schnittkante interpoliert wird und dafür der Nachbar außerhalb mitgelesen
+     werden muss. Übersprungene Zellen behalten, was im Puffer stand; sie
+     liegen außerhalb des Beschnitts und sind nie zu sehen. */
   for (let iy=0; iy<FH; iy++){
     const oben = Math.max(0,iy-1)*FW, unten = Math.min(FH-1,iy+1)*FW, hier = iy*FW;
     for (let ix=0; ix<FW; ix++){
       const k = hier+ix, j = k<<2;
+      if (!maskeA[k] && !maskeA[oben+ix] && !maskeA[unten+ix]
+          && !(ix > 0 && maskeA[k-1]) && !(ix < FW-1 && maskeA[k+1])) continue;
       const h = fH[k];
       const hx = (fH[hier + Math.min(FW-1,ix+1)] - fH[hier + Math.max(0,ix-1)]) * vz / (2*ZELLE);
       const hy = (fH[unten + ix] - fH[oben + ix]) * vz / (2*ZELLE);
@@ -883,7 +988,7 @@ function bildBauen(){
          damit ist die Linie im Steilen so dünn wie im Flachen. */
       if (linien){
         const fr = stufe - Math.floor(stufe);
-        const grad = Math.hypot(hx, hy) / vz / band * ZELLE;
+        const grad = Math.sqrt(hx*hx + hy*hy) / vz / band * ZELLE;
         const ab = Math.min(fr, 1-fr) / Math.max(grad, 1e-4);
         if (ab < 0.85){
           const s = 1 - 0.34*(1 - ab/0.85);
@@ -904,6 +1009,7 @@ function bildBauen(){
 
 /* ------------------------------------------------------------- Zeichnen */
 function zeichne(){
+  const angefangen = performance.now();
   /* Der Maßstab zuerst: das Raster hängt an ihm (feldMasseSetzen). */
   const [x0,x1,y0,y1] = RAHMEN;
   zx = (x0+x1)/2; zy = (y0+y1)/2;
@@ -914,7 +1020,15 @@ function zeichne(){
   umrissVerziehen();
   feldMasseSetzen();
   feldBauen();
-  maskeBauen();
+  /* Die Rastermaske wird nur noch als Statistik gebraucht — für das
+     Perzentil der Farbleiter und für die Liste der Ausgewanderten; gezeichnet
+     wird die Küste als Pfad (4.5). Beides ändert sich von Bild zu Bild so
+     wenig, dass es in der Fahrt jedes zweite Bild reicht: ein Bahnhof, der
+     gerade die Küste überquert, hätte seine Scholle einen Wimpernschlag zu
+     früh oder zu spät. Das kostet dreißig Millisekunden je Bild, und die
+     fehlen der Schärfe. */
+  if (!maskeA || maskeA.length !== FW*FH || !(spiel && !spiel.halt)
+      || (maskeTakt++ & 1) === 0) maskeBauen();
   bildBauen();
 
   ctx.setTransform(DPR,0,0,DPR,0,0);
@@ -936,6 +1050,16 @@ function zeichne(){
   if (Z.punkte) punkteMalen();
   if (Z.namen) namenMalen();
   tafelSetzen();
+
+  /* Der Regelkreis für die Fahrt: nachsehen, wie lange dieses Bild
+     gebraucht hat, und die Rasterstufe entsprechend nachziehen. Gemessen
+     wird nur in der Bewegung — im Halt und in Ruhe soll ohnehin die feinste
+     Stufe stehen. */
+  if (spiel && !spiel.halt){
+    const ms = performance.now() - angefangen;
+    if (ms > SPIELBUDGET) spielFein = Math.min(FEIN_GROB, spielFein * 1.18);
+    else if (ms < SPIELBUDGET * 0.6) spielFein = Math.max(FEIN_RUHE, spielFein / 1.10);
+  }
 }
 
 function grenzenMalen(){
@@ -1089,7 +1213,7 @@ function isoMalen(){
       }
     }
   }
-  const rk = glockeRadius(22.0/ZELLE);
+  const rk = kastenRadien(Math.sqrt(Math.max(1, 22*22 - 0.5*ZELLE*ZELLE)) / ZELLE);
   verwischen(dich, hilf, FW, FH, rk);
   verwischen(feld, hilf, FW, FH, rk);
   for (let k=0;k<anz;k++) feld[k] = dich[k]>1e-12 ? feld[k]/dich[k] : NaN;
@@ -1246,7 +1370,7 @@ function regler(id, feld, faktor, zeige){
    Hänger. Bleibt die Fahrt stehen, kommt über den Reglerwechsel ohnehin
    FEIN_RUHE nach. */
 function ziehFein(){
-  return !spiel ? FEIN_ZIEH : spiel.halt > 0 ? FEIN_HALT : FEIN_SPIEL;
+  return !spiel ? FEIN_ZIEH : spiel.halt > 0 ? FEIN_HALT : spielFein;
 }
 
 /* ---------- Der Abspielknopf. Ein Regler, den man nicht anfasst, sieht wie
@@ -1689,7 +1813,9 @@ Reisezeit. Umriss und Ländergrenzen laufen mit, verschoben mit dem
 Verschiebungsfeld der Bahnhöfe selbst. Der <b>Abspielknopf</b> fährt hin und
 her und hält an beiden Enden eine Dreiviertelsekunde an: sonst kehrt die
 Fahrt im Endzustand um, ohne ihn gezeigt zu haben — und die beiden
-Endzustände sind gerade das, was die Karte behauptet.</li>
+Endzustände sind gerade das, was die Karte behauptet. Weich wird die Karte in
+der Fahrt nicht: die Rasterstufe wird gemessen statt gesetzt, läuft also auf
+der Ruhestufe und geht nur gröber, wenn die Maschine sonst nicht mitkäme.</li>
 <li><b>Anteil Deutschlands</b> ist der Regler, der die Höhe überhaupt
 definiert — er schiebt zwischen Ballungsraum und Geografie. Achtzehn Stufen
 liegen vorgerechnet in der Seite, dazwischen wird gemischt. Auch er hat einen
@@ -1713,9 +1839,10 @@ gesetzt, sondern gemessen — 1,29 —, und Deutschland wird damit gut zwanzig
 Prozent größer gezeichnet als vorher: nachgemessen +23 % auf 1440 × 900 und
 +29 % hochkant auf dem Telefon. Das Höhenfeld wird dabei mit **einer Zelle je
 Bildschirmpixel** gerastert statt mit festen drei Minuten — zweieinhalbmal
-feiner je Achse —, und die Küste wird <b>beschnitten</b> statt ausmaskiert:
-ein Pfad hat keine Auflösung, eine Maske im Raster wird beim Hochskalieren
-weichgezeichnet. In der Landkarte geht dabei garantiert nichts
+feiner je Achse, und in der Fahrt genauso scharf wie im Stand —, und die Küste
+wird <b>beschnitten</b> statt ausmaskiert: ein Pfad hat keine Auflösung, eine
+Maske im Raster wird beim Hochskalieren weichgezeichnet. In der Landkarte geht
+dabei garantiert nichts
 verloren; in der reinen Zeitkarte fliegen <b>108 der
 ${P.bahnhoefe.toLocaleString('de-DE')} Bahnhöfe</b> aus dem Bild: 2,3 % der
 Bahnhöfe, aber nur 0,9 % aller Halte am Tag — die Bodenseerunde, die Rügener
