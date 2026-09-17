@@ -252,11 +252,10 @@ ist eine Zeile hoch, weil jede Zeile, die er sich nimmt, der Karte fehlt.
   der Platz: die Gesamtzahl der Namen bleibt ungefähr gleich, und die
   Bahnhofsnamen füllen die Lücke, die die aus dem Bild gefallenen Ortsmarken
   lassen.
-- **Alle Punkte sehen gleich aus.** Rot sind die Ortsmarken — eine feste
-  Liste, unabhängig davon, ob ihr Name untergebracht werden konnte. Vorher
-  bekam den roten Punkt, wessen Name gerade daneben passte, und weil beim
-  Verziehen andere Namen passen als vorher, wechselten die Punkte dabei die
-  Farbe.
+- **Ein roter Punkt heißt: hier steht ein Name.** Er ist der Anker der
+  Beschriftung, also ändert sich mit dem Zoom, welche Bahnhöfe rot sind; die
+  übrigen 4.781 sind weiß. Rot bleiben außerdem die Ortsmarken, auch wenn ihr
+  Name keinen Platz fand.
 - Zeiger über einen Punkt zeigt Name, Erreichbarkeit und Zahl der Halte.
 
 ### Die Legende liegt unter der Karte
