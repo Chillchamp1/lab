@@ -331,7 +331,7 @@ den ganzen Zoombereich auf derselben Zahl.
 Zwei Dinge sind dabei nebenbei besser geworden. Die Nachsicht, mit der ein
 Bahnhof noch als „an Land" gilt, stand in **Zellen** und hing damit an der
 Auflösung — die Zahl der Inseln war 537 bei drei Minuten je Zelle und 593 bei
-1,24; jetzt sind es 539, und zwar bei jeder Auflösung. Jetzt steht sie in Minuten (zwei) und die Karte hat immer dieselben
+1,24; jetzt sind es 585, und zwar bei jeder Auflösung. Jetzt steht sie in Minuten (zwei) und die Karte hat immer dieselben
 Inseln. Und die Isochronen liegen auf dem Grundgitter: bei σ = 22 Minuten sind
 das über sieben Zellen, die Linien kommen als Pfad in Weltkoordinaten heraus
 und sind bei jedem Zoom scharf — auf dem Bildgitter waren sie zwanzigmal so
@@ -384,7 +384,7 @@ aber außerhalb des Bildes liegt.
 Wurzel des Zooms etwas größer, gedeckelt — linear lägen sie schon bei Zoom 4
 wie Murmeln.
 
-Nebenbei: die Zahl der Inseln liegt jetzt bei 539 statt 593, weil die
+Nebenbei: die Zahl der Inseln liegt jetzt bei 585 statt 593, weil die
 Nachsicht in Minuten statt in Zellen steht und das Grundgitter drei Minuten
 weit ist. Das ist derselbe Wert wie in der Fassung mit drei Minuten je Zelle
 (537) — er hängt eben nicht mehr an der Auflösung.
@@ -604,7 +604,7 @@ sich, ihre Lage im Bild nicht.
 
 Jetzt gilt **ein** Rahmen für den ganzen Film, und er muss den verzogenen
 Umriss bei jeder Reglerstellung fassen. Die weißen Bahnhofspunkte dürfen
-hinausfliegen — in der Zeitkarte liegen 539 jenseits der Küste, und wer die
+hinausfliegen — in der Zeitkarte liegen 585 jenseits der Küste, und wer die
 alle fassen will, druckt Deutschland auf Briefmarkengröße —, die Grenzen des
 Zeit-Deutschlands nicht.
 
@@ -699,6 +699,77 @@ Neustart findet seine Arbeit wieder, ein anderer Stand fängt neu an. Das ist
 gegen den Fehler gebaut, der bei der Vorlage passiert ist — dort wurden
 stillschweigend Abschnitte aus einem anderen Stand der Seite übernommen, und der
 Film war vorne alt und hinten neu, ohne ein Wort im Protokoll.
+
+## Warum die Punkte am Kartenrand flackerten
+
+Aufgefallen ist es im Film, und die erste Vermutung war falsch. Nicht die
+Beschriftung: über 30 Bilder wechseln nur fünf Namen, jeder einmal. Es waren
+die **Eisschollen**, und ihre Zahl lief durch die Verformung nicht monoton —
+240, 236, 238, 237, 242, 242, 244, 242, 241 …, also 80 Wechsel in 29 Bildern.
+
+Zwei Ursachen, und sie ließen sich trennen, indem gezählt wurde, wie oft
+*derselbe* Bahnhof kippt. Über 60 Bilder:
+
+| Wechsel je Bahnhof | Anzahl |
+| --- | --- |
+| 1 — echter Übertritt | 101 |
+| 2 | 5 |
+| 3 und mehr — Flackern | 29, einer zwölfmal |
+
+**Erstens** lag der Auswanderer-Test auf der ganzzahligen Rasterzelle (`|0`)
+und nahm das Maximum über drei mal drei Zellen. Sein Prüffenster sprang damit
+bei jeder Zellgrenze um eine ganze Zelle weiter, und an der Küste kippte die
+Entscheidung hin und her. Gegriffen wird jetzt bilinear und an einem Ring von
+acht Richtungen: stetig in der Lage des Bahnhofs. Das brachte die 80 Wechsel
+auf 62 — besser, aber nicht gut.
+
+**Zweitens**, und das war der größere Teil: eine Entscheidung ist immer ja oder
+nein, und mit ihr erschien schlagartig eine weiße Scheibe von 23 Minuten
+Durchmesser. Die 101 einmaligen Übertritte sind richtig — aber jeder war ein
+Aufblitzen. Jetzt **wächst** die Scholle: ihr Radius hängt daran, wie weit der
+Bahnhof draußen liegt, und geht an der Küstenlinie auf null.
+
+Nachgemessen über 231 Übertritte in zwei Sekunden, bei 6,9 Pixeln Vollradius:
+
+| Sprung beim Erscheinen | vorher | jetzt |
+| --- | --- | --- |
+| Mittel | 6,9 px (immer die ganze Scheibe) | **0,20 px** |
+| über 1 px | alle 231 | 8 |
+| über 3 px | alle 231 | 2 |
+
+Der Nebeneffekt ist der eigentliche Gewinn: die 34 Bahnhöfe, die genau auf der
+Schwelle kippen, haben jetzt eine Scholle von nahezu null Radius. Ihr Kippen
+ist unsichtbar, **ohne** dass die Entscheidung geglättet oder mit einem
+Gedächtnis versehen werden musste. Beides war der naheliegende Griff und wäre
+teuer gewesen: eine Hysterese hätte gekostet, dass dieselbe Reglerstellung
+dieselbe Karte zeigt — und genau dafür steht die Nachsicht in Minuten und nicht
+in Zellen.
+
+Die Zahl der Inseln in der reinen Zeitkarte liegt damit bei **585** statt 539,
+weil der bilineare Griff etwas strenger ist als das Maximum über neun Zellen.
+Davon haben 558 mehr als halben und 11 weniger als ein Zehntel Radius — das
+Bild ändert sich also kaum, nur die Grenzfälle blenden sich aus. Bei jedem Zoom
+dieselbe Zahl, wie zugesagt.
+
+## Der Film läuft in der Schleife
+
+Die Standbilder waren zu lang, und der Grund lag nicht in ihrer Länge, sondern
+in der Schleife: der Film endet dort, wo er anfängt, also **addierte** sich das
+Standbild am Ende zu dem am Anfang. Zwei mal 3,5 Sekunden waren an der Naht
+sieben Sekunden Stillstand.
+
+Jetzt gibt es am Ende gar keines — das Standbild am Anfang *ist* das der Naht,
+und es dauert 1,6 Sekunden; der Halt in der Zeitkarte 2,4 statt 5. Das letzte
+Bild wird nicht mehr gerechnet, weil es mit dem ersten identisch wäre und dort
+ein Bild lang stotterte; nachgemessen unterscheiden sich erstes und letztes Bild
+um 0,1 von 255 im Mittel. Die Kreuzblende der Texte ist von 0,45 auf 0,3
+Sekunden herunter, weil bei 1,6 Sekunden Halt sonst mehr als ein Viertel davon
+für das Ein- und Ausblenden draufging.
+
+Statt eines Schlussakts mit der Adresse steht die Quelle dauerhaft unten: in
+einer Schleife läuft ohnehin jeder Akt wieder vorbei, und ein Akt, der nur eine
+Adresse zeigt, kostet Sekunden, in denen die Karte stillsteht. Länge jetzt
+**26 Sekunden**, 780 Bilder.
 
 ## Was offen ist
 
