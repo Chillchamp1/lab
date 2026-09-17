@@ -405,3 +405,24 @@ Jeder Schritt schreibt nach `build/zwischen/` und zählt aus, was er getan hat.
 Die beiden schweren Teile sind in C und laufen auf allen Kernen: die
 Reisezeitmatrix braucht 13 Sekunden auf vier Kernen, das Federmodell fünf
 Minuten.
+
+## Ein Video aus der Seite
+
+`build/film.mjs` macht aus der fertigen Seite ein hochkantes mp4 (1080 × 1920
+für Reddit, dazu 1440 × 2560 ohne Bitratendeckel), für die Stellen, an denen
+eine Webseite nicht hingeht. Der Inhalt ist der der Seite: sie wird geladen,
+die Regler ausgeblendet, dann Bild für Bild weitergestellt. Das Werkzeug
+braucht zwei npm-Pakete — die Regel „keine Abhängigkeiten" gilt für alles, was
+*ausgeliefert* wird, und ein Filmskript wird es nicht:
+
+```
+cd build && npm install playwright-core ffmpeg-static
+MESSEN=1 node film.mjs              # Bildzeit je Einstellung, schreibt nichts
+BILDER=0,0.3,0.9 node film.mjs      # einzelne Standbilder zur Ansicht
+KURZ=20 node film.mjs probe.mp4     # die ganze Kette in drei Minuten
+UEBER=6 FEIN=0.20 node film.mjs film.mp4    # der Lauf, rund zwei Stunden
+```
+
+Das Drehbuch steht im Skript (`AKTE`), die Begründung der Einstellungen in
+[STAND.md](STAND.md) — besonders die des Bitratendeckels, die einmal vier
+Rechenläufe gekostet hat.
