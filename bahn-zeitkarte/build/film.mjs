@@ -434,11 +434,21 @@ const gesamt = n - 1 + NACH * FPS;
    Edit-Listen, nicht das Profil — vier Runden Raten, alle wirkungslos. Was
    half, war `maxrate` mit `bufsize` = 2 x maxrate.
 
-   2 600 k ist der Wert, mit dem es durchging, und er bleibt. Was sich gegen
-   `eiszeit-europa` aendert, ist CRF: dort stand 23 und der Lauf kam auf
-   1,93 Mbit/s — anderthalb Mbit/s Luft unter dem Deckel, die niemand nutzte.
-   Mit CRF 18 fuellt der Kodierer sie aus, die **Spitze bleibt gedeckelt**, und
-   damit steigt die Qualitaet, ohne das Risiko anzufassen, um das es ging.
+   2 600 k ist der Wert, mit dem es durchging, und er bleibt. Der Versuch, die
+   Luft darunter mit einem kleineren CRF auszufuellen, war aber ein Denkfehler,
+   und er ist nachgemessen: `maxrate` deckelt **nicht die Spitze**, sondern die
+   Rate im Mittel — kurze Ausschlaege bis zur Puffergroesse sind erlaubt. Mit
+   CRF 18 kam der Lauf auf 2,68 Mbit/s im Mittel, und ueber Fenster von einer,
+   zwei und fuenf Sekunden auf 4,67, 3,65 und 3,10. Die Datei lag damit **am**
+   Deckel statt darunter, und die nachgewiesen angenommene Fassung lag bei
+   1,93. 2,68 ist ungepruefstes Mittelfeld zwischen 1,93 (ging durch) und
+   3,3 bis 4,2 (ging nicht), und darin will man nicht stehen.
+
+   Gedeckelt wird darum das **Mittel** und nicht die Qualitaet: `-b:v 1900k`
+   neben demselben `maxrate`. Nachgemessen 1,97 Mbit/s im Mittel und 3,45 /
+   2,87 / 2,63 ueber die drei Fenster — das ist die Fassung, die es schon
+   einmal durch Reddit geschafft hat, und das ist hier mehr wert als ein Viertel
+   mehr Bitrate.
 
    **film-hoch.mp4 — die Fassung fuer alles andere.** 1 440 x 2 560, CRF 16,
    kein Deckel. Reddit will sie nicht, YouTube und ein Download schon.
@@ -457,7 +467,7 @@ function kodierer(datei, breite, hoehe, mehr) {
 }
 const FASSUNGEN = [
   { name: 'reddit', b: BREITE, h: HOEHE,
-    mehr: ['-crf', '18', '-maxrate', '2600k', '-bufsize', '5200k'] },
+    mehr: ['-b:v', '1900k', '-maxrate', '2600k', '-bufsize', '5200k'] },
   /* CRF 16 gab bei 34 Sekunden 42,8 MB, und damit passte die Datei durch
      keinen der Kanaele, ueber die sie danach verschickt werden sollte (30 MB).
      Eine zweite Kodierung rettet das, kostet aber eine Generation. 19 landet

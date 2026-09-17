@@ -557,10 +557,30 @@ Tonspur — die funktionierende Fassung hat gar keine —, nicht B-Frames, nicht
 Edit-Listen, nicht das Profil. Was hilft, ist `-maxrate 2600k -bufsize 5200k`
 neben dem CRF. Diese Flags stehen hier unverändert.
 
-Geändert ist nur **CRF: 18 statt 23**. Bei 23 kam der Lauf dort auf
-1,93 Mbit/s — anderthalb Mbit/s Luft unter einem Deckel, den niemand nutzte.
-Der Deckel begrenzt die Spitze, nicht den Durchschnitt; ein kleineres CRF füllt
-also die Luft aus, ohne das Risiko anzufassen, um das es ging.
+Was sich ändert, ist die **zweite** Zahl, und der erste Anlauf dazu war ein
+Denkfehler. Gedacht war: der Deckel begrenzt die Spitze, das CRF darf darunter
+also kleiner sein — bei 23 kam der Eiszeit-Lauf auf 1,93 Mbit/s und ließ Luft.
+Mit CRF 18 gerechnet und dann nachgemessen:
+
+| Fenster | CRF 18 | mit `-b:v 1900k` |
+| --- | --- | --- |
+| ganze Datei | 2,68 Mbit/s | **1,97** |
+| 5 s | 3,10 | 2,63 |
+| 2 s | 3,65 | 2,87 |
+| 1 s | 4,67 | 3,45 |
+
+**`maxrate` deckelt nicht die Spitze, sondern die Rate im Mittel** — kurze
+Ausschläge bis zur Puffergröße sind erlaubt, und über zwei Sekunden lief die
+Datei auf 3,65 bei einem Deckel von 2,6. Sie lag damit *am* Deckel statt
+darunter, und 2,68 im Mittel ist ungeprüftes Mittelfeld zwischen 1,93 (ging
+durch) und 3,3 bis 4,2 (ging nicht durch).
+
+Gedeckelt wird darum das **Mittel** und nicht die Qualität: `-b:v 1900k` neben
+demselben `maxrate`, nachgemessen 1,97 Mbit/s. Das ist die Rate, die es schon
+einmal durch Reddit geschafft hat, und die ist hier mehr wert als ein Viertel
+mehr Bitrate. Die Spitze über gleitende Fenster liest
+`ffprobe -show_entries packet=pts_time,size` aus; es dauert zwei Minuten und
+beantwortet die Frage, die man sonst glaubt.
 
 **Gerechnet wird groß und verkleinert.** Die Seite deckelt die Punktdichte bei
 2 und das Feldgitter bei 700.000 Zellen, weil dort jedes Bild in Echtzeit
