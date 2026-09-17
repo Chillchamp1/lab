@@ -388,6 +388,43 @@ Nachsicht in Minuten statt in Zellen steht und das Grundgitter drei Minuten
 weit ist. Das ist derselbe Wert wie in der Fassung mit drei Minuten je Zelle
 (537) — er hängt eben nicht mehr an der Auflösung.
 
+## Die Farbe eines Punktes darf nichts über den Platz sagen
+
+Beim Verziehen wechselten Bahnhofspunkte zwischen Weiß und Rot, und die Frage
+war, warum. Nachgesehen: die Punktebene zeichnet alle 4.781 Bahnhöfe weiß, und
+die Beschriftung zeichnete darüber einen roten Kreis für jeden Bahnhof, dessen
+Name untergebracht werden konnte — 83 bei morph 0, 81 bei morph 1, und
+dazwischen eine andere Auswahl, weil beim Verziehen andere Namen passen als
+vorher. Es sah aus, als sagte die Farbe etwas über den Bahnhof; sie sagte
+etwas über den Platz.
+
+Rot bekommen jetzt die **Ortsmarken**, unabhängig davon, ob ihr Name
+untergebracht wurde: eine feste Liste, nachgemessen 62 bei jedem Morphwert.
+Ein Name zeichnet keinen eigenen Punkt mehr — außer wenn die Punktebene
+ausgeschaltet ist, denn dann braucht er einen Anker.
+
+Der Fehler ist mit dem Einblenden der Punkte entstanden. Vorher waren die
+Punkte aus, und der rote Kreis war die *einzige* Marke — dann fällt nicht auf,
+dass er kommt und geht, weil dort vorher nichts war.
+
+## Zu viele Namen beim Hineinzoomen
+
+Die Zahl der Bahnhofsnamen hing am Zoom (dreißig je Stufe, höchstens 260), und
+bei Zoom 8 standen 184 im Bild. Das war kein Kartenbild mehr, sondern ein
+Register.
+
+Jetzt sagt nicht der Zoom, wie viele dazukommen, sondern der **Platz**: die
+Gesamtzahl der Namen im Bild bleibt ungefähr gleich. Beim Hineinzoomen fallen
+die Ortsmarken aus dem Bild — von 62 sind bei Zoom 8 noch drei übrig —, und
+genau diese Lücke füllen die Bahnhofsnamen auf.
+
+| Zoom | Namen gesamt | davon Bahnhöfe |
+| --- | --- | --- |
+| 1,15 | 81 | 11 |
+| 2 | 62 | 6 |
+| 4 | 62 | 37 |
+| 8 | 62 | 59 |
+
 ## Was offen ist
 
 **Die Bevölkerung ist innerhalb eines Kreises gleichmäßig verteilt.** Das ist
