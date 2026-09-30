@@ -2932,10 +2932,14 @@ async function dreiStarten() {
       '  float nl = max(dot(vec3(0.0, 0.0, 1.0), uSonne), 0.0);',
       '  float sw = schatten(vUv, 0.0004).x;',
       '  vec3 c = wasser * (0.35 + 0.9 * nl * sw) + himmel(R) * fr * 0.8 + ggx(N, uSonne, V, 0.07) * SONNENFARBE * 1.6 * sw;',
-      '  float deck = 1.0 - exp(-tiefe / 25.0);',
+      // Durchsichtiger (Nutzer 30.09.2026): flaches Wasser zeigt den Grund,
+      // die Tiefsee deckt, und unter flachem Blickwinkel spiegelt es mehr als
+      // es durchlaesst (Fresnel). Kostet nichts - nur die Deckkraft ist anders.
+      '  float deck = 0.22 + 0.58 * (1.0 - exp(-tiefe / 350.0));',
+      '  deck = mix(deck, 1.0, fr * 0.8);',
       '  float kl = kueste(vUv);',
       '  c = mix(c, vec3(0.85, 0.90, 0.95), 0.26 * kl);',
-      '  gl_FragColor = vec4(dunst(c, vWelt), clamp(0.55 + 0.45 * deck + 0.3 * kl, 0.0, 1.0));',
+      '  gl_FragColor = vec4(dunst(c, vWelt), clamp(deck + 0.3 * kl, 0.0, 1.0));',
       '  #include <tonemapping_fragment>',
       '  #include <colorspace_fragment>',
       '}'].join('\n'),
