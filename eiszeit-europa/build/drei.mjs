@@ -64,14 +64,29 @@ async function dreiStarten() {
   // steht sie damit im Gegenlicht, und Eis und Meer glaenzen ohne Drehen.
   // Muss zur gebackenen Lichtkarte passen (licht_backen.py, LICHT_SONNE).
   const sonne = new THREE.Vector3(0.34, 0.94, 0.27).normalize();
+  /* Die heutige Kuestenlinie: das moderne DEM als Textur, die Linie zieht der
+     Shader bei null (Polder als Land, wie in der flachen Karte). Das DEM kommt
+     in 10-m-Stufen; die Schwelle liegt deshalb bei 5 m, zwischen null und der
+     ersten Landstufe. */
+  const heuteDem = new Uint16Array(GW * GH);
+  for (let i = 0; i < GW * GH; i++) {
+    let v = MASKE[i] ? DEM[i] : -4000;
+    if (POLDER[i] && v < 10) v = 10;
+    heuteDem[i] = THREE.DataUtils.toHalfFloat(v);
+  }
+  const heuteTex = new THREE.DataTexture(heuteDem, GW, GH, THREE.RedFormat, THREE.HalfFloatType);
+  heuteTex.magFilter = heuteTex.minFilter = THREE.LinearFilter;
+  heuteTex.needsUpdate = true;
+
   const gemein = {
+    uHeuteDem: { value: heuteTex }, uHeute: { value: 1 },
     uHoehe: { value: null }, uFarbe: { value: null }, uLicht: { value: licht },
     uTexel: { value: new THREE.Vector2(1, 1) }, uGroesse: { value: new THREE.Vector2(W3, H3) },
     uSonne: { value: sonne }, uSkala: { value: DREI_UEBER / 1e6 }, uTief: { value: DREI_TIEF },
     uZeit: { value: 0 },
   };
   const GLSL_GEMEIN = [
-    'uniform sampler2D uHoehe; uniform sampler2D uFarbe; uniform sampler2D uLicht;',
+    'uniform sampler2D uHoehe; uniform sampler2D uFarbe; uniform sampler2D uLicht; uniform sampler2D uHeuteDem; uniform float uHeute;',
     'uniform vec2 uTexel; uniform vec2 uGroesse; uniform vec3 uSonne; uniform float uSkala; uniform float uTief; uniform float uZeit;',
     'float hoeheBei(vec2 uv) { return texture2D(uHoehe, vec2(uv.x, 1.0 - uv.y)).r; }',
     'vec4 farbeBei(vec2 uv) { return texture2D(uFarbe, vec2(uv.x, 1.0 - uv.y)); }',
@@ -117,6 +132,15 @@ async function dreiStarten() {
     '  return mix(c, DUNST * 0.55, (1.0 - exp(-max(d - 6.5, 0.0) * 0.12)) * 0.35);',
     '}',
   ].join('\\n');
+  // Haarfeine heutige Kuestenlinie, etwa ein Bildpunkt breit, egal wie nah.
+  // Nur im Fragment-Shader: fwidth gibt es im Vertex-Shader nicht.
+  const GLSL_KUESTE = [
+    'float kueste(vec2 uv) {',
+    '  float d = texture2D(uHeuteDem, vec2(uv.x, 1.0 - uv.y)).r - 5.0;',
+    '  float w = max(fwidth(d), 1e-3);',
+    '  return uHeute * (1.0 - smoothstep(0.0, w * 1.2, abs(d)));',
+    '}',
+  ].join('\\n');
 
   // ---------------------------------------------------------------- Gelaende
   const n = Math.min(rW, 700), m = Math.round(n * GH / GW);
@@ -130,7 +154,8 @@ async function dreiStarten() {
       '  vec4 w = modelMatrix * vec4(p, 1.0); vWelt = w.xyz;',
       '  gl_Position = projectionMatrix * viewMatrix * w;',
       '}'].join('\\n'),
-    fragmentShader: GLSL_GEMEIN + [
+    fragmentShader: GLSL_GEMEIN + '\\n' + GLSL_KUESTE + [
+      '',
       'varying vec2 vUv; varying vec3 vWelt;',
       'void main() {',
       '  vec4 f = farbeBei(vUv);',
@@ -173,7 +198,9 @@ async function dreiStarten() {
       // Ein schmaler dunkler Saum am Eisrand: die Kante liest sich als Stufe.
       '  float saum = smoothstep(0.54, 0.62, f.a) - smoothstep(0.62, 0.74, f.a);',
       '  eisC *= 1.0 - 0.35 * saum;',
-      '  vec3 c = dunst(mix(fels, eisC, eis), vWelt);',
+      '  vec3 c = mix(fels, eisC, eis);',
+      '  c = mix(c, vec3(0.92, 0.94, 0.96) * max(lb.g, 0.7), 0.26 * kueste(vUv));',
+      '  c = dunst(c, vWelt);',
       '  gl_FragColor = vec4(c, 1.0);',
       '  #include <tonemapping_fragment>',
       '  #include <colorspace_fragment>',
@@ -191,7 +218,8 @@ async function dreiStarten() {
       'varying vec2 vUv; varying vec3 vWelt;',
       'void main() { vUv = uv; vec4 w = modelMatrix * vec4(position, 1.0); vWelt = w.xyz;',
       '  gl_Position = projectionMatrix * viewMatrix * w; }'].join('\\n'),
-    fragmentShader: GLSL_GEMEIN + [
+    fragmentShader: GLSL_GEMEIN + '\\n' + GLSL_KUESTE + [
+      '',
       'varying vec2 vUv; varying vec3 vWelt;',
       'float rausch(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }',
       'float welle(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);',
@@ -218,7 +246,9 @@ async function dreiStarten() {
       '  float sw = schatten(vUv, 0.0004).x;',
       '  vec3 c = wasser * (0.35 + 0.9 * nl * sw) + himmel(R) * fr * 0.8 + ggx(N, uSonne, V, 0.07) * SONNENFARBE * 1.6 * sw;',
       '  float deck = 1.0 - exp(-tiefe / 25.0);',
-      '  gl_FragColor = vec4(dunst(c, vWelt), clamp(0.55 + 0.45 * deck, 0.0, 1.0));',
+      '  float kl = kueste(vUv);',
+      '  c = mix(c, vec3(0.85, 0.90, 0.95), 0.26 * kl);',
+      '  gl_FragColor = vec4(dunst(c, vWelt), clamp(0.55 + 0.45 * deck + 0.3 * kl, 0.0, 1.0));',
       '  #include <tonemapping_fragment>',
       '  #include <colorspace_fragment>',
       '}'].join('\\n'),
@@ -307,7 +337,40 @@ async function dreiStarten() {
   komponist.addPass(bloom);
   komponist.addPass(new OutputPass());
 
-  drei = { THREE, r, szene, kam, steuer, leinwand, gemein, hoeheTex: null, farbeTex: null, hBuf: null, fBuf: null, w: 0, h: 0 };
+  // ------------------------------------------------------------- Staedte
+  // Wie in der flachen Karte: Punkt, Name und, wo gerade Eis liegt, dessen
+  // Maechtigkeit. HTML ueber der Leinwand, je Bild auf den Schirm projiziert —
+  // die Schrift bleibt scharf und gleich gross, egal wie gedreht wird.
+  const orteBox = document.createElement('div');
+  orteBox.style.cssText = 'position:absolute;inset:0;pointer-events:none;overflow:hidden;display:none';
+  feld.appendChild(orteBox);
+  const orte3 = ORTE.map(o => {
+    const el = document.createElement('div');
+    el.style.cssText = 'position:absolute;left:0;top:0;white-space:nowrap;font:600 11.5px/1.2 system-ui,sans-serif;'
+      + 'color:#f4f6f8;text-shadow:0 0 3px rgba(0,0,0,.9),0 1px 2px rgba(0,0,0,.8);will-change:transform';
+    el.innerHTML = '<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#fff;'
+      + 'box-shadow:0 0 0 1.5px rgba(0,0,0,.55);margin-right:5px;vertical-align:1px"></span>'
+      + '<span></span><div style="font-weight:500;font-size:10px;opacity:.85;margin-left:10px"></div>';
+    orteBox.appendChild(el);
+    return { o, el, name: el.children[1], zweit: el.children[2], x: (o.x / GW - 0.5) * W3, y: (0.5 - o.y / GH) * H3, z: 0, eis: 0, text: '' };
+  });
+  orte3.forEach(s => { s.name.textContent = s.o.name; });
+  const pv = new THREE.Vector3();
+  function orteSetzen() {
+    if (!HEUTE) { orteBox.style.display = 'none'; return; }
+    orteBox.style.display = 'block';
+    const b = leinwand.clientWidth, h = leinwand.clientHeight;
+    for (const s of orte3) {
+      pv.set(s.x, s.y, s.z + 0.002).project(kam);
+      if (pv.z > 1 || pv.x < -1.05 || pv.x > 1.05 || pv.y < -1.05 || pv.y > 1.05) { s.el.style.display = 'none'; continue; }
+      s.el.style.display = 'block';
+      s.el.style.transform = 'translate(' + ((pv.x + 1) / 2 * b - 2.5).toFixed(1) + 'px,' + ((1 - pv.y) / 2 * h - 8).toFixed(1) + 'px)';
+      const t = s.eis >= EISSCHWELLE ? nfm.format(Math.round(s.eis / 10) * 10) + ' m under ice' : '';
+      if (t !== s.text) { s.zweit.textContent = t; s.text = t; }
+    }
+  }
+
+  drei = { THREE, r, szene, kam, steuer, leinwand, gemein, hoeheTex: null, farbeTex: null, hBuf: null, fBuf: null, w: 0, h: 0, orte3, orteBox };
   function groesse() {
     const b = feld.clientWidth || breite, h = feld.clientHeight || hoehe;
     r.setSize(b, h, false); kam.aspect = b / Math.max(1, h); kam.updateProjectionMatrix();
@@ -320,6 +383,7 @@ async function dreiStarten() {
     gemein.uZeit.value = t / 1000;
     steuer.update();
     komponist.render();
+    orteSetzen();
   });
   return drei;
 }
@@ -363,6 +427,15 @@ function dreiFelder() {
   }
   drei.hoeheTex.needsUpdate = true;
   drei.farbeTex.needsUpdate = true;
+  gemein.uHeute.value = HEUTE ? 1 : 0;
+  // Hoehe und Eis an den Staedten fuer die Beschriftung
+  for (const s of drei.orte3) {
+    const fx = Math.max(0, Math.min(rW - 1, Math.round(s.o.x / GW * rW)));
+    const fy = Math.max(0, Math.min(rH - 1, Math.round(s.o.y / GH * rH)));
+    const fi = fy * rW + fx, hh = Math.max(0, flaeche[fi]);
+    s.z = hh * DREI_UEBER / 1e6;
+    s.eis = maskeR[fi] ? eisD[fi] : 0;
+  }
 }
 
 async function dreiSchalten(an) {
@@ -392,6 +465,7 @@ async function dreiSchalten(an) {
     drei.groesse();
   } else if (drei) {
     drei.leinwand.style.display = 'none';
+    drei.orteBox.style.display = 'none';
     cv.style.visibility = '';
   }
   zeichne();
