@@ -80,7 +80,7 @@ async function dreiStarten() {
     '  float t = clamp(d.z * 0.5 + 0.5, 0.0, 1.0);',
     '  vec3 c = mix(vec3(0.62, 0.74, 0.90), vec3(0.16, 0.34, 0.72), pow(t, 0.8));',
     '  float s = max(dot(normalize(d), uSonne), 0.0);',
-    '  return c + vec3(1.0, 0.93, 0.82) * (pow(s, 900.0) * 40.0 + pow(s, 24.0) * 0.35);',
+    '  return c + vec3(1.0, 0.93, 0.82) * (pow(s, 900.0) * 10.0 + pow(s, 24.0) * 0.2);',
     '}',
     'float ggx(vec3 n, vec3 l, vec3 v, float a) {',
     '  vec3 h = normalize(l + v); float nh = max(dot(n, h), 0.0); float a2 = a * a;',
@@ -169,7 +169,7 @@ async function dreiStarten() {
       '  float amb = (0.26 + 0.14 * Ne.z) * mulde;',
       '  float sonneEis = sch.x;',
       '  vec3 eisC = eisF * (nl * 2.3 * SONNENFARBE * mulde * sonneEis + amb * vec3(0.50, 0.64, 0.95))',
-      '            + ggx(Ne, uSonne, V, 0.10) * SONNENFARBE * 4.0 * sonneEis + himmel(R) * fr * 0.7;',
+      '            + ggx(Ne, uSonne, V, 0.12) * SONNENFARBE * 1.8 * sonneEis + himmel(R) * fr * 0.55;',
       // Ein schmaler dunkler Saum am Eisrand: die Kante liest sich als Stufe.
       '  float saum = smoothstep(0.54, 0.62, f.a) - smoothstep(0.62, 0.74, f.a);',
       '  eisC *= 1.0 - 0.35 * saum;',
@@ -216,7 +216,7 @@ async function dreiStarten() {
       '  vec3 wasser = mix(flach, tief, 1.0 - exp(-tiefe / 180.0));',
       '  float nl = max(dot(vec3(0.0, 0.0, 1.0), uSonne), 0.0);',
       '  float sw = schatten(vUv, 0.0004).x;',
-      '  vec3 c = wasser * (0.35 + 0.9 * nl * sw) + himmel(R) * fr + ggx(N, uSonne, V, 0.06) * SONNENFARBE * 4.0 * sw;',
+      '  vec3 c = wasser * (0.35 + 0.9 * nl * sw) + himmel(R) * fr * 0.8 + ggx(N, uSonne, V, 0.07) * SONNENFARBE * 1.6 * sw;',
       '  float deck = 1.0 - exp(-tiefe / 25.0);',
       '  gl_FragColor = vec4(dunst(c, vWelt), clamp(0.55 + 0.45 * deck, 0.0, 1.0));',
       '  #include <tonemapping_fragment>',
@@ -242,7 +242,7 @@ async function dreiStarten() {
       '  vec3 oben = mix(vec3(0.20, 0.36, 0.70), vec3(0.04, 0.10, 0.30), smoothstep(0.0, 0.6, d.z));',
       '  vec3 unten = vec3(0.018, 0.022, 0.035);',
       '  vec3 c = mix(unten, oben, smoothstep(-0.12, 0.04, d.z));',
-      '  c += SONNENFARBE * (pow(s, 8.0) * 0.22 + pow(s, 80.0) * 0.6) * smoothstep(-0.2, 0.05, d.z);',
+      '  c += SONNENFARBE * (pow(s, 8.0) * 0.12 + pow(s, 80.0) * 0.3) * smoothstep(-0.2, 0.05, d.z);',
       '  gl_FragColor = vec4(c, 1.0);',
       '  #include <tonemapping_fragment>',
       '  #include <colorspace_fragment>',
@@ -302,7 +302,8 @@ async function dreiStarten() {
   // Farbraum macht dann der OutputPass, nicht mehr das Material.
   const komponist = new EffectComposer(r);
   komponist.addPass(new RenderPass(szene, kam));
-  const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.2, 0.3, 1.05);
+  // Nutzer 30.09.2026: "Blendung zu stark" -> schwaecher und erst ab hellerem Licht
+  const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.08, 0.25, 1.3);
   komponist.addPass(bloom);
   komponist.addPass(new OutputPass());
 
@@ -369,10 +370,25 @@ async function dreiSchalten(an) {
   const knopf = document.getElementById('dreid');
   if (knopf) knopf.setAttribute('aria-pressed', an ? 'true' : 'false');
   if (an) {
-    try { await dreiStarten(); }
-    catch (e) { DREID = false; if (knopf) { knopf.setAttribute('aria-pressed', 'false'); knopf.title = 'WebGL not available: ' + e.message; } return; }
-    drei.leinwand.style.display = 'block';
+    // Die flache Karte gar nicht erst zeigen, solange 3D laedt: 3D ist die Vorgabe.
     cv.style.visibility = 'hidden';
+    let hinweis = document.getElementById('dreiLaedt');
+    if (!drei && !hinweis) {
+      hinweis = document.createElement('div');
+      hinweis.id = 'dreiLaedt';
+      hinweis.textContent = 'Loading 3D\\u2026';
+      hinweis.style.cssText = 'position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:13px;pointer-events:none';
+      cv.parentElement.appendChild(hinweis);
+    }
+    try { await dreiStarten(); }
+    catch (e) {
+      DREID = false; cv.style.visibility = '';
+      if (hinweis) hinweis.remove();
+      if (knopf) { knopf.setAttribute('aria-pressed', 'false'); knopf.title = 'WebGL not available: ' + e.message; }
+      zeichne(); return;
+    }
+    if (hinweis) hinweis.remove();
+    drei.leinwand.style.display = 'block';
     drei.groesse();
   } else if (drei) {
     drei.leinwand.style.display = 'none';
