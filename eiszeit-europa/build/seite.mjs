@@ -303,6 +303,8 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
 .quellen summary{cursor:pointer}
 .quellen p{margin:.45em 0 0}
 .feld{position:relative}
+.orte3d{font-size:11.5px}
+@media (max-width:700px){.orte3d{font-size:5.75px}}
 </style>
 <script type="importmap">{"imports":{"three":"./drei/three.module.min.js"}}</script>
 </head><body>

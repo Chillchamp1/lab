@@ -291,6 +291,8 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
 .quellen summary{cursor:pointer}
 .quellen p{margin:.45em 0 0}
 .feld{position:relative}
+.orte3d{font-size:11.5px}
+@media (max-width:700px){.orte3d{font-size:5.75px}}
 </style>
 <script type="importmap">{"imports":{"three":"./drei/three.module.min.js"}}</script>
 </head><body>
@@ -3026,16 +3028,20 @@ async function dreiStarten() {
   // Wie in der flachen Karte: Punkt, Name und, wo gerade Eis liegt, dessen
   // Maechtigkeit. HTML ueber der Leinwand, je Bild auf den Schirm projiziert —
   // die Schrift bleibt scharf und gleich gross, egal wie gedreht wird.
+  // Alle Masse in em: die Schriftgroesse setzt das CSS (.orte3d), auf dem
+  // Telefon halb so gross (Nutzer 30.09.2026).
   const orteBox = document.createElement('div');
+  orteBox.className = 'orte3d';
   orteBox.style.cssText = 'position:absolute;inset:0;pointer-events:none;overflow:hidden;display:none';
   feld.appendChild(orteBox);
+  const schmal = matchMedia('(max-width: 700px)');
   const orte3 = ORTE.map(o => {
     const el = document.createElement('div');
-    el.style.cssText = 'position:absolute;left:0;top:0;white-space:nowrap;font:600 11.5px/1.2 system-ui,sans-serif;'
+    el.style.cssText = 'position:absolute;left:0;top:0;white-space:nowrap;font-weight:600;line-height:1.2;font-family:system-ui,sans-serif;'
       + 'color:#f4f6f8;text-shadow:0 0 3px rgba(0,0,0,.9),0 1px 2px rgba(0,0,0,.8);will-change:transform';
-    el.innerHTML = '<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#fff;'
-      + 'box-shadow:0 0 0 1.5px rgba(0,0,0,.55);margin-right:5px;vertical-align:1px"></span>'
-      + '<span></span><div style="font-weight:500;font-size:10px;opacity:.85;margin-left:10px"></div>';
+    el.innerHTML = '<span style="display:inline-block;width:.44em;height:.44em;border-radius:50%;background:#fff;'
+      + 'box-shadow:0 0 0 .13em rgba(0,0,0,.55);margin-right:.44em;vertical-align:.08em"></span>'
+      + '<span></span><div style="font-weight:500;font-size:.87em;opacity:.85;margin-left:1em"></div>';
     orteBox.appendChild(el);
     return { o, el, name: el.children[1], zweit: el.children[2], x: (o.x / GW - 0.5) * W3, y: (0.5 - o.y / GH) * H3, z: 0, eis: 0, text: '' };
   });
@@ -3049,7 +3055,8 @@ async function dreiStarten() {
       pv.set(s.x, s.y, s.z + 0.002).project(kam);
       if (pv.z > 1 || pv.x < -1.05 || pv.x > 1.05 || pv.y < -1.05 || pv.y > 1.05) { s.el.style.display = 'none'; continue; }
       s.el.style.display = 'block';
-      s.el.style.transform = 'translate(' + ((pv.x + 1) / 2 * b - 2.5).toFixed(1) + 'px,' + ((1 - pv.y) / 2 * h - 8).toFixed(1) + 'px)';
+      const k = schmal.matches ? 0.5 : 1;
+      s.el.style.transform = 'translate(' + ((pv.x + 1) / 2 * b - 2.5 * k).toFixed(1) + 'px,' + ((1 - pv.y) / 2 * h - 8 * k).toFixed(1) + 'px)';
       const t = s.eis >= EISSCHWELLE ? nfm.format(Math.round(s.eis / 10) * 10) + ' m under ice' : '';
       if (t !== s.text) { s.zweit.textContent = t; s.text = t; }
     }
