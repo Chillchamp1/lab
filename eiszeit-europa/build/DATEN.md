@@ -101,12 +101,18 @@ die Seite selbst bleibt in sich geschlossen und wird dadurch nicht schwerer.
 Der Code steht in `drei.mjs`.
 
 `../drei/licht.webp` ist eine in Blender (Cycles) gebackene Lichtkarte des
-heutigen Geländes: Sonne aus Nordwest, Himmelslicht, Schlagschatten, dazu das
+heutigen Geländes: Sonne aus Nord-Nordost, 15° hoch (`LICHT_SONNE=0.34,0.94,0.27`
+— im Standardblick nach Norden Gegenlicht, damit Eis und Meer glänzen), Himmelslicht, Schlagschatten, dazu das
 unverglättete 1,5-km-Relief als Bump — 3 040 × 3 548 gebacken, auf 1 520 × 1 774
 verkleinert. Gebacken wurde im Filmprojekt, aus dem diese Nachträge stammen;
 das Skript liegt als `licht_backen.py` zum Nachlesen hier (es braucht dessen
 Szene). Überhöhung dort und in `drei.mjs`: 24-fach, Tiefsee logarithmisch
 gestaucht — beides muss gleich sein, sonst passen Schatten und Relief nicht.
+
+Die 3D-Ansicht ist die Vorgabe beim Laden (wo WebGL 2 geht; `#flach` in der
+Adresse startet flach). Die Eisoberfläche wird für 3D nach Mächtigkeit
+geglättet — im Feld stehen sonst Fjorde und Gipfel des heutigen DEM, die unter
+einem Eisschild nicht an der Oberfläche liegen —, nie unter den Fels.
 
 Gelände: Farbe der Karte (oder Biome) × gebackenes Licht. Eis: live, mit Glanz
 (GGX) und Fresnel-Spiegelung des Himmels. Meer: eigene Fläche mit Tiefenfarbe,

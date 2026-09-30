@@ -23,9 +23,13 @@ sc = bpy.data.scenes["Map"]
 sc.frame_set(C.FRAMES)                       # heute
 
 # Nur Gelaende und Licht
+from mathutils import Vector
+ZUR_SONNE = Vector([float(v) for v in os.environ.get("LICHT_SONNE", "-0.70,0.62,0.36").split(",")]).normalized()
 for ob in sc.objects:
     if ob.type == "MESH" and ob.name != "Europa":
         ob.hide_render = True
+    if ob.name == "Sonne":
+        ob.rotation_euler = (-ZUR_SONNE).to_track_quat("-Z", "Y").to_euler()
     if ob.type == "LIGHT":
         ob.hide_render = ob.name not in ("Sonne", "Himmel_oben")
         if ob.name == "Sonne":

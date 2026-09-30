@@ -3394,6 +3394,10 @@ setzeZeit(0);
 masse(); marken(); legende(); notizen(); zeichne();
 requestAnimationFrame(schlag);
 setTimeout(starte, 700);
+/* Die 3D-Ansicht ist die Vorgabe, wo WebGL 2 geht; sonst bleibt die flache
+   Karte stehen, und der Knopf traegt den Grund im Titel. Mit #flach in der
+   Adresse startet die Seite flach. */
+if (window.WebGL2RenderingContext && !/flach/.test(location.hash)) dreiSchalten(true);
 `;
 }
 
