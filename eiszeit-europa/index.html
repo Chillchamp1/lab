@@ -2823,7 +2823,7 @@ async function dreiStarten() {
     'float kueste(vec2 uv) {',
     '  float d = texture2D(uHeuteDem, vec2(uv.x, 1.0 - uv.y)).r - 5.0;',
     '  float w = max(fwidth(d), 1e-3);',
-    '  return uHeute * (1.0 - smoothstep(0.0, w * 1.2, abs(d)));',
+    '  return uHeute * (1.0 - smoothstep(0.0, w * 0.6, abs(d)));',
     '}',
   ].join('\n');
 
