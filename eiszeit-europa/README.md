@@ -42,6 +42,27 @@ Ergebnis.
 Erfundenes Gelände kommt nicht durch: `build.mjs` erkennt Gerüstdaten und
 **weigert sich**, daraus eine Seite ohne Wasserzeichen zu schreiben.
 
+## Nachträge aus dem Film (30.09.2026)
+
+Aus dieser Seite ist ein gerenderter Film entstanden, und bei ihm sind vier
+Dinge aufgefallen, die auch hier fehlten. Alle vier sind nachgezogen; Details
+in [build/DATEN.md](build/DATEN.md), Abschnitt „Zusätze".
+
+- **BRITICE-CHRONO** (Clark u. a. 2022) statt DATED-1 für das britisch-irische
+  Eis — im *Band*, in einem festen Gebiet um die Britischen Inseln. DATED-1
+  gilt dort als überholt: Maximum schon bei 26–25 ka, ein Eislappen bis in die
+  Keltische See, Cornwall und Devon eisfrei.
+- **Polder** sind heute Land. Das moderne DEM hat eingedeichtes Land unter
+  null, und die Karte zeichnete die Niederlande „heute" teils als Meer.
+- **Gebirgsgletscher** ausserhalb der Eisschilde, als ausdrücklich benannte
+  **Schätzung** über die Schneegrenze. ICE-6G_C hat über den Alpen, den
+  Pyrenäen und allen anderen Gebirgen kein Eis — die Karte zeigte die Alpen im
+  Maximum eisfrei.
+- **Biome** als zweiter Blick auf das Land (Knopf *Biomes*): rekonstruierte
+  Vegetation in sechs Klassen, Modell mit Pollen korrigiert.
+
+Die Quellen stehen jetzt auch **auf der Seite** („Sources and method").
+
 ## Was die Karte zeigt
 
 **Das Relief ist echt, die Bewegung ist rekonstruiert.** Das ist die eine

@@ -48,6 +48,51 @@ Rahmen bis Grönland reicht, entscheidet die Probe: DEM gegen `Topo`(0),
 Median 76 m über Grönland und 52 m über Europa — `surface` trifft, `bed` läge
 drei Kilometer daneben.
 
+## Zusätze (30.09.2026): BRITICE, Polder, Gebirgseis, Biome
+
+Zwei weitere Schritte nach `quellen.py`, beide optional — fehlen ihre
+Ausgaben, baut `build.mjs` die Seite wie vorher:
+
+```
+pip install pyproj pillow scipy pandas openpyxl h5py
+python3 zusatz.py              # BRITICE-Raender, Gebiet, Polder, Gebirgseis -> zwischen/
+python3 vegetation.py          # Biome je Zeitscheibe -> zwischen/biome.u8
+node build.mjs > ../index.html
+```
+
+Die Rohdaten dafür lädt `holen.sh` (noch) nicht; sie gehören von Hand an diese
+Stellen:
+
+| Ziel | Quelle |
+|---|---|
+| `data/raw/britice/Data S3 …GIS data/` | BRITICE-CHRONO, Clark u. a. 2022, Boreas 51, 699–758. [PANGAEA doi:10.1594/PANGAEA.945729](https://doi.pangaea.de/10.1594/PANGAEA.945729), Datei `Data_S3_BRITICE_CHRONO_empirical_reconstruction_GIS_data_zip.zip` (6 MB, CC-BY 4.0), entpackt |
+| `data/raw/ne/ne_10m_land/`, `ne_10m_lakes/` | [Natural Earth 1:10m](https://www.naturalearthdata.com/), gemeinfrei |
+| `data/raw/veg/Biome_assignments_V1.1_89_time-slices.csv` | Allen u. a. 2020, J. Biogeogr. 47, 2073. [Zenodo 3966353](https://doi.org/10.5281/zenodo.3966353) |
+| `data/raw/veg/zanon2018/…/forest_cover_*.grd` | Zanon u. a. 2018, Front. Plant Sci. 9:253. [PANGAEA 886656](https://doi.org/10.1594/PANGAEA.886656) |
+| `data/raw/veg/davis2024/Davis et al 2024  Figure data and LGM pollen counts.xlsx` | Davis u. a. 2024, Clim. Past 20, 1939 (Supplement) |
+| `data/raw/veg/BIOME6000_classified_plotfile_v1.csv` | BIOME 6000, Harrison 2017, [doi:10.17864/1947.99](https://doi.org/10.17864/1947.99) |
+
+Was die beiden Skripte tun und warum, steht in ihrem Kopf. Kurz:
+
+- **BRITICE-CHRONO** ersetzt DATED-1 für das britisch-irische Eis (26–15 ka,
+  Randlinien *optimum*, *max*, *min*). Die Seite zeichnet es nur im Gebiet
+  `REGION` (Britische Inseln, Irische und Keltische See, westliche Nordsee bis
+  3,5° O), DATED-1 nur ausserhalb. Anlass war ein Hinweis, DATED-1 sei dort
+  überholt; BRITICE setzt das Maximum bei 26–25 ka, mit einem Eislappen in die
+  Keltische See und eisfreiem Cornwall und Devon.
+- **Polder**: Land nach Natural Earth, das im DEM unter null liegt (2 194
+  Zellen, v. a. Niederlande und deutsche Nordseeküste). Die Seite hebt es
+  zwischen 1 ka und heute auf +1 m, und die heutige Küstenlinie läuft um die
+  Polder herum statt durch sie.
+- **Gebirgseis**: ICE-6G_C hat über Alpen, Pyrenäen, Karpaten, Balkan, Apennin
+  und Kaukasus kein Eis. Eine Schätzung über die Schneegrenze (ELA): 41
+  Stützpunkte mit LGM-Werten aus der Literatur, Gauss-verteilt; die Seite
+  rechnet ELA(t) = ELA_LGM + 1200 m × (1 − Kälte), die Kälte aus der
+  LGMR-Temperatur. Auf der Seite als Schätzung benannt.
+- **Biome**: dieselbe Rechnung wie im Film (Modell Allen 2020, im Glazial mit
+  Pollen korrigiert, Holozän-Waldanteil aus Zanon 2018), auf sechs Klassen
+  gerundet, 24 km Raster, je ICE-6G-Zeitscheibe. Schalter *Biomes*, beim Laden aus.
+
 ## Prüfsummen
 
 Zwei Dateien, und sie tun Verschiedenes:

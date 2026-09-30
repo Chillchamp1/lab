@@ -293,6 +293,14 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
 /* Die Temperaturzeile ruecht enger an den Meeresspiegel: die beiden gehoeren
    zusammen — was das Eis dem Meer nahm und was es die Welt an Waerme kostete. */
 .temp{margin-top:1px}
+/* Die Biom-Legende ersetzt die Gesteinsleiter, solange der Schalter an ist:
+   sechs Klassen sind Flaechen, keine Hoehenstufen, und brauchen keine Zahl. */
+.biomLeg{display:flex;flex-wrap:wrap;gap:3px 12px;font-size:11px;line-height:1.3;margin:2px 0 3px}
+.biomLeg span{display:inline-flex;align-items:center;gap:5px;color:var(--muted)}
+.biomLeg i{width:12px;height:10px;display:inline-block;border-radius:2px;flex:0 0 auto}
+.quellen{font-size:11px;line-height:1.45;color:var(--muted);margin-top:10px}
+.quellen summary{cursor:pointer}
+.quellen p{margin:.45em 0 0}
 </style>
 </head><body>
 <div class="wrap">
@@ -309,6 +317,7 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
         <div><div class="rampe" id="rampe"></div><div class="stufen" id="stufen"></div></div>
         <div><div class="rampe" id="rampeEis"></div><div class="stufen" id="stufenEis"></div></div>
       </div>
+      <div class="biomLeg" id="biomLeg" hidden></div>
       <p class="klein" id="legText"></p>
     </div>
   </div>
@@ -333,12 +342,20 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
     <label><span>Tilt</span><input type="range" id="kipp" min="0" max="100" value="0" step="1" aria-label="Tilt"></label>
     <label><span>Turn</span><input type="range" id="dreh" min="0" max="360" value="0" step="1" aria-label="Turn"></label>
     <button id="heute" aria-pressed="true" title="Today&#39;s coastline and cities, for orientation">Today</button>
-    <button id="band" aria-pressed="false" title="DATED-1 dated ice margin and its maximum/minimum uncertainty band">Band</button>
+    <button id="band" aria-pressed="false" title="Dated ice margins with their maximum/minimum uncertainty band: BRITICE-CHRONO for the British Isles, DATED-1 elsewhere">Band</button>${D.biome ? `
+    <button id="biom" aria-pressed="false" title="Colour the land by reconstructed vegetation instead of elevation">Biomes</button>` : ''}
   </div>
   <div class="schild"><b id="jahrZahl">&#8211;</b><span id="jahrNeben"></span></div>
   <div class="text">
     <p class="jetzt" id="jetzt"></p>
     <div class="faden" id="faden" aria-live="polite"></div>
+    <details class="quellen"><summary>Sources and method</summary>
+      <p><b>Ice thickness, crust and sea level:</b> ICE-6G_C (VM5a), Peltier, Argus &amp; Drummond 2015, JGR Solid Earth 120; 1&#176; grid.</p>
+      <p><b>Dated ice margins:</b> DATED-1, Hughes et al. 2016, Boreas 45 (PANGAEA 848117). British Isles and the western North Sea: BRITICE-CHRONO, Clark et al. 2022, Boreas 51 (PANGAEA 945729).</p>
+      <p><b>Mountain glaciers</b> outside the ice sheets (Alps, Pyrenees, Carpathians, Balkans, Apennines, Caucasus &#8230;): ICE-6G_C has none there. Shown is a rough estimate from published last-glacial snowline altitudes (e.g. Hughes &amp; Woodward 2017), moved with the global temperature &#8212; indicative, not a reconstruction.</p>
+      <p><b>Vegetation</b> (Biomes): LPJ-GUESS biomes, Allen et al. 2020, J. Biogeogr. 47; glacial forest cover corrected with pollen, Davis et al. 2024 (Clim. Past 20) and BIOME 6000 (Harrison 2017); Holocene forest cover from pollen, Zanon et al. 2018 (Front. Plant Sci. 9). Simplified to six classes.</p>
+      <p><b>Terrain:</b> ETOPO 2022, 15&#8243; (NOAA). <b>Temperature:</b> LGMR, Osman et al. 2021, Nature 599. <b>Polders:</b> Natural Earth 1:10m land.</p>
+    </details>
   </div>
 </div>
 </div>
@@ -442,6 +459,72 @@ const DATED = {};
   }
 }
 const DATED_KA = Object.keys(DATED).map(Number).sort((a, b) => a - b);
+
+/* ---------- BRITICE-CHRONO ----------
+   Derselbe Aufbau wie DATED-1, ein zweiter Satz Raender. Gezeichnet wird er
+   nur im Gebiet REGION (Britische Inseln, Irische und Keltische See, westliche
+   Nordsee), DATED-1 nur ausserhalb — zwei Rekonstruktionen im selben Gebiet
+   uebereinander waeren zwei Aussagen, wo eine gilt. */
+const BRIT = {};
+if (D.brit) {
+  const d = entpacke(D.brit.d, D.brit.L);
+  let k = 0;
+  for (const ka of Object.keys(D.brit.s)) {
+    BRIT[ka] = {};
+    for (const sorte of ['mc', 'max', 'min']) {
+      const laengen = D.brit.s[ka][sorte];
+      if (!laengen) continue;
+      const linien = [];
+      for (const n of laengen) {
+        let px = 0, py = 0;
+        const xs = new Float32Array(n), ys = new Float32Array(n);
+        for (let i = 0; i < n; i++) { px += d[k++]; py += d[k++]; xs[i] = px / 10; ys[i] = py / 10; }
+        linien.push([xs, ys]);
+      }
+      BRIT[ka][sorte] = linien;
+    }
+  }
+}
+const BRIT_KA = Object.keys(BRIT).map(Number).sort((a, b) => a - b);
+const REGION = [];
+if (D.region) for (let i = 0; i < D.region.length; i += 2) REGION.push([D.region[i] / 10, D.region[i + 1] / 10]);
+
+/* ---------- Polder ----------
+   Eingedeichtes Land, das im modernen DEM unter null liegt. Ohne Maske zeigte
+   die Karte die Niederlande "heute" teils als Meer. Lauflaengen, abwechselnd
+   null und eins. */
+const POLDER = new Uint8Array(GW * GH);
+let polderDa = false;
+if (D.polder) {
+  const l = entpacke(D.polder, 0);
+  let i = 0, v = 0;
+  for (const n of l) { if (v) { POLDER.fill(1, i, i + n); polderDa = true; } i += n; v ^= 1; }
+}
+
+/* ---------- Gebirgsgletscher (Schaetzung) ----------
+   ELA im LGM und Einzugshoehe je Zelle, null wo kein Gletscher moeglich ist. */
+const BERG = D.berg ? D.berg.p : null;
+const BERG_E = new Int16Array(GW * GH), BERG_Z = new Int16Array(GW * GH);
+if (D.berg) {
+  const e = entpacke(D.berg.e, D.berg.eL), z = entpacke(D.berg.z, D.berg.zL);
+  for (let i = 0; i < GW * GH; i++) { BERG_E[i] = e[i] * 10; BERG_Z[i] = z[i] * 10; }
+}
+
+/* ---------- Biome ----------
+   Je ICE-6G-Zeitscheibe eine Klassenkarte auf einem groben Gitter (die
+   Vegetationsdaten haben 0,5 Grad). Erste Scheibe roh, danach Aenderungen. */
+const BIOM_S = [];
+let BIOM_W = 0, BIOM_H = 0, BIOM_RGB = [];
+if (D.biome) {
+  BIOM_W = D.biome.w; BIOM_H = D.biome.h;
+  const n = BIOM_W * BIOM_H, d = entpacke(D.biome.d, D.biome.L);
+  for (let t = 0; t < NT; t++) {
+    const s = new Uint8Array(n);
+    for (let i = 0; i < n; i++) s[i] = (t ? BIOM_S[t - 1][i] : 0) + d[t * n + i];
+    BIOM_S.push(s);
+  }
+  BIOM_RGB = D.biome.kl.map(k => [1, 3, 5].map(j => parseInt(k.hex.slice(j, j + 2), 16)));
+}
 
 /* ================================================================ Die Leiter
    Zwei, eine je Material. Gesetzt ist nur, wie viele Baender; wo sie anfangen
@@ -614,7 +697,59 @@ function feldAnlegen() {
       maskeR[i] = m === 4 ? 2 : 1;      // 2 = ganz drin, 1 = Randzelle
     }
   }
+  // Polder und Gebirgsfelder: naechster Gitterpunkt. Beides sind Masken bzw.
+  // Schwellenfelder, die man nicht mittelt.
+  polderR = new Uint8Array(w * h); bergER = new Float32Array(w * h); bergZR = new Float32Array(w * h);
+  biomF = new Float32Array(w * h * 3); biomStand = -1;
+  for (let y = 0; y < h; y++) {
+    const gy = Math.min(GH - 1, Math.floor((y + 0.5) / h * GH));
+    for (let x = 0; x < w; x++) {
+      const gi = gy * GW + Math.min(GW - 1, Math.floor((x + 0.5) / w * GW)), i = y * w + x;
+      polderR[i] = POLDER[gi];
+      bergER[i] = BERG_E[gi]; bergZR[i] = BERG_Z[gi];
+    }
+  }
   return true;
+}
+let polderR = null, bergER = null, bergZR = null, biomF = null, biomStand = -1;
+
+/* Die Kaelte des Augenblicks, 0 heute bis 1 im Maximum, aus der globalen
+   Temperaturanomalie (-7,4 Grad = 1). Vor 23 ka hat die Reihe keine Werte;
+   dort gilt der erste. */
+function kaelteJetzt() {
+  let t = tempJetzt();
+  if (t === null || t === undefined) t = TEMP.find(v => v !== null && v !== undefined);
+  if (t === null || t === undefined) return 0;
+  return Math.max(0, Math.min(1, -t / ((BERG && BERG.kaeltenorm) || 7.4)));
+}
+
+/* Biomfarben des Augenblicks auf dem Feldgitter: zwischen zwei Zeitscheiben
+   linear, im Raum bilinear zwischen den Klassenfarben. Die Klassen bleiben
+   Klassen; nur ihre Grenzen werden weich. */
+function biomRechnen() {
+  if (!BIOM_S.length || biomStand === feldStand) return;
+  biomStand = feldStand;
+  const a = abschnitt, b = Math.min(NT - 1, a + 1), u = uAbschnitt;
+  const SA = BIOM_S[a], SB = BIOM_S[b], C = BIOM_RGB;
+  for (let y = 0; y < rH; y++) {
+    const fy = (y + 0.5) / rH * BIOM_H - 0.5;
+    const y0 = Math.max(0, Math.min(BIOM_H - 2, Math.floor(fy))), ty = Math.max(0, Math.min(1, fy - y0));
+    for (let x = 0; x < rW; x++) {
+      const fx = (x + 0.5) / rW * BIOM_W - 0.5;
+      const x0 = Math.max(0, Math.min(BIOM_W - 2, Math.floor(fx))), tx = Math.max(0, Math.min(1, fx - x0));
+      const q = [y0 * BIOM_W + x0, y0 * BIOM_W + x0 + 1, (y0 + 1) * BIOM_W + x0, (y0 + 1) * BIOM_W + x0 + 1];
+      const wq = [(1 - tx) * (1 - ty), tx * (1 - ty), (1 - tx) * ty, tx * ty];
+      let r = 0, g = 0, bb = 0;
+      for (let j = 0; j < 4; j++) {
+        const ca = C[SA[q[j]]], cb = C[SB[q[j]]], w = wq[j];
+        r += w * (ca[0] + u * (cb[0] - ca[0]));
+        g += w * (ca[1] + u * (cb[1] - ca[1]));
+        bb += w * (ca[2] + u * (cb[2] - ca[2]));
+      }
+      const i = 3 * (y * rW + x);
+      biomF[i] = r; biomF[i + 1] = g; biomF[i + 2] = bb;
+    }
+  }
 }
 
 /* ---------- Was in der Zeit dazwischen steht ----------
@@ -789,9 +924,28 @@ function paleo() {
   for (let i = 0; i < eisJetzt.length; i++)
     eisMaske[i] = eisJetzt[i] >= EISSCHWELLE ? 1 : 0;
   hochrechnen(eisMaske, EIS.w, EIS.h, randF, rW, rH, wxE, ixE, wyE, iyE, tmpE);
+  /* Polder: im letzten Jahrtausend eingedeicht (Flevoland erst in den 1950ern),
+     also weich zwischen 1 ka und heute auf einen Meter ueber null. Davor bleibt
+     die Hoehe, wie DEM und Differenzfeld sie liefern. */
+  const pt = Math.max(0, Math.min(1, 1 - ka)), polderW = polderDa ? pt * pt * (3 - 2 * pt) : 0;
+  /* Gebirgsgletscher: ELA(t) = ELA_LGM + delta * (1 - Kaelte). Dicke nach der
+     Einzugshoehe, Zungen bis BERG.zunge Meter unter die ELA. Nur, wo ICE-6G_C
+     selbst weniger Eis hat. */
+  const bergAn = !!BERG, kalt = bergAn ? kaelteJetzt() : 0;
   for (let i = 0; i < rock.length; i++) {
     if (eisD[i] < 0 || randF[i] < 0.5) eisD[i] = 0;
     flaeche[i] = rock[i] + demR[i];   // DEM + Topo_Diff = Oberflaeche
+    if (polderW > 0 && polderR[i] && flaeche[i] < 1) flaeche[i] += polderW * (1 - flaeche[i]);
+    if (bergAn && bergER[i] > 0 && flaeche[i] > 0) {
+      const e = bergER[i] + BERG.delta * (1 - kalt);
+      let hb = BERG.k * (bergZR[i] - e);
+      if (hb > 0) {
+        if (hb > BERG.hmax) hb = BERG.hmax;
+        const z = (demR[i] - (e - BERG.zunge)) / BERG.rampe;
+        hb *= z <= 0 ? 0 : z >= 1 ? 1 : z;
+        if (hb > eisD[i]) { flaeche[i] += hb - eisD[i]; eisD[i] = hb; }
+      }
+    }
     /* ---- nur aufliegendes Eis ----
        Das grobe stgit-Feld wird bikubisch hochgerechnet und laeuft dabei ueber
        den Eisrand hinaus aufs offene Meer; ohne Schranke stuende bei 21 ka auf
@@ -990,6 +1144,7 @@ function lichtRechnen() {
 const EISSCHWELLE = 12;                 // Meter, ab denen Eis gezeichnet wird
 function farbeRechnen() {
   const fo = bild.data, lo = lichtBild.data;
+  if (BIOM) biomRechnen();
   for (let i = 0; i < rW * rH; i++) {
     const j = i << 2;
     if (!maskeR[i]) { fo[j + 3] = 0; lo[j + 3] = 0; continue; }
@@ -998,6 +1153,9 @@ function farbeRechnen() {
     if (eis) {
       const k = Math.max(0, Math.min(NEIS - 1, Math.floor(eisLeiter(flaeche[i]) * NEIS)));
       r = ER[k]; g = EG[k]; b = EB[k];
+    } else if (BIOM && rock[i] >= 0) {
+      // Biome statt Hoehenleiter: nur an Land, das Meer behaelt seine Tiefen.
+      r = biomF[3 * i]; g = biomF[3 * i + 1]; b = biomF[3 * i + 2];
     } else {
       const k = Math.max(0, Math.min(NBAND - 1, Math.floor(gesteinLeiter(rock[i]) * NBAND)));
       r = GR[k]; g = GG[k]; b = GB[k];
@@ -1514,6 +1672,7 @@ let SICHT = null;
    und im Film, der keine Knoepfe hat, waere sie gar nicht abwaehlbar. Wer den
    Vergleich sehen will, drueckt „Band". */
 let BAND = false;
+let BIOM = false;          // Land nach Vegetation statt nach Hoehe (Knopf "Biomes")
 
 // Die Scheiben liegen auf **absoluten Hoehen**, damit der Rahmen feststeht.
 // Nach dem hoechsten Punkt zu rechnen, der gerade dasteht, waere verlockend —
@@ -1781,9 +1940,29 @@ let KANTENHELL = kantenDeck(KANTENHELL33), KANTENDUNKEL = kantenDeck(KANTENDUNKE
    CSS-Pixel-Versatzes, WURFDECK die Deckkraft der innersten Kopie. */
 let WURFLAENGE = 1.2, WURFDECK = 0.35, WURFSTUFEN = 3;
 
+/* Das Biom-Muster fuer die gekippte Ansicht: die Farben des Feldgitters als
+   Bild, im Grundriss-Mass der Ringe (je = kw/rW Punkte je Feldzelle). */
+let biomMuster = null;
+const hkB = document.createElement('canvas'), hcB = hkB.getContext('2d');
+function biomMusterBauen() {
+  biomMuster = null;
+  if (!BIOM || !BIOM_S.length) return;
+  biomRechnen();
+  if (hkB.width !== rW || hkB.height !== rH) { hkB.width = rW; hkB.height = rH; }
+  const im = hcB.createImageData(rW, rH), p = im.data;
+  for (let i = 0; i < rW * rH; i++) {
+    p[4 * i] = biomF[3 * i]; p[4 * i + 1] = biomF[3 * i + 1]; p[4 * i + 2] = biomF[3 * i + 2]; p[4 * i + 3] = 255;
+  }
+  hcB.putImageData(im, 0, 0);
+  biomMuster = ctx.createPattern(hkB, 'no-repeat');
+  const je = kw / rW;
+  biomMuster.setTransform(new DOMMatrix([je, 0, 0, je, 0, 0]));
+}
+
 function scheibenMalen() {
   const Dp = DPR;
   const S = sichtRechnen();
+  biomMusterBauen();
   const { co, si, ct, st, cx, cy, z: zz, oX: ozX, oY: ozY, dz } = S;
   const fels = scheibenRinge(0), eis = scheibenRinge(1);
   // Der Umriss dessen, was dieser Durchgang malt — in Geraetepunkten, damit er
@@ -1828,6 +2007,9 @@ function scheibenMalen() {
     const ringe = istEis ? eis : fels;
     if (!ringe[k]) continue;
     const [r, g, b] = bandFarbe(k, istEis);
+    // Biome: Landplatten tragen die Vegetationsfarbe als Muster statt ihrer
+    // Hoehenfarbe; die Hoehe zeigt gekippt ohnehin der Stapel selbst.
+    const biomHier = biomMuster && !istEis && S_VON + k * dzM > 0;
     const wand = 'rgb(' + Math.round(r * WANDDUNKEL) + ',' + Math.round(g * WANDDUNKEL) + ',' + Math.round(b * WANDDUNKEL) + ')';
     const fuss = 'rgb(' + Math.round(r * WANDFUSS) + ',' + Math.round(g * WANDFUSS) + ',' + Math.round(b * WANDFUSS) + ')';
     /* Erst die Wand: derselbe Ring, eine Stufe tiefer, gefuellt — und
@@ -1841,9 +2023,12 @@ function scheibenMalen() {
        als das Licht richtig lag: auf Durchsichtigem malt soft-light grau. */
     const schritte = Math.max(2, Math.ceil(Dp * dz / WANDSCHRITT));
     for (let w = 0; w < schritte; w++) {
-      ctx.fillStyle = (w === 0 && schritte > 1) ? fuss : wand;
       ctx.setTransform(a2, b2, c2, d2, eX,
         Dp * (ozY - (k - 1 + w / schritte) * dz) - b2 * cx - d2 * cy);
+      if (biomHier) {
+        ctx.fillStyle = biomMuster; ctx.fill(ringe[k], 'evenodd');
+        ctx.fillStyle = (w === 0 && schritte > 1) ? 'rgba(0,0,0,.38)' : 'rgba(0,0,0,.18)';
+      } else ctx.fillStyle = (w === 0 && schritte > 1) ? fuss : wand;
       ctx.fill(ringe[k], 'evenodd');
     }
     /* Die beleuchtete Kante mit dem alten Praegetrick: derselbe Ring zweimal
@@ -1876,7 +2061,7 @@ function scheibenMalen() {
       }
     }
     ctx.globalAlpha = 1;
-    ctx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
+    ctx.fillStyle = biomHier ? biomMuster : 'rgb(' + r + ',' + g + ',' + b + ')';
     ctx.fill(ringe[k], 'evenodd');
     ctx.restore();
     }
@@ -2350,7 +2535,8 @@ function heuteKueste() {
     if (px < sichtX0 || py < sichtY0 || px > sichtX1 || py > sichtY1) return -1e9;
     if (px < 0 || py < 0 || px >= rW || py >= rH) return -1e9;
     const i = py * rW + px;
-    return maskeR[i] ? demR[i] : -1e9;
+    // Polder gehoeren zur heutigen Kueste dazu: eingedeichtes Land ist Land.
+    return maskeR[i] ? (polderR[i] && demR[i] < 1 ? 1 : demR[i]) : -1e9;
   };
   const stempel = ++rZaehler;
   let nk = 0;
@@ -2481,12 +2667,44 @@ function datedUeber() {
      Ein Schalter, der nur die Haelfte dessen abschaltet, was man sieht, ist
      keiner. */
   if (!BAND) return;
+  const sil = schraeg() ? silhouetteHoch() : silhouette();
+  // Das Gebiet, in dem BRITICE-CHRONO gilt, in Bildschirmmass (gekippt wie die
+  // Raender auf die Oberflaeche gehoben).
+  let gebiet = null;
+  if (REGION.length) {
+    gebiet = new Path2D();
+    REGION.forEach(([x, y], i) => { const [sx, sy] = projRand(x, y); if (i) gebiet.lineTo(sx, sy); else gebiet.moveTo(sx, sy); });
+    gebiet.closePath();
+  }
   const t = datedBei(ka);
-  if (!t) return;
-  const s = DATED[t.ka];
-  if (!s) return;
-  ctx.save();
-  ctx.clip(schraeg() ? silhouetteHoch() : silhouette());
+  if (t && DATED[t.ka]) {
+    ctx.save();
+    ctx.clip(sil);
+    if (gebiet) {
+      const aussen = new Path2D();
+      aussen.rect(-1e5, -1e5, 2e5, 2e5);
+      aussen.addPath(gebiet);
+      ctx.clip(aussen, 'evenodd');
+    }
+    randZeichnen(DATED[t.ka]);
+    ctx.restore();
+  }
+  const b = gebiet ? britBei(ka) : null;
+  if (b && BRIT[b.ka]) {
+    ctx.save();
+    ctx.clip(sil);
+    ctx.clip(gebiet);
+    randZeichnen(BRIT[b.ka]);
+    ctx.restore();
+  }
+}
+function britBei(kaJetzt) {
+  if (!BRIT_KA.length) return null;
+  let best = null, dist = 1e9;
+  for (const k of BRIT_KA) { const d = Math.abs(k - kaJetzt); if (d < dist) { dist = d; best = k; } }
+  return dist <= 0.5 ? { ka: best, d: dist } : null;
+}
+function randZeichnen(s) {
   if (s.max && s.min) {
     const p = new Path2D();
     p.addPath(bandPfad(s.max));
@@ -2504,7 +2722,6 @@ function datedUeber() {
     ctx.lineJoin = 'round';
     ctx.stroke(bandPfad(s.mc, true));
   }
-  ctx.restore();
 }
 `;
 }
@@ -2823,14 +3040,24 @@ function legende() {
    der eine orange Linie erklaert, die gerade nicht da ist, ist schlimmer als
    keiner. */
 function legendeText() {
+  const bl = document.getElementById('biomLeg');
+  if (bl) {
+    bl.hidden = !BIOM;
+    if (BIOM && !bl.childElementCount && D.biome)
+      bl.innerHTML = D.biome.kl.map(k => '<span><i style="background:' + k.hex + '"></i>' + k.name + '</span>').join('');
+  }
   document.getElementById('legText').innerHTML =
-    'Rock elevation and ice-surface elevation, metres. Every contour is a colour boundary.'
+    (BIOM
+      ? 'Land coloured by reconstructed vegetation (model corrected with pollen, six classes); sea and ice by elevation.'
+      : 'Rock elevation and ice-surface elevation, metres. Every contour is a colour boundary.')
+    + ' Mountain glaciers outside the ice sheets are estimated from snowline altitudes.'
     + (tempDa
       ? ' Below: sea level, and global mean temperature against today &#8212; global, so Europe cooled a good deal more.'
       : '')
     + (BAND
-      ? ' The orange line is the DATED-1 most-credible ice margin, the band around it its maximum and minimum.'
-      : ' Press Band for the DATED-1 dated ice margins.');
+      ? ' The orange line is the most-credible dated ice margin, the band around it its maximum and minimum'
+        + (BRIT_KA.length ? ': BRITICE-CHRONO for the British Isles, DATED-1 elsewhere.' : ' (DATED-1).')
+      : ' Press Band for the dated ice margins.');
 }
 
 /* ================================================================ Notizen */
@@ -3114,6 +3341,13 @@ document.getElementById('heute').addEventListener('click', e => {
 document.getElementById('band').addEventListener('click', e => {
   BAND = !BAND;
   e.currentTarget.setAttribute('aria-pressed', BAND ? 'true' : 'false');
+  legendeText();
+  zeichne();
+});
+if (document.getElementById('biom')) document.getElementById('biom').addEventListener('click', e => {
+  BIOM = !BIOM;
+  e.currentTarget.setAttribute('aria-pressed', BIOM ? 'true' : 'false');
+  biomStand = -1;
   legendeText();
   zeichne();
 });

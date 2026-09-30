@@ -16,7 +16,7 @@
 // Paeth 115 kB. Die Vorhersage ist also fuers Ausliefern da, nicht fuer die
 // Datei.
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { packe, packeL } from './code.mjs';
 
 const kuerzer = (v) => {
@@ -118,29 +118,82 @@ export function baueNutzlast(zwischen, log) {
   // Die Linien liegen schon in Gitterkoordinaten. Auf ein Zehntel einer Zelle
   // gerundet — feiner als ein Bildpunkt ist sinnlos, und die Raender sind
   // handdigitalisiert.
-  const dated = JSON.parse(readFileSync(zwischen + '/dated.json', 'utf8'));
-  const dl = [];
-  const dstruktur = {};
-  for (const ka of Object.keys(dated).sort((a, b) => +a - +b)) {
-    dstruktur[ka] = {};
-    for (const sorte of ['mc', 'max', 'min']) {
-      const linien = dated[ka][sorte];
-      if (!linien) continue;
-      const laengen = [];
-      for (const linie of linien) {
-        laengen.push(linie.length);
-        let px = 0, py = 0;
-        for (const [x, y] of linie) {
-          const qx = Math.round(x * 10), qy = Math.round(y * 10);
-          dl.push(qx - px, qy - py); px = qx; py = qy;
+  function randSatz(quelle) {
+    const dl = [];
+    const dstruktur = {};
+    for (const ka of Object.keys(quelle).sort((a, b) => +a - +b)) {
+      dstruktur[ka] = {};
+      for (const sorte of ['mc', 'max', 'min']) {
+        const linien = quelle[ka][sorte];
+        if (!linien) continue;
+        const laengen = [];
+        for (const linie of linien) {
+          laengen.push(linie.length);
+          let px = 0, py = 0;
+          for (const [x, y] of linie) {
+            const qx = Math.round(x * 10), qy = Math.round(y * 10);
+            dl.push(qx - px, qy - py); px = qx; py = qy;
+          }
         }
+        dstruktur[ka][sorte] = laengen;
       }
-      dstruktur[ka][sorte] = laengen;
     }
+    return { s: dstruktur, k: kuerzer(dl), n: dl.length / 2 };
   }
-  const datK = kuerzer(dl);
+  const dated = randSatz(JSON.parse(readFileSync(zwischen + '/dated.json', 'utf8')));
+  const datK = dated.k, dstruktur = dated.s;
   log(`  DATED-1    ${Object.keys(dstruktur).length} Zeitscheiben, `
-    + `${dl.length / 2} Punkte -> ${(datK.s.length / 1024).toFixed(0)} kB`);
+    + `${dated.n} Punkte -> ${(datK.s.length / 1024).toFixed(0)} kB`);
+
+  // --------------------------------------------------------------- Zusaetze
+  // Aus zusatz.py und vegetation.py. Fehlen sie, baut die Seite wie vorher:
+  // ohne BRITICE, ohne Polder, ohne Gebirgseis, ohne Biome.
+  const zusatz = existsSync(zwischen + '/zusatz.json')
+    ? JSON.parse(readFileSync(zwischen + '/zusatz.json', 'utf8')) : null;
+  let brit = null, region = null, polder = null, berg = null, biome = null;
+  if (zusatz) {
+    const b = randSatz(zusatz.britice || {});
+    brit = { s: b.s, d: b.k.s, L: b.k.lauf };
+    region = zusatz.region.flat().map(v => Math.round(v * 10));
+    log(`  BRITICE    ${Object.keys(b.s).length} Zeitscheiben, ${b.n} Punkte -> `
+      + `${(b.k.s.length / 1024).toFixed(0)} kB, Gebiet ${zusatz.region.length} Punkte`);
+
+    // Polder: Lauflaengen abwechselnd 0/1 ueber das ganze Gitter, zeilenweise.
+    const pm = new Uint8Array(roh('polder.u8'));
+    const lauf = []; let cur = 0, n = 0, eins = 0;
+    for (let i = 0; i < pm.length; i++) {
+      if (pm[i] !== cur) { lauf.push(n); cur = pm[i]; n = 0; }
+      n++; eins += pm[i];
+    }
+    lauf.push(n);
+    const pK = packe(lauf);
+    polder = pK;
+    log(`  Polder     ${eins} Zellen -> ${(pK.length / 1024).toFixed(1)} kB`);
+
+    // Gebirgseis: zwei duenne Felder (ELA, Einzugshoehe), 10 m je Stufe,
+    // ueberall sonst null — die Nulllaeufe tragen fast die ganze Kompression.
+    const ela = new Int16Array(roh('berg_ela.i16').buffer.slice(0));
+    const zc = new Int16Array(roh('berg_zc.i16').buffer.slice(0));
+    const eK = kuerzer(Array.from(ela, v => Math.round(v / 10)));
+    const zK = kuerzer(Array.from(zc, v => Math.round(v / 10)));
+    berg = { e: eK.s, eL: eK.lauf, z: zK.s, zL: zK.lauf, p: zusatz.berg };
+    log(`  Gebirge    ${ela.filter(v => v > 0).length} Zellen -> `
+      + `${((eK.s.length + zK.s.length) / 1024).toFixed(0)} kB`);
+  }
+  if (existsSync(zwischen + '/biome.json')) {
+    const bm = JSON.parse(readFileSync(zwischen + '/biome.json', 'utf8'));
+    const kl = new Uint8Array(roh('biome.u8'));
+    const n = bm.w * bm.h;
+    // Erste Scheibe roh, danach die Aenderung gegen die vorige: die Biome
+    // wandern langsam, fast alles ist null.
+    const v = [];
+    for (let t = 0; t < NT; t++)
+      for (let i = 0; i < n; i++) v.push(t === 0 ? kl[i] : kl[t * n + i] - kl[(t - 1) * n + i]);
+    const k = kuerzer(v);
+    biome = { w: bm.w, h: bm.h, d: k.s, L: k.lauf, kl: bm.klassen };
+    log(`  Biome      ${bm.w} x ${bm.h} x ${NT}, ${bm.klassen.length} Klassen -> `
+      + `${(k.s.length / 1024).toFixed(0)} kB`);
+  }
 
   const D = {
     g: { w: g.w, h: g.h, s: g.schritt, x0: g.x0, y0: g.y0 },
@@ -169,6 +222,7 @@ export function baueNutzlast(zwischen, log) {
     td: { w: meta.topodiff.w, h: meta.topodiff.h, d: tdK.s, L: tdK.lauf },
     eis: { w: meta.stgit.w, h: meta.stgit.h, d: eisK.s, L: eisK.lauf },
     dated: { s: dstruktur, d: datK.s, L: datK.lauf },
+    brit, region, polder, berg, biome,
     je: meta.je_scheibe.map(e => ({
       ka: e.ka,
       land: Math.round(e.land_anteil * 1e4) / 1e4,
