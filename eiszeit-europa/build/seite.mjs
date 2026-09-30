@@ -6,6 +6,7 @@
 // Dichte, und ein Unsicherheitsband, das die Kernaussage traegt.
 
 import { ENTPACKER } from './code.mjs';
+import { dreiD } from './drei.mjs';
 
 export function baueSeite({ D, nutzlast, gestein, gesteinCvd, eisrampe, notizen, kenn }) {
   const J = (o) => JSON.stringify(o);
@@ -301,7 +302,9 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
 .quellen{font-size:11px;line-height:1.45;color:var(--muted);margin-top:10px}
 .quellen summary{cursor:pointer}
 .quellen p{margin:.45em 0 0}
+.feld{position:relative}
 </style>
+<script type="importmap">{"imports":{"three":"./drei/three.module.min.js"}}</script>
 </head><body>
 <div class="wrap">
 <div class="buehne" id="buehne">
@@ -344,6 +347,7 @@ input[type=range]{width:100%;margin:0;accent-color:#9aa07f}
     <button id="heute" aria-pressed="true" title="Today&#39;s coastline and cities, for orientation">Today</button>
     <button id="band" aria-pressed="false" title="Dated ice margins with their maximum/minimum uncertainty band: BRITICE-CHRONO for the British Isles, DATED-1 elsewhere">Band</button>${D.biome ? `
     <button id="biom" aria-pressed="false" title="Colour the land by reconstructed vegetation instead of elevation">Biomes</button>` : ''}
+    <button id="dreid" aria-pressed="false" title="3D view with light baked in Blender, glossy ice and water; drag to turn, scroll to zoom">3D</button>
   </div>
   <div class="schild"><b id="jahrZahl">&#8211;</b><span id="jahrNeben"></span></div>
   <div class="text">
@@ -1185,6 +1189,7 @@ function farbeRechnen() {
 
 ${hoehenlinien()}
 ${scheiben()}
+${dreiD()}
 ${bedienung()}
 </script>
 </body></html>`;
@@ -2735,6 +2740,11 @@ let hkLinien = null, hcLinien = null;
 function zeichne() {
   if (!(breite > 60 && hoehe > 60)) return;
   sichtFeldRechnen();
+  if (DREID) {
+    // 3D: dieselben Felder, gezeichnet von WebGL. Die Leinwand der Karte ruht.
+    paleo(); dreiFelder(); schreibe();
+    return;
+  }
   paleo();
   lichtRechnen();
   // Das Farbbild ist die **flache** Karte. Gekippt malt jede Platte ihre
@@ -3363,7 +3373,8 @@ function leiterWaehlen(cvd, merken) {
 }
 document.getElementById('farben').addEventListener('click',
   () => leiterWaehlen(GESTEIN !== GESTEIN_CVD, true));
-addEventListener('resize', () => { masse(); zeichne(); });
+addEventListener('resize', () => { masse(); if (drei) drei.groesse(); zeichne(); });
+document.getElementById('dreid').addEventListener('click', () => dreiSchalten(!DREID));
 if (window.ResizeObserver) {
   let zW = 0, zH = 0;
   new ResizeObserver(() => {

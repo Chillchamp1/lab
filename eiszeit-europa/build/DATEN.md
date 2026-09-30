@@ -93,6 +93,26 @@ Was die beiden Skripte tun und warum, steht in ihrem Kopf. Kurz:
   Pollen korrigiert, Holozän-Waldanteil aus Zanon 2018), auf sechs Klassen
   gerundet, 24 km Raster, je ICE-6G-Zeitscheibe. Schalter *Biomes*, beim Laden aus.
 
+## Die 3D-Ansicht (Knopf *3D*)
+
+WebGL mit three.js 0.186.1 (MIT, `../drei/three.module.min.js`, `three.core.js`,
+`OrbitControls.js`, Lizenz daneben). Geladen wird es **erst beim Einschalten**;
+die Seite selbst bleibt in sich geschlossen und wird dadurch nicht schwerer.
+Der Code steht in `drei.mjs`.
+
+`../drei/licht.webp` ist eine in Blender (Cycles) gebackene Lichtkarte des
+heutigen Geländes: Sonne aus Nordwest, Himmelslicht, Schlagschatten, dazu das
+unverglättete 1,5-km-Relief als Bump — 3 040 × 3 548 gebacken, auf 1 520 × 1 774
+verkleinert. Gebacken wurde im Filmprojekt, aus dem diese Nachträge stammen;
+das Skript liegt als `licht_backen.py` zum Nachlesen hier (es braucht dessen
+Szene). Überhöhung dort und in `drei.mjs`: 24-fach, Tiefsee logarithmisch
+gestaucht — beides muss gleich sein, sonst passen Schatten und Relief nicht.
+
+Gelände: Farbe der Karte (oder Biome) × gebackenes Licht. Eis: live, mit Glanz
+(GGX) und Fresnel-Spiegelung des Himmels. Meer: eigene Fläche mit Tiefenfarbe,
+feinen Wellen fürs Glitzern und Himmelsspiegelung. Der Glanz hängt am Blick
+und wandert beim Drehen.
+
 ## Prüfsummen
 
 Zwei Dateien, und sie tun Verschiedenes:
