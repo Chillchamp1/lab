@@ -32,6 +32,10 @@ async function dreiStarten() {
   if (drei) return drei;
   const THREE = await import('three');
   const { OrbitControls } = await import('./drei/OrbitControls.js');
+  const { EffectComposer } = await import('./drei/postprocessing/EffectComposer.js');
+  const { RenderPass } = await import('./drei/postprocessing/RenderPass.js');
+  const { UnrealBloomPass } = await import('./drei/postprocessing/UnrealBloomPass.js');
+  const { OutputPass } = await import('./drei/postprocessing/OutputPass.js');
   const feld = cv.parentElement;
   const leinwand = document.createElement('canvas');
   leinwand.id = 'drei';
@@ -88,6 +92,30 @@ async function dreiStarten() {
     '  float hy = zVon(hoeheBei(uv + vec2(0.0, uTexel.y))) - zVon(hoeheBei(uv - vec2(0.0, uTexel.y)));',
     '  return normalize(vec3(-hx / (2.0 * uTexel.x * uGroesse.x), -hy / (2.0 * uTexel.y * uGroesse.y), 1.0));',
     '}',
+    // Warme, tiefe Sonne und kuehles Himmelslicht - dieselben Farben wie beim Backen.
+    'const vec3 SONNENFARBE = vec3(1.0, 0.80, 0.62);',
+    'const vec3 DUNST = vec3(0.50, 0.60, 0.76);',
+    // Schatten der Eiskuppen zur Laufzeit: Strahl zur Sonne ueber das Hoehenfeld,
+    // mit wachsender Schrittweite (4 bis 350 km) und weichem Halbschatten.
+    // Zurueck: Schattenfaktor (1 = Sonne) und ob der Werfer Eis ist.
+    'vec2 schatten(vec2 uv, float z0) {',
+    '  float horiz = length(uSonne.xy); vec2 dir = uSonne.xy / horiz; float steig = uSonne.z / horiz;',
+    '  float s = 1.0, werferEis = 0.0, t = 0.004;',
+    '  for (int i = 0; i < 28; i++) {',
+    '    vec2 p = uv + dir * t / uGroesse;',
+    '    if (p.x < 0.0 || p.y < 0.0 || p.x > 1.0 || p.y > 1.0) break;',
+    '    float zt = zVon(hoeheBei(p));',
+    '    float o = clamp((z0 + steig * t - zt) / (0.0015 + t * 0.03) + 0.5, 0.0, 1.0);',
+    '    if (o < s) { s = o; werferEis = farbeBei(p).a; }',
+    '    t *= 1.18;',
+    '  }',
+    '  return vec2(s, step(0.55, werferEis));',
+    '}',
+    // Luftperspektive: was weit weg liegt, verblasst leicht ins Himmelsblau.
+    'vec3 dunst(vec3 c, vec3 welt) {',
+    '  float d = length(cameraPosition - welt);',
+    '  return mix(c, DUNST * 0.55, (1.0 - exp(-max(d - 6.5, 0.0) * 0.12)) * 0.35);',
+    '}',
   ].join('\\n');
 
   // ---------------------------------------------------------------- Gelaende
@@ -114,29 +142,38 @@ async function dreiStarten() {
       '  vec3 V = normalize(cameraPosition - vWelt);',
       '  vec3 N = normaleBei(vUv);',
       '  vec3 alb = pow(f.rgb, vec3(2.2));',
-      // Gelaende: gebackenes Licht aus Blender (Sonne + Himmel + Schatten + Detail)
-      '  float lb = texture2D(uLicht, vUv).r; lb = pow(lb, 2.2) * 2.7;',
-      '  vec3 fels = alb * lb * vec3(1.0, 0.97, 0.93);',
+      // Gelaende: gebackenes, farbiges Licht aus Blender (warme Sonne, blauer
+      // Himmel in den Schatten, Schlagschatten, 1,5-km-Relief)
+      '  vec3 lb = pow(texture2D(uLicht, vUv).rgb, vec3(2.2)) * 3.5;',
+      // Das Blau der Schatten nur zur Haelfte: voll entsaettigte es das Gruen.
+      '  lb = mix(vec3(dot(lb, vec3(0.3333))), lb, 0.5);',
+      '  float lum = dot(alb, vec3(0.2126, 0.7152, 0.0722));',
+      '  alb = max(mix(vec3(lum), alb, 1.25), 0.0);',
+      '  vec2 sch = schatten(vUv, zVon(h) + 0.0004);',
+      // Schatten, den Eis zur Laufzeit wirft (das heutige Gelaende steckt schon im Backen)
+      '  float eisSchatten = mix(1.0, sch.x, sch.y * (1.0 - smoothstep(0.54, 0.60, f.a)));',
+      '  vec3 fels = alb * lb * mix(vec3(0.42, 0.50, 0.66), vec3(1.0), eisSchatten);',
       // Eis: live. Fuer die Schattierung wird die Neigung verstaerkt (die Kuppen
       // sind auch ueberhoeht nur wenige Grad steil), dazu eine Mulde aus dem
       // Vergleich mit der Umgebung: das macht flache Eisflaechen plastisch.
-      '  vec3 Ne = normalize(vec3(N.xy * 3.2, N.z));',
+      '  vec3 Ne = normalize(vec3(N.xy * 1.4, N.z));',
       '  vec2 r1 = uTexel * 6.0, r2 = uTexel * 18.0;',
       '  float umg = 0.125 * (hoeheBei(vUv + vec2(r1.x, 0.0)) + hoeheBei(vUv - vec2(r1.x, 0.0)) + hoeheBei(vUv + vec2(0.0, r1.y)) + hoeheBei(vUv - vec2(0.0, r1.y))',
       '            + hoeheBei(vUv + vec2(r2.x, 0.0)) + hoeheBei(vUv - vec2(r2.x, 0.0)) + hoeheBei(vUv + vec2(0.0, r2.y)) + hoeheBei(vUv - vec2(0.0, r2.y)));',
-      '  float mulde = clamp(1.0 - (umg - h) / 260.0, 0.55, 1.12);',
+      '  float mulde = clamp(1.0 - (umg - h) / 420.0, 0.75, 1.08);',
       '  float t = clamp(h / 2500.0, 0.0, 1.0);',
       '  vec3 eisF = mix(vec3(0.92, 0.94, 0.95), vec3(0.40, 0.64, 0.92), t);',
       '  float nl = max(dot(Ne, uSonne), 0.0);',
       '  vec3 R = reflect(-V, Ne);',
       '  float fr = 0.04 + 0.96 * pow(1.0 - max(dot(Ne, V), 0.0), 5.0);',
       '  float amb = (0.26 + 0.14 * Ne.z) * mulde;',
-      '  vec3 eisC = eisF * (nl * 2.1 * vec3(1.0, 0.95, 0.88) * mulde + amb * vec3(0.50, 0.64, 0.95))',
-      '            + ggx(Ne, uSonne, V, 0.10) * vec3(1.0, 0.94, 0.84) * 3.4 + himmel(R) * fr * 0.7;',
+      '  float sonneEis = sch.x;',
+      '  vec3 eisC = eisF * (nl * 2.3 * SONNENFARBE * mulde * sonneEis + amb * vec3(0.50, 0.64, 0.95))',
+      '            + ggx(Ne, uSonne, V, 0.10) * SONNENFARBE * 4.0 * sonneEis + himmel(R) * fr * 0.7;',
       // Ein schmaler dunkler Saum am Eisrand: die Kante liest sich als Stufe.
       '  float saum = smoothstep(0.54, 0.62, f.a) - smoothstep(0.62, 0.74, f.a);',
       '  eisC *= 1.0 - 0.35 * saum;',
-      '  vec3 c = mix(fels, eisC, eis);',
+      '  vec3 c = dunst(mix(fels, eisC, eis), vWelt);',
       '  gl_FragColor = vec4(c, 1.0);',
       '  #include <tonemapping_fragment>',
       '  #include <colorspace_fragment>',
@@ -178,9 +215,10 @@ async function dreiStarten() {
       '  vec3 flach = vec3(0.10, 0.62, 0.62), tief = vec3(0.01, 0.10, 0.34);',
       '  vec3 wasser = mix(flach, tief, 1.0 - exp(-tiefe / 180.0));',
       '  float nl = max(dot(vec3(0.0, 0.0, 1.0), uSonne), 0.0);',
-      '  vec3 c = wasser * (0.35 + 0.9 * nl) + himmel(R) * fr + ggx(N, uSonne, V, 0.06) * vec3(1.0, 0.95, 0.85) * 3.0;',
+      '  float sw = schatten(vUv, 0.0004).x;',
+      '  vec3 c = wasser * (0.35 + 0.9 * nl * sw) + himmel(R) * fr + ggx(N, uSonne, V, 0.06) * SONNENFARBE * 4.0 * sw;',
       '  float deck = 1.0 - exp(-tiefe / 25.0);',
-      '  gl_FragColor = vec4(c, clamp(0.55 + 0.45 * deck, 0.0, 1.0));',
+      '  gl_FragColor = vec4(dunst(c, vWelt), clamp(0.55 + 0.45 * deck, 0.0, 1.0));',
       '  #include <tonemapping_fragment>',
       '  #include <colorspace_fragment>',
       '}'].join('\\n'),
@@ -190,10 +228,89 @@ async function dreiStarten() {
   meerNetz.position.z = 0.0002;
   szene.add(meerNetz);
 
+  // ------------------------------------------------------------ Himmel
+  // Eine grosse Kugel von innen: ueber dem Horizont Himmelsblau mit Schein zur
+  // Sonne hin, darunter ein dunkler Grund, in dem das Modell steht.
+  const himmelKugel = new THREE.Mesh(new THREE.SphereGeometry(30, 48, 24), new THREE.ShaderMaterial({
+    uniforms: gemein, side: THREE.BackSide, depthWrite: false,
+    vertexShader: 'varying vec3 vR; void main() { vR = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    fragmentShader: GLSL_GEMEIN + [
+      'varying vec3 vR;',
+      'void main() {',
+      '  vec3 d = normalize(vR);',
+      '  float s = max(dot(d, uSonne), 0.0);',
+      '  vec3 oben = mix(vec3(0.20, 0.36, 0.70), vec3(0.04, 0.10, 0.30), smoothstep(0.0, 0.6, d.z));',
+      '  vec3 unten = vec3(0.018, 0.022, 0.035);',
+      '  vec3 c = mix(unten, oben, smoothstep(-0.12, 0.04, d.z));',
+      '  c += SONNENFARBE * (pow(s, 8.0) * 0.22 + pow(s, 80.0) * 0.6) * smoothstep(-0.2, 0.05, d.z);',
+      '  gl_FragColor = vec4(c, 1.0);',
+      '  #include <tonemapping_fragment>',
+      '  #include <colorspace_fragment>',
+      '}'].join('\\n'),
+  }));
+  szene.add(himmelKugel);
+
+  // ------------------------------------------------------------- Sockel
+  // Die Karte als Reliefmodell: Seitenwaende vom Gelaenderand bis zu einem
+  // Boden unter der tiefsten Tiefsee. Oben folgt die Wand dem Rand des Feldes.
+  {
+    const seg = 400, pos = [], uvs = [], oben = [], nor = [], idx = [];
+    const kanten = [[[0, 0], [1, 0], [0, -1, 0]], [[1, 0], [1, 1], [1, 0, 0]], [[1, 1], [0, 1], [0, 1, 0]], [[0, 1], [0, 0], [-1, 0, 0]]];
+    for (const [[u0, v0], [u1, v1], nn] of kanten) {
+      const basis = pos.length / 3;
+      for (let i = 0; i <= seg; i++) {
+        const u = u0 + (u1 - u0) * i / seg, v = v0 + (v1 - v0) * i / seg;
+        for (const o of [1, 0]) {
+          pos.push((u - 0.5) * W3, (v - 0.5) * H3, 0); uvs.push(u, v); oben.push(o); nor.push(...nn);
+        }
+        if (i < seg) { const a = basis + 2 * i; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+      }
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    g.setAttribute('oben', new THREE.Float32BufferAttribute(oben, 1));
+    g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+    g.setIndex(idx);
+    const sockel = new THREE.Mesh(g, new THREE.ShaderMaterial({
+      uniforms: gemein, side: THREE.DoubleSide,
+      vertexShader: GLSL_GEMEIN + [
+        'attribute float oben; varying float vOben; varying vec3 vN; varying vec3 vWelt;',
+        'void main() {',
+        '  vec2 uvi = clamp(uv, uTexel * 0.5, 1.0 - uTexel * 0.5);',
+        '  vec3 p = position; p.z = oben > 0.5 ? zVon(hoeheBei(uvi)) : -0.095;',
+        '  vOben = oben; vN = normal; vec4 w = modelMatrix * vec4(p, 1.0); vWelt = w.xyz;',
+        '  gl_Position = projectionMatrix * viewMatrix * w;',
+        '}'].join('\\n'),
+      fragmentShader: GLSL_GEMEIN + [
+        'varying float vOben; varying vec3 vN; varying vec3 vWelt;',
+        'void main() {',
+        '  float z = vWelt.z;',
+        '  vec3 erde = mix(vec3(0.05, 0.045, 0.04), vec3(0.20, 0.16, 0.12), smoothstep(-0.095, 0.0, z));',
+        '  erde *= 0.85 + 0.15 * sin(z * 900.0);',
+        '  float l = 0.35 + 0.9 * max(dot(normalize(vN), uSonne), 0.0);',
+        '  gl_FragColor = vec4(dunst(erde * l, vWelt), 1.0);',
+        '  #include <tonemapping_fragment>',
+        '  #include <colorspace_fragment>',
+        '}'].join('\\n'),
+    }));
+    szene.add(sockel);
+  }
+
+  // ------------------------------------------------ Nachbearbeitung: Bloom
+  // Die Glanzpunkte auf Eis und Meer strahlen leicht ueber. Tonkurve und
+  // Farbraum macht dann der OutputPass, nicht mehr das Material.
+  const komponist = new EffectComposer(r);
+  komponist.addPass(new RenderPass(szene, kam));
+  const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.2, 0.3, 1.05);
+  komponist.addPass(bloom);
+  komponist.addPass(new OutputPass());
+
   drei = { THREE, r, szene, kam, steuer, leinwand, gemein, hoeheTex: null, farbeTex: null, hBuf: null, fBuf: null, w: 0, h: 0 };
   function groesse() {
     const b = feld.clientWidth || breite, h = feld.clientHeight || hoehe;
     r.setSize(b, h, false); kam.aspect = b / Math.max(1, h); kam.updateProjectionMatrix();
+    komponist.setPixelRatio(r.getPixelRatio()); komponist.setSize(b, h);
   }
   drei.groesse = groesse;
   groesse();
@@ -201,7 +318,7 @@ async function dreiStarten() {
     if (!DREID) return;
     gemein.uZeit.value = t / 1000;
     steuer.update();
-    r.render(szene, kam);
+    komponist.render();
   });
   return drei;
 }
@@ -224,24 +341,14 @@ function dreiFelder() {
     gemein.uTexel.value.set(1 / rW, 1 / rH);
   }
   if (BIOM) biomRechnen();
-  /* Eisoberflaeche glaetten. Die Karte rechnet sie als heutiges DEM plus
-     Differenzfeld, und darin stehen Fjorde und Gipfel, die unter einem
-     Eisschild nicht an der Oberflaeche liegen. Flach gezeichnet faellt das
-     kaum auf; mit Licht und Glanz sah das Eis zerknittert aus. Geglaettet wird
-     nach Maechtigkeit, und nie unter den Fels: der ragt als Nunatak heraus. */
-  if (!drei.gA || drei.gA.length !== n) { drei.gA = new Float32Array(n); drei.gB = new Float32Array(n); }
-  const gA = drei.gA, gB = drei.gB, rg = Math.max(2, Math.round(rW / 110));
-  kastenX(flaeche, gA, rg, rW, rH); kastenY(gA, gB, rg, rW, rH);
-  kastenX(gB, gA, rg, rW, rH); kastenY(gA, gB, rg, rW, rH);
+  /* Die Eisoberflaeche bleibt, wie die Karte sie rechnet (heutiges DEM plus
+     Differenzfeld): das Relief darunter scheint durch. Eine Glaettung nach
+     Maechtigkeit war kurz drin und ist wieder raus — das Eis wirkte damit wie
+     ein anderer Datensatz, weich und ohne die Rauheit (Nutzer, 30.09.2026). */
   const hb = drei.hBuf, fb = drei.fBuf;
   for (let i = 0; i < n; i++) {
     const j = i << 2;
-    let hh = flaeche[i];
-    if (eisD[i] >= EISSCHWELLE) {
-      const w = Math.min(1, eisD[i] / 250);
-      hh = Math.max(rock[i], hh + w * (gB[i] - hh));
-    }
-    hb[i] = THREE.DataUtils.toHalfFloat(maskeR[i] ? hh : -4000);
+    hb[i] = THREE.DataUtils.toHalfFloat(maskeR[i] ? flaeche[i] : -4000);
     if (!maskeR[i]) { fb[j + 3] = 0; continue; }
     let r, g, b;
     if (BIOM && rock[i] >= 0) { r = biomF[3 * i]; g = biomF[3 * i + 1]; b = biomF[3 * i + 2]; }

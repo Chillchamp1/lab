@@ -33,7 +33,7 @@ for ob in sc.objects:
     if ob.type == "LIGHT":
         ob.hide_render = ob.name not in ("Sonne", "Himmel_oben")
         if ob.name == "Sonne":
-            ob.data.color = (1.0, 1.0, 1.0)
+            ob.data.color = (1.0, 0.80, 0.62) if os.environ.get("LICHT_FARBE", "0") == "1" else (1.0, 1.0, 1.0)
         if ob.name == "Himmel_oben":
             ob.data.color = (1.0, 1.0, 1.0)
 # Welt: neutrales Grau
@@ -43,8 +43,19 @@ wn = w.node_tree.nodes
 wl = w.node_tree.links
 for n in list(wn):
     wn.remove(n)
+FARBE = os.environ.get("LICHT_FARBE", "0") == "1"
 bg = wn.new("ShaderNodeBackground"); bg.inputs[0].default_value = (1, 1, 1, 1); bg.inputs[1].default_value = 0.3
 wo = wn.new("ShaderNodeOutputWorld"); wl.new(bg.outputs[0], wo.inputs[0])
+if FARBE:
+    # Farbiges Licht: physikalischer Himmel (Mehrfachstreuung, ohne Sonnenscheibe) fuer das
+    # blaue Himmelslicht in den Schatten, dazu eine warme, tiefe Sonne als Lampe.
+    sky = wn.new("ShaderNodeTexSky")
+    sky.sky_type = "MULTIPLE_SCATTERING"
+    sky.sun_disc = False
+    sky.sun_elevation = math.asin(ZUR_SONNE.z)
+    sky.sun_rotation = math.atan2(ZUR_SONNE.x, ZUR_SONNE.y)
+    wl.new(sky.outputs[0], bg.inputs[0])
+    bg.inputs[1].default_value = float(os.environ.get("LICHT_HIMMEL", "0.35"))
 
 # Backmaterial
 mat = bpy.data.materials.new("LichtBacken")
@@ -106,6 +117,8 @@ img.save()
 import numpy as np
 px = np.empty(B * HB * 4, np.float32)
 img.pixels.foreach_get(px)
-lum = px.reshape(HB, B, 4)[::-1, :, 0]            # Blender-Bildzeile 0 = Sueden -> Norden oben
+rgb = px.reshape(HB, B, 4)[::-1, :, :3]          # Blender-Bildzeile 0 = Sueden -> Norden oben
+lum = rgb[..., 0]
 np.save(r"C:\Users\benja\Videos\Eiszeit-Europa\tests\licht\licht.npy", lum.astype(np.float32))
+np.save(r"C:\Users\benja\Videos\Eiszeit-Europa\tests\licht\licht_rgb.npy", rgb.astype(np.float16))
 print("GESPEICHERT", img.filepath_raw, float(lum.min()), float(np.median(lum)), float(lum.max()), flush=True)

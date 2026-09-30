@@ -110,9 +110,18 @@ Szene). Überhöhung dort und in `drei.mjs`: 24-fach, Tiefsee logarithmisch
 gestaucht — beides muss gleich sein, sonst passen Schatten und Relief nicht.
 
 Die 3D-Ansicht ist die Vorgabe beim Laden (wo WebGL 2 geht; `#flach` in der
-Adresse startet flach). Die Eisoberfläche wird für 3D nach Mächtigkeit
-geglättet — im Feld stehen sonst Fjorde und Gipfel des heutigen DEM, die unter
-einem Eisschild nicht an der Oberfläche liegen —, nie unter den Fels.
+Adresse startet flach). Die Eisoberfläche bleibt ungeglättet, wie die Karte sie
+rechnet: das Relief darunter scheint durch (eine Glättung war kurz drin und
+wirkte „wie ein anderer Datensatz").
+
+Die Lichtkarte ist **farbig** gebacken: physikalischer Himmel (Mehrfachstreuung,
+`LICHT_FARBE=1`, `LICHT_HIMMEL=0.10`) für bläuliches Licht in den Schatten, dazu
+eine warme, tiefe Sonne; 512 Samples. Beim Aufbereiten wird flaches Land auf
+neutral gestellt, nur Hänge werden warm oder kühl. Zur Laufzeit dazu:
+Schatten der Eiskuppen (Strahl über das Höhenfeld zur Sonne, 4–350 km, weicher
+Halbschatten), Luftperspektive in der Ferne, ein Himmel mit Schein zur Sonne,
+Seitenwände als Kartensockel und ein leichter Bloom auf den Glanzlichtern
+(three.js-Postprocessing unter `../drei/postprocessing/`).
 
 Gelände: Farbe der Karte (oder Biome) × gebackenes Licht. Eis: live, mit Glanz
 (GGX) und Fresnel-Spiegelung des Himmels. Meer: eigene Fläche mit Tiefenfarbe,
