@@ -26,6 +26,17 @@ describe('clinical test data', () => {
     }
   });
 
+  it('every test names at least one source with a full citation', () => {
+    for (const x of TESTS) {
+      expect(x.sources.length, x.id).toBeGreaterThan(0);
+      for (const s of x.sources) {
+        expect(s.short, x.id).toMatch(/\d{4}$/);
+        expect(s.cite.length, x.id).toBeGreaterThan(40);
+        if (s.url) expect(s.url, x.id).toMatch(/^https:\/\/doi\.org\/10\./);
+      }
+    }
+  });
+
   it('every step has text and a positive duration', () => {
     for (const t of TESTS) for (const s of t.steps) { expect(s.text.length).toBeGreaterThan(5); expect(s.dur).toBeGreaterThan(0); }
   });

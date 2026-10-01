@@ -9,6 +9,7 @@ import { FramesProvider, useFrames } from './frames';
 import { Rig } from './Rig';
 import { Figure } from './Figure';
 import { TestDriver } from './TestDriver';
+import { CalloutAnchor } from './CalloutAnchor';
 import rig from './rigdata.json';
 
 const CUT_Y = rig.pivots.fovea[1] - 0.004; // cross-section through the ulnar head / DRUJ
@@ -84,6 +85,7 @@ export function Scene() {
         </group>
         <CameraRig />
         <TestDriver />
+        <CalloutAnchor wrist={WRIST} />
       </FramesProvider>
     </Canvas>
   );

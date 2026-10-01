@@ -51,6 +51,18 @@ await page.click('#pl-next');
 await sleep(1200);
 out.afterNext = `${await text('.tl-count')} / ${(await text('#pl-play')).includes('Pause') ? 'playing' : 'paused'}`;
 out.testFps = await fps();
+// the instruction sits on the stage, with a pointer line from the box to the spot the step is about
+out.callout = await page.evaluate(() => {
+  const box = document.querySelector('#callout'), view = document.querySelector('.view'), ln = document.querySelector('.pointer line.ln');
+  if (!box || !view || !ln) return null;
+  const b = box.getBoundingClientRect(), v = view.getBoundingClientRect();
+  const n = (k) => Math.round(+ln.getAttribute(k));
+  return {
+    text: box.querySelector('p')?.textContent?.slice(0, 40), source: box.querySelector('.src')?.textContent,
+    box: [b.left - v.left, b.top - v.top, b.width, b.height].map(Math.round), view: [v.width, v.height].map(Math.round),
+    line: [n('x1'), n('y1'), n('x2'), n('y2')], lineShown: document.querySelector('.pointer').style.opacity === '1',
+  };
+});
 await shot('2-test');
 
 // orbit: drag on the canvas, away from the overlays

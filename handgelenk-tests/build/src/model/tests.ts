@@ -15,11 +15,13 @@ export type Body = 'seated_table' | 'seated_elbow_vertical' | 'seated_under_tabl
 export type Present = 'skin' | 'xray' | 'bones';
 export type Risk = { level: 1 | 2 | 3; note: string };
 export type Hold = 'forearm' | 'wrist' | 'hand';
+// Where a test is described in the literature: short form for tight places, full citation, link (DOI) where one exists.
+export type Source = { short: string; cite: string; url?: string; note?: string };
 export type Step = { dur: number; pose: StepPose; text: string; body: Body; holds?: Hold[]; contacts?: LandmarkId[]; forces?: Force[]; kinematics?: Kin & { clunkAtDev?: number } };
 export type Test = {
   id: string; name: string; group: string; targets: string[]; needsPartner: boolean; homeOk: boolean;
   steps: Step[]; positive: string; painZones: LandmarkId[]; meaning: string; home: string;
-  hyper?: Kin & { clunkAtDev?: number }; source?: string; textOnly?: string[]; view: ViewId | 'free';
+  hyper?: Kin & { clunkAtDev?: number }; sources: Source[]; textOnly?: string[]; view: ViewId | 'free';
   risk: Risk; present: Present;
 };
 
