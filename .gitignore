@@ -54,3 +54,8 @@ probe-*.png
 # Rohdaten und Zwischenergebnisse der Bahn-Zeitkarte, siehe bahn-zeitkarte/build/DATEN.md
 bahn-zeitkarte/build/roh/
 bahn-zeitkarte/build/zwischen/
+# Handgelenktests: Werkzeug und Rohdaten, siehe handgelenk-tests/build/README.md
+handgelenk-tests/build/node_modules
+handgelenk-tests/build/dist
+handgelenk-tests/build/dist-artifact
+handgelenk-tests/build/assets-src/

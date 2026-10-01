@@ -1,0 +1,913 @@
+{
+  "_meta": {
+    "version": 1,
+    "status": "draft from claude.ai chat 2026-10-01, to be refined in Claude Code",
+    "conventions": {
+      "rot": "forearm rotation in deg: negative = pronation (palm down), positive = supination (palm up), 0 = thumb up",
+      "ext": "wrist in deg: positive = extension, negative = flexion",
+      "dev": "wrist in deg: positive = ulnar (pinky side), negative = radial (thumb side)",
+      "elbow": "elbow flexion in deg (0 = straight, 90 = right angle)",
+      "fingers": "finger curl 0 = open, 1 = full fist",
+      "grip": "grip force 0..1",
+      "axial": "axial load through the wrist 0..1 (body weight, examiner push)",
+      "force.dir": "anatomical direction in the local frame of the bone at the landmark: palmar | dorsal | radial | ulnar | proximal | distal | rotate_pronation | rotate_supination",
+      "force.by": "examiner | self | body | table",
+      "landmarks": "LM_<id> empties in the glb, see HANDOVER.md 6.3",
+      "hyper": "optional extra kinematic offsets shown when the hypermobility toggle is on",
+      "view": "camera preset for the test: free | dorsal | thumb | palm | ulnar | end",
+      "risk": "1 = safe to try yourself, 2 = careful: load or a partner involved, 3 = examiner only",
+      "present": "default presentation: skin | xray | bones",
+      "body": "per step: posture scene for the mannequin inset: seated_table | seated_elbow_vertical | seated_under_table | chair_press | chair_press_up | standing",
+      "holds": "per step: where a second person fixes the limb: forearm | wrist | hand (drawn as a ring)"
+    },
+    "globalRules": [
+      "Always compare with the other side; in a hypermobile wrist only asymmetry or reproducing the usual pain counts.",
+      "Gentle, a few repetitions, stop at sharp pain.",
+      "A positive test is a hint, not a diagnosis; tests overlap and are often wrong.",
+      "Film clunks and snaps for the doctor; they often do not happen on command."
+    ]
+  },
+  "tests": [
+    {
+      "id": "ulnar_fovea_sign",
+      "name": "Ulnar fovea sign",
+      "group": "TFCC / ulnar side",
+      "targets": [
+        "tfcc",
+        "ulnocarpal"
+      ],
+      "needsPartner": false,
+      "homeOk": true,
+      "steps": [
+        {
+          "dur": 1.5,
+          "pose": {
+            "rot": 0,
+            "ext": 0,
+            "dev": 0,
+            "elbow": 90
+          },
+          "text": "Rest the forearm on a table, thumb up, wrist relaxed.",
+          "body": "seated_table"
+        },
+        {
+          "dur": 2.0,
+          "pose": {
+            "rot": 0,
+            "ext": 0,
+            "dev": 0,
+            "elbow": 90
+          },
+          "contacts": [
+            "ulnar_fovea"
+          ],
+          "forces": [
+            {
+              "at": "ulnar_fovea",
+              "dir": "radial",
+              "mag": 0.5,
+              "by": "examiner"
+            }
+          ],
+          "text": "Press a thumb into the soft spot between the ulnar styloid and the FCU tendon, palm side of the bony bump.",
+          "body": "seated_table"
+        }
+      ],
+      "positive": "Clear tenderness that reproduces your pain, more than on the other side.",
+      "painZones": [
+        "ulnar_fovea"
+      ],
+      "meaning": "Points to a foveal TFCC tear or an ulnotriquetral ligament injury.",
+      "home": "Same, with your own thumb.",
+      "source": "Tay, Tomita, Berger 2007 (high reported sensitivity)",
+      "view": "palm",
+      "risk": {
+        "level": 1,
+        "note": "Pressing with a thumb is harmless. Compare both sides."
+      },
+      "present": "bones"
+    },
+    {
+      "id": "press_test",
+      "name": "Press test",
+      "group": "TFCC / ulnar side",
+      "targets": [
+        "tfcc"
+      ],
+      "needsPartner": false,
+      "homeOk": true,
+      "steps": [
+        {
+          "dur": 1.5,
+          "pose": {
+            "rot": -80,
+            "ext": 60,
+            "dev": 0,
+            "elbow": 20,
+            "axial": 0.1
+          },
+          "text": "Sit on a stable chair, put both palms flat on the seat beside you.",
+          "body": "chair_press"
+        },
+        {
+          "dur": 2.0,
+          "pose": {
+            "rot": -80,
+            "ext": 80,
+            "dev": 5,
+            "elbow": 0,
+            "axial": 0.9
+          },
+          "forces": [
+            {
+              "at": "pisiform",
+              "dir": "dorsal",
+              "mag": 0.9,
+              "by": "body"
+            }
+          ],
+          "text": "Push yourself up so your body weight goes through the extended wrists.",
+          "body": "chair_press_up"
+        }
+      ],
+      "positive": "Pain on the pinky side of the wrist.",
+      "painZones": [
+        "ulnar_fovea",
+        "ulnar_head_dorsal"
+      ],
+      "meaning": "Suggests a TFCC lesion.",
+      "home": "Exactly as described; stop at the first sharp pain.",
+      "hyper": {
+        "midcarpalSag": 0.6,
+        "drujShift": 0.4
+      },
+      "source": "Lester et al. 1995",
+      "view": "ulnar",
+      "risk": {
+        "level": 2,
+        "note": "Your body weight goes through the wrist. Stop at the first sharp pain; skip it while the wrist is acutely painful."
+      },
+      "present": "bones"
+    },
+    {
+      "id": "ulnocarpal_stress_test",
+      "name": "Ulnocarpal stress test",
+      "group": "TFCC / ulnar side",
+      "targets": [
+        "tfcc",
+        "lt",
+        "ulnocarpal"
+      ],
+      "needsPartner": true,
+      "homeOk": true,
+      "steps": [
+        {
+          "dur": 1.5,
+          "pose": {
+            "rot": 0,
+            "ext": 0,
+            "dev": 30,
+            "elbow": 90
+          },
+          "text": "Elbow on the table, forearm vertical; the partner tilts your wrist fully toward the pinky.",
+          "body": "seated_elbow_vertical"
+        },
+        {
+          "dur": 2.0,
+          "pose": {
+            "rot": -60,
+            "ext": 0,
+            "dev": 30,
+            "elbow": 90,
+            "axial": 0.6
+          },
+          "forces": [
+            {
+              "at": "ulnocarpal_volar",
+              "dir": "proximal",
+              "mag": 0.6,
+              "by": "examiner"
+            },
+            {
+              "at": "ulnar_styloid",
+              "dir": "rotate_pronation",
+              "mag": 0.4,
+              "by": "examiner"
+            }
+          ],
+          "text": "The partner pushes the hand down along the forearm axis and turns the forearm palm down ...",
+          "body": "seated_elbow_vertical",
+          "holds": [
+            "forearm"
+          ]
+        },
+        {
+          "dur": 2.0,
+          "pose": {
+            "rot": 70,
+            "ext": 0,
+            "dev": 30,
+            "elbow": 90,
+            "axial": 0.6
+          },
+          "forces": [
+            {
+              "at": "ulnocarpal_volar",
+              "dir": "proximal",
+              "mag": 0.6,
+              "by": "examiner"
+            },
+            {
+              "at": "ulnar_styloid",
+              "dir": "rotate_supination",
+              "mag": 0.4,
+              "by": "examiner"
+            }
+          ],
+          "text": "... and palm up, keeping the push.",
+          "body": "seated_elbow_vertical",
+          "holds": [
+            "forearm"
+          ]
+        }
+      ],
+      "positive": "Pain or crepitus on the pinky side.",
+      "painZones": [
+        "ulnocarpal_volar",
+        "ulnar_fovea"
+      ],
+      "meaning": "TFCC tear, ulnocarpal impaction, LT problems (not specific).",
+      "home": "Partner does it gently and slowly.",
+      "view": "dorsal",
+      "risk": {
+        "level": 2,
+        "note": "A partner pushes and turns the wrist at the end of its range. Slow and gentle only."
+      },
+      "present": "bones"
+    },
+    {
+      "id": "supination_lift_test",
+      "name": "Supination lift test",
+      "group": "TFCC / ulnar side",
+      "targets": [
+        "tfcc",
+        "druj"
+      ],
+      "needsPartner": false,
+      "homeOk": true,
+      "steps": [
+        {
+          "dur": 1.5,
+          "pose": {
+            "rot": 85,
+            "ext": 0,
+            "dev": 0,
+            "elbow": 90
+          },
+          "text": "Sit at a heavy table, palms up under its edge, elbows bent 90°.",
+          "body": "seated_under_table"
+        },
+        {
+          "dur": 2.0,
+          "pose": {
+            "rot": 85,
+            "ext": 10,
+            "dev": 0,
+            "elbow": 90,
+            "grip": 0.3,
+            "axial": 0.6
+          },
+          "forces": [
+            {
+              "at": "pisiform",
+              "dir": "dorsal",
+              "mag": 0.7,
+              "by": "table"
+            }
+          ],
+          "text": "Try to lift the table.",
+          "body": "seated_under_table"
+        }
+      ],
+      "positive": "Pain on the pinky side, or the wrist gives way.",
+      "painZones": [
+        "ulnar_fovea",
+        "druj_dorsal"
+      ],
+      "meaning": "Peripheral TFCC tear.",
+      "home": "Exactly as described.",
+      "view": "ulnar",
+      "risk": {
+        "level": 2,
+        "note": "Loads the TFCC against a heavy table. Lift gently, never jerk."
+      },
+      "present": "bones"
+    },
+    {
+      "id": "druj_ballottement",
+      "name": "DRUJ ballottement / piano key test",
+      "group": "DRUJ",
+      "targets": [
+        "druj",
+        "tfcc"
+      ],
+      "needsPartner": false,
+      "homeOk": true,
+      "steps": [
+        {
+          "dur": 1.5,
+          "pose": {
+            "rot": 0,
+            "ext": 0,
+            "dev": 0,
+            "elbow": 90
+          },
+          "contacts": [
+            "druj_dorsal",
+            "druj_volar"
+          ],
+          "text": "Neutral forearm. The examiner fixes the radius with one hand and grips the ulnar head between thumb and index of the other.",
+          "body": "seated_table",
+          "holds": [
+            "forearm"
+          ]
+        },
+        {
+          "dur": 2.0,
+          "pose": {
+            "rot": 0,
+            "ext": 0,
+            "dev": 0,
+            "elbow": 90
+          },
+          "forces": [
+            {
+              "at": "ulnar_head_dorsal",
+              "dir": "palmar",
+              "mag": 0.5,
+              "by": "examiner"
+            }
+          ],
+          "kinematics": {
+            "drujShift": -1.0
+          },
+          "text": "Shift the ulnar head toward the palm ...",
+          "body": "seated_table",
+          "holds": [
+            "forearm"
+          ]
+        },
+        {
+          "dur": 2.0,
+          "pose": {
+            "rot": 0,
+            "ext": 0,
+            "dev": 0,
+            "elbow": 90
+          },
+          "forces": [
+            {
+              "at": "druj_volar",
+              "dir": "dorsal",
+              "mag": 0.5,
+              "by": "examiner"
+            }
+          ],
+          "kinematics": {
+            "drujShift": 1.0
+          },
+          "text": "... and toward the back of the hand.",
+          "body": "seated_table",
+          "holds": [
+            "forearm"
+          ]
+        },
+        {
+          "dur": 3.0,
+          "pose": {
+            "rot": -80,
+            "ext": 0,
+            "dev": 0,
+            "elbow": 90
+          },
+          "forces": [
+            {
+              "at": "ulnar_head_dorsal",
+              "dir": "palmar",
+              "mag": 0.5,
+              "by": "examiner"
+            }
+          ],
+          "kinematics": {
+            "drujShift": -0.6
+          },
+          "text": "Repeat palm down (piano key: press the prominent ulnar head down; does it spring back?) and palm up.",
+          "body": "seated_table",
+          "holds": [
+            "forearm"
+          ]
+        }
+      ],
+      "positive": "More translation than on the other side, a soft end point, or pain. Typical for instability: more shift in neutral than at the end of rotation.",
+      "painZones": [
+        "druj_dorsal",
+        "ulnar_fovea"
+      ],
+      "meaning": "DRUJ instability / laxity of the radioulnar ligaments.",
+      "home": "Palm down, press the ulnar head toward the palm with the other hand; compare both sides.",
+      "hyper": {
+        "drujShift": 1.6
+      },
+      "view": "end",
+      "risk": {
+        "level": 1,
+        "note": "Home version: gentle pressure on the ulnar head; compare both sides."
+      },
+      "present": "bones"
+    },
+    {
+      "id": "ecu_subluxation_test",
+      "name": "ECU subluxation test",
+      "group": "ECU",
+      "targets": [
+        "ecu"
+      ],
+      "needsPartner": false,
+      "homeOk": true,
+      "steps": [
+        {
+          "dur": 1.5,
+          "pose": {
+            "rot": -80,
+            "ext": 0,
+            "dev": 0,
+            "elbow": 90
+          },
+          "contacts": [
+            "ecu_groove"
+          ],
+          "text": "Palm down; rest a finger on the back of the ulnar head.",
+          "body": "seated_table"
+        },
+        {
+          "dur": 3.0,
+          "pose": {
+            "rot": 80,
+            "ext": -30,
+            "dev": 25,
+            "elbow": 90,
+            "fingers": 0.4
+          },
+          "kinematics": {
+            "ecuSublux": 1.0
+          },
+          "text": "Turn the palm up while bending the wrist palm-ward and tilting it toward the pinky.",
+          "body": "seated_table"
+        }
+      ],
+      "positive": "A snap, or the tendon cord jumping sideways over the bump.",
+      "painZones": [
+        "ecu_groove"
+      ],
+      "meaning": "ECU subsheath insufficiency / ECU instability.",
+      "home": "Exactly as described; film it.",
+      "hyper": {
+        "ecuSublux": 1.0
+      },
+      "view": "end",
+      "risk": {
+        "level": 1,
+        "note": "Harmless, but do not make a snapping tendon snap more than a few times; it irritates the sheath."
+      },
+      "present": "bones"
+    },
+    {
+      "id": "ecu_synergy_test",
+      "name": "ECU synergy test",
+      "group": "ECU",
+      "targets": [
+        "ecu"
+      ],
+      "needsPartner": true,
+      "homeOk": true,
+      "steps": [
+        {
+          "dur": 1.5,
+          "pose": {
+            "rot": 85,
+            "ext": 0,
+            "dev": 0,
+            "elbow": 90,
+            "fingers": 0
+          },
+          "text": "Forearm palm up on the table, elbow 90°, fingers straight.",
+          "body": "seated_table"
+        },
+        {
+          "dur": 2.5,
+          "pose": {
+            "rot": 85,
+            "ext": 0,
+            "dev": 0,
+            "elbow": 90,
+            "fingers": 0,
+            "thumb": "radial_abduction"
+          },
+          "forces": [
+            {
+              "at": "scaphoid_tubercle",
+              "dir": "ulnar",
+              "mag": 0.5,
+              "by": "examiner"
+            }
+          ],
+          "text": "Push the thumb away from the palm (sideways) against the partner's resistance; ECU and FCU co-contract.",
+          "body": "seated_table",
+          "holds": [
+            "forearm"
+          ]
+        }
+      ],
+      "positive": "Pain along the back of the pinky side (ECU course).",
+      "painZones": [
+        "ecu_groove"
+      ],
+      "meaning": "ECU tendinitis rather than an intra-articular (TFCC) problem.",
+      "home": "Partner resists at the thumb.",
+      "source": "Ruland & Hogan 2008",
+      "view": "palm",
+      "risk": {
+        "level": 2,
+        "note": "Low load, but a partner has to resist the thumb."
+      },
+      "present": "bones"
+    },
+    {
+      "id": "midcarpal_shift_test",
+      "name": "Midcarpal shift test (Lichtman)",
+      "group": "Midcarpal",
+      "targets": [
+        "midcarpal",
+        "lt",
+        "ulnocarpal"
+      ],
+      "needsPartner": true,
+      "homeOk": false,
+      "steps": [
+        {
+          "dur": 1.5,
+          "pose": {
+            "rot": -80,
+            "ext": 0,
+            "dev": -10,
+            "elbow": 90
+          },
+          "text": "Palm down, wrist slightly tilted to the thumb side.",
+          "body": "seated_table"
+        },
+        {
+          "dur": 2.0,
+          "pose": {
+            "rot": -80,
+            "ext": 0,
+            "dev": -10,
+            "elbow": 90
+          },
+          "forces": [
+            {
+              "at": "midcarpal_ulnar_dorsal",
+              "dir": "palmar",
+              "mag": 0.6,
+              "by": "examiner"
+            }
+          ],
+          "kinematics": {
+            "midcarpalSag": 1.0,
+            "proximalRowFlex": 1.0
+          },
+          "text": "The examiner pushes the hand toward the palm at the level of the carpal bones ...",
+          "body": "seated_table",
+          "holds": [
+            "forearm"
+          ]
+        },
+        {
+          "dur": 2.5,
+          "pose": {
+            "rot": -80,
+            "ext": 0,
+            "dev": 25,
+            "elbow": 90,
+            "axial": 0.4
+          },
+          "forces": [
+            {
+              "at": "midcarpal_ulnar_dorsal",
+              "dir": "palmar",
+              "mag": 0.6,
+              "by": "examiner"
+            }
+          ],
+          "kinematics": {
+            "clunkAtDev": 7
+          },
+          "text": "... then tilts the wrist toward the pinky with slight axial load.",
+          "body": "seated_table",
+          "holds": [
+            "forearm"
+          ]
+        }
+      ],
+      "positive": "A clunk as the carpus snaps back (proximal row jumps from flexed to extended); grading I–V by Lichtman.",
+      "painZones": [
+        "midcarpal_ulnar_dorsal",
+        "triquetrum_dorsal"
+      ],
+      "meaning": "Palmar midcarpal instability, common in hypermobility.",
+      "home": "Use the active catch-up clunk test instead.",
+      "hyper": {
+        "midcarpalSag": 1.0,
+        "clunkAtDev": 6
+      },
+      "view": "ulnar",
+      "risk": {
+        "level": 3,
+        "note": "The examiner pushes the carpus into the clunk; forcing it can hurt. At home use the active catch-up clunk instead."
+      },
+      "present": "bones"
+    },
+    {
+      "id": "active_catchup_clunk",
+      "name": "Active catch-up clunk (self test)",
+      "group": "Midcarpal",
+      "targets": [
+        "midcarpal"
+      ],
+      "needsPartner": false,
+      "homeOk": true,
+      "steps": [
+        {
+          "dur": 1.5,
+          "pose": {
+            "rot": -80,
+            "ext": 0,
+            "dev": -15,
+            "elbow": 90,
+            "fingers": 0.6,
+            "grip": 0.3
+          },
+          "text": "Palm down, loose fist, wrist tilted to the thumb side, some grip tension.",
+          "body": "seated_table"
+        },
+        {
+          "dur": 3.0,
+          "pose": {
+            "rot": -80,
+            "ext": 0,
+            "dev": 30,
+            "elbow": 90,
+            "fingers": 0.6,
+            "grip": 0.3
+          },
+          "kinematics": {
+            "clunkAtDev": 7
+          },
+          "text": "Slowly tilt to the pinky side.",
+          "body": "seated_table"
+        }
+      ],
+      "positive": "A visible, often painful clunk midway.",
+      "painZones": [
+        "midcarpal_ulnar_dorsal"
+      ],
+      "meaning": "Midcarpal instability.",
+      "home": "Exactly as described; film it.",
+      "hyper": {
+        "midcarpalSag": 1.0,
+        "clunkAtDev": 6
+      },
+      "view": "ulnar",
+      "risk": {
+        "level": 1,
+        "note": "A few slow repetitions only; stop if the clunk hurts."
+      },
+      "present": "bones"
+    },
+    {
+      "id": "watson_scaphoid_shift",
+      "name": "Watson test (scaphoid shift)",
+      "group": "Carpal ligaments",
+      "targets": [
+        "sl"
+      ],
+      "needsPartner": true,
+      "homeOk": false,
+      "steps": [
+        {
+          "dur": 1.5,
+          "pose": {
+            "rot": -60,
+            "ext": 10,
+            "dev": 25,
+            "elbow": 90
+          },
+          "contacts": [
+            "scaphoid_tubercle"
+          ],
+          "text": "Examiner's thumb on the scaphoid tubercle (palm side), wrist tilted to the pinky side.",
+          "body": "seated_table",
+          "holds": [
+            "forearm"
+          ]
+        },
+        {
+          "dur": 2.5,
+          "pose": {
+            "rot": -60,
+            "ext": 0,
+            "dev": -15,
+            "elbow": 90
+          },
+          "forces": [
+            {
+              "at": "scaphoid_tubercle",
+              "dir": "dorsal",
+              "mag": 0.6,
+              "by": "examiner"
+            }
+          ],
+          "kinematics": {
+            "scaphoidDorsalShift": 1.0,
+            "slGap": 1.0
+          },
+          "text": "Move the wrist to the thumb side while pressing the tubercle; the scaphoid wants to flex and is blocked.",
+          "body": "seated_table",
+          "holds": [
+            "forearm"
+          ]
+        },
+        {
+          "dur": 1.5,
+          "pose": {
+            "rot": -60,
+            "ext": 0,
+            "dev": -15,
+            "elbow": 90
+          },
+          "kinematics": {
+            "scaphoidDorsalShift": 0
+          },
+          "text": "Release the thumb.",
+          "body": "seated_table",
+          "holds": [
+            "forearm"
+          ]
+        }
+      ],
+      "positive": "Pain on the back of the wrist at the SL interval, or a clunk on release.",
+      "painZones": [
+        "sl_interval_dorsal"
+      ],
+      "meaning": "Scapholunate instability; also positive in many lax but healthy wrists – compare sides.",
+      "home": "Not recommended (hard to do on yourself, painful when positive).",
+      "view": "thumb",
+      "risk": {
+        "level": 3,
+        "note": "Painful when positive and hard to do on yourself. Shown so you know what to expect."
+      },
+      "present": "bones"
+    },
+    {
+      "id": "lt_ballottement",
+      "name": "LT ballottement (Reagan)",
+      "group": "Carpal ligaments",
+      "targets": [
+        "lt"
+      ],
+      "needsPartner": true,
+      "homeOk": false,
+      "steps": [
+        {
+          "dur": 1.5,
+          "pose": {
+            "rot": -80,
+            "ext": 0,
+            "dev": 0,
+            "elbow": 90
+          },
+          "contacts": [
+            "lt_interval_dorsal",
+            "pisiform"
+          ],
+          "text": "The examiner fixes the lunate between thumb and index of one hand, and the triquetrum and pisiform with the other.",
+          "body": "seated_table",
+          "holds": [
+            "wrist"
+          ]
+        },
+        {
+          "dur": 2.5,
+          "pose": {
+            "rot": -80,
+            "ext": 0,
+            "dev": 0,
+            "elbow": 90
+          },
+          "forces": [
+            {
+              "at": "pisiform",
+              "dir": "dorsal",
+              "mag": 0.5,
+              "by": "examiner"
+            },
+            {
+              "at": "triquetrum_dorsal",
+              "dir": "palmar",
+              "mag": 0.5,
+              "by": "examiner"
+            }
+          ],
+          "kinematics": {
+            "ltShear": 1.0
+          },
+          "text": "Shift the triquetrum up and down against the lunate.",
+          "body": "seated_table",
+          "holds": [
+            "wrist"
+          ]
+        }
+      ],
+      "positive": "Pain, laxity or crepitus at the LT interval.",
+      "painZones": [
+        "lt_interval_dorsal"
+      ],
+      "meaning": "Lunotriquetral ligament injury.",
+      "home": "Only a partner who knows the anatomy (e.g. a doctor).",
+      "view": "dorsal",
+      "risk": {
+        "level": 3,
+        "note": "Needs exact knowledge of the anatomy. Shown so you know what to expect."
+      },
+      "present": "bones"
+    },
+    {
+      "id": "beighton_score",
+      "name": "Beighton score (general hypermobility)",
+      "group": "General",
+      "targets": [],
+      "needsPartner": false,
+      "homeOk": true,
+      "steps": [
+        {
+          "dur": 2.0,
+          "pose": {
+            "rot": -80,
+            "ext": 30,
+            "dev": 0,
+            "elbow": 0,
+            "littleFingerExt": 95
+          },
+          "text": "Little finger bends back past 90° (1 point per side).",
+          "body": "standing"
+        },
+        {
+          "dur": 2.0,
+          "pose": {
+            "rot": 0,
+            "ext": -80,
+            "dev": 0,
+            "elbow": 20,
+            "thumb": "to_forearm"
+          },
+          "text": "Thumb can be pulled onto the forearm (1 point per side).",
+          "body": "standing"
+        },
+        {
+          "dur": 2.0,
+          "pose": {
+            "rot": 85,
+            "ext": 0,
+            "dev": 0,
+            "elbow": -12
+          },
+          "text": "Elbow straightens more than 10° past straight (1 point per side).",
+          "body": "standing"
+        }
+      ],
+      "textOnly": [
+        "Knee hyperextends more than 10° (1 point per side).",
+        "Palms flat on the floor with straight knees (1 point)."
+      ],
+      "positive": "5 or more of 9 points (adults up to 50; 4 or more above 50) suggests generalised hypermobility.",
+      "painZones": [],
+      "meaning": "Context for all wrist findings.",
+      "home": "Yes.",
+      "view": "free",
+      "risk": {
+        "level": 1,
+        "note": "Harmless; do not force any joint past what feels comfortable."
+      },
+      "present": "bones"
+    }
+  ]
+}
