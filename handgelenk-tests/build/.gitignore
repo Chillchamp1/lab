@@ -1,0 +1,6 @@
+node_modules
+dist
+dist-artifact
+assets-src
+*.local
+*.tsbuildinfo

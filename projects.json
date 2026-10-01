@@ -58,5 +58,11 @@
     "titel": "Deutschland, gezeichnet von seinen Fahrplänen",
     "beschreibung": "4.781 Bahnhöfe des Fern- und Regionalverkehrs, nicht nach Kilometern gezeichnet, sondern nach der Reisezeit mit dem Zug: zwischen je zwei Bahnhöfen hängt eine Feder mit der Reisezeit als Ruhelänge, und die Karte ist die Lage, in der alle Federn zusammen am wenigsten ziehen — ein Kilometer Luftlinie ist dabei 1,14 Minuten wert. Das Relief darüber misst nicht Entfernung, sondern Reichweite: wie lange es dauert, bis von hier ein Anteil Deutschlands mit dem Zug erreichbar ist. Dieser Anteil ist ein Regler, und er schiebt zwischen den beiden Polen, zwischen denen jede Erreichbarkeitskarte steht — bei einem Fünfzigstel zählt nur die Nachbarschaft und jeder Ballungsraum wird ein eigener See, bei neun Zehnteln muss man bis in die Ecken und es gewinnen Fulda und Kassel in der Mitte. Voreingestellt ist die Hälfte — 41,8 Millionen Menschen, das obere Ende des brauchbaren Fensters: unterhalb eines Siebtels schöpft jede Region noch aus sich selbst, denn das Ruhrgebiet erreicht in 90 Minuten 11,6 Prozent des Landes. Die Seite selbst ist auf Englisch. Die Karte lässt sich mit Rad oder zwei Fingern zoomen: beim Hineinzoomen erscheinen die Namen der kleineren Bahnhöfe, beim Herauszoomen die Enden, die der Bildausschnitt hinausgeworfen hat — Sylt, die Rügener Bäderbahn, der Zipfel um Singen. Fahrplan ist ein Mittwoch aus dem offenen DELFI-Datensatz, Abfahrt in der dichtesten Stunde des Tages, die gemessen wurde und 06:36 bis 07:36 liegt.",
     "datum": "2026-09"
+  },
+  {
+    "slug": "handgelenk-tests",
+    "titel": "Handgelenktests, Schritt für Schritt in 3D",
+    "beschreibung": "Zwölf klinische Handgelenktests — TFCC, DRUJ, ECU, Midkarpalgelenk, Karpalbänder, Beighton — an einer sitzenden Figur, deren rechter Unterarm ein Knochen- und Hautmodell aus BodyParts3D ist. Eine Zeitleiste zum Hin- und Herziehen zeigt je Abschnitt, was zu tun ist; dazu Kraftpfeile, Haltegriffe, Auflageflächen, Schmerzzonen bei positivem Befund und eine Ampel, welche Tests man selbst probieren kann und welche dem Untersucher vorbehalten sind. Kein Diagnosewerkzeug. Die Seite selbst ist auf Englisch.",
+    "datum": "2026-10"
   }
 ]

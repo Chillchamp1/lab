@@ -1,0 +1,51 @@
+# Handgelenktests in 3D
+
+Zwölf klinische Handgelenktests, Schritt für Schritt an einem 3D-Modell: eine sitzende Figur, deren rechter
+Unterarm und Hand ein Knochen- und Hautmodell sind. Die Seite selbst ist auf Englisch.
+
+**Kein Diagnosewerkzeug.** Schematisch und vereinfacht, nicht maßstäblich. Alle Belastungswerte sind erfundene
+Faustwerte zur Anschauung, keine Messungen.
+
+## Was man sieht
+
+- Tests nach Gruppen: TFCC / ulnare Seite, DRUJ, ECU, Midkarpalgelenk, Karpalbänder (SL, LT), Beighton-Score.
+- Je Test eine Ampel in drei Stufen: selbst probieren · Vorsicht (Last oder Partner) · nur Untersucher.
+- Zeitleiste mit einer Farbe je Abschnitt, mit der Maus oder dem Finger hin- und herziehbar. Abspielen wiederholt
+  nur den aktuellen Abschnitt; ⏮ ⏭ wechseln den Abschnitt.
+- Kraftpfeile, Fingerauflagen des Untersuchers, Halteringe („held fixed“), Auflageflächen (Tisch, Sitz),
+  Schmerzzonen bei positivem Befund.
+- Darstellung umschaltbar: Haut · Röntgen · Knochen. Die Ansicht dreht immer um das Handgelenk.
+- Zweiter Reiter „Explore“: freie Haltung, Last, Hypermobilität, äußere Stützen (DRUJ-Band, Pisiforme-Lift,
+  Karpalwickel) mit eingefärbter Belastung der Bänder und Sehnen.
+
+## Quellen und Lizenz
+
+- Knochen und Haut: **BodyParts3D**, © The Database Center for Life Science, lizenziert unter
+  CC Attribution-Share Alike 2.1 Japan (https://dbarchive.biosciencedbc.jp/en/bodyparts3d/). Die abgeleiteten
+  Netze in `assets/*.glb` stehen unter derselben Lizenz. Verwendet wird die zu 99 % reduzierte OBJ-Fassung,
+  im Bau einmal geglättet (Loop-Unterteilung).
+- Testbeschreibungen: `build/src/model/wrist-tests.json`, mit Quellenangabe je Test, wo vorhanden
+  (z. B. Tay/Tomita/Berger 2007, Lester 1995, Ruland & Hogan 2008).
+- Die Figur ist eine Gliederpuppe aus Grundformen mit üblichen Erwachsenenproportionen, kein gescannter Mensch.
+
+## Bekannte Grenzen
+
+- Ansatzpunkte der Bänder und Sehnen sind grob gesetzt und auf die Knochenoberfläche geschnappt, nicht einzeln geprüft.
+- Die Karpalkinematik ist ein Zwei-Drehpunkt-Modell (radiokarpal, midkarpal) mit kleinen Zusatzbewegungen;
+  echte Handwurzelknochen bewegen sich gekoppelt in sechs Freiheitsgraden.
+- Der zweite Mensch (Partner, Untersucher) erscheint nur als Ringe, Auflagen und Pfeile.
+- Oberfläche und Texte bisher nur auf Englisch.
+
+## Bauen
+
+Der Quellcode liegt in [`build/`](build/README.md) (Vite, TypeScript, React, three.js). Die Seite hier ist das
+Bauergebnis:
+
+```bash
+cd handgelenk-tests/build
+npm install
+npm run lab
+```
+
+`npm run lab` baut und kopiert `index.html` und `assets/` in diesen Ordner. Die Rohdaten von BodyParts3D
+(62 MB) liegen nicht im Repo; `build/README.md` beschreibt, wie man sie holt und die Knochen neu erzeugt.

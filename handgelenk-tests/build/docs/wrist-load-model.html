@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wrist load model</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E4EAEA; --panel:#F3F6F5; --ink:#1E2C31; --muted:#56676D; --line:#C3CFD0;
+  --bone:#F2E8D3; --bone-edge:#7D6E52;
+  --support:#2F6FB0; --support-fill:rgba(47,111,176,.15);
+  --chip:#D7E0E0;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#151E21; --panel:#1D282C; --ink:#E3EBEC; --muted:#93A4A9; --line:#2F3D42;
+    --bone:#D8CCB2; --bone-edge:#7B6D50;
+    --support:#6EA6E0; --support-fill:rgba(110,166,224,.16);
+    --chip:#26343A;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#151E21; --panel:#1D282C; --ink:#E3EBEC; --muted:#93A4A9; --line:#2F3D42;
+  --bone:#D8CCB2; --bone-edge:#7B6D50;
+  --support:#6EA6E0; --support-fill:rgba(110,166,224,.16);
+  --chip:#26343A;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:16px;line-height:1.45}
+header{padding:18px 16px 6px;max-width:1180px;margin:0 auto}
+h1{font-size:1.55rem;line-height:1.15;margin:0 0 6px;letter-spacing:-.01em}
+header p{margin:0;color:var(--muted);max-width:60ch}
+main{max-width:1180px;margin:0 auto;padding:0 16px 32px;display:grid;gap:16px}
+@media (min-width:900px){
+  main{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);align-items:start}
+  .stage{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+}
+@media (max-width:899px){
+  .stage{position:sticky;top:env(safe-area-inset-top,0px);z-index:3;background:var(--paper);
+    padding-top:8px;border-bottom:1px solid var(--line)}
+}
+.tabs{display:flex;gap:6px;margin-bottom:6px}
+.tabs button{flex:1;font:inherit;font-size:.9rem;padding:8px 6px;border-radius:10px;
+  border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.view{background:var(--panel);border-radius:14px;border:1px solid var(--line);position:relative}
+.view svg{display:block;width:100%;height:auto;max-height:44vh;margin:0 auto}
+@media (min-width:900px){.view svg{max-height:68vh}}
+.caption{font-size:.85rem;color:var(--muted);margin:6px 2px 8px}
+.notices{position:absolute;left:8px;right:8px;top:8px;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.notice{background:var(--ink);color:var(--paper);font-size:.82rem;padding:6px 10px;border-radius:8px;max-width:34ch}
+.notice.warn{background:#B23338;color:#fff}
+.toast{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);background:#B23338;color:#fff;
+  padding:8px 12px;border-radius:10px;font-size:.85rem;max-width:90%;text-align:center;opacity:0;transition:opacity .25s}
+.toast.on{opacity:1}
+section h2{font-size:1.05rem;margin:4px 0 8px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+.presets{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.presets button{flex:none;font:inherit;font-size:.88rem;padding:6px 11px;border-radius:999px;border:none;
+  background:var(--chip);color:var(--ink);cursor:pointer}
+.slider{margin-top:14px}
+.slider .top{display:flex;justify-content:space-between;font-size:.92rem}
+.slider .top b{font-weight:700}
+.slider .ends{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--ink);margin:6px 0 2px}
+.toggles{display:grid;gap:8px;margin-top:14px}
+.tg{display:flex;align-items:center;gap:10px;font:inherit;text-align:left;padding:9px 11px;border-radius:10px;
+  border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.tg .sw{flex:none;width:34px;height:20px;border-radius:10px;background:var(--line);position:relative;transition:background .2s}
+.tg .sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--panel);transition:transform .2s}
+.tg[aria-pressed="true"] .sw{background:var(--support)}
+.tg[aria-pressed="true"] .sw::after{transform:translateX(14px)}
+.tg.hyper[aria-pressed="true"] .sw{background:#B23338}
+.tg small{display:block;color:var(--muted);font-size:.78rem}
+.grouplabel{font-size:.85rem;color:var(--muted);margin:14px 0 -4px}
+.list{display:grid;gap:4px}
+.row{display:grid;grid-template-columns:1fr 44px;gap:2px 10px;align-items:center;font:inherit;text-align:left;
+  background:transparent;border:1px solid transparent;border-radius:10px;padding:7px 8px;color:var(--ink);cursor:pointer}
+.row[aria-current="true"]{border-color:var(--support);background:var(--support-fill)}
+.row .nm{font-size:.92rem}
+.row .pc{font-size:.85rem;text-align:right;color:var(--muted)}
+.row .bar{grid-column:1/3;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.row .bar i{display:block;height:100%;border-radius:3px}
+.tag{font-size:.72rem;padding:1px 6px;border-radius:6px;background:#B23338;color:#fff;margin-left:6px;white-space:nowrap}
+.detail h3{margin:0 0 2px;font-size:1.05rem}
+.detail .kind{color:var(--muted);font-size:.85rem;margin-bottom:8px}
+.detail dl{margin:0;display:grid;gap:8px}
+.detail dt{font-size:.8rem;color:var(--muted)}
+.detail dd{margin:0}
+.detail .hyp{border-left:3px solid #B23338;padding-left:8px}
+.recs{margin:0;padding-left:18px}
+.recs li{margin-bottom:6px}
+.on-tag{font-size:.75rem;color:var(--support);font-weight:700;margin-left:4px}
+footer{max-width:1180px;margin:0 auto;padding:0 16px 28px;color:var(--muted);font-size:.82rem}
+.hit{cursor:pointer}
+.bone{fill:var(--bone);stroke:var(--bone-edge);stroke-width:1.4}
+.ghost{fill-opacity:.45;stroke-dasharray:3 3}
+.lbl{fill:var(--muted);font-size:10px;font-family:inherit}
+.lbl.s{font-size:9px}
+button:focus-visible,input:focus-visible{outline:3px solid var(--support);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>How a wrist carries load</h1>
+  <p>A schematic right wrist. Move it, add load, switch on hypermobility, and see which structures take the strain — and where support from the outside helps.</p>
+</header>
+
+<main>
+  <div class="stage">
+    <div class="tabs" role="tablist" aria-label="View">
+      <button role="tab" data-view="dorsal" aria-selected="true">Back of hand</button>
+      <button role="tab" data-view="side" aria-selected="false">Side</button>
+      <button role="tab" data-view="cross" aria-selected="false">Cross-section</button>
+    </div>
+    <div class="view">
+      <svg id="svg" role="img" aria-label="Wrist model"></svg>
+      <div class="notices" id="notices"></div>
+      <div class="toast" id="toast" role="status"></div>
+    </div>
+    <p class="caption" id="caption"></p>
+  </div>
+
+  <div style="display:grid;gap:16px">
+    <section class="card">
+      <h2>Pose</h2>
+      <div class="presets" id="presets"></div>
+
+      <div class="slider">
+        <div class="top"><span>Bend</span><b id="v-ext"></b></div>
+        <input type="range" id="ext" step="1" aria-label="Bend: flex to extend">
+        <div class="ends"><span>palm-ward (flex)</span><span>back-ward (extend)</span></div>
+      </div>
+      <div class="slider">
+        <div class="top"><span>Side tilt</span><b id="v-dev"></b></div>
+        <input type="range" id="dev" step="1" aria-label="Side tilt: thumb side to pinky side">
+        <div class="ends"><span>thumb side</span><span>pinky side</span></div>
+      </div>
+      <div class="slider">
+        <div class="top"><span>Forearm turn</span><b id="v-rot"></b></div>
+        <input type="range" id="rot" step="1" aria-label="Forearm rotation: palm down to palm up">
+        <div class="ends"><span>palm down</span><span>palm up</span></div>
+      </div>
+      <div class="slider">
+        <div class="top"><span>Load</span><b id="v-load"></b></div>
+        <input type="range" id="load" min="0" max="100" step="1" aria-label="Grip or weight-bearing load">
+        <div class="ends"><span>none</span><span>hard grip / body weight</span></div>
+      </div>
+
+      <div class="toggles">
+        <button class="tg hyper" id="t-hyper" aria-pressed="false"><span class="sw"></span><span>Hypermobile wrist<small>More range, looser joints, more muscle work</small></span></button>
+        <div class="grouplabel">Outside support</div>
+        <button class="tg" id="t-band" aria-pressed="false"><span class="sw"></span><span>DRUJ band<small>WristWidget or tape strip 1, just above the ulnar head</small></span></button>
+        <button class="tg" id="t-lift" aria-pressed="false"><span class="sw"></span><span>Pisiform lift<small>Tape strip 2 or splint pad under the pinky-side heel of the hand</small></span></button>
+        <button class="tg" id="t-wrap" aria-pressed="false"><span class="sw"></span><span>Carpal wrap<small>Firm band around the carpal bones</small></span></button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Where support would help right now</h2>
+      <ul class="recs" id="recs"></ul>
+    </section>
+
+    <section class="card">
+      <h2>What's working hardest</h2>
+      <div class="list" id="list"></div>
+    </section>
+
+    <section class="card detail" id="detail" aria-live="polite"></section>
+  </div>
+</main>
+
+<footer>Schematic and simplified for intuition — not to scale, not a diagnosis. Persistent pinky-side pain, clicking, snapping or giving way: see a hand surgeon or hand therapist.</footer>
+
+<script>
+(function(){
+const RANGE={normal:{ext:[-75,70],dev:[-20,35],rot:[-80,85]},hyper:{ext:[-95,95],dev:[-25,45],rot:[-90,100]}};
+const S={ext:0,dev:0,rot:0,load:0,hyper:false,band:false,lift:false,wrap:false,view:'dorsal',sel:'tfcc'};
+let prevDev=0, toastTimer=null;
+
+const STR=[
+ {id:'tfcc',name:'TFCC (triangular fibrocartilage)',kind:'Cartilage disc with ligaments',where:'Pinky side, between the end of the ulna and the carpal bones.',loads:'Tilting toward the pinky, gripping, loading with the palm down (push-ups, planks).',hyp:'A loose radioulnar joint lets the ulna shift, adding shear on the disc.',support:'DRUJ band just above the ulnar head (WristWidget / tape strip 1). For push-ups: fists or handles.',view:'dorsal'},
+ {id:'druj',name:'Radioulnar ligaments (DRUJ)',kind:'Ligaments, part of the TFCC',where:'Hold radius and ulna together at the wrist.',loads:'Turning the forearm to the end of its range, especially while gripping — keys, screwdrivers, doorknobs, jars.',hyp:'The main weak point in lax wrists: the ulnar head shifts more with every turn.',support:'DRUJ band — this is exactly the job the WristWidget takes over.',view:'cross'},
+ {id:'ecu',name:'ECU tendon and its sheath',kind:'Tendon',where:'Groove on the back of the ulna, pinky side.',loads:'Palm up + wrist bent palm-ward + pinky-side tilt. In that position it can snap out of its groove.',hyp:'Looser sheath, so it snaps out more easily; the tendon also works overtime as a stabiliser.',support:'DRUJ band helps somewhat. Avoid palm-up gripping with the wrist flexed. Repeated snapping needs a splint that keeps the forearm palm-down.',view:'cross'},
+ {id:'ulnocarpal',name:'Ulnocarpal ligaments',kind:'Ligaments, palm side',where:'From the ulna and TFCC to the lunate and triquetrum.',loads:'Extension, palm-up turning, tilt toward the thumb.',hyp:'When the pinky-side carpus sags palm-ward, it hangs on these ligaments.',support:'Pisiform lift (tape strip 2) or a splint with a pad under the pisiform.',view:'dorsal'},
+ {id:'sl',name:'Scapholunate ligament',kind:'Ligament',where:'Between scaphoid and lunate, center of the wrist.',loads:'Loaded extension (push-ups), hard grip, pinky-side tilt.',hyp:'The gap between the two bones opens more under grip.',support:'Carpal wrap with gentle pressure on the back of the wrist; avoid loading in full extension.',view:'dorsal'},
+ {id:'lt',name:'Lunotriquetral ligament',kind:'Ligament',where:'Between lunate and triquetrum, pinky side.',loads:'Tilting toward the thumb, palm-down loading, falls onto the hand.',hyp:'Pulled on by the sagging pinky-side carpus.',support:'Pisiform lift / pinky-side support.',view:'dorsal'},
+ {id:'volar',name:'Palm-side wrist ligaments',kind:'Ligaments (radioscaphocapitate, radiolunate)',where:'Palm side, from the radius to the carpal bones.',loads:'End-range extension — these are the brakes in push-ups, planks and yoga.',hyp:'The range goes further before they stop it, so the end-stop comes later and harder.',support:'Limit end-range extension: fists, handles or wedges, or an X-tape over the palm side.',view:'side'},
+ {id:'dorsal',name:'Back-of-wrist ligaments',kind:'Ligaments (dorsal radiocarpal, dorsal intercarpal)',where:'Back of the wrist.',loads:'End-range flexion, especially with load.',hyp:'Later, harder end-stop in flexion.',support:'Carpal wrap; keep loaded work out of deep flexion.',view:'side'},
+ {id:'midcarpal',name:'Midcarpal joint, pinky side',kind:'Joint and ligaments',where:'Between the two rows of carpal bones.',loads:'Palm-down loading and grip.',hyp:'Typical in hypermobility: the hand sags palm-ward here and "clunks" when tilting toward the pinky (midcarpal instability).',support:'Pisiform lift — pushes the pinky-side carpus back up (tape strip 2 or a pisiform-boost splint).',view:'side'},
+ {id:'flexors',name:'Finger flexor tendons',kind:'Tendons',where:'Through the carpal tunnel, palm side.',loads:'Grip force. Carpal-tunnel pressure rises in deep flexion and in deep extension.',hyp:'Muscles co-contract more to make up for loose ligaments, which tires them.',support:'Thicker handles, lighter grip, neutral wrist.',view:'side'},
+ {id:'extensors',name:'Wrist and finger extensors',kind:'Tendons and muscles',where:'Back of the forearm into the hand, up to the elbow (tennis-elbow area).',loads:'Gripping with the wrist bent palm-ward — they hold the wrist up against the grip.',hyp:'Extra stabilising work, so they fatigue sooner.',support:'Grip with the wrist neutral or slightly extended; counterforce strap at the elbow if sore there.',view:'side'},
+ {id:'fcu',name:'FCU tendon and pisiform',kind:'Tendon',where:'Palm side, pinky edge, inserting on the pisiform.',loads:'Loaded pinky-side tilt or extension, carrying heavy bags.',hyp:'Works as an active stabiliser of the pinky side.',support:'Pisiform lift; carry closer to neutral.',view:'side'}
+];
+const byId=Object.fromEntries(STR.map(s=>[s.id,s]));
+
+const PRESETS=[
+ {n:'Neutral',ext:0,dev:0,rot:0,load:0},
+ {n:'Push-up',ext:80,dev:5,rot:-80,load:85},
+ {n:'Downward dog',ext:88,dev:10,rot:-85,load:60},
+ {n:'Typing',ext:20,dev:15,rot:-80,load:8},
+ {n:'Turning a key',ext:0,dev:10,rot:75,load:45},
+ {n:'Screwdriver',ext:-10,dev:5,rot:85,load:65},
+ {n:'Carrying a bag',ext:0,dev:22,rot:0,load:70},
+ {n:'Phone in hand',ext:-30,dev:15,rot:-30,load:10},
+ {n:'Opening a jar',ext:-25,dev:25,rot:60,load:80}
+];
+
+const $=id=>document.getElementById(id);
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const f1=n=>(+n).toFixed(1);
+
+function col(v){v=clamp(v);const a=[46,139,122],b=[211,155,46],c=[194,54,58];let p,q,t;
+  if(v<.5){p=a;q=b;t=v/.5}else{p=b;q=c;t=(v-.5)/.5}
+  return 'rgb('+p.map((x,i)=>Math.round(x+(q[i]-x)*t)).join(',')+')';}
+
+function apply(p,ops){let x=p[0],y=p[1];
+  for(let i=ops.length-1;i>=0;i--){const o=ops[i];
+    if(o[0]==='t'){x+=o[1];y+=o[2];}
+    else{const a=o[1]*Math.PI/180,c=Math.cos(a),s=Math.sin(a),dx=x-o[2],dy=y-o[3];x=o[2]+dx*c-dy*s;y=o[3]+dx*s+dy*c;}}
+  return [x,y];}
+function tstr(ops){return ops.map(o=>o[0]==='t'?`translate(${f1(o[1])} ${f1(o[2])})`:`rotate(${f1(o[1])} ${o[2]} ${o[3]})`).join(' ');}
+
+function compute(){
+  const e=Math.max(S.ext,0)/70,f=Math.max(-S.ext,0)/75,ud=Math.max(S.dev,0)/35,rd=Math.max(-S.dev,0)/20,
+        pro=Math.max(-S.rot,0)/80,sup=Math.max(S.rot,0)/85,L=S.load/100,lax=S.hyper?1:0;
+  const druj=(0.22*(pro+sup)+0.3*L)*(1+1.3*lax)*(S.band?0.4:1);
+  const sag=lax*(0.35+0.65*L)*(S.lift?0.35:1)*(S.wrap?0.8:1);
+  const slGap=(lax?1:0.25)*(0.15+0.85*L*(0.5+0.5*ud))*(S.wrap?0.65:1);
+  const st={
+    tfcc:(0.42*ud+0.2*pro+0.36*L+0.15*e*L+0.3*druj)*(S.band?0.72:1)*(S.lift?0.9:1),
+    druj:(0.5*Math.max(pro,sup)**2+0.15*L+0.5*druj)*(S.band?0.8:1),
+    ecu:(0.45*sup+0.25*f+0.3*ud+0.15*L+0.2*lax*L)*(S.band?0.88:1),
+    ulnocarpal:(0.4*e+0.3*sup+0.2*rd+0.2*L*e+0.25*sag)*(S.lift?0.8:1),
+    sl:(0.3*e+0.2*ud+0.35*L+0.35*slGap)*(S.wrap?0.82:1),
+    lt:(0.35*rd+0.2*pro+0.25*L+0.15*e+0.25*sag)*(S.lift?0.88:1),
+    volar:0.85*Math.pow(e,1.4)+0.2*L*e+0.2*sag,
+    dorsal:(0.85*Math.pow(f,1.4)+0.15*L+0.15*lax*f)*(S.wrap?0.9:1),
+    midcarpal:0.25*L+0.25*pro+0.15*ud+0.65*sag,
+    flexors:0.5*L+0.3*f+0.25*e,
+    extensors:0.38*L+0.35*f*L+0.2*f+0.15*lax*L,
+    fcu:(0.2*L+0.3*ud*L+0.25*e*L+0.15*lax*L+0.1*e)*(S.lift?0.85:1)
+  };
+  const sublux=(sup>0.55&&ud>0.25&&f>0.15)||(lax&&st.ecu>0.75&&sup>0.4);
+  const N=RANGE.normal;
+  const beyond=S.ext>N.ext[1]||S.ext<N.ext[0]||S.dev>N.dev[1]||S.dev<N.dev[0]||S.rot>N.rot[1]||S.rot<N.rot[0];
+  return {e,f,ud,rd,pro,sup,L,lax,druj,sag,slGap,st,sublux,beyond};
+}
+
+/* drawing helpers */
+function pathD(pts,curve){
+  if(curve&&pts.length===3)return `M${f1(pts[0][0])},${f1(pts[0][1])} Q${f1(pts[1][0])},${f1(pts[1][1])} ${f1(pts[2][0])},${f1(pts[2][1])}`;
+  return 'M'+pts.map(p=>f1(p[0])+','+f1(p[1])).join(' L');}
+function lig(id,pts,v,o={}){
+  const d=pathD(pts,o.curve),w=o.w||3,sel=S.sel===id;
+  return `<g class="hit" data-id="${id}"><path d="${d}" stroke="transparent" stroke-width="18" fill="none"/>`+
+    (sel?`<path d="${d}" stroke="var(--support)" stroke-width="${w+10}" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".3"/>`:'')+
+    `<path d="${d}" stroke="${col(v)}" stroke-width="${f1(w+3*clamp(v))}" fill="none" stroke-linecap="round" stroke-linejoin="round" ${o.dash?'stroke-dasharray="5 5"':''}/></g>`;}
+function zone(id,d,v){const sel=S.sel===id;
+  return `<g class="hit" data-id="${id}">`+(sel?`<path d="${d}" fill="none" stroke="var(--support)" stroke-width="8" opacity=".35" stroke-linejoin="round"/>`:'')+
+    `<path d="${d}" fill="${col(v)}" fill-opacity=".9" stroke="${col(v)}" stroke-width="1.5" stroke-linejoin="round"/></g>`;}
+function dot(id,p,r,v){const sel=S.sel===id;
+  return `<g class="hit" data-id="${id}"><circle cx="${f1(p[0])}" cy="${f1(p[1])}" r="14" fill="transparent"/>`+
+    (sel?`<circle cx="${f1(p[0])}" cy="${f1(p[1])}" r="${r+5}" fill="var(--support)" opacity=".3"/>`:'')+
+    `<circle cx="${f1(p[0])}" cy="${f1(p[1])}" r="${r}" fill="${col(v)}" stroke="var(--panel)" stroke-width="1.5"/></g>`;}
+const ell=(cx,cy,rx,ry,rot,cls)=>`<ellipse cx="${cx}" cy="${cy}" rx="${f1(rx)}" ry="${f1(ry)}" transform="rotate(${rot||0} ${cx} ${cy})" class="bone ${cls||''}"/>`;
+const shaft=(x1,y1,x2,y2,w)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--bone-edge)" stroke-width="${w+3}" stroke-linecap="round"/><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--bone)" stroke-width="${w}" stroke-linecap="round"/>`;
+const txt=(x,y,t,cls,anchor)=>`<text x="${f1(x)}" y="${f1(y)}" class="lbl ${cls||''}" text-anchor="${anchor||'middle'}">${t}</text>`;
+const defs=`<defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--support)"/></marker>
+<marker id="arrR" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#B23338"/></marker></defs>`;
+
+/* view 1: back of hand */
+function drawDorsal(c){
+  const st=c.st,C=[142,200],dev=S.dev;
+  const prox=[['t',-0.35*dev*(1+0.4*c.lax),0],['r',0.35*dev,C[0],C[1]]];
+  const dist=[['r',dev,C[0],C[1]]];
+  const uv=-(4*c.pro+5*c.L);
+  const sc=[...prox,['t',-c.slGap*7,0]];
+  const rxS=22*(1-0.35*c.rd);
+  let s=defs;
+  s+=txt(142,14,'fingers')+txt(4,340,'thumb side','s','start')+txt(296,340,'pinky side','s','end');
+  // forearm
+  s+=`<path class="bone" d="M62,390 C58,320 58,270 66,226 L80,232 Q120,238 166,246 C168,280 160,330 152,390 Z"/>`;
+  s+=`<g transform="translate(0 ${f1(uv)})"><path class="bone" d="M186,390 L189,266 C189,252 198,246 210,246 C221,246 228,251 230,258 L233,244 L239,247 C238,290 237,330 236,390 Z"/></g>`;
+  // hand: metacarpals + distal row
+  s+=`<g transform="${tstr(dist)}">`+shaft(62,168,34,98,12)+shaft(102,166,98,48,13)+shaft(141,150,142,34,14)+shaft(172,163,178,46,12)+shaft(190,170,208,62,11)+
+     ell(72,182,15,13,-20)+ell(101,180,12,12)+`<rect x="126" y="150" width="32" height="52" rx="14" class="bone"/>`+ell(176,182,16,19,10)+`<circle cx="182" cy="188" r="5" class="bone ghost"/></g>`;
+  // TFCC zone (under the carpals)
+  const t1=apply([166,229],prox),t2=apply([186,227],prox);
+  s+=zone('tfcc',`M${f1(t1[0])},${f1(t1[1])} L${f1(t2[0])},${f1(t2[1])} L234,${f1(246+uv)} L194,${f1(250+uv)} Z`,st.tfcc);
+  // proximal row
+  s+=`<g transform="${tstr(sc)}">`+ell(100,210,rxS,13,35)+`</g>`;
+  s+=`<g transform="${tstr(prox)}">`+ell(140,220,17,13)+ell(176,216,15,11,20)+`<circle cx="186" cy="208" r="8" class="bone ghost"/></g>`;
+  // ligaments
+  s+=lig('sl',[apply([100+0.82*rxS,210+0.57*rxS],sc),apply([123,221],prox)],st.sl,{w:4});
+  s+=lig('lt',[apply([157,220],prox),apply([162,213],prox)],st.lt,{w:4});
+  s+=lig('dorsal',[[118,238],apply([172,222],prox)],st.dorsal,{w:2.5});
+  s+=lig('dorsal',[apply([180,210],prox),apply([140,194],prox),apply([96,204],sc)],st.dorsal,{w:2.5,curve:true});
+  s+=lig('ulnocarpal',[[198,252+uv],apply([146,229],prox)],st.ulnocarpal,{dash:true});
+  s+=lig('ulnocarpal',[[204,250+uv],apply([174,226],prox)],st.ulnocarpal,{dash:true});
+  s+=lig('midcarpal',[apply([186,206],prox),apply([170,192],dist),apply([152,190],dist)],st.midcarpal,{dash:true,curve:true});
+  // tendons
+  s+=lig('fcu',[[234,390],[224,300],apply([186,214],prox)],st.fcu,{dash:true,w:3});
+  s+=lig('ecu',[[226,390],[226,300],[224+(c.sublux?13:0),262+uv],apply([194,166],dist)],st.ecu,{w:3.5});
+  // supports
+  if(S.wrap)s+=`<rect x="50" y="188" width="200" height="48" rx="8" fill="var(--support-fill)" stroke="var(--support)" stroke-dasharray="6 4"/>`+txt(54,184,'carpal wrap','s','start');
+  if(S.band)s+=`<rect x="50" y="274" width="196" height="16" rx="3" fill="var(--support-fill)" stroke="var(--support)" stroke-width="2"/>`+txt(54,304,'DRUJ band — sits above the ulnar head','s','start');
+  if(S.lift){const p=apply([186,214],prox);s+=`<path d="M${f1(p[0])},${f1(p[1])} Q240,236 244,274" fill="none" stroke="var(--support)" stroke-width="8" opacity=".35" stroke-linecap="round"/>`+txt(262,228,'pisiform lift','s','end');}
+  if(c.lax&&!S.band&&c.druj>0.35)s+=`<path d="M246,${f1(258+uv)} l14,0" stroke="#B23338" stroke-width="2" marker-end="url(#arrR)" marker-start="url(#arrR)"/>`;
+  s+=txt(100,360,'radius')+txt(212,372,'ulna')+txt(78,228,'scaphoid','s','end')+txt(243,238,'TFCC','s','start');
+  return {vb:'-10 0 310 395',svg:s,cap:'Seen from the back of a right hand. Dashed lines lie on the palm side. Tap any coloured structure.'};
+}
+
+/* view 2: side */
+function drawSide(c){
+  const st=c.st,Rc=[150,153],Mc=[176,153];
+  const a=S.ext>=0?0.62*S.ext:0.42*S.ext,b=S.ext-a;
+  const visi=12*c.sag,sagPx=9*c.sag;
+  const lun=[['r',-a+visi,Rc[0],Rc[1]]];
+  const dist=[['r',-a,Rc[0],Rc[1]],['t',0,sagPx],['r',-b,Mc[0],Mc[1]]];
+  let s=defs;
+  s+=txt(8,96,'back of hand','s','start')+txt(8,214,'palm','s','start');
+  s+=`<path class="bone" d="M0,128 L118,124 C134,124 146,129 151,138 Q141,153 152,169 C138,177 118,178 0,176 Z"/>`;
+  s+=`<g transform="${tstr(dist)}"><rect x="166" y="141" width="48" height="25" rx="12" class="bone"/>`+shaft(214,153,284,151,16)+`<circle cx="290" cy="151" r="9" class="bone"/>`+shaft(300,151,332,150,11)+`</g>`;
+  s+=`<g transform="${tstr(lun)}"><path class="bone" d="M150,137 Q168,132 177,141 Q167,153 177,166 Q168,174 151,169 Q141,153 150,137 Z"/><circle cx="164" cy="183" r="7" class="bone"/></g>`;
+  // ligaments
+  s+=lig('volar',[[149,171],apply([166,175],lun),apply([198,167],dist)],st.volar,{w:3.5,curve:true});
+  s+=lig('dorsal',[[148,134],apply([170,134],lun),apply([196,140],dist)],st.dorsal,{w:3.5,curve:true});
+  s+=lig('midcarpal',[apply([172,167],lun),apply([184,166],dist)],st.midcarpal,{w:5});
+  // tendons
+  s+=lig('extensors',[[0,116],[120,118],[142,121],apply([196,135],dist),apply([282,141],dist)],st.extensors,{w:3});
+  s+=lig('flexors',[[0,188],[130,186],[152,183],apply([196,173],dist),apply([282,162],dist)],st.flexors,{w:3});
+  s+=lig('fcu',[[0,198],[120,196],apply([164,190],lun)],st.fcu,{w:3});
+  // supports
+  if(S.band)s+=`<rect x="114" y="110" width="16" height="76" rx="3" fill="var(--support-fill)" stroke="var(--support)" stroke-width="2"/>`+txt(122,104,'DRUJ band','s');
+  if(S.wrap)s+=`<rect x="144" y="124" width="66" height="60" rx="12" fill="var(--support-fill)" stroke="var(--support)" stroke-dasharray="6 4"/>`;
+  if(S.lift){const p=apply([164,192],lun);s+=`<line x1="${f1(p[0])}" y1="${f1(p[1]+34)}" x2="${f1(p[0])}" y2="${f1(p[1]+4)}" stroke="var(--support)" stroke-width="3" marker-end="url(#arr)"/>`+txt(p[0],p[1]+46,'pisiform lift','s');}
+  if(c.sag>0.12){const p=apply([200,170],dist);s+=`<line x1="${f1(p[0])}" y1="${f1(p[1]+4)}" x2="${f1(p[0])}" y2="${f1(p[1]+24)}" stroke="#B23338" stroke-width="2.5" marker-end="url(#arrR)"/>`+txt(p[0]+6,p[1]+36,'midcarpal sag','s','start');}
+  s+=txt(60,155,'radius')+txt(60,166,'(ulna behind)','s');
+  const lp=apply([160,112],lun);s+=txt(lp[0],lp[1],'lunate','s');
+  const cp=apply([250,136],dist);s+=txt(cp[0],cp[1],'metacarpal','s');
+  return {vb:'0 -40 360 380',svg:s,cap:'Thumb side view, back of hand up. Extension happens mostly at the radius–lunate joint, flexion more between the carpal rows.'};
+}
+
+/* view 3: cross-section */
+function drawCross(c){
+  const st=c.st,U=[160,175],ang=-S.rot;
+  const rad=[['r',ang,U[0],U[1]]];
+  const a=ang*Math.PI/180,dir=[-Math.cos(a),-Math.sin(a)];
+  const mag=clamp(c.druj,0,1.3)*11,sg=S.rot<=0?1:-1;
+  const sh=[dir[0]*mag*sg,dir[1]*mag*sg];
+  const u=[U[0]+sh[0],U[1]+sh[1]];
+  let s=defs;
+  if(S.band)s+=`<g transform="${tstr(rad)}"><ellipse cx="160" cy="138" rx="62" ry="78" fill="var(--support-fill)" stroke="var(--support)" stroke-width="7" opacity=".9"/></g>`;
+  s+=`<g transform="${tstr(rad)}"><path class="bone" d="M120,143 Q112,115 130,97 Q160,77 192,95 Q210,113 202,143 Q160,131 120,143 Z"/></g>`;
+  s+=`<circle cx="${f1(u[0])}" cy="${f1(u[1])}" r="28" class="bone"/>`;
+  const dv=st.druj*(S.rot<0?1:0.7),pv=st.druj*(S.rot>0?1:0.7);
+  s+=lig('druj',[apply([123,141],rad),[u[0]-4,u[1]-6]],dv,{w:4});
+  s+=lig('druj',[apply([199,141],rad),[u[0]+4,u[1]-6]],pv,{w:4});
+  // ECU groove on ulna (dorsal-ulnar)
+  const g=[u[0]-18,u[1]+18];
+  s+=`<path d="M${f1(g[0]-10)},${f1(g[1]-6)} Q${f1(g[0]-2)},${f1(g[1]+4)} ${f1(g[0]+6)},${f1(g[1]+10)}" stroke="var(--bone-edge)" stroke-width="2" fill="none"/>`;
+  const ep=c.sublux?[u[0]+8,u[1]+36]:[g[0]-3,g[1]+3];
+  s+=dot('ecu',ep,6,st.ecu);
+  if(c.sublux)s+=txt(ep[0]+12,ep[1]+4,'ECU out of groove','s','start');
+  // labels
+  const rp=apply([160,112],rad);s+=txt(rp[0],rp[1]+3,'radius');
+  s+=txt(u[0],u[1]+4,'ulna');
+  const d1=apply([116,112],rad),d2=apply([88,112],rad);
+  s+=`<line x1="${f1(d1[0])}" y1="${f1(d1[1])}" x2="${f1(d2[0])}" y2="${f1(d2[1])}" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arr)"/>`;
+  const d3=apply([52,112],rad);s+=txt(d3[0],d3[1]+3,'back of hand','s');
+  if(mag>3)s+=txt(160,318,`ulnar head shifts ${f1(mag/4)} mm-ish ${sg>0?'toward the back':'toward the palm'}`,'s');
+  return {vb:'0 20 320 310',svg:s,cap:'Right wrist seen from the fingertips. Thumb-up is neutral; the radius swings around the ulna as you turn the palm down or up.'};
+}
+
+/* render */
+function render(){
+  const c=compute();
+  const out=S.view==='dorsal'?drawDorsal(c):S.view==='side'?drawSide(c):drawCross(c);
+  const svg=$('svg');svg.setAttribute('viewBox',out.vb);svg.innerHTML=out.svg;
+  $('caption').textContent=out.cap;
+
+  // notices
+  const n=[];
+  if(c.beyond)n.push(['warn','Beyond typical range — only the ligaments are stopping the motion now.']);
+  if(c.sublux)n.push(['warn','ECU tendon at risk of snapping out of its groove.']);
+  $('notices').innerHTML=n.map(x=>`<div class="notice ${x[0]}">${x[1]}</div>`).join('');
+
+  // values
+  $('v-ext').textContent=S.ext===0?'neutral':S.ext>0?S.ext+'° extended':(-S.ext)+'° flexed';
+  $('v-dev').textContent=S.dev===0?'straight':S.dev>0?S.dev+'° to pinky':(-S.dev)+'° to thumb';
+  $('v-rot').textContent=S.rot===0?'thumb up':S.rot>0?S.rot+'° palm up':(-S.rot)+'° palm down';
+  $('v-load').textContent=S.load+'%';
+
+  // list
+  const rows=STR.map(x=>({...x,v:c.st[x.id]})).sort((p,q)=>q.v-p.v);
+  $('list').innerHTML=rows.map(r=>`<button class="row" data-id="${r.id}" aria-current="${S.sel===r.id}">
+    <span class="nm">${r.name}${r.v>1?'<span class="tag">past limit</span>':''}</span><span class="pc">${Math.round(clamp(r.v)*100)}%</span>
+    <span class="bar"><i style="width:${Math.round(clamp(r.v)*100)}%;background:${col(r.v)}"></i></span></button>`).join('');
+
+  // detail
+  const d=byId[S.sel],v=c.st[S.sel];
+  const lvl=v<.33?'low':v<.66?'moderate':'high';
+  $('detail').innerHTML=`<h3>${d.name}</h3><div class="kind">${d.kind} · now ${Math.round(clamp(v)*100)}% (${lvl})</div>
+   <dl><div><dt>Where</dt><dd>${d.where}</dd></div>
+   <div><dt>Loaded by</dt><dd>${d.loads}</dd></div>
+   <div class="${S.hyper?'hyp':''}"><dt>In a hypermobile wrist</dt><dd>${d.hyp}</dd></div>
+   <div><dt>Support from outside</dt><dd>${d.support}</dd></div></dl>`;
+
+  // recommendations
+  const st=c.st;
+  const recs=[
+    {k:'band',on:S.band,v:Math.max(st.tfcc,st.druj,st.ecu*0.6),t:'DRUJ band just above the ulnar head (WristWidget / tape strip 1) — offloads TFCC and radioulnar ligaments.'},
+    {k:'lift',on:S.lift,v:Math.max(st.midcarpal,st.ulnocarpal,st.lt,st.fcu*0.7),t:'Pisiform lift (tape strip 2 or splint pad) — holds the pinky-side carpus up against sag.'},
+    {k:'wrap',on:S.wrap,v:Math.max(st.sl,st.dorsal*0.8),t:'Carpal wrap — compresses the carpal bones, helps the scapholunate area.'},
+    {k:'ext',on:false,v:st.volar,t:'Block end-range extension — fists, push-up handles or wedges instead of flat palms.'}
+  ].filter(r=>r.v>0.3).sort((p,q)=>q.v-p.v).slice(0,3);
+  $('recs').innerHTML=recs.length?recs.map(r=>`<li>${r.t}${r.on?'<span class="on-tag">on</span>':''}</li>`).join(''):'<li>Nothing is loaded much in this pose — no support needed.</li>';
+
+  // clunk
+  if(S.hyper&&!S.lift&&c.L>0.3&&prevDev<4&&S.dev>=4)toast('Clunk — the proximal carpal row snaps from flexed to extended (midcarpal instability). Try the pisiform lift.');
+  prevDev=S.dev;
+}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('on'),2600);}
+
+/* controls */
+function setRanges(){const r=S.hyper?RANGE.hyper:RANGE.normal;
+  ['ext','dev','rot'].forEach(k=>{const el=$(k);el.min=r[k][0];el.max=r[k][1];S[k]=Math.max(r[k][0],Math.min(r[k][1],S[k]));el.value=S[k];});
+  $('load').value=S.load;}
+['ext','dev','rot','load'].forEach(k=>$(k).addEventListener('input',e=>{S[k]=+e.target.value;render();}));
+[['t-hyper','hyper'],['t-band','band'],['t-lift','lift'],['t-wrap','wrap']].forEach(([id,k])=>{
+  $(id).addEventListener('click',()=>{S[k]=!S[k];$(id).setAttribute('aria-pressed',S[k]);if(k==='hyper')setRanges();render();});});
+document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
+function setView(v){S.view=v;document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x.dataset.view===v));render();}
+$('presets').innerHTML=PRESETS.map((p,i)=>`<button data-i="${i}">${p.n}</button>`).join('');
+$('presets').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const p=PRESETS[b.dataset.i];
+  S.ext=p.ext;S.dev=p.dev;S.rot=p.rot;S.load=p.load;prevDev=S.dev;setRanges();render();});
+$('svg').addEventListener('click',e=>{const g=e.target.closest('.hit');if(!g)return;S.sel=g.dataset.id;render();});
+$('list').addEventListener('click',e=>{const b=e.target.closest('.row');if(!b)return;S.sel=b.dataset.id;
+  const v=byId[S.sel].view;if(v!==S.view)setView(v);else render();});
+
+setRanges();render();
+})();
+</script>
+</body>
+</html>
