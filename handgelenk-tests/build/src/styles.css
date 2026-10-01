@@ -223,8 +223,11 @@ details.options .grouplabel { margin-top: 10px; }
 
 /* instruction on the stage: a box in the corner away from the body, a pointer line to the spot the step is about */
 .pointer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 6; transition: opacity .2s; }
-.pointer .halo { stroke: var(--panel); stroke-width: 6; stroke-linecap: round; fill: none; opacity: .8; }
-.pointer .ln { stroke: var(--c); stroke-width: 2.25; stroke-linecap: round; fill: none; }
+/* the line is only a hint: thin and mostly see-through, no light outline; the ring at the target stays a bit stronger */
+.pointer .halo { stroke: var(--panel); stroke-width: 5; fill: none; opacity: .45; }
+.pointer line.halo { display: none; }
+.pointer .ln { stroke: var(--c); stroke-width: 1.5; stroke-linecap: round; fill: none; opacity: .3; }
+.pointer circle.ln { stroke-width: 2; opacity: .65; }
 .callout { position: absolute; bottom: 12px; z-index: 7; width: min(340px, 44%); pointer-events: none;
   background: var(--panel); border: 1px solid var(--line); border-left: 5px solid var(--c); border-radius: 4px 12px 12px 4px;
   padding: 9px 12px 8px; box-shadow: 0 4px 18px rgba(0, 0, 0, .14); }
