@@ -12,6 +12,8 @@ Faustwerte zur Anschauung, keine Messungen.
 - Je Test eine Ampel in drei Stufen: selbst probieren · Vorsicht (Last oder Partner) · nur Untersucher.
 - Zeitleiste mit einer Farbe je Abschnitt, mit der Maus oder dem Finger hin- und herziehbar. Abspielen wiederholt
   nur den aktuellen Abschnitt; ⏮ ⏭ wechseln den Abschnitt.
+- Die Anweisung zum aktuellen Abschnitt steht im 3D-Bild: ein Kasten in der Ecke, die vom Körper weg zeigt, mit
+  einer Zeigerlinie zu der Stelle, um die es im Abschnitt geht.
 - Kraftpfeile, Fingerauflagen des Untersuchers, Halteringe („held fixed“), Auflageflächen (Tisch, Sitz),
   Schmerzzonen bei positivem Befund.
 - Darstellung umschaltbar: Haut · Röntgen · Knochen. Die Ansicht dreht immer um das Handgelenk.
@@ -24,8 +26,10 @@ Faustwerte zur Anschauung, keine Messungen.
   CC Attribution-Share Alike 2.1 Japan (https://dbarchive.biosciencedbc.jp/en/bodyparts3d/). Die abgeleiteten
   Netze in `assets/*.glb` stehen unter derselben Lizenz. Verwendet wird die zu 99 % reduzierte OBJ-Fassung,
   im Bau einmal geglättet (Loop-Unterteilung).
-- Testbeschreibungen: `build/src/model/wrist-tests.json`, mit Quellenangabe je Test, wo vorhanden
-  (z. B. Tay/Tomita/Berger 2007, Lester 1995, Ruland & Hogan 2008).
+- Testbeschreibungen: `build/src/model/wrist-tests.json`. Jeder Test nennt seine Quellen (Erstbeschreibung oder die
+  meistzitierte Arbeit, mit DOI-Link): im Kasten im 3D-Bild in Kurzform, in der Karte zum Test als volles Zitat.
+  Die Schritte auf der Seite sind vereinfacht. Zwei Quellen sind nur über spätere Übersichtsarbeiten zugeordnet:
+  der Supination-Lift-Test (Buterbaugh 1998) und das Klaviertastenzeichen (Cooney, Linscheid, Dobyns 1998).
 - Die Figur ist eine Gliederpuppe aus Grundformen mit üblichen Erwachsenenproportionen, kein gescannter Mensch.
 
 ## Bekannte Grenzen

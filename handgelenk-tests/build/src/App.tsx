@@ -3,6 +3,7 @@ import { t } from './i18n/en';
 import { Scene } from './scene/Scene';
 import { ExplorePanel, PresentBar, StageOverlay } from './ui/Panels';
 import { ModeTabs, SideSwitch, TestsPanel, Timeline } from './ui/TestsPanel';
+import { Callout } from './ui/Callout';
 import { useStore } from './state/store';
 import { TESTS } from './model/tests';
 
@@ -42,6 +43,7 @@ export function App() {
             <Scene />
             <StageOverlay />
             <PresentBar />
+            <Callout />
           </div>
           <Timeline />
         </div>

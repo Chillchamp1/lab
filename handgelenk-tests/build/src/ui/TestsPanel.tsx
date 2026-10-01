@@ -66,7 +66,7 @@ function TestList() {
                 <button key={x.id} id={`test-${x.id}`} className="row test" aria-current={current === x.id} onClick={() => { openTest(x.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
                   <span className="nm">{x.name}</span>
                   <span className="meaning">{x.meaning}</span>
-                  <span className="meta"><RiskBar test={x} compact />{x.needsPartner && <span className="badge partner">{t.tests.partner}</span>}</span>
+                  <span className="meta"><RiskBar test={x} compact />{x.needsPartner && <span className="badge partner">{t.tests.partner}</span>}<span className="src">{x.sources.map((s) => s.short).join(' · ')}</span></span>
                 </button>
               ))}
             </div>
@@ -86,8 +86,8 @@ function Rules() {
   );
 }
 
-// About the open test: who can do it and what a positive result means.
-// The steps themselves live in the timeline above; they are not repeated here.
+// About the open test: who can do it, what a positive result means, and where the test comes from.
+// The steps themselves are shown on the stage; they are not repeated here.
 function TestInfo() {
   const p = useStore((s) => s.player);
   const ctl = useStore((s) => s.playerCtl);
@@ -98,7 +98,6 @@ function TestInfo() {
       <h2>{test.name}</h2>
       <div className="riskrow"><RiskBar test={test} /><span className="note">{test.risk.note}</span></div>
       {test.risk.level === 3 && <div className="banner">{t.risk.banner3}</div>}
-
 
       <dl>
         <div className="hyp"><dt>{t.tests.positiveIf}</dt><dd>{test.positive}</dd></div>
@@ -114,7 +113,20 @@ function TestInfo() {
         <div><dt>{t.tests.meaning}</dt><dd>{test.meaning}</dd></div>
         <div><dt>{t.tests.home}</dt><dd>{test.home}</dd></div>
         {test.textOnly && <div><dt>{t.tests.textOnly}</dt><dd><ul>{test.textOnly.map((x) => <li key={x}>{x}</li>)}</ul></dd></div>}
-        {test.source && <div><dt>{t.tests.source}</dt><dd>{test.source}</dd></div>}
+        <div className="sources">
+          <dt>{t.tests.sources}</dt>
+          <dd>
+            <ol>
+              {test.sources.map((s) => (
+                <li key={s.cite}>
+                  {s.url ? <a href={s.url} target="_blank" rel="noopener noreferrer">{s.cite}</a> : s.cite}
+                  {s.note && <span className="why"> {s.note}</span>}
+                </li>
+              ))}
+            </ol>
+            <p className="note">{t.tests.sourcesNote}</p>
+          </dd>
+        </div>
       </dl>
       <p className="note keys">{t.keys}</p>
     </section>
@@ -131,11 +143,12 @@ export function TestsPanel() {
   );
 }
 
-// One colour per step, so the timeline, the instruction and the step list can be matched at a glance.
+// One colour per step, so the timeline and the instruction on the stage can be matched at a glance.
 export const STEP_COLORS = ['#2E8B7A', '#2F6FB0', '#C9862B', '#7A4FD6', '#C2365A'];
-const stepColor = (i: number) => STEP_COLORS[i % STEP_COLORS.length];
+export const stepColor = (i: number) => STEP_COLORS[i % STEP_COLORS.length];
 
-// Under the 3D view: a scrubbable timeline (drag anywhere on it), transport, and the current instruction.
+// Under the 3D view: a scrubbable timeline (drag anywhere on it), transport, and the key to the glyphs in the picture.
+// The instruction itself is on the stage (Callout).
 export function Timeline() {
   const mode = useStore((s) => s.mode), p = useStore((s) => s.player);
   const forces = useStore((s) => s.frame.forces), contacts = useStore((s) => s.frame.contacts);
@@ -149,7 +162,6 @@ export function Timeline() {
   const step = test.steps[p.step];
   const total = test.steps.reduce((a, x) => a + x.dur, 0);
   const now = p.done ? total : test.steps.slice(0, p.step).reduce((a, x) => a + x.dur, 0) + Math.min(p.t, step.dur);
-  const who = stepWho(test, step);
   const by = [...new Set(forces.map((f: Force) => f.by))];
   const holds = step.holds?.length ?? 0, rest = SCENES[step.body].rest;
 
@@ -189,17 +201,8 @@ export function Timeline() {
           <button id="pl-play" className="primary" onClick={onPlay}>{p.playing ? `⏸ ${t.tests.pause}` : `▶ ${t.tests.play}`}</button>
           <button id="pl-next" aria-label={t.tests.next} onClick={() => { gotoStep(p.step + 1); ctl({ playing: true }); }} disabled={p.step >= test.steps.length - 1}>⏭</button>
         </div>
-        <div className="chiprow speed" role="group" aria-label={t.tests.speed}>
-          <span className="lbl">{t.tests.speed}</span>
-          {[0.5, 1, 2].map((v) => <button key={v} className="chip" aria-pressed={p.speed === v} onClick={() => ctl({ speed: v })}>{v}×</button>)}
-        </div>
-      </div>
-
-      <div className="instruction" style={{ ['--c' as string]: stepColor(p.step) }}>
-        <div className="head"><span className="tl-count">{t.tests.step(p.step + 1, test.steps.length)}</span><span className={`who ${who}`}>{t.who[who]}</span></div>
-        <p>{step.text}</p>
         {(by.length > 0 || contacts.length > 0 || showPain || holds > 0 || rest) && (
-          <div className="legend">
+          <div className="legend" aria-label={t.tests.legendLabel}>
             {by.map((b) => <span key={b}><i style={{ background: FORCE_COLOR[b] }} />{t.tests.legend[b]}</span>)}
             {contacts.length > 0 && <span><i className="pad" />{t.tests.legend.pad}</span>}
             {holds > 0 && <span><i className="hold" />{t.tests.legend.hold}</span>}
@@ -207,6 +210,10 @@ export function Timeline() {
             {showPain && <span><i className="pain" />{t.tests.legend.pain}</span>}
           </div>
         )}
+        <div className="chiprow speed" role="group" aria-label={t.tests.speed}>
+          <span className="lbl">{t.tests.speed}</span>
+          {[0.5, 1, 2].map((v) => <button key={v} className="chip" aria-pressed={p.speed === v} onClick={() => ctl({ speed: v })}>{v}×</button>)}
+        </div>
       </div>
     </div>
   );

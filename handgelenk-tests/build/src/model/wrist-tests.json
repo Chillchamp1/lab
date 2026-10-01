@@ -18,7 +18,8 @@
       "risk": "1 = safe to try yourself, 2 = careful: load or a partner involved, 3 = examiner only",
       "present": "default presentation: skin | xray | bones",
       "body": "per step: posture scene for the mannequin inset: seated_table | seated_elbow_vertical | seated_under_table | chair_press | chair_press_up | standing",
-      "holds": "per step: where a second person fixes the limb: forearm | wrist | hand (drawn as a ring)"
+      "holds": "per step: where a second person fixes the limb: forearm | wrist | hand (drawn as a ring)",
+      "sources": "per test: where the test is described in the literature (short form, full citation, DOI link, one-line note)"
     },
     "globalRules": [
       "Always compare with the other side; in a hypermobile wrist only asymmetry or reproducing the usual pain counts.",
@@ -51,7 +52,7 @@
           "body": "seated_table"
         },
         {
-          "dur": 2.0,
+          "dur": 2,
           "pose": {
             "rot": 0,
             "ext": 0,
@@ -79,13 +80,20 @@
       ],
       "meaning": "Points to a foveal TFCC tear or an ulnotriquetral ligament injury.",
       "home": "Same, with your own thumb.",
-      "source": "Tay, Tomita, Berger 2007 (high reported sensitivity)",
       "view": "palm",
       "risk": {
         "level": 1,
         "note": "Pressing with a thumb is harmless. Compare both sides."
       },
-      "present": "bones"
+      "present": "bones",
+      "sources": [
+        {
+          "short": "Tay et al. 2007",
+          "cite": "Tay SC, Tomita K, Berger RA. The “ulnar fovea sign” for defining ulnar wrist pain: an analysis of sensitivity and specificity. J Hand Surg Am 2007;32(4):438–444.",
+          "url": "https://doi.org/10.1016/j.jhsa.2007.01.022",
+          "note": "First description of the sign, checked against arthroscopy."
+        }
+      ]
     },
     {
       "id": "press_test",
@@ -110,7 +118,7 @@
           "body": "chair_press"
         },
         {
-          "dur": 2.0,
+          "dur": 2,
           "pose": {
             "rot": -80,
             "ext": 80,
@@ -141,13 +149,20 @@
         "midcarpalSag": 0.6,
         "drujShift": 0.4
       },
-      "source": "Lester et al. 1995",
       "view": "ulnar",
       "risk": {
         "level": 2,
         "note": "Your body weight goes through the wrist. Stop at the first sharp pain; skip it while the wrist is acutely painful."
       },
-      "present": "bones"
+      "present": "bones",
+      "sources": [
+        {
+          "short": "Lester et al. 1995",
+          "cite": "Lester B, Halbrecht J, Levy IM, Gaudinez R. “Press test” for office diagnosis of triangular fibrocartilage complex tears of the wrist. Ann Plast Surg 1995;35(1):41–45.",
+          "url": "https://doi.org/10.1097/00000637-199507000-00009",
+          "note": "First description of the test."
+        }
+      ]
     },
     {
       "id": "ulnocarpal_stress_test",
@@ -173,7 +188,7 @@
           "body": "seated_elbow_vertical"
         },
         {
-          "dur": 2.0,
+          "dur": 2,
           "pose": {
             "rot": -60,
             "ext": 0,
@@ -202,7 +217,7 @@
           ]
         },
         {
-          "dur": 2.0,
+          "dur": 2,
           "pose": {
             "rot": 70,
             "ext": 0,
@@ -243,7 +258,15 @@
         "level": 2,
         "note": "A partner pushes and turns the wrist at the end of its range. Slow and gentle only."
       },
-      "present": "bones"
+      "present": "bones",
+      "sources": [
+        {
+          "short": "Nakamura et al. 1997",
+          "cite": "Nakamura R, Horii E, Imaeda T, Nakao E, Kato H, Watanabe K. The ulnocarpal stress test in the diagnosis of ulnar-sided wrist pain. J Hand Surg Br 1997;22(6):719–723.",
+          "url": "https://doi.org/10.1016/S0266-7681(97)80432-9",
+          "note": "First description of the test."
+        }
+      ]
     },
     {
       "id": "supination_lift_test",
@@ -268,7 +291,7 @@
           "body": "seated_under_table"
         },
         {
-          "dur": 2.0,
+          "dur": 2,
           "pose": {
             "rot": 85,
             "ext": 10,
@@ -301,7 +324,15 @@
         "level": 2,
         "note": "Loads the TFCC against a heavy table. Lift gently, never jerk."
       },
-      "present": "bones"
+      "present": "bones",
+      "sources": [
+        {
+          "short": "Buterbaugh et al. 1998",
+          "cite": "Buterbaugh GA, Brown TR, Horn PC. Ulnar-sided wrist pain in athletes. Clin Sports Med 1998;17(3):567–583.",
+          "url": "https://doi.org/10.1016/S0278-5919(05)70102-2",
+          "note": "The review this test is usually credited to. Its accuracy has not been studied on its own."
+        }
+      ]
     },
     {
       "id": "druj_ballottement",
@@ -333,7 +364,7 @@
           ]
         },
         {
-          "dur": 2.0,
+          "dur": 2,
           "pose": {
             "rot": 0,
             "ext": 0,
@@ -349,7 +380,7 @@
             }
           ],
           "kinematics": {
-            "drujShift": -1.0
+            "drujShift": -1
           },
           "text": "Shift the ulnar head toward the palm ...",
           "body": "seated_table",
@@ -358,7 +389,7 @@
           ]
         },
         {
-          "dur": 2.0,
+          "dur": 2,
           "pose": {
             "rot": 0,
             "ext": 0,
@@ -374,7 +405,7 @@
             }
           ],
           "kinematics": {
-            "drujShift": 1.0
+            "drujShift": 1
           },
           "text": "... and toward the back of the hand.",
           "body": "seated_table",
@@ -383,7 +414,7 @@
           ]
         },
         {
-          "dur": 3.0,
+          "dur": 3,
           "pose": {
             "rot": -80,
             "ext": 0,
@@ -423,7 +454,26 @@
         "level": 1,
         "note": "Home version: gentle pressure on the ulnar head; compare both sides."
       },
-      "present": "bones"
+      "present": "bones",
+      "sources": [
+        {
+          "short": "Moriya et al. 2009",
+          "cite": "Moriya T, Aoki M, Iba K, Ozasa Y, Wada T, Yamashita T. Effect of triangular ligament tears on distal radioulnar joint instability and evaluation of three clinical tests: a biomechanical study. J Hand Surg Eur 2009;34(2):219–223.",
+          "url": "https://doi.org/10.1177/1753193408098482",
+          "note": "Ballottement test compared with other DRUJ tests in the lab."
+        },
+        {
+          "short": "Onishi et al. 2017",
+          "cite": "Onishi T, Omokawa S, Iida A, et al. Biomechanical study of distal radioulnar joint ballottement test. J Orthop Res 2017;35(5):1123–1127.",
+          "url": "https://doi.org/10.1002/jor.23355",
+          "note": "How the hold on the radius and carpus changes the result."
+        },
+        {
+          "short": "Cooney et al. 1998",
+          "cite": "Cooney WP, Linscheid RL, Dobyns JH (eds). The Wrist: Diagnosis and Operative Treatment. St. Louis: Mosby; 1998.",
+          "note": "Textbook the piano key sign is credited to in later reviews."
+        }
+      ]
     },
     {
       "id": "ecu_subluxation_test",
@@ -450,7 +500,7 @@
           "body": "seated_table"
         },
         {
-          "dur": 3.0,
+          "dur": 3,
           "pose": {
             "rot": 80,
             "ext": -30,
@@ -459,7 +509,7 @@
             "fingers": 0.4
           },
           "kinematics": {
-            "ecuSublux": 1.0
+            "ecuSublux": 1
           },
           "text": "Turn the palm up while bending the wrist palm-ward and tilting it toward the pinky.",
           "body": "seated_table"
@@ -472,14 +522,28 @@
       "meaning": "ECU subsheath insufficiency / ECU instability.",
       "home": "Exactly as described; film it.",
       "hyper": {
-        "ecuSublux": 1.0
+        "ecuSublux": 1
       },
       "view": "end",
       "risk": {
         "level": 1,
         "note": "Harmless, but do not make a snapping tendon snap more than a few times; it irritates the sheath."
       },
-      "present": "bones"
+      "present": "bones",
+      "sources": [
+        {
+          "short": "Burkhart et al. 1982",
+          "cite": "Burkhart SS, Wood MB, Linscheid RL. Posttraumatic recurrent subluxation of the extensor carpi ulnaris tendon. J Hand Surg Am 1982;7(1):1–3.",
+          "url": "https://doi.org/10.1016/S0363-5023(82)80002-6",
+          "note": "Early description of the tendon snapping out in supination, flexion and ulnar deviation."
+        },
+        {
+          "short": "Campbell et al. 2013",
+          "cite": "Campbell D, Campbell R, O’Connor P, Hawkes R. Sports-related extensor carpi ulnaris pathology: a review of functional anatomy, sports injury and management. Br J Sports Med 2013;47(17):1105–1111.",
+          "url": "https://doi.org/10.1136/bjsports-2013-092835",
+          "note": "Review of ECU anatomy, instability and examination."
+        }
+      ]
     },
     {
       "id": "ecu_synergy_test",
@@ -534,13 +598,20 @@
       ],
       "meaning": "ECU tendinitis rather than an intra-articular (TFCC) problem.",
       "home": "Partner resists at the thumb.",
-      "source": "Ruland & Hogan 2008",
       "view": "palm",
       "risk": {
         "level": 2,
         "note": "Low load, but a partner has to resist the thumb."
       },
-      "present": "bones"
+      "present": "bones",
+      "sources": [
+        {
+          "short": "Ruland & Hogan 2008",
+          "cite": "Ruland RT, Hogan CJ. The ECU synergy test: an aid to diagnose ECU tendonitis. J Hand Surg Am 2008;33(10):1777–1782.",
+          "url": "https://doi.org/10.1016/j.jhsa.2008.08.018",
+          "note": "First description of the test."
+        }
+      ]
     },
     {
       "id": "midcarpal_shift_test",
@@ -566,7 +637,7 @@
           "body": "seated_table"
         },
         {
-          "dur": 2.0,
+          "dur": 2,
           "pose": {
             "rot": -80,
             "ext": 0,
@@ -582,8 +653,8 @@
             }
           ],
           "kinematics": {
-            "midcarpalSag": 1.0,
-            "proximalRowFlex": 1.0
+            "midcarpalSag": 1,
+            "proximalRowFlex": 1
           },
           "text": "The examiner pushes the hand toward the palm at the level of the carpal bones ...",
           "body": "seated_table",
@@ -626,7 +697,7 @@
       "meaning": "Palmar midcarpal instability, common in hypermobility.",
       "home": "Use the active catch-up clunk test instead.",
       "hyper": {
-        "midcarpalSag": 1.0,
+        "midcarpalSag": 1,
         "clunkAtDev": 6
       },
       "view": "ulnar",
@@ -634,7 +705,21 @@
         "level": 3,
         "note": "The examiner pushes the carpus into the clunk; forcing it can hurt. At home use the active catch-up clunk instead."
       },
-      "present": "bones"
+      "present": "bones",
+      "sources": [
+        {
+          "short": "Lichtman et al. 1981",
+          "cite": "Lichtman DM, Schneider JR, Swafford AR, Mack GR. Ulnar midcarpal instability—clinical and laboratory analysis. J Hand Surg Am 1981;6(5):515–523.",
+          "url": "https://doi.org/10.1016/S0363-5023(81)80115-3",
+          "note": "First description of the instability and of the test."
+        },
+        {
+          "short": "Feinstein et al. 1999",
+          "cite": "Feinstein WK, Lichtman DM, Noble PC, Alexander JW, Hipp JA. Quantitative assessment of the midcarpal shift test. J Hand Surg Am 1999;24(5):977–983.",
+          "url": "https://doi.org/10.1053/jhsu.1999.0977",
+          "note": "Grading of the test."
+        }
+      ]
     },
     {
       "id": "active_catchup_clunk",
@@ -660,7 +745,7 @@
           "body": "seated_table"
         },
         {
-          "dur": 3.0,
+          "dur": 3,
           "pose": {
             "rot": -80,
             "ext": 0,
@@ -683,7 +768,7 @@
       "meaning": "Midcarpal instability.",
       "home": "Exactly as described; film it.",
       "hyper": {
-        "midcarpalSag": 1.0,
+        "midcarpalSag": 1,
         "clunkAtDev": 6
       },
       "view": "ulnar",
@@ -691,7 +776,21 @@
         "level": 1,
         "note": "A few slow repetitions only; stop if the clunk hurts."
       },
-      "present": "bones"
+      "present": "bones",
+      "sources": [
+        {
+          "short": "Lichtman & Wroten 2006",
+          "cite": "Lichtman DM, Wroten ES. Understanding midcarpal instability. J Hand Surg Am 2006;31(3):491–498.",
+          "url": "https://doi.org/10.1016/j.jhsa.2005.12.014",
+          "note": "Explains the catch-up clunk on tilting toward the pinky."
+        },
+        {
+          "short": "Lichtman et al. 1981",
+          "cite": "Lichtman DM, Schneider JR, Swafford AR, Mack GR. Ulnar midcarpal instability—clinical and laboratory analysis. J Hand Surg Am 1981;6(5):515–523.",
+          "url": "https://doi.org/10.1016/S0363-5023(81)80115-3",
+          "note": "First description of the instability."
+        }
+      ]
     },
     {
       "id": "watson_scaphoid_shift",
@@ -737,8 +836,8 @@
             }
           ],
           "kinematics": {
-            "scaphoidDorsalShift": 1.0,
-            "slGap": 1.0
+            "scaphoidDorsalShift": 1,
+            "slGap": 1
           },
           "text": "Move the wrist to the thumb side while pressing the tubercle; the scaphoid wants to flex and is blocked.",
           "body": "seated_table",
@@ -775,7 +874,15 @@
         "level": 3,
         "note": "Painful when positive and hard to do on yourself. Shown so you know what to expect."
       },
-      "present": "bones"
+      "present": "bones",
+      "sources": [
+        {
+          "short": "Watson et al. 1988",
+          "cite": "Watson HK, Ashmead D 4th, Makhlouf MV. Examination of the scaphoid. J Hand Surg Am 1988;13(5):657–660.",
+          "url": "https://doi.org/10.1016/S0363-5023(88)80118-7",
+          "note": "First description of the scaphoid shift manoeuvre."
+        }
+      ]
     },
     {
       "id": "lt_ballottement",
@@ -828,7 +935,7 @@
             }
           ],
           "kinematics": {
-            "ltShear": 1.0
+            "ltShear": 1
           },
           "text": "Shift the triquetrum up and down against the lunate.",
           "body": "seated_table",
@@ -848,7 +955,15 @@
         "level": 3,
         "note": "Needs exact knowledge of the anatomy. Shown so you know what to expect."
       },
-      "present": "bones"
+      "present": "bones",
+      "sources": [
+        {
+          "short": "Reagan et al. 1984",
+          "cite": "Reagan DS, Linscheid RL, Dobyns JH. Lunotriquetral sprains. J Hand Surg Am 1984;9(4):502–514.",
+          "url": "https://doi.org/10.1016/S0363-5023(84)80101-X",
+          "note": "First description of the test."
+        }
+      ]
     },
     {
       "id": "beighton_score",
@@ -859,7 +974,7 @@
       "homeOk": true,
       "steps": [
         {
-          "dur": 2.0,
+          "dur": 2,
           "pose": {
             "rot": -80,
             "ext": 30,
@@ -871,7 +986,7 @@
           "body": "standing"
         },
         {
-          "dur": 2.0,
+          "dur": 2,
           "pose": {
             "rot": 0,
             "ext": -80,
@@ -883,7 +998,7 @@
           "body": "standing"
         },
         {
-          "dur": 2.0,
+          "dur": 2,
           "pose": {
             "rot": 85,
             "ext": 0,
@@ -907,7 +1022,21 @@
         "level": 1,
         "note": "Harmless; do not force any joint past what feels comfortable."
       },
-      "present": "bones"
+      "present": "bones",
+      "sources": [
+        {
+          "short": "Beighton et al. 1973",
+          "cite": "Beighton P, Solomon L, Soskolne CL. Articular mobility in an African population. Ann Rheum Dis 1973;32(5):413–418.",
+          "url": "https://doi.org/10.1136/ard.32.5.413",
+          "note": "The nine-point score."
+        },
+        {
+          "short": "Malfait et al. 2017",
+          "cite": "Malfait F, Francomano C, Byers P, et al. The 2017 international classification of the Ehlers–Danlos syndromes. Am J Med Genet C Semin Med Genet 2017;175(1):8–26.",
+          "url": "https://doi.org/10.1002/ajmg.c.31552",
+          "note": "Cut-offs by age."
+        }
+      ]
     }
   ]
 }
