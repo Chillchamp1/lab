@@ -60,6 +60,8 @@ export const en = {
     home: 'At home',
     source: 'Source',
     sources: 'Sources',
+    exercises: 'Exercises that fit',
+    exercisesNote: 'They train the muscles that steady what this test examines. If the test is positive, have the wrist looked at first.',
     sourcesNote: 'Where the test is described in the literature. The steps shown here are simplified.',
     legendLabel: 'In the picture',
     textOnly: 'Not shown in the model',

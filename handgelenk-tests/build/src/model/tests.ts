@@ -30,7 +30,8 @@ export type Program = {
   hyper?: Kin & { clunkAtDev?: number }; sources: Source[]; view: ViewId | 'free';
   risk: Risk; present: Present; prop?: PropId;
 };
-export type Test = Program & { positive: string; meaning: string; home: string; textOnly?: string[] };
+// exercises: ids from exercises.json that train what the test examines, with one line saying why
+export type Test = Program & { positive: string; meaning: string; home: string; textOnly?: string[]; exercises?: { id: string; why: string }[] };
 
 // Who acts in a step: derived from the forces, so the data stays free of UI labels.
 export type Who = 'you' | 'partner' | 'examiner';

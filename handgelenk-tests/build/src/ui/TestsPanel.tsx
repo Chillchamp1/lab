@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { t } from '../i18n/en';
 import { guided, painShown, useStore, type Mode } from '../state/store';
 import { GLOBAL_RULES, TESTS, TEST_GROUPS, stepWho, type Force, type Program, type Test } from '../model/tests';
-import { findProgram } from '../model/exercises';
+import { EXERCISES, findProgram } from '../model/exercises';
 import { FORCE_COLOR } from '../scene/TestOverlay';
 import { SCENES } from '../scene/Figure';
 
@@ -110,6 +110,31 @@ export function Sources({ of, note }: { of: Program; note: string }) {
   );
 }
 
+// Exercises that train what the open test examines; a click switches to the Exercises tab and opens the exercise.
+function FittingExercises({ test }: { test: Test }) {
+  const setMode = useStore((s) => s.setMode), openTest = useStore((s) => s.openTest);
+  const fit = (test.exercises ?? []).flatMap((f) => { const x = EXERCISES.find((e) => e.id === f.id); return x ? [{ x, why: f.why }] : []; });
+  if (!fit.length) return null;
+  return (
+    <div className="fit">
+      <dt>{t.tests.exercises}</dt>
+      <dd>
+        <div className="list">
+          {fit.map(({ x, why }) => (
+            <button key={x.id} id={`fit-${x.id}`} className="row test" onClick={() => { setMode('train'); openTest(x.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+              <span className="go" aria-hidden="true">▶</span>
+              <span className="nm">{x.name}</span>
+              <span className="meaning">{why}</span>
+              <span className="chev" aria-hidden="true">›</span>
+            </button>
+          ))}
+        </div>
+        <p className="note">{t.tests.exercisesNote}</p>
+      </dd>
+    </div>
+  );
+}
+
 // About the open test: who can do it, what a positive result means, and where the test comes from.
 // The steps themselves are shown on the stage; they are not repeated here.
 function TestInfo() {
@@ -137,6 +162,7 @@ function TestInfo() {
         <div><dt>{t.tests.meaning}</dt><dd>{test.meaning}</dd></div>
         <div><dt>{t.tests.home}</dt><dd>{test.home}</dd></div>
         {test.textOnly && <div><dt>{t.tests.textOnly}</dt><dd><ul>{test.textOnly.map((x) => <li key={x}>{x}</li>)}</ul></dd></div>}
+        <FittingExercises test={test} />
         <Sources of={test} note={t.tests.sourcesNote} />
       </dl>
       <p className="note keys">{t.keys}</p>
