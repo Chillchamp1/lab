@@ -38,6 +38,10 @@ GitHub Pages serves `handgelenk-tests/index.html` from `main` a minute or two la
 | `src/scene/Scene.tsx` | canvas, left/right mirror, camera presets, end-on cross-section clipping |
 | `src/ui/Panels.tsx` | controls, strain list, info card, recommendations |
 | `src/ui/Callout.tsx` + `src/scene/CalloutAnchor.tsx` | the current instruction on the 3D stage: a box in the corner away from the body and a pointer line to the spot the step is about (first force / contact landmark, else the wrist). The scene projects the spot to pixels every frame and the box draws a faint SVG line, without React re-renders |
+| `src/model/exercises.json` + `exercises.ts` | the strengthening exercises (third tab). Same step format and the same player as the tests, plus `prop` (object in the hand), goal, dose, progression, stop rule and `sources`. `PROGRAMS` = tests + exercises |
+| `src/scene/props.ts` + `HeldProp.tsx` | the held objects (dumbbell, hammer, soft ball, bottle): sizes and grip position computed from the knuckle centres, meshes built from simple shapes and hung on the hand frame |
+| `src/scene/landmarks.ts` | anatomical landmarks from the pipeline plus hand-level points and object centres for force arrows |
+| `src/ui/TrainPanel.tsx` | exercise list, exercise card, ground rules |
 | `src/model/wrist-tests.json` | the tests: steps, forces, postures, risk level and `sources` (short form, full citation, DOI link, note) for every test |
 | `docs/` | test data draft, 2D prototype (used by the parity test) |
 

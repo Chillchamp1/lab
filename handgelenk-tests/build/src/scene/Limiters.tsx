@@ -4,8 +4,9 @@ import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
-import { useStore } from '../state/store';
-import { TESTS, type Hold } from '../model/tests';
+import { guided, useStore } from '../state/store';
+import type { Hold } from '../model/tests';
+import { findProgram } from '../model/exercises';
 import { SCENES, currentBody } from './Figure';
 import type { FrameId, V3 } from './anatomy';
 import { useFrames } from './frames';
@@ -27,6 +28,7 @@ const REST: Record<'forearm' | 'hand', { frame: FrameId; base: V3; off: number; 
 
 // drawn with depth, so they sit around / under the limb instead of covering it
 const holdMat = new THREE.MeshBasicMaterial({ color: FORCE_COLOR.examiner, transparent: true, opacity: 0.8, depthWrite: false });
+const holdSelfMat = new THREE.MeshBasicMaterial({ color: FORCE_COLOR.other, transparent: true, opacity: 0.8, depthWrite: false }); // your own other hand
 const restMat = new THREE.MeshBasicMaterial({ color: '#5C6B70', transparent: true, opacity: 0.35, depthWrite: false, side: THREE.DoubleSide });
 
 // Labels stand off from the limb: a short, faint line in the label's colour runs from the edge of the glyph to the
@@ -36,7 +38,7 @@ const LEAD = 46; // px
 type Dir2 = [number, number]; // screen direction, y down
 const leadDir = (side: 'L' | 'R', up: boolean): Dir2 => [side === 'L' ? 0.5 : -0.5, up ? -0.866 : 0.866];
 
-function Lead({ kind, label, dir }: { kind: 'hold' | 'rest'; label: string; dir: Dir2 }) {
+function Lead({ kind, label, dir }: { kind: 'hold' | 'hold self' | 'rest'; label: string; dir: Dir2 }) {
   return (
     <Html zIndexRange={[5, 0]}>
       <div className={`lead ${kind}`}>
@@ -59,7 +61,7 @@ function edgeAngle(parent: THREE.Object3D, c: THREE.Vector3, u: THREE.Vector3, v
   return Math.atan2(along(E.v), along(E.u));
 }
 
-function HoldRing({ h, attach }: { h: Hold; attach: Attach }) {
+function HoldRing({ h, self, attach }: { h: Hold; self: boolean; attach: Attach }) {
   const spec = HOLDS[h];
   const side = useStore((s) => s.side);
   const dir = useMemo(() => leadDir(side, true), [side]);
@@ -77,14 +79,14 @@ function HoldRing({ h, attach }: { h: Hold; attach: Attach }) {
   });
   return (
     <group ref={(o) => { grp.current = o; attach(spec.frame)(o); }}>
-      <mesh geometry={geo} material={holdMat} renderOrder={21} />
-      <group ref={lab}><Lead kind="hold" label={t.limiters.held} dir={dir} /></group>
+      <mesh geometry={geo} material={self ? holdSelfMat : holdMat} renderOrder={21} />
+      <group ref={lab}><Lead kind={self ? 'hold self' : 'hold'} label={self ? t.limiters.heldSelf : t.limiters.held} dir={dir} /></group>
     </group>
   );
 }
 
 // Flat pad where the limb meets the supporting surface; "down" is world gravity transformed into the frame.
-function RestPad({ part, dir, label, attach }: { part: 'forearm' | 'hand'; dir: 'down' | 'up'; label: string; attach: Attach }) {
+function RestPad({ part, dir, back, label, attach }: { part: 'forearm' | 'hand'; dir: 'down' | 'up'; back: number; label: string; attach: Attach }) {
   const spec = REST[part];
   const { frames } = useFrames();
   const mesh = useRef<THREE.Mesh>(null);
@@ -102,7 +104,7 @@ function RestPad({ part, dir, label, attach }: { part: 'forearm' | 'hand'; dir: 
     tmp.b.crossVectors(n, tmp.tng);
     tmp.m.makeBasis(tmp.b, n, tmp.tng);
     mesh.current.quaternion.setFromRotationMatrix(tmp.m);
-    mesh.current.position.set(spec.base[0] + tmp.d.x * spec.off, spec.base[1] + tmp.d.y * spec.off, spec.base[2] + tmp.d.z * spec.off);
+    mesh.current.position.set(spec.base[0] + tmp.d.x * spec.off, spec.base[1] - back + tmp.d.y * spec.off, spec.base[2] + tmp.d.z * spec.off);
     // the label's line starts on the pad's edge, on the side the label stands on
     const parent = mesh.current.parent;
     if (!parent || !labelRef.current) return;
@@ -122,15 +124,15 @@ function RestPad({ part, dir, label, attach }: { part: 'forearm' | 'hand'; dir: 
 
 export function Limiters({ attach }: { attach: Attach }) {
   const mode = useStore((s) => s.mode), id = useStore((s) => s.player.id), step = useStore((s) => s.player.step);
-  if (mode !== 'test' || !id) return null;
-  const test = TESTS.find((x) => x.id === id);
+  if (!guided(mode) || !id) return null;
+  const test = findProgram(id);
   const st = test?.steps[step];
   const body = currentBody(), rest = SCENES[body].rest;
   const label = rest?.dir === 'up' ? t.limiters.under : body.startsWith('chair') ? t.limiters.seat : t.limiters.table;
   return (
     <>
-      {st?.holds?.map((h) => <HoldRing key={h} h={h} attach={attach} />)}
-      {rest && <RestPad key={`${rest.part}${rest.dir}`} part={rest.part} dir={rest.dir} label={label} attach={attach} />}
+      {st?.holds?.map((h) => <HoldRing key={h} h={h} self={mode === 'train'} attach={attach} />)}
+      {rest && <RestPad key={`${rest.part}${rest.dir}`} part={rest.part} dir={rest.dir} back={rest.back ?? 0} label={label} attach={attach} />}
     </>
   );
 }

@@ -2,8 +2,9 @@
 // the spot the step is about. The box never takes clicks, so dragging through it still rotates the view.
 import { useEffect, useRef } from 'react';
 import { t } from '../i18n/en';
-import { useStore } from '../state/store';
-import { TESTS, stepWho } from '../model/tests';
+import { guided, useStore } from '../state/store';
+import { stepWho } from '../model/tests';
+import { findProgram } from '../model/exercises';
 import { calloutBus } from '../scene/CalloutAnchor';
 import { stepColor } from './TestsPanel';
 
@@ -32,8 +33,8 @@ export function Callout() {
     return () => { calloutBus.draw = null; };
   }, []);
 
-  const test = TESTS.find((x) => x.id === id);
-  if (mode !== 'test' || !test) return null;
+  const test = findProgram(id);
+  if (!guided(mode) || !test) return null;
   const step = test.steps[stepIx], who = stepWho(test, step);
   const color = { ['--c' as string]: stepColor(stepIx) };
 

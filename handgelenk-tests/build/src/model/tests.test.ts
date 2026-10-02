@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { TESTS, blend, stepTarget } from './tests';
+import { BODIES, TESTS, blend, stepTarget } from './tests';
+import { EXERCISES, PROGRAMS } from './exercises';
 import rig from '../scene/rigdata.json';
+import { LANDMARKS } from '../scene/landmarks';
+import { PROP_IDS } from '../scene/props';
+import { STRUCTURE_IDS } from './structures';
 import { en } from '../i18n/en';
 
 const LM = Object.keys(rig.landmarks);
@@ -20,14 +24,14 @@ describe('clinical test data', () => {
       expect(t.risk.note.length).toBeGreaterThan(10);
       expect(['skin', 'xray', 'bones']).toContain(t.present);
       for (const s of t.steps) {
-        expect(['seated_table', 'seated_elbow_vertical', 'seated_under_table', 'chair_press', 'chair_press_up', 'standing']).toContain(s.body);
+        expect(BODIES).toContain(s.body);
         for (const h of s.holds ?? []) expect(['forearm', 'wrist', 'hand']).toContain(h);
       }
     }
   });
 
-  it('every test names at least one source with a full citation', () => {
-    for (const x of TESTS) {
+  it('every test and exercise names at least one source with a full citation', () => {
+    for (const x of PROGRAMS) {
       expect(x.sources.length, x.id).toBeGreaterThan(0);
       for (const s of x.sources) {
         expect(s.short, x.id).toMatch(/\d{4}$/);
@@ -38,7 +42,27 @@ describe('clinical test data', () => {
   });
 
   it('every step has text and a positive duration', () => {
-    for (const t of TESTS) for (const s of t.steps) { expect(s.text.length).toBeGreaterThan(5); expect(s.dur).toBeGreaterThan(0); }
+    for (const t of PROGRAMS) for (const s of t.steps) { expect(s.text.length).toBeGreaterThan(5); expect(s.dur).toBeGreaterThan(0); }
+  });
+});
+
+describe('exercise data', () => {
+  it.each(EXERCISES.map((x) => [x.id, x] as const))('%s is complete and references only known things', (_id, x) => {
+    for (const k of ['name', 'group', 'summary', 'goal', 'dose', 'progress', 'stop', 'equipment'] as const) expect(x[k].length, k).toBeGreaterThan(3);
+    expect([1, 2, 3]).toContain(x.risk.level);
+    if (x.prop) expect(PROP_IDS).toContain(x.prop);
+    for (const id of x.targets) expect(STRUCTURE_IDS).toContain(id);
+    for (const s of x.steps) {
+      expect(BODIES).toContain(s.body);
+      for (const f of s.forces ?? []) expect(Object.keys(LANDMARKS)).toContain(f.at);
+      // a lax wrist trains in mid-range: no step goes near the end of the normal range
+      expect(Math.abs(s.pose.ext)).toBeLessThanOrEqual(35);
+      expect(Math.abs(s.pose.dev)).toBeLessThanOrEqual(18);
+    }
+  });
+
+  it('ids do not clash with the tests', () => {
+    expect(new Set(PROGRAMS.map((p) => p.id)).size).toBe(PROGRAMS.length);
   });
 });
 

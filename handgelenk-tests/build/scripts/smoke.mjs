@@ -93,6 +93,14 @@ await page.mouse.move(tb.x + tb.width * 0.05, tb.y + tb.height / 2, { steps: 10 
 await sleep(600);
 out.stepAfterScrubBack = await text('.tl-count');
 await page.click('#present-skin'); await sleep(1500); await shot('5-skin');
+// exercises tab: list, an exercise with an object in the hand, the player
+await page.click('#mode-train'); await sleep(1500);
+out.exercises = await page.evaluate(() => document.querySelectorAll('[id^="ex-"]').length);
+await page.click('#ex-hammer_rotation'); await sleep(1500);
+await page.click('#pl-play'); await sleep(2500);
+await page.click('#pl-next'); await sleep(1500);
+out.exercise = `${await text('.tl-count')} / ${await text('#callout .src')}`;
+await shot('7-exercise');
 await page.click('#mode-free'); await sleep(2500);
 out.exploreSliders = await page.evaluate(() => document.querySelectorAll('input[type=range]').length);
 await shot('6-explore');

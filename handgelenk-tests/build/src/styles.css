@@ -152,6 +152,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--support); o
 .legend i { display: inline-block; width: 14px; height: 4px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
 .legend i.pad { width: 9px; height: 9px; border-radius: 50%; background: #7A4FD6; opacity: .55; }
 .legend i.hold { width: 12px; height: 12px; border-radius: 50%; border: 2.5px solid #7A4FD6; background: transparent; }
+.legend i.hold.self { border-color: #2E8B7A; }
 .legend i.rest { width: 14px; height: 6px; border-radius: 2px; background: #5C6B70; opacity: .6; }
 .legend i.pain { width: 9px; height: 9px; border-radius: 50%; background: #E5484D; }
 
@@ -192,11 +193,13 @@ details.options .grouplabel { margin-top: 10px; }
 /* labels anchored in 3D */
 .lbl3d { font-size: .72rem; font-weight: 700; letter-spacing: .02em; padding: 2px 7px; border-radius: 6px; white-space: nowrap; pointer-events: none; font-family: var(--font); }
 .lbl3d.hold { background: #7A4FD6; color: #fff; }
+.lbl3d.hold.self { background: #2E8B7A; }
 .lbl3d.rest { background: #5C6B70; color: #fff; opacity: .85; }
 /* a label stands off from its ring or pad; a faint line in the label's colour connects the two */
 .lead { position: relative; width: 0; height: 0; pointer-events: none; }
 .lead i { position: absolute; left: 0; top: -.75px; height: 1.5px; border-radius: 1px; transform-origin: 0 50%; opacity: .45; }
 .lead.hold i { background: #7A4FD6; }
+.lead.hold.self i { background: #2E8B7A; }
 .lead.rest i { background: #5C6B70; }
 .lead .lbl3d { position: absolute; }
 

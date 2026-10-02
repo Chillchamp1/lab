@@ -4,8 +4,9 @@
 import { useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { useStore } from '../state/store';
-import { TESTS, type Body } from '../model/tests';
+import { guided, useStore } from '../state/store';
+import type { Body } from '../model/tests';
+import { findProgram } from '../model/exercises';
 import { useFrames } from './frames';
 import rigJson from './rigdata.json';
 import type { RigData } from './anatomy';
@@ -19,14 +20,18 @@ const HEAD_R = 0.105, NECK = 0.05, TORSO = 0.50, SHOULDER_W = 0.19, HIP_W = 0.10
 const UPPER_ARM = 0.30, FOREARM = 0.26, HAND = 0.18, THIGH = 0.42, SHIN = 0.40, FOOT = 0.24;
 export const SEAT_H = 0.45;
 
-export type Rest = { part: 'forearm' | 'hand'; dir: 'down' | 'up' } | null;
+// back: the pad sits this far toward the elbow (the forearm lies on a short table and the wrist is past its edge)
+export type Rest = { part: 'forearm' | 'hand'; dir: 'down' | 'up'; back?: number } | null;
+const TABLE_DEPTH = 0.64, TABLE_NEAR = 0.10; // full table: its near edge is 10 cm in front of the hips
 export type Scene = {
-  chair: boolean; table?: number; rest: Rest;
+  chair: boolean; table?: number; tableDepth?: number; rest: Rest;
   pelvis: [number, number, number]; lean: number; hip: number; knee: number;
   shoulderR: [number, number]; shoulderL: [number, number]; elbowL: number; // [flex, abduct] deg
 };
 export const SCENES: Record<Body, Scene> = {
   seated_table: { chair: true, table: 0.72, rest: { part: 'forearm', dir: 'down' }, pelvis: [0, SEAT_H + 0.08, 0], lean: 4, hip: 90, knee: 90, shoulderR: [25, 8], shoulderL: [15, 6], elbowL: 70 },
+  // short table: the forearm lies on it, the wrist and hand are free beyond its far edge (exercises with a weight)
+  seated_table_edge: { chair: true, table: 0.72, tableDepth: 0.235, rest: { part: 'forearm', dir: 'down', back: 0.05 }, pelvis: [0, SEAT_H + 0.08, 0], lean: 4, hip: 90, knee: 90, shoulderR: [25, 8], shoulderL: [15, 6], elbowL: 70 },
   seated_elbow_vertical: { chair: true, table: 0.72, rest: null, pelvis: [0, SEAT_H + 0.08, 0], lean: 10, hip: 90, knee: 90, shoulderR: [45, 10], shoulderL: [15, 6], elbowL: 70 },
   seated_under_table: { chair: true, table: 0.80, rest: { part: 'hand', dir: 'up' }, pelvis: [0, SEAT_H + 0.08, 0], lean: 0, hip: 90, knee: 90, shoulderR: [8, 6], shoulderL: [8, 6], elbowL: 90 },
   chair_press: { chair: true, rest: { part: 'hand', dir: 'down' }, pelvis: [0, SEAT_H + 0.08, 0], lean: 2, hip: 90, knee: 90, shoulderR: [-18, 14], shoulderL: [-18, 14], elbowL: 20 },
@@ -35,8 +40,8 @@ export const SCENES: Record<Body, Scene> = {
 };
 export const currentBody = (): Body => {
   const s = useStore.getState();
-  if (s.mode !== 'test') return 'seated_table';
-  return TESTS.find((t) => t.id === s.player.id)?.steps[s.player.step]?.body ?? 'seated_table';
+  if (!guided(s.mode)) return 'seated_table';
+  return findProgram(s.player.id)?.steps[s.player.step]?.body ?? 'seated_table';
 };
 
 // Rig frame (+X ulnar, +Y distal, +Z dorsal) → elbow frame of the hanging right arm (palm medial, thumb forward):
@@ -107,10 +112,18 @@ function Props({ refs }: { refs: Refs }) {
         ))}
       </group>
       <group ref={(o) => { refs.current.table = o; }}>
-        <mesh position={[0, -0.02, 0.42]} material={glassTop} renderOrder={3}><boxGeometry args={[1.0, 0.04, 0.64]} /></mesh>
-        {[[-0.45, 0.15], [0.45, 0.15], [-0.45, 0.69], [0.45, 0.69]].map(([x, z]) => (
-          <mesh key={`${x}${z}`} position={[x, -0.4, z]} material={glassLeg} renderOrder={3}><boxGeometry args={[0.04, 0.72, 0.04]} /></mesh>
+        {/* the top is stretched and the far legs are moved to the scene's table depth */}
+        <group ref={(o) => { refs.current.tableTop = o; }} position={[0, -0.02, TABLE_NEAR + TABLE_DEPTH / 2]}>
+          <mesh material={glassTop} renderOrder={3}><boxGeometry args={[1.0, 0.04, TABLE_DEPTH]} /></mesh>
+        </group>
+        {[-0.45, 0.45].map((x) => (
+          <mesh key={x} position={[x, -0.4, TABLE_NEAR + 0.05]} material={glassLeg} renderOrder={3}><boxGeometry args={[0.04, 0.72, 0.04]} /></mesh>
         ))}
+        <group ref={(o) => { refs.current.tableFar = o; }}>
+          {[-0.45, 0.45].map((x) => (
+            <mesh key={x} position={[x, -0.4, TABLE_NEAR + TABLE_DEPTH - 0.05]} material={glassLeg} renderOrder={3}><boxGeometry args={[0.04, 0.72, 0.04]} /></mesh>
+          ))}
+        </group>
       </group>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0.3]}>
         <circleGeometry args={[1.6, 48]} />
@@ -163,6 +176,10 @@ export function Figure({ children }: { children?: ReactNode }) {
       r.chair!.visible = sc.chair;
       r.table!.visible = !!sc.table;
       if (sc.table) r.table!.position.y = go('tableY', sc.table, dt);
+      const depth = go('tableD', sc.tableDepth ?? TABLE_DEPTH, dt);
+      r.tableTop!.scale.z = depth / TABLE_DEPTH;
+      r.tableTop!.position.z = TABLE_NEAR + depth / 2;
+      r.tableFar!.position.z = depth - TABLE_DEPTH;
     };
     return () => { preFrame.fn = null; };
   }, [preFrame, go, camera, rigRoot, wristPos]);

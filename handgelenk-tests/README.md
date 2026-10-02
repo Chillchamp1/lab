@@ -17,7 +17,11 @@ Faustwerte zur Anschauung, keine Messungen.
 - Kraftpfeile, Fingerauflagen des Untersuchers, Halteringe („held fixed“), Auflageflächen (Tisch, Sitz),
   Schmerzzonen bei positivem Befund.
 - Darstellung umschaltbar: Haut · Röntgen · Knochen. Die Ansicht dreht immer um das Handgelenk.
-- Zweiter Reiter „Explore“: freie Haltung, Last, Hypermobilität, äußere Stützen (DRUJ-Band, Pisiforme-Lift,
+- Reiter „Exercises“: neun Kräftigungsübungen für Handgelenk und Unterarm, Schwerpunkt lockeres (hypermobiles)
+  Handgelenk. Erst Halten ohne Bewegung gegen die eigene Hand, dann leichte Last. Die Gegenstände (Hantel, Hammer,
+  weicher Ball, halbvolle Flasche) sind aus Grundformen gebaut und liegen in der Faust. Je Übung: was sie trainiert,
+  was man braucht, wie viel, wie man steigert, wann man nachlässt, und die Quellen.
+- Reiter „Explore“: freie Haltung, Last, Hypermobilität, äußere Stützen (DRUJ-Band, Pisiforme-Lift,
   Karpalwickel) mit eingefärbter Belastung der Bänder und Sehnen.
 
 ## Quellen und Lizenz
@@ -37,6 +41,8 @@ Faustwerte zur Anschauung, keine Messungen.
 - Ansatzpunkte der Bänder und Sehnen sind grob gesetzt und auf die Knochenoberfläche geschnappt, nicht einzeln geprüft.
 - Die Karpalkinematik ist ein Zwei-Drehpunkt-Modell (radiokarpal, midkarpal) mit kleinen Zusatzbewegungen;
   echte Handwurzelknochen bewegen sich gekoppelt in sechs Freiheitsgraden.
+- Sätze und Wiederholungen der Übungen sind übliche Startwerte aus der Handtherapie, keine Verordnung. Die Quellen
+  stützen das Prinzip der jeweiligen Übung; nur wo es dabeisteht, stammt die Übung selbst aus einer Studie.
 - Der zweite Mensch (Partner, Untersucher) erscheint nur als Ringe, Auflagen und Pfeile.
 - Oberfläche und Texte bisher nur auf Englisch.
 

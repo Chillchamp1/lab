@@ -4,9 +4,12 @@ import type { StructureId } from '../model/structures';
 export type StructureText = { name: string; kind: string; where: string; loads: string; hyp: string; support: string };
 
 export const en = {
-  title: 'Wrist tests',
-  intro: 'Clinical wrist tests, step by step on a 3D wrist. Pick a test, press play, and see what is done, where it hurts when positive, and what it points to.',
-  exploreIntro: 'Move the wrist freely, add load, switch on hypermobility, and see which structures take the strain and where outside support helps.',
+  titles: { test: 'Wrist tests', train: 'Wrist exercises', free: 'Wrist model' },
+  intros: {
+    test: 'Clinical wrist tests, step by step on a 3D wrist. Pick a test, press play, and see what is done, where it hurts when positive, and what it points to.',
+    train: 'Strengthening exercises for the wrist and forearm, with a focus on lax (hypermobile) wrists. Pick an exercise, press play, and see the movement, the object and which muscles work.',
+    free: 'Move the wrist freely, add load, switch on hypermobility, and see which structures take the strain and where outside support helps.',
+  },
   credits: 'Bone meshes: BodyParts3D, © The Database Center for Life Science, CC BY-SA 2.1 Japan (dbarchive.biosciencedbc.jp/en/bodyparts3d). Derived meshes are shared under the same licence.',
   disclaimer: 'Schematic and simplified for intuition — not to scale, not a diagnosis. All strain numbers are invented heuristics, not measurements. Persistent pinky-side pain, clicking, snapping or giving way: see a hand surgeon or hand therapist.',
 
@@ -15,10 +18,10 @@ export const en = {
   viewHint: 'Drag to orbit, pinch or scroll to zoom. Tap a coloured structure for details.',
   layers: { label: 'Show', bones: 'Bones', xray: 'See-through bones', ligaments: 'Ligaments', tendons: 'Tendons', supports: 'Supports' },
 
-  modes: { free: 'Explore', test: 'Tests' },
+  modes: { free: 'Explore', test: 'Tests', train: 'Exercises' },
   present: { label: 'Show', skin: 'Skin', xray: 'X-ray', bones: 'Bones' },
   zoomHint: 'Scroll or pinch to zoom in on the wrist · drag to rotate',
-  limiters: { held: 'held fixed', table: 'rests on the table', seat: 'rests on the seat', under: 'pushes against the table' },
+  limiters: { held: 'held fixed', heldSelf: 'held by your other hand', table: 'rests on the table', seat: 'rests on the seat', under: 'pushes against the table' },
   risk: {
     label: 'Who can do this',
     1: 'Safe to try yourself',
@@ -60,7 +63,18 @@ export const en = {
     legendLabel: 'In the picture',
     textOnly: 'Not shown in the model',
     wrist: 'Wrist',
-    legend: { examiner: 'examiner', self: 'you', body: 'body weight', table: 'table', pad: 'examiner finger', pain: 'pain zone', hold: 'held fixed', rest: 'support' },
+    legend: { examiner: 'examiner', self: 'you', body: 'body weight', table: 'table', other: 'your other hand', weight: 'weight', pad: 'examiner finger', pain: 'pain zone', hold: 'held fixed', rest: 'support' },
+  },
+  train: {
+    all: 'All exercises',
+    rulesTitle: 'Before you train',
+    level: { 1: 'Start here: no load', 2: 'Next: light load', 3: 'Later: more load' },
+    goal: 'What it trains',
+    equipment: 'You need',
+    dose: 'How much',
+    progress: 'Make it harder',
+    stop: 'Ease off if',
+    sourcesNote: 'The papers the exercise rests on. Sets and repetitions are common starting points from hand therapy, not a prescription.',
   },
   landmarks: {
     ulnar_fovea: 'ulnar fovea (soft spot, palm side of the ulnar bump)',

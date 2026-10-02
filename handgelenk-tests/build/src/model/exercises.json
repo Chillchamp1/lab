@@ -1,0 +1,280 @@
+{
+  "_meta": {
+    "version": 1,
+    "conventions": {
+      "steps": "same step format as wrist-tests.json (pose, body, forces, holds, text)",
+      "prop": "object held in the hand for the whole exercise: dumbbell | hammer | ball | bottle (built in src/scene/HeldProp.tsx)",
+      "risk": "level 1 = start here, no load; 2 = light load; 3 = more load, later",
+      "force.by": "other = your other hand resists, weight = gravity on the object",
+      "force.dir": "as in the tests, plus down = straight down in the room (gravity)",
+      "sources": "the papers the exercise rests on; the note says what each one supports. Sets and repetitions are common hand-therapy starting points, not taken from a trial unless the note says so"
+    },
+    "rules": [
+      "Stay in the middle of the range. Do not push into the end positions a lax wrist allows; that is where it hangs on its ligaments.",
+      "Slow and controlled. If the wrist shifts, clunks or gives way, use less load or a smaller range.",
+      "Holding without movement comes first, light weights second. More load only when the easier version feels steady.",
+      "Pain up to about 3 out of 10 that has settled by the next day is acceptable. More than that was too much.",
+      "This is an overview, not a prescription. A hand therapist can choose and adapt the exercises for your wrist."
+    ]
+  },
+  "exercises": [
+    {
+      "id": "iso_holds",
+      "name": "Holds without movement, four directions",
+      "group": "Lax wrist: control first",
+      "summary": "Push against your other hand; the wrist stays straight.",
+      "targets": ["extensors", "flexors", "ecu", "fcu"],
+      "equipment": "Nothing",
+      "risk": { "level": 1, "note": "No weight and no movement. The safest way to start, also on a sore day." },
+      "goal": "The forearm muscles learn to hold the wrist steady in the middle of its range. A lax wrist otherwise relies on its ligaments, which let it travel too far.",
+      "dose": "5 holds of 5 to 10 seconds in each direction, at about half strength, once or twice a day.",
+      "progress": "Hold up to 30 seconds. Then repeat with the wrist a little bent back and a little bent forward, never at the end of the range.",
+      "stop": "Push less hard if it hurts more than 3 out of 10 or if the wrist shifts.",
+      "steps": [
+        { "dur": 3, "pose": { "rot": 0, "ext": 0, "dev": 0, "elbow": 90, "fingers": 0.3 }, "text": "Forearm on the table, thumb up, wrist straight. This position stays the same in every part.", "body": "seated_table" },
+        { "dur": 4, "pose": { "rot": 0, "ext": 0, "dev": 0, "elbow": 90, "fingers": 0.3, "grip": 0.4 }, "holds": ["hand"], "forces": [{ "at": "hand_dorsal", "dir": "palmar", "mag": 0.6, "by": "other" }], "text": "Other hand on the back of the hand. Push the hand back against it for 5 to 10 seconds. Nothing moves.", "body": "seated_table" },
+        { "dur": 4, "pose": { "rot": 0, "ext": 0, "dev": 0, "elbow": 90, "fingers": 0.3, "grip": 0.4 }, "holds": ["hand"], "forces": [{ "at": "hand_palmar", "dir": "dorsal", "mag": 0.6, "by": "other" }], "text": "Other hand on the palm. Push toward the palm side and hold.", "body": "seated_table" },
+        { "dur": 4, "pose": { "rot": 0, "ext": 0, "dev": 0, "elbow": 90, "fingers": 0.3, "grip": 0.4 }, "holds": ["hand"], "forces": [{ "at": "hand_radial", "dir": "ulnar", "mag": 0.6, "by": "other" }], "text": "Other hand on top, on the thumb side. Push up toward the thumb and hold.", "body": "seated_table" },
+        { "dur": 4, "pose": { "rot": 0, "ext": 0, "dev": 0, "elbow": 90, "fingers": 0.3, "grip": 0.4 }, "forces": [{ "at": "hand_ulnar", "dir": "radial", "mag": 0.6, "by": "table" }], "text": "Press the pinky side of the hand down into the table and hold. This works the ECU, the tendon that steadies the pinky side.", "body": "seated_table" }
+      ],
+      "painZones": [],
+      "needsPartner": false,
+      "homeOk": true,
+      "view": "free",
+      "present": "bones",
+      "sources": [
+        { "short": "Hagert 2010", "cite": "Hagert E. Proprioception of the wrist joint: a review of current concepts and possible implications on the rehabilitation of the wrist. J Hand Ther 2010;23(1):2–17.", "url": "https://doi.org/10.1016/j.jht.2009.09.008", "note": "Stages of wrist rehabilitation; holding without movement is the first strengthening stage." },
+        { "short": "Engelbert et al. 2017", "cite": "Engelbert RHH, Juul-Kristensen B, Pacey V, et al. The evidence-based rationale for physical therapy treatment of children, adolescents, and adults diagnosed with joint hypermobility syndrome/hypermobile Ehlers Danlos syndrome. Am J Med Genet C Semin Med Genet 2017;175(1):158–167.", "url": "https://doi.org/10.1002/ajmg.c.31545", "note": "Why exercise for hypermobile joints aims at control and strength, not at more range." }
+      ]
+    },
+    {
+      "id": "iso_rotation",
+      "name": "Forearm turn against your other hand",
+      "group": "Lax wrist: control first",
+      "summary": "Try to turn the palm up, then down; the other hand stops it.",
+      "targets": ["druj", "tfcc", "ecu"],
+      "equipment": "Nothing",
+      "risk": { "level": 1, "note": "No weight and no movement. The joint between radius and ulna is loaded without sliding." },
+      "goal": "The muscles that turn the forearm also press radius and ulna together. Working them without movement steadies that joint (the DRUJ) without shearing the TFCC.",
+      "dose": "5 holds of 5 to 10 seconds in each direction, at about half strength, once a day.",
+      "progress": "Repeat with the palm turned half down and half up. The next step is the hammer exercise.",
+      "stop": "Ease off if the ulnar head moves or clicks, or if the pinky side hurts.",
+      "steps": [
+        { "dur": 3, "pose": { "rot": 0, "ext": 0, "dev": 0, "elbow": 90, "fingers": 0.45 }, "text": "Forearm on the table, thumb up, loose fist. Grip the wrist firmly with the other hand.", "holds": ["wrist"], "body": "seated_table" },
+        { "dur": 4, "pose": { "rot": 0, "ext": 0, "dev": 0, "elbow": 90, "fingers": 0.45, "grip": 0.4 }, "holds": ["wrist"], "forces": [{ "at": "ulnar_styloid", "dir": "rotate_pronation", "mag": 0.6, "by": "other" }], "text": "Try to turn the palm up. The other hand does not let the forearm move. Hold 5 to 10 seconds.", "body": "seated_table" },
+        { "dur": 4, "pose": { "rot": 0, "ext": 0, "dev": 0, "elbow": 90, "fingers": 0.45, "grip": 0.4 }, "holds": ["wrist"], "forces": [{ "at": "ulnar_styloid", "dir": "rotate_supination", "mag": 0.6, "by": "other" }], "text": "Now try to turn the palm down against the other hand, and hold.", "body": "seated_table" }
+      ],
+      "painZones": [],
+      "needsPartner": false,
+      "homeOk": true,
+      "view": "free",
+      "present": "bones",
+      "sources": [
+        { "short": "Gofton et al. 2004", "cite": "Gofton WT, Gordon KD, Dunning CE, Johnson JA, King GJW. Soft-tissue stabilizers of the distal radioulnar joint: an in vitro kinematic study. J Hand Surg Am 2004;29(3):423–431.", "url": "https://doi.org/10.1016/j.jhsa.2004.01.020", "note": "Lab study of what holds the joint between radius and ulna together." },
+        { "short": "Stuart 1996", "cite": "Stuart PR. Pronator quadratus revisited. J Hand Surg Br 1996;21(6):714–722.", "url": "https://doi.org/10.1016/S0266-7681(96)80175-6", "note": "The pronator quadratus muscle and its role at this joint." },
+        { "short": "Bonhof-Jansen et al. 2019", "cite": "Bonhof-Jansen EEDJ, Kroon GJ, Brink SM, van Uchelen JH. Rehabilitation with a stabilizing exercise program in triangular fibrocartilage complex lesions with distal radioulnar joint instability: a pilot intervention study. Hand Ther 2019;24(4):116–122.", "url": "https://doi.org/10.1177/1758998319861661", "note": "Pilot study of a stabilising exercise programme for TFCC lesions with an unstable DRUJ." }
+      ]
+    },
+    {
+      "id": "ball_squeeze",
+      "name": "Soft-ball squeeze with a straight wrist",
+      "group": "Lax wrist: control first",
+      "summary": "Squeeze at half strength; the wrist must not bend or tilt.",
+      "targets": ["flexors", "extensors", "ecu", "fcu"],
+      "prop": "ball",
+      "equipment": "A soft ball or a rolled-up sock",
+      "risk": { "level": 1, "note": "Light. Half strength only: squeezing as hard as you can widens the gap between scaphoid and lunate in a lax wrist." },
+      "goal": "A grip tightens the muscles on both sides of the forearm at once. Together they press the carpal bones against each other, the wrist's own brace.",
+      "dose": "10 squeezes of 5 seconds, once or twice a day.",
+      "progress": "A firmer ball. Then squeeze with the palm down and with the palm up.",
+      "stop": "Squeeze less hard if the wrist bends, tilts or aches in the middle of its back.",
+      "steps": [
+        { "dur": 3, "pose": { "rot": 0, "ext": 5, "dev": 0, "elbow": 90, "fingers": 0.42 }, "text": "Forearm on the table, thumb up, ball in the hand. Wrist straight, a touch bent back.", "body": "seated_table" },
+        { "dur": 4, "pose": { "rot": 0, "ext": 5, "dev": 0, "elbow": 90, "fingers": 0.5, "grip": 0.55 }, "text": "Squeeze at about half strength for 5 seconds. Watch the wrist: it stays exactly where it is.", "body": "seated_table" },
+        { "dur": 3, "pose": { "rot": 0, "ext": 5, "dev": 0, "elbow": 90, "fingers": 0.42, "grip": 0.1 }, "text": "Let go slowly. The wrist still does not move.", "body": "seated_table" }
+      ],
+      "painZones": [],
+      "needsPartner": false,
+      "homeOk": true,
+      "view": "free",
+      "present": "bones",
+      "sources": [
+        { "short": "Hagert 2010", "cite": "Hagert E. Proprioception of the wrist joint: a review of current concepts and possible implications on the rehabilitation of the wrist. J Hand Ther 2010;23(1):2–17.", "url": "https://doi.org/10.1016/j.jht.2009.09.008", "note": "Tightening both muscle groups together as a stage of wrist rehabilitation." },
+        { "short": "Esplugas et al. 2016", "cite": "Esplugas M, Garcia-Elias M, Lluch A, Llusá Pérez M. Role of muscles in the stabilization of ligament-deficient wrists. J Hand Ther 2016;29(2):166–174.", "url": "https://doi.org/10.1016/j.jht.2016.03.009", "note": "Which forearm muscles steady the carpal bones when ligaments are loose." }
+      ]
+    },
+    {
+      "id": "bottle_slosh",
+      "name": "Steady hold with a half-full bottle",
+      "group": "Lax wrist: control first",
+      "summary": "The water moves; the wrist reacts and stays steady.",
+      "targets": ["extensors", "flexors", "ecu", "fcu"],
+      "prop": "bottle",
+      "equipment": "A 0.5 litre bottle, half full of water",
+      "risk": { "level": 2, "note": "Light load, but the wrist has to react quickly. Start with small, slow movements." },
+      "goal": "The moving water keeps pulling the hand off balance and the muscles have to answer in time. This quick, unconscious control is what tends to be weaker in hypermobile joints.",
+      "dose": "3 rounds of 30 seconds, once a day.",
+      "progress": "Small quick shakes while the wrist stays still. Then a 1 litre bottle.",
+      "stop": "Smaller movements if the wrist clunks or the pinky side hurts.",
+      "steps": [
+        { "dur": 3, "pose": { "rot": 0, "ext": 5, "dev": 0, "elbow": 90, "fingers": 0.5, "grip": 0.3 }, "forces": [{ "at": "prop_bottle", "dir": "down", "mag": 0.4, "by": "weight" }], "text": "Forearm on the table, hand past the edge, thumb up, bottle upright.", "body": "seated_table_edge" },
+        { "dur": 3, "pose": { "rot": 0, "ext": 5, "dev": -12, "elbow": 90, "fingers": 0.5, "grip": 0.4 }, "forces": [{ "at": "prop_bottle", "dir": "down", "mag": 0.4, "by": "weight" }], "text": "Tip the bottle a little back toward you ...", "body": "seated_table_edge" },
+        { "dur": 3, "pose": { "rot": 0, "ext": 5, "dev": 14, "elbow": 90, "fingers": 0.5, "grip": 0.4 }, "forces": [{ "at": "prop_bottle", "dir": "down", "mag": 0.4, "by": "weight" }], "text": "... and a little forward. The water shifts; the wrist goes only as far as you let it.", "body": "seated_table_edge" },
+        { "dur": 3, "pose": { "rot": -25, "ext": 5, "dev": 0, "elbow": 90, "fingers": 0.5, "grip": 0.4 }, "forces": [{ "at": "prop_bottle", "dir": "down", "mag": 0.4, "by": "weight" }], "text": "Turn it a little inward ...", "body": "seated_table_edge" },
+        { "dur": 3, "pose": { "rot": 25, "ext": 5, "dev": 0, "elbow": 90, "fingers": 0.5, "grip": 0.4 }, "forces": [{ "at": "prop_bottle", "dir": "down", "mag": 0.4, "by": "weight" }], "text": "... and a little outward. Small and smooth.", "body": "seated_table_edge" }
+      ],
+      "painZones": [],
+      "needsPartner": false,
+      "homeOk": true,
+      "view": "free",
+      "present": "bones",
+      "sources": [
+        { "short": "Hagert 2010", "cite": "Hagert E. Proprioception of the wrist joint: a review of current concepts and possible implications on the rehabilitation of the wrist. J Hand Ther 2010;23(1):2–17.", "url": "https://doi.org/10.1016/j.jht.2009.09.008", "note": "Reactive muscle training with an unsteady load as a later stage. The bottle is a household stand-in for the devices named there." },
+        { "short": "Chen 2019", "cite": "Chen Z. A novel staged wrist sensorimotor rehabilitation program for a patient with triangular fibrocartilage complex injury: a case report. J Hand Ther 2019;32(4):525–534.", "url": "https://doi.org/10.1016/j.jht.2018.04.003", "note": "A staged control-training programme for a TFCC injury (single case)." },
+        { "short": "Smith et al. 2013", "cite": "Smith TO, Jerman E, Easton V, et al. Do people with benign joint hypermobility syndrome (BJHS) have reduced joint proprioception? A systematic review and meta-analysis. Rheumatol Int 2013;33(11):2709–2716.", "url": "https://doi.org/10.1007/s00296-013-2790-4", "note": "Joint position sense in hypermobile people." }
+      ]
+    },
+    {
+      "id": "hammer_rotation",
+      "name": "Slow forearm turns with a hammer",
+      "group": "Forearm rotation (DRUJ, TFCC)",
+      "summary": "Tip the hammer inward and outward, half way, and bring it back.",
+      "targets": ["druj", "tfcc", "ecu"],
+      "prop": "hammer",
+      "equipment": "A hammer (or a stick with a weight at one end)",
+      "risk": { "level": 2, "note": "The lever makes a light hammer heavy. Start with the hand close to the head and stay in the middle of the turn." },
+      "goal": "The off-centre weight makes the turning muscles work in both directions, also while lowering. They are the active stabilisers of the joint between radius and ulna.",
+      "dose": "2 to 3 sets of 10 slow turns, every other day.",
+      "progress": "Slide the hand down the handle. Then turn further, but stop before the ulnar head starts to shift or click.",
+      "stop": "Shorter lever or smaller turn if the ulnar head shifts, clicks, or the pinky side hurts.",
+      "steps": [
+        { "dur": 3, "pose": { "rot": 0, "ext": 5, "dev": 0, "elbow": 90, "fingers": 0.8, "grip": 0.4 }, "forces": [{ "at": "prop_hammer_head", "dir": "down", "mag": 0.5, "by": "weight" }], "text": "Forearm on the table, hand past the edge, hammer upright, thumb up. Hold it close to the head to start.", "body": "seated_table_edge" },
+        { "dur": 4, "pose": { "rot": -45, "ext": 5, "dev": 0, "elbow": 90, "fingers": 0.8, "grip": 0.5 }, "forces": [{ "at": "prop_hammer_head", "dir": "down", "mag": 0.7, "by": "weight" }], "text": "Let the hammer tip inward, palm turning down, about half way. Take 3 seconds.", "body": "seated_table_edge" },
+        { "dur": 3, "pose": { "rot": 0, "ext": 5, "dev": 0, "elbow": 90, "fingers": 0.8, "grip": 0.5 }, "forces": [{ "at": "prop_hammer_head", "dir": "down", "mag": 0.5, "by": "weight" }], "text": "Bring it back to upright.", "body": "seated_table_edge" },
+        { "dur": 4, "pose": { "rot": 45, "ext": 5, "dev": 0, "elbow": 90, "fingers": 0.8, "grip": 0.5 }, "forces": [{ "at": "prop_hammer_head", "dir": "down", "mag": 0.7, "by": "weight" }], "text": "Now outward, palm turning up, about half way ...", "body": "seated_table_edge" },
+        { "dur": 3, "pose": { "rot": 0, "ext": 5, "dev": 0, "elbow": 90, "fingers": 0.8, "grip": 0.5 }, "forces": [{ "at": "prop_hammer_head", "dir": "down", "mag": 0.5, "by": "weight" }], "text": "... and back to upright.", "body": "seated_table_edge" }
+      ],
+      "painZones": [],
+      "needsPartner": false,
+      "homeOk": true,
+      "view": "free",
+      "present": "bones",
+      "sources": [
+        { "short": "Bonhof-Jansen et al. 2019", "cite": "Bonhof-Jansen EEDJ, Kroon GJ, Brink SM, van Uchelen JH. Rehabilitation with a stabilizing exercise program in triangular fibrocartilage complex lesions with distal radioulnar joint instability: a pilot intervention study. Hand Ther 2019;24(4):116–122.", "url": "https://doi.org/10.1177/1758998319861661", "note": "Pilot study of a stabilising exercise programme for TFCC lesions with an unstable DRUJ." },
+        { "short": "Gofton et al. 2004", "cite": "Gofton WT, Gordon KD, Dunning CE, Johnson JA, King GJW. Soft-tissue stabilizers of the distal radioulnar joint: an in vitro kinematic study. J Hand Surg Am 2004;29(3):423–431.", "url": "https://doi.org/10.1016/j.jhsa.2004.01.020", "note": "Lab study of what holds the joint between radius and ulna together." },
+        { "short": "Stuart 1996", "cite": "Stuart PR. Pronator quadratus revisited. J Hand Surg Br 1996;21(6):714–722.", "url": "https://doi.org/10.1016/S0266-7681(96)80175-6", "note": "The pronator quadratus muscle and its role at this joint." }
+      ]
+    },
+    {
+      "id": "radial_raise",
+      "name": "Thumb-side raise with a hammer",
+      "group": "Strength through the range",
+      "summary": "A hammer blow in slow motion, then raise it back up.",
+      "targets": ["extensors", "sl", "flexors"],
+      "prop": "hammer",
+      "equipment": "A hammer",
+      "risk": { "level": 2, "note": "Light load with a lever. Keep the tilt small." },
+      "goal": "Works the muscles on the thumb side of the forearm. Lab studies describe them as the ones that steady the scaphoid and lunate, while the ECU steadies the pinky side.",
+      "dose": "2 to 3 sets of 10, lowering for 3 seconds, every other day.",
+      "progress": "Slide the hand down the handle for a longer lever.",
+      "stop": "Smaller tilt if the wrist clunks when it tilts toward the pinky.",
+      "steps": [
+        { "dur": 3, "pose": { "rot": 0, "ext": 5, "dev": 0, "elbow": 90, "fingers": 0.8, "grip": 0.4 }, "forces": [{ "at": "prop_hammer_head", "dir": "down", "mag": 0.5, "by": "weight" }], "text": "Forearm on the table, hand past the edge, hammer upright, thumb up.", "body": "seated_table_edge" },
+        { "dur": 4, "pose": { "rot": 0, "ext": 0, "dev": 16, "elbow": 90, "fingers": 0.8, "grip": 0.5 }, "forces": [{ "at": "prop_hammer_head", "dir": "down", "mag": 0.7, "by": "weight" }], "text": "Let the hammer head sink forward slowly, like a hammer blow in slow motion. Only a little.", "body": "seated_table_edge" },
+        { "dur": 3, "pose": { "rot": 0, "ext": 8, "dev": -12, "elbow": 90, "fingers": 0.8, "grip": 0.5 }, "forces": [{ "at": "prop_hammer_head", "dir": "down", "mag": 0.6, "by": "weight" }], "text": "Raise it back past upright, toward you. The forearm stays on the table.", "body": "seated_table_edge" }
+      ],
+      "painZones": [],
+      "needsPartner": false,
+      "homeOk": true,
+      "view": "free",
+      "present": "bones",
+      "sources": [
+        { "short": "Esplugas et al. 2016", "cite": "Esplugas M, Garcia-Elias M, Lluch A, Llusá Pérez M. Role of muscles in the stabilization of ligament-deficient wrists. J Hand Ther 2016;29(2):166–174.", "url": "https://doi.org/10.1016/j.jht.2016.03.009", "note": "Which forearm muscles steady which carpal ligament." }
+      ]
+    },
+    {
+      "id": "dart_thrower",
+      "name": "Dart-thrower's motion",
+      "group": "Strength through the range",
+      "summary": "From back-and-thumb-side to forward-and-pinky-side, like throwing a dart.",
+      "targets": ["sl", "extensors", "fcu", "midcarpal"],
+      "prop": "hammer",
+      "equipment": "A light hammer, or nothing to start",
+      "risk": { "level": 2, "note": "Light load. Start without the hammer and keep away from both ends of the movement." },
+      "goal": "This slanted path is the one the wrist uses for throwing and hammering. Most of the motion happens between the two rows of carpal bones, and the scaphoid and lunate move little against each other.",
+      "dose": "2 to 3 sets of 10 slow throws, every other day.",
+      "progress": "First without a weight, then with the hammer held close to the head, then further down the handle.",
+      "stop": "Stop short of the point where the wrist clunks near the pinky-side end.",
+      "steps": [
+        { "dur": 3, "pose": { "rot": -20, "ext": 5, "dev": 0, "elbow": 90, "fingers": 0.8, "grip": 0.4 }, "forces": [{ "at": "prop_hammer_head", "dir": "down", "mag": 0.5, "by": "weight" }], "text": "Forearm on the table, hand past the edge, thumb turned slightly inward.", "body": "seated_table_edge" },
+        { "dur": 3, "pose": { "rot": -20, "ext": 28, "dev": -12, "elbow": 90, "fingers": 0.8, "grip": 0.5 }, "forces": [{ "at": "prop_hammer_head", "dir": "down", "mag": 0.6, "by": "weight" }], "text": "Wind up: the hand goes back and toward the thumb side at the same time.", "body": "seated_table_edge" },
+        { "dur": 4, "pose": { "rot": -20, "ext": -22, "dev": 16, "elbow": 90, "fingers": 0.8, "grip": 0.5 }, "forces": [{ "at": "prop_hammer_head", "dir": "down", "mag": 0.7, "by": "weight" }], "text": "Throw in slow motion: forward and toward the pinky side in one slanted line. Stop before the end.", "body": "seated_table_edge" }
+      ],
+      "painZones": [],
+      "needsPartner": false,
+      "homeOk": true,
+      "view": "free",
+      "present": "bones",
+      "sources": [
+        { "short": "Moritomo et al. 2007", "cite": "Moritomo H, Apergis EP, Herzberg G, Werner FW, Wolfe SW, Garcia-Elias M. 2007 IFSSH committee report of wrist biomechanics committee: biomechanics of the so-called dart-throwing motion of the wrist. J Hand Surg Am 2007;32(9):1447–1453.", "url": "https://doi.org/10.1016/j.jhsa.2007.08.014", "note": "How the carpal bones move along this path." },
+        { "short": "Moritomo et al. 2014", "cite": "Moritomo H, Apergis EP, Garcia-Elias M, Werner FW, Wolfe SW. International Federation of Societies for Surgery of the Hand 2013 committee's report on wrist dart-throwing motion. J Hand Surg Am 2014;39(7):1433–1439.", "url": "https://doi.org/10.1016/j.jhsa.2014.02.035", "note": "Use of the motion in rehabilitation." }
+      ]
+    },
+    {
+      "id": "wrist_extension",
+      "name": "Wrist lift, palm down, slow lowering",
+      "group": "Strength through the range",
+      "summary": "Lift the back of the hand for 2 seconds, lower for 4.",
+      "targets": ["extensors", "ecu"],
+      "prop": "dumbbell",
+      "equipment": "A dumbbell of 0.5 to 1 kg, or a small full bottle",
+      "risk": { "level": 2, "note": "Light load through a movement. Stay away from the end positions." },
+      "goal": "Strengthens the muscles that lift the hand and hold the wrist up during every grip. The slow lowering is the part that builds up the tendon; it is the standard exercise for tennis elbow.",
+      "dose": "3 sets of 10 to 15, lifting for 2 seconds and lowering for 4, daily or every other day.",
+      "progress": "More weight in small steps once 15 repetitions are easy.",
+      "stop": "Less weight if the pain at the wrist or the outside of the elbow goes above 3 out of 10.",
+      "steps": [
+        { "dur": 3, "pose": { "rot": -80, "ext": 0, "dev": 0, "elbow": 90, "fingers": 0.8, "grip": 0.4 }, "forces": [{ "at": "prop_dumbbell", "dir": "down", "mag": 0.6, "by": "weight" }], "text": "Forearm on the table, palm down, hand past the edge, dumbbell in the fist.", "body": "seated_table_edge" },
+        { "dur": 3, "pose": { "rot": -80, "ext": 32, "dev": 0, "elbow": 90, "fingers": 0.8, "grip": 0.5 }, "forces": [{ "at": "prop_dumbbell", "dir": "down", "mag": 0.6, "by": "weight" }], "text": "Lift the back of the hand, 2 seconds. Not all the way to the end.", "body": "seated_table_edge" },
+        { "dur": 5, "pose": { "rot": -80, "ext": -22, "dev": 0, "elbow": 90, "fingers": 0.8, "grip": 0.5 }, "forces": [{ "at": "prop_dumbbell", "dir": "down", "mag": 0.6, "by": "weight" }], "text": "Lower slowly, 4 seconds, to a little below level.", "body": "seated_table_edge" }
+      ],
+      "painZones": [],
+      "needsPartner": false,
+      "homeOk": true,
+      "view": "free",
+      "present": "bones",
+      "sources": [
+        { "short": "Tyler et al. 2010", "cite": "Tyler TF, Thomas GC, Nicholas SJ, McHugh MP. Addition of isolated wrist extensor eccentric exercise to standard treatment for chronic lateral epicondylosis: a prospective randomized trial. J Shoulder Elbow Surg 2010;19(6):917–922.", "url": "https://doi.org/10.1016/j.jse.2010.04.041", "note": "Randomised trial: slow lowering work for the wrist extensors in tennis elbow." },
+        { "short": "Peterson et al. 2014", "cite": "Peterson M, Butler S, Eriksson M, Svärdsudd K. A randomized controlled trial of eccentric vs. concentric graded exercise in chronic tennis elbow (lateral elbow tendinopathy). Clin Rehabil 2014;28(9):862–872.", "url": "https://doi.org/10.1177/0269215514527595", "note": "Randomised trial: lowering compared with lifting, using a weight at home." }
+      ]
+    },
+    {
+      "id": "wrist_flexion",
+      "name": "Wrist curl, palm up",
+      "group": "Strength through the range",
+      "summary": "Curl the hand up toward you, lower slowly.",
+      "targets": ["flexors", "fcu"],
+      "prop": "dumbbell",
+      "equipment": "A dumbbell of 0.5 to 1 kg, or a small full bottle",
+      "risk": { "level": 2, "note": "Light load through a movement. Do not let the weight pull the wrist far back." },
+      "goal": "Strengthens the muscles on the palm side of the forearm, including the FCU, which steadies the pinky side together with the ECU.",
+      "dose": "3 sets of 10 to 15, lifting for 2 seconds and lowering for 4, every other day.",
+      "progress": "More weight in small steps once 15 repetitions are easy.",
+      "stop": "Less weight, or a smaller range, if the palm side of the wrist or the inside of the elbow hurts.",
+      "steps": [
+        { "dur": 3, "pose": { "rot": 80, "ext": 0, "dev": 0, "elbow": 90, "fingers": 0.8, "grip": 0.4 }, "forces": [{ "at": "prop_dumbbell", "dir": "down", "mag": 0.6, "by": "weight" }], "text": "Forearm on the table, palm up, hand past the edge, dumbbell in the fist.", "body": "seated_table_edge" },
+        { "dur": 3, "pose": { "rot": 80, "ext": -32, "dev": 0, "elbow": 90, "fingers": 0.8, "grip": 0.5 }, "forces": [{ "at": "prop_dumbbell", "dir": "down", "mag": 0.6, "by": "weight" }], "text": "Curl the hand up toward you, 2 seconds.", "body": "seated_table_edge" },
+        { "dur": 5, "pose": { "rot": 80, "ext": 18, "dev": 0, "elbow": 90, "fingers": 0.8, "grip": 0.5 }, "forces": [{ "at": "prop_dumbbell", "dir": "down", "mag": 0.6, "by": "weight" }], "text": "Lower slowly, 4 seconds, to a little below level. Do not let it hang at the end.", "body": "seated_table_edge" }
+      ],
+      "painZones": [],
+      "needsPartner": false,
+      "homeOk": true,
+      "view": "free",
+      "present": "bones",
+      "sources": [
+        { "short": "Day et al. 2019", "cite": "Day JM, Lucado AM, Uhl TL. A comprehensive rehabilitation program for treating lateral elbow tendinopathy. Int J Sports Phys Ther 2019;14(5):818–829.", "url": "https://doi.org/10.26603/ijspt20190818", "note": "A phased strengthening programme for the wrist and forearm (clinical commentary). The curl is the mirror image of the wrist lift." },
+        { "short": "Esplugas et al. 2016", "cite": "Esplugas M, Garcia-Elias M, Lluch A, Llusá Pérez M. Role of muscles in the stabilization of ligament-deficient wrists. J Hand Ther 2016;29(2):166–174.", "url": "https://doi.org/10.1016/j.jht.2016.03.009", "note": "Which forearm muscles steady which carpal ligament." }
+      ]
+    }
+  ]
+}

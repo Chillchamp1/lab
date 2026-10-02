@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react';
 import { t } from '../i18n/en';
-import { painShown, useStore, type Mode } from '../state/store';
-import { GLOBAL_RULES, TESTS, TEST_GROUPS, stepWho, type Force, type Test } from '../model/tests';
+import { guided, painShown, useStore, type Mode } from '../state/store';
+import { GLOBAL_RULES, TESTS, TEST_GROUPS, stepWho, type Force, type Program, type Test } from '../model/tests';
+import { findProgram } from '../model/exercises';
 import { FORCE_COLOR } from '../scene/TestOverlay';
 import { SCENES } from '../scene/Figure';
 
@@ -9,7 +10,7 @@ export function ModeTabs() {
   const mode = useStore((s) => s.mode), setMode = useStore((s) => s.setMode);
   return (
     <div className="seg modes" role="tablist" aria-label="Mode">
-      {(['test', 'free'] as Mode[]).map((m) => (
+      {(['test', 'train', 'free'] as Mode[]).map((m) => (
         <button key={m} id={`mode-${m}`} role="tab" aria-selected={mode === m} aria-pressed={mode === m} onClick={() => setMode(m)}>{t.modes[m]}</button>
       ))}
     </div>
@@ -86,6 +87,26 @@ function Rules() {
   );
 }
 
+// Full citations with links; used by the test card and the exercise card.
+export function Sources({ of, note }: { of: Program; note: string }) {
+  return (
+    <div className="sources">
+      <dt>{t.tests.sources}</dt>
+      <dd>
+        <ol>
+          {of.sources.map((s) => (
+            <li key={s.cite}>
+              {s.url ? <a href={s.url} target="_blank" rel="noopener noreferrer">{s.cite}</a> : s.cite}
+              {s.note && <span className="why"> {s.note}</span>}
+            </li>
+          ))}
+        </ol>
+        <p className="note">{note}</p>
+      </dd>
+    </div>
+  );
+}
+
 // About the open test: who can do it, what a positive result means, and where the test comes from.
 // The steps themselves are shown on the stage; they are not repeated here.
 function TestInfo() {
@@ -113,20 +134,7 @@ function TestInfo() {
         <div><dt>{t.tests.meaning}</dt><dd>{test.meaning}</dd></div>
         <div><dt>{t.tests.home}</dt><dd>{test.home}</dd></div>
         {test.textOnly && <div><dt>{t.tests.textOnly}</dt><dd><ul>{test.textOnly.map((x) => <li key={x}>{x}</li>)}</ul></dd></div>}
-        <div className="sources">
-          <dt>{t.tests.sources}</dt>
-          <dd>
-            <ol>
-              {test.sources.map((s) => (
-                <li key={s.cite}>
-                  {s.url ? <a href={s.url} target="_blank" rel="noopener noreferrer">{s.cite}</a> : s.cite}
-                  {s.note && <span className="why"> {s.note}</span>}
-                </li>
-              ))}
-            </ol>
-            <p className="note">{t.tests.sourcesNote}</p>
-          </dd>
-        </div>
+        <Sources of={test} note={t.tests.sourcesNote} />
       </dl>
       <p className="note keys">{t.keys}</p>
     </section>
@@ -156,8 +164,8 @@ export function Timeline() {
   const showPain = useStore(painShown);
   const track = useRef<HTMLDivElement>(null);
   const drag = useRef<{ wasPlaying: boolean } | null>(null);
-  const test = TESTS.find((x) => x.id === p.id);
-  if (mode !== 'test' || !test) return null;
+  const test = findProgram(p.id);
+  if (!guided(mode) || !test) return null;
 
   const step = test.steps[p.step];
   const total = test.steps.reduce((a, x) => a + x.dur, 0);
@@ -205,7 +213,7 @@ export function Timeline() {
           <div className="legend" aria-label={t.tests.legendLabel}>
             {by.map((b) => <span key={b}><i style={{ background: FORCE_COLOR[b] }} />{t.tests.legend[b]}</span>)}
             {contacts.length > 0 && <span><i className="pad" />{t.tests.legend.pad}</span>}
-            {holds > 0 && <span><i className="hold" />{t.tests.legend.hold}</span>}
+            {holds > 0 && <span><i className={mode === 'train' ? 'hold self' : 'hold'} />{mode === 'train' ? t.limiters.heldSelf : t.tests.legend.hold}</span>}
             {rest && <span><i className="rest" />{t.tests.legend.rest}</span>}
             {showPain && <span><i className="pain" />{t.tests.legend.pain}</span>}
           </div>

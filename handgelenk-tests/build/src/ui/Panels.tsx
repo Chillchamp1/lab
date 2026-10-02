@@ -152,7 +152,7 @@ export function ExplorePanel() {
   const layers = useStore((s) => s.layers), toggle = useStore((s) => s.toggleLayer);
   return (
     <>
-      <p className="note top">{t.exploreIntro}</p>
+      <p className="note top">{t.intros.free}</p>
       <PoseCard />
       <RecsCard />
       <StrainList />
