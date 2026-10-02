@@ -7,7 +7,6 @@ import { TESTS, stepWho } from '../model/tests';
 import { calloutBus } from '../scene/CalloutAnchor';
 import { stepColor } from './TestsPanel';
 
-const RING = 8; // px, radius of the ring around the target
 const INSET = 12; // px, the line starts this far inside the box (the box is drawn over it)
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 
@@ -24,14 +23,11 @@ export function Callout() {
       const l = b.offsetLeft, tp = b.offsetTop, w = b.offsetWidth, h = b.offsetHeight;
       const sx = clamp(x, l + INSET, l + w - INSET), sy = clamp(y, tp + INSET, tp + h - INSET);
       const d = Math.hypot(x - sx, y - sy);
-      if (!visible || d < INSET + RING + 6) { g.style.opacity = '0'; return; } // target behind the camera or under the box
+      if (!visible || d < INSET + 10) { g.style.opacity = '0'; return; } // target behind the camera or under the box
       g.style.opacity = '1';
-      const ex = x - ((x - sx) / d) * RING, ey = y - ((y - sy) / d) * RING;
-      for (const ln of g.querySelectorAll('line')) {
-        ln.setAttribute('x1', sx.toFixed(1)); ln.setAttribute('y1', sy.toFixed(1));
-        ln.setAttribute('x2', ex.toFixed(1)); ln.setAttribute('y2', ey.toFixed(1));
-      }
-      for (const c of g.querySelectorAll('circle')) { c.setAttribute('cx', x.toFixed(1)); c.setAttribute('cy', y.toFixed(1)); }
+      const ln = g.firstElementChild!;
+      ln.setAttribute('x1', sx.toFixed(1)); ln.setAttribute('y1', sy.toFixed(1));
+      ln.setAttribute('x2', x.toFixed(1)); ln.setAttribute('y2', y.toFixed(1));
     };
     return () => { calloutBus.draw = null; };
   }, []);
@@ -44,8 +40,7 @@ export function Callout() {
   return (
     <>
       <svg ref={svg} className="pointer" aria-hidden="true" style={{ ...color, opacity: 0 }}>
-        <line className="halo" /><circle className="halo" r={RING} />
-        <line className="ln" /><circle className="ln" r={RING} />
+        <line className="ln" />
       </svg>
       <div ref={box} id="callout" className={`callout ${side === 'L' ? 'right' : 'left'}`} style={color} aria-live="polite">
         <div className="head"><span className="tl-count">{t.tests.step(stepIx + 1, test.steps.length)}</span><span className={`who ${who}`}>{t.who[who]}</span></div>
