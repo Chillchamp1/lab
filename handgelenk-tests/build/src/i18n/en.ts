@@ -20,7 +20,6 @@ export const en = {
 
   modes: { free: 'Explore', test: 'Tests', train: 'Exercises' },
   present: { label: 'Show', skin: 'Skin', xray: 'X-ray', bones: 'Bones' },
-  zoomHint: 'Scroll or pinch to zoom in on the wrist · drag to rotate',
   limiters: { held: 'held fixed', heldSelf: 'held by your other hand', table: 'rests on the table', seat: 'rests on the seat', under: 'pushes against the table' },
   risk: {
     label: 'Who can do this',

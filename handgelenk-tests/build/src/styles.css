@@ -159,7 +159,6 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--support); o
 /* stage overlays */
 .stagebar { position: absolute; left: 8px; right: 8px; top: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; z-index: 8; pointer-events: none; }
 .stagebar > * { pointer-events: auto; }
-.zoomhint { font-size: .78rem; color: var(--muted); background: color-mix(in srgb, var(--panel) 80%, transparent); padding: 3px 8px; border-radius: 8px; }
 .notices { top: 48px; }
 .who { font-size: .72rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; padding: 1px 7px; border-radius: 6px; white-space: nowrap; vertical-align: middle; }
 .who.you { background: #2E8B7A; color: #fff; }
@@ -248,7 +247,6 @@ details.options .grouplabel { margin-top: 10px; }
   .callout .tl-count { font-size: .7rem; }
   .callout .who { font-size: .62rem; }
   .lbl3d { font-size: .6rem; padding: 1px 5px; }
-  .zoomhint { font-size: .7rem; }
 }
 
 /* sources */
