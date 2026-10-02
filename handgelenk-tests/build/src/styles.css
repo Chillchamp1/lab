@@ -193,6 +193,12 @@ details.options .grouplabel { margin-top: 10px; }
 .lbl3d { font-size: .72rem; font-weight: 700; letter-spacing: .02em; padding: 2px 7px; border-radius: 6px; white-space: nowrap; pointer-events: none; font-family: var(--font); }
 .lbl3d.hold { background: #7A4FD6; color: #fff; }
 .lbl3d.rest { background: #5C6B70; color: #fff; opacity: .85; }
+/* a label stands off from its ring or pad; a faint line in the label's colour connects the two */
+.lead { position: relative; width: 0; height: 0; pointer-events: none; }
+.lead i { position: absolute; left: 0; top: -.75px; height: 1.5px; border-radius: 1px; transform-origin: 0 50%; opacity: .45; }
+.lead.hold i { background: #7A4FD6; }
+.lead.rest i { background: #5C6B70; }
+.lead .lbl3d { position: absolute; }
 
 /* test open: full-width stage, timeline and instruction directly under it, details below in two columns */
 @media (min-width: 900px) {
