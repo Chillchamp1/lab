@@ -19,7 +19,8 @@
       "present": "default presentation: skin | xray | bones",
       "body": "per step: posture scene for the mannequin inset: seated_table | seated_elbow_vertical | seated_under_table | chair_press | chair_press_up | standing",
       "holds": "per step: where a second person fixes the limb: forearm | wrist | hand (drawn as a ring)",
-      "sources": "per test: where the test is described in the literature (short form, full citation, DOI link, one-line note)"
+      "sources": "per test: where the test is described in the literature (short form, full citation, DOI link, one-line note)",
+      "exercises": "per test, optional: exercises from exercises.json that train what the test examines, each with one line saying why. Left out where no exercise fits"
     },
     "globalRules": [
       "Always compare with the other side; in a hypermobile wrist only asymmetry or reproducing the usual pain counts.",
@@ -86,6 +87,20 @@
         "note": "Pressing with a thumb is harmless. Compare both sides."
       },
       "present": "bones",
+      "exercises": [
+        {
+          "id": "iso_rotation",
+          "why": "Works the muscles that press radius and ulna together, without any sliding in the joint."
+        },
+        {
+          "id": "hammer_rotation",
+          "why": "The next step: the same muscles through a small, slow turn against a light lever."
+        },
+        {
+          "id": "iso_holds",
+          "why": "Steadies the wrist in mid-range; the pinky-side hold works the ECU, which lies right over the TFCC."
+        }
+      ],
       "sources": [
         {
           "short": "Tay et al. 2007",
@@ -155,6 +170,20 @@
         "note": "Your body weight goes through the wrist. Stop at the first sharp pain; skip it while the wrist is acutely painful."
       },
       "present": "bones",
+      "exercises": [
+        {
+          "id": "iso_rotation",
+          "why": "Works the muscles that press radius and ulna together, without any sliding in the joint."
+        },
+        {
+          "id": "hammer_rotation",
+          "why": "The next step: the same muscles through a small, slow turn against a light lever."
+        },
+        {
+          "id": "iso_holds",
+          "why": "Steadies the wrist in mid-range; the pinky-side hold works the ECU, which lies right over the TFCC."
+        }
+      ],
       "sources": [
         {
           "short": "Lester et al. 1995",
@@ -259,6 +288,20 @@
         "note": "A partner pushes and turns the wrist at the end of its range. Slow and gentle only."
       },
       "present": "bones",
+      "exercises": [
+        {
+          "id": "iso_rotation",
+          "why": "Works the muscles that press radius and ulna together, without any sliding in the joint."
+        },
+        {
+          "id": "hammer_rotation",
+          "why": "The next step: the same muscles through a small, slow turn against a light lever."
+        },
+        {
+          "id": "iso_holds",
+          "why": "Steadies the wrist in mid-range; the pinky-side hold works the ECU, which lies right over the TFCC."
+        }
+      ],
       "sources": [
         {
           "short": "Nakamura et al. 1997",
@@ -325,6 +368,20 @@
         "note": "Loads the TFCC against a heavy table. Lift gently, never jerk."
       },
       "present": "bones",
+      "exercises": [
+        {
+          "id": "iso_rotation",
+          "why": "Works the muscles that press radius and ulna together, without any sliding in the joint."
+        },
+        {
+          "id": "hammer_rotation",
+          "why": "The next step: the same muscles through a small, slow turn against a light lever."
+        },
+        {
+          "id": "iso_holds",
+          "why": "Steadies the wrist in mid-range; the pinky-side hold works the ECU, which lies right over the TFCC."
+        }
+      ],
       "sources": [
         {
           "short": "Buterbaugh et al. 1998",
@@ -455,6 +512,20 @@
         "note": "Home version: gentle pressure on the ulnar head; compare both sides."
       },
       "present": "bones",
+      "exercises": [
+        {
+          "id": "iso_rotation",
+          "why": "Works the muscles that press radius and ulna together, without any sliding in the joint."
+        },
+        {
+          "id": "hammer_rotation",
+          "why": "The next step: the same muscles through a small, slow turn against a light lever."
+        },
+        {
+          "id": "bottle_slosh",
+          "why": "Reactive control of the forearm and wrist muscles with a light, unsteady load."
+        }
+      ],
       "sources": [
         {
           "short": "Moriya et al. 2009",
@@ -604,6 +675,16 @@
         "note": "Low load, but a partner has to resist the thumb."
       },
       "present": "bones",
+      "exercises": [
+        {
+          "id": "iso_holds",
+          "why": "The pinky-side hold loads the ECU tendon without movement, the gentlest way to start with an irritated tendon."
+        },
+        {
+          "id": "wrist_extension",
+          "why": "Later: slow lowering work for the wrist extensors, the ECU included, in a small range."
+        }
+      ],
       "sources": [
         {
           "short": "Ruland & Hogan 2008",
@@ -706,6 +787,20 @@
         "note": "The examiner pushes the carpus into the clunk; forcing it can hurt. At home use the active catch-up clunk instead."
       },
       "present": "bones",
+      "exercises": [
+        {
+          "id": "iso_holds",
+          "why": "The pinky-side hold works the ECU, one of the muscles that lifts the sagging pinky side of the carpus."
+        },
+        {
+          "id": "ball_squeeze",
+          "why": "A light grip tightens both muscle groups and presses the two carpal rows together."
+        },
+        {
+          "id": "bottle_slosh",
+          "why": "Trains the quick, unconscious control that keeps the carpus from slipping into the clunk."
+        }
+      ],
       "sources": [
         {
           "short": "Lichtman et al. 1981",
@@ -777,6 +872,20 @@
         "note": "A few slow repetitions only; stop if the clunk hurts."
       },
       "present": "bones",
+      "exercises": [
+        {
+          "id": "iso_holds",
+          "why": "The pinky-side hold works the ECU, one of the muscles that lifts the sagging pinky side of the carpus."
+        },
+        {
+          "id": "ball_squeeze",
+          "why": "A light grip tightens both muscle groups and presses the two carpal rows together."
+        },
+        {
+          "id": "bottle_slosh",
+          "why": "Trains the quick, unconscious control that keeps the carpus from slipping into the clunk."
+        }
+      ],
       "sources": [
         {
           "short": "Lichtman & Wroten 2006",
@@ -875,6 +984,16 @@
         "note": "Painful when positive and hard to do on yourself. Shown so you know what to expect."
       },
       "present": "bones",
+      "exercises": [
+        {
+          "id": "radial_raise",
+          "why": "Works the thumb-side muscles, which lab studies describe as the ones that steady scaphoid and lunate."
+        },
+        {
+          "id": "dart_thrower",
+          "why": "Moves the wrist along the path on which scaphoid and lunate shift least against each other."
+        }
+      ],
       "sources": [
         {
           "short": "Watson et al. 1988",
@@ -956,6 +1075,12 @@
         "note": "Needs exact knowledge of the anatomy. Shown so you know what to expect."
       },
       "present": "bones",
+      "exercises": [
+        {
+          "id": "iso_holds",
+          "why": "The pinky-side hold works the ECU, which lab studies describe as the muscle that steadies lunate and triquetrum."
+        }
+      ],
       "sources": [
         {
           "short": "Reagan et al. 1984",
@@ -1023,6 +1148,24 @@
         "note": "Harmless; do not force any joint past what feels comfortable."
       },
       "present": "bones",
+      "exercises": [
+        {
+          "id": "iso_holds",
+          "why": "The starting point for a lax wrist: holding steady in mid-range."
+        },
+        {
+          "id": "iso_rotation",
+          "why": "The same for the joint between radius and ulna."
+        },
+        {
+          "id": "ball_squeeze",
+          "why": "A light grip as the wrist's own muscular brace."
+        },
+        {
+          "id": "bottle_slosh",
+          "why": "Quick, unconscious control, which tends to be weaker in hypermobile joints."
+        }
+      ],
       "sources": [
         {
           "short": "Beighton et al. 1973",

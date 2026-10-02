@@ -21,6 +21,8 @@ Faustwerte zur Anschauung, keine Messungen.
   Handgelenk. Erst Halten ohne Bewegung gegen die eigene Hand, dann leichte Last. Die Gegenstände (Hantel, Hammer,
   weicher Ball, halbvolle Flasche) sind aus Grundformen gebaut und liegen in der Faust. Je Übung: was sie trainiert,
   was man braucht, wie viel, wie man steigert, wann man nachlässt, und die Quellen.
+- Unter jedem Test stehen die passenden Übungen als Kästen zum Antippen, mit einem Satz, warum sie passen. Beim
+  ECU-Subluxationstest steht bewusst keine: eine Sehne, die aus ihrer Rinne springt, hält keine Übung an ihrem Platz.
 - Reiter „Explore“: freie Haltung, Last, Hypermobilität, äußere Stützen (DRUJ-Band, Pisiforme-Lift,
   Karpalwickel) mit eingefärbter Belastung der Bänder und Sehnen.
 

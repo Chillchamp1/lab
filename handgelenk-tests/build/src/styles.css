@@ -273,3 +273,10 @@ details.options .grouplabel { margin-top: 10px; }
 .row.test[aria-current="true"] { border-color: var(--ink); border-width: 2px; padding: 9px 11px; background: var(--chip); }
 .row.test[aria-current="true"] .go { background: var(--support); color: #fff; }
 @media (prefers-reduced-motion: reduce) { .row.test:hover { transform: none; } }
+
+/* exercises that fit a test: the same boxes as in the lists, a little tighter */
+.result .fit .list { gap: 6px; margin-top: 4px; }
+.result .fit .row.test { padding: 8px 10px; grid-template-columns: 28px minmax(0, 1fr) 14px; }
+.result .fit .row.test .go { width: 28px; height: 28px; font-size: .62rem; grid-row: 1 / span 2; }
+.result .fit .row.test .chev { grid-row: 1 / span 2; }
+.result .fit .note { margin: 6px 0 0; }

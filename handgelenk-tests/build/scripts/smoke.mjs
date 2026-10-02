@@ -93,6 +93,12 @@ await page.mouse.move(tb.x + tb.width * 0.05, tb.y + tb.height / 2, { steps: 10 
 await sleep(600);
 out.stepAfterScrubBack = await text('.tl-count');
 await page.click('#present-skin'); await sleep(1500); await shot('5-skin');
+// from a test to a fitting exercise
+await page.click('#mode-test'); await sleep(800);
+await page.click('#test-druj_ballottement'); await sleep(1200);
+out.fitLinks = await page.evaluate(() => document.querySelectorAll('.fit .row.test').length);
+await page.evaluate(() => document.querySelector('#fit-iso_rotation').click()); await sleep(1500);
+out.fitOpens = `${await text('#mode-train[aria-pressed="true"]')} / ${await text('.result h2')}`;
 // exercises tab: list, an exercise with an object in the hand, the player
 await page.click('#mode-train'); await sleep(1500);
 out.exercises = await page.evaluate(() => document.querySelectorAll('[id^="ex-"]').length);

@@ -61,6 +61,18 @@ describe('exercise data', () => {
     }
   });
 
+  it('tests link only to exercises that exist, each with a reason', () => {
+    const ids = EXERCISES.map((x) => x.id);
+    for (const t of TESTS) for (const f of t.exercises ?? []) {
+      expect(ids, t.id).toContain(f.id);
+      expect(f.why.length, t.id).toBeGreaterThan(20);
+    }
+    // a scapholunate problem must not be sent to hard gripping or to the ECU hold
+    const sl = TESTS.find((t) => t.id === 'watson_scaphoid_shift')!.exercises!.map((f) => f.id);
+    expect(sl).not.toContain('ball_squeeze');
+    expect(sl).not.toContain('iso_holds');
+  });
+
   it('ids do not clash with the tests', () => {
     expect(new Set(PROGRAMS.map((p) => p.id)).size).toBe(PROGRAMS.length);
   });
