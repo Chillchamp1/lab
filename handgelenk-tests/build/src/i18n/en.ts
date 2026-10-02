@@ -46,6 +46,7 @@ export const en = {
     notHome: 'examiner only',
     back: 'All tests',
     all: 'All tests',
+    pickHint: 'Tap a test to see it on the model.',
     step: (i: number, n: number) => `Step ${i} of ${n}`,
     play: 'Play', pause: 'Pause', prev: 'Previous step', next: 'Next step', restart: 'Replay',
     yourWrist: 'Your wrist',
@@ -67,6 +68,7 @@ export const en = {
   },
   train: {
     all: 'All exercises',
+    pickHint: 'Tap an exercise to see it on the model.',
     rulesTitle: 'Before you train',
     level: { 1: 'Start here: no load', 2: 'Next: light load', 3: 'Later: more load' },
     goal: 'What it trains',

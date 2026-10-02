@@ -51,6 +51,7 @@ function TestList() {
   return (
     <section className="card">
       <h2>{t.tests.all}</h2>
+      <p className="note pick">{t.tests.pickHint}</p>
       <div className="chiprow filters" role="group" aria-label={t.filters.label}>
         {(['all', 'self', 'partner', 'examiner'] as Filter[]).map((f) => (
           <button key={f} id={`filter-${f}`} className="chip" aria-pressed={filter === f} onClick={() => setFilter(f)}>{t.filters[f]}</button>
@@ -65,9 +66,11 @@ function TestList() {
             <div className="list">
               {items.map((x) => (
                 <button key={x.id} id={`test-${x.id}`} className="row test" aria-current={current === x.id} onClick={() => { openTest(x.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+                  <span className="go" aria-hidden="true">▶</span>
                   <span className="nm">{x.name}</span>
                   <span className="meaning">{x.meaning}</span>
-                  <span className="meta"><RiskBar test={x} compact />{x.needsPartner && <span className="badge partner">{t.tests.partner}</span>}<span className="src">{x.sources.map((s) => s.short).join(' · ')}</span></span>
+                  <span className="meta"><RiskBar test={x} compact />{x.needsPartner && <span className="badge partner">{t.tests.partner}</span>}</span>
+                  <span className="chev" aria-hidden="true">›</span>
                 </button>
               ))}
             </div>

@@ -33,7 +33,7 @@ GitHub Pages serves `handgelenk-tests/index.html` from `main` a minute or two la
 | `src/scene/rigdata.json` | generated: pivots, finger joint centres/axes, TFCC, supports, anchors snapped onto bone surfaces |
 | `src/scene/Skin.tsx` | forearm + hand skin (cropped BodyParts3D body skin), CPU-skinned to the rig frames with weights from `skin.glb` |
 | `src/scene/Figure.tsx` | the mannequin (gender-neutral, standard proportions) with chair / see-through table; its right forearm + hand *are* the rig, mounted at the elbow. Shoulder/elbow angles are solved so the forearm really rests on the furniture |
-| `src/scene/Limiters.tsx` | what blocks the motion in a step: hold rings (examiner fixes forearm / wrist / hand, `holds` in the JSON) and rest pads (table top, seat, table underside) with HTML labels |
+| `src/scene/Limiters.tsx` | what blocks the motion in a step: hold rings (examiner fixes forearm / wrist / hand, `holds` in the JSON) and rest pads (table top, seat, table underside) with HTML labels. Each label is laid out on screen every frame: across the limb, inside the picture, off the instruction box and the other labels, hidden in the overview |
 | `src/scene/Rig.tsx` | nested pivot groups (ulna → PV_forearm → radius → PV_radiocarpal → proximal row → PV_midcarpal → hand), per-frame tube rebuild |
 | `src/scene/Scene.tsx` | canvas, left/right mirror, camera presets, end-on cross-section clipping |
 | `src/ui/Panels.tsx` | controls, strain list, info card, recommendations |

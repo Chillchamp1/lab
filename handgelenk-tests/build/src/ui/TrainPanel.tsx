@@ -21,15 +21,18 @@ function TrainList() {
   return (
     <section className="card">
       <h2>{t.train.all}</h2>
+      <p className="note pick">{t.train.pickHint}</p>
       {EXERCISE_GROUPS.map((g) => (
         <div key={g} className="tgroup">
           <h3>{g}</h3>
           <div className="list">
             {EXERCISES.filter((x) => x.group === g).map((x) => (
               <button key={x.id} id={`ex-${x.id}`} className="row test" aria-current={current === x.id} onClick={() => { openTest(x.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+                <span className="go" aria-hidden="true">▶</span>
                 <span className="nm">{x.name}</span>
                 <span className="meaning">{x.summary}</span>
-                <span className="meta"><LevelBar x={x} compact /><span className="badge">{x.equipment}</span><span className="src">{x.sources.map((s) => s.short).join(' · ')}</span></span>
+                <span className="meta"><LevelBar x={x} compact /><span className="badge">{x.equipment}</span></span>
+                <span className="chev" aria-hidden="true">›</span>
               </button>
             ))}
           </div>
