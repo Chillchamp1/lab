@@ -46,7 +46,6 @@ export function Callout() {
       <div ref={box} id="callout" className={`callout ${side === 'L' ? 'right' : 'left'}`} style={color} aria-live="polite">
         <div className="head"><span className="tl-count">{t.tests.step(stepIx + 1, test.steps.length)}</span><span className={`who ${who}`}>{t.who[who]}</span></div>
         <p>{step.text}</p>
-        <div className="src">{t.tests.source}: {test.sources.map((s) => s.short).join(' · ')}</div>
       </div>
     </>
   );

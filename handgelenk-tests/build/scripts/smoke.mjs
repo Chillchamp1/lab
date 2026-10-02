@@ -58,7 +58,7 @@ out.callout = await page.evaluate(() => {
   const b = box.getBoundingClientRect(), v = view.getBoundingClientRect();
   const n = (k) => Math.round(+ln.getAttribute(k));
   return {
-    text: box.querySelector('p')?.textContent?.slice(0, 40), source: box.querySelector('.src')?.textContent,
+    text: box.querySelector('p')?.textContent?.slice(0, 40),
     box: [b.left - v.left, b.top - v.top, b.width, b.height].map(Math.round), view: [v.width, v.height].map(Math.round),
     line: [n('x1'), n('y1'), n('x2'), n('y2')], lineShown: document.querySelector('.pointer').style.opacity === '1',
   };
@@ -99,7 +99,8 @@ out.exercises = await page.evaluate(() => document.querySelectorAll('[id^="ex-"]
 await page.click('#ex-hammer_rotation'); await sleep(1500);
 await page.click('#pl-play'); await sleep(2500);
 await page.click('#pl-next'); await sleep(1500);
-out.exercise = `${await text('.tl-count')} / ${await text('#callout .src')}`;
+out.exercise = `${await text('.tl-count')} / ${(await text('#callout p'))?.slice(0, 40)}`;
+out.sourcesInCard = await page.evaluate(() => document.querySelectorAll('.sources li').length);
 await shot('7-exercise');
 await page.click('#mode-free'); await sleep(2500);
 out.exploreSliders = await page.evaluate(() => document.querySelectorAll('input[type=range]').length);

@@ -29,7 +29,7 @@ function CameraRig() {
   const setup = useRef(false);
   const tmp = useRef({ f: new THREE.Vector3(), n: new THREE.Vector3(), p: new THREE.Vector3(), distal: new THREE.Vector3(), toCam: new THREE.Vector3() });
 
-  useFrame(() => {
+  useFrame(({ size }) => {
     const s = useStore.getState();
     const rootObj = root.current, c = ctl.current;
     if (!rootObj || !c) return;
@@ -45,6 +45,12 @@ function CameraRig() {
     const { f, n, p, distal, toCam } = tmp.current;
     f.set(...WRIST).applyMatrix4(rootObj.matrixWorld);
     c.moveTo(f.x, f.y, f.z, false);
+    // On a phone the instruction box spans the bottom edge: lift the picture by half its height, so the wrist sits
+    // in the middle of the part that is left free.
+    const box = size.width < 600 ? document.getElementById('callout') : null;
+    const lift = box ? box.offsetHeight / 2 + 4 : 0; // px
+    const perPx = (2 * c.distance * Math.tan(THREE.MathUtils.degToRad((c.camera as THREE.PerspectiveCamera).fov) / 2)) / size.height;
+    c.setFocalOffset(0, lift * perPx, 0, false);
 
     // DRUJ cross-section: for tests about the radius–ulna joint, the hand is cut away automatically once the user has
     // zoomed in and looks along the forearm from the fingertips.

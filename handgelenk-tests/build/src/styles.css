@@ -191,17 +191,18 @@ details.options summary { cursor: pointer; font-weight: 700; font-size: .95rem; 
 details.options .grouplabel { margin-top: 10px; }
 
 /* labels anchored in 3D */
-.lbl3d { font-size: .72rem; font-weight: 700; letter-spacing: .02em; padding: 2px 7px; border-radius: 6px; white-space: nowrap; pointer-events: none; font-family: var(--font); }
+.lbl3d { font-size: .68rem; font-weight: 700; letter-spacing: .02em; padding: 1px 6px; border-radius: 6px; white-space: nowrap; pointer-events: none; font-family: var(--font); }
 .lbl3d.hold { background: #7A4FD6; color: #fff; }
 .lbl3d.hold.self { background: #2E8B7A; }
 .lbl3d.rest { background: #5C6B70; color: #fff; opacity: .85; }
 /* a label stands off from its ring or pad; a faint line in the label's colour connects the two */
 .lead { position: relative; width: 0; height: 0; pointer-events: none; }
+.lead { transition: opacity .15s; }
 .lead i { position: absolute; left: 0; top: -.75px; height: 1.5px; border-radius: 1px; transform-origin: 0 50%; opacity: .45; }
 .lead.hold i { background: #7A4FD6; }
 .lead.hold.self i { background: #2E8B7A; }
 .lead.rest i { background: #5C6B70; }
-.lead .lbl3d { position: absolute; }
+.lead .lbl3d { position: absolute; left: 0; top: 0; }
 
 /* test open: full-width stage, timeline and instruction directly under it, details below in two columns */
 @media (min-width: 900px) {
@@ -241,15 +242,34 @@ details.options .grouplabel { margin-top: 10px; }
 .callout.right { right: 12px; }
 .callout .head { display: flex; gap: 8px; align-items: center; }
 .callout p { margin: 4px 0 0; font-size: 1.02rem; line-height: 1.38; }
-.callout .src { margin-top: 6px; font-size: .72rem; color: var(--muted); }
 @media (max-width: 899px) {
-  .callout, .callout.left, .callout.right { left: 8px; right: 8px; bottom: 8px; width: auto; padding: 7px 10px 6px; }
-  .callout p { font-size: .9rem; line-height: 1.32; }
+  .callout, .callout.left, .callout.right { left: 6px; right: 6px; bottom: 6px; width: auto; padding: 5px 9px 6px; }
+  .callout p { font-size: .84rem; line-height: 1.3; margin-top: 2px; }
+  .callout .tl-count { font-size: .7rem; }
+  .callout .who { font-size: .62rem; }
+  .lbl3d { font-size: .6rem; padding: 1px 5px; }
+  .zoomhint { font-size: .7rem; }
 }
 
 /* sources */
-.row.test .meta .src { font-size: .72rem; color: var(--muted); }
 .result .sources ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; font-size: .88rem; }
 .result .sources a { color: var(--support); text-decoration: underline; text-underline-offset: 2px; }
 .result .sources .why { color: var(--muted); }
 .result .sources .note { margin: 6px 0 0; }
+
+/* the lists of tests and exercises: every entry is a box with a play button, so it reads as something to press */
+.note.pick { margin: -4px 0 8px; }
+.tgroup .list { gap: 8px; }
+.row.test { grid-template-columns: 34px minmax(0, 1fr) 14px; gap: 2px 12px; align-items: center; padding: 10px 12px;
+  border: 1px solid var(--line); border-radius: 12px; background: var(--paper); box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+  transition: border-color .15s, box-shadow .15s, transform .15s; }
+.row.test > .nm, .row.test > .meaning, .row.test > .meta { grid-column: 2; }
+.row.test .nm { font-weight: 700; font-size: .95rem; }
+.row.test .go { grid-column: 1; grid-row: 1 / span 3; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--ink); color: var(--paper); font-size: .72rem; padding-left: 2px; }
+.row.test .chev { grid-column: 3; grid-row: 1 / span 3; color: var(--muted); font-size: 1.3rem; line-height: 1; }
+.row.test:hover { border-color: var(--ink); box-shadow: 0 3px 10px rgba(0, 0, 0, .12); transform: translateY(-1px); }
+.row.test:active { transform: none; box-shadow: none; }
+.row.test[aria-current="true"] { border-color: var(--ink); border-width: 2px; padding: 9px 11px; background: var(--chip); }
+.row.test[aria-current="true"] .go { background: var(--support); color: #fff; }
+@media (prefers-reduced-motion: reduce) { .row.test:hover { transform: none; } }
