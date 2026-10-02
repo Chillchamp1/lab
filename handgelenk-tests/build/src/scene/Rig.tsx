@@ -5,7 +5,7 @@ import { Suspense, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
-import { useStore, stressOf } from '../state/store';
+import { guided, useStore, stressOf } from '../state/store';
 import { solveRig, type RigTargets } from '../model/kinematics';
 import { strainRGB } from '../model/stress';
 import type { StructureId } from '../model/structures';
@@ -15,9 +15,10 @@ import handUrl from '../assets/hand.glb?url';
 import { useFrames } from './frames';
 import { TestOverlay } from './TestOverlay';
 import { Skin } from './Skin';
-import { TESTS } from '../model/tests';
+import { findProgram } from '../model/exercises';
 import { CUT_PLANE } from './Scene';
 import { Limiters } from './Limiters';
+import { HeldProp } from './HeldProp';
 
 const RIG = rigJson as unknown as RigData;
 const PIVOT = RIG.pivots;
@@ -93,10 +94,10 @@ export function Rig() {
   const supports = useStore((s) => s.supports);
   const select = useStore((s) => s.select);
   const endOn = useStore((s) => s.cut);
-  const inTest = useStore((s) => s.mode === 'test');
+  const inTest = useStore((s) => guided(s.mode)); // a test or an exercise is on
   const present = useStore((s) => s.present);
   const testId = useStore((s) => s.player.id);
-  const targets = useMemo(() => new Set(TESTS.find((t) => t.id === testId)?.targets ?? []), [testId]);
+  const targets = useMemo(() => new Set(findProgram(testId)?.targets ?? []), [testId]);
   // What is drawn: in a test, the app decides (presentation preset + only the structures the test examines);
   // in Explore, the user's layer toggles apply.
   const showBones = inTest ? present !== 'skin' : layers.bones;
@@ -281,6 +282,7 @@ export function Rig() {
       <Suspense fallback={null}><Skin rootRef={rootRef} /></Suspense>
       <TestOverlay attach={attach} />
       <Limiters attach={attach} />
+      <HeldProp attach={attach} />
       <mesh ref={liftMesh} material={supportMat} visible={layers.supports && supports.lift} renderOrder={2}>
         <bufferGeometry />
       </mesh>

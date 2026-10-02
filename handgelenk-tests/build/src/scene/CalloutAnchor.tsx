@@ -4,12 +4,10 @@
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { useStore } from '../state/store';
-import type { RigData, V3 } from './anatomy';
-import rigJson from './rigdata.json';
+import { guided, useStore } from '../state/store';
+import type { V3 } from './anatomy';
+import { LANDMARKS as LM } from './landmarks';
 import { useFrames } from './frames';
-
-const LM = (rigJson as unknown as RigData).landmarks;
 
 // The callout (src/ui/Callout.tsx) registers its draw function here.
 export const calloutBus: { draw: ((x: number, y: number, visible: boolean) => void) | null } = { draw: null };
@@ -23,9 +21,10 @@ export function CalloutAnchor({ wrist }: { wrist: V3 }) {
     const draw = calloutBus.draw;
     if (!draw) return;
     const s = useStore.getState(), a = st.current;
-    if (s.mode !== 'test' || !s.player.id || !root.current) { a.key = ''; draw(0, 0, false); return; }
+    if (!guided(s.mode) || !s.player.id || !root.current) { a.key = ''; draw(0, 0, false); return; }
 
-    const id = s.frame.forces[0]?.at ?? s.frame.contacts[0];
+    // a held weight is not the point of a step; the wrist is
+    const id = s.frame.forces.find((f) => f.by !== 'weight')?.at ?? s.frame.contacts[0];
     const lm = id ? LM[id] : undefined, frame = lm && frames.get(lm.frame);
     const onSkin = s.present !== 'bones';
     if (lm && frame) v.current.set(...(onSkin && lm.skin ? lm.skin : lm.p)).applyMatrix4(frame.matrixWorld);

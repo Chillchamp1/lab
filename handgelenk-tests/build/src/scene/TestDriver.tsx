@@ -1,9 +1,10 @@
 // Runs the clinical test timeline: advances time, blends step targets, fires the catch-up clunk, writes the store.
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useStore } from '../state/store';
+import { guided, useStore } from '../state/store';
 import { NEUTRAL, RANGE } from '../model/pose';
-import { AUX_FREE, TESTS, blend, stepTarget, type StepTarget } from '../model/tests';
+import { AUX_FREE, blend, stepTarget, type StepTarget } from '../model/tests';
+import { findProgram } from '../model/exercises';
 
 const START: StepTarget = { pose: NEUTRAL, aux: AUX_FREE, kin: {} };
 const NONE: never[] = [];
@@ -17,8 +18,8 @@ export function TestDriver() {
   useFrame((_, dtRaw) => {
     const s = useStore.getState();
     const p = s.player;
-    if (s.mode !== 'test' || !p.id) return;
-    const test = TESTS.find((x) => x.id === p.id);
+    if (!guided(s.mode) || !p.id) return;
+    const test = findProgram(p.id);
     if (!test) return;
 
     const { step, playing, done } = p;
