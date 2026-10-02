@@ -142,7 +142,6 @@ export function PresentBar() {
           <button key={p} id={`present-${p}`} aria-pressed={present === p} onClick={() => setPresent(p)}>{t.present[p]}</button>
         ))}
       </div>
-      <span className="zoomhint">{t.zoomHint}</span>
     </div>
   );
 }
