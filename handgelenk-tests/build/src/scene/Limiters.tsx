@@ -29,16 +29,56 @@ const REST: Record<'forearm' | 'hand', { frame: FrameId; base: V3; off: number; 
 const holdMat = new THREE.MeshBasicMaterial({ color: FORCE_COLOR.examiner, transparent: true, opacity: 0.8, depthWrite: false });
 const restMat = new THREE.MeshBasicMaterial({ color: '#5C6B70', transparent: true, opacity: 0.35, depthWrite: false, side: THREE.DoubleSide });
 
+// Labels stand off from the limb: a short, faint line in the label's colour runs from the edge of the glyph to the
+// text. Its direction is fixed on screen (up for a hold or a surface above, down for a surface below, sideways away
+// from the body), so a label never swings around while the limb moves.
+const LEAD = 46; // px
+type Dir2 = [number, number]; // screen direction, y down
+const leadDir = (side: 'L' | 'R', up: boolean): Dir2 => [side === 'L' ? 0.5 : -0.5, up ? -0.866 : 0.866];
+
+function Lead({ kind, label, dir }: { kind: 'hold' | 'rest'; label: string; dir: Dir2 }) {
+  return (
+    <Html zIndexRange={[5, 0]}>
+      <div className={`lead ${kind}`}>
+        <i style={{ width: LEAD, transform: `rotate(${Math.atan2(dir[1], dir[0])}rad)` }} />
+        <span className={`lbl3d ${kind}`} style={{ left: dir[0] * LEAD, top: dir[1] * LEAD, transform: `translate(-50%, ${dir[1] < 0 ? '-100%' : '0'})` }}>{label}</span>
+      </div>
+    </Html>
+  );
+}
+
+// Angle of the point on an ellipse (centre c, half-axes u and v, in `parent` coordinates) that lies furthest in the
+// screen direction `dir`: the line starts there, on the visible edge of the ring or pad.
+const E = { c: new THREE.Vector3(), u: new THREE.Vector3(), v: new THREE.Vector3() };
+function edgeAngle(parent: THREE.Object3D, c: THREE.Vector3, u: THREE.Vector3, v: THREE.Vector3, dir: Dir2, camera: THREE.Camera, size: { width: number; height: number }) {
+  camera.updateMatrixWorld();
+  E.c.copy(c).applyMatrix4(parent.matrixWorld).project(camera);
+  E.u.copy(c).add(u).applyMatrix4(parent.matrixWorld).project(camera).sub(E.c);
+  E.v.copy(c).add(v).applyMatrix4(parent.matrixWorld).project(camera).sub(E.c);
+  const along = (p: THREE.Vector3) => p.x * size.width * dir[0] - p.y * size.height * dir[1];
+  return Math.atan2(along(E.v), along(E.u));
+}
+
 function HoldRing({ h, attach }: { h: Hold; attach: Attach }) {
   const spec = HOLDS[h];
+  const side = useStore((s) => s.side);
+  const dir = useMemo(() => leadDir(side, true), [side]);
+  const grp = useRef<THREE.Object3D | null>(null);
+  const lab = useRef<THREE.Group>(null);
+  const ell = useMemo(() => ({ c: new THREE.Vector3(0, spec.y, 0), u: new THREE.Vector3(spec.rx, 0, 0), v: new THREE.Vector3(0, 0, spec.rz) }), [spec]);
   const geo = useMemo(() => {
     const pts = Array.from({ length: 49 }, (_, i) => { const a = (i / 48) * 2 * Math.PI; return new THREE.Vector3(spec.rx * Math.cos(a), spec.y, spec.rz * Math.sin(a)); });
     return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), 64, 0.0022, 8, true);
   }, [spec]);
+  useFrame(({ camera, size }) => {
+    if (!grp.current || !lab.current) return;
+    const a = edgeAngle(grp.current, ell.c, ell.u, ell.v, dir, camera, size);
+    lab.current.position.set(spec.rx * Math.cos(a), spec.y, spec.rz * Math.sin(a));
+  });
   return (
-    <group ref={attach(spec.frame)}>
+    <group ref={(o) => { grp.current = o; attach(spec.frame)(o); }}>
       <mesh geometry={geo} material={holdMat} renderOrder={21} />
-      <Html position={[0, spec.y - 0.012, spec.rz + 0.008]} center zIndexRange={[5, 0]}><span className="lbl3d hold">{t.limiters.held}</span></Html>
+      <group ref={lab}><Lead kind="hold" label={t.limiters.held} dir={dir} /></group>
     </group>
   );
 }
@@ -49,8 +89,10 @@ function RestPad({ part, dir, label, attach }: { part: 'forearm' | 'hand'; dir: 
   const { frames } = useFrames();
   const mesh = useRef<THREE.Mesh>(null);
   const labelRef = useRef<THREE.Group>(null);
-  const tmp = useMemo(() => ({ d: new THREE.Vector3(), q: new THREE.Quaternion(), tng: new THREE.Vector3(), b: new THREE.Vector3(), m: new THREE.Matrix4() }), []);
-  useFrame(() => {
+  const side = useStore((s) => s.side);
+  const lead = useMemo(() => leadDir(side, dir === 'up'), [side, dir]);
+  const tmp = useMemo(() => ({ d: new THREE.Vector3(), q: new THREE.Quaternion(), tng: new THREE.Vector3(), b: new THREE.Vector3(), m: new THREE.Matrix4(), u: new THREE.Vector3(), v: new THREE.Vector3() }), []);
+  useFrame(({ camera, size }) => {
     const f = frames.get(spec.frame);
     if (!f || !mesh.current) return;
     f.matrixWorld.decompose(tmp.b, tmp.q, tmp.tng);
@@ -61,14 +103,19 @@ function RestPad({ part, dir, label, attach }: { part: 'forearm' | 'hand'; dir: 
     tmp.m.makeBasis(tmp.b, n, tmp.tng);
     mesh.current.quaternion.setFromRotationMatrix(tmp.m);
     mesh.current.position.set(spec.base[0] + tmp.d.x * spec.off, spec.base[1] + tmp.d.y * spec.off, spec.base[2] + tmp.d.z * spec.off);
-    labelRef.current?.position.copy(mesh.current.position).addScaledVector(tmp.b, -(spec.across + 0.012));
+    // the label's line starts on the pad's edge, on the side the label stands on
+    const parent = mesh.current.parent;
+    if (!parent || !labelRef.current) return;
+    tmp.u.copy(tmp.b).multiplyScalar(spec.across); tmp.v.copy(tmp.tng).multiplyScalar(spec.along);
+    const a = edgeAngle(parent, mesh.current.position, tmp.u, tmp.v, lead, camera, size);
+    labelRef.current.position.copy(mesh.current.position).addScaledVector(tmp.u, Math.cos(a)).addScaledVector(tmp.v, Math.sin(a));
   });
   return (
     <group ref={attach(spec.frame)}>
       <mesh ref={mesh} material={restMat} renderOrder={16} scale={[spec.across, 1, spec.along]}>
         <cylinderGeometry args={[1, 1, 0.0015, 36]} />
       </mesh>
-      <group ref={labelRef}><Html center zIndexRange={[5, 0]}><span className="lbl3d rest">{label}</span></Html></group>
+      <group ref={labelRef}><Lead kind="rest" label={label} dir={lead} /></group>
     </group>
   );
 }
