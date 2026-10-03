@@ -28,6 +28,11 @@ export const HAMMER = { r: 0.0115, butt: -0.05, top: 0.22, head: [0.03, 0.1, 0.0
 export const BALL = { r: 0.03 };
 export const BOTTLE = { r: 0.031, bottom: -0.075, shoulder: 0.1, neckR: 0.012, neck: 0.035, water: 0.02 };
 
+// Placed, not held (Step.gear). Towel: a rolled hand towel across the heel of the hand, in the 'mid' frame.
+// Tape: a firm ring of non-stretch tape around the carpal bones, in the 'prox' frame (sized from the carpal wrap).
+export const TOWEL = { c: [-0.006, 0.006, -0.040] as V3, r: 0.017, len: 0.085 };
+export const TAPE = { c: RIG.support.wrap.c, r: [RIG.support.wrap.r[0] * 1.04, RIG.support.wrap.r[1] * 1.15] as [number, number], h: 0.026 };
+
 export const GRIP: Record<PropId, V3> = {
   dumbbell: gripCentre(DUMBBELL.r), hammer: gripCentre(HAMMER.r), ball: gripCentre(BALL.r), bottle: gripCentre(BOTTLE.r),
 };

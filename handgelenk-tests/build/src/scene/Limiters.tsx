@@ -21,9 +21,10 @@ const HOLDS: Record<Hold, { frame: FrameId; y: number; rx: number; rz: number }>
   wrist: { frame: 'prox', y: 0.0, rx: 0.036, rz: 0.024 },
   hand: { frame: 'mid', y: 0.06, rx: 0.047, rz: 0.019 },
 };
-const REST: Record<'forearm' | 'hand', { frame: FrameId; base: V3; off: number; across: number; along: number }> = {
+const REST: Record<'forearm' | 'hand' | 'fist', { frame: FrameId; base: V3; off: number; across: number; along: number }> = {
   forearm: { frame: 'ulna', base: [0.003, -0.06, 0], off: 0.031, across: 0.03, along: 0.07 },
   hand: { frame: 'mid', base: [-0.004, 0.055, 0], off: 0.019, across: 0.045, along: 0.05 },
+  fist: { frame: 'f3_1', base: [-0.014, 0.104, -0.017], off: 0.012, across: 0.04, along: 0.03 },
 };
 
 // drawn with depth, so they sit around / under the limb instead of covering it
@@ -169,7 +170,7 @@ function HoldRing({ h, self, attach }: { h: Hold; self: boolean; attach: Attach 
 }
 
 // Flat pad where the limb meets the supporting surface; "down" is world gravity transformed into the frame.
-function RestPad({ part, dir, back, label, attach }: { part: 'forearm' | 'hand'; dir: 'down' | 'up'; back: number; label: string; attach: Attach }) {
+function RestPad({ part, dir, back, label, attach }: { part: 'forearm' | 'hand' | 'fist'; dir: 'down' | 'up'; back: number; label: string; attach: Attach }) {
   const spec = REST[part];
   const { frames } = useFrames();
   const mesh = useRef<THREE.Mesh>(null);

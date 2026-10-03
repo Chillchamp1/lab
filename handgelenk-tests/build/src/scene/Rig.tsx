@@ -18,7 +18,7 @@ import { Skin } from './Skin';
 import { findProgram } from '../model/exercises';
 import { CUT_PLANE } from './Scene';
 import { Limiters } from './Limiters';
-import { HeldProp } from './HeldProp';
+import { HeldProp, StepGear } from './HeldProp';
 
 const RIG = rigJson as unknown as RigData;
 const PIVOT = RIG.pivots;
@@ -167,7 +167,9 @@ export function Rig() {
     mcRef.current!.rotation.set((k.mcExt - k.rowExtra) * D2R, 0, -k.mcDev * D2R, 'ZXY');
 
     jointRefs.forEach((chain, f) => chain.forEach((g, j) => {
-      const deg = f === 4 && j === 0 && k.littleExt > 1 ? -k.littleExt : k.fingers * RIG.fingers[f].joints[j].maxFlex;
+      // fingers 2–5 can take a shape joint by joint (tendon gliding); the thumb always follows the uniform curl
+      const curl = f === 0 ? k.fingers : k.fingers + (([k.mcp, k.pip, k.dip][j] ?? k.fingers) - k.fingers) * k.shape;
+      const deg = f === 4 && j === 0 && k.littleExt > 1 ? -k.littleExt : curl * RIG.fingers[f].joints[j].maxFlex;
       g.quaternion.setFromAxisAngle(JOINT_AXES[f][j], deg * D2R);
     }));
 
@@ -283,6 +285,7 @@ export function Rig() {
       <TestOverlay attach={attach} />
       <Limiters attach={attach} />
       <HeldProp attach={attach} />
+      <StepGear attach={attach} />
       <mesh ref={liftMesh} material={supportMat} visible={layers.supports && supports.lift} renderOrder={2}>
         <bufferGeometry />
       </mesh>

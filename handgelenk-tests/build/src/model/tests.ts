@@ -14,15 +14,21 @@ export type Kin = Partial<Record<'drujShift' | 'ecuSublux' | 'midcarpalSag' | 'p
 export type StepPose = {
   rot: number; ext: number; dev: number; elbow?: number; fingers?: number; grip?: number; axial?: number;
   thumb?: 'radial_abduction' | 'to_forearm'; littleFingerExt?: number;
+  // finger joints one by one, 0 = straight .. 1 = fully bent (index to little finger); overrides `fingers` when set
+  mcp?: number; pip?: number; dip?: number;
 };
-export type Body = 'seated_table' | 'seated_table_edge' | 'seated_elbow_vertical' | 'seated_under_table' | 'chair_press' | 'chair_press_up' | 'standing';
-export const BODIES: Body[] = ['seated_table', 'seated_table_edge', 'seated_elbow_vertical', 'seated_under_table', 'chair_press', 'chair_press_up', 'standing'];
+export type Body = 'seated_table' | 'seated_table_edge' | 'seated_elbow_vertical' | 'seated_under_table' | 'chair_press' | 'chair_press_up' | 'standing'
+  | 'standing_table_fists' | 'standing_table_towel' | 'standing_table_flat';
+export const BODIES: Body[] = ['seated_table', 'seated_table_edge', 'seated_elbow_vertical', 'seated_under_table', 'chair_press', 'chair_press_up', 'standing',
+  'standing_table_fists', 'standing_table_towel', 'standing_table_flat'];
+// Things placed on or around the hand for one step (not held): a rolled towel under the heel of the hand, a tape ring.
+export type Gear = 'towel' | 'tape';
 export type Present = 'skin' | 'xray' | 'bones';
 export type Risk = { level: 1 | 2 | 3; note: string };
 export type Hold = 'forearm' | 'wrist' | 'hand';
 // Where a test is described in the literature: short form for tight places, full citation, link (DOI) where one exists.
 export type Source = { short: string; cite: string; url?: string; note?: string };
-export type Step = { dur: number; pose: StepPose; text: string; body: Body; holds?: Hold[]; contacts?: LandmarkId[]; forces?: Force[]; kinematics?: Kin & { clunkAtDev?: number } };
+export type Step = { dur: number; pose: StepPose; text: string; body: Body; holds?: Hold[]; contacts?: LandmarkId[]; forces?: Force[]; gear?: Gear[]; kinematics?: Kin & { clunkAtDev?: number } };
 // Anything the player can run step by step: a clinical test or an exercise (exercises.ts).
 export type Program = {
   id: string; name: string; group: string; targets: string[]; needsPartner: boolean; homeOk: boolean;
@@ -47,8 +53,9 @@ export const GLOBAL_RULES = data._meta.globalRules;
 export const TEST_GROUPS = [...new Set(TESTS.map((t) => t.group))];
 
 // Extra pose channels the free mode doesn't expose.
-export type Aux = { elbow: number; thumbRad: number; thumbPalm: number; littleExt: number };
-export const AUX_FREE: Aux = { elbow: 90, thumbRad: 0, thumbPalm: 0, littleExt: 0 };
+// shape blends the fingers from the uniform curl (0) to the joint-by-joint values mcp/pip/dip (1).
+export type Aux = { elbow: number; thumbRad: number; thumbPalm: number; littleExt: number; shape: number; mcp: number; pip: number; dip: number };
+export const AUX_FREE: Aux = { elbow: 90, thumbRad: 0, thumbPalm: 0, littleExt: 0, shape: 0, mcp: 0, pip: 0, dip: 0 };
 
 const AMPLITUDE: (keyof Kin)[] = ['drujShift', 'ecuSublux', 'midcarpalSag', 'proximalRowFlex', 'scaphoidDorsalShift', 'slGap', 'ltShear'];
 // How much of each finding a normal (negative) wrist still shows.
@@ -84,6 +91,9 @@ export function stepTarget(test: Program, i: number, opts: { hyper: boolean; pos
       thumbRad: p.thumb === 'radial_abduction' ? 1 : 0,
       thumbPalm: p.thumb === 'to_forearm' ? 1 : 0,
       littleExt: p.littleFingerExt ?? 0,
+      ...(p.mcp != null || p.pip != null || p.dip != null
+        ? { shape: 1, mcp: p.mcp ?? fingers / 100, pip: p.pip ?? fingers / 100, dip: p.dip ?? fingers / 100 }
+        : { shape: 0, mcp: 0, pip: 0, dip: 0 }),
     },
     kin, clunkAtDev,
   };

@@ -9,7 +9,9 @@ import type { Body } from '../model/tests';
 import { findProgram } from '../model/exercises';
 import { useFrames } from './frames';
 import rigJson from './rigdata.json';
-import type { RigData } from './anatomy';
+import type { FrameId, RigData, V3 } from './anatomy';
+import { LANDMARKS } from './landmarks';
+import { TOWEL } from './props';
 
 const RIG = rigJson as unknown as RigData;
 const D2R = Math.PI / 180;
@@ -21,10 +23,13 @@ const UPPER_ARM = 0.30, FOREARM = 0.26, HAND = 0.18, THIGH = 0.42, SHIN = 0.40, 
 export const SEAT_H = 0.45;
 
 // back: the pad sits this far toward the elbow (the forearm lies on a short table and the wrist is past its edge)
-export type Rest = { part: 'forearm' | 'hand'; dir: 'down' | 'up'; back?: number } | null;
+export type Rest = { part: 'forearm' | 'hand' | 'fist'; dir: 'down' | 'up'; back?: number } | null;
+// Leaning on the hands at the table: which point of the hand touches the table top, and how far the heel of the hand
+// is propped up (deg). The body is then posed by a controller, see preFrame.
+export type Press = { contact: 'palm' | 'towel' | 'fist'; wedge: number };
 const TABLE_DEPTH = 0.64, TABLE_NEAR = 0.10; // full table: its near edge is 10 cm in front of the hips
 export type Scene = {
-  chair: boolean; table?: number; tableDepth?: number; rest: Rest;
+  chair: boolean; table?: number; tableDepth?: number; rest: Rest; press?: Press;
   pelvis: [number, number, number]; lean: number; hip: number; knee: number;
   shoulderR: [number, number]; shoulderL: [number, number]; elbowL: number; // [flex, abduct] deg
 };
@@ -37,7 +42,20 @@ export const SCENES: Record<Body, Scene> = {
   chair_press: { chair: true, rest: { part: 'hand', dir: 'down' }, pelvis: [0, SEAT_H + 0.08, 0], lean: 2, hip: 90, knee: 90, shoulderR: [-18, 14], shoulderL: [-18, 14], elbowL: 20 },
   chair_press_up: { chair: true, rest: { part: 'hand', dir: 'down' }, pelvis: [0, SEAT_H + 0.16, 0], lean: 2, hip: 85, knee: 85, shoulderR: [-18, 14], shoulderL: [-18, 14], elbowL: 0 },
   standing: { chair: false, rest: null, pelvis: [0, 0.92, 0], lean: 0, hip: 0, knee: 0, shoulderR: [90, 5], shoulderL: [5, 5], elbowL: 10 },
+  // standing at the table, body straight and tilted forward, both hands on the top (pelvis, lean, hips, arms: preFrame)
+  standing_table_fists: { chair: false, table: 0.72, rest: { part: 'fist', dir: 'down' }, press: { contact: 'fist', wedge: 0 }, pelvis: [0, 0.8, -0.45], lean: -25, hip: -25, knee: 0, shoulderR: [25, 6], shoulderL: [25, 6], elbowL: 0 },
+  standing_table_towel: { chair: false, table: 0.72, rest: { part: 'hand', dir: 'down' }, press: { contact: 'towel', wedge: 20 }, pelvis: [0, 0.75, -0.5], lean: -32, hip: -32, knee: 0, shoulderR: [65, 6], shoulderL: [65, 6], elbowL: 0 },
+  standing_table_flat: { chair: false, table: 0.72, rest: { part: 'hand', dir: 'down' }, press: { contact: 'palm', wedge: 0 }, pelvis: [0, 0.75, -0.5], lean: -32, hip: -32, knee: 0, shoulderR: [75, 6], shoulderL: [75, 6], elbowL: 0 },
 };
+
+// where each contact point sits in its bone frame, and how high above the table top it should end up
+const CONTACT: Record<Press['contact'], { frame: FrameId; p: V3; lift: number }> = {
+  palm: { frame: 'mid', p: LANDMARKS.hand_palmar.skin!, lift: 0.002 },
+  towel: { frame: 'mid', p: TOWEL.c, lift: TOWEL.r },
+  fist: { frame: 'f3_1', p: LANDMARKS.fist_knuckles.skin!, lift: 0.002 },
+};
+const LEG_LEN = 0.82, FOOT_H = 0.06; // hip to sole when the leg is straight
+const HAND_Z = 0.27; // where the hands land on the table top (world z; the top runs from 0.10 to 0.74)
 export const currentBody = (): Body => {
   const s = useStore.getState();
   if (!guided(s.mode)) return 'seated_table';
@@ -76,8 +94,10 @@ function Arm({ side, refs, children }: { side: 1 | -1; refs: Refs; children?: Re
             <group position={MOUNT_P} quaternion={MOUNT_Q}>{children}</group>
           ) : (
             <Seg len={FOREARM} r={0.038}>
-              <mesh position={[0, -HAND / 2, 0]} material={bodyMat}><boxGeometry args={[0.028, HAND, 0.085]} /></mesh>
-              <mesh position={[0, -0.05, 0.055]} rotation={[-0.5, 0, 0]} material={bodyMat}><capsuleGeometry args={[0.013, 0.05, 4, 8]} /></mesh>
+              <group ref={(o) => { refs.current.wrL = o; }}>
+                <mesh position={[0, -HAND / 2, 0]} material={bodyMat}><boxGeometry args={[0.028, HAND, 0.085]} /></mesh>
+                <mesh position={[0, -0.05, 0.055]} rotation={[-0.5, 0, 0]} material={bodyMat}><capsuleGeometry args={[0.013, 0.05, 4, 8]} /></mesh>
+              </group>
             </Seg>
           )}
         </group>
@@ -138,7 +158,9 @@ export function Figure({ children }: { children?: ReactNode }) {
   const root = useRef<THREE.Group>(null);
   const torso = useRef<THREE.Group>(null);
   const cur = useRef<Record<string, number>>({});
-  const { preFrame, root: rigRoot } = useFrames();
+  const { preFrame, root: rigRoot, frames } = useFrames();
+  const lean = useRef({ on: false, beta: 30, z: -0.5 }); // leaning controller state: body tilt (deg), pelvis z
+  const tmpV = useMemo(() => new THREE.Vector3(), []);
   const camera = useThree((s) => s.camera);
   const wristPos = useMemo(() => new THREE.Vector3(), []);
   const go = useMemo(() => (key: string, target: number, dt: number) => (cur.current[key] = damp(cur.current[key] ?? target, target, 10, dt)), []);
@@ -157,16 +179,39 @@ export function Figure({ children }: { children?: ReactNode }) {
       if (T && sc.rest?.part === 'forearm') { shF = flexFor(T + 0.042); elbow = 93.5 - shF; } // forearm on the top, tapering to the wrist
       else if (T && sc.rest?.dir === 'up') { shF = flexFor(T - 0.065); elbow = 90 - shF; } // forearm under the top, palm against it
       else if (T && body === 'seated_elbow_vertical') { shF = flexFor(T + 0.03); elbow = 172 - shF; } // elbow on the top, forearm up
-      root.current.position.set(go('px', sc.pelvis[0], dt), go('py', sc.pelvis[1], dt), go('pz', sc.pelvis[2], dt));
-      torso.current.rotation.x = -go('lean', sc.lean, dt) * D2R;
+      let pelvis = sc.pelvis, leanDeg = sc.lean, hip = sc.hip, shL = sc.shoulderL[0], elL = sc.elbowL, wristL = 0;
+      // Leaning on the hands: the body is a straight plank pivoting at the feet. A flat hand fixes the arm angle
+      // (arm angle from vertical = 90° − wrist extension − towel tilt; a fist needs an upright forearm). Two small
+      // controllers then tilt the plank and move the feet until the contact point lies on the table top at HAND_Z.
+      const L = lean.current;
+      if (sc.press && T) {
+        const P = sc.press, C = CONTACT[P.contact];
+        if (!L.on) { L.on = true; L.beta = -sc.lean; L.z = sc.pelvis[2]; }
+        const alpha = P.contact === 'fist' ? 0 : Math.max(0, 90 - s.pose.ext - P.wedge);
+        const f = frames.get(C.frame);
+        if (f) {
+          tmpV.set(...C.p).applyMatrix4(f.matrixWorld);
+          L.beta = Math.max(5, Math.min(60, L.beta + Math.max(-1.5, Math.min(1.5, (tmpV.y - T - C.lift) * 500 * dt))));
+          L.z += Math.max(-0.02, Math.min(0.02, (HAND_Z - tmpV.z) * 3 * dt));
+        }
+        pelvis = [0, LEG_LEN * Math.cos(L.beta * D2R) + FOOT_H, L.z];
+        leanDeg = -L.beta; hip = -L.beta;
+        shF = alpha + L.beta; shL = shF; elbow = 0; elL = 0;
+        wristL = P.contact === 'fist' ? 0 : 90 - alpha; // the plain left hand lies flat too
+      } else L.on = false;
+      root.current.position.set(go('px', pelvis[0], dt), go('py', pelvis[1], dt), go('pz', pelvis[2], dt));
+      torso.current.rotation.x = -go('lean', leanDeg, dt) * D2R;
       for (const k of ['R', 'L'] as const) {
-        r[`hip${k}`]!.rotation.x = -go(`hip${k}`, sc.hip, dt) * D2R;
+        r[`hip${k}`]!.rotation.x = -go(`hip${k}`, hip, dt) * D2R;
         r[`kn${k}`]!.rotation.x = go(`kn${k}`, sc.knee, dt) * D2R;
       }
       r.shR!.rotation.set(-go('shRf', shF, dt) * D2R, 0, -go('shRa', sc.shoulderR[1], dt) * D2R);
-      r.shL!.rotation.set(-go('shLf', sc.shoulderL[0], dt) * D2R, 0, go('shLa', sc.shoulderL[1], dt) * D2R);
+      r.shL!.rotation.set(-go('shLf', shL, dt) * D2R, 0, go('shLa', sc.shoulderL[1], dt) * D2R);
       r.elR!.rotation.x = -go('elR', elbow, dt) * D2R;
-      r.elL!.rotation.x = -go('elL', sc.elbowL, dt) * D2R;
+      r.elL!.rotation.x = -go('elL', elL, dt) * D2R;
+      // the left hand turns palm down (about the forearm) and bends back by the same angle as the right wrist
+      const wl = go('wrL', wristL, dt), turn = go('wrLt', sc.press ? 1 : 0, dt);
+      r.wrL?.rotation.set(-wl * D2R, turn * Math.PI / 2, 0);
       // Close-ups: the body and the chair fade to a faint ghost as the camera nears the wrist, so the view is never
       // cluttered by (or stuck inside) the mannequin; from about a metre away the whole figure is solid.
       const d = rigRoot.current ? camera.position.distanceTo(rigRoot.current.getWorldPosition(wristPos)) : 2;
@@ -182,7 +227,7 @@ export function Figure({ children }: { children?: ReactNode }) {
       r.tableFar!.position.z = depth - TABLE_DEPTH;
     };
     return () => { preFrame.fn = null; };
-  }, [preFrame, go, camera, rigRoot, wristPos]);
+  }, [preFrame, go, camera, rigRoot, wristPos, frames, tmpV]);
 
   return (
     <>
