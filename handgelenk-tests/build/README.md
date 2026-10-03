@@ -39,6 +39,9 @@ GitHub Pages serves `handgelenk-tests/index.html` from `main` a minute or two la
 | `src/ui/Panels.tsx` | controls, strain list, info card, recommendations |
 | `src/ui/Callout.tsx` + `src/scene/CalloutAnchor.tsx` | the current instruction on the 3D stage: a box in the corner away from the body and a pointer line to the spot the step is about (first force / contact landmark, else the wrist). The scene projects the spot to pixels every frame and the box draws a faint SVG line, without React re-renders |
 | `src/model/exercises.json` + `exercises.ts` | the strengthening exercises (third tab). Same step format and the same player as the tests, plus `prop` (object in the hand), goal, dose, progression, stop rule and `sources`. `PROGRAMS` = tests + exercises |
+| `src/scene/Figure.tsx` (leaning) | `standing_table_*` postures: the body is a straight plank pivoting at the feet; the arm angle follows from the wrist angle (flat hand on the table), and two small controllers tilt the plank and move the feet until the palm, towel or knuckles touch the table top |
+| `Step.gear` | things one step puts on or under the hand (rolled towel, tape ring), drawn by `StepGear` in `HeldProp.tsx` |
+| `StepPose.mcp/pip/dip` | finger joints one by one (tendon gliding); blended in via `Aux.shape`, the thumb keeps the uniform curl |
 | `src/scene/props.ts` + `HeldProp.tsx` | the held objects (dumbbell, hammer, soft ball, bottle): sizes and grip position computed from the knuckle centres, meshes built from simple shapes and hung on the hand frame |
 | `src/scene/landmarks.ts` | anatomical landmarks from the pipeline plus hand-level points and object centres for force arrows |
 | `src/ui/TrainPanel.tsx` | exercise list, exercise card, ground rules |

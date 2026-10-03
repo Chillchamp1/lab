@@ -28,6 +28,7 @@ export type RigTargets = {
   ecuSublux: number; fingers: number;
   scaphoidDorsal: number; ltShear: number;
   elbow: number; thumbRad: number; thumbPalm: number; littleExt: number;
+  shape: number; mcp: number; pip: number; dip: number;
 };
 
 // `kin` carries findings a clinical test demonstrates (DRUJ shift, ECU snap, sag …); free mode passes {}.
@@ -56,6 +57,7 @@ export function solveRig(p: Pose, hyper: boolean, sup: Supports, c: Stress, rowL
     scaphoidDorsal: 0.0025 * (kin.scaphoidDorsalShift ?? 0),
     ltShear: kin.ltShear ?? 0,
     elbow: aux.elbow, thumbRad: aux.thumbRad, thumbPalm: aux.thumbPalm, littleExt: aux.littleExt,
+    shape: aux.shape, mcp: aux.mcp, pip: aux.pip, dip: aux.dip,
   };
 }
 

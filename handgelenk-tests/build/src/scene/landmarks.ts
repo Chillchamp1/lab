@@ -8,7 +8,7 @@ const RIG = rigJson as unknown as RigData;
 
 export type ExtraLandmarkId =
   | 'hand_dorsal' | 'hand_palmar' | 'hand_radial' | 'hand_ulnar'
-  | 'prop_dumbbell' | 'prop_hammer_head' | 'prop_bottle';
+  | 'prop_dumbbell' | 'prop_hammer_head' | 'prop_bottle' | 'fist_knuckles';
 export type AnyLandmarkId = LandmarkId | ExtraLandmarkId;
 
 // p = on the bone, skin = on the skin, n = outward. Rig frame: +X ulnar, +Y distal, +Z dorsal.
@@ -20,6 +20,8 @@ const EXTRA: Record<ExtraLandmarkId, Landmark> = {
   prop_dumbbell: { frame: 'mid', p: PROP_CENTRE.dumbbell, n: [0, 0, -1] },
   prop_hammer_head: { frame: 'mid', p: PROP_CENTRE.hammer, n: [0, 0, -1] },
   prop_bottle: { frame: 'mid', p: PROP_CENTRE.bottle, n: [0, 0, -1] },
+  // back of the middle finger's first phalanx: what a fist stands on (with the knuckles bent about 90°)
+  fist_knuckles: { frame: 'f3_1', p: [-0.014, 0.104, -0.011], n: [0, 0, 1], skin: [-0.014, 0.104, -0.006] },
 };
 
 export const LANDMARKS: Record<AnyLandmarkId, Landmark> = { ...RIG.landmarks, ...EXTRA };

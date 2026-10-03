@@ -1,11 +1,12 @@
 // The object an exercise is done with (dumbbell, hammer, soft ball, bottle), built from simple shapes and placed in
 // the fist. It hangs on the 'mid' frame (metacarpals), so it follows the wrist; the left hand mirrors it with the rig.
+// StepGear: what one step puts on or under the hand (a rolled towel, a tape ring), built the same way.
 import { useMemo } from 'react';
 import * as THREE from 'three';
 import { guided, useStore } from '../state/store';
 import { findProgram } from '../model/exercises';
 import type { FrameId } from './anatomy';
-import { BALL, BOTTLE, DUMBBELL, GRIP, GRIP_X, GRIP_Y, GRIP_Z, HAMMER, type PropId } from './props';
+import { BALL, BOTTLE, DUMBBELL, GRIP, GRIP_X, GRIP_Y, GRIP_Z, HAMMER, TAPE, TOWEL, type PropId } from './props';
 
 type Attach = (frame: FrameId) => (o: THREE.Object3D | null) => void;
 
@@ -19,6 +20,9 @@ const foam = new THREE.MeshStandardMaterial({ color: '#E0954A', roughness: 0.9 }
 const plastic = new THREE.MeshStandardMaterial({ color: '#BFD9E6', roughness: 0.2, transparent: true, opacity: 0.32, depthWrite: false });
 const water = new THREE.MeshStandardMaterial({ color: '#3F8FC4', roughness: 0.15, transparent: true, opacity: 0.6, depthWrite: false });
 const cap = new THREE.MeshStandardMaterial({ color: '#2F6FB0', roughness: 0.6 });
+const cloth = new THREE.MeshStandardMaterial({ color: '#D9C9A3', roughness: 1 });
+const tapeMat = new THREE.MeshStandardMaterial({ color: '#F4F1EA', roughness: 0.8, transparent: true, opacity: 0.85, side: THREE.DoubleSide });
+const OPEN_TUBE = new THREE.CylinderGeometry(1, 1, 1, 48, 1, true);
 
 // a cylinder between two positions on the grip axis
 const Rod = ({ from, to, r, material, seg = 24, order }: { from: number; to: number; r: number; material: THREE.Material; seg?: number; order?: number }) => (
@@ -79,5 +83,24 @@ export function HeldProp({ attach }: { attach: Attach }) {
     <group ref={attach('mid')}>
       <group position={GRIP[prop]} quaternion={GRIP_Q}><Shape /></group>
     </group>
+  );
+}
+
+export function StepGear({ attach }: { attach: Attach }) {
+  const mode = useStore((s) => s.mode), id = useStore((s) => s.player.id), step = useStore((s) => s.player.step);
+  const gear = guided(mode) ? findProgram(id)?.steps[step]?.gear ?? [] : [];
+  return (
+    <>
+      {gear.includes('towel') && (
+        <group ref={attach('mid')}>
+          <mesh position={TOWEL.c} rotation={[0, 0, Math.PI / 2]} material={cloth}><cylinderGeometry args={[TOWEL.r, TOWEL.r, TOWEL.len, 28]} /></mesh>
+        </group>
+      )}
+      {gear.includes('tape') && (
+        <group ref={attach('prox')}>
+          <mesh geometry={OPEN_TUBE} material={tapeMat} position={TAPE.c} scale={[TAPE.r[0], TAPE.h, TAPE.r[1]]} />
+        </group>
+      )}
+    </>
   );
 }

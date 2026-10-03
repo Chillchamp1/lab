@@ -55,8 +55,10 @@ describe('exercise data', () => {
     for (const s of x.steps) {
       expect(BODIES).toContain(s.body);
       for (const f of s.forces ?? []) expect(Object.keys(LANDMARKS)).toContain(f.at);
-      // a lax wrist trains in mid-range: no step goes near the end of the normal range
-      expect(Math.abs(s.pose.ext)).toBeLessThanOrEqual(35);
+      // a lax wrist trains in mid-range: no step goes near the end of the normal range (leaning on the hands may
+      // bend a little further, and only as far as painless)
+      expect(Math.abs(s.pose.ext)).toBeLessThanOrEqual(s.body.startsWith('standing_table') ? 55 : 35);
+      for (const g of s.gear ?? []) expect(['towel', 'tape']).toContain(g);
       expect(Math.abs(s.pose.dev)).toBeLessThanOrEqual(18);
     }
   });

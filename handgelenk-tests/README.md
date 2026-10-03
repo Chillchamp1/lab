@@ -17,8 +17,8 @@ Faustwerte zur Anschauung, keine Messungen.
 - Kraftpfeile, Fingerauflagen des Untersuchers, Halteringe („held fixed“), Auflageflächen (Tisch, Sitz),
   Schmerzzonen bei positivem Befund.
 - Darstellung umschaltbar: Haut · Röntgen · Knochen. Die Ansicht dreht immer um das Handgelenk.
-- Reiter „Exercises“: neun Kräftigungsübungen für Handgelenk und Unterarm, Schwerpunkt lockeres (hypermobiles)
-  Handgelenk. Erst Halten ohne Bewegung gegen die eigene Hand, dann leichte Last. Die Gegenstände (Hantel, Hammer,
+- Reiter „Exercises“: elf Übungen für Handgelenk und Unterarm, Schwerpunkt lockeres (hypermobiles) Handgelenk;
+  dazu Abstützen am Tisch (Fäuste, Handtuchrolle, flache Hand mit Tape) und Sehnengleiten. Erst Halten ohne Bewegung gegen die eigene Hand, dann leichte Last. Die Gegenstände (Hantel, Hammer,
   weicher Ball, halbvolle Flasche) sind aus Grundformen gebaut und liegen in der Faust. Je Übung: was sie trainiert,
   was man braucht, wie viel, wie man steigert, wann man nachlässt, und die Quellen.
 - Unter jedem Test stehen die passenden Übungen als Kästen zum Antippen, mit einem Satz, warum sie passen. Beim
