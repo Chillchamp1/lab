@@ -1,0 +1,775 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Unter dem Wedding</title>
+<meta name="description" content="Prototyp: die U-Bahnhöfe Amrumer Straße und Leopoldplatz in 3D, gebaut aus OpenStreetMap — Bahnsteige, Treppen, Rolltreppen, Aufzüge und Zugänge auf ihren Ebenen unter der Straße.">
+<style>
+/* Unter der Erde ist es dunkel, also ein Farbklima: dunkel. Die Farben der
+   Bauteile sind auf diesen Grund gesetzt. */
+:root{
+  --plane:#0b0d10; --surface:rgba(18,21,26,.88); --ink:#f2f1ec; --ink2:#c3c1b8;
+  --muted:#8b8a84; --line:#2a2e35; --akzent:#5aa9e6;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overscroll-behavior:none}
+body{background:var(--plane);color:var(--ink);overflow:hidden;
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px;line-height:1.45;
+  -webkit-text-size-adjust:100%}
+canvas{display:block;touch-action:none}
+#buehne{position:fixed;inset:0}
+.kasten{position:fixed;background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  padding:12px 14px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#kopf{top:12px;left:12px;max-width:min(360px,calc(100vw - 24px))}
+h1{font-size:17px;margin:0 0 2px;font-weight:650;letter-spacing:.01em}
+.unter{color:var(--ink2);margin:0 0 10px}
+.knoepfe{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+button{font:inherit;color:var(--ink);background:#1d222a;border:1px solid #333a44;border-radius:7px;
+  padding:5px 10px;cursor:pointer}
+button[aria-pressed="true"]{background:var(--akzent);border-color:var(--akzent);color:#08121c;font-weight:600}
+label.regler{display:flex;align-items:center;gap:8px;color:var(--ink2)}
+label.regler input{flex:1;accent-color:var(--akzent)}
+#ueberhoehung{min-width:3.2em;text-align:right;font-variant-numeric:tabular-nums}
+#legende{display:grid;grid-template-columns:auto 1fr;gap:3px 8px;margin-top:10px;color:var(--ink2);font-size:13px}
+#legende i{display:inline-block;width:18px;height:10px;border-radius:2px;margin-top:4px}
+#bahnhof{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);color:var(--ink2);font-size:13px}
+#bahnhof b{color:var(--ink)}
+#bahnhof:empty{display:none}
+#info{right:12px;bottom:12px;max-width:min(340px,calc(100vw - 24px));font-size:13px;display:none}
+#info h2{font-size:14px;margin:0 0 6px}
+#info table{border-collapse:collapse}
+#info td{padding:1px 8px 1px 0;vertical-align:top}
+#info td:first-child{color:var(--muted);white-space:nowrap}
+#info .zu{position:absolute;top:6px;right:8px;background:none;border:0;color:var(--muted);font-size:18px;padding:0 4px}
+#fuss{left:12px;bottom:12px;font-size:12px;color:var(--muted);max-width:min(520px,calc(100vw - 24px));padding:7px 10px}
+#fuss a,#info a{color:var(--akzent)}
+#status{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+#status div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 18px;max-width:420px;
+  text-align:center;color:var(--ink2);pointer-events:auto}
+#status:empty{display:none}
+@media (max-width:600px){
+  #kopf{top:8px;left:8px;right:8px;max-width:none;padding:10px 12px}
+  .unter,#legende{display:none}
+  #info{left:8px;right:8px;bottom:44px;max-width:none}
+  #fuss{left:8px;right:8px;bottom:8px;max-width:none}
+}
+</style>
+<script type="importmap">{"imports":{"three":"./drei/three.module.min.js"}}</script>
+</head><body>
+<div id="buehne"></div>
+
+<div id="kopf" class="kasten">
+  <h1>Unter dem Wedding</h1>
+  <p class="unter">Zwei U-Bahnhöfe der U9 und dazwischen 761 m Tunnel, gebaut aus OpenStreetMap. Ziehen dreht, Rad oder zwei Finger zoomen, Tippen erklärt ein Bauteil.</p>
+  <div class="knoepfe" role="group" aria-label="Ansicht">
+    <button data-ziel="ueberblick" aria-pressed="true">Überblick</button>
+    <button data-ziel="amrumer" aria-pressed="false">Amrumer Straße</button>
+    <button data-ziel="leopoldplatz" aria-pressed="false">Leopoldplatz</button>
+  </div>
+  <label class="regler">Tiefe
+    <input id="regler" type="range" min="1" max="6" step="0.5" value="3">
+    <span id="ueberhoehung">3×</span></label>
+  <div id="legende"></div>
+  <div id="bahnhof"></div>
+</div>
+
+<div id="info" class="kasten" role="dialog" aria-live="polite">
+  <button class="zu" aria-label="Schließen">×</button>
+  <h2 id="info-titel"></h2>
+  <table id="info-tabelle"></table>
+  <p id="info-link" style="margin:6px 0 0"></p>
+</div>
+
+<div id="fuss" class="kasten">Daten © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap-Mitwirkende</a> (ODbL) · <span id="stand">lädt …</span> · Tiefen schematisch, siehe <a href="README.md">Doku</a></div>
+<div id="status"></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from './drei/OrbitControls.js';
+
+// ---------------------------------------------------------------------------
+// Feste Größen
+// ---------------------------------------------------------------------------
+
+// OSM kennt Ebenen, keine Meter. Eine Ebene ist hier 4,5 m: so viel liegt bei
+// den flachen Berliner Bahnhöfen ungefähr zwischen Straße und Zwischengeschoss
+// und zwischen Zwischengeschoss und Bahnsteig. Echte Tiefen fehlen in jeder
+// offenen Quelle; die Zahl ist geschätzt und steht deshalb im Fuß der Seite.
+const EBENE_M = 4.5;
+const SCHIENE_UNTER_BAHNSTEIG = 1.0;
+
+// Ursprung der Szene: Mitte zwischen beiden Bahnhöfen.
+const LAT0 = 52.5445, LON0 = 13.3547;
+const KX = 111320 * Math.cos(LAT0 * Math.PI / 180), KY = 110574;
+const xy = (lon, lat) => [(lon - LON0) * KX, -(lat - LAT0) * KY];
+
+// Bahnhofspunkte und Eckdaten aus der deutschsprachigen Wikipedia.
+const STATIONEN = {
+  amrumer: { name: 'Amrumer Straße', lat: 52.5425, lon: 13.3503,
+    text: '<b>Amrumer Straße</b> · U9 · eröffnet 28. August 1961. Ein Mittelbahnsteig unter der Luxemburger Straße, an beiden Enden ein Ausgang in eine Zugangshalle. Ein Aufzug, barrierefrei.' },
+  leopoldplatz: { name: 'Leopoldplatz', lat: 52.5465, lon: 13.3591,
+    text: '<b>Leopoldplatz</b> · Kreuzungsbahnhof U6 / U9. Oben die U6 (1923, seit 1961 mit zwei Seitenbahnsteigen), darunter im rechten Winkel die U9 (1961) mit einem rund 14 m breiten Mittelbahnsteig. Aufzüge seit 2010.' },
+};
+
+const LINIENFARBE = { U6: '#8c6dab', U9: '#f3791d' };
+const FARBE = {
+  gleis: '#9aa3ad', bahnsteig: '#c9c3b4', treppe: '#e8e2d2', rolltreppe: '#f2b84b',
+  aufzug: '#7fd3ff', gang: '#7d8693', raum: '#3b4452', eingang: '#1f6fb8',
+  strasse: '#2a3038', haus: '#4a525d', boden: '#151a20',
+};
+const NAME = {
+  gleis: 'Gleis', bahnsteig: 'Bahnsteig', treppe: 'Treppe', rolltreppe: 'Rolltreppe',
+  aufzug: 'Aufzug', gang: 'Gang', raum: 'Halle / Raum', eingang: 'Zugang',
+};
+
+// ---------------------------------------------------------------------------
+// Daten: erst der eingefrorene Stand im Ordner, sonst live von Overpass
+// ---------------------------------------------------------------------------
+
+const OVERPASS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter',
+];
+const statusEl = document.getElementById('status');
+const zeigeStatus = (html) => { statusEl.innerHTML = html ? `<div>${html}</div>` : ''; };
+
+async function ladeDaten() {
+  try {
+    const r = await fetch('data/osm.json');
+    if (r.ok) return { daten: await r.json(), quelle: 'eingefrorener Stand' };
+  } catch (e) { /* kein Stand im Ordner: weiter zu Overpass */ }
+  zeigeStatus('Lade die Bahnhöfe aus OpenStreetMap …<br><small>live über die Overpass-API, das dauert ein paar Sekunden</small>');
+  const abfrage = await (await fetch('abfrage.overpassql')).text();
+  let letzterFehler;
+  for (const url of OVERPASS) {
+    try {
+      const r = await fetch(url, { method: 'POST', body: 'data=' + encodeURIComponent(abfrage),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+      if (!r.ok) throw new Error(`${new URL(url).host} antwortet ${r.status}`);
+      return { daten: await r.json(), quelle: 'live aus Overpass' };
+    } catch (e) { letzterFehler = e; }
+  }
+  throw letzterFehler;
+}
+
+// ---------------------------------------------------------------------------
+// OSM lesen
+// ---------------------------------------------------------------------------
+
+// "level" kann eine Zahl sein, eine Liste "-2;-1", ein Bereich "-2--1" oder
+// "0-1". Zurück kommen kleinste und größte Ebene.
+function ebenen(s) {
+  if (s == null || s === '') return null;
+  const werte = [];
+  for (const teil of String(s).split(';')) {
+    const m = teil.trim().match(/^(-?\d+(?:\.\d+)?)(?:\s*-\s*(-?\d+(?:\.\d+)?))?$/);
+    if (!m) continue;
+    werte.push(+m[1]);
+    if (m[2] != null) werte.push(+m[2]);
+  }
+  if (!werte.length) return null;
+  return { min: Math.min(...werte), max: Math.max(...werte) };
+}
+
+function art(el) {
+  const t = el.tags || {};
+  if (t.railway === 'subway' && el.type === 'way') return 'gleis';
+  if (el.type !== 'node' && (t.railway === 'platform' || (t.public_transport === 'platform' && t.subway === 'yes'))) return 'bahnsteig';
+  if (t.highway === 'elevator') return 'aufzug';
+  if (el.type === 'node' && (t.railway === 'subway_entrance' || t.entrance)) return 'eingang';
+  if (el.type === 'way' && t.conveying) return 'rolltreppe';
+  if (el.type === 'way' && t.highway === 'steps') return 'treppe';
+  if (el.type === 'way' && /^(footway|corridor|pedestrian)$/.test(t.highway || '')
+      && (t.level != null || t.indoor || t.tunnel)) return 'gang';
+  if (el.type === 'way' && /^(room|area|corridor)$/.test(t.indoor || '')) return 'raum';
+  if (el.type === 'way' && t.building) return 'haus';
+  if (el.type === 'way' && t.highway) return 'strasse';
+  return null;
+}
+
+function lese(daten) {
+  const els = daten.elements || [];
+  const punkt = new Map();               // Knoten-ID → [x, z]
+  const teile = [];
+  const linienVon = new Map();           // "way/123" → Set("U9")
+  const linienFarbe = {};
+
+  for (const el of els) {
+    if (el.type === 'relation') {
+      const ref = el.tags?.ref;
+      if (!ref) continue;
+      if (el.tags.colour) linienFarbe[ref] = el.tags.colour;
+      for (const m of el.members || []) {
+        const k = m.type + '/' + m.ref;
+        if (!linienVon.has(k)) linienVon.set(k, new Set());
+        linienVon.get(k).add(ref);
+      }
+    }
+  }
+  for (let el of els) {
+    if (el.type === 'relation') continue;
+    const a = art(el);
+    if (!a) continue;
+    let pts;
+    if (el.type === 'node') {
+      pts = [xy(el.lon, el.lat)];
+      punkt.set(el.id, pts[0]);
+    } else if (el.geometry) {
+      pts = el.geometry.map(g => g && xy(g.lon, g.lat));
+      // Knoten außerhalb des Kastens kommen als null: das längste Stück behalten
+      if (pts.some(p => !p)) {
+        let best = [0, 0];
+        for (let i = 0, a = 0; i <= pts.length; i++) {
+          if (i === pts.length || !pts[i]) { if (i - a > best[1] - best[0]) best = [a, i]; a = i + 1; }
+        }
+        if (best[1] - best[0] < 2) continue;
+        pts = pts.slice(...best);
+        if (el.nodes) el = { ...el, nodes: el.nodes.slice(...best) };
+      }
+      el.nodes?.forEach((id, i) => punkt.set(id, pts[i]));
+    } else continue;
+    const linien = [...(linienVon.get(el.type + '/' + el.id) || [])];
+    const t = el.tags || {};
+    const geschlossen = el.type === 'way' && el.nodes && el.nodes.length > 3 && el.nodes[0] === el.nodes.at(-1);
+    teile.push({ el, art: a, pts, linien, geschlossen, ebene: ebenen(t.level), tags: t });
+  }
+  return { teile, punkt, linienFarbe, stand: daten.osm3s?.timestamp_osm_base };
+}
+
+// Ebenen für alles, was keine eindeutige hat. Ausgangspunkt sind Wege mit genau
+// einer Ebene (Bahnsteige, Gänge) und Zugänge an der Straße; daraus bekommen
+// Knoten eine Ebene, und Treppen nehmen die Ebene der Knoten an, an denen sie
+// hängen. Ein paar Runden, weil Treppen Ketten bilden (Bahnsteig → Halle → Straße).
+function loeseEbenen(teile) {
+  const knoten = new Map();
+  const setze = (id, l) => { if (id != null && !knoten.has(id)) knoten.set(id, l); };
+
+  // Bahnsteige ohne level: notfalls aus layer, sonst eine Ebene unter der Straße
+  for (const t of teile) if (t.art === 'bahnsteig' && !t.ebene) {
+    const layer = parseFloat(t.tags.layer);
+    const l = Number.isFinite(layer) && layer < 0 ? layer : -1;
+    t.ebene = { min: l, max: l }; t.ebeneGeraten = true;
+  }
+  for (const t of teile) {
+    if (!['bahnsteig', 'gang', 'raum'].includes(t.art) || !t.ebene || t.ebene.min !== t.ebene.max) continue;
+    t.el.nodes?.forEach(id => setze(id, t.ebene.min));
+  }
+  for (const t of teile) if (t.art === 'eingang') {
+    const l = t.ebene && t.ebene.min === t.ebene.max ? t.ebene.min : 0;
+    if (!t.ebene) t.ebene = { min: l, max: l };
+    setze(t.el.id, l);
+  }
+
+  const treppen = teile.filter(t => t.art === 'treppe' || t.art === 'rolltreppe');
+  for (let runde = 0; runde < 6; runde++) {
+    let neu = 0;
+    for (const t of treppen) {
+      if (t.enden && !t.endenGeraten) continue;
+      const ids = t.el.nodes || [];
+      const a = knoten.get(ids[0]), b = knoten.get(ids.at(-1));
+      const r = t.ebene;
+      let enden = null, geraten = false;
+      if (r && r.min !== r.max) {
+        if (a != null && (a === r.min || a === r.max)) enden = [a, a === r.min ? r.max : r.min];
+        else if (b != null && (b === r.min || b === r.max)) enden = [b === r.min ? r.max : r.min, b];
+        else {
+          const inc = String(t.tags.incline || '');
+          if (/^(up|\+?\d)/.test(inc)) enden = [r.min, r.max];
+          else if (/^(down|-)/.test(inc)) enden = [r.max, r.min];
+          else { enden = [r.max, r.min]; geraten = true; }
+        }
+      } else if (a != null && b != null) {
+        enden = [a, b];
+      } else if (a != null || b != null) {
+        // ein Ende bekannt: die Treppe führt eine Ebene nach oben, Richtung Straße
+        const k = a != null ? a : b, andere = k < 0 ? k + 1 : k;
+        enden = a != null ? [k, andere] : [andere, k];
+        geraten = true;
+      } else if (r) {
+        enden = [r.min, r.min]; geraten = true;
+      }
+      if (!enden) continue;
+      const vorher = t.enden ? t.enden.join() : '';
+      t.enden = enden; t.endenGeraten = geraten;
+      if (!geraten) { setze(ids[0], enden[0]); setze(ids.at(-1), enden[1]); }
+      if (vorher !== enden.join()) neu++;
+    }
+    if (!neu && runde > 1) break;
+  }
+  // Treppen, über die gar nichts bekannt ist: von der Straße eine Ebene hinab
+  for (const t of treppen) if (!t.enden) {
+    t.enden = /^(up|\+?\d)/.test(String(t.tags.incline || '')) ? [-1, 0] : [0, -1];
+    t.endenGeraten = true;
+  }
+
+  // Gänge ohne level, aber im Tunnel: die Ebene der Knoten, an denen sie hängen
+  for (const t of teile) if (t.art === 'gang' && !t.ebene) {
+    const l = (t.el.nodes || []).map(id => knoten.get(id)).find(v => v != null);
+    t.ebene = { min: l ?? -1, max: l ?? -1 };
+  }
+  for (const t of teile) if (t.art === 'raum' && !t.ebene) t.ebene = { min: -1, max: -1 };
+}
+
+// ---------------------------------------------------------------------------
+// Szene
+// ---------------------------------------------------------------------------
+
+const buehne = document.getElementById('buehne');
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+buehne.appendChild(renderer.domElement);
+const szene = new THREE.Scene();
+szene.background = new THREE.Color(0x0b0d10);
+szene.fog = new THREE.Fog(0x0b0d10, 1400, 3200);
+const kamera = new THREE.PerspectiveCamera(40, 1, 0.5, 6000);
+const steuerung = new OrbitControls(kamera, renderer.domElement);
+steuerung.enableDamping = true;
+steuerung.dampingFactor = 0.08;
+steuerung.maxDistance = 2500;
+steuerung.minDistance = 8;
+
+szene.add(new THREE.HemisphereLight(0xdfe8ff, 0x1a1410, 1.6));
+const sonne = new THREE.DirectionalLight(0xffffff, 1.4);
+sonne.position.set(-300, 600, 400);
+szene.add(sonne);
+
+// Alles unter der Erde hängt in "tief"; dessen y-Maßstab ist die Überhöhung.
+const tief = new THREE.Group();
+const oben = new THREE.Group();
+szene.add(tief, oben);
+const beschriftungen = [];   // { sprite, x, y, z } — y wird mit der Überhöhung mitgeführt
+let ueberhoehung = 3;
+
+const mat = (farbe, extra = {}) => new THREE.MeshStandardMaterial({ color: farbe, roughness: .8, metalness: .05, side: THREE.DoubleSide, ...extra });
+
+// Ein Band entlang eines Linienzugs; hoehe(i) gibt das y am Stützpunkt i.
+function band(pts, breite, hoehe, material) {
+  const pos = [], idx = [];
+  const n = pts.length;
+  for (let i = 0; i < n; i++) {
+    const p = pts[i], a = pts[Math.max(i - 1, 0)], b = pts[Math.min(i + 1, n - 1)];
+    let tx = b[0] - a[0], tz = b[1] - a[1];
+    const l = Math.hypot(tx, tz) || 1; tx /= l; tz /= l;
+    const nx = -tz * breite / 2, nz = tx * breite / 2, y = hoehe(i);
+    pos.push(p[0] + nx, y, p[1] + nz, p[0] - nx, y, p[1] - nz);
+    if (i) { const k = 2 * i; idx.push(k - 2, k - 1, k, k - 1, k + 1, k); }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  return new THREE.Mesh(g, material);
+}
+
+// Fläche aus einem geschlossenen Weg, oben bei y, dick nach unten.
+function platte(pts, y, dicke, material) {
+  const form = new THREE.Shape(pts.map(([x, z]) => new THREE.Vector2(x, -z)));
+  const g = dicke > 0
+    ? new THREE.ExtrudeGeometry(form, { depth: dicke, bevelEnabled: false })
+    : new THREE.ShapeGeometry(form);
+  g.rotateX(-Math.PI / 2);
+  g.translate(0, y - dicke, 0);
+  return new THREE.Mesh(g, material);
+}
+
+function linienzug(pts, y, farbe, deckkraft = 1) {
+  const g = new THREE.BufferGeometry().setFromPoints(pts.map(([x, z]) => new THREE.Vector3(x, y, z)));
+  return new THREE.Line(g, new THREE.LineBasicMaterial({ color: farbe, transparent: deckkraft < 1, opacity: deckkraft }));
+}
+
+function laengen(pts) {
+  const s = [0];
+  for (let i = 1; i < pts.length; i++) s.push(s[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+  return s;
+}
+
+function schild(text, { farbe = '#f2f1ec', grund = 'rgba(11,13,16,.78)', px = 13, fett = false } = {}) {
+  const c = document.createElement('canvas'), k = c.getContext('2d'), r = 2;
+  const font = `${fett ? 650 : 500} ${px * r}px system-ui,-apple-system,"Segoe UI",sans-serif`;
+  k.font = font;
+  const w = Math.ceil(k.measureText(text).width) + 12 * r, h = Math.ceil(px * 1.7 * r);
+  c.width = w; c.height = h;
+  k.font = font;
+  k.fillStyle = grund; k.beginPath(); k.roundRect(0, 0, w, h, 5 * r); k.fill();
+  k.fillStyle = farbe; k.textBaseline = 'middle'; k.fillText(text, 6 * r, h / 2 + r);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, sizeAttenuation: false, depthTest: false, transparent: true }));
+  s.userData.pixel = [w / r, h / r];
+  s.renderOrder = 10;
+  return s;
+}
+function beschrifte(text, x, y, z, opt) {
+  const s = schild(text, opt);
+  s.center.set(0.5, 0);
+  beschriftungen.push({ sprite: s, x, y, z, unten: y < 0 });
+  oben.add(s);
+  return s;
+}
+function legeBeschriftungen() {
+  // Schildgröße in Bildpunkten, unabhängig vom Abstand
+  const f = 1 / Math.tan(kamera.fov * Math.PI / 360);
+  const k = 2 / (renderer.domElement.clientHeight * f);
+  for (const b of beschriftungen) {
+    b.sprite.position.set(b.x, b.unten ? b.y * ueberhoehung : b.y, b.z);
+    b.sprite.scale.set(b.sprite.userData.pixel[0] * k, b.sprite.userData.pixel[1] * k, 1);
+  }
+}
+
+// Zum Antippen: jedes Bauteil merkt sich, woher es kommt.
+const antippbar = [];
+function merke(obj, teil) { obj.userData.teil = teil; antippbar.push(obj); return obj; }
+
+function baue({ teile, linienFarbe }) {
+  const farbeLinie = (linien, ersatz) => {
+    for (const l of linien) if (linienFarbe[l] || LINIENFARBE[l]) return linienFarbe[l] || LINIENFARBE[l];
+    return ersatz;
+  };
+  const yEbene = l => l * EBENE_M;
+
+  // Boden: eine halbdurchsichtige Straßenebene, damit man von oben hineinsieht
+  const boden = new THREE.Mesh(new THREE.PlaneGeometry(1400, 1300),
+    new THREE.MeshBasicMaterial({ color: FARBE.boden, transparent: true, opacity: .35, side: THREE.DoubleSide, depthWrite: false }));
+  boden.rotation.x = -Math.PI / 2;
+  oben.add(boden);
+
+  // Über der Erde: Straßen als flache Bänder, Häuser als Umrisse
+  const strassenBreite = { primary: 14, secondary: 12, tertiary: 10, pedestrian: 6, living_street: 6 };
+  const strassenMat = new THREE.MeshBasicMaterial({ color: FARBE.strasse, side: THREE.DoubleSide, transparent: true, opacity: .5, depthWrite: false });
+  const namen = new Map();
+  const hausLinien = [];
+  for (const t of teile) {
+    if (t.art === 'strasse') {
+      oben.add(band(t.pts, strassenBreite[t.tags.highway] || 8, () => 0.02, strassenMat));
+      const n = t.tags.name;
+      if (n) { const l = laengen(t.pts).at(-1); if (!namen.has(n) || namen.get(n).l < l) namen.set(n, { l, t }); }
+    } else if (t.art === 'haus') {
+      for (let i = 1; i < t.pts.length; i++) hausLinien.push(t.pts[i - 1][0], 0.1, t.pts[i - 1][1], t.pts[i][0], 0.1, t.pts[i][1]);
+    }
+  }
+  if (hausLinien.length) {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(hausLinien, 3));
+    oben.add(new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color: FARBE.haus, transparent: true, opacity: .55 })));
+  }
+  for (const [n, { t }] of namen) {
+    const m = t.pts[Math.floor(t.pts.length / 2)];
+    beschrifte(n, m[0], 1, m[1], { farbe: '#9aa3ad', grund: 'rgba(11,13,16,.0)', px: 11 });
+  }
+
+  // Bahnsteige
+  const bahnsteige = teile.filter(t => t.art === 'bahnsteig');
+  for (const t of bahnsteige) {
+    const y = yEbene(t.ebene.max);
+    const farbe = new THREE.Color(farbeLinie(t.linien, FARBE.bahnsteig)).lerp(new THREE.Color(FARBE.bahnsteig), .55);
+    let m;
+    if (t.geschlossen) m = platte(t.pts.slice(0, -1), y, SCHIENE_UNTER_BAHNSTEIG, mat(farbe));
+    else m = band(t.pts, parseFloat(t.tags.width) || 4, () => y, mat(farbe));
+    tief.add(merke(m, t));
+    t.mitte = mitte(t.pts);
+  }
+  // Bahnsteigschilder: eins je Linie und Bahnhof reicht
+  const schon = new Set();
+  for (const t of bahnsteige) {
+    const s = naechsteStation(t.mitte);
+    const text = (t.linien.length ? t.linien.join(' / ') : 'Bahnsteig') + (t.tags.ref || t.tags.local_ref ? ` · ${t.tags.local_ref || t.tags.ref}` : '');
+    const k = s + text;
+    if (schon.has(k)) continue;
+    schon.add(k);
+    beschrifte(text, t.mitte[0], yEbene(t.ebene.max) + .5, t.mitte[1],
+      { farbe: '#fff', grund: farbeLinie(t.linien, '#59606b'), px: 12, fett: true });
+  }
+
+  // Gleise: Höhe je Stützpunkt aus den Bahnsteigen derselben Linie, nach
+  // Abstand gewichtet. So taucht der Tunnel zwischen zwei Bahnhöfen
+  // gleichmäßig von einer Tiefe in die andere.
+  const gleisY = (p, linien, eigen) => {
+    if (eigen) return yEbene(eigen.min) - SCHIENE_UNTER_BAHNSTEIG;
+    let kand = bahnsteige.filter(b => b.linien.some(l => linien.includes(l)));
+    if (!kand.length) kand = bahnsteige;
+    if (!kand.length) return yEbene(-1) - SCHIENE_UNTER_BAHNSTEIG;
+    let sw = 0, sy = 0;
+    for (const b of kand) {
+      const d2 = (b.mitte[0] - p[0]) ** 2 + (b.mitte[1] - p[1]) ** 2;
+      const w = 1 / (d2 + 400) ** 2;
+      sw += w; sy += w * yEbene(b.ebene.max);
+    }
+    return sy / sw - SCHIENE_UNTER_BAHNSTEIG;
+  };
+  for (const t of teile.filter(t => t.art === 'gleis')) {
+    const ys = t.pts.map(p => gleisY(p, t.linien, t.tags.level != null ? t.ebene : null));
+    const farbe = farbeLinie(t.linien, FARBE.gleis);
+    tief.add(merke(band(t.pts, 1.5, i => ys[i], mat(farbe, { emissive: farbe, emissiveIntensity: .25 })), t));
+    // Tunnelröhre: ein Kasten aus Licht um das Gleis, nur angedeutet
+    const roehre = band(t.pts, 7, i => ys[i] - .3, new THREE.MeshBasicMaterial({ color: farbe, transparent: true, opacity: .08, side: THREE.DoubleSide, depthWrite: false }));
+    tief.add(roehre);
+  }
+
+  // Hallen und Gänge
+  for (const t of teile.filter(t => t.art === 'raum' && t.geschlossen)) {
+    const y = yEbene(t.ebene.min);
+    tief.add(merke(platte(t.pts.slice(0, -1), y, 0, mat(FARBE.raum, { transparent: true, opacity: .55, depthWrite: false })), t));
+    tief.add(linienzug(t.pts, y + .05, '#6c7787'));
+  }
+  for (const t of teile.filter(t => t.art === 'gang')) {
+    const y = yEbene(t.ebene.min) + .05;
+    tief.add(merke(band(t.pts, parseFloat(t.tags.width) || 2.5, () => y, mat(FARBE.gang)), t));
+  }
+
+  // Treppen: Stufen, so viele wie Höhe, Rolltreppen: eine glatte Rampe mit Handlauf
+  const stufeGeo = new THREE.BoxGeometry(1, 1, 1);
+  for (const t of teile.filter(t => t.art === 'treppe' || t.art === 'rolltreppe')) {
+    const [l0, l1] = t.enden || [0, -1];
+    const y0 = yEbene(l0), y1 = yEbene(l1);
+    const s = laengen(t.pts), L = s.at(-1) || 1;
+    const yAt = i => y0 + (y1 - y0) * s[i] / L;
+    const breite = parseFloat(t.tags.width) || (t.art === 'rolltreppe' ? 1.4 : 2.4);
+    const farbe = FARBE[t.art];
+    tief.add(merke(band(t.pts, breite, i => yAt(i) - .15, mat(farbe, { emissive: farbe, emissiveIntensity: .15 })), t));
+    if (t.art === 'treppe' && y0 !== y1) {
+      const anzahl = Math.max(2, Math.round(Math.abs(y1 - y0) / .17));
+      const stufen = new THREE.InstancedMesh(stufeGeo, mat(farbe), anzahl);
+      const hub = Math.abs(y1 - y0) / anzahl, auftritt = L / anzahl;
+      const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), achse = new THREE.Vector3(0, 1, 0);
+      for (let i = 0; i < anzahl; i++) {
+        const [p, rx, rz] = entlang(t.pts, s, (i + .5) / anzahl * L);
+        q.setFromAxisAngle(achse, Math.atan2(rx, rz));
+        const y = y0 + (y1 - y0) * (i + .5) / anzahl;
+        m4.compose(new THREE.Vector3(p[0], y - hub / 2, p[1]), q, new THREE.Vector3(breite, hub, auftritt));
+        stufen.setMatrixAt(i, m4);
+      }
+      tief.add(merke(stufen, t));
+    } else if (t.art === 'rolltreppe') {
+      for (const seite of [-1, 1]) {
+        const versatz = t.pts.map((p, i) => {
+          const a = t.pts[Math.max(i - 1, 0)], b = t.pts[Math.min(i + 1, t.pts.length - 1)];
+          let tx = b[0] - a[0], tz = b[1] - a[1]; const l = Math.hypot(tx, tz) || 1;
+          return [p[0] - tz / l * seite * breite / 2, p[1] + tx / l * seite * breite / 2];
+        });
+        const g = new THREE.BufferGeometry().setFromPoints(versatz.map((p, i) => new THREE.Vector3(p[0], yAt(i) + 1, p[1])));
+        tief.add(new THREE.Line(g, new THREE.LineBasicMaterial({ color: farbe })));
+      }
+    }
+  }
+
+  // Aufzüge: gläserne Schächte von der untersten bis zur obersten Ebene; an
+  // der Straße ragt das Häuschen 2,5 m heraus.
+  for (const t of teile.filter(t => t.art === 'aufzug')) {
+    const p = t.el.type === 'node' ? t.pts[0] : mitte(t.pts);
+    let lo, hi;
+    if (t.ebene && t.ebene.min !== t.ebene.max) { lo = t.ebene.min; hi = t.ebene.max; }
+    else {
+      const nah = bahnsteige.filter(b => Math.hypot(b.mitte[0] - p[0], b.mitte[1] - p[1]) < 120)
+        .sort((a, b) => Math.hypot(a.mitte[0] - p[0], a.mitte[1] - p[1]) - Math.hypot(b.mitte[0] - p[0], b.mitte[1] - p[1]))[0];
+      lo = nah ? nah.ebene.max : -1;
+      hi = t.ebene ? Math.max(t.ebene.max, lo) : 0;
+      if (hi === lo) hi = 0;
+      t.ebeneGeraten = true;
+    }
+    const yLo = yEbene(lo), yHi = yEbene(hi);
+    const h = yHi - yLo;
+    const schacht = new THREE.Mesh(new THREE.BoxGeometry(2, h, 2),
+      mat(FARBE.aufzug, { transparent: true, opacity: .35, emissive: FARBE.aufzug, emissiveIntensity: .4, depthWrite: false }));
+    schacht.position.set(p[0], yLo + h / 2, p[1]);
+    tief.add(merke(schacht, t));
+    const kante = new THREE.LineSegments(new THREE.EdgesGeometry(schacht.geometry), new THREE.LineBasicMaterial({ color: FARBE.aufzug }));
+    kante.position.copy(schacht.position);
+    tief.add(kante);
+    if (hi >= 0) {
+      const haus = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.5, 2.4), mat(FARBE.aufzug, { transparent: true, opacity: .6 }));
+      haus.position.set(p[0], 1.25, p[1]);
+      oben.add(merke(haus, t));
+    }
+  }
+
+  // Zugänge: das blaue U an der Straße, darunter ein Strich bis auf den Boden
+  for (const t of teile.filter(t => t.art === 'eingang')) {
+    const [x, z] = t.pts[0];
+    const y = (t.ebene?.min ?? 0) * EBENE_M;
+    const schildU = beschrifte('U', x, y + 4, z, { farbe: '#fff', grund: FARBE.eingang, px: 13, fett: true });
+    if (y < 0) beschriftungen.at(-1).unten = true;
+    const pfosten = new THREE.Mesh(new THREE.CylinderGeometry(.15, .15, 4), mat('#c8d3df'));
+    pfosten.position.set(x, y + 2, z);
+    (y < 0 ? tief : oben).add(merke(pfosten, t));
+    schildU.userData.teil = t;
+  }
+
+  // Tiefenmaßstab neben jedem Bahnhof: 0, −5, −10, −15 m
+  for (const s of Object.values(STATIONEN)) {
+    const [x0, z0] = xy(s.lon, s.lat), x = x0 + 45, z = z0 - 45;
+    const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x, 0, z), new THREE.Vector3(x, -15, z)]);
+    tief.add(new THREE.Line(g, new THREE.LineBasicMaterial({ color: '#59606b' })));
+    for (const d of [0, 5, 10, 15]) {
+      const tg = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x - 2, -d, z), new THREE.Vector3(x + 2, -d, z)]);
+      tief.add(new THREE.Line(tg, new THREE.LineBasicMaterial({ color: '#59606b' })));
+      if (d) { const b = beschrifte(`−${d} m`, x + 3, -d, z, { farbe: '#8b8a84', grund: 'rgba(0,0,0,0)', px: 10 }); b.center.set(0, .5); }
+    }
+    beschrifte(s.name, x0, 9, z0, { px: 14, fett: true });
+  }
+}
+
+function mitte(pts) {
+  let x = 0, z = 0;
+  for (const p of pts) { x += p[0]; z += p[1]; }
+  return [x / pts.length, z / pts.length];
+}
+function entlang(pts, s, d) {
+  let i = 1;
+  while (i < pts.length - 1 && s[i] < d) i++;
+  const a = pts[i - 1], b = pts[i], l = s[i] - s[i - 1] || 1, f = Math.min(1, Math.max(0, (d - s[i - 1]) / l));
+  return [[a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f], (b[0] - a[0]) / l, (b[1] - a[1]) / l];
+}
+function naechsteStation(p) {
+  let best = null, bd = Infinity;
+  for (const [k, s] of Object.entries(STATIONEN)) {
+    const [x, z] = xy(s.lon, s.lat), d = Math.hypot(x - p[0], z - p[1]);
+    if (d < bd) { bd = d; best = k; }
+  }
+  return best;
+}
+
+// ---------------------------------------------------------------------------
+// Bedienung
+// ---------------------------------------------------------------------------
+
+const ANSICHT = {
+  ueberblick: { ziel: [0, -8, 0], abstand: 900, hoehe: .62, drehung: -.55, ueberhoehung: 3 },
+  amrumer: { station: 'amrumer', abstand: 150, hoehe: .45, drehung: .95, ueberhoehung: 1.5 },
+  leopoldplatz: { station: 'leopoldplatz', abstand: 160, hoehe: .45, drehung: -.35, ueberhoehung: 1.5 },
+};
+let flug = null;
+function fliege(name, sofort = false) {
+  const a = ANSICHT[name];
+  let ziel = a.ziel;
+  if (a.station) { const s = STATIONEN[a.station]; const [x, z] = xy(s.lon, s.lat); ziel = [x, -6, z]; }
+  const zielV = new THREE.Vector3(...ziel);
+  // Hochkant passt weniger Breite ins Bild: weiter zurück
+  const abstand = a.abstand * Math.max(1, .9 / kamera.aspect);
+  const pos = new THREE.Vector3(
+    zielV.x + abstand * Math.cos(a.hoehe) * Math.sin(a.drehung),
+    zielV.y + abstand * Math.sin(a.hoehe),
+    zielV.z + abstand * Math.cos(a.hoehe) * Math.cos(a.drehung));
+  setzeUeberhoehung(a.ueberhoehung);
+  document.querySelectorAll('[data-ziel]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.ziel === name)));
+  document.getElementById('bahnhof').innerHTML = a.station ? STATIONEN[a.station].text + (zaehlung[a.station] || '') : '';
+  if (sofort) { kamera.position.copy(pos); steuerung.target.copy(zielV); steuerung.update(); return; }
+  flug = { t: 0, von: kamera.position.clone(), nach: pos, zielVon: steuerung.target.clone(), zielNach: zielV };
+}
+document.querySelectorAll('[data-ziel]').forEach(b => b.addEventListener('click', () => fliege(b.dataset.ziel)));
+
+const regler = document.getElementById('regler');
+function setzeUeberhoehung(v) {
+  ueberhoehung = v;
+  regler.value = v;
+  document.getElementById('ueberhoehung').textContent = String(v).replace('.', ',') + '×';
+  tief.scale.y = v;
+  legeBeschriftungen();
+}
+regler.addEventListener('input', () => setzeUeberhoehung(+regler.value));
+
+document.getElementById('legende').innerHTML = [
+  ['bahnsteig', LINIENFARBE.U9, 'Bahnsteig (Farbe der Linie)'], ['treppe', FARBE.treppe, 'Treppe'],
+  ['rolltreppe', FARBE.rolltreppe, 'Rolltreppe'], ['aufzug', FARBE.aufzug, 'Aufzug'],
+  ['gang', FARBE.gang, 'Gang, Halle'], ['eingang', FARBE.eingang, 'Zugang an der Straße'],
+].map(([, f, t]) => `<i style="background:${f}"></i><span>${t}</span>`).join('');
+
+// Antippen: was ist das?
+const info = document.getElementById('info');
+info.querySelector('.zu').addEventListener('click', () => { info.style.display = 'none'; });
+const strahl = new THREE.Raycaster();
+let druck = null;
+renderer.domElement.addEventListener('pointerdown', e => { druck = [e.clientX, e.clientY]; });
+renderer.domElement.addEventListener('pointerup', e => {
+  if (!druck || Math.hypot(e.clientX - druck[0], e.clientY - druck[1]) > 5) return;
+  const r = renderer.domElement.getBoundingClientRect();
+  strahl.setFromCamera(new THREE.Vector2((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1), kamera);
+  const treffer = strahl.intersectObjects(antippbar, false)[0];
+  if (!treffer) { info.style.display = 'none'; return; }
+  zeigeInfo(treffer.object.userData.teil);
+});
+
+function zeigeInfo(t) {
+  const tags = t.tags;
+  document.getElementById('info-titel').textContent = (NAME[t.art] || t.art) + (tags.name ? ` · ${tags.name}` : '');
+  const zeilen = [];
+  const ebeneText = l => (l > 0 ? '+' : '') + String(l).replace('.', ',');
+  if (t.enden) zeilen.push(['Ebenen', `${ebeneText(t.enden[0])} → ${ebeneText(t.enden[1])}` + (t.endenGeraten ? ' (geschätzt)' : '')]);
+  else if (t.ebene) zeilen.push(['Ebene', (t.ebene.min === t.ebene.max ? ebeneText(t.ebene.min) : `${ebeneText(t.ebene.min)} bis ${ebeneText(t.ebene.max)}`) + (t.ebeneGeraten ? ' (geschätzt)' : '')]);
+  if (t.linien.length) zeilen.push(['Linie', t.linien.join(', ')]);
+  for (const k of ['level', 'layer', 'incline', 'conveying', 'step_count', 'width', 'wheelchair', 'handrail', 'ref', 'local_ref', 'indoor', 'description'])
+    if (tags[k] != null) zeilen.push([k, tags[k]]);
+  const tab = document.getElementById('info-tabelle');
+  tab.replaceChildren(...zeilen.map(([k, v]) => {
+    const tr = document.createElement('tr');
+    for (const x of [k, v]) { const td = document.createElement('td'); td.textContent = x; tr.appendChild(td); }
+    return tr;
+  }));
+  const a = document.createElement('a');
+  a.href = `https://www.openstreetmap.org/${t.el.type}/${t.el.id}`;
+  a.target = '_blank'; a.rel = 'noopener';
+  a.textContent = `In OpenStreetMap ansehen (${t.el.type} ${t.el.id})`;
+  document.getElementById('info-link').replaceChildren(a);
+  info.style.display = 'block';
+}
+
+// Was OSM je Bahnhof kennt — ehrlich, damit Lücken als Lücken erkennbar sind
+const zaehlung = {};
+function zaehle(teile) {
+  for (const [k, s] of Object.entries(STATIONEN)) {
+    const [x, z] = xy(s.lon, s.lat);
+    const nah = t => { const p = t.el.type === 'node' ? t.pts[0] : mitte(t.pts); return Math.hypot(p[0] - x, p[1] - z) < 180; };
+    const n = a => teile.filter(t => t.art === a && nah(t)).length;
+    const geraten = teile.filter(t => nah(t) && (t.endenGeraten || t.ebeneGeraten)).length;
+    zaehlung[k] = `<br><span style="color:var(--muted)">In OSM: ${n('bahnsteig')} Bahnsteige, ${n('treppe')} Treppen, ${n('rolltreppe')} Rolltreppen, ${n('aufzug')} Aufzüge, ${n('eingang')} Zugänge` +
+      (geraten ? ` · bei ${geraten} Teilen ist die Ebene geschätzt` : '') + '.</span>';
+  }
+}
+
+function groesse() {
+  const w = buehne.clientWidth, h = buehne.clientHeight;
+  renderer.setSize(w, h);
+  kamera.aspect = w / h;
+  kamera.updateProjectionMatrix();
+  legeBeschriftungen();
+}
+addEventListener('resize', groesse);
+
+function lauf() {
+  if (flug) {
+    flug.t = Math.min(1, flug.t + 1 / 50);
+    const e = flug.t < .5 ? 2 * flug.t * flug.t : 1 - (-2 * flug.t + 2) ** 2 / 2;
+    kamera.position.lerpVectors(flug.von, flug.nach, e);
+    steuerung.target.lerpVectors(flug.zielVon, flug.zielNach, e);
+    if (flug.t === 1) flug = null;
+  }
+  steuerung.update();
+  renderer.render(szene, kamera);
+  requestAnimationFrame(lauf);
+}
+
+// ---------------------------------------------------------------------------
+// Los
+// ---------------------------------------------------------------------------
+groesse();
+fliege('ueberblick', true);
+lauf();
+try {
+  const { daten, quelle } = await ladeDaten();
+  const gelesen = lese(daten);
+  loeseEbenen(gelesen.teile);
+  baue(gelesen);
+  zaehle(gelesen.teile);
+  legeBeschriftungen();
+  const stand = gelesen.stand ? new Date(gelesen.stand).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+  document.getElementById('stand').textContent = `${quelle}${stand ? ', Stand ' + stand : ''}`;
+  zeigeStatus('');
+  const start = new URLSearchParams(location.search).get('ansicht');
+  if (start && ANSICHT[start]) fliege(start, true);
+  window.__fertig = true;
+} catch (e) {
+  console.error(e);
+  zeigeStatus(`Die OSM-Daten ließen sich nicht laden.<br><small>${String(e.message || e).replace(/</g, '&lt;')}</small><br><small>Die Overpass-API ist manchmal überlastet; in einer Minute noch einmal versuchen.</small>`);
+  document.getElementById('stand').textContent = 'keine Daten';
+  window.__fertig = true;
+}
+</script>
+</body></html>
