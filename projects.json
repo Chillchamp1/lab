@@ -1,5 +1,11 @@
 [
   {
+    "slug": "berlin-untergrund",
+    "titel": "Unter dem Wedding",
+    "beschreibung": "Prototyp nach dem Vorbild von metroskop.cz: die U-Bahnhöfe Amrumer Straße und Leopoldplatz und der U9-Tunnel dazwischen in 3D, gebaut aus OpenStreetMap — Bahnsteige, Treppen, Rolltreppen, Aufzüge und Zugänge auf ihren Ebenen unter der Straße. Ein amtliches 3D-Modell der Bahnhöfe gibt es nicht als Open Data; OSM kennt Ebenen, keine Meter, deshalb sind die Tiefen geschätzt.",
+    "datum": "2026-10"
+  },
+  {
     "slug": "wahlkarte-2025",
     "titel": "Stärkste Partei, Bundestagswahl 2025",
     "beschreibung": "431 Gebiete nach Zweitstimmen eingefärbt, mit Regler zwischen Landkarte und flächentreuem Kartogramm.",
