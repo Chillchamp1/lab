@@ -1,69 +1,71 @@
-# Pixel-Fliesen
+# Pixel Tiles
 
-Ein Bild einfügen, und die Seite zerlegt es in **neun 2×2-Fliesen**
-(LEGO®-kompatibel, 3 × 3 Fliesen, ca. 47,8 × 47,8 mm), die man auf eine
-Bauplatte steckt. Ausgabe ist eine mehrfarbige **3MF für Snapmaker Orca**
-(Snapmaker U1, vier Werkzeugköpfe), dazu STL je Farbe und eine PNG-Vorlage.
-Alles läuft im Browser; das Bild verlässt den Rechner nicht.
+Drop in a picture and the page splits it into **nine 2×2 tiles**
+(LEGO®-compatible, 3 × 3 tiles, about 47.8 × 47.8 mm) that you press onto a
+baseplate. The output is a multi-colour **3MF for Snapmaker Orca**
+(Snapmaker U1, four toolheads), plus one STL per colour and a PNG template.
+Everything runs in the browser; the picture never leaves your computer.
 
-## Bedienung
+## Usage
 
-1. Bild hineinziehen, einfügen (Strg+V) oder auswählen. Am besten ein großes
-   Artwork als PNG mit transparentem Hintergrund; einfarbige Hintergründe
-   werden freigestellt.
-2. Die Seite sucht die Farbtöne selbst. Ein Farbfeld anklicken und auf das
-   eigene Filament setzen macht die Farbe fest; danach wird neu zugeordnet.
-3. Mit dem Pinsel lassen sich einzelne Stellen nachmalen (Strg+Z zurück).
-4. 3MF herunterladen, in Snapmaker Orca öffnen, Bildseite liegt unten auf dem
-   Bett. Schichthöhe 0,2 mm.
+1. Drag in, paste (Ctrl+V) or pick a picture. A large artwork as a PNG with a
+   transparent background works best; plain backgrounds are cut out.
+2. The page finds the hues by itself. Clicking a colour swatch and setting it
+   to your own filament fixes that colour; everything is then reassigned.
+3. The brush lets you touch up single spots (Ctrl+Z to undo).
+4. Download the 3MF and open it in Snapmaker Orca; the picture side lies on
+   the bed. Layer height 0.2 mm.
 
-Die 3D-Vorschau lädt beim ersten Öffnen three.js (r128) von cdnjs.
+The 3D preview loads three.js (r128) from cdnjs the first time it opens.
 
-## Wie die Farben gefunden werden
+## How the colours are found
 
-- **Konturen zuerst.** Was dunkel, eher grau und höchstens etwa 1,2 mm breit
-  ist, gilt als Umriss. Breite dunkle Flächen (Schatten) und kräftig gefärbte
-  dunkle Stellen bleiben normale Farbe. Die Schwelle ist ein Regler.
-- **Farbton vor Helligkeit.** Im Lab-Farbraum zählt die Helligkeit nur halb,
-  damit Licht, Schatten und Glanz beim selben Farbton bleiben.
-- **Dominante Farbtöne.** Erst 16 feine Gruppen (k-means), dann werden die
-  zwei ähnlichsten so lange zusammengelegt, bis so viele übrig sind wie
-  Filamente. Kleine Flächen geben dabei etwas leichter nach, ein deutlich
-  anderer Farbton wie rote Augen bleibt aber erhalten.
+- **Outlines first.** Anything dark, rather grey and no wider than about
+  1.2 mm counts as an outline. Wide dark areas (shadows) and strongly
+  coloured dark spots stay normal colours. Detection is set high by default
+  and can be adjusted with a slider.
+- **Hue before lightness.** In Lab colour space lightness counts only half,
+  so light, shadow and highlights stay with the same hue.
+- **Dominant hues.** First 16 fine groups (k-means), then the two most
+  similar are merged until as many remain as there are filaments. Small areas
+  give way a little more easily, but a clearly different hue such as red
+  eyes survives.
 
-## Konturen als Graben
+## Outlines as grooves
 
-Statt eines eigenen schwarzen Filaments werden die Umrisse 0,2–0,6 mm tief in
-die Bildseite eingelassen. Den Grabenboden druckt das dunkelste Filament (oder
-ein gewähltes), der Schatten im Graben macht die Linie zusätzlich dunkel. So
-bleiben alle vier Filamente für Flächenfarben. Im Druck mit der Bildseite nach
-unten bleibt der Graben in den ersten Schichten frei und wird dann überbrückt.
+Instead of using a separate black filament, outlines are recessed
+0.2–0.6 mm into the picture side. The groove floor is printed in the darkest
+filament (or one you choose), and the shadow in the groove makes the line
+look darker still. That keeps all four filaments free for area colours.
+Printed picture side down, the groove stays empty in the first layers and is
+bridged afterwards.
 
-## Geometrie
+## Geometry
 
-- 15,8 × 15,8 × 3,2 mm, Decke 1,2 mm, davon 0,6 mm Farbschicht (3 Schichten).
-- Wand 1,2 mm, Mittelröhrchen Ø 6,51 / 4,8 mm.
-- **Klemmrippen:** acht Rippen an der Innenwand, je zwei pro Noppe, ragen
-  standardmäßig 0,1 mm über den Noppenrand. Ohne sie berühren die Wände die
-  Noppen nicht (0,3 mm Luft) und die Fliese hält nur am Röhrchen, was im
-  FDM-Druck zu locker ist. Der **Passungstest** erzeugt vier schlichte
-  Fliesen mit +0,05 / +0,10 / +0,15 / +0,20 mm, erkennbar an 1–4 Punkten.
-- Farbflächen entstehen aus einem 0,1-mm-Raster per Marching Squares,
-  vereinfacht (Douglas-Peucker, 0,04 mm) und mit earcut trianguliert.
-  Flecken unter der Düsenbreite werden vorher entfernt.
+- 15.8 × 15.8 × 3.2 mm, top 1.2 mm, of which 0.6 mm is the colour layer
+  (3 layers).
+- Wall 1.2 mm, centre tube Ø 6.51 / 4.8 mm.
+- **Clutch ribs:** eight ribs on the inner wall, two per stud, reach 0.1 mm
+  past the stud edge by default. Without them the walls do not touch the
+  studs (0.3 mm gap) and the tile only grips on the tube, which is too loose
+  in FDM printing. The **fit test** produces four plain tiles with
+  +0.05 / +0.10 / +0.15 / +0.20 mm, marked with 1–4 dots.
+- Colour areas come from a 0.1 mm grid via marching squares, simplified
+  (Douglas-Peucker, 0.04 mm) and triangulated with earcut. Specks smaller
+  than the nozzle are removed beforehand.
 
 ## 3MF
 
-Aufbau wie von Snapmaker Orca 2.4 gespeichert: je Fliese eine Objektdatei in
-`3D/Objects/`, Teile mit Filament-Zuordnung in
-`Metadata/model_settings.config`. Geprüft ist, dass alle Teile geschlossene
-Körper sind und die Farbteile jede Fliese lückenlos füllen.
+Laid out the way Snapmaker Orca 2.4 saves files: one object file per tile in
+`3D/Objects/`, parts with their filament assignment in
+`Metadata/model_settings.config`. Checked: all parts are closed solids and
+the colour parts fill every tile without gaps.
 
-## Stand
+## Status
 
-Nicht geprüft ist der Druck selbst: wie fest die Fliesen halten, wie dunkel
-die Gräben wirken und ob Orca die Filamente beim Öffnen richtig zuordnet.
+Not yet checked is the print itself: how firmly the tiles hold, how dark the
+grooves look, and whether Orca assigns the filaments correctly on opening.
 
-## Lizenz der eingebetteten Bibliothek
+## Licence of the embedded library
 
-earcut 2.2.4 (ISC, © Mapbox) ist in `index.html` eingebettet.
+earcut 2.2.4 (ISC, © Mapbox) is embedded in `index.html`.
