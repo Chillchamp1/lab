@@ -1,5 +1,11 @@
 [
   {
+    "slug": "pixel-fliesen",
+    "titel": "Pixel-Fliesen: Bilder als Fliesenmosaik für den 3D-Druck",
+    "beschreibung": "Bild einfügen, und die Seite zerlegt es in neun LEGO-kompatible 2×2-Fliesen mit bis zu vier Filamentfarben, als mehrfarbige 3MF für den Snapmaker U1. Farbtöne werden trotz Licht und Schatten erkannt, dunkle Umrisse werden als Graben gedruckt, der durch seinen Schatten dunkel wirkt und kein eigenes Filament braucht. Mit 3D-Vorschau, Pinsel zum Nachmalen und einem Passungstest für den Halt auf den Noppen.",
+    "datum": "2026-10"
+  },
+  {
     "slug": "berlin-untergrund",
     "titel": "Unter dem Wedding",
     "beschreibung": "Prototyp nach dem Vorbild von metroskop.cz: die U-Bahnhöfe Amrumer Straße und Leopoldplatz und der U9-Tunnel dazwischen in 3D, gebaut aus OpenStreetMap — Bahnsteige, Treppen, Rolltreppen, Aufzüge und Zugänge auf ihren Ebenen unter der Straße. Ein amtliches 3D-Modell der Bahnhöfe gibt es nicht als Open Data; OSM kennt Ebenen, keine Meter, deshalb sind die Tiefen geschätzt.",
