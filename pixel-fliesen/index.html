@@ -1,0 +1,1249 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pixel-Fliesen</title>
+<style>
+:root{
+  --bg:#f4f2ee; --surface:#ffffff; --surface-2:#ebe8e2; --line:#d9d4cb;
+  --text:#1f1d1a; --muted:#6b665e; --accent:#d94b2b; --accent-2:#b83a1d; --accent-ink:#ffffff;
+  --gap:#cfc9bf; --warn:#9a6a00; --warn-bg:#fff4d6;
+  --radius:12px; --shadow:0 1px 2px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#16151a; --surface:#1f1e24; --surface-2:#2a2930; --line:#3a3841;
+    --text:#ecebf0; --muted:#a19fab; --accent:#ff6a47; --accent-2:#ff8466; --accent-ink:#1a0d08;
+    --gap:#3a3841; --warn:#ffcf66; --warn-bg:#3a2f12; --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#16151a; --surface:#1f1e24; --surface-2:#2a2930; --line:#3a3841;
+  --text:#ecebf0; --muted:#a19fab; --accent:#ff6a47; --accent-2:#ff8466; --accent-ink:#1a0d08;
+  --gap:#3a3841; --warn:#ffcf66; --warn-bg:#3a2f12; --shadow:none;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:20px 24px 8px;max-width:1280px;margin:0 auto}
+h1{font-size:22px;margin:0;letter-spacing:-.01em}
+header p{margin:4px 0 0;color:var(--muted)}
+.layout{display:grid;grid-template-columns:340px 1fr;gap:20px;padding:16px 24px 40px;max-width:1280px;margin:0 auto}
+@media (max-width:900px){.layout{grid-template-columns:1fr;padding:12px 16px 32px}header{padding:16px 16px 4px}}
+.panel{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.card h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 12px;font-weight:600}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;display:flex;flex-direction:column;align-items:center;gap:8px}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--surface-2)}
+.drop img{max-width:100%;max-height:150px;image-rendering:pixelated;background:repeating-conic-gradient(var(--surface-2) 0 25%,transparent 0 50%) 0 0/14px 14px;border-radius:6px}
+.drop small{color:var(--muted)}
+.row{display:flex;align-items:center;gap:10px;margin:8px 0}
+.row label{flex:1;color:var(--text)}
+.row .hint{color:var(--muted);font-size:12px}
+select,input[type=number]{background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:inherit;min-width:0}
+input[type=number]{width:84px}
+input[type=range]{width:120px;accent-color:var(--accent)}
+input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--text);padding:7px 12px}
+button:hover{background:var(--surface-2)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+button.primary:hover{background:var(--accent-2);border-color:var(--accent-2)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.slots{display:flex;flex-direction:column;gap:6px}
+.slot{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;border:1px solid transparent}
+.slot.sel{border-color:var(--accent);background:var(--surface-2)}
+.slot input[type=color]{width:34px;height:28px;border:1px solid var(--line);border-radius:6px;padding:0;background:none;cursor:pointer}
+.slot .sw{width:34px;height:28px;border:1px solid var(--line);border-radius:6px;flex:none}
+.slot .nm{flex:1}
+.slot .nm b{font-weight:600}
+.slot .nm span{display:block;color:var(--muted);font-size:12px}
+.slot button{padding:4px 8px;font-size:12px}
+.lock.on{border-color:var(--accent);color:var(--accent)}
+details summary{cursor:pointer;color:var(--muted);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.06em;list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"▸ ";}
+details[open] summary::before{content:"▾ ";}
+.results{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;align-content:start}
+.mosaic h3{margin:0;font-size:17px}
+.mosaic .sub{color:var(--muted);font-size:13px;margin:2px 0 12px}
+.mosaic canvas{width:100%;aspect-ratio:1;display:block;border-radius:8px;background:var(--gap);touch-action:none}
+.mosaic canvas.paint{cursor:crosshair}
+.mosaic .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.stats{color:var(--muted);font-size:12px;margin-top:8px;display:flex;flex-wrap:wrap;gap:4px 12px}
+.stats i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px;border:1px solid var(--line)}
+.warn{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:8px 10px;font-size:12px;margin-top:8px}
+.help{grid-column:1/-1}
+.help ol{margin:0;padding-left:20px}
+.help li{margin:4px 0}
+.muted{color:var(--muted)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <h1>Pixel-Fliesen</h1>
+  <p>Bild einfügen → Mosaik aus 9 2×2-Fliesen (LEGO®-kompatibel) als mehrfarbige 3MF für den Snapmaker U1.</p>
+</header>
+
+<main class="layout">
+  <aside class="panel">
+    <section class="card">
+      <h2>1 · Bild</h2>
+      <div class="drop" id="drop" tabindex="0">
+        <img id="thumb" class="hidden" alt="Vorschau des Bildes">
+        <div id="dropText"><b>Bild hierher ziehen</b><br><small>oder klicken · oder Strg+V zum Einfügen<br>PNG mit transparentem Hintergrund ist ideal, je größer desto besser</small></div>
+      </div>
+      <input type="file" id="file" accept="image/*" class="hidden">
+      <div class="row"><label for="style">Stil</label>
+        <select id="style"><option value="smooth">Glatt – feine Konturen</option><option value="pixel">Pixel-Art – Quadrate</option></select></div>
+      <div class="row pixelOnly"><label for="pixelSize">Pixelgröße</label>
+        <select id="pixelSize"><option value="0.4">0,4 mm</option><option value="0.5">0,5 mm</option><option value="0.8" selected>0,8 mm</option><option value="1">1,0 mm</option><option value="1.6">1,6 mm</option><option value="2">2,0 mm</option></select></div>
+      <div class="row pixelOnly"><label for="resample">Verkleinern</label>
+        <select id="resample"><option value="avg">Mittelwert</option><option value="nearest">Nächster Nachbar</option></select></div>
+      <div class="row"><label for="minDetail">Kleinstes Detail<br><span class="hint">kleinere Flecken werden entfernt</span></label>
+        <select id="minDetail"><option value="0.2">0,2 mm</option><option value="0.3">0,3 mm</option><option value="0.4" selected>0,4 mm (Düse)</option><option value="0.6">0,6 mm</option><option value="0.8">0,8 mm</option></select></div>
+      <div class="row"><label for="thicken">Umrisse verstärken<br><span class="hint">Kontur bzw. dunkelste Farbe wird breiter</span></label>
+        <select id="thicken"><option value="0" selected>aus</option><option value="1">+0,1 mm</option><option value="2">+0,2 mm</option><option value="3">+0,3 mm</option></select></div>
+      <div class="row"><label for="margin">Rand (mm)</label><input type="number" id="margin" min="0" max="5" step="0.1" value="0.5"></div>
+      <div class="row"><label for="removeBg">Einfarbigen Hintergrund entfernen<br><span class="hint">nur bei Bildern ohne Transparenz</span></label><input type="checkbox" id="removeBg" checked></div>
+      <div class="row"><label for="bgTol">Toleranz Hintergrund</label><input type="range" id="bgTol" min="5" max="120" value="40"></div>
+    </section>
+
+    <section class="card">
+      <h2>2 · Farben / Filamente</h2>
+      <div class="row"><label for="ncol">Anzahl Filamente</label>
+        <select id="ncol"><option>2</option><option>3</option><option selected>4</option></select></div>
+      <div class="row"><label for="groove">Konturen als Graben<br><span class="hint">dunkle Umrisse werden vertieft und wirken durch den Schatten dunkel – kein eigenes Filament nötig</span></label><input type="checkbox" id="groove" checked></div>
+      <div class="row grooveOnly"><label for="darkL">Kontur-Erkennung<br><span class="hint">nach rechts = auch hellere Linien werden Graben</span></label><input type="range" id="darkL" min="10" max="60" value="32"></div>
+      <div class="row grooveOnly"><label for="grooveDepth">Grabentiefe</label>
+        <select id="grooveDepth"><option value="0.2">0,2 mm (1 Schicht)</option><option value="0.4" selected>0,4 mm (2 Schichten)</option><option value="0.6">0,6 mm (3 Schichten)</option></select></div>
+      <div class="row grooveOnly"><label for="grooveFill">Grabenboden in</label><select id="grooveFill"></select></div>
+      <div class="slots" id="slots"></div>
+      <p class="muted" style="font-size:12px;margin:8px 0 0">Farbe anklicken und auf dein Filament setzen – sie wird dann fest (🔒) und alle Flächen werden neu zugeordnet. Filament 1 ist der Hintergrund. Farbtöne werden unabhängig von Licht und Schatten zusammengefasst.</p>
+      <div class="row"><label for="baseSlot">Fliesenkörper (Unterseite) in</label><select id="baseSlot"></select></div>
+      <div class="toolbar">
+        <button id="paintBtn" title="Mit der markierten Farbe in die Vorschau malen">✎ Malen</button>
+        <button id="undoBtn" title="Strg+Z">↶ Rückgängig</button>
+        <label class="muted" for="brush" style="font-size:12px">Pinsel</label><input type="range" id="brush" min="0.2" max="3" step="0.1" value="0.6" title="Pinselgröße">
+      </div>
+    </section>
+
+    <section class="card">
+      <details id="geoDetails">
+        <summary>3 · Fliese &amp; Druck</summary>
+        <div class="row"><label for="gS">Kantenlänge (mm)</label><input type="number" id="gS" step="0.05" value="15.8"></div>
+        <div class="row"><label for="gH">Höhe (mm)</label><input type="number" id="gH" step="0.1" value="3.2"></div>
+        <div class="row"><label for="gTop">Deckenstärke (mm)</label><input type="number" id="gTop" step="0.1" value="1.2"></div>
+        <div class="row"><label for="gT">davon Farbschicht (mm)</label><input type="number" id="gT" step="0.1" value="0.6"></div>
+        <div class="row"><label for="gWall">Wandstärke (mm)</label><input type="number" id="gWall" step="0.05" value="1.2"></div>
+        <div class="row"><label for="gClamp">Klemmrippen (mm)<br><span class="hint">8 Rippen an der Innenwand drücken auf die Noppen; größer = fester</span></label><input type="number" id="gClamp" step="0.05" value="0.1"></div>
+        <div class="row"><button id="fitTest">Passungstest herunterladen</button><span class="hint">4 schlichte Fliesen: 1–4 Punkte = +0,05 / +0,10 / +0,15 / +0,20 mm</span></div>
+        <div class="row"><label for="gTubeO">Röhrchen außen Ø (mm)<br><span class="hint">größer = fester Halt</span></label><input type="number" id="gTubeO" step="0.05" value="6.51"></div>
+        <div class="row"><label for="gTubeI">Röhrchen innen Ø (mm)</label><input type="number" id="gTubeI" step="0.05" value="4.8"></div>
+        <div class="row"><label for="faceDown">Bildseite nach unten drucken<br><span class="hint">empfohlen: glatte Oberfläche, keine Brücken</span></label><input type="checkbox" id="faceDown" checked></div>
+        <div class="row"><label for="bedX">Bettmitte X / Y (mm)</label><input type="number" id="bedX" value="135" style="width:64px"><input type="number" id="bedY" value="135" style="width:64px"></div>
+      </details>
+    </section>
+  </aside>
+
+  <section class="results" id="results">
+    <div class="card help">
+      <h2>So druckst du</h2>
+      <ol>
+        <li>3MF herunterladen und in <b>Snapmaker Orca</b> öffnen.</li>
+        <li>Jede Fliese besteht aus Teilen, die schon Filament 1–4 zugeordnet sind. Links in der Filamentliste die Farben so setzen bzw. einlegen, wie sie hier angezeigt werden.</li>
+        <li>Schichthöhe 0,2 mm (erste Schicht 0,2 mm) → die Farbschicht von 0,6 mm sind genau 3 Schichten. Glattes PEI-Bett gibt eine glänzende Bildseite.</li>
+        <li>Für feine Linien in Orca den Wandgenerator „Arachne“ nutzen (Standard). Linienbreite der ersten Schicht ≈ 0,42 mm.</li>
+        <li>Konturen als Graben: Beim Druck mit Bildseite nach unten bleiben die Gräben in den ersten Schichten frei und werden danach überbrückt – bei 0,4–1 mm Breite problemlos. Gräben schmaler als die Düse verschwinden; dann „Umrisse verstärken“ hochstellen.</li>
+        <li>Halt auf den Noppen: unter „Fliese &amp; Druck“ einmal den <b>Passungstest</b> drucken (4 kleine Fliesen, an 1–4 Punkten erkennbar), die mit dem besten Halt aussuchen und deren Wert bei „Klemmrippen“ eintragen.</li>
+      </ol>
+    </div>
+  </section>
+</main>
+
+<script>
+/* earcut 2.2.4 – (c) 2016 Mapbox, ISC License – https://github.com/mapbox/earcut */
+!function(e){"object"==typeof exports&&"undefined"!=typeof module?module.exports=e():"function"==typeof define&&define.amd?define([],e):("undefined"!=typeof window?window:"undefined"!=typeof global?global:"undefined"!=typeof self?self:this).earcut=e()}(function(){return function r(x,i,u){function f(n,e){if(!i[n]){if(!x[n]){var t="function"==typeof require&&require;if(!e&&t)return t(n,!0);if(o)return o(n,!0);throw(e=new Error("Cannot find module '"+n+"'")).code="MODULE_NOT_FOUND",e}t=i[n]={exports:{}},x[n][0].call(t.exports,function(e){return f(x[n][1][e]||e)},t,t.exports,r,x,i,u)}return i[n].exports}for(var o="function"==typeof require&&require,e=0;e<u.length;e++)f(u[e]);return f}({1:[function(e,n,t){"use strict";function r(e,n,t){t=t||2;var r,x,i,u,f,o=n&&n.length,v=o?n[0]*t:e.length,p=s(e,0,v,t,!0),y=[];if(p&&p.next!==p.prev){if(o&&(p=function(e,n,t,r){var x,i,u,f,o=[];for(x=0,i=n.length;x<i;x++)f=n[x]*r,u=x<i-1?n[x+1]*r:e.length,(f=s(e,f,u,r,!1))===f.next&&(f.steiner=!0),o.push(function(e){var n=e,t=e;for(;(n.x<t.x||n.x===t.x&&n.y<t.y)&&(t=n),n=n.next,n!==e;);return t}(f));for(o.sort(c),x=0;x<o.length;x++)t=function(e,n){var t=function(e,n){var t,r=n,x=e.x,i=e.y,u=-1/0;do{if(i<=r.y&&i>=r.next.y&&r.next.y!==r.y){var f=r.x+(i-r.y)*(r.next.x-r.x)/(r.next.y-r.y);if(f<=x&&u<f&&(u=f,t=r.x<r.next.x?r:r.next,f===x))return t}}while(r=r.next,r!==n);if(!t)return null;var o,v=t,p=t.x,y=t.y,a=1/0;r=t;for(;x>=r.x&&r.x>=p&&x!==r.x&&D(i<y?x:u,i,p,y,i<y?u:x,i,r.x,r.y)&&(o=Math.abs(i-r.y)/(x-r.x),_(r,e)&&(o<a||o===a&&(r.x>t.x||r.x===t.x&&function(e,n){return E(e.prev,e,n.prev)<0&&E(n.next,e,e.next)<0}(t,r)))&&(t=r,a=o)),r=r.next,r!==v;);return t}(e,n);if(!t)return n;n=j(t,e);return q(n,n.next),q(t,t.next)}(o[x],t);return t}(e,n,p,t)),e.length>80*t){for(var a=r=e[0],l=x=e[1],h=t;h<v;h+=t)(i=e[h])<a&&(a=i),(u=e[h+1])<l&&(l=u),r<i&&(r=i),x<u&&(x=u);f=0!==(f=Math.max(r-a,x-l))?32767/f:0}O(p,y,t,a,l,f,0)}return y}function s(e,n,t,r,x){var i,u;if(x===0<d(e,n,t,r))for(i=n;i<t;i+=r)u=f(i,e[i],e[i+1],u);else for(i=t-r;n<=i;i-=r)u=f(i,e[i],e[i+1],u);return u&&N(u,u.next)&&(C(u),u=u.next),u}function q(e,n){if(!e)return e;n=n||e;var t,r=e;do{if(t=!1,r.steiner||!N(r,r.next)&&0!==E(r.prev,r,r.next))r=r.next;else{if(C(r),(r=n=r.prev)===r.next)break;t=!0}}while(t||r!==n);return n}function O(e,n,t,r,x,i,u){if(e){if(!u&&i){for(var f=e,o=r,v=x,p=i,y=f;0===y.z&&(y.z=k(y.x,y.y,o,v,p)),y.prevZ=y.prev,y.nextZ=y.next,(y=y.next)!==f;);y.prevZ.nextZ=null,y.prevZ=null;var a,l,h,s,c,d,Z,g,w=y,M=1;do{for(l=w,c=w=null,d=0;l;){for(d++,h=l,a=Z=0;a<M&&(Z++,h=h.nextZ);a++);for(g=M;0<Z||0<g&&h;)0!==Z&&(0===g||!h||l.z<=h.z)?(l=(s=l).nextZ,Z--):(h=(s=h).nextZ,g--),c?c.nextZ=s:w=s,s.prevZ=c,c=s;l=h}}while(c.nextZ=null,M*=2,1<d)}for(var b,m,z=e;e.prev!==e.next;)if(b=e.prev,m=e.next,i?function(e,n,t,r){var x=e.prev,i=e,u=e.next;if(0<=E(x,i,u))return;var f=x.x,o=i.x,v=u.x,p=x.y,y=i.y,a=u.y,l=f<o?f<v?f:v:o<v?o:v,h=p<y?p<a?p:a:y<a?y:a,s=o<f?v<f?f:v:v<o?o:v,c=y<p?a<p?p:a:a<y?y:a,d=k(l,h,n,t,r),Z=k(s,c,n,t,r),g=e.prevZ,w=e.nextZ;for(;g&&g.z>=d&&w&&w.z<=Z;){if(g.x>=l&&g.x<=s&&g.y>=h&&g.y<=c&&g!==x&&g!==u&&D(f,p,o,y,v,a,g.x,g.y)&&0<=E(g.prev,g,g.next))return;if(g=g.prevZ,w.x>=l&&w.x<=s&&w.y>=h&&w.y<=c&&w!==x&&w!==u&&D(f,p,o,y,v,a,w.x,w.y)&&0<=E(w.prev,w,w.next))return;w=w.nextZ}for(;g&&g.z>=d;){if(g.x>=l&&g.x<=s&&g.y>=h&&g.y<=c&&g!==x&&g!==u&&D(f,p,o,y,v,a,g.x,g.y)&&0<=E(g.prev,g,g.next))return;g=g.prevZ}for(;w&&w.z<=Z;){if(w.x>=l&&w.x<=s&&w.y>=h&&w.y<=c&&w!==x&&w!==u&&D(f,p,o,y,v,a,w.x,w.y)&&0<=E(w.prev,w,w.next))return;w=w.nextZ}return 1}(e,r,x,i):function(e){var n=e.prev,t=e,e=e.next;if(0<=E(n,t,e))return;var r=n.x,x=t.x,i=e.x,u=n.y,f=t.y,o=e.y,v=r<x?r<i?r:i:x<i?x:i,p=u<f?u<o?u:o:f<o?f:o,y=x<r?i<r?r:i:i<x?x:i,a=f<u?o<u?u:o:o<f?f:o,l=e.next;for(;l!==n;){if(l.x>=v&&l.x<=y&&l.y>=p&&l.y<=a&&D(r,u,x,f,i,o,l.x,l.y)&&0<=E(l.prev,l,l.next))return;l=l.next}return 1}(e))n.push(b.i/t|0),n.push(e.i/t|0),n.push(m.i/t|0),C(e),e=m.next,z=m.next;else if((e=m)===z){u?1===u?O(e=function(e,n,t){var r=e;do{var x=r.prev,i=r.next.next}while(!N(x,i)&&U(x,r,r.next,i)&&_(x,i)&&_(i,x)&&(n.push(x.i/t|0),n.push(r.i/t|0),n.push(i.i/t|0),C(r),C(r.next),r=e=i),r=r.next,r!==e);return q(r)}(q(e),n,t),n,t,r,x,i,2):2===u&&function(e,n,t,r,x,i){var u=e;do{for(var f,o=u.next.next;o!==u.prev;){if(u.i!==o.i&&function(e,n){return e.next.i!==n.i&&e.prev.i!==n.i&&!function(e,n){var t=e;do{if(t.i!==e.i&&t.next.i!==e.i&&t.i!==n.i&&t.next.i!==n.i&&U(t,t.next,e,n))return 1}while(t=t.next,t!==e);return}(e,n)&&(_(e,n)&&_(n,e)&&function(e,n){var t=e,r=!1,x=(e.x+n.x)/2,i=(e.y+n.y)/2;for(;t.y>i!=t.next.y>i&&t.next.y!==t.y&&x<(t.next.x-t.x)*(i-t.y)/(t.next.y-t.y)+t.x&&(r=!r),t=t.next,t!==e;);return r}(e,n)&&(E(e.prev,e,n.prev)||E(e,n.prev,n))||N(e,n)&&0<E(e.prev,e,e.next)&&0<E(n.prev,n,n.next))}(u,o))return f=j(u,o),u=q(u,u.next),f=q(f,f.next),O(u,n,t,r,x,i,0),O(f,n,t,r,x,i,0);o=o.next}}while(u=u.next,u!==e)}(e,n,t,r,x,i):O(q(e),n,t,r,x,i,1);break}}}function c(e,n){return e.x-n.x}function k(e,n,t,r,x){return(e=1431655765&((e=858993459&((e=252645135&((e=16711935&((e=(e-t)*x|0)|e<<8))|e<<4))|e<<2))|e<<1))|(n=1431655765&((n=858993459&((n=252645135&((n=16711935&((n=(n-r)*x|0)|n<<8))|n<<4))|n<<2))|n<<1))<<1}function D(e,n,t,r,x,i,u,f){return(e-u)*(i-f)<=(x-u)*(n-f)&&(t-u)*(n-f)<=(e-u)*(r-f)&&(x-u)*(r-f)<=(t-u)*(i-f)}function E(e,n,t){return(n.y-e.y)*(t.x-n.x)-(n.x-e.x)*(t.y-n.y)}function N(e,n){return e.x===n.x&&e.y===n.y}function U(e,n,t,r){var x=v(E(e,n,t)),i=v(E(e,n,r)),u=v(E(t,r,e)),f=v(E(t,r,n));return x!==i&&u!==f||(0===x&&o(e,t,n)||(0===i&&o(e,r,n)||(0===u&&o(t,e,r)||!(0!==f||!o(t,n,r)))))}function o(e,n,t){return n.x<=Math.max(e.x,t.x)&&n.x>=Math.min(e.x,t.x)&&n.y<=Math.max(e.y,t.y)&&n.y>=Math.min(e.y,t.y)}function v(e){return 0<e?1:e<0?-1:0}function _(e,n){return E(e.prev,e,e.next)<0?0<=E(e,n,e.next)&&0<=E(e,e.prev,n):E(e,n,e.prev)<0||E(e,e.next,n)<0}function j(e,n){var t=new u(e.i,e.x,e.y),r=new u(n.i,n.x,n.y),x=e.next,i=n.prev;return(e.next=n).prev=e,(t.next=x).prev=t,(r.next=t).prev=r,(i.next=r).prev=i,r}function f(e,n,t,r){e=new u(e,n,t);return r?(e.next=r.next,(e.prev=r).next.prev=e,r.next=e):(e.prev=e).next=e,e}function C(e){e.next.prev=e.prev,e.prev.next=e.next,e.prevZ&&(e.prevZ.nextZ=e.nextZ),e.nextZ&&(e.nextZ.prevZ=e.prevZ)}function u(e,n,t){this.i=e,this.x=n,this.y=t,this.prev=null,this.next=null,this.z=0,this.prevZ=null,this.nextZ=null,this.steiner=!1}function d(e,n,t,r){for(var x=0,i=n,u=t-r;i<t;i+=r)x+=(e[u]-e[i])*(e[i+1]+e[u+1]),u=i;return x}n.exports=r,(n.exports.default=r).deviation=function(e,n,t,r){var x=n&&n.length,i=x?n[0]*t:e.length,u=Math.abs(d(e,0,i,t));if(x)for(var f=0,o=n.length;f<o;f++){var v=n[f]*t,p=f<o-1?n[f+1]*t:e.length;u-=Math.abs(d(e,v,p,t))}for(var y=0,f=0;f<r.length;f+=3){var a=r[f]*t,l=r[f+1]*t,h=r[f+2]*t;y+=Math.abs((e[a]-e[h])*(e[1+l]-e[1+a])-(e[a]-e[l])*(e[1+h]-e[1+a]))}return 0===u&&0===y?0:Math.abs((y-u)/u)},r.flatten=function(e){for(var n=e[0][0].length,t={vertices:[],holes:[],dimensions:n},r=0,x=0;x<e.length;x++){for(var i=0;i<e[x].length;i++)for(var u=0;u<n;u++)t.vertices.push(e[x][i][u]);0<x&&(r+=e[x-1].length,t.holes.push(r))}return t}},{}]},{},[1])(1)});
+</script>
+
+<script id="core">
+/* ---------- Reine Rechenfunktionen (ohne DOM) ---------- */
+const Core = (() => {
+  const PITCH = 16;   // LEGO-Raster 2×2 = 16 mm
+  const CELL = 0.1;   // Feinraster in mm
+  const CPT = Math.round(PITCH / CELL); // Zellen je Fliesenraster
+
+  const hex = rgb => '#' + rgb.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('').toUpperCase();
+  const parseHex = h => { h = h.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16)); };
+
+  const lin = c => { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+  function rgb2lab(r, g, b) {
+    const R = lin(r), G = lin(g), B = lin(b);
+    const x = (R * 0.4124 + G * 0.3576 + B * 0.1805) / 0.95047;
+    const y = R * 0.2126 + G * 0.7152 + B * 0.0722;
+    const z = (R * 0.0193 + G * 0.1192 + B * 0.9505) / 1.08883;
+    const f = t => t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116;
+    const fx = f(x), fy = f(y), fz = f(z);
+    return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
+  }
+
+  /* ---------- Bild ---------- */
+  // Hintergrund freistellen, Bounding-Box des Motivs bestimmen
+  function prepareImage(src, removeBg, tol) {
+    const { w, h } = src, d = new Uint8ClampedArray(src.data);
+    let hasAlpha = false;
+    for (let i = 3; i < d.length; i += 4) if (d[i] < 250) { hasAlpha = true; break; }
+    if (removeBg && !hasAlpha) {
+      const corners = [0, w - 1, (h - 1) * w, h * w - 1], ref = [0, 0, 0];
+      for (const c of corners) for (let k = 0; k < 3; k++) ref[k] += d[c * 4 + k] / 4;
+      const t2 = tol * tol;
+      const near = p => { const i = p * 4; return (d[i] - ref[0]) ** 2 + (d[i + 1] - ref[1]) ** 2 + (d[i + 2] - ref[2]) ** 2 <= t2; };
+      const seen = new Uint8Array(w * h), stack = [];
+      const push = p => { if (!seen[p] && near(p)) { seen[p] = 1; stack.push(p); } };
+      for (let x = 0; x < w; x++) { push(x); push((h - 1) * w + x); }
+      for (let y = 0; y < h; y++) { push(y * w); push(y * w + w - 1); }
+      while (stack.length) {
+        const p = stack.pop(), x = p % w, y = (p - x) / w;
+        d[p * 4 + 3] = 0;
+        if (x > 0) push(p - 1); if (x < w - 1) push(p + 1);
+        if (y > 0) push(p - w); if (y < h - 1) push(p + w);
+      }
+    }
+    let x0 = w, y0 = h, x1 = -1, y1 = -1;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] >= 128) {
+      if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+    }
+    if (x1 < 0) { x0 = 0; y0 = 0; x1 = w - 1; y1 = h - 1; }
+    return { w, h, d, bbox: { x0, y0, x1: x1 + 1, y1: y1 + 1 } };
+  }
+
+  // Motiv auf G×G Raster (Zellgröße cellMM) abtasten → [r,g,b,deckung]; 'smooth' = bilinear + Mittelwert
+  function sampleGrid(prep, G, cellMM, marginMM, mode) {
+    const { w, h, d, bbox } = prep;
+    const bw = bbox.x1 - bbox.x0, bh = bbox.y1 - bbox.y0;
+    const inner = Math.max(1, G - 2 * marginMM / cellMM);
+    const scale = Math.max(bw, bh) / inner;
+    const ox = bbox.x0 + bw / 2 - G * scale / 2, oy = bbox.y0 + bh / 2 - G * scale / 2;
+    const ss = mode === 'nearest' ? 1 : Math.max(1, Math.min(6, Math.ceil(scale)));
+    const bil = mode !== 'nearest';
+    const out = new Float32Array(G * G * 4);
+    const acc = [0, 0, 0, 0];
+    const add = (ix, iy, wt) => {
+      if (ix < 0 || iy < 0 || ix >= w || iy >= h || wt <= 0) return;
+      const i = (iy * w + ix) * 4, a = d[i + 3] / 255 * wt;
+      acc[0] += d[i] * a; acc[1] += d[i + 1] * a; acc[2] += d[i + 2] * a; acc[3] += a;
+    };
+    for (let y = 0; y < G; y++) for (let x = 0; x < G; x++) {
+      acc[0] = acc[1] = acc[2] = acc[3] = 0;
+      for (let sy = 0; sy < ss; sy++) for (let sx = 0; sx < ss; sx++) {
+        const px = ox + (x + (sx + 0.5) / ss) * scale, py = oy + (y + (sy + 0.5) / ss) * scale;
+        if (!bil) { add(Math.floor(px), Math.floor(py), 1); continue; }
+        const fx = px - 0.5, fy = py - 0.5, ix = Math.floor(fx), iy = Math.floor(fy), tx = fx - ix, ty = fy - iy;
+        add(ix, iy, (1 - tx) * (1 - ty)); add(ix + 1, iy, tx * (1 - ty)); add(ix, iy + 1, (1 - tx) * ty); add(ix + 1, iy + 1, tx * ty);
+      }
+      const o = (y * G + x) * 4;
+      if (acc[3] > 0) { out[o] = acc[0] / acc[3]; out[o + 1] = acc[1] / acc[3]; out[o + 2] = acc[2] / acc[3]; }
+      out[o + 3] = acc[3] / (ss * ss);
+    }
+    return out;
+  }
+
+  /* ---------- Farbanalyse ---------- */
+  // Farbabstand mit halb gewichteter Helligkeit: Licht und Schatten eines Farbtons bleiben zusammen
+  const WL = 0.5;
+  const dist2w = (a, b) => (WL * (a[0] - b[0])) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2;
+
+  // Quadratisches Erodieren (isMax=false) bzw. Dilatieren (isMax=true), getrennt in Zeilen und Spalten
+  function morph(M, G, r, isMax) {
+    const tmp = new Uint8Array(G * G), out = new Uint8Array(G * G);
+    const pass = (src, dst, horiz) => {
+      for (let a = 0; a < G; a++) for (let b = 0; b < G; b++) {
+        let v = isMax ? 0 : 1;
+        for (let k = -r; k <= r; k++) {
+          const bb = b + k, s = bb < 0 || bb >= G ? 0 : horiz ? src[a * G + bb] : src[bb * G + a];
+          if (isMax ? s : !s) { v = isMax ? 1 : 0; break; }
+        }
+        dst[horiz ? a * G + b : b * G + a] = v;
+      }
+    };
+    pass(M, tmp, true); pass(tmp, out, false);
+    return out;
+  }
+
+  // Bild → Palette + Beschriftung je Zelle.
+  // contour ≥ 0: dunkle Linien (Helligkeit < darkL, höchstens 2·lineR Zellen breit) werden zum Kontur-Slot; breite dunkle Flächen bleiben Farben.
+  // Übrige Zellen: 16 feine Farbgruppen, dann schrittweise die ähnlichsten zusammenlegen, bis so viele wie Filamente übrig sind.
+  // Ein kleiner, aber deutlich anderer Farbton (z. B. rote Augen) bleibt so erhalten, Schattierungen verschmelzen mit ihrem Farbton.
+  function analyze(samples, G, slots, contour, darkL, lineR) {
+    const n = G * G, lab = new Float32Array(n * 3), solid = new Uint8Array(n), cache = new Map();
+    for (let i = 0; i < n; i++) {
+      const o = i * 4; if (samples[o + 3] < 0.5) continue;
+      solid[i] = 1;
+      const key = (Math.round(samples[o]) << 16) | (Math.round(samples[o + 1]) << 8) | Math.round(samples[o + 2]);
+      let l = cache.get(key); if (!l) cache.set(key, l = rgb2lab(samples[o], samples[o + 1], samples[o + 2]));
+      lab[i * 3] = l[0]; lab[i * 3 + 1] = l[1]; lab[i * 3 + 2] = l[2];
+    }
+    let line = new Uint8Array(n);
+    if (contour >= 0) {
+      // Umrisse sind dunkel und eher grau; kräftig gefärbte Schattenstellen (z. B. dunkelrot) zählen erst bei sehr wenig Helligkeit
+      for (let i = 0; i < n; i++) line[i] = solid[i] && lab[i * 3] + 0.3 * Math.hypot(lab[i * 3 + 1], lab[i * 3 + 2]) < darkL ? 1 : 0;
+      if (lineR > 0) { const wide = morph(morph(line, G, lineR, false), G, lineR, true); for (let i = 0; i < n; i++) if (wide[i]) line[i] = 0; }
+    }
+    // Häufigkeiten auf einem Lab-Raster (2 Einheiten)
+    const bins = new Map();
+    for (let i = 0; i < n; i++) {
+      if (!solid[i] || line[i]) continue;
+      const o = i * 4, L = lab[i * 3], a = lab[i * 3 + 1], b = lab[i * 3 + 2];
+      const key = (Math.round(L / 2) * 256 + Math.round(a / 2) + 128) * 256 + Math.round(b / 2) + 128;
+      let e = bins.get(key); if (!e) bins.set(key, e = [0, 0, 0, 0, 0, 0, 0]);
+      e[0]++; e[1] += L; e[2] += a; e[3] += b; e[4] += samples[o]; e[5] += samples[o + 1]; e[6] += samples[o + 2];
+    }
+    const B = [...bins.values()].map(e => ({ w: e[0], lab: [e[1] / e[0], e[2] / e[0], e[3] / e[0]], rgb: [e[4] / e[0], e[5] / e[0], e[6] / e[0]] }));
+    const W = B.reduce((s, b) => s + b.w, 0) || 1;
+    // feine Gruppen: k-means mit gewichteter Startwahl
+    const K0 = Math.min(16, B.length), sub = [];
+    while (sub.length < K0) {
+      let best = null, bs = -1;
+      for (const b of B) {
+        let md = Infinity; for (const c of sub) md = Math.min(md, dist2w(b.lab, c.lab));
+        const sc = sub.length ? b.w * md : b.w;
+        if (sc > bs) { bs = sc; best = b; }
+      }
+      if (!best || (sub.length && bs <= 0)) break;
+      sub.push({ lab: best.lab.slice(), rgb: best.rgb.slice(), w: 0 });
+    }
+    const nearest = (l, C) => { let bi = 0, bd = Infinity; for (let c = 0; c < C.length; c++) { const d = dist2w(l, C[c].lab); if (d < bd) { bd = d; bi = c; } } return bi; };
+    for (let it = 0; it < 20 && sub.length; it++) {
+      const acc = sub.map(() => [0, 0, 0, 0, 0, 0, 0]);
+      for (const b of B) { const a = acc[nearest(b.lab, sub)]; a[0] += b.w; for (let k = 0; k < 3; k++) { a[1 + k] += b.lab[k] * b.w; a[4 + k] += b.rgb[k] * b.w; } }
+      let moved = 0;
+      sub.forEach((c, i) => {
+        const a = acc[i]; c.w = a[0]; if (!a[0]) return;
+        const l = [a[1] / a[0], a[2] / a[0], a[3] / a[0]];
+        moved += dist2w(l, c.lab); c.lab = l; c.rgb = [a[4] / a[0], a[5] / a[0], a[6] / a[0]];
+      });
+      if (moved < 0.01) break;
+    }
+    for (let i = sub.length - 1; i >= 0; i--) if (!sub[i].w) sub.splice(i, 1);
+    // zusammenlegen; feste Filamente bleiben an ihrem Platz und nehmen ähnliche Gruppen auf
+    const fil = slots.map((s, i) => i).filter(i => i !== contour);
+    const cl = fil.filter(i => slots[i].locked).map(i => ({ lab: rgb2lab(...slots[i].rgb), rgb: slots[i].rgb.slice(), w: 0, fixed: i, members: [] }));
+    sub.forEach((c, i) => { if (c.w) cl.push({ lab: c.lab, rgb: c.rgb, w: c.w, fixed: -1, members: [i] }); });
+    while (cl.length > fil.length) {
+      let bi = -1, bj = -1, bc = Infinity;
+      for (let i = 0; i < cl.length; i++) for (let j = i + 1; j < cl.length; j++) {
+        const A = cl[i], C = cl[j];
+        if (A.fixed >= 0 && C.fixed >= 0) continue;
+        const w = A.fixed >= 0 ? C.w : C.fixed >= 0 ? A.w : Math.min(A.w, C.w);
+        const cost = dist2w(A.lab, C.lab) * Math.pow(Math.max(1e-4, w / W), 0.3);
+        if (cost < bc) { bc = cost; bi = i; bj = j; }
+      }
+      if (bi < 0) break;
+      let keep = cl[bi], drop = cl[bj];
+      if (drop.fixed >= 0) [keep, drop] = [drop, keep];
+      if (keep.fixed < 0) { // mittlerer Farbton der Gruppe (Licht und Schatten gemittelt)
+        const t = drop.w / (keep.w + drop.w);
+        for (let k = 0; k < 3; k++) { keep.lab[k] += (drop.lab[k] - keep.lab[k]) * t; keep.rgb[k] += (drop.rgb[k] - keep.rgb[k]) * t; }
+      }
+      keep.members.push(...drop.members); keep.w += drop.w;
+      cl.splice(cl.indexOf(drop), 1);
+    }
+    // freie Gruppen nach Größe auf die nicht festen Filamente verteilen
+    const palette = slots.map(s => s.rgb.slice()), subSlot = new Uint8Array(sub.length);
+    const freeSlots = fil.filter(i => !slots[i].locked);
+    cl.filter(c => c.fixed < 0).sort((a, b) => b.w - a.w).forEach((c, k) => { c.fixed = freeSlots[k]; palette[c.fixed] = c.rgb; });
+    for (const c of cl) for (const m of c.members) subSlot[m] = c.fixed;
+    const out = new Uint8Array(n), memo = new Map();
+    for (let i = 0; i < n; i++) {
+      if (!solid[i]) { out[i] = 0; continue; }
+      if (line[i]) { out[i] = contour; continue; }
+      const key = (Math.round(lab[i * 3] * 4) * 2048 + Math.round(lab[i * 3 + 1] * 4) + 1024) * 2048 + Math.round(lab[i * 3 + 2] * 4) + 1024;
+      let s = memo.get(key);
+      if (s === undefined) memo.set(key, s = sub.length ? subSlot[nearest([lab[i * 3], lab[i * 3 + 1], lab[i * 3 + 2]], sub)] : 0);
+      out[i] = s;
+    }
+    return { palette: palette.map(c => c.map(Math.round)), L: out };
+  }
+
+  // grobes Pixelraster auf das Feinraster vergrößern
+  function expand(Lp, Gp, f) {
+    const G = Gp * f, L = new Uint8Array(G * G);
+    for (let y = 0; y < G; y++) { const row = ((y / f) | 0) * Gp; for (let x = 0; x < G; x++) L[y * G + x] = Lp[row + ((x / f) | 0)]; }
+    return L;
+  }
+
+  /* ---------- Bereinigung ---------- */
+  // Mehrheitsfilter 3×3 glättet Treppen und Einzelpixel
+  function majority(L, G) {
+    const out = L.slice(), cnt = new Uint8Array(16);
+    for (let y = 1; y < G - 1; y++) for (let x = 1; x < G - 1; x++) {
+      cnt.fill(0);
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) cnt[L[(y + dy) * G + x + dx]]++;
+      let best = L[y * G + x], bc = 0;
+      for (let k = 0; k < 16; k++) if (cnt[k] > bc) { bc = cnt[k]; best = k; }
+      if (bc >= 5) out[y * G + x] = best;
+    }
+    L.set(out);
+  }
+
+  // Inseln kleiner als minCells Zellen in die umgebende Farbe übernehmen
+  function removeIslands(L, G, minCells) {
+    if (minCells < 2) return;
+    const comp = new Int32Array(G * G).fill(-1), stack = [], members = [];
+    let id = 0;
+    for (let s = 0; s < G * G; s++) {
+      if (comp[s] >= 0) continue;
+      const lab = L[s]; members.length = 0; stack.push(s); comp[s] = id;
+      const nb = new Map();
+      while (stack.length) {
+        const p = stack.pop(); members.push(p);
+        const x = p % G, y = (p - x) / G;
+        const visit = q => {
+          if (L[q] === lab) { if (comp[q] < 0) { comp[q] = id; stack.push(q); } }
+          else nb.set(L[q], (nb.get(L[q]) || 0) + 1);
+        };
+        if (x > 0) visit(p - 1); if (x < G - 1) visit(p + 1);
+        if (y > 0) visit(p - G); if (y < G - 1) visit(p + G);
+      }
+      if (members.length < minCells && nb.size) {
+        let best = lab, bc = 0;
+        for (const [k, c] of nb) if (c > bc) { bc = c; best = k; }
+        for (const p of members) L[p] = best;
+      }
+      id++;
+    }
+  }
+
+  // Farbe slot um k Zellen ausdehnen (abwechselnd 4er/8er Nachbarschaft → rundlich)
+  function thicken(L, G, slot, k) {
+    for (let it = 0; it < k; it++) {
+      const src = L.slice(), diag = it % 2 === 1;
+      for (let y = 0; y < G; y++) for (let x = 0; x < G; x++) {
+        const p = y * G + x;
+        if (src[p] === slot) continue;
+        let hit = (x > 0 && src[p - 1] === slot) || (x < G - 1 && src[p + 1] === slot) || (y > 0 && src[p - G] === slot) || (y < G - 1 && src[p + G] === slot);
+        if (!hit && diag) hit = (x > 0 && y > 0 && src[p - G - 1] === slot) || (x < G - 1 && y > 0 && src[p - G + 1] === slot) || (x > 0 && y < G - 1 && src[p + G - 1] === slot) || (x < G - 1 && y < G - 1 && src[p + G + 1] === slot);
+        if (hit) L[p] = slot;
+      }
+    }
+  }
+
+  /* ---------- Geometrie ---------- */
+  // Fliesenkörper: geschlossener Körper aus Außenwand, Decke und Mittelröhrchen (Bildseite oben, z = 0 unten)
+  function baseMesh(g) {
+    const N = 64, c = g.S / 2, zt = g.H - g.t, hc = g.H - g.top;
+    const v = [], t = [];
+    const P = (x, y, z) => { v.push(x, y, z); return v.length / 3 - 1; };
+    const ring = (fn, z) => { const a = []; for (let k = 0; k < N; k++) { const [x, y] = fn(2 * Math.PI * k / N); a.push(P(x, y, z)); } return a; };
+    const sq = half => ang => { const co = Math.cos(ang), si = Math.sin(ang), r = half / Math.max(Math.abs(co), Math.abs(si)); return [c + r * co, c + r * si]; };
+    const ci = rad => ang => [c + rad * Math.cos(ang), c + rad * Math.sin(ang)];
+    const O0 = ring(sq(c), 0), Ot = ring(sq(c), zt), I0 = ring(sq(c - g.wall), 0), Ic = ring(sq(c - g.wall), hc);
+    const T0 = ring(ci(g.tubeO / 2), 0), Tc = ring(ci(g.tubeO / 2), hc), U0 = ring(ci(g.tubeI / 2), 0), Uc = ring(ci(g.tubeI / 2), hc);
+    const ct = P(c, c, zt), cc = P(c, c, hc);
+    const q = (a, b, cq, d) => t.push(a, b, cq, a, cq, d);
+    for (let k = 0; k < N; k++) {
+      const j = (k + 1) % N;
+      q(O0[k], O0[j], Ot[j], Ot[k]);   // Außenwand
+      t.push(ct, Ot[k], Ot[j]);         // Oberseite
+      q(O0[k], I0[k], I0[j], O0[j]);   // Unterkante Wand
+      q(Ic[k], Ic[j], I0[j], I0[k]);   // Innenwand
+      q(Ic[k], Tc[k], Tc[j], Ic[j]);   // Decke innen
+      q(T0[k], T0[j], Tc[j], Tc[k]);   // Röhrchen außen
+      q(T0[k], U0[k], U0[j], T0[j]);   // Röhrchen unten
+      q(Uc[k], Uc[j], U0[j], U0[k]);   // Röhrchen innen
+      t.push(cc, Uc[j], Uc[k]);         // Röhrchen Decke
+    }
+    // Klemmrippen: je Noppe zwei Rippen an der Innenwand, Rippenfläche g.clamp mm über den Noppenrand hinaus (Noppe Ø 4,8 im Abstand PITCH/4)
+    const inner = c - g.wall, depth = inner - (PITCH / 4 + 2.4 - (g.clamp || 0)), rw = 0.8, emb = 0.05;
+    if (depth > 0.02) {
+      const box = (x0, x1, y0, y1, z0, z1) => {
+        const b = [P(x0, y0, z0), P(x1, y0, z0), P(x1, y1, z0), P(x0, y1, z0), P(x0, y0, z1), P(x1, y0, z1), P(x1, y1, z1), P(x0, y1, z1)];
+        q(b[0], b[3], b[2], b[1]); q(b[4], b[5], b[6], b[7]);
+        q(b[0], b[1], b[5], b[4]); q(b[1], b[2], b[6], b[5]); q(b[2], b[3], b[7], b[6]); q(b[3], b[0], b[4], b[7]);
+      };
+      for (const s of [-1, 1]) for (const o of [-PITCH / 4, PITCH / 4]) {
+        const a0 = c + o - rw / 2, a1 = c + o + rw / 2;
+        const w0 = s > 0 ? c + inner - depth : c - inner - emb, w1 = s > 0 ? c + inner + emb : c - inner + depth;
+        box(w0, w1, a0, a1, 0, hc + emb);   // Wand links/rechts
+        box(a0, a1, w0, w1, 0, hc + emb);   // Wand vorne/hinten
+      }
+    }
+    return { v, t };
+  }
+
+  // Passungstest: schlichte Fliesen mit verschiedener Klemmung, Stufe k ist an k Vertiefungen auf der Bildseite erkennbar
+  function buildFitTest(g, faceDown, slot, clamps) {
+    const spacing = g.S + 5, S = g.S, d = 1.4, gap = 1;
+    return clamps.map((cl, k) => {
+      const w = (k + 1) * d + k * gap, x0 = (S - w) / 2, holes = [];
+      for (let i = 0; i <= k; i++) { const a = x0 + i * (d + gap), y = S / 2 - d / 2; holes.push([[a, y], [a, y + d], [a + d, y + d], [a + d, y]]); }
+      const face = extrude([[[[0, 0], [S, 0], [S, S], [0, S]], ...holes]], g.H - g.t, g.H);
+      const label = 'P' + (k + 1), txt = `${cl >= 0 ? '+' : ''}${cl.toFixed(2).replace('.', ',')} mm`;
+      return {
+        label, pos: [(k - (clamps.length - 1) / 2) * spacing, 0],
+        parts: [{ name: `${label} Körper ${txt}`, slot, mesh: place(baseMesh({ ...g, clamp: cl }), g, faceDown) },
+                { name: `${label} Bildseite`, slot, mesh: place(face, g, faceDown) }],
+      };
+    });
+  }
+
+  // Marching Squares: geschlossene Konturen der Farbe c im Raster T (nc×nc, Zeile 0 = oben), Koordinaten in mm mit y nach oben
+  function contourLoops(T, nc, c, hs, S) {
+    const W = nc + 2;
+    const val = (u, v) => (u >= 0 && v >= 0 && u < nc && v < nc && T[v * nc + u] === c) ? 1 : 0;
+    const Hk = (u, v) => ((v + 1) * W + (u + 1)) * 2, Vk = (u, v) => ((v + 1) * W + (u + 1)) * 2 + 1;
+    const adj = new Map();
+    const link = (a, b) => {
+      let x = adj.get(a); if (!x) adj.set(a, x = []); x.push(b);
+      let y = adj.get(b); if (!y) adj.set(b, y = []); y.push(a);
+    };
+    for (let v = -1; v < nc; v++) for (let u = -1; u < nc; u++) {
+      const a = val(u, v), b = val(u + 1, v), cc = val(u + 1, v + 1), d = val(u, v + 1), s = a + b + cc + d;
+      if (s === 0 || s === 4) continue;
+      const top = Hk(u, v), right = Vk(u + 1, v), bottom = Hk(u, v + 1), left = Vk(u, v);
+      if (a !== b && b !== cc && d !== cc && a !== d) {
+        if (a) { link(top, left); link(bottom, right); } else { link(top, right); link(left, bottom); }
+        continue;
+      }
+      const e = [];
+      if (a !== b) e.push(top); if (b !== cc) e.push(right); if (d !== cc) e.push(bottom); if (a !== d) e.push(left);
+      link(e[0], e[1]);
+    }
+    const pos = k => {
+      const p = k >> 1, u = (p % W) - 1, v = Math.floor(p / W) - 1;
+      return (k & 1) ? [(u + 0.5) * hs, S - (v + 1) * hs] : [(u + 1) * hs, S - (v + 0.5) * hs];
+    };
+    const seen = new Set(), loops = [];
+    for (const start of adj.keys()) {
+      if (seen.has(start)) continue;
+      const loop = []; let prev = -1, cur = start;
+      while (true) {
+        seen.add(cur); loop.push(pos(cur));
+        const n = adj.get(cur), nx = n[0] !== prev ? n[0] : n[1];
+        prev = cur; cur = nx;
+        if (cur === start || seen.has(cur)) break;
+      }
+      if (loop.length >= 3) loops.push(loop);
+    }
+    return loops;
+  }
+
+  const area = p => { let s = 0; for (let i = 0, j = p.length - 1; i < p.length; j = i++) s += (p[j][0] - p[i][0]) * (p[j][1] + p[i][1]); return s / 2; };
+  const inside = (pt, p) => {
+    let c = false;
+    for (let i = 0, j = p.length - 1; i < p.length; j = i++) {
+      if ((p[i][1] > pt[1]) !== (p[j][1] > pt[1]) && pt[0] < (p[j][0] - p[i][0]) * (pt[1] - p[i][1]) / (p[j][1] - p[i][1]) + p[i][0]) c = !c;
+    }
+    return c;
+  };
+  function dp(pts, tol) {
+    const keep = new Uint8Array(pts.length); keep[0] = keep[pts.length - 1] = 1;
+    const st = [[0, pts.length - 1]], t2 = tol * tol;
+    while (st.length) {
+      const [a, b] = st.pop(); let md = 0, mi = -1;
+      const [ax, ay] = pts[a], [bx, by] = pts[b], dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy;
+      for (let i = a + 1; i < b; i++) {
+        let t = l2 ? ((pts[i][0] - ax) * dx + (pts[i][1] - ay) * dy) / l2 : 0; t = Math.max(0, Math.min(1, t));
+        const ex = ax + t * dx - pts[i][0], ey = ay + t * dy - pts[i][1], dd = ex * ex + ey * ey;
+        if (dd > md) { md = dd; mi = i; }
+      }
+      if (mi >= 0 && md > t2) { keep[mi] = 1; st.push([a, mi], [mi, b]); }
+    }
+    return pts.filter((_, i) => keep[i]);
+  }
+  function simplifyClosed(p, tol) {
+    if (p.length < 8) return p;
+    let fi = 0, fd = -1;
+    for (let i = 1; i < p.length; i++) { const d = (p[i][0] - p[0][0]) ** 2 + (p[i][1] - p[0][1]) ** 2; if (d > fd) { fd = d; fi = i; } }
+    const a = dp(p.slice(0, fi + 1), tol), b = dp(p.slice(fi).concat([p[0]]), tol);
+    return a.slice(0, -1).concat(b.slice(0, -1));
+  }
+
+  // Konturen → Flächen (außen + Löcher), vereinfacht und richtig orientiert
+  function loopsToPolys(loops, tol, minArea) {
+    const info = loops.map(p => {
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      for (const [x, y] of p) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+      return { p, a: Math.abs(area(p)), bb: [x0, y0, x1, y1], depth: 0, parent: -1 };
+    });
+    info.forEach((li, i) => {
+      const pt = li.p[0]; let pa = Infinity;
+      info.forEach((lj, j) => {
+        if (i === j || lj.a <= li.a) return;
+        if (pt[0] < lj.bb[0] || pt[0] > lj.bb[2] || pt[1] < lj.bb[1] || pt[1] > lj.bb[3]) return;
+        if (inside(pt, lj.p)) { li.depth++; if (lj.a < pa) { pa = lj.a; li.parent = j; } }
+      });
+    });
+    const polys = new Map();
+    info.forEach((li, i) => {
+      if (li.depth % 2 || li.a < minArea) return;
+      let r = simplifyClosed(li.p, tol); if (r.length < 3) return;
+      if (area(r) < 0) r = r.reverse();
+      polys.set(i, [r]);
+    });
+    info.forEach(li => {
+      if (li.depth % 2 === 0 || li.a < minArea || !polys.has(li.parent)) return;
+      let r = simplifyClosed(li.p, tol); if (r.length < 3) return;
+      if (area(r) > 0) r = r.reverse();
+      polys.get(li.parent).push(r);
+    });
+    return [...polys.values()];
+  }
+
+  // Flächen zu geschlossenen Körpern zwischen z0 und z1 extrudieren
+  function extrude(polys, z0, z1) {
+    const v = [], t = [];
+    for (const rings of polys) {
+      const flat = [], holes = []; let n = 0;
+      rings.forEach((r, ri) => { if (ri) holes.push(n); for (const [x, y] of r) flat.push(x, y); n += r.length; });
+      const base = v.length / 3;
+      for (let i = 0; i < n; i++) v.push(flat[2 * i], flat[2 * i + 1], z0);
+      for (let i = 0; i < n; i++) v.push(flat[2 * i], flat[2 * i + 1], z1);
+      // earcut auf minimal verrauschter Kopie: exakt kollineare Punkte (Pixel-Art, Löcher auf einer Linie) gäben sonst T-Stöße
+      const jit = flat.map((x, i) => x + (((i * 2654435761) >>> 0) % 1000 - 500) * 2e-7);
+      const tri = earcut(jit, holes, 2);
+      for (let k = 0; k < tri.length; k += 3) {
+        let a = tri[k], b = tri[k + 1], c = tri[k + 2];
+        const cr = (jit[2 * b] - jit[2 * a]) * (jit[2 * c + 1] - jit[2 * a + 1]) - (jit[2 * b + 1] - jit[2 * a + 1]) * (jit[2 * c] - jit[2 * a]);
+        if (cr < 0) { const s = b; b = c; c = s; }
+        t.push(base + n + a, base + n + b, base + n + c, base + a, base + c, base + b);
+      }
+      let off = 0;
+      for (const r of rings) {
+        const L = r.length;
+        for (let i = 0; i < L; i++) {
+          const a = base + off + i, b = base + off + (i + 1) % L;
+          t.push(a, b, b + n, a, b + n, a + n);
+        }
+        off += L;
+      }
+    }
+    return { v, t };
+  }
+
+  // Farbschicht einer Fliese: je Farbe ein Körper (oben auf dem Fliesenkörper); die Graben-Farbe endet depth unter der Oberfläche
+  function colorMeshes(m, ti, tj, g, tol, groove) {
+    const { L, G } = m, nc = Math.round(g.S / CELL), hs = g.S / nc, off = (PITCH - g.S) / 2;
+    const T = new Uint8Array(nc * nc), used = new Set();
+    for (let v = 0; v < nc; v++) {
+      const gy = Math.min(G - 1, Math.floor((tj * PITCH + off + (v + 0.5) * hs) / CELL));
+      for (let u = 0; u < nc; u++) {
+        const gx = Math.min(G - 1, Math.floor((ti * PITCH + off + (u + 0.5) * hs) / CELL));
+        used.add(T[v * nc + u] = L[gy * G + gx]);
+      }
+    }
+    const meshes = new Map();
+    for (const c of [...used].sort((a, b) => a - b)) {
+      const polys = loopsToPolys(contourLoops(T, nc, c, hs, g.S), tol, 0.02);
+      if (!polys.length) continue;
+      meshes.set(c, extrude(polys, g.H - g.t, groove && c === groove.slot ? g.H - groove.depth : g.H));
+    }
+    return meshes;
+  }
+
+  // zentrieren und ggf. Bildseite nach unten drehen (180° um X → keine Spiegelung, Umlaufsinn bleibt)
+  function place(mesh, g, faceDown) {
+    const v = new Float32Array(mesh.v.length), h = g.S / 2;
+    for (let i = 0; i < v.length; i += 3) {
+      let x = mesh.v[i] - h, y = mesh.v[i + 1] - h, z = mesh.v[i + 2];
+      if (faceDown) { y = -y; z = g.H - z; }
+      v[i] = x; v[i + 1] = y; v[i + 2] = z;
+    }
+    return { v, t: mesh.t };
+  }
+
+  // groove = {slot, fill, depth}: Kontur-Farbe slot wird als Graben im Filament fill gedruckt, die Farbschicht dafür um depth dicker
+  const grooveGeo = (g, groove) => groove ? { ...g, t: g.t + groove.depth, top: Math.max(g.top, g.t + groove.depth + 0.2) } : g;
+
+  function buildSet(m, g, faceDown, baseSlot, groove = null, tol = 0.04) {
+    g = grooveGeo(g, groove);
+    const base = place(baseMesh(g), g, faceDown), tiles = [], spacing = g.S + 5;
+    for (let tj = 0; tj < m.n; tj++) for (let ti = 0; ti < m.n; ti++) {
+      const label = 'ABCDEFGH'[tj] + (ti + 1);
+      const parts = [{ name: `${label} Körper`, slot: baseSlot, mesh: base }];
+      for (const [slot, M] of colorMeshes(m, ti, tj, g, tol, groove)) {
+        const isGroove = groove && slot === groove.slot;
+        parts.push({ name: isGroove ? `${label} Kontur-Graben` : `${label} Farbe ${slot + 1}`, slot: isGroove ? groove.fill : slot, mesh: place(M, g, faceDown) });
+      }
+      const px = (ti - (m.n - 1) / 2) * spacing, py = (tj - (m.n - 1) / 2) * spacing * (faceDown ? 1 : -1);
+      tiles.push({ label, parts, pos: [px, py] });
+    }
+    return tiles;
+  }
+
+  /* ---------- Dateiformate ---------- */
+  const fx = x => (Math.round(x * 10000) / 10000).toString();
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const uuid = (id, tag) => id.toString(16).padStart(8, '0') + '-' + tag + '-4c03-9d28-80fed5dfa1dc';
+  const NS = 'xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:BambuStudio="http://schemas.bambulab.com/package/2021" xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06" requiredextensions="p"';
+
+  function meshXml(id, mesh) {
+    const out = [`<object id="${id}" p:UUID="${uuid(id, '81cb')}" type="model"><mesh><vertices>`];
+    const v = mesh.v, t = mesh.t;
+    for (let i = 0; i < v.length; i += 3) out.push(`<vertex x="${fx(v[i])}" y="${fx(v[i + 1])}" z="${fx(v[i + 2])}"/>`);
+    out.push('</vertices><triangles>');
+    for (let i = 0; i < t.length; i += 3) out.push(`<triangle v1="${t[i]}" v2="${t[i + 1]}" v3="${t[i + 2]}"/>`);
+    out.push('</triangles></mesh></object>');
+    return out.join('\n');
+  }
+
+  // 3MF im Aufbau von Snapmaker Orca / Bambu: je Fliese eine Objektdatei, Teile mit Filament-Zuordnung in model_settings.config
+  async function make3MF(tiles, palette, bed, title) {
+    const enc = new TextEncoder();
+    let id = 1;
+    const files = [], objs = [], items = [], cfg = [], inst = [], relList = [];
+    for (const tile of tiles) {
+      const ids = [], meshes = [];
+      for (const p of tile.parts) { const pid = id++; ids.push(pid); meshes.push(meshXml(pid, p.mesh)); }
+      const cid = id++, path = `/3D/Objects/fliese_${tile.label}.model`;
+      files.push({ name: path.slice(1), data: enc.encode(`<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" ${NS}>\n<metadata name="BambuStudio:3mfVersion">1</metadata>\n<resources>\n${meshes.join('\n')}\n</resources>\n<build/>\n</model>`) });
+      relList.push(` <Relationship Target="${path}" Id="rel-${relList.length + 1}" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/>`);
+      objs.push(`  <object id="${cid}" p:UUID="${uuid(cid, '61cb')}" type="model">\n   <components>\n` +
+        ids.map(i => `    <component p:path="${path}" objectid="${i}" p:UUID="${uuid(i, 'b206')}" transform="1 0 0 0 1 0 0 0 1 0 0 0"/>`).join('\n') + `\n   </components>\n  </object>`);
+      items.push(`  <item objectid="${cid}" p:UUID="${uuid(cid, 'b1ec')}" transform="1 0 0 0 1 0 0 0 1 ${fx(bed[0] + tile.pos[0])} ${fx(bed[1] + tile.pos[1])} 0" printable="1"/>`);
+      cfg.push(`  <object id="${cid}">\n    <metadata key="name" value="Fliese ${tile.label}"/>\n    <metadata key="extruder" value="${tile.parts[0].slot + 1}"/>\n` +
+        tile.parts.map((p, k) => `    <part id="${ids[k]}" subtype="normal_part">\n      <metadata key="name" value="${esc(p.name)}"/>\n      <metadata key="matrix" value="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"/>\n      <metadata key="extruder" value="${p.slot + 1}"/>\n    </part>`).join('\n') +
+        `\n  </object>`);
+      inst.push(`    <model_instance>\n      <metadata key="object_id" value="${cid}"/>\n      <metadata key="instance_id" value="0"/>\n      <metadata key="identify_id" value="${1000 + cid}"/>\n    </model_instance>`);
+    }
+    const model = `<?xml version="1.0" encoding="UTF-8"?>
+<model unit="millimeter" xml:lang="en-US" ${NS}>
+ <metadata name="Application">Snapmaker_Orca-2.4.0</metadata>
+ <metadata name="BambuStudio:3mfVersion">1</metadata>
+ <metadata name="Title">${esc(title)}</metadata>
+ <metadata name="Designer">Pixel-Fliesen</metadata>
+ <resources>
+${objs.join('\n')}
+ </resources>
+ <build p:UUID="2c7c17d8-22b5-4d84-8835-1976022ea369">
+${items.join('\n')}
+ </build>
+</model>`;
+    const config = `<?xml version="1.0" encoding="UTF-8"?>\n<config>\n${cfg.join('\n')}\n  <plate>\n    <metadata key="plater_id" value="1"/>\n    <metadata key="plater_name" value="${esc(title)}"/>\n    <metadata key="locked" value="false"/>\n${inst.join('\n')}\n  </plate>\n</config>\n`;
+    const modelRels = `<?xml version="1.0" encoding="UTF-8"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n${relList.join('\n')}\n</Relationships>`;
+    const types = `<?xml version="1.0" encoding="UTF-8"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+ <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+ <Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/>
+ <Default Extension="config" ContentType="text/xml"/>
+</Types>`;
+    const rels = `<?xml version="1.0" encoding="UTF-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+ <Relationship Target="/3D/3dmodel.model" Id="rel-1" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/>
+</Relationships>`;
+    return zip([
+      { name: '[Content_Types].xml', data: enc.encode(types) },
+      { name: '_rels/.rels', data: enc.encode(rels) },
+      { name: '3D/3dmodel.model', data: enc.encode(model) },
+      { name: '3D/_rels/3dmodel.model.rels', data: enc.encode(modelRels) },
+      ...files,
+      { name: 'Metadata/model_settings.config', data: enc.encode(config) },
+    ]);
+  }
+
+  function stl(meshes) { // meshes: [{v,t,off:[x,y]}]
+    let n = 0; for (const m of meshes) n += m.t.length / 3;
+    const buf = new ArrayBuffer(84 + n * 50), dv = new DataView(buf);
+    const head = 'Pixel-Fliesen'; for (let i = 0; i < head.length; i++) dv.setUint8(i, head.charCodeAt(i));
+    dv.setUint32(80, n, true);
+    let o = 84;
+    for (const m of meshes) {
+      const v = m.v, t = m.t, [dx, dy] = m.off;
+      for (let i = 0; i < t.length; i += 3) {
+        const p = [t[i], t[i + 1], t[i + 2]].map(k => [v[k * 3] + dx, v[k * 3 + 1] + dy, v[k * 3 + 2]]);
+        const u = [0, 1, 2].map(k => p[1][k] - p[0][k]), w = [0, 1, 2].map(k => p[2][k] - p[0][k]);
+        let nx = u[1] * w[2] - u[2] * w[1], ny = u[2] * w[0] - u[0] * w[2], nz = u[0] * w[1] - u[1] * w[0];
+        const l = Math.hypot(nx, ny, nz) || 1;
+        for (const c of [nx / l, ny / l, nz / l]) { dv.setFloat32(o, c, true); o += 4; }
+        for (const pt of p) for (const c of pt) { dv.setFloat32(o, c, true); o += 4; }
+        o += 2;
+      }
+    }
+    return new Uint8Array(buf);
+  }
+
+  async function makeSTLZip(tiles, palette, prefix) {
+    const bySlot = new Map();
+    for (const tile of tiles) for (const p of tile.parts) {
+      if (!bySlot.has(p.slot)) bySlot.set(p.slot, []);
+      bySlot.get(p.slot).push({ v: p.mesh.v, t: p.mesh.t, off: tile.pos });
+    }
+    const files = [...bySlot.entries()].sort((a, b) => a[0] - b[0]).map(([slot, ms]) =>
+      ({ name: `${prefix}_filament${slot + 1}_${hex(palette[slot]).slice(1)}.stl`, data: stl(ms) }));
+    return zip(files);
+  }
+
+  /* ---------- ZIP (deflate wenn verfügbar) ---------- */
+  const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  const crc32 = u8 => { let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+  async function deflate(u8) {
+    if (typeof CompressionStream === 'undefined') return null;
+    try {
+      const s = new Blob([u8]).stream().pipeThrough(new CompressionStream('deflate-raw'));
+      return new Uint8Array(await new Response(s).arrayBuffer());
+    } catch (e) { return null; }
+  }
+  async function zip(files) {
+    const enc = new TextEncoder(), chunks = [], central = [];
+    let offset = 0;
+    const d = new Date(), dosTime = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1),
+      dosDate = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+    for (const f of files) {
+      const name = enc.encode(f.name), crc = crc32(f.data);
+      const comp = await deflate(f.data), method = comp ? 8 : 0, body = comp || f.data;
+      const lh = new DataView(new ArrayBuffer(30));
+      lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, method, true);
+      lh.setUint16(10, dosTime, true); lh.setUint16(12, dosDate, true); lh.setUint32(14, crc, true);
+      lh.setUint32(18, body.length, true); lh.setUint32(22, f.data.length, true); lh.setUint16(26, name.length, true); lh.setUint16(28, 0, true);
+      chunks.push(new Uint8Array(lh.buffer), name, body);
+      const ch = new DataView(new ArrayBuffer(46));
+      ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, method, true);
+      ch.setUint16(12, dosTime, true); ch.setUint16(14, dosDate, true); ch.setUint32(16, crc, true);
+      ch.setUint32(20, body.length, true); ch.setUint32(24, f.data.length, true); ch.setUint16(28, name.length, true);
+      ch.setUint32(42, offset, true);
+      central.push(new Uint8Array(ch.buffer), name);
+      offset += 30 + name.length + body.length;
+    }
+    let cdSize = 0; for (const c of central) cdSize += c.length;
+    const end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+    end.setUint32(12, cdSize, true); end.setUint32(16, offset, true);
+    const all = [...chunks, ...central, new Uint8Array(end.buffer)];
+    let len = 0; for (const c of all) len += c.length;
+    const out = new Uint8Array(len); let p = 0;
+    for (const c of all) { out.set(c, p); p += c.length; }
+    return out;
+  }
+
+  return { PITCH, CELL, CPT, hex, parseHex, rgb2lab, prepareImage, sampleGrid, analyze, expand, majority, removeIslands, thicken, baseMesh, colorMeshes, grooveGeo, buildSet, buildFitTest, make3MF, makeSTLZip, zip };
+})();
+</script>
+
+<script>
+/* ---------- Oberfläche ---------- */
+(() => {
+  const $ = s => document.querySelector(s);
+  const DEFAULT_COLORS = ['#FFFFFF', '#1A1A1A', '#E8B830', '#D23C2A'];
+  const state = {
+    src: null, name: 'bild',
+    slots: [{ rgb: [255, 255, 255], locked: true }, { rgb: [26, 26, 26], locked: false }, { rgb: [232, 184, 48], locked: false }, { rgb: [210, 60, 42], locked: false }],
+    palette: [], brush: 1, painting: false, lastPainted: null,
+    mosaics: [
+      { n: 3, L: null, undo: [], title: '9 Fliesen (3 × 3)' },
+    ],
+  };
+  state.palette = state.slots.map(s => s.rgb.slice());
+
+  // Kontur-Slot (immer der letzte) ist kein Filament, sondern wird als Graben gedruckt
+  const contourIdx = () => state.slots.findIndex(s => s.contour);
+  const nFil = () => state.slots.filter(s => !s.contour).length;
+  function grooveInfo() {
+    const slot = contourIdx(); if (slot < 0) return null;
+    let fill = +$('#grooveFill').value;
+    if (!(fill >= 0 && fill < nFil())) { // automatisch: dunkelstes Filament
+      const ls = state.palette.slice(0, nFil()).map(c => Core.rgb2lab(...c)[0]);
+      fill = ls.indexOf(Math.min(...ls));
+    }
+    return { slot, fill, depth: num('grooveDepth') };
+  }
+  // Anzeige: Graben = Filament im Schatten
+  function shownPalette() {
+    const gr = grooveInfo(), p = state.palette.slice();
+    if (gr) p[gr.slot] = p[gr.fill].map(v => v * 0.4);
+    return p;
+  }
+
+  const num = id => parseFloat($('#' + id).value);
+  const geo = () => {
+    const g = { S: num('gS'), H: num('gH'), top: num('gTop'), t: num('gT'), wall: num('gWall'), tubeO: num('gTubeO'), tubeI: num('gTubeI'), clamp: num('gClamp') || 0 };
+    g.t = Math.max(0.2, g.t);
+    g.top = Math.max(g.t + 0.2, g.top);
+    g.H = Math.max(g.top + 1, g.H);
+    g.S = Math.min(Core.PITCH, Math.max(10, g.S));
+    return g;
+  };
+
+  /* --- Mosaik-Karten --- */
+  const results = $('#results');
+  state.mosaics.forEach(m => {
+    m.G = m.n * Core.CPT;
+    m.off = document.createElement('canvas'); m.off.width = m.off.height = m.G;
+    m.offCtx = m.off.getContext('2d'); m.img = m.offCtx.createImageData(m.G, m.G);
+    const card = document.createElement('div');
+    card.className = 'card mosaic';
+    card.innerHTML = `
+      <h3>${m.title}</h3>
+      <div class="sub" data-sub></div>
+      <canvas aria-label="Vorschau ${m.title}"></canvas>
+      <div class="stats" data-stats></div>
+      <div class="warn hidden" data-warn></div>
+      <div class="actions">
+        <button class="primary" data-3mf disabled>3MF herunterladen</button>
+        <button data-stl disabled>STL je Farbe (ZIP)</button>
+        <button data-png disabled>Vorlage (PNG)</button>
+      </div>`;
+    results.insertBefore(card, results.lastElementChild);
+    m.card = card; m.canvas = card.querySelector('canvas');
+    card.querySelector('[data-3mf]').addEventListener('click', () => exportSet(m, '3mf'));
+    card.querySelector('[data-stl]').addEventListener('click', () => exportSet(m, 'stl'));
+    card.querySelector('[data-png]').addEventListener('click', () => exportPng(m));
+    setupPaint(m);
+  });
+  results.appendChild(results.querySelector('.help'));
+
+  /* --- 3D-Vorschau (three.js wird erst bei Bedarf geladen) --- */
+  const v3 = { three: null, explode: false, theta: -Math.PI / 2, phi: 0.75, dist: 115, timer: 0 };
+  {
+    const card = document.createElement('div');
+    card.className = 'card mosaic';
+    card.innerHTML = `
+      <h3>3D-Vorschau</h3>
+      <div class="sub">Ziehen = drehen · Mausrad / zwei Finger = zoomen</div>
+      <canvas aria-label="3D-Vorschau der Fliesen"></canvas>
+      <div class="warn hidden" data-warn></div>
+      <div class="actions">
+        <button data-v="top">Bildseite</button>
+        <button data-v="tilt">Schräg</button>
+        <button data-v="bottom">Unterseite</button>
+        <button data-v="explode">Auseinander</button>
+      </div>`;
+    results.insertBefore(card, results.querySelector('.help'));
+    v3.card = card; v3.canvas = card.querySelector('canvas');
+    const cv = v3.canvas, ptrs = new Map(), clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+    let pinch = 0;
+    cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]); });
+    cv.addEventListener('pointermove', e => {
+      const p = ptrs.get(e.pointerId); if (!p) return;
+      if (ptrs.size === 1) { v3.theta -= (e.clientX - p[0]) * 0.01; v3.phi = clamp(v3.phi - (e.clientY - p[1]) * 0.01, 0.02, Math.PI - 0.02); }
+      p[0] = e.clientX; p[1] = e.clientY;
+      if (ptrs.size === 2) {
+        const [a, b] = [...ptrs.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+        if (pinch) v3.dist = clamp(v3.dist * pinch / d, 30, 300);
+        pinch = d;
+      }
+      render3D();
+    });
+    ['pointerup', 'pointercancel'].forEach(ev => cv.addEventListener(ev, e => { ptrs.delete(e.pointerId); pinch = 0; }));
+    cv.addEventListener('wheel', e => { e.preventDefault(); v3.dist = clamp(v3.dist * Math.exp(e.deltaY * 0.001), 30, 300); render3D(); }, { passive: false });
+    card.querySelectorAll('[data-v]').forEach(b => b.addEventListener('click', () => {
+      const v = b.dataset.v;
+      if (v === 'explode') { v3.explode = !v3.explode; b.textContent = v3.explode ? 'Zusammen' : 'Auseinander'; rebuild3D(); }
+      else { v3.theta = -Math.PI / 2; v3.phi = v === 'top' ? 0.02 : v === 'tilt' ? 0.75 : Math.PI - 0.6; }
+      render3D();
+    }));
+  }
+
+  let threeP = null;
+  const loadThree = () => threeP || (threeP = new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+    s.onload = () => res(window.THREE);
+    s.onerror = () => { threeP = null; s.remove(); rej(new Error('three.js konnte nicht geladen werden')); };
+    document.head.appendChild(s);
+  }));
+
+  function init3D(THREE) {
+    const r = new THREE.WebGLRenderer({ canvas: v3.canvas, antialias: true, alpha: true });
+    r.outputEncoding = THREE.sRGBEncoding; r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
+    const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(30, 1, 1, 1000);
+    cam.up.set(0, 0, 1);
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x8a8a8a, 0.6); hemi.position.set(0, 0, 1); scene.add(hemi);
+    // flaches Licht von schräg oben, damit die Gräben Schatten werfen
+    const sun = new THREE.DirectionalLight(0xffffff, 0.95); sun.position.set(-45, 60, 80); sun.castShadow = true;
+    const sc = sun.shadow.camera; sc.left = sc.bottom = -45; sc.right = sc.top = 45; sc.near = 1; sc.far = 300;
+    sun.shadow.mapSize.set(4096, 4096); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02;
+    scene.add(sun);
+    const group = new THREE.Group(); scene.add(group);
+    v3.three = { THREE, r, scene, cam, group, mats: new Map() };
+  }
+
+  function rebuild3D() {
+    const m = state.mosaics[0], T = v3.three;
+    if (!m.L || !T) return;
+    const { THREE, group } = T;
+    group.children.forEach(o => o.geometry.dispose()); group.clear();
+    T.mats.forEach(mt => mt.dispose()); T.mats.clear();
+    const mat = slot => {
+      const hx = Core.hex(state.palette[slot]);
+      if (!T.mats.has(hx)) T.mats.set(hx, new THREE.MeshStandardMaterial({ color: new THREE.Color(hx).convertSRGBToLinear(), roughness: 0.55, metalness: 0, flatShading: true }));
+      return T.mats.get(hx);
+    };
+    const geoms = new Map(), toGeom = mesh => {
+      if (geoms.has(mesh)) return geoms.get(mesh);
+      const gm = new THREE.BufferGeometry();
+      gm.setAttribute('position', new THREE.BufferAttribute(mesh.v, 3));
+      gm.setIndex(new THREE.BufferAttribute(new Uint32Array(mesh.t), 1));
+      gm.computeVertexNormals();
+      geoms.set(mesh, gm); return gm;
+    };
+    const tiles = Core.buildSet(m, geo(), false, +$('#baseSlot').value, grooveInfo());
+    const sp = Core.PITCH + (v3.explode ? 4 : 0);
+    tiles.forEach((tile, k) => {
+      const ti = k % m.n, tj = (k / m.n) | 0;
+      for (const p of tile.parts) {
+        const mesh = new THREE.Mesh(toGeom(p.mesh), mat(p.slot));
+        mesh.position.set((ti - (m.n - 1) / 2) * sp, -(tj - (m.n - 1) / 2) * sp, 0);
+        mesh.castShadow = mesh.receiveShadow = true;
+        group.add(mesh);
+      }
+    });
+  }
+
+  function render3D() {
+    const T = v3.three; if (!T) return;
+    const W = v3.canvas.clientWidth || 400;
+    T.r.setPixelRatio(window.devicePixelRatio || 1); T.r.setSize(W, W, false);
+    T.cam.aspect = 1; T.cam.updateProjectionMatrix();
+    const { theta, phi, dist } = v3, zc = 1.6;
+    T.cam.position.set(dist * Math.sin(phi) * Math.cos(theta), dist * Math.sin(phi) * Math.sin(theta), zc + dist * Math.cos(phi));
+    T.cam.lookAt(0, 0, zc);
+    T.r.render(T.scene, T.cam);
+  }
+
+  async function update3D() {
+    if (!state.mosaics[0].L) return;
+    const warn = v3.card.querySelector('[data-warn]');
+    try {
+      if (!v3.three) init3D(await loadThree());
+      rebuild3D(); render3D();
+      warn.classList.add('hidden');
+    } catch (e) {
+      console.error(e);
+      warn.textContent = 'Die 3D-Vorschau braucht beim ersten Öffnen eine Internetverbindung (three.js).';
+      warn.classList.remove('hidden');
+    }
+  }
+  const schedule3D = () => { clearTimeout(v3.timer); v3.timer = setTimeout(update3D, 250); };
+
+  /* --- Bild laden --- */
+  const drop = $('#drop'), fileIn = $('#file');
+  drop.addEventListener('click', () => fileIn.click());
+  drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileIn.click(); } });
+  fileIn.addEventListener('change', () => fileIn.files[0] && loadFile(fileIn.files[0]));
+  ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) loadFile(f); });
+  window.addEventListener('paste', e => {
+    const f = [...(e.clipboardData?.files || [])].find(f => f.type.startsWith('image/'));
+    if (f) loadFile(f);
+  });
+
+  function loadFile(file) {
+    state.name = (file.name || 'bild').replace(/\.[^.]+$/, '').replace(/[^\w\-äöüÄÖÜß]+/g, '_') || 'bild';
+    const url = URL.createObjectURL(file), im = new Image();
+    im.onload = () => { setSource(im); URL.revokeObjectURL(url); };
+    im.onerror = () => alert('Das Bild konnte nicht geladen werden.');
+    im.src = url;
+  }
+  function setSource(im) {
+    let w = im.naturalWidth, h = im.naturalHeight;
+    const s = Math.min(1, 1600 / Math.max(w, h));
+    w = Math.max(1, Math.round(w * s)); h = Math.max(1, Math.round(h * s));
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const g = c.getContext('2d'); g.imageSmoothingEnabled = s < 1; g.imageSmoothingQuality = 'high'; g.drawImage(im, 0, 0, w, h);
+    state.src = { w, h, data: g.getImageData(0, 0, w, h).data };
+    const th = $('#thumb'); th.src = im.src; th.classList.remove('hidden');
+    $('#dropText').innerHTML = `<small>${im.naturalWidth} × ${im.naturalHeight} px · anderes Bild: klicken oder ziehen</small>`;
+    process();
+  }
+
+  /* --- Verarbeitung --- */
+  function process() {
+    const pixel = $('#style').value === 'pixel';
+    document.querySelectorAll('.pixelOnly').forEach(el => el.classList.toggle('hidden', !pixel));
+    if (!state.src) { renderAll(); return; }
+    const prep = Core.prepareImage(state.src, $('#removeBg').checked, +$('#bgTol').value);
+    const margin = Math.max(0, num('margin') || 0), p = num('pixelSize');
+    const samples = state.mosaics.map(m => pixel
+      ? Core.sampleGrid(prep, Math.round(m.n * Core.PITCH / p), p, margin, $('#resample').value)
+      : Core.sampleGrid(prep, m.G, Core.CELL, margin, 'smooth'));
+    const cell = pixel ? p : Core.CELL, con = contourIdx();
+    const res = state.mosaics.map((m, i) => Core.analyze(samples[i], pixel ? Math.round(m.n * Core.PITCH / p) : m.G, state.slots, con, +$('#darkL').value, Math.round(0.6 / cell)));
+    state.palette = res[0].palette;
+    state.slots.forEach((s, i) => { if (!s.locked) s.rgb = state.palette[i].slice(); });
+    const d = num('minDetail'), minCells = Math.round(0.6 * d * d / (Core.CELL * Core.CELL));
+    const labs = state.palette.map(c => Core.rgb2lab(...c)[0]);
+    const dark = con >= 0 ? con : labs.indexOf(Math.min(...labs)), thick = +$('#thicken').value;
+    state.mosaics.forEach((m, i) => {
+      const Lq = res[i].L;
+      if (pixel) { const Gp = Math.round(m.n * Core.PITCH / p); m.L = Core.expand(Lq, Gp, Math.round(p / Core.CELL)); }
+      else { m.L = Lq; Core.majority(m.L, m.G); }
+      Core.removeIslands(m.L, m.G, minCells);
+      if (thick && dark > 0) Core.thicken(m.L, m.G, dark, thick);
+      m.undo = [];
+      renderOff(m);
+    });
+    renderAll();
+  }
+
+  function renderOff(m, x0 = 0, y0 = 0, x1 = m.G, y1 = m.G) {
+    if (!m.L) return;
+    const d = m.img.data, G = m.G, pal = shownPalette();
+    for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) {
+      const c = pal[m.L[y * G + x]], o = (y * G + x) * 4;
+      d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255;
+    }
+    m.offCtx.putImageData(m.img, 0, 0, x0, y0, x1 - x0, y1 - y0);
+  }
+
+  function renderAll() {
+    renderSlots();
+    state.mosaics.forEach(m => { renderOff(m); drawMosaic(m); });
+  }
+
+  function renderSlots() {
+    const box = $('#slots'); box.innerHTML = '';
+    const gf = $('#grooveFill'), gcur = gf.value;
+    gf.innerHTML = `<option value="auto">automatisch (dunkelstes)</option>` + state.palette.slice(0, nFil()).map((c, i) => `<option value="${i}">Filament ${i + 1} (${Core.hex(c)})</option>`).join('');
+    gf.value = gcur && (gcur === 'auto' || +gcur < nFil()) ? gcur : 'auto';
+    const gr = grooveInfo();
+    state.slots.forEach((s, i) => {
+      const el = document.createElement('div'), con = !!s.contour;
+      el.className = 'slot' + (state.painting && state.brush === i ? ' sel' : '');
+      const info = con ? `dunkle Linien → Graben ${String(gr.depth).replace('.', ',')} mm tief, Boden in Filament ${gr.fill + 1}`
+        : `${i === 0 ? 'Hintergrund' : s.locked ? 'fest' : 'automatisch'} · ${Core.hex(state.palette[i] || s.rgb)}`;
+      el.innerHTML = (con ? `<span class="sw" style="background:${Core.hex(shownPalette()[i])}"></span>`
+        : `<input type="color" value="${Core.hex(state.palette[i] || s.rgb).toLowerCase()}" aria-label="Farbe Filament ${i + 1}">`) + `
+        <div class="nm"><b>${con ? 'Kontur' : 'Filament ' + (i + 1)}</b><span>${info}</span></div>
+        ${i === 0 || con ? '' : `<button class="lock ${s.locked ? 'on' : ''}" title="${s.locked ? 'Wieder automatisch wählen lassen' : 'Farbe festhalten'}">${s.locked ? '🔒' : '🔓'}</button>`}`;
+      const inp = el.querySelector('input');
+      inp?.addEventListener('change', () => { s.rgb = Core.parseHex(inp.value); s.locked = true; process(); });
+      el.querySelector('.lock')?.addEventListener('click', () => { s.locked = !s.locked; if (s.locked) s.rgb = state.palette[i].slice(); process(); });
+      el.addEventListener('click', e => { if (!e.target.closest('input,button')) { state.brush = i; renderSlots(); } });
+      box.appendChild(el);
+    });
+    const bs = $('#baseSlot'), cur = bs.value;
+    bs.innerHTML = state.slots.filter(s => !s.contour).map((s, i) => `<option value="${i}">Filament ${i + 1} (${Core.hex(state.palette[i] || s.rgb)})</option>`).join('');
+    bs.value = cur && +cur < nFil() ? cur : '0';
+  }
+
+  function drawMosaic(m) {
+    const cv = m.canvas, dpr = window.devicePixelRatio || 1, W = cv.clientWidth || 400;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(W * dpr);
+    const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const n = m.n, mm = W / (Core.PITCH * n), cs = getComputedStyle(document.documentElement), gs = geo();
+    g.fillStyle = cs.getPropertyValue('--gap'); g.fillRect(0, 0, W, W);
+    const inset = Math.max(1.5, (Core.PITCH - gs.S) / 2 * mm);
+    g.imageSmoothingEnabled = false;
+    for (let tj = 0; tj < n; tj++) for (let ti = 0; ti < n; ti++) {
+      const x0 = ti * Core.PITCH * mm + inset, y0 = tj * Core.PITCH * mm + inset, sz = Core.PITCH * mm - 2 * inset;
+      g.save(); g.beginPath(); g.rect(x0, y0, sz, sz); g.clip();
+      if (m.L) g.drawImage(m.off, 0, 0, W, W);
+      else { g.fillStyle = cs.getPropertyValue('--surface'); g.fillRect(x0, y0, sz, sz); }
+      g.restore();
+      g.font = `600 ${Math.max(10, Math.round(sz * 0.07))}px system-ui,sans-serif`;
+      g.fillStyle = 'rgba(0,0,0,.4)'; g.fillText('ABCDEFGH'[tj] + (ti + 1), x0 + 4, y0 + Math.max(12, sz * 0.09));
+    }
+    if (!m.L) {
+      g.fillStyle = cs.getPropertyValue('--muted'); g.font = '14px system-ui,sans-serif'; g.textAlign = 'center';
+      g.fillText('Noch kein Bild geladen', W / 2, W / 2); g.textAlign = 'start';
+    }
+    const total = (n * Core.PITCH - (Core.PITCH - gs.S)).toFixed(1).replace('.', ',');
+    const pixel = $('#style').value === 'pixel';
+    const gr = grooveInfo();
+    m.card.querySelector('[data-sub]').textContent = `Bild ca. ${total} × ${total} mm · ` + (pixel ? `Pixel ${String(num('pixelSize')).replace('.', ',')} mm` : 'Konturen auf 0,1 mm genau') + (gr ? ' · Konturen als Graben' : '');
+    const st = m.card.querySelector('[data-stats]'), warn = m.card.querySelector('[data-warn]');
+    if (m.L) {
+      const cnt = state.slots.map(() => 0), pal = shownPalette(); for (const v of m.L) cnt[v]++;
+      st.innerHTML = cnt.map((c, i) => `<span><i style="background:${Core.hex(pal[i])}"></i>${state.slots[i].contour ? 'Kontur (Graben)' : 'Filament ' + (i + 1)}: ${Math.round(c / m.L.length * 100)} %</span>`).join('');
+    } else st.innerHTML = '';
+    const msgs = [];
+    if (pixel && num('pixelSize') < 0.4) msgs.push('Pixel kleiner als die Düse.');
+    if (gr) { const gg = Core.grooveGeo(gs, gr), inner = gg.H - gg.top; if (inner < 1.8) msgs.push(`Durch den Graben ist die Fliese innen nur noch ${inner.toFixed(1).replace('.', ',')} mm tief – Noppen brauchen ca. 1,8 mm. Grabentiefe verringern oder Höhe erhöhen.`); }
+    warn.textContent = msgs.join(' '); warn.classList.toggle('hidden', !msgs.length);
+    m.card.querySelectorAll('.actions button').forEach(b => b.disabled = !m.L);
+    cv.classList.toggle('paint', state.painting);
+    schedule3D();
+  }
+
+  /* --- Malen --- */
+  function setupPaint(m) {
+    let down = false;
+    const paint = e => {
+      const r = m.canvas.getBoundingClientRect(), G = m.G;
+      const cx = (e.clientX - r.left) / r.width * G, cy = (e.clientY - r.top) / r.height * G;
+      const rad = num('brush') / 2 / Core.CELL;
+      const x0 = Math.max(0, Math.floor(cx - rad)), x1 = Math.min(G, Math.ceil(cx + rad)), y0 = Math.max(0, Math.floor(cy - rad)), y1 = Math.min(G, Math.ceil(cy + rad));
+      if (x0 >= x1 || y0 >= y1) return;
+      for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) if ((x + 0.5 - cx) ** 2 + (y + 0.5 - cy) ** 2 <= rad * rad) m.L[y * G + x] = state.brush;
+      renderOff(m, x0, y0, x1, y1); drawMosaic(m);
+    };
+    m.canvas.addEventListener('pointerdown', e => {
+      if (!state.painting || !m.L) return;
+      down = true; m.canvas.setPointerCapture(e.pointerId);
+      m.undo.push(m.L.slice()); if (m.undo.length > 30) m.undo.shift();
+      state.lastPainted = m; paint(e);
+    });
+    m.canvas.addEventListener('pointermove', e => { if (down) paint(e); });
+    ['pointerup', 'pointercancel'].forEach(ev => m.canvas.addEventListener(ev, () => { down = false; }));
+  }
+  $('#paintBtn').addEventListener('click', () => {
+    state.painting = !state.painting;
+    $('#paintBtn').classList.toggle('primary', state.painting);
+    $('#paintBtn').textContent = state.painting ? '✎ Malen an – Farbe oben wählen' : '✎ Malen';
+    renderSlots(); state.mosaics.forEach(drawMosaic);
+  });
+  const undo = () => { const m = state.lastPainted; if (m && m.undo.length) { m.L = m.undo.pop(); renderOff(m); drawMosaic(m); } };
+  $('#undoBtn').addEventListener('click', undo);
+  window.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); undo(); } });
+
+  /* --- Export --- */
+  function download(data, name, type) {
+    const url = URL.createObjectURL(new Blob([data], { type }));
+    const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+  async function exportSet(m, kind) {
+    const btn = m.card.querySelector(kind === '3mf' ? '[data-3mf]' : '[data-stl]'), label = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Erzeuge …';
+    try {
+      await new Promise(r => setTimeout(r, 20));
+      const tiles = Core.buildSet(m, geo(), $('#faceDown').checked, +$('#baseSlot').value, grooveInfo());
+      const prefix = `${state.name}_${m.n}x${m.n}`;
+      if (kind === '3mf') download(await Core.make3MF(tiles, state.palette, [num('bedX'), num('bedY')], prefix), prefix + '.3mf', 'model/3mf');
+      else download(await Core.makeSTLZip(tiles, state.palette, prefix), prefix + '_stl.zip', 'application/zip');
+    } catch (e) { console.error(e); alert('Export fehlgeschlagen: ' + e.message); }
+    btn.disabled = false; btn.textContent = label;
+  }
+  $('#fitTest').addEventListener('click', async () => {
+    try {
+      const tiles = Core.buildFitTest(geo(), $('#faceDown').checked, 0, [0.05, 0.1, 0.15, 0.2]);
+      download(await Core.make3MF(tiles, state.palette, [num('bedX'), num('bedY')], 'passungstest'), 'passungstest.3mf', 'model/3mf');
+    } catch (e) { console.error(e); alert('Export fehlgeschlagen: ' + e.message); }
+  });
+  function exportPng(m) {
+    const G = m.G, s = 4, c = document.createElement('canvas');
+    c.width = c.height = G * s; const g = c.getContext('2d');
+    g.imageSmoothingEnabled = false; g.drawImage(m.off, 0, 0, G * s, G * s);
+    g.strokeStyle = '#888'; g.lineWidth = 6;
+    for (let k = 1; k < m.n; k++) { const p = k * Core.CPT * s; g.beginPath(); g.moveTo(p, 0); g.lineTo(p, G * s); g.moveTo(0, p); g.lineTo(G * s, p); g.stroke(); }
+    c.toBlob(b => download(b, `${state.name}_${m.n}x${m.n}_vorlage.png`, 'image/png'));
+  }
+
+  /* --- Einstellungen --- */
+  function setSlots() {
+    const k = +$('#ncol').value, fil = state.slots.filter(s => !s.contour);
+    const con = state.slots.find(s => s.contour) || { rgb: [26, 26, 26], locked: true, contour: true };
+    while (fil.length < k) fil.push({ rgb: Core.parseHex(DEFAULT_COLORS[fil.length]), locked: false });
+    fil.length = k;
+    state.slots = $('#groove').checked ? [...fil, con] : fil;
+    state.palette = state.slots.map(s => s.rgb.slice());
+    if (state.brush >= state.slots.length) state.brush = 0;
+    document.querySelectorAll('.grooveOnly').forEach(el => el.classList.toggle('hidden', !$('#groove').checked));
+    process();
+  }
+  ['ncol', 'groove'].forEach(id => $('#' + id).addEventListener('change', setSlots));
+  ['grooveDepth', 'grooveFill'].forEach(id => $('#' + id).addEventListener('change', renderAll));
+  ['style', 'pixelSize', 'resample', 'minDetail', 'thicken', 'margin', 'removeBg', 'bgTol', 'darkL'].forEach(id => $('#' + id).addEventListener('change', process));
+  ['gS', 'gH', 'gTop', 'gT', 'gWall', 'gTubeO', 'gTubeI', 'gClamp', 'baseSlot'].forEach(id => $('#' + id).addEventListener('change', () => state.mosaics.forEach(drawMosaic)));
+  let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => state.mosaics.forEach(drawMosaic), 100); });
+  if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => state.mosaics.forEach(drawMosaic));
+
+  window.__pixelFliesen = { state, process, loadSource: setSource, grooveInfo, v3 };
+  setSlots();
+})();
+</script>
+</body>
+</html>
