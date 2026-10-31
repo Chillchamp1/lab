@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pixel-Fliesen</title>
+<title>Pixel Tiles</title>
 <style>
 :root{
   --bg:#f4f2ee; --surface:#ffffff; --surface-2:#ebe8e2; --line:#d9d4cb;
@@ -83,81 +83,81 @@ details[open] summary::before{content:"▾ ";}
 </head>
 <body>
 <header>
-  <h1>Pixel-Fliesen</h1>
-  <p>Bild einfügen → Mosaik aus 9 2×2-Fliesen (LEGO®-kompatibel) als mehrfarbige 3MF für den Snapmaker U1.</p>
+  <h1>Pixel Tiles</h1>
+  <p>Drop in a picture → a mosaic of nine 2×2 tiles (LEGO®-compatible) as a multi-colour 3MF for the Snapmaker U1.</p>
 </header>
 
 <main class="layout">
   <aside class="panel">
     <section class="card">
-      <h2>1 · Bild</h2>
+      <h2>1 · Picture</h2>
       <div class="drop" id="drop" tabindex="0">
-        <img id="thumb" class="hidden" alt="Vorschau des Bildes">
-        <div id="dropText"><b>Bild hierher ziehen</b><br><small>oder klicken · oder Strg+V zum Einfügen<br>PNG mit transparentem Hintergrund ist ideal, je größer desto besser</small></div>
+        <img id="thumb" class="hidden" alt="Preview of the picture">
+        <div id="dropText"><b>Drag a picture here</b><br><small>or click · or paste with Ctrl+V<br>A PNG with a transparent background is ideal, the larger the better</small></div>
       </div>
       <input type="file" id="file" accept="image/*" class="hidden">
-      <div class="row"><label for="style">Stil</label>
-        <select id="style"><option value="smooth">Glatt – feine Konturen</option><option value="pixel">Pixel-Art – Quadrate</option></select></div>
-      <div class="row pixelOnly"><label for="pixelSize">Pixelgröße</label>
-        <select id="pixelSize"><option value="0.4">0,4 mm</option><option value="0.5">0,5 mm</option><option value="0.8" selected>0,8 mm</option><option value="1">1,0 mm</option><option value="1.6">1,6 mm</option><option value="2">2,0 mm</option></select></div>
-      <div class="row pixelOnly"><label for="resample">Verkleinern</label>
-        <select id="resample"><option value="avg">Mittelwert</option><option value="nearest">Nächster Nachbar</option></select></div>
-      <div class="row"><label for="minDetail">Kleinstes Detail<br><span class="hint">kleinere Flecken werden entfernt</span></label>
-        <select id="minDetail"><option value="0.2">0,2 mm</option><option value="0.3">0,3 mm</option><option value="0.4" selected>0,4 mm (Düse)</option><option value="0.6">0,6 mm</option><option value="0.8">0,8 mm</option></select></div>
-      <div class="row"><label for="thicken">Umrisse verstärken<br><span class="hint">Kontur bzw. dunkelste Farbe wird breiter</span></label>
-        <select id="thicken"><option value="0" selected>aus</option><option value="1">+0,1 mm</option><option value="2">+0,2 mm</option><option value="3">+0,3 mm</option></select></div>
-      <div class="row"><label for="margin">Rand (mm)</label><input type="number" id="margin" min="0" max="5" step="0.1" value="0.5"></div>
-      <div class="row"><label for="removeBg">Einfarbigen Hintergrund entfernen<br><span class="hint">nur bei Bildern ohne Transparenz</span></label><input type="checkbox" id="removeBg" checked></div>
-      <div class="row"><label for="bgTol">Toleranz Hintergrund</label><input type="range" id="bgTol" min="5" max="120" value="40"></div>
+      <div class="row"><label for="style">Style</label>
+        <select id="style"><option value="smooth">Smooth – fine outlines</option><option value="pixel">Pixel art – squares</option></select></div>
+      <div class="row pixelOnly"><label for="pixelSize">Pixel size</label>
+        <select id="pixelSize"><option value="0.4">0.4 mm</option><option value="0.5">0.5 mm</option><option value="0.8" selected>0.8 mm</option><option value="1">1.0 mm</option><option value="1.6">1.6 mm</option><option value="2">2.0 mm</option></select></div>
+      <div class="row pixelOnly"><label for="resample">Downscaling</label>
+        <select id="resample"><option value="avg">Average</option><option value="nearest">Nearest neighbour</option></select></div>
+      <div class="row"><label for="minDetail">Smallest detail<br><span class="hint">smaller specks are removed</span></label>
+        <select id="minDetail"><option value="0.2">0.2 mm</option><option value="0.3">0.3 mm</option><option value="0.4" selected>0.4 mm (nozzle)</option><option value="0.6">0.6 mm</option><option value="0.8">0.8 mm</option></select></div>
+      <div class="row"><label for="thicken">Thicken outlines<br><span class="hint">contour or darkest colour gets wider</span></label>
+        <select id="thicken"><option value="0" selected>off</option><option value="1">+0.1 mm</option><option value="2">+0.2 mm</option><option value="3">+0.3 mm</option></select></div>
+      <div class="row"><label for="margin">Margin (mm)</label><input type="number" id="margin" min="0" max="5" step="0.1" value="0.5"></div>
+      <div class="row"><label for="removeBg">Remove plain background<br><span class="hint">only for pictures without transparency</span></label><input type="checkbox" id="removeBg" checked></div>
+      <div class="row"><label for="bgTol">Background tolerance</label><input type="range" id="bgTol" min="5" max="120" value="40"></div>
     </section>
 
     <section class="card">
-      <h2>2 · Farben / Filamente</h2>
-      <div class="row"><label for="ncol">Anzahl Filamente</label>
+      <h2>2 · Colours / filaments</h2>
+      <div class="row"><label for="ncol">Number of filaments</label>
         <select id="ncol"><option>2</option><option>3</option><option selected>4</option></select></div>
-      <div class="row"><label for="groove">Konturen als Graben<br><span class="hint">dunkle Umrisse werden vertieft und wirken durch den Schatten dunkel – kein eigenes Filament nötig</span></label><input type="checkbox" id="groove" checked></div>
-      <div class="row grooveOnly"><label for="darkL">Kontur-Erkennung<br><span class="hint">nach rechts = auch hellere Linien werden Graben</span></label><input type="range" id="darkL" min="10" max="60" value="32"></div>
-      <div class="row grooveOnly"><label for="grooveDepth">Grabentiefe</label>
-        <select id="grooveDepth"><option value="0.2">0,2 mm (1 Schicht)</option><option value="0.4" selected>0,4 mm (2 Schichten)</option><option value="0.6">0,6 mm (3 Schichten)</option></select></div>
-      <div class="row grooveOnly"><label for="grooveFill">Grabenboden in</label><select id="grooveFill"></select></div>
+      <div class="row"><label for="groove">Outlines as grooves<br><span class="hint">dark outlines are recessed and look dark through their shadow – no extra filament needed</span></label><input type="checkbox" id="groove" checked></div>
+      <div class="row grooveOnly"><label for="darkL">Outline detection<br><span class="hint">further right = lighter lines become grooves too</span></label><input type="range" id="darkL" min="10" max="70" value="55"></div>
+      <div class="row grooveOnly"><label for="grooveDepth">Groove depth</label>
+        <select id="grooveDepth"><option value="0.2">0.2 mm (1 layer)</option><option value="0.4" selected>0.4 mm (2 layers)</option><option value="0.6">0.6 mm (3 layers)</option></select></div>
+      <div class="row grooveOnly"><label for="grooveFill">Groove floor in</label><select id="grooveFill"></select></div>
       <div class="slots" id="slots"></div>
-      <p class="muted" style="font-size:12px;margin:8px 0 0">Farbe anklicken und auf dein Filament setzen – sie wird dann fest (🔒) und alle Flächen werden neu zugeordnet. Filament 1 ist der Hintergrund. Farbtöne werden unabhängig von Licht und Schatten zusammengefasst.</p>
-      <div class="row"><label for="baseSlot">Fliesenkörper (Unterseite) in</label><select id="baseSlot"></select></div>
+      <p class="muted" style="font-size:12px;margin:8px 0 0">Click a colour and set it to your filament – it is then fixed (🔒) and all areas are reassigned. Filament 1 is the background. Hues are grouped regardless of light and shadow.</p>
+      <div class="row"><label for="baseSlot">Tile body (underside) in</label><select id="baseSlot"></select></div>
       <div class="toolbar">
-        <button id="paintBtn" title="Mit der markierten Farbe in die Vorschau malen">✎ Malen</button>
-        <button id="undoBtn" title="Strg+Z">↶ Rückgängig</button>
-        <label class="muted" for="brush" style="font-size:12px">Pinsel</label><input type="range" id="brush" min="0.2" max="3" step="0.1" value="0.6" title="Pinselgröße">
+        <button id="paintBtn" title="Paint into the preview with the selected colour">✎ Paint</button>
+        <button id="undoBtn" title="Ctrl+Z">↶ Undo</button>
+        <label class="muted" for="brush" style="font-size:12px">Brush</label><input type="range" id="brush" min="0.2" max="3" step="0.1" value="0.6" title="Brush size">
       </div>
     </section>
 
     <section class="card">
       <details id="geoDetails">
-        <summary>3 · Fliese &amp; Druck</summary>
-        <div class="row"><label for="gS">Kantenlänge (mm)</label><input type="number" id="gS" step="0.05" value="15.8"></div>
-        <div class="row"><label for="gH">Höhe (mm)</label><input type="number" id="gH" step="0.1" value="3.2"></div>
-        <div class="row"><label for="gTop">Deckenstärke (mm)</label><input type="number" id="gTop" step="0.1" value="1.2"></div>
-        <div class="row"><label for="gT">davon Farbschicht (mm)</label><input type="number" id="gT" step="0.1" value="0.6"></div>
-        <div class="row"><label for="gWall">Wandstärke (mm)</label><input type="number" id="gWall" step="0.05" value="1.2"></div>
-        <div class="row"><label for="gClamp">Klemmrippen (mm)<br><span class="hint">8 Rippen an der Innenwand drücken auf die Noppen; größer = fester</span></label><input type="number" id="gClamp" step="0.05" value="0.1"></div>
-        <div class="row"><button id="fitTest">Passungstest herunterladen</button><span class="hint">4 schlichte Fliesen: 1–4 Punkte = +0,05 / +0,10 / +0,15 / +0,20 mm</span></div>
-        <div class="row"><label for="gTubeO">Röhrchen außen Ø (mm)<br><span class="hint">größer = fester Halt</span></label><input type="number" id="gTubeO" step="0.05" value="6.51"></div>
-        <div class="row"><label for="gTubeI">Röhrchen innen Ø (mm)</label><input type="number" id="gTubeI" step="0.05" value="4.8"></div>
-        <div class="row"><label for="faceDown">Bildseite nach unten drucken<br><span class="hint">empfohlen: glatte Oberfläche, keine Brücken</span></label><input type="checkbox" id="faceDown" checked></div>
-        <div class="row"><label for="bedX">Bettmitte X / Y (mm)</label><input type="number" id="bedX" value="135" style="width:64px"><input type="number" id="bedY" value="135" style="width:64px"></div>
+        <summary>3 · Tile &amp; print</summary>
+        <div class="row"><label for="gS">Edge length (mm)</label><input type="number" id="gS" step="0.05" value="15.8"></div>
+        <div class="row"><label for="gH">Height (mm)</label><input type="number" id="gH" step="0.1" value="3.2"></div>
+        <div class="row"><label for="gTop">Top thickness (mm)</label><input type="number" id="gTop" step="0.1" value="1.2"></div>
+        <div class="row"><label for="gT">of which colour layer (mm)</label><input type="number" id="gT" step="0.1" value="0.6"></div>
+        <div class="row"><label for="gWall">Wall thickness (mm)</label><input type="number" id="gWall" step="0.05" value="1.2"></div>
+        <div class="row"><label for="gClamp">Clutch ribs (mm)<br><span class="hint">8 ribs on the inner wall press on the studs; larger = tighter</span></label><input type="number" id="gClamp" step="0.05" value="0.1"></div>
+        <div class="row"><button id="fitTest">Download fit test</button><span class="hint">4 plain tiles: 1–4 dots = +0.05 / +0.10 / +0.15 / +0.20 mm</span></div>
+        <div class="row"><label for="gTubeO">Tube outer Ø (mm)<br><span class="hint">larger = tighter grip</span></label><input type="number" id="gTubeO" step="0.05" value="6.51"></div>
+        <div class="row"><label for="gTubeI">Tube inner Ø (mm)</label><input type="number" id="gTubeI" step="0.05" value="4.8"></div>
+        <div class="row"><label for="faceDown">Print picture side down<br><span class="hint">recommended: smooth surface, no bridges on the face</span></label><input type="checkbox" id="faceDown" checked></div>
+        <div class="row"><label for="bedX">Bed centre X / Y (mm)</label><input type="number" id="bedX" value="135" style="width:64px"><input type="number" id="bedY" value="135" style="width:64px"></div>
       </details>
     </section>
   </aside>
 
   <section class="results" id="results">
     <div class="card help">
-      <h2>So druckst du</h2>
+      <h2>How to print</h2>
       <ol>
-        <li>3MF herunterladen und in <b>Snapmaker Orca</b> öffnen.</li>
-        <li>Jede Fliese besteht aus Teilen, die schon Filament 1–4 zugeordnet sind. Links in der Filamentliste die Farben so setzen bzw. einlegen, wie sie hier angezeigt werden.</li>
-        <li>Schichthöhe 0,2 mm (erste Schicht 0,2 mm) → die Farbschicht von 0,6 mm sind genau 3 Schichten. Glattes PEI-Bett gibt eine glänzende Bildseite.</li>
-        <li>Für feine Linien in Orca den Wandgenerator „Arachne“ nutzen (Standard). Linienbreite der ersten Schicht ≈ 0,42 mm.</li>
-        <li>Konturen als Graben: Beim Druck mit Bildseite nach unten bleiben die Gräben in den ersten Schichten frei und werden danach überbrückt – bei 0,4–1 mm Breite problemlos. Gräben schmaler als die Düse verschwinden; dann „Umrisse verstärken“ hochstellen.</li>
-        <li>Halt auf den Noppen: unter „Fliese &amp; Druck“ einmal den <b>Passungstest</b> drucken (4 kleine Fliesen, an 1–4 Punkten erkennbar), die mit dem besten Halt aussuchen und deren Wert bei „Klemmrippen“ eintragen.</li>
+        <li>Download the 3MF and open it in <b>Snapmaker Orca</b>.</li>
+        <li>Each tile consists of parts already assigned to filaments 1–4. In the filament list on the left, set or load the colours as shown here.</li>
+        <li>Layer height 0.2 mm (first layer 0.2 mm) → the 0.6 mm colour layer is exactly 3 layers. A smooth PEI bed gives a glossy picture side.</li>
+        <li>For fine lines use Orca's "Arachne" wall generator (default). First-layer line width ≈ 0.42 mm.</li>
+        <li>Outlines as grooves: printed picture side down, the grooves stay empty in the first layers and are bridged afterwards – no problem at 0.4–1 mm width. Grooves narrower than the nozzle disappear; then raise "Thicken outlines".</li>
+        <li>Grip on the studs: print the <b>fit test</b> under "Tile &amp; print" once (4 small tiles, marked with 1–4 dots), pick the one that holds best and enter its value under "Clutch ribs".</li>
       </ol>
     </div>
   </section>
@@ -169,11 +169,11 @@ details[open] summary::before{content:"▾ ";}
 </script>
 
 <script id="core">
-/* ---------- Reine Rechenfunktionen (ohne DOM) ---------- */
+/* ---------- Pure computation (no DOM) ---------- */
 const Core = (() => {
-  const PITCH = 16;   // LEGO-Raster 2×2 = 16 mm
-  const CELL = 0.1;   // Feinraster in mm
-  const CPT = Math.round(PITCH / CELL); // Zellen je Fliesenraster
+  const PITCH = 16;   // LEGO grid 2×2 = 16 mm
+  const CELL = 0.1;   // fine grid in mm
+  const CPT = Math.round(PITCH / CELL); // cells per tile pitch
 
   const hex = rgb => '#' + rgb.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('').toUpperCase();
   const parseHex = h => { h = h.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16)); };
@@ -189,8 +189,8 @@ const Core = (() => {
     return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
   }
 
-  /* ---------- Bild ---------- */
-  // Hintergrund freistellen, Bounding-Box des Motivs bestimmen
+  /* ---------- Picture ---------- */
+  // cut out the background, find the bounding box of the subject
   function prepareImage(src, removeBg, tol) {
     const { w, h } = src, d = new Uint8ClampedArray(src.data);
     let hasAlpha = false;
@@ -219,7 +219,7 @@ const Core = (() => {
     return { w, h, d, bbox: { x0, y0, x1: x1 + 1, y1: y1 + 1 } };
   }
 
-  // Motiv auf G×G Raster (Zellgröße cellMM) abtasten → [r,g,b,deckung]; 'smooth' = bilinear + Mittelwert
+  // sample the subject on a G×G grid (cell size cellMM) → [r,g,b,coverage]; 'smooth' = bilinear + average
   function sampleGrid(prep, G, cellMM, marginMM, mode) {
     const { w, h, d, bbox } = prep;
     const bw = bbox.x1 - bbox.x0, bh = bbox.y1 - bbox.y0;
@@ -250,12 +250,12 @@ const Core = (() => {
     return out;
   }
 
-  /* ---------- Farbanalyse ---------- */
-  // Farbabstand mit halb gewichteter Helligkeit: Licht und Schatten eines Farbtons bleiben zusammen
+  /* ---------- Colour analysis ---------- */
+  // colour distance with lightness at half weight: light and shadow of one hue stay together
   const WL = 0.5;
   const dist2w = (a, b) => (WL * (a[0] - b[0])) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2;
 
-  // Quadratisches Erodieren (isMax=false) bzw. Dilatieren (isMax=true), getrennt in Zeilen und Spalten
+  // square erosion (isMax=false) or dilation (isMax=true), separable into rows and columns
   function morph(M, G, r, isMax) {
     const tmp = new Uint8Array(G * G), out = new Uint8Array(G * G);
     const pass = (src, dst, horiz) => {
@@ -272,10 +272,10 @@ const Core = (() => {
     return out;
   }
 
-  // Bild → Palette + Beschriftung je Zelle.
-  // contour ≥ 0: dunkle Linien (Helligkeit < darkL, höchstens 2·lineR Zellen breit) werden zum Kontur-Slot; breite dunkle Flächen bleiben Farben.
-  // Übrige Zellen: 16 feine Farbgruppen, dann schrittweise die ähnlichsten zusammenlegen, bis so viele wie Filamente übrig sind.
-  // Ein kleiner, aber deutlich anderer Farbton (z. B. rote Augen) bleibt so erhalten, Schattierungen verschmelzen mit ihrem Farbton.
+  // picture → palette + label per cell.
+  // contour ≥ 0: dark lines (darkness < darkL, at most 2·lineR cells wide) go to the contour slot; wide dark areas stay colours.
+  // Other cells: 16 fine colour groups, then merge the most similar step by step until as many remain as there are filaments.
+  // A small but clearly different hue (e.g. red eyes) survives this way; shading merges with its hue.
   function analyze(samples, G, slots, contour, darkL, lineR) {
     const n = G * G, lab = new Float32Array(n * 3), solid = new Uint8Array(n), cache = new Map();
     for (let i = 0; i < n; i++) {
@@ -287,11 +287,11 @@ const Core = (() => {
     }
     let line = new Uint8Array(n);
     if (contour >= 0) {
-      // Umrisse sind dunkel und eher grau; kräftig gefärbte Schattenstellen (z. B. dunkelrot) zählen erst bei sehr wenig Helligkeit
-      for (let i = 0; i < n; i++) line[i] = solid[i] && lab[i * 3] + 0.3 * Math.hypot(lab[i * 3 + 1], lab[i * 3 + 2]) < darkL ? 1 : 0;
+      // outlines are dark and rather grey; strongly coloured shadows (e.g. dark red) only count when very dark
+      for (let i = 0; i < n; i++) line[i] = solid[i] && lab[i * 3] + 0.6 * Math.hypot(lab[i * 3 + 1], lab[i * 3 + 2]) < darkL ? 1 : 0;
       if (lineR > 0) { const wide = morph(morph(line, G, lineR, false), G, lineR, true); for (let i = 0; i < n; i++) if (wide[i]) line[i] = 0; }
     }
-    // Häufigkeiten auf einem Lab-Raster (2 Einheiten)
+    // histogram on a Lab grid (2 units)
     const bins = new Map();
     for (let i = 0; i < n; i++) {
       if (!solid[i] || line[i]) continue;
@@ -302,7 +302,7 @@ const Core = (() => {
     }
     const B = [...bins.values()].map(e => ({ w: e[0], lab: [e[1] / e[0], e[2] / e[0], e[3] / e[0]], rgb: [e[4] / e[0], e[5] / e[0], e[6] / e[0]] }));
     const W = B.reduce((s, b) => s + b.w, 0) || 1;
-    // feine Gruppen: k-means mit gewichteter Startwahl
+    // fine groups: k-means with weighted seeding
     const K0 = Math.min(16, B.length), sub = [];
     while (sub.length < K0) {
       let best = null, bs = -1;
@@ -327,7 +327,7 @@ const Core = (() => {
       if (moved < 0.01) break;
     }
     for (let i = sub.length - 1; i >= 0; i--) if (!sub[i].w) sub.splice(i, 1);
-    // zusammenlegen; feste Filamente bleiben an ihrem Platz und nehmen ähnliche Gruppen auf
+    // merge; fixed filaments stay in place and absorb similar groups
     const fil = slots.map((s, i) => i).filter(i => i !== contour);
     const cl = fil.filter(i => slots[i].locked).map(i => ({ lab: rgb2lab(...slots[i].rgb), rgb: slots[i].rgb.slice(), w: 0, fixed: i, members: [] }));
     sub.forEach((c, i) => { if (c.w) cl.push({ lab: c.lab, rgb: c.rgb, w: c.w, fixed: -1, members: [i] }); });
@@ -343,14 +343,14 @@ const Core = (() => {
       if (bi < 0) break;
       let keep = cl[bi], drop = cl[bj];
       if (drop.fixed >= 0) [keep, drop] = [drop, keep];
-      if (keep.fixed < 0) { // mittlerer Farbton der Gruppe (Licht und Schatten gemittelt)
+      if (keep.fixed < 0) { // mean tone of the group (light and shadow averaged)
         const t = drop.w / (keep.w + drop.w);
         for (let k = 0; k < 3; k++) { keep.lab[k] += (drop.lab[k] - keep.lab[k]) * t; keep.rgb[k] += (drop.rgb[k] - keep.rgb[k]) * t; }
       }
       keep.members.push(...drop.members); keep.w += drop.w;
       cl.splice(cl.indexOf(drop), 1);
     }
-    // freie Gruppen nach Größe auf die nicht festen Filamente verteilen
+    // distribute free groups by size onto the non-fixed filaments
     const palette = slots.map(s => s.rgb.slice()), subSlot = new Uint8Array(sub.length);
     const freeSlots = fil.filter(i => !slots[i].locked);
     cl.filter(c => c.fixed < 0).sort((a, b) => b.w - a.w).forEach((c, k) => { c.fixed = freeSlots[k]; palette[c.fixed] = c.rgb; });
@@ -367,15 +367,15 @@ const Core = (() => {
     return { palette: palette.map(c => c.map(Math.round)), L: out };
   }
 
-  // grobes Pixelraster auf das Feinraster vergrößern
+  // upscale the coarse pixel grid to the fine grid
   function expand(Lp, Gp, f) {
     const G = Gp * f, L = new Uint8Array(G * G);
     for (let y = 0; y < G; y++) { const row = ((y / f) | 0) * Gp; for (let x = 0; x < G; x++) L[y * G + x] = Lp[row + ((x / f) | 0)]; }
     return L;
   }
 
-  /* ---------- Bereinigung ---------- */
-  // Mehrheitsfilter 3×3 glättet Treppen und Einzelpixel
+  /* ---------- Clean-up ---------- */
+  // 3×3 majority filter smooths staircases and single pixels
   function majority(L, G) {
     const out = L.slice(), cnt = new Uint8Array(16);
     for (let y = 1; y < G - 1; y++) for (let x = 1; x < G - 1; x++) {
@@ -388,7 +388,7 @@ const Core = (() => {
     L.set(out);
   }
 
-  // Inseln kleiner als minCells Zellen in die umgebende Farbe übernehmen
+  // islands smaller than minCells cells take the surrounding colour
   function removeIslands(L, G, minCells) {
     if (minCells < 2) return;
     const comp = new Int32Array(G * G).fill(-1), stack = [], members = [];
@@ -416,7 +416,7 @@ const Core = (() => {
     }
   }
 
-  // Farbe slot um k Zellen ausdehnen (abwechselnd 4er/8er Nachbarschaft → rundlich)
+  // grow colour slot by k cells (alternating 4/8 neighbourhood → roundish)
   function thicken(L, G, slot, k) {
     for (let it = 0; it < k; it++) {
       const src = L.slice(), diag = it % 2 === 1;
@@ -430,8 +430,8 @@ const Core = (() => {
     }
   }
 
-  /* ---------- Geometrie ---------- */
-  // Fliesenkörper: geschlossener Körper aus Außenwand, Decke und Mittelröhrchen (Bildseite oben, z = 0 unten)
+  /* ---------- Geometry ---------- */
+  // tile body: closed solid of outer wall, top and centre tube (picture side up, z = 0 at the bottom)
   function baseMesh(g) {
     const N = 64, c = g.S / 2, zt = g.H - g.t, hc = g.H - g.top;
     const v = [], t = [];
@@ -445,17 +445,17 @@ const Core = (() => {
     const q = (a, b, cq, d) => t.push(a, b, cq, a, cq, d);
     for (let k = 0; k < N; k++) {
       const j = (k + 1) % N;
-      q(O0[k], O0[j], Ot[j], Ot[k]);   // Außenwand
-      t.push(ct, Ot[k], Ot[j]);         // Oberseite
-      q(O0[k], I0[k], I0[j], O0[j]);   // Unterkante Wand
-      q(Ic[k], Ic[j], I0[j], I0[k]);   // Innenwand
-      q(Ic[k], Tc[k], Tc[j], Ic[j]);   // Decke innen
-      q(T0[k], T0[j], Tc[j], Tc[k]);   // Röhrchen außen
-      q(T0[k], U0[k], U0[j], T0[j]);   // Röhrchen unten
-      q(Uc[k], Uc[j], U0[j], U0[k]);   // Röhrchen innen
-      t.push(cc, Uc[j], Uc[k]);         // Röhrchen Decke
+      q(O0[k], O0[j], Ot[j], Ot[k]);   // outer wall
+      t.push(ct, Ot[k], Ot[j]);         // top face
+      q(O0[k], I0[k], I0[j], O0[j]);   // wall bottom edge
+      q(Ic[k], Ic[j], I0[j], I0[k]);   // inner wall
+      q(Ic[k], Tc[k], Tc[j], Ic[j]);   // ceiling inside
+      q(T0[k], T0[j], Tc[j], Tc[k]);   // tube outside
+      q(T0[k], U0[k], U0[j], T0[j]);   // tube bottom
+      q(Uc[k], Uc[j], U0[j], U0[k]);   // tube inside
+      t.push(cc, Uc[j], Uc[k]);         // tube ceiling
     }
-    // Klemmrippen: je Noppe zwei Rippen an der Innenwand, Rippenfläche g.clamp mm über den Noppenrand hinaus (Noppe Ø 4,8 im Abstand PITCH/4)
+    // clutch ribs: two ribs on the inner wall per stud, rib face g.clamp mm past the stud edge (stud Ø 4.8 at PITCH/4)
     const inner = c - g.wall, depth = inner - (PITCH / 4 + 2.4 - (g.clamp || 0)), rw = 0.8, emb = 0.05;
     if (depth > 0.02) {
       const box = (x0, x1, y0, y1, z0, z1) => {
@@ -466,30 +466,30 @@ const Core = (() => {
       for (const s of [-1, 1]) for (const o of [-PITCH / 4, PITCH / 4]) {
         const a0 = c + o - rw / 2, a1 = c + o + rw / 2;
         const w0 = s > 0 ? c + inner - depth : c - inner - emb, w1 = s > 0 ? c + inner + emb : c - inner + depth;
-        box(w0, w1, a0, a1, 0, hc + emb);   // Wand links/rechts
-        box(a0, a1, w0, w1, 0, hc + emb);   // Wand vorne/hinten
+        box(w0, w1, a0, a1, 0, hc + emb);   // left/right wall
+        box(a0, a1, w0, w1, 0, hc + emb);   // front/back wall
       }
     }
     return { v, t };
   }
 
-  // Passungstest: schlichte Fliesen mit verschiedener Klemmung, Stufe k ist an k Vertiefungen auf der Bildseite erkennbar
+  // fit test: plain tiles with different clutch, step k is marked by k recesses on the picture side
   function buildFitTest(g, faceDown, slot, clamps) {
     const spacing = g.S + 5, S = g.S, d = 1.4, gap = 1;
     return clamps.map((cl, k) => {
       const w = (k + 1) * d + k * gap, x0 = (S - w) / 2, holes = [];
       for (let i = 0; i <= k; i++) { const a = x0 + i * (d + gap), y = S / 2 - d / 2; holes.push([[a, y], [a, y + d], [a + d, y + d], [a + d, y]]); }
       const face = extrude([[[[0, 0], [S, 0], [S, S], [0, S]], ...holes]], g.H - g.t, g.H);
-      const label = 'P' + (k + 1), txt = `${cl >= 0 ? '+' : ''}${cl.toFixed(2).replace('.', ',')} mm`;
+      const label = 'P' + (k + 1), txt = `${cl >= 0 ? '+' : ''}${cl.toFixed(2)} mm`;
       return {
         label, pos: [(k - (clamps.length - 1) / 2) * spacing, 0],
-        parts: [{ name: `${label} Körper ${txt}`, slot, mesh: place(baseMesh({ ...g, clamp: cl }), g, faceDown) },
-                { name: `${label} Bildseite`, slot, mesh: place(face, g, faceDown) }],
+        parts: [{ name: `${label} body ${txt}`, slot, mesh: place(baseMesh({ ...g, clamp: cl }), g, faceDown) },
+                { name: `${label} face`, slot, mesh: place(face, g, faceDown) }],
       };
     });
   }
 
-  // Marching Squares: geschlossene Konturen der Farbe c im Raster T (nc×nc, Zeile 0 = oben), Koordinaten in mm mit y nach oben
+  // marching squares: closed contours of colour c in grid T (nc×nc, row 0 = top), coordinates in mm with y up
   function contourLoops(T, nc, c, hs, S) {
     const W = nc + 2;
     const val = (u, v) => (u >= 0 && v >= 0 && u < nc && v < nc && T[v * nc + u] === c) ? 1 : 0;
@@ -561,7 +561,7 @@ const Core = (() => {
     return a.slice(0, -1).concat(b.slice(0, -1));
   }
 
-  // Konturen → Flächen (außen + Löcher), vereinfacht und richtig orientiert
+  // contours → areas (outer + holes), simplified and correctly oriented
   function loopsToPolys(loops, tol, minArea) {
     const info = loops.map(p => {
       let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
@@ -592,7 +592,7 @@ const Core = (() => {
     return [...polys.values()];
   }
 
-  // Flächen zu geschlossenen Körpern zwischen z0 und z1 extrudieren
+  // extrude areas into closed solids between z0 and z1
   function extrude(polys, z0, z1) {
     const v = [], t = [];
     for (const rings of polys) {
@@ -601,7 +601,7 @@ const Core = (() => {
       const base = v.length / 3;
       for (let i = 0; i < n; i++) v.push(flat[2 * i], flat[2 * i + 1], z0);
       for (let i = 0; i < n; i++) v.push(flat[2 * i], flat[2 * i + 1], z1);
-      // earcut auf minimal verrauschter Kopie: exakt kollineare Punkte (Pixel-Art, Löcher auf einer Linie) gäben sonst T-Stöße
+      // earcut on a minimally jittered copy: exactly collinear points (pixel art, holes on one line) would otherwise give T-junctions
       const jit = flat.map((x, i) => x + (((i * 2654435761) >>> 0) % 1000 - 500) * 2e-7);
       const tri = earcut(jit, holes, 2);
       for (let k = 0; k < tri.length; k += 3) {
@@ -623,7 +623,7 @@ const Core = (() => {
     return { v, t };
   }
 
-  // Farbschicht einer Fliese: je Farbe ein Körper (oben auf dem Fliesenkörper); die Graben-Farbe endet depth unter der Oberfläche
+  // colour layer of a tile: one solid per colour (on top of the body); the groove colour ends depth below the surface
   function colorMeshes(m, ti, tj, g, tol, groove) {
     const { L, G } = m, nc = Math.round(g.S / CELL), hs = g.S / nc, off = (PITCH - g.S) / 2;
     const T = new Uint8Array(nc * nc), used = new Set();
@@ -643,7 +643,7 @@ const Core = (() => {
     return meshes;
   }
 
-  // zentrieren und ggf. Bildseite nach unten drehen (180° um X → keine Spiegelung, Umlaufsinn bleibt)
+  // centre and optionally turn picture side down (180° about X → no mirroring, winding preserved)
   function place(mesh, g, faceDown) {
     const v = new Float32Array(mesh.v.length), h = g.S / 2;
     for (let i = 0; i < v.length; i += 3) {
@@ -654,7 +654,7 @@ const Core = (() => {
     return { v, t: mesh.t };
   }
 
-  // groove = {slot, fill, depth}: Kontur-Farbe slot wird als Graben im Filament fill gedruckt, die Farbschicht dafür um depth dicker
+  // groove = {slot, fill, depth}: contour colour slot is printed as a groove in filament fill; the colour layer gets thicker by depth
   const grooveGeo = (g, groove) => groove ? { ...g, t: g.t + groove.depth, top: Math.max(g.top, g.t + groove.depth + 0.2) } : g;
 
   function buildSet(m, g, faceDown, baseSlot, groove = null, tol = 0.04) {
@@ -662,10 +662,10 @@ const Core = (() => {
     const base = place(baseMesh(g), g, faceDown), tiles = [], spacing = g.S + 5;
     for (let tj = 0; tj < m.n; tj++) for (let ti = 0; ti < m.n; ti++) {
       const label = 'ABCDEFGH'[tj] + (ti + 1);
-      const parts = [{ name: `${label} Körper`, slot: baseSlot, mesh: base }];
+      const parts = [{ name: `${label} body`, slot: baseSlot, mesh: base }];
       for (const [slot, M] of colorMeshes(m, ti, tj, g, tol, groove)) {
         const isGroove = groove && slot === groove.slot;
-        parts.push({ name: isGroove ? `${label} Kontur-Graben` : `${label} Farbe ${slot + 1}`, slot: isGroove ? groove.fill : slot, mesh: place(M, g, faceDown) });
+        parts.push({ name: isGroove ? `${label} outline groove` : `${label} colour ${slot + 1}`, slot: isGroove ? groove.fill : slot, mesh: place(M, g, faceDown) });
       }
       const px = (ti - (m.n - 1) / 2) * spacing, py = (tj - (m.n - 1) / 2) * spacing * (faceDown ? 1 : -1);
       tiles.push({ label, parts, pos: [px, py] });
@@ -673,7 +673,7 @@ const Core = (() => {
     return tiles;
   }
 
-  /* ---------- Dateiformate ---------- */
+  /* ---------- File formats ---------- */
   const fx = x => (Math.round(x * 10000) / 10000).toString();
   const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const uuid = (id, tag) => id.toString(16).padStart(8, '0') + '-' + tag + '-4c03-9d28-80fed5dfa1dc';
@@ -689,7 +689,7 @@ const Core = (() => {
     return out.join('\n');
   }
 
-  // 3MF im Aufbau von Snapmaker Orca / Bambu: je Fliese eine Objektdatei, Teile mit Filament-Zuordnung in model_settings.config
+  // 3MF laid out like Snapmaker Orca / Bambu: one object file per tile, parts with filament assignment in model_settings.config
   async function make3MF(tiles, palette, bed, title) {
     const enc = new TextEncoder();
     let id = 1;
@@ -703,7 +703,7 @@ const Core = (() => {
       objs.push(`  <object id="${cid}" p:UUID="${uuid(cid, '61cb')}" type="model">\n   <components>\n` +
         ids.map(i => `    <component p:path="${path}" objectid="${i}" p:UUID="${uuid(i, 'b206')}" transform="1 0 0 0 1 0 0 0 1 0 0 0"/>`).join('\n') + `\n   </components>\n  </object>`);
       items.push(`  <item objectid="${cid}" p:UUID="${uuid(cid, 'b1ec')}" transform="1 0 0 0 1 0 0 0 1 ${fx(bed[0] + tile.pos[0])} ${fx(bed[1] + tile.pos[1])} 0" printable="1"/>`);
-      cfg.push(`  <object id="${cid}">\n    <metadata key="name" value="Fliese ${tile.label}"/>\n    <metadata key="extruder" value="${tile.parts[0].slot + 1}"/>\n` +
+      cfg.push(`  <object id="${cid}">\n    <metadata key="name" value="Tile ${tile.label}"/>\n    <metadata key="extruder" value="${tile.parts[0].slot + 1}"/>\n` +
         tile.parts.map((p, k) => `    <part id="${ids[k]}" subtype="normal_part">\n      <metadata key="name" value="${esc(p.name)}"/>\n      <metadata key="matrix" value="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1"/>\n      <metadata key="extruder" value="${p.slot + 1}"/>\n    </part>`).join('\n') +
         `\n  </object>`);
       inst.push(`    <model_instance>\n      <metadata key="object_id" value="${cid}"/>\n      <metadata key="instance_id" value="0"/>\n      <metadata key="identify_id" value="${1000 + cid}"/>\n    </model_instance>`);
@@ -713,7 +713,7 @@ const Core = (() => {
  <metadata name="Application">Snapmaker_Orca-2.4.0</metadata>
  <metadata name="BambuStudio:3mfVersion">1</metadata>
  <metadata name="Title">${esc(title)}</metadata>
- <metadata name="Designer">Pixel-Fliesen</metadata>
+ <metadata name="Designer">Pixel Tiles</metadata>
  <resources>
 ${objs.join('\n')}
  </resources>
@@ -746,7 +746,7 @@ ${items.join('\n')}
   function stl(meshes) { // meshes: [{v,t,off:[x,y]}]
     let n = 0; for (const m of meshes) n += m.t.length / 3;
     const buf = new ArrayBuffer(84 + n * 50), dv = new DataView(buf);
-    const head = 'Pixel-Fliesen'; for (let i = 0; i < head.length; i++) dv.setUint8(i, head.charCodeAt(i));
+    const head = 'Pixel Tiles'; for (let i = 0; i < head.length; i++) dv.setUint8(i, head.charCodeAt(i));
     dv.setUint32(80, n, true);
     let o = 84;
     for (const m of meshes) {
@@ -775,7 +775,7 @@ ${items.join('\n')}
     return zip(files);
   }
 
-  /* ---------- ZIP (deflate wenn verfügbar) ---------- */
+  /* ---------- ZIP (deflate when available) ---------- */
   const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
   const crc32 = u8 => { let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
   async function deflate(u8) {
@@ -822,33 +822,33 @@ ${items.join('\n')}
 </script>
 
 <script>
-/* ---------- Oberfläche ---------- */
+/* ---------- User interface ---------- */
 (() => {
   const $ = s => document.querySelector(s);
   const DEFAULT_COLORS = ['#FFFFFF', '#1A1A1A', '#E8B830', '#D23C2A'];
   const state = {
-    src: null, name: 'bild',
+    src: null, name: 'picture',
     slots: [{ rgb: [255, 255, 255], locked: true }, { rgb: [26, 26, 26], locked: false }, { rgb: [232, 184, 48], locked: false }, { rgb: [210, 60, 42], locked: false }],
     palette: [], brush: 1, painting: false, lastPainted: null,
     mosaics: [
-      { n: 3, L: null, undo: [], title: '9 Fliesen (3 × 3)' },
+      { n: 3, L: null, undo: [], title: '9 tiles (3 × 3)' },
     ],
   };
   state.palette = state.slots.map(s => s.rgb.slice());
 
-  // Kontur-Slot (immer der letzte) ist kein Filament, sondern wird als Graben gedruckt
+  // the contour slot (always last) is not a filament but is printed as a groove
   const contourIdx = () => state.slots.findIndex(s => s.contour);
   const nFil = () => state.slots.filter(s => !s.contour).length;
   function grooveInfo() {
     const slot = contourIdx(); if (slot < 0) return null;
     let fill = +$('#grooveFill').value;
-    if (!(fill >= 0 && fill < nFil())) { // automatisch: dunkelstes Filament
+    if (!(fill >= 0 && fill < nFil())) { // automatic: darkest filament
       const ls = state.palette.slice(0, nFil()).map(c => Core.rgb2lab(...c)[0]);
       fill = ls.indexOf(Math.min(...ls));
     }
     return { slot, fill, depth: num('grooveDepth') };
   }
-  // Anzeige: Graben = Filament im Schatten
+  // display: groove = filament in shadow
   function shownPalette() {
     const gr = grooveInfo(), p = state.palette.slice();
     if (gr) p[gr.slot] = p[gr.fill].map(v => v * 0.4);
@@ -865,7 +865,7 @@ ${items.join('\n')}
     return g;
   };
 
-  /* --- Mosaik-Karten --- */
+  /* --- Mosaic cards --- */
   const results = $('#results');
   state.mosaics.forEach(m => {
     m.G = m.n * Core.CPT;
@@ -876,13 +876,13 @@ ${items.join('\n')}
     card.innerHTML = `
       <h3>${m.title}</h3>
       <div class="sub" data-sub></div>
-      <canvas aria-label="Vorschau ${m.title}"></canvas>
+      <canvas aria-label="Preview ${m.title}"></canvas>
       <div class="stats" data-stats></div>
       <div class="warn hidden" data-warn></div>
       <div class="actions">
-        <button class="primary" data-3mf disabled>3MF herunterladen</button>
-        <button data-stl disabled>STL je Farbe (ZIP)</button>
-        <button data-png disabled>Vorlage (PNG)</button>
+        <button class="primary" data-3mf disabled>Download 3MF</button>
+        <button data-stl disabled>STL per colour (ZIP)</button>
+        <button data-png disabled>Template (PNG)</button>
       </div>`;
     results.insertBefore(card, results.lastElementChild);
     m.card = card; m.canvas = card.querySelector('canvas');
@@ -893,21 +893,21 @@ ${items.join('\n')}
   });
   results.appendChild(results.querySelector('.help'));
 
-  /* --- 3D-Vorschau (three.js wird erst bei Bedarf geladen) --- */
+  /* --- 3D preview (three.js is loaded on demand) --- */
   const v3 = { three: null, explode: false, theta: -Math.PI / 2, phi: 0.75, dist: 115, timer: 0 };
   {
     const card = document.createElement('div');
     card.className = 'card mosaic';
     card.innerHTML = `
-      <h3>3D-Vorschau</h3>
-      <div class="sub">Ziehen = drehen · Mausrad / zwei Finger = zoomen</div>
-      <canvas aria-label="3D-Vorschau der Fliesen"></canvas>
+      <h3>3D preview</h3>
+      <div class="sub">Drag = rotate · wheel / two fingers = zoom</div>
+      <canvas aria-label="3D preview of the tiles"></canvas>
       <div class="warn hidden" data-warn></div>
       <div class="actions">
-        <button data-v="top">Bildseite</button>
-        <button data-v="tilt">Schräg</button>
-        <button data-v="bottom">Unterseite</button>
-        <button data-v="explode">Auseinander</button>
+        <button data-v="top">Picture side</button>
+        <button data-v="tilt">Angled</button>
+        <button data-v="bottom">Underside</button>
+        <button data-v="explode">Spread out</button>
       </div>`;
     results.insertBefore(card, results.querySelector('.help'));
     v3.card = card; v3.canvas = card.querySelector('canvas');
@@ -929,7 +929,7 @@ ${items.join('\n')}
     cv.addEventListener('wheel', e => { e.preventDefault(); v3.dist = clamp(v3.dist * Math.exp(e.deltaY * 0.001), 30, 300); render3D(); }, { passive: false });
     card.querySelectorAll('[data-v]').forEach(b => b.addEventListener('click', () => {
       const v = b.dataset.v;
-      if (v === 'explode') { v3.explode = !v3.explode; b.textContent = v3.explode ? 'Zusammen' : 'Auseinander'; rebuild3D(); }
+      if (v === 'explode') { v3.explode = !v3.explode; b.textContent = v3.explode ? 'Together' : 'Spread out'; rebuild3D(); }
       else { v3.theta = -Math.PI / 2; v3.phi = v === 'top' ? 0.02 : v === 'tilt' ? 0.75 : Math.PI - 0.6; }
       render3D();
     }));
@@ -940,7 +940,7 @@ ${items.join('\n')}
     const s = document.createElement('script');
     s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
     s.onload = () => res(window.THREE);
-    s.onerror = () => { threeP = null; s.remove(); rej(new Error('three.js konnte nicht geladen werden')); };
+    s.onerror = () => { threeP = null; s.remove(); rej(new Error('three.js could not be loaded')); };
     document.head.appendChild(s);
   }));
 
@@ -950,7 +950,7 @@ ${items.join('\n')}
     const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(30, 1, 1, 1000);
     cam.up.set(0, 0, 1);
     const hemi = new THREE.HemisphereLight(0xffffff, 0x8a8a8a, 0.6); hemi.position.set(0, 0, 1); scene.add(hemi);
-    // flaches Licht von schräg oben, damit die Gräben Schatten werfen
+    // low light from above at an angle so the grooves cast shadows
     const sun = new THREE.DirectionalLight(0xffffff, 0.95); sun.position.set(-45, 60, 80); sun.castShadow = true;
     const sc = sun.shadow.camera; sc.left = sc.bottom = -45; sc.right = sc.top = 45; sc.near = 1; sc.far = 300;
     sun.shadow.mapSize.set(4096, 4096); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02;
@@ -1011,13 +1011,13 @@ ${items.join('\n')}
       warn.classList.add('hidden');
     } catch (e) {
       console.error(e);
-      warn.textContent = 'Die 3D-Vorschau braucht beim ersten Öffnen eine Internetverbindung (three.js).';
+      warn.textContent = 'The 3D preview needs an internet connection the first time (three.js).';
       warn.classList.remove('hidden');
     }
   }
   const schedule3D = () => { clearTimeout(v3.timer); v3.timer = setTimeout(update3D, 250); };
 
-  /* --- Bild laden --- */
+  /* --- Load picture --- */
   const drop = $('#drop'), fileIn = $('#file');
   drop.addEventListener('click', () => fileIn.click());
   drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileIn.click(); } });
@@ -1031,10 +1031,10 @@ ${items.join('\n')}
   });
 
   function loadFile(file) {
-    state.name = (file.name || 'bild').replace(/\.[^.]+$/, '').replace(/[^\w\-äöüÄÖÜß]+/g, '_') || 'bild';
+    state.name = (file.name || 'picture').replace(/\.[^.]+$/, '').replace(/[^\w\-]+/g, '_') || 'picture';
     const url = URL.createObjectURL(file), im = new Image();
     im.onload = () => { setSource(im); URL.revokeObjectURL(url); };
-    im.onerror = () => alert('Das Bild konnte nicht geladen werden.');
+    im.onerror = () => alert('The picture could not be loaded.');
     im.src = url;
   }
   function setSource(im) {
@@ -1045,11 +1045,11 @@ ${items.join('\n')}
     const g = c.getContext('2d'); g.imageSmoothingEnabled = s < 1; g.imageSmoothingQuality = 'high'; g.drawImage(im, 0, 0, w, h);
     state.src = { w, h, data: g.getImageData(0, 0, w, h).data };
     const th = $('#thumb'); th.src = im.src; th.classList.remove('hidden');
-    $('#dropText').innerHTML = `<small>${im.naturalWidth} × ${im.naturalHeight} px · anderes Bild: klicken oder ziehen</small>`;
+    $('#dropText').innerHTML = `<small>${im.naturalWidth} × ${im.naturalHeight} px · other picture: click or drag</small>`;
     process();
   }
 
-  /* --- Verarbeitung --- */
+  /* --- Processing --- */
   function process() {
     const pixel = $('#style').value === 'pixel';
     document.querySelectorAll('.pixelOnly').forEach(el => el.classList.toggle('hidden', !pixel));
@@ -1096,18 +1096,18 @@ ${items.join('\n')}
   function renderSlots() {
     const box = $('#slots'); box.innerHTML = '';
     const gf = $('#grooveFill'), gcur = gf.value;
-    gf.innerHTML = `<option value="auto">automatisch (dunkelstes)</option>` + state.palette.slice(0, nFil()).map((c, i) => `<option value="${i}">Filament ${i + 1} (${Core.hex(c)})</option>`).join('');
+    gf.innerHTML = `<option value="auto">automatic (darkest)</option>` + state.palette.slice(0, nFil()).map((c, i) => `<option value="${i}">Filament ${i + 1} (${Core.hex(c)})</option>`).join('');
     gf.value = gcur && (gcur === 'auto' || +gcur < nFil()) ? gcur : 'auto';
     const gr = grooveInfo();
     state.slots.forEach((s, i) => {
       const el = document.createElement('div'), con = !!s.contour;
       el.className = 'slot' + (state.painting && state.brush === i ? ' sel' : '');
-      const info = con ? `dunkle Linien → Graben ${String(gr.depth).replace('.', ',')} mm tief, Boden in Filament ${gr.fill + 1}`
-        : `${i === 0 ? 'Hintergrund' : s.locked ? 'fest' : 'automatisch'} · ${Core.hex(state.palette[i] || s.rgb)}`;
+      const info = con ? `dark lines → groove ${gr.depth} mm deep, floor in filament ${gr.fill + 1}`
+        : `${i === 0 ? 'background' : s.locked ? 'fixed' : 'automatic'} · ${Core.hex(state.palette[i] || s.rgb)}`;
       el.innerHTML = (con ? `<span class="sw" style="background:${Core.hex(shownPalette()[i])}"></span>`
-        : `<input type="color" value="${Core.hex(state.palette[i] || s.rgb).toLowerCase()}" aria-label="Farbe Filament ${i + 1}">`) + `
-        <div class="nm"><b>${con ? 'Kontur' : 'Filament ' + (i + 1)}</b><span>${info}</span></div>
-        ${i === 0 || con ? '' : `<button class="lock ${s.locked ? 'on' : ''}" title="${s.locked ? 'Wieder automatisch wählen lassen' : 'Farbe festhalten'}">${s.locked ? '🔒' : '🔓'}</button>`}`;
+        : `<input type="color" value="${Core.hex(state.palette[i] || s.rgb).toLowerCase()}" aria-label="Colour filament ${i + 1}">`) + `
+        <div class="nm"><b>${con ? 'Outline' : 'Filament ' + (i + 1)}</b><span>${info}</span></div>
+        ${i === 0 || con ? '' : `<button class="lock ${s.locked ? 'on' : ''}" title="${s.locked ? 'Let it be chosen automatically again' : 'Keep this colour'}">${s.locked ? '🔒' : '🔓'}</button>`}`;
       const inp = el.querySelector('input');
       inp?.addEventListener('change', () => { s.rgb = Core.parseHex(inp.value); s.locked = true; process(); });
       el.querySelector('.lock')?.addEventListener('click', () => { s.locked = !s.locked; if (s.locked) s.rgb = state.palette[i].slice(); process(); });
@@ -1138,27 +1138,27 @@ ${items.join('\n')}
     }
     if (!m.L) {
       g.fillStyle = cs.getPropertyValue('--muted'); g.font = '14px system-ui,sans-serif'; g.textAlign = 'center';
-      g.fillText('Noch kein Bild geladen', W / 2, W / 2); g.textAlign = 'start';
+      g.fillText('No picture loaded yet', W / 2, W / 2); g.textAlign = 'start';
     }
-    const total = (n * Core.PITCH - (Core.PITCH - gs.S)).toFixed(1).replace('.', ',');
+    const total = (n * Core.PITCH - (Core.PITCH - gs.S)).toFixed(1);
     const pixel = $('#style').value === 'pixel';
     const gr = grooveInfo();
-    m.card.querySelector('[data-sub]').textContent = `Bild ca. ${total} × ${total} mm · ` + (pixel ? `Pixel ${String(num('pixelSize')).replace('.', ',')} mm` : 'Konturen auf 0,1 mm genau') + (gr ? ' · Konturen als Graben' : '');
+    m.card.querySelector('[data-sub]').textContent = `Picture approx. ${total} × ${total} mm · ` + (pixel ? `pixels ${num('pixelSize')} mm` : 'outlines accurate to 0.1 mm') + (gr ? ' · outlines as grooves' : '');
     const st = m.card.querySelector('[data-stats]'), warn = m.card.querySelector('[data-warn]');
     if (m.L) {
       const cnt = state.slots.map(() => 0), pal = shownPalette(); for (const v of m.L) cnt[v]++;
-      st.innerHTML = cnt.map((c, i) => `<span><i style="background:${Core.hex(pal[i])}"></i>${state.slots[i].contour ? 'Kontur (Graben)' : 'Filament ' + (i + 1)}: ${Math.round(c / m.L.length * 100)} %</span>`).join('');
+      st.innerHTML = cnt.map((c, i) => `<span><i style="background:${Core.hex(pal[i])}"></i>${state.slots[i].contour ? 'Outline (groove)' : 'Filament ' + (i + 1)}: ${Math.round(c / m.L.length * 100)} %</span>`).join('');
     } else st.innerHTML = '';
     const msgs = [];
-    if (pixel && num('pixelSize') < 0.4) msgs.push('Pixel kleiner als die Düse.');
-    if (gr) { const gg = Core.grooveGeo(gs, gr), inner = gg.H - gg.top; if (inner < 1.8) msgs.push(`Durch den Graben ist die Fliese innen nur noch ${inner.toFixed(1).replace('.', ',')} mm tief – Noppen brauchen ca. 1,8 mm. Grabentiefe verringern oder Höhe erhöhen.`); }
+    if (pixel && num('pixelSize') < 0.4) msgs.push('Pixels smaller than the nozzle.');
+    if (gr) { const gg = Core.grooveGeo(gs, gr), inner = gg.H - gg.top; if (inner < 1.8) msgs.push(`Because of the groove the tile is only ${inner.toFixed(1)} mm deep inside – studs need about 1.8 mm. Reduce the groove depth or increase the height.`); }
     warn.textContent = msgs.join(' '); warn.classList.toggle('hidden', !msgs.length);
     m.card.querySelectorAll('.actions button').forEach(b => b.disabled = !m.L);
     cv.classList.toggle('paint', state.painting);
     schedule3D();
   }
 
-  /* --- Malen --- */
+  /* --- Painting --- */
   function setupPaint(m) {
     let down = false;
     const paint = e => {
@@ -1182,7 +1182,7 @@ ${items.join('\n')}
   $('#paintBtn').addEventListener('click', () => {
     state.painting = !state.painting;
     $('#paintBtn').classList.toggle('primary', state.painting);
-    $('#paintBtn').textContent = state.painting ? '✎ Malen an – Farbe oben wählen' : '✎ Malen';
+    $('#paintBtn').textContent = state.painting ? '✎ Painting on – pick a colour above' : '✎ Paint';
     renderSlots(); state.mosaics.forEach(drawMosaic);
   });
   const undo = () => { const m = state.lastPainted; if (m && m.undo.length) { m.L = m.undo.pop(); renderOff(m); drawMosaic(m); } };
@@ -1197,21 +1197,21 @@ ${items.join('\n')}
   }
   async function exportSet(m, kind) {
     const btn = m.card.querySelector(kind === '3mf' ? '[data-3mf]' : '[data-stl]'), label = btn.textContent;
-    btn.disabled = true; btn.textContent = 'Erzeuge …';
+    btn.disabled = true; btn.textContent = 'Building …';
     try {
       await new Promise(r => setTimeout(r, 20));
       const tiles = Core.buildSet(m, geo(), $('#faceDown').checked, +$('#baseSlot').value, grooveInfo());
       const prefix = `${state.name}_${m.n}x${m.n}`;
       if (kind === '3mf') download(await Core.make3MF(tiles, state.palette, [num('bedX'), num('bedY')], prefix), prefix + '.3mf', 'model/3mf');
       else download(await Core.makeSTLZip(tiles, state.palette, prefix), prefix + '_stl.zip', 'application/zip');
-    } catch (e) { console.error(e); alert('Export fehlgeschlagen: ' + e.message); }
+    } catch (e) { console.error(e); alert('Export failed: ' + e.message); }
     btn.disabled = false; btn.textContent = label;
   }
   $('#fitTest').addEventListener('click', async () => {
     try {
       const tiles = Core.buildFitTest(geo(), $('#faceDown').checked, 0, [0.05, 0.1, 0.15, 0.2]);
-      download(await Core.make3MF(tiles, state.palette, [num('bedX'), num('bedY')], 'passungstest'), 'passungstest.3mf', 'model/3mf');
-    } catch (e) { console.error(e); alert('Export fehlgeschlagen: ' + e.message); }
+      download(await Core.make3MF(tiles, state.palette, [num('bedX'), num('bedY')], 'fit-test'), 'fit-test.3mf', 'model/3mf');
+    } catch (e) { console.error(e); alert('Export failed: ' + e.message); }
   });
   function exportPng(m) {
     const G = m.G, s = 4, c = document.createElement('canvas');
@@ -1219,10 +1219,10 @@ ${items.join('\n')}
     g.imageSmoothingEnabled = false; g.drawImage(m.off, 0, 0, G * s, G * s);
     g.strokeStyle = '#888'; g.lineWidth = 6;
     for (let k = 1; k < m.n; k++) { const p = k * Core.CPT * s; g.beginPath(); g.moveTo(p, 0); g.lineTo(p, G * s); g.moveTo(0, p); g.lineTo(G * s, p); g.stroke(); }
-    c.toBlob(b => download(b, `${state.name}_${m.n}x${m.n}_vorlage.png`, 'image/png'));
+    c.toBlob(b => download(b, `${state.name}_${m.n}x${m.n}_template.png`, 'image/png'));
   }
 
-  /* --- Einstellungen --- */
+  /* --- Settings --- */
   function setSlots() {
     const k = +$('#ncol').value, fil = state.slots.filter(s => !s.contour);
     const con = state.slots.find(s => s.contour) || { rgb: [26, 26, 26], locked: true, contour: true };
