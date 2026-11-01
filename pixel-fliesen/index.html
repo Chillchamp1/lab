@@ -60,6 +60,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .slot .nm span{display:block;color:var(--muted);font-size:12px}
 .slot button{padding:4px 8px;font-size:12px}
 .lock.on{border-color:var(--accent);color:var(--accent)}
+.slot .fill.on{border-color:var(--accent);background:var(--accent);color:var(--accent-ink)}
 details summary{cursor:pointer;color:var(--muted);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.06em;list-style:none}
 details summary::-webkit-details-marker{display:none}
 details summary::before{content:"▸ ";}
@@ -128,6 +129,11 @@ details[open] summary::before{content:"▾ ";}
         <button id="undoBtn" title="Ctrl+Z">↶ Undo</button>
         <label class="muted" for="brush" style="font-size:12px">Brush</label><input type="range" id="brush" min="0.2" max="3" step="0.1" value="0.6" title="Brush size">
       </div>
+      <p class="muted" style="font-size:12px;margin:10px 0 0">🪣 next to a colour, then click an area in the preview: the area gets that colour. Manual edits stay when colours or settings change.</p>
+      <div class="row"><label for="fillMode">Fill</label>
+        <select id="fillMode"><option value="picture">similar colour in the picture</option><option value="preview">same colour in the preview</option></select></div>
+      <div class="row"><label for="fillTol">Fill tolerance<br><span class="hint">for "similar colour in the picture"</span></label><input type="range" id="fillTol" min="4" max="60" value="18"></div>
+      <div class="toolbar"><button id="clearManual">Clear manual edits</button></div>
     </section>
 
     <section class="card">
@@ -157,6 +163,7 @@ details[open] summary::before{content:"▾ ";}
         <li>Layer height 0.2 mm (first layer 0.2 mm) → the 0.6 mm colour layer is exactly 3 layers. A smooth PEI bed gives a glossy picture side.</li>
         <li>For fine lines use Orca's "Arachne" wall generator (default). First-layer line width ≈ 0.42 mm.</li>
         <li>Outlines as grooves: printed picture side down, the grooves stay empty in the first layers and are bridged afterwards – no problem at 0.4–1 mm width. Grooves narrower than the nozzle disappear; then raise "Thicken outlines".</li>
+        <li>Wrong colour somewhere? Click 🪣 next to the right colour, then click the area in the preview. "Similar colour in the picture" picks the area from the original picture (raise the tolerance for shaded areas), "same colour in the preview" fills exactly the area you see.</li>
         <li>Grip on the studs: print the <b>fit test</b> under "Tile &amp; print" once (4 small tiles, marked with 1–4 dots), pick the one that holds best and enter its value under "Clutch ribs".</li>
       </ol>
     </div>
@@ -364,7 +371,20 @@ const Core = (() => {
       if (s === undefined) memo.set(key, s = sub.length ? subSlot[nearest([lab[i * 3], lab[i * 3 + 1], lab[i * 3 + 2]], sub)] : 0);
       out[i] = s;
     }
-    return { palette: palette.map(c => c.map(Math.round)), L: out };
+    return { palette: palette.map(c => c.map(Math.round)), L: out, lab, solid };
+  }
+
+  // flood fill from seed: 4-connected cells of the G×G grid for which inRegion(cell) holds
+  function floodFill(G, seed, inRegion) {
+    const mask = new Uint8Array(G * G), stack = [seed];
+    mask[seed] = 1;
+    while (stack.length) {
+      const p = stack.pop(), x = p % G;
+      const visit = q => { if (!mask[q] && inRegion(q)) { mask[q] = 1; stack.push(q); } };
+      if (x > 0) visit(p - 1); if (x < G - 1) visit(p + 1);
+      if (p >= G) visit(p - G); if (p < G * G - G) visit(p + G);
+    }
+    return mask;
   }
 
   // upscale the coarse pixel grid to the fine grid
@@ -817,7 +837,7 @@ ${items.join('\n')}
     return out;
   }
 
-  return { PITCH, CELL, CPT, hex, parseHex, rgb2lab, prepareImage, sampleGrid, analyze, expand, majority, removeIslands, thicken, baseMesh, colorMeshes, grooveGeo, buildSet, buildFitTest, make3MF, makeSTLZip, zip };
+  return { PITCH, CELL, CPT, hex, parseHex, rgb2lab, prepareImage, sampleGrid, analyze, floodFill, expand, majority, removeIslands, thicken, baseMesh, colorMeshes, grooveGeo, buildSet, buildFitTest, make3MF, makeSTLZip, zip };
 })();
 </script>
 
@@ -829,7 +849,7 @@ ${items.join('\n')}
   const state = {
     src: null, name: 'picture',
     slots: [{ rgb: [255, 255, 255], locked: true }, { rgb: [26, 26, 26], locked: false }, { rgb: [232, 184, 48], locked: false }, { rgb: [210, 60, 42], locked: false }],
-    palette: [], brush: 1, painting: false, lastPainted: null,
+    palette: [], brush: 1, tool: null, lastPainted: null,
     mosaics: [
       { n: 3, L: null, undo: [], title: '9 tiles (3 × 3)' },
     ],
@@ -1046,6 +1066,7 @@ ${items.join('\n')}
     state.src = { w, h, data: g.getImageData(0, 0, w, h).data };
     const th = $('#thumb'); th.src = im.src; th.classList.remove('hidden');
     $('#dropText').innerHTML = `<small>${im.naturalWidth} × ${im.naturalHeight} px · other picture: click or drag</small>`;
+    resetManual();
     process();
   }
 
@@ -1068,14 +1089,25 @@ ${items.join('\n')}
     const dark = con >= 0 ? con : labs.indexOf(Math.min(...labs)), thick = +$('#thicken').value;
     state.mosaics.forEach((m, i) => {
       const Lq = res[i].L;
-      if (pixel) { const Gp = Math.round(m.n * Core.PITCH / p); m.L = Core.expand(Lq, Gp, Math.round(p / Core.CELL)); }
-      else { m.L = Lq; Core.majority(m.L, m.G); }
-      Core.removeIslands(m.L, m.G, minCells);
-      if (thick && dark > 0) Core.thicken(m.L, m.G, dark, thick);
-      m.undo = [];
-      renderOff(m);
+      m.lab = res[i].lab; m.solid = res[i].solid;
+      m.sG = pixel ? Math.round(m.n * Core.PITCH / p) : m.G; m.f = pixel ? Math.round(p / Core.CELL) : 1;
+      if (pixel) m.auto = Core.expand(Lq, m.sG, m.f);
+      else { m.auto = Lq; Core.majority(m.auto, m.G); }
+      Core.removeIslands(m.auto, m.G, minCells);
+      if (thick && dark > 0) Core.thicken(m.auto, m.G, dark, thick);
+      applyManual(m);
     });
     renderAll();
+  }
+
+  // manual edits (brush and fill) live in their own layer over the automatic result, 255 = untouched
+  function resetManual() { state.mosaics.forEach(m => { m.manual = new Uint8Array(m.G * m.G).fill(255); m.undo = []; }); }
+  function applyManual(m) {
+    if (!m.auto) return;
+    m.L = m.auto.slice();
+    if (!m.manual) return;
+    const n = state.slots.length;
+    for (let k = 0; k < m.L.length; k++) { const v = m.manual[k]; if (v < n) m.L[k] = v; }
   }
 
   function renderOff(m, x0 = 0, y0 = 0, x1 = m.G, y1 = m.G) {
@@ -1101,13 +1133,16 @@ ${items.join('\n')}
     const gr = grooveInfo();
     state.slots.forEach((s, i) => {
       const el = document.createElement('div'), con = !!s.contour;
-      el.className = 'slot' + (state.painting && state.brush === i ? ' sel' : '');
+      el.className = 'slot' + (state.tool && state.brush === i ? ' sel' : '');
+      const filling = state.tool === 'fill' && state.brush === i;
       const info = con ? `dark lines → groove ${gr.depth} mm deep, floor in filament ${gr.fill + 1}`
         : `${i === 0 ? 'background' : s.locked ? 'fixed' : 'automatic'} · ${Core.hex(state.palette[i] || s.rgb)}`;
       el.innerHTML = (con ? `<span class="sw" style="background:${Core.hex(shownPalette()[i])}"></span>`
         : `<input type="color" value="${Core.hex(state.palette[i] || s.rgb).toLowerCase()}" aria-label="Colour filament ${i + 1}">`) + `
         <div class="nm"><b>${con ? 'Outline' : 'Filament ' + (i + 1)}</b><span>${info}</span></div>
+        <button class="fill ${filling ? 'on' : ''}" title="Fill an area in the preview with this colour">🪣</button>
         ${i === 0 || con ? '' : `<button class="lock ${s.locked ? 'on' : ''}" title="${s.locked ? 'Let it be chosen automatically again' : 'Keep this colour'}">${s.locked ? '🔒' : '🔓'}</button>`}`;
+      el.querySelector('.fill').addEventListener('click', () => setTool(filling ? null : 'fill', i));
       const inp = el.querySelector('input');
       inp?.addEventListener('change', () => { s.rgb = Core.parseHex(inp.value); s.locked = true; process(); });
       el.querySelector('.lock')?.addEventListener('click', () => { s.locked = !s.locked; if (s.locked) s.rgb = state.palette[i].slice(); process(); });
@@ -1154,38 +1189,69 @@ ${items.join('\n')}
     if (gr) { const gg = Core.grooveGeo(gs, gr), inner = gg.H - gg.top; if (inner < 1.8) msgs.push(`Because of the groove the tile is only ${inner.toFixed(1)} mm deep inside – studs need about 1.8 mm. Reduce the groove depth or increase the height.`); }
     warn.textContent = msgs.join(' '); warn.classList.toggle('hidden', !msgs.length);
     m.card.querySelectorAll('.actions button').forEach(b => b.disabled = !m.L);
-    cv.classList.toggle('paint', state.painting);
+    cv.classList.toggle('paint', !!state.tool);
     schedule3D();
   }
 
-  /* --- Painting --- */
+  /* --- Painting and filling --- */
+  function setTool(tool, slot) {
+    state.tool = tool;
+    if (slot !== undefined) state.brush = slot;
+    $('#paintBtn').classList.toggle('primary', tool === 'paint');
+    $('#paintBtn').textContent = tool === 'paint' ? '✎ Painting on – pick a colour above' : '✎ Paint';
+    renderSlots(); state.mosaics.forEach(drawMosaic);
+  }
+  function fillAt(m, p) {
+    const G = m.G, slot = state.brush;
+    let inRegion;
+    if ($('#fillMode').value === 'preview') {
+      const v = m.L[p]; inRegion = q => m.L[q] === v;
+    } else { // similar colour in the original picture (sampled grid, coarser in pixel mode)
+      const si = q => m.f === 1 ? q : ((q / G / m.f | 0) * m.sG + ((q % G) / m.f | 0));
+      const s0 = si(p), tol2 = (+$('#fillTol').value) ** 2;
+      if (!m.solid[s0]) inRegion = q => !m.solid[si(q)];
+      else {
+        const ref = [m.lab[s0 * 3], m.lab[s0 * 3 + 1], m.lab[s0 * 3 + 2]];
+        // full Lab distance here: a dark spot of the same hue must stay separate from its lighter surroundings
+        inRegion = q => { const s = si(q); if (!m.solid[s]) return false; return (m.lab[s * 3] - ref[0]) ** 2 + (m.lab[s * 3 + 1] - ref[1]) ** 2 + (m.lab[s * 3 + 2] - ref[2]) ** 2 <= tol2; };
+      }
+    }
+    const mask = Core.floodFill(G, p, inRegion);
+    for (let k = 0; k < mask.length; k++) if (mask[k]) { m.manual[k] = slot; m.L[k] = slot; }
+    renderOff(m); drawMosaic(m);
+  }
   function setupPaint(m) {
     let down = false;
+    const cellAt = e => {
+      const r = m.canvas.getBoundingClientRect();
+      return [(e.clientX - r.left) / r.width * m.G, (e.clientY - r.top) / r.height * m.G];
+    };
     const paint = e => {
-      const r = m.canvas.getBoundingClientRect(), G = m.G;
-      const cx = (e.clientX - r.left) / r.width * G, cy = (e.clientY - r.top) / r.height * G;
+      const G = m.G, [cx, cy] = cellAt(e);
       const rad = num('brush') / 2 / Core.CELL;
       const x0 = Math.max(0, Math.floor(cx - rad)), x1 = Math.min(G, Math.ceil(cx + rad)), y0 = Math.max(0, Math.floor(cy - rad)), y1 = Math.min(G, Math.ceil(cy + rad));
       if (x0 >= x1 || y0 >= y1) return;
-      for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) if ((x + 0.5 - cx) ** 2 + (y + 0.5 - cy) ** 2 <= rad * rad) m.L[y * G + x] = state.brush;
+      for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) if ((x + 0.5 - cx) ** 2 + (y + 0.5 - cy) ** 2 <= rad * rad) m.L[y * G + x] = m.manual[y * G + x] = state.brush;
       renderOff(m, x0, y0, x1, y1); drawMosaic(m);
     };
     m.canvas.addEventListener('pointerdown', e => {
-      if (!state.painting || !m.L) return;
-      down = true; m.canvas.setPointerCapture(e.pointerId);
-      m.undo.push(m.L.slice()); if (m.undo.length > 30) m.undo.shift();
-      state.lastPainted = m; paint(e);
+      if (!state.tool || !m.L) return;
+      const [cx, cy] = cellAt(e), x = Math.floor(cx), y = Math.floor(cy);
+      if (x < 0 || y < 0 || x >= m.G || y >= m.G) return;
+      m.undo.push(m.manual.slice()); if (m.undo.length > 30) m.undo.shift();
+      state.lastPainted = m;
+      if (state.tool === 'fill') { fillAt(m, y * m.G + x); return; }
+      down = true; m.canvas.setPointerCapture(e.pointerId); paint(e);
     });
     m.canvas.addEventListener('pointermove', e => { if (down) paint(e); });
     ['pointerup', 'pointercancel'].forEach(ev => m.canvas.addEventListener(ev, () => { down = false; }));
   }
-  $('#paintBtn').addEventListener('click', () => {
-    state.painting = !state.painting;
-    $('#paintBtn').classList.toggle('primary', state.painting);
-    $('#paintBtn').textContent = state.painting ? '✎ Painting on – pick a colour above' : '✎ Paint';
-    renderSlots(); state.mosaics.forEach(drawMosaic);
+  $('#paintBtn').addEventListener('click', () => setTool(state.tool === 'paint' ? null : 'paint'));
+  $('#clearManual').addEventListener('click', () => {
+    state.mosaics.forEach(m => { if (m.manual) { m.undo.push(m.manual.slice()); m.manual.fill(255); state.lastPainted = m; applyManual(m); } });
+    renderAll();
   });
-  const undo = () => { const m = state.lastPainted; if (m && m.undo.length) { m.L = m.undo.pop(); renderOff(m); drawMosaic(m); } };
+  const undo = () => { const m = state.lastPainted; if (m && m.undo.length) { m.manual = m.undo.pop(); applyManual(m); renderOff(m); drawMosaic(m); } };
   $('#undoBtn').addEventListener('click', undo);
   window.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); undo(); } });
 
@@ -1236,12 +1302,15 @@ ${items.join('\n')}
   }
   ['ncol', 'groove'].forEach(id => $('#' + id).addEventListener('change', setSlots));
   ['grooveDepth', 'grooveFill'].forEach(id => $('#' + id).addEventListener('change', renderAll));
-  ['style', 'pixelSize', 'resample', 'minDetail', 'thicken', 'margin', 'removeBg', 'bgTol', 'darkL'].forEach(id => $('#' + id).addEventListener('change', process));
+  ['resample', 'minDetail', 'thicken', 'darkL'].forEach(id => $('#' + id).addEventListener('change', process));
+  // these shift where the picture sits on the grid, so manual edits would no longer line up
+  ['style', 'pixelSize', 'margin', 'removeBg', 'bgTol'].forEach(id => $('#' + id).addEventListener('change', () => { resetManual(); process(); }));
   ['gS', 'gH', 'gTop', 'gT', 'gWall', 'gTubeO', 'gTubeI', 'gClamp', 'baseSlot'].forEach(id => $('#' + id).addEventListener('change', () => state.mosaics.forEach(drawMosaic)));
   let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => state.mosaics.forEach(drawMosaic), 100); });
   if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => state.mosaics.forEach(drawMosaic));
 
-  window.__pixelFliesen = { state, process, loadSource: setSource, grooveInfo, v3 };
+  window.__pixelFliesen = { state, process, loadSource: setSource, grooveInfo, v3, setTool, fillAt };
+  resetManual();
   setSlots();
 })();
 </script>
