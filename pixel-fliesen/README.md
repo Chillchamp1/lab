@@ -3,7 +3,7 @@
 Drop in a picture and the page splits it into **nine 2×2 tiles**
 (LEGO®-compatible, 3 × 3 tiles, about 47.8 × 47.8 mm) that you press onto a
 baseplate. The output is a multi-colour **3MF for Snapmaker Orca**
-(Snapmaker U1, four toolheads), plus one STL per colour and a PNG template.
+(Snapmaker U1, four toolheads).
 Everything runs in the browser; the picture never leaves your computer.
 
 ## Usage
@@ -13,15 +13,18 @@ Everything runs in the browser; the picture never leaves your computer.
 2. The page finds the hues by itself. Clicking a colour swatch and setting it
    to your own filament fixes that colour; everything is then reassigned.
 3. If an area got the wrong colour, click 🪣 next to the right colour and
-   then the area in the preview. "Similar colour in the picture" selects the
-   area from the original picture with a tolerance slider, so it can also
-   split areas the automatic step merged; "same colour in the preview" fills
-   exactly the area you see. The brush touches up single spots. Manual edits
+   then the area in the preview. The area is picked from the original
+   picture with a tolerance slider, so it can also split areas the automatic
+   step merged. The brush touches up single spots. Manual edits
    are a separate layer: they stay when colours, grooves or detection change,
    and are only cleared by a new picture or by settings that move the picture
-   on the grid (style, pixel size, margin, background removal). Ctrl+Z undoes.
+   on the grid (style, pixel size, background removal). Ctrl+Z undoes.
 4. Download the 3MF and open it in Snapmaker Orca; the picture side lies on
    the bed. Layer height 0.2 mm.
+
+The page only shows what is needed for that. Tile geometry, groove depth and
+print orientation are fixed; "More settings" holds the outline thickening,
+the background tolerance and the stud grip with its fit test.
 
 The 3D preview loads three.js (r128) from cdnjs the first time it opens.
 
@@ -41,8 +44,8 @@ The 3D preview loads three.js (r128) from cdnjs the first time it opens.
 ## Outlines as grooves
 
 Instead of using a separate black filament, outlines are recessed
-0.2–0.6 mm into the picture side. The groove floor is printed in the darkest
-filament (or one you choose), and the shadow in the groove makes the line
+0.4 mm (2 layers) into the picture side. The groove floor is printed in the
+darkest filament, and the shadow in the groove makes the line
 look darker still. That keeps all four filaments free for area colours.
 Printed picture side down, the groove stays empty in the first layers and is
 bridged afterwards.
@@ -53,7 +56,7 @@ bridged afterwards.
   (3 layers).
 - Wall 1.2 mm, centre tube Ø 6.51 / 4.8 mm.
 - **Clutch ribs:** eight ribs on the inner wall, two per stud, reach 0.1 mm
-  past the stud edge by default. Without them the walls do not touch the
+  past the stud edge by default ("Stud grip"). Without them the walls do not touch the
   studs (0.3 mm gap) and the tile only grips on the tube, which is too loose
   in FDM printing. The **fit test** produces four plain tiles with
   +0.05 / +0.10 / +0.15 / +0.20 mm, marked with 1–4 dots.

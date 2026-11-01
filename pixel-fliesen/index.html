@@ -101,55 +101,34 @@ details[open] summary::before{content:"▾ ";}
         <select id="style"><option value="smooth">Smooth – fine outlines</option><option value="pixel">Pixel art – squares</option></select></div>
       <div class="row pixelOnly"><label for="pixelSize">Pixel size</label>
         <select id="pixelSize"><option value="0.4">0.4 mm</option><option value="0.5">0.5 mm</option><option value="0.8" selected>0.8 mm</option><option value="1">1.0 mm</option><option value="1.6">1.6 mm</option><option value="2">2.0 mm</option></select></div>
-      <div class="row pixelOnly"><label for="resample">Downscaling</label>
-        <select id="resample"><option value="avg">Average</option><option value="nearest">Nearest neighbour</option></select></div>
-      <div class="row"><label for="minDetail">Smallest detail<br><span class="hint">smaller specks are removed</span></label>
-        <select id="minDetail"><option value="0.2">0.2 mm</option><option value="0.3">0.3 mm</option><option value="0.4" selected>0.4 mm (nozzle)</option><option value="0.6">0.6 mm</option><option value="0.8">0.8 mm</option></select></div>
-      <div class="row"><label for="thicken">Thicken outlines<br><span class="hint">contour or darkest colour gets wider</span></label>
-        <select id="thicken"><option value="0" selected>off</option><option value="1">+0.1 mm</option><option value="2">+0.2 mm</option><option value="3">+0.3 mm</option></select></div>
-      <div class="row"><label for="margin">Margin (mm)</label><input type="number" id="margin" min="0" max="5" step="0.1" value="0.5"></div>
-      <div class="row"><label for="removeBg">Remove plain background<br><span class="hint">only for pictures without transparency</span></label><input type="checkbox" id="removeBg" checked></div>
-      <div class="row"><label for="bgTol">Background tolerance</label><input type="range" id="bgTol" min="5" max="120" value="40"></div>
+      <div class="row"><label for="removeBg">Remove plain background</label><input type="checkbox" id="removeBg" checked></div>
     </section>
 
     <section class="card">
-      <h2>2 · Colours / filaments</h2>
-      <div class="row"><label for="ncol">Number of filaments</label>
+      <h2>2 · Colours</h2>
+      <div class="row"><label for="ncol">Filaments</label>
         <select id="ncol"><option>2</option><option>3</option><option selected>4</option></select></div>
-      <div class="row"><label for="groove">Outlines as grooves<br><span class="hint">dark outlines are recessed and look dark through their shadow – no extra filament needed</span></label><input type="checkbox" id="groove" checked></div>
-      <div class="row grooveOnly"><label for="darkL">Outline detection<br><span class="hint">further right = lighter lines become grooves too</span></label><input type="range" id="darkL" min="10" max="70" value="55"></div>
-      <div class="row grooveOnly"><label for="grooveDepth">Groove depth</label>
-        <select id="grooveDepth"><option value="0.2">0.2 mm (1 layer)</option><option value="0.4" selected>0.4 mm (2 layers)</option><option value="0.6">0.6 mm (3 layers)</option></select></div>
-      <div class="row grooveOnly"><label for="grooveFill">Groove floor in</label><select id="grooveFill"></select></div>
+      <div class="row"><label for="groove">Outlines as grooves<br><span class="hint">recessed, look dark through their shadow</span></label><input type="checkbox" id="groove" checked></div>
+      <div class="row grooveOnly"><label for="darkL">Outline detection<br><span class="hint">right = lighter lines too</span></label><input type="range" id="darkL" min="10" max="70" value="55"></div>
       <div class="slots" id="slots"></div>
-      <p class="muted" style="font-size:12px;margin:8px 0 0">Click a colour and set it to your filament – it is then fixed (🔒) and all areas are reassigned. Filament 1 is the background. Hues are grouped regardless of light and shadow.</p>
-      <div class="row"><label for="baseSlot">Tile body (underside) in</label><select id="baseSlot"></select></div>
+      <p class="muted" style="font-size:12px;margin:8px 0 0">Pick a colour to match your filament (🔒 keeps it). 🪣 then click an area in the preview to recolour it.</p>
       <div class="toolbar">
         <button id="paintBtn" title="Paint into the preview with the selected colour">✎ Paint</button>
         <button id="undoBtn" title="Ctrl+Z">↶ Undo</button>
-        <label class="muted" for="brush" style="font-size:12px">Brush</label><input type="range" id="brush" min="0.2" max="3" step="0.1" value="0.6" title="Brush size">
+        <button id="clearManual" title="Remove all painted and filled areas">Clear edits</button>
       </div>
-      <p class="muted" style="font-size:12px;margin:10px 0 0">🪣 next to a colour, then click an area in the preview: the area gets that colour. Manual edits stay when colours or settings change.</p>
-      <div class="row"><label for="fillMode">Fill</label>
-        <select id="fillMode"><option value="picture">similar colour in the picture</option><option value="preview">same colour in the preview</option></select></div>
-      <div class="row"><label for="fillTol">Fill tolerance<br><span class="hint">for "similar colour in the picture"</span></label><input type="range" id="fillTol" min="4" max="60" value="18"></div>
-      <div class="toolbar"><button id="clearManual">Clear manual edits</button></div>
+      <div class="row hidden" id="brushRow"><label for="brush">Brush size</label><input type="range" id="brush" min="0.2" max="3" step="0.1" value="0.6"></div>
+      <div class="row hidden" id="fillRow"><label for="fillTol">Fill tolerance<br><span class="hint">higher = also shaded parts</span></label><input type="range" id="fillTol" min="4" max="60" value="18"></div>
     </section>
 
     <section class="card">
-      <details id="geoDetails">
-        <summary>3 · Tile &amp; print</summary>
-        <div class="row"><label for="gS">Edge length (mm)</label><input type="number" id="gS" step="0.05" value="15.8"></div>
-        <div class="row"><label for="gH">Height (mm)</label><input type="number" id="gH" step="0.1" value="3.2"></div>
-        <div class="row"><label for="gTop">Top thickness (mm)</label><input type="number" id="gTop" step="0.1" value="1.2"></div>
-        <div class="row"><label for="gT">of which colour layer (mm)</label><input type="number" id="gT" step="0.1" value="0.6"></div>
-        <div class="row"><label for="gWall">Wall thickness (mm)</label><input type="number" id="gWall" step="0.05" value="1.2"></div>
-        <div class="row"><label for="gClamp">Clutch ribs (mm)<br><span class="hint">8 ribs on the inner wall press on the studs; larger = tighter</span></label><input type="number" id="gClamp" step="0.05" value="0.1"></div>
-        <div class="row"><button id="fitTest">Download fit test</button><span class="hint">4 plain tiles: 1–4 dots = +0.05 / +0.10 / +0.15 / +0.20 mm</span></div>
-        <div class="row"><label for="gTubeO">Tube outer Ø (mm)<br><span class="hint">larger = tighter grip</span></label><input type="number" id="gTubeO" step="0.05" value="6.51"></div>
-        <div class="row"><label for="gTubeI">Tube inner Ø (mm)</label><input type="number" id="gTubeI" step="0.05" value="4.8"></div>
-        <div class="row"><label for="faceDown">Print picture side down<br><span class="hint">recommended: smooth surface, no bridges on the face</span></label><input type="checkbox" id="faceDown" checked></div>
-        <div class="row"><label for="bedX">Bed centre X / Y (mm)</label><input type="number" id="bedX" value="135" style="width:64px"><input type="number" id="bedY" value="135" style="width:64px"></div>
+      <details>
+        <summary>More settings</summary>
+        <div class="row"><label for="thicken">Thicken outlines<br><span class="hint">if thin lines disappear</span></label>
+          <select id="thicken"><option value="0" selected>off</option><option value="1">+0.1 mm</option><option value="2">+0.2 mm</option><option value="3">+0.3 mm</option></select></div>
+        <div class="row"><label for="bgTol">Background tolerance</label><input type="range" id="bgTol" min="5" max="120" value="40"></div>
+        <div class="row"><label for="gClamp">Stud grip (mm)<br><span class="hint">larger = tighter</span></label><input type="number" id="gClamp" step="0.05" value="0.1"></div>
+        <div class="row"><button id="fitTest">Download fit test</button><span class="hint">4 tiles, 1–4 dots = 0.05 / 0.10 / 0.15 / 0.20</span></div>
       </details>
     </section>
   </aside>
@@ -158,13 +137,9 @@ details[open] summary::before{content:"▾ ";}
     <div class="card help">
       <h2>How to print</h2>
       <ol>
-        <li>Download the 3MF and open it in <b>Snapmaker Orca</b>.</li>
-        <li>Each tile consists of parts already assigned to filaments 1–4. In the filament list on the left, set or load the colours as shown here.</li>
-        <li>Layer height 0.2 mm (first layer 0.2 mm) → the 0.6 mm colour layer is exactly 3 layers. A smooth PEI bed gives a glossy picture side.</li>
-        <li>For fine lines use Orca's "Arachne" wall generator (default). First-layer line width ≈ 0.42 mm.</li>
-        <li>Outlines as grooves: printed picture side down, the grooves stay empty in the first layers and are bridged afterwards – no problem at 0.4–1 mm width. Grooves narrower than the nozzle disappear; then raise "Thicken outlines".</li>
-        <li>Wrong colour somewhere? Click 🪣 next to the right colour, then click the area in the preview. "Similar colour in the picture" picks the area from the original picture (raise the tolerance for shaded areas), "same colour in the preview" fills exactly the area you see.</li>
-        <li>Grip on the studs: print the <b>fit test</b> under "Tile &amp; print" once (4 small tiles, marked with 1–4 dots), pick the one that holds best and enter its value under "Clutch ribs".</li>
+        <li>Open the 3MF in <b>Snapmaker Orca</b>; all parts are already assigned to filaments 1–4. Load the colours shown here.</li>
+        <li>Layer height 0.2 mm. A smooth PEI bed gives a glossy picture side.</li>
+        <li>Tiles too loose or too tight? Print the fit test under "More settings" once and enter the value of the one that holds best under "Stud grip".</li>
       </ol>
     </div>
   </section>
@@ -861,12 +836,9 @@ ${items.join('\n')}
   const nFil = () => state.slots.filter(s => !s.contour).length;
   function grooveInfo() {
     const slot = contourIdx(); if (slot < 0) return null;
-    let fill = +$('#grooveFill').value;
-    if (!(fill >= 0 && fill < nFil())) { // automatic: darkest filament
-      const ls = state.palette.slice(0, nFil()).map(c => Core.rgb2lab(...c)[0]);
-      fill = ls.indexOf(Math.min(...ls));
-    }
-    return { slot, fill, depth: num('grooveDepth') };
+    // groove floor in the darkest filament
+    const ls = state.palette.slice(0, nFil()).map(c => Core.rgb2lab(...c)[0]);
+    return { slot, fill: ls.indexOf(Math.min(...ls)), depth: GROOVE_DEPTH };
   }
   // display: groove = filament in shadow
   function shownPalette() {
@@ -876,14 +848,10 @@ ${items.join('\n')}
   }
 
   const num = id => parseFloat($('#' + id).value);
-  const geo = () => {
-    const g = { S: num('gS'), H: num('gH'), top: num('gTop'), t: num('gT'), wall: num('gWall'), tubeO: num('gTubeO'), tubeI: num('gTubeI'), clamp: num('gClamp') || 0 };
-    g.t = Math.max(0.2, g.t);
-    g.top = Math.max(g.t + 0.2, g.top);
-    g.H = Math.max(g.top + 1, g.H);
-    g.S = Math.min(Core.PITCH, Math.max(10, g.S));
-    return g;
-  };
+  // fixed print settings: tile geometry, picture side down, Snapmaker U1 bed centre
+  const GEO = { S: 15.8, H: 3.2, top: 1.2, t: 0.6, wall: 1.2, tubeO: 6.51, tubeI: 4.8 };
+  const GROOVE_DEPTH = 0.4, BASE_SLOT = 0, FACE_DOWN = true, BED = [135, 135], MARGIN = 0.5, MIN_DETAIL = 0.4;
+  const geo = () => ({ ...GEO, clamp: Math.max(0, num('gClamp') || 0) });
 
   /* --- Mosaic cards --- */
   const results = $('#results');
@@ -901,14 +869,10 @@ ${items.join('\n')}
       <div class="warn hidden" data-warn></div>
       <div class="actions">
         <button class="primary" data-3mf disabled>Download 3MF</button>
-        <button data-stl disabled>STL per colour (ZIP)</button>
-        <button data-png disabled>Template (PNG)</button>
       </div>`;
     results.insertBefore(card, results.lastElementChild);
     m.card = card; m.canvas = card.querySelector('canvas');
-    card.querySelector('[data-3mf]').addEventListener('click', () => exportSet(m, '3mf'));
-    card.querySelector('[data-stl]').addEventListener('click', () => exportSet(m, 'stl'));
-    card.querySelector('[data-png]').addEventListener('click', () => exportPng(m));
+    card.querySelector('[data-3mf]').addEventListener('click', () => exportSet(m));
     setupPaint(m);
   });
   results.appendChild(results.querySelector('.help'));
@@ -998,7 +962,7 @@ ${items.join('\n')}
       gm.computeVertexNormals();
       geoms.set(mesh, gm); return gm;
     };
-    const tiles = Core.buildSet(m, geo(), false, +$('#baseSlot').value, grooveInfo());
+    const tiles = Core.buildSet(m, geo(), false, BASE_SLOT, grooveInfo());
     const sp = Core.PITCH + (v3.explode ? 4 : 0);
     tiles.forEach((tile, k) => {
       const ti = k % m.n, tj = (k / m.n) | 0;
@@ -1076,15 +1040,15 @@ ${items.join('\n')}
     document.querySelectorAll('.pixelOnly').forEach(el => el.classList.toggle('hidden', !pixel));
     if (!state.src) { renderAll(); return; }
     const prep = Core.prepareImage(state.src, $('#removeBg').checked, +$('#bgTol').value);
-    const margin = Math.max(0, num('margin') || 0), p = num('pixelSize');
+    const p = num('pixelSize');
     const samples = state.mosaics.map(m => pixel
-      ? Core.sampleGrid(prep, Math.round(m.n * Core.PITCH / p), p, margin, $('#resample').value)
-      : Core.sampleGrid(prep, m.G, Core.CELL, margin, 'smooth'));
+      ? Core.sampleGrid(prep, Math.round(m.n * Core.PITCH / p), p, MARGIN, 'avg')
+      : Core.sampleGrid(prep, m.G, Core.CELL, MARGIN, 'smooth'));
     const cell = pixel ? p : Core.CELL, con = contourIdx();
     const res = state.mosaics.map((m, i) => Core.analyze(samples[i], pixel ? Math.round(m.n * Core.PITCH / p) : m.G, state.slots, con, +$('#darkL').value, Math.round(0.6 / cell)));
     state.palette = res[0].palette;
     state.slots.forEach((s, i) => { if (!s.locked) s.rgb = state.palette[i].slice(); });
-    const d = num('minDetail'), minCells = Math.round(0.6 * d * d / (Core.CELL * Core.CELL));
+    const d = MIN_DETAIL, minCells = Math.round(0.6 * d * d / (Core.CELL * Core.CELL));
     const labs = state.palette.map(c => Core.rgb2lab(...c)[0]);
     const dark = con >= 0 ? con : labs.indexOf(Math.min(...labs)), thick = +$('#thicken').value;
     state.mosaics.forEach((m, i) => {
@@ -1127,15 +1091,12 @@ ${items.join('\n')}
 
   function renderSlots() {
     const box = $('#slots'); box.innerHTML = '';
-    const gf = $('#grooveFill'), gcur = gf.value;
-    gf.innerHTML = `<option value="auto">automatic (darkest)</option>` + state.palette.slice(0, nFil()).map((c, i) => `<option value="${i}">Filament ${i + 1} (${Core.hex(c)})</option>`).join('');
-    gf.value = gcur && (gcur === 'auto' || +gcur < nFil()) ? gcur : 'auto';
     const gr = grooveInfo();
     state.slots.forEach((s, i) => {
       const el = document.createElement('div'), con = !!s.contour;
       el.className = 'slot' + (state.tool && state.brush === i ? ' sel' : '');
       const filling = state.tool === 'fill' && state.brush === i;
-      const info = con ? `dark lines → groove ${gr.depth} mm deep, floor in filament ${gr.fill + 1}`
+      const info = con ? `dark lines → groove, floor in filament ${gr.fill + 1}`
         : `${i === 0 ? 'background' : s.locked ? 'fixed' : 'automatic'} · ${Core.hex(state.palette[i] || s.rgb)}`;
       el.innerHTML = (con ? `<span class="sw" style="background:${Core.hex(shownPalette()[i])}"></span>`
         : `<input type="color" value="${Core.hex(state.palette[i] || s.rgb).toLowerCase()}" aria-label="Colour filament ${i + 1}">`) + `
@@ -1149,9 +1110,6 @@ ${items.join('\n')}
       el.addEventListener('click', e => { if (!e.target.closest('input,button')) { state.brush = i; renderSlots(); } });
       box.appendChild(el);
     });
-    const bs = $('#baseSlot'), cur = bs.value;
-    bs.innerHTML = state.slots.filter(s => !s.contour).map((s, i) => `<option value="${i}">Filament ${i + 1} (${Core.hex(state.palette[i] || s.rgb)})</option>`).join('');
-    bs.value = cur && +cur < nFil() ? cur : '0';
   }
 
   function drawMosaic(m) {
@@ -1186,7 +1144,6 @@ ${items.join('\n')}
     } else st.innerHTML = '';
     const msgs = [];
     if (pixel && num('pixelSize') < 0.4) msgs.push('Pixels smaller than the nozzle.');
-    if (gr) { const gg = Core.grooveGeo(gs, gr), inner = gg.H - gg.top; if (inner < 1.8) msgs.push(`Because of the groove the tile is only ${inner.toFixed(1)} mm deep inside – studs need about 1.8 mm. Reduce the groove depth or increase the height.`); }
     warn.textContent = msgs.join(' '); warn.classList.toggle('hidden', !msgs.length);
     m.card.querySelectorAll('.actions button').forEach(b => b.disabled = !m.L);
     cv.classList.toggle('paint', !!state.tool);
@@ -1198,23 +1155,22 @@ ${items.join('\n')}
     state.tool = tool;
     if (slot !== undefined) state.brush = slot;
     $('#paintBtn').classList.toggle('primary', tool === 'paint');
-    $('#paintBtn').textContent = tool === 'paint' ? '✎ Painting on – pick a colour above' : '✎ Paint';
+    $('#paintBtn').textContent = tool === 'paint' ? '✎ Painting – pick a colour' : '✎ Paint';
+    $('#brushRow').classList.toggle('hidden', tool !== 'paint');
+    $('#fillRow').classList.toggle('hidden', tool !== 'fill');
     renderSlots(); state.mosaics.forEach(drawMosaic);
   }
   function fillAt(m, p) {
     const G = m.G, slot = state.brush;
+    // similar colour in the original picture (sampled grid, coarser in pixel mode)
     let inRegion;
-    if ($('#fillMode').value === 'preview') {
-      const v = m.L[p]; inRegion = q => m.L[q] === v;
-    } else { // similar colour in the original picture (sampled grid, coarser in pixel mode)
-      const si = q => m.f === 1 ? q : ((q / G / m.f | 0) * m.sG + ((q % G) / m.f | 0));
-      const s0 = si(p), tol2 = (+$('#fillTol').value) ** 2;
-      if (!m.solid[s0]) inRegion = q => !m.solid[si(q)];
-      else {
-        const ref = [m.lab[s0 * 3], m.lab[s0 * 3 + 1], m.lab[s0 * 3 + 2]];
-        // full Lab distance here: a dark spot of the same hue must stay separate from its lighter surroundings
-        inRegion = q => { const s = si(q); if (!m.solid[s]) return false; return (m.lab[s * 3] - ref[0]) ** 2 + (m.lab[s * 3 + 1] - ref[1]) ** 2 + (m.lab[s * 3 + 2] - ref[2]) ** 2 <= tol2; };
-      }
+    const si = q => m.f === 1 ? q : ((q / G / m.f | 0) * m.sG + ((q % G) / m.f | 0));
+    const s0 = si(p), tol2 = (+$('#fillTol').value) ** 2;
+    if (!m.solid[s0]) inRegion = q => !m.solid[si(q)];
+    else {
+      const ref = [m.lab[s0 * 3], m.lab[s0 * 3 + 1], m.lab[s0 * 3 + 2]];
+      // full Lab distance here: a dark spot of the same hue must stay separate from its lighter surroundings
+      inRegion = q => { const s = si(q); if (!m.solid[s]) return false; return (m.lab[s * 3] - ref[0]) ** 2 + (m.lab[s * 3 + 1] - ref[1]) ** 2 + (m.lab[s * 3 + 2] - ref[2]) ** 2 <= tol2; };
     }
     const mask = Core.floodFill(G, p, inRegion);
     for (let k = 0; k < mask.length; k++) if (mask[k]) { m.manual[k] = slot; m.L[k] = slot; }
@@ -1261,32 +1217,23 @@ ${items.join('\n')}
     const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   }
-  async function exportSet(m, kind) {
-    const btn = m.card.querySelector(kind === '3mf' ? '[data-3mf]' : '[data-stl]'), label = btn.textContent;
+  async function exportSet(m) {
+    const btn = m.card.querySelector('[data-3mf]'), label = btn.textContent;
     btn.disabled = true; btn.textContent = 'Building …';
     try {
       await new Promise(r => setTimeout(r, 20));
-      const tiles = Core.buildSet(m, geo(), $('#faceDown').checked, +$('#baseSlot').value, grooveInfo());
+      const tiles = Core.buildSet(m, geo(), FACE_DOWN, BASE_SLOT, grooveInfo());
       const prefix = `${state.name}_${m.n}x${m.n}`;
-      if (kind === '3mf') download(await Core.make3MF(tiles, state.palette, [num('bedX'), num('bedY')], prefix), prefix + '.3mf', 'model/3mf');
-      else download(await Core.makeSTLZip(tiles, state.palette, prefix), prefix + '_stl.zip', 'application/zip');
+      download(await Core.make3MF(tiles, state.palette, BED, prefix), prefix + '.3mf', 'model/3mf');
     } catch (e) { console.error(e); alert('Export failed: ' + e.message); }
     btn.disabled = false; btn.textContent = label;
   }
   $('#fitTest').addEventListener('click', async () => {
     try {
-      const tiles = Core.buildFitTest(geo(), $('#faceDown').checked, 0, [0.05, 0.1, 0.15, 0.2]);
-      download(await Core.make3MF(tiles, state.palette, [num('bedX'), num('bedY')], 'fit-test'), 'fit-test.3mf', 'model/3mf');
+      const tiles = Core.buildFitTest(geo(), FACE_DOWN, 0, [0.05, 0.1, 0.15, 0.2]);
+      download(await Core.make3MF(tiles, state.palette, BED, 'fit-test'), 'fit-test.3mf', 'model/3mf');
     } catch (e) { console.error(e); alert('Export failed: ' + e.message); }
   });
-  function exportPng(m) {
-    const G = m.G, s = 4, c = document.createElement('canvas');
-    c.width = c.height = G * s; const g = c.getContext('2d');
-    g.imageSmoothingEnabled = false; g.drawImage(m.off, 0, 0, G * s, G * s);
-    g.strokeStyle = '#888'; g.lineWidth = 6;
-    for (let k = 1; k < m.n; k++) { const p = k * Core.CPT * s; g.beginPath(); g.moveTo(p, 0); g.lineTo(p, G * s); g.moveTo(0, p); g.lineTo(G * s, p); g.stroke(); }
-    c.toBlob(b => download(b, `${state.name}_${m.n}x${m.n}_template.png`, 'image/png'));
-  }
 
   /* --- Settings --- */
   function setSlots() {
@@ -1301,11 +1248,10 @@ ${items.join('\n')}
     process();
   }
   ['ncol', 'groove'].forEach(id => $('#' + id).addEventListener('change', setSlots));
-  ['grooveDepth', 'grooveFill'].forEach(id => $('#' + id).addEventListener('change', renderAll));
-  ['resample', 'minDetail', 'thicken', 'darkL'].forEach(id => $('#' + id).addEventListener('change', process));
+  ['thicken', 'darkL'].forEach(id => $('#' + id).addEventListener('change', process));
   // these shift where the picture sits on the grid, so manual edits would no longer line up
-  ['style', 'pixelSize', 'margin', 'removeBg', 'bgTol'].forEach(id => $('#' + id).addEventListener('change', () => { resetManual(); process(); }));
-  ['gS', 'gH', 'gTop', 'gT', 'gWall', 'gTubeO', 'gTubeI', 'gClamp', 'baseSlot'].forEach(id => $('#' + id).addEventListener('change', () => state.mosaics.forEach(drawMosaic)));
+  ['style', 'pixelSize', 'removeBg', 'bgTol'].forEach(id => $('#' + id).addEventListener('change', () => { resetManual(); process(); }));
+  $('#gClamp').addEventListener('change', () => state.mosaics.forEach(drawMosaic));
   let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => state.mosaics.forEach(drawMosaic), 100); });
   if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => state.mosaics.forEach(drawMosaic));
 
