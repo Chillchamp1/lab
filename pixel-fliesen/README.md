@@ -12,7 +12,14 @@ Everything runs in the browser; the picture never leaves your computer.
    transparent background works best; plain backgrounds are cut out.
 2. The page finds the hues by itself. Clicking a colour swatch and setting it
    to your own filament fixes that colour; everything is then reassigned.
-3. The brush lets you touch up single spots (Ctrl+Z to undo).
+3. If an area got the wrong colour, click 🪣 next to the right colour and
+   then the area in the preview. "Similar colour in the picture" selects the
+   area from the original picture with a tolerance slider, so it can also
+   split areas the automatic step merged; "same colour in the preview" fills
+   exactly the area you see. The brush touches up single spots. Manual edits
+   are a separate layer: they stay when colours, grooves or detection change,
+   and are only cleared by a new picture or by settings that move the picture
+   on the grid (style, pixel size, margin, background removal). Ctrl+Z undoes.
 4. Download the 3MF and open it in Snapmaker Orca; the picture side lies on
    the bed. Layer height 0.2 mm.
 
