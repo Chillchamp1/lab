@@ -1,5 +1,11 @@
 [
   {
+    "slug": "flachkanal-dn75",
+    "titel": "Flachkanal DN 75 hinter dem Schreibtisch",
+    "beschreibung": "Generator für einen 3D-gedruckten Abluftkanal: Ein HT-Rohr DN 75 wird hinter der Tischkante flach, läuft an der Wand hoch und biegt durch ein Rechteckloch ins Druckergehäuse. Die Teile sind auf den Bauraum des Snapmaker U1 zugeschnitten, ohne Stützen druckbar, mit Seitenansicht, 3D-Vorschau und STL-Export.",
+    "datum": "2026-11"
+  },
+  {
     "slug": "pixel-fliesen",
     "titel": "Pixel Tiles: pictures as a tile mosaic for 3D printing",
     "beschreibung": "Drop in a picture and the page splits it into nine LEGO-compatible 2×2 tiles with up to four filament colours, as a multi-colour 3MF for the Snapmaker U1. Hues are recognised regardless of light and shadow, and dark outlines are printed as grooves that look dark through their own shadow and need no filament of their own. With a 3D preview, a brush for touch-ups and a fit test for the grip on the studs. In English.",
