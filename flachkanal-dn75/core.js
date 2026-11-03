@@ -15,7 +15,7 @@ const Core = (() => {
    * Uhrzeigersinn ab der Mitte der rechten Seite. Ein Kreis ist der Sonderfall
    * hx = hy = rc. Weil alle Querschnitte gleich abgetastet werden, passen die
    * Punkte zweier Ringe zueinander. */
-  function rrect(hx, hy, rc, cy) {
+  function rrect(hx, hy, rc, cy, cx = 0) {
     rc = Math.min(rc, hx, hy);
     const sx = hx - rc, sy = hy - rc, q = Math.PI * rc / 2, h = Math.PI / 2;
     const arc = (cx, cyy, a0) => t => [cx + rc * Math.cos(a0 + t * h), cyy + rc * Math.sin(a0 + t * h)];
@@ -38,13 +38,13 @@ const Core = (() => {
       while (si < segs.length - 1 && s > acc + segs[si][0] + 1e-12) { acc += segs[si][0]; si++; }
       const L = segs[si][0], t = L > 0 ? Math.min(1, Math.max(0, (s - acc) / L)) : 0;
       const [x, y] = segs[si][1](t);
-      pts[2 * i] = x; pts[2 * i + 1] = y + cy;
+      pts[2 * i] = x + cx; pts[2 * i + 1] = y + cy;
     }
     return pts;
   }
 
   // Querschnitt als [hx, hy, rc, cy]; nach innen versetzt um d
-  const inset = (pr, d, rcMin = 0.3) => [pr[0] - d, pr[1] - d, Math.max(pr[2] - d, rcMin), pr[3]];
+  const inset = (pr, d, rcMin = 0.3) => [pr[0] - d, pr[1] - d, Math.max(pr[2] - d, rcMin), pr[3], pr[4] || 0];
 
   /* Rohr aus Ringen: jeder Ring hat Außen- und Innenquerschnitt auf einer
    * Höhe. Zwei Ringe auf gleicher Höhe ergeben eine waagrechte Stufe. */
@@ -98,9 +98,9 @@ const Core = (() => {
   /* Hohler Kasten: Außenpolygon Po und Hohlraum Q in der y-z-Ebene, entlang
    * x ausgezogen (außen ±hx, innen ±hi). openings: Paare [Kante von Po, Kante
    * von Q], die auf derselben Linie liegen – dort ist der Kasten offen. */
-  function box(Po, Q, openings, hx, hi) {
+  function box(Po, Q, openings, hx, hi, cx = 0) {
     const tris = [];
-    const P3 = (p, x) => [x, p[0], p[1]];
+    const P3 = (p, x) => [x + cx, p[0], p[1]];
     const tri = (a, b, c, n) => {
       const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], v = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
       const cr = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
@@ -135,12 +135,14 @@ const Core = (() => {
 
   function defaults() {
     return {
-      gap: 32,          // freier Spalt Wand ↔ Tischkante
+      depth: 25,        // Kanaldicke außen (Spalt hinter dem Tisch minus etwas Luft)
+      widthMode: 'rohr',// 'rohr' = gleicher Querschnitt wie das Rohr, 'loch' = so breit wie das Loch, 'eigen'
+      width: 150,       // Kanalbreite außen bei 'eigen'
       desk: 40,         // Tischplatte samt Zarge, so weit muss es unter der Oberkante flach sein
       holeZ: 600,       // Tischoberkante → Unterkante Loch
       holeW: 70, holeH: 40,
-      encGap: 32,       // Wand ↔ Außenseite Gehäuserückwand
-      insert: 15,       // so weit ragt der Stutzen über die Gehäuserückwand hinaus nach innen
+      encGap: 27,       // Wand ↔ Außenseite Gehäuserückwand
+      insert: 5,        // so weit reicht der Stutzen von außen ins Loch – am besten nur die Wandstärke
       end: 'muffe',     // 'muffe' (über das Rohrende) | 'spitz' (in eine HT-Muffe)
       t: 2.4,           // Wandstärke
       clr: 0.3,         // Spiel in der Steckverbindung
@@ -152,9 +154,16 @@ const Core = (() => {
   function plan(inp) {
     const p = { ...defaults(), ...inp };
     const warn = [], t = p.t, c = p.clr;
-    const D = p.gap - 2, W = p.holeW - 1;          // je 1 mm Luft
+    const D = p.depth;
+    const Ws0 = p.holeW - 1;                         // Stutzen: 1 mm kleiner als das Loch
+    const pipeArea = Math.PI * (PIPE_ID / 2) ** 2;
+    const Wrohr = Math.ceil(pipeArea / Math.max(1, D - 2 * t) + 2 * t);
+    let W = p.widthMode === 'loch' ? Ws0 : p.widthMode === 'eigen' ? p.width : Wrohr;
+    W = Math.max(W, 2 * t + 10);
+    const Ws = Math.min(Ws0, W);
     const hx = W / 2, hy = D / 2, rcf = Math.min(2, hy, hx);
-    if (D - 2 * t < 8) warn.push(`Der Spalt ist zu schmal: innen blieben nur ${(D - 2 * t).toFixed(1)} mm.`);
+    if (D - 2 * t < 8) warn.push(`Der Kanal ist zu dünn: innen blieben nur ${(D - 2 * t).toFixed(1)} mm.`);
+    if (W > p.bed - 8) warn.push(`Der Kanal ist ${Math.round(W)} mm breit; liegend gedruckt ist das höher als der Bauraum.`);
     if (p.holeH - 1 - 2 * t < 8) warn.push('Das Loch ist zu niedrig für Stutzen samt Wänden.');
     if (p.encGap < D) warn.push(`Die Gehäuserückwand steht näher an der Wand (${p.encGap} mm) als der Kanal tief ist (${D} mm).`);
 
@@ -217,7 +226,13 @@ const Core = (() => {
     const fuMax = S - untenFixed;
     const LmMax = diag - D;                           // liegend, notfalls diagonal
     const LoMax = diag - ye;
-    const zb = sock + ch;                             // ab hier ist das Oberteil ein Kasten
+    // Oberteil: nach der Muffe verjüngt es sich einseitig auf Lochbreite. Die
+    // Bettseite (x = −W/2) bleibt gerade, die obere Wand fällt mit gut 49° ab.
+    const taper = W - Ws > 0.5;
+    const zT0 = sock + ch + 3, Lta = taper ? 0.85 * (W - Ws) : 0;
+    const zb = taper ? zT0 + Lta + 3 : sock + ch;      // ab hier ist das Oberteil ein Kasten
+    const cxN = -W / 2 + Ws / 2;
+    const NOUT = [Ws / 2, hy, Math.min(rcf, Ws / 2), hy, cxN], NREG = inset(NOUT, t);
     const LoMin = zb + 10 + (zt - hb);
     if (fuMax < 10) warn.push('Der Bauraum ist zu niedrig für das Unterteil.');
     let n = 0;
@@ -280,14 +295,22 @@ const Core = (() => {
     const r2 = Math.SQRT2 - 1;
     const Po = [[0, zb], [D, zb], [D, hb_], [ye, hb_], [ye, zt_], [k, zt_], [0, zt_ - k]];
     const Q = [[t, zb], [D - t, zb], [D - t, hb_ + t], [ye, hb_ + t], [ye, zt_ - t], [k + t * r2, zt_ - t], [t, zt_ - k - t * r2]];
-    const stub = tube([
-      { z: 0, o: OUT, i: SOCK }, { z: sock, o: OUT, i: SOCK }, { z: zb, o: OUT, i: REG }, { z: zb + 5, o: OUT, i: REG },
-    ]);
-    const bx = box(Po, Q, [[0, 0], [3, 3]], hx, hx - t);
+    const stubRings = [{ z: 0, o: OUT, i: SOCK }, { z: sock, o: OUT, i: SOCK }, { z: sock + ch, o: OUT, i: REG }];
+    if (taper) {
+      const mix = (a, b, e) => a.map((v, j) => lerp(v, b[j] || 0, e));
+      const A = [...OUT, 0], B = NOUT;
+      for (let j = 0; j <= 24; j++) {
+        const e = j / 24, o = mix(A, B, e);
+        stubRings.push({ z: zT0 + e * Lta, o, i: inset(o, t) });
+      }
+    }
+    stubRings.push({ z: zb + 5, o: taper ? NOUT : OUT, i: taper ? NREG : REG });
+    const stub = tube(stubRings);
+    const bx = box(Po, Q, [[0, 0], [3, 3]], Ws / 2, Ws / 2 - t, taper ? cxN : 0);
     const ob = new Float32Array(stub.length + bx.length); ob.set(stub); ob.set(bx, stub.length);
     parts.push({
       id: 'oben', name: 'Oberteil', file: `flachkanal-${2 + n}-oberteil.stl`,
-      what: 'Flachkanal mit Bogen und Stutzen ins Gehäuse', local: ob, shells: [stub.length / 9, bx.length / 9],
+      what: taper ? 'verjüngt sich auf Lochbreite, Bogen und Stutzen ins Gehäuse' : 'Flachkanal mit Bogen und Stutzen ins Gehäuse', local: ob, shells: [stub.length / 9, bx.length / 9],
       at: zc, lying: true, outline: { Po, zb: zc, D },
     });
 
@@ -303,11 +326,11 @@ const Core = (() => {
 
     const innerArea = (pr) => { const [a, b, r] = pr; return 4 * a * b - (4 - Math.PI) * r * r; };
     return {
-      p, D, W, H, t, Rmax, n, fu, Lm, Lo, total, flat0, zt, hb, ye, overhang, warn, parts,
+      p, D, W, Ws, Wrohr, snoutX: taper ? cxN : 0, H, t, Rmax, n, fu, Lm, Lo, total, flat0, zt, hb, ye, overhang, warn, parts,
       pipeTop: untenZ + (p.end === 'muffe' ? p.collar : 0),   // Rohrende, Höhe über Tischoberkante
       pipeAxis: Rmax,
       untenBottom: untenZ,
-      area: { pipe: Math.PI * (PIPE_ID / 2) ** 2, duct: innerArea(REG), snout: (W - 2 * t) * (p.holeH - 1 - 2 * t) },
+      area: { pipe: pipeArea, duct: innerArea(REG), snout: (Ws - 2 * t) * (p.holeH - 1 - 2 * t) },
       profiles: { OUT, REG },
       untenRings,
     };
