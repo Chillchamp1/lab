@@ -2,7 +2,7 @@
   {
     "slug": "flachkanal-dn75",
     "titel": "Flachkanal DN 75 hinter dem Schreibtisch",
-    "beschreibung": "Generator für einen 3D-gedruckten Abluftkanal: Ein HT-Rohr DN 75 wird hinter der Tischkante flach, läuft an der Wand hoch und biegt durch ein Rechteckloch ins Druckergehäuse. Die Teile sind auf den Bauraum des Snapmaker U1 zugeschnitten, ohne Stützen druckbar, mit Seitenansicht, 3D-Vorschau und STL-Export.",
+    "beschreibung": "Generator für einen 3D-gedruckten Abluftkanal: Ein HT-Rohr DN 75 wird hinter der Tischkante flach, standardmäßig mit demselben Querschnitt wie das Rohr (25 mm dick, gut 20 cm breit). Der Kanal läuft an der Wand hoch und biegt durch ein Rechteckloch ins Druckergehäuse. Die Teile sind auf den Bauraum des Snapmaker U1 zugeschnitten, ohne Stützen druckbar, mit Seitenansicht, 3D-Vorschau und STL-Export.",
     "datum": "2026-11"
   },
   {

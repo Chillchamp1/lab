@@ -16,10 +16,23 @@ fertig ausgerichtet für den Druck.
 | Steckverbinder | stehend | kurzes Rohrstück in Zungenform, verbindet zwei liegende Teile |
 | Oberteil | liegend auf der Seitenwand | Muffe, Flachkanal, kastenförmiger Bogen und Stutzen ins Gehäuse |
 
-- **Querschnitt:** Der Kanal ist so breit wie das Gehäuseloch minus 1 mm und
-  so tief wie der Spalt hinter dem Tisch minus 2 mm. Er ist innen ein
-  Rechteck mit kleinen Rundungen und liegt mit der flachen Rückseite an der
-  Wand.
+- **Querschnitt:** Die Dicke ist frei wählbar. Die Breite ist voreingestellt
+  auf denselben Innenquerschnitt wie das Rohr (39,8 cm²): Bei 25 mm Dicke und
+  2,4 mm Wand ergibt das 202 mm außen. Wahlweise geht auch „so breit wie das
+  Loch“ oder eine eigene Breite. Innen ist der Kanal ein Rechteck mit kleinen
+  Rundungen. Er liegt mit der flachen Rückseite an der Wand.
+- **Warum breit, obwohl das Loch eng ist:** Druckverluste addieren sich. Das
+  Loch ist ein einmaliger Verlust, der nicht mit der Länge wächst. Reibung
+  und Bogen hängen dagegen an der Geschwindigkeit im Kanal. Ein Beispiel mit
+  10 m³/h (kleiner Gehäuselüfter), überschlagen: Der 69 × 30-Kanal kommt auf
+  etwa 4,2 Pa, der 202 × 25-Kanal auf etwa 2,3 Pa. Davon entfallen etwa
+  0,8 Pa auf den Einlauf ins Loch. Ein Stutzen, der ins Gehäuse hineinragt,
+  hat einen höheren Einlaufverlust als ein bündig endender. Deshalb steht er
+  nur 5 mm tief im Loch.
+- **Verjüngung im Oberteil:** Ist der Kanal breiter als das Loch, verjüngt
+  sich das Oberteil nach der Muffe auf die Lochbreite. Das geschieht nur
+  einseitig, damit die Bettseite beim liegenden Druck gerade bleibt. Die
+  schräge Wand steht etwa 49° steil.
 - **Übergang:** Der Übergang führt den Kreis über eine Schar abgerundeter
   Rechtecke in den Flachkanal über (Breite, Tiefe und Eckradius werden mit
   einer Smoothstep-Kurve überblendet). Die Rückseite läuft dabei auf die
