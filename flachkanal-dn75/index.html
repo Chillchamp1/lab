@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flachkanal DN 75</title>
+<style>
+:root{
+  --bg:#f4f2ee; --surface:#ffffff; --surface-2:#ebe8e2; --line:#d9d4cb;
+  --text:#1f1d1a; --muted:#6b665e; --accent:#2f6fb2; --accent-2:#245a92; --accent-ink:#ffffff;
+  --warn:#9a6a00; --warn-bg:#fff4d6;
+  --p1:#2f6fb2; --p2:#d0782a; --p3:#3c9a5f; --p4:#8a5cc2;
+  --wall:#cfc9bf; --desk:#c8a77e; --enc:#9aa3ad; --pipe:#9b9b96;
+  --radius:12px; --shadow:0 1px 2px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#16151a; --surface:#1f1e24; --surface-2:#2a2930; --line:#3a3841;
+    --text:#ecebf0; --muted:#a19fab; --accent:#5b9be0; --accent-2:#79aee8; --accent-ink:#0b1622;
+    --warn:#ffcf66; --warn-bg:#3a2f12;
+    --p1:#5b9be0; --p2:#e8964f; --p3:#5cbf80; --p4:#a987d8;
+    --wall:#4a4650; --desk:#8a6d4c; --enc:#6c7580; --pipe:#77767c; --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#16151a; --surface:#1f1e24; --surface-2:#2a2930; --line:#3a3841;
+  --text:#ecebf0; --muted:#a19fab; --accent:#5b9be0; --accent-2:#79aee8; --accent-ink:#0b1622;
+  --warn:#ffcf66; --warn-bg:#3a2f12;
+  --p1:#5b9be0; --p2:#e8964f; --p3:#5cbf80; --p4:#a987d8;
+  --wall:#4a4650; --desk:#8a6d4c; --enc:#6c7580; --pipe:#77767c; --shadow:none;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:20px 24px 8px;max-width:1280px;margin:0 auto}
+h1{font-size:22px;margin:0;letter-spacing:-.01em}
+header p{margin:4px 0 0;color:var(--muted);max-width:780px}
+.layout{display:grid;grid-template-columns:330px 1fr;gap:20px;padding:16px 24px 40px;max-width:1280px;margin:0 auto}
+@media (max-width:900px){.layout{grid-template-columns:1fr;padding:12px 16px 32px}header{padding:16px 16px 4px}}
+.panel{display:flex;flex-direction:column;gap:14px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);min-width:0}
+.card h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 12px;font-weight:600}
+.row{display:flex;align-items:center;gap:10px;margin:8px 0}
+.row label{flex:1}
+.row .hint{display:block;color:var(--muted);font-size:12px;line-height:1.35}
+input[type=number],select{background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:inherit;min-width:0}
+input[type=number]{width:78px;text-align:right}
+.unit{color:var(--muted);font-size:12px;width:22px}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--text);padding:7px 12px}
+button:hover{background:var(--surface-2)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+button.primary:hover{background:var(--accent-2);border-color:var(--accent-2)}
+details summary{cursor:pointer;color:var(--muted);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.06em;list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"▸ "}
+details[open] summary::before{content:"▾ "}
+.main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-content:start;min-width:0}
+@media (max-width:1100px){.main{grid-template-columns:minmax(0,1fr)}}
+.wide{grid-column:1/-1}
+.sub{color:var(--muted);font-size:13px;margin:-6px 0 10px}
+#side{display:block;width:100%;height:auto;max-height:760px;margin:0 auto}
+#side text{font-family:system-ui,sans-serif;font-size:var(--fs,11px);fill:var(--text)}
+#side .dim{stroke:var(--muted);stroke-width:1}
+#side .dimt{fill:var(--muted)}
+.v3{width:100%;aspect-ratio:1;display:block;border-radius:8px;background:var(--surface-2);touch-action:none;cursor:grab}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.parts{display:flex;flex-direction:column;gap:10px}
+.part{display:grid;grid-template-columns:14px 1fr auto;gap:4px 10px;align-items:start;padding:10px;border:1px solid var(--line);border-radius:10px}
+.part i{width:14px;height:14px;border-radius:3px;margin-top:3px}
+.part b{font-weight:600}
+.part .d{color:var(--muted);font-size:12.5px}
+.part button{align-self:center}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0}
+.facts dt{color:var(--muted)}
+.facts dd{margin:0;font-variant-numeric:tabular-nums}
+.warn{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:8px 10px;font-size:13px;margin-top:10px}
+.hidden{display:none!important}
+ol,ul{margin:0;padding-left:20px}
+li{margin:4px 0}
+.muted{color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Flachkanal DN 75 hinter dem Schreibtisch</h1>
+  <p>Das HT-Rohr DN 75 kommt von unten, wird hinter der Tischkante flach, läuft flach an der Wand hoch und biegt hinten ins Druckergehäuse. Die Teile sind auf den Bauraum des Snapmaker U1 (270 mm) zugeschnitten und lassen sich ohne Stützen drucken.</p>
+</header>
+
+<main class="layout">
+  <aside class="panel">
+    <section class="card">
+      <h2>1 · Am Schreibtisch messen</h2>
+      <div class="row"><label for="gap">Spalt Wand ↔ Tischkante<span class="hint">so weit darf der Tisch von der Wand stehen; der Kanal wird 2 mm dünner</span></label><input type="number" id="gap" min="18" max="80" step="1"><span class="unit">mm</span></div>
+      <div class="row"><label for="desk">Tischplatte samt Zarge<span class="hint">so weit unter der Oberkante muss der Kanal noch flach sein</span></label><input type="number" id="desk" min="10" max="200" step="1"><span class="unit">mm</span></div>
+    </section>
+
+    <section class="card">
+      <h2>2 · Loch im Gehäuse</h2>
+      <div class="row"><label for="holeZ">Tischoberkante → Unterkante Loch</label><input type="number" id="holeZ" min="60" max="1500" step="1"><span class="unit">mm</span></div>
+      <div class="row"><label for="holeW">Lochbreite</label><input type="number" id="holeW" min="30" max="200" step="1"><span class="unit">mm</span></div>
+      <div class="row"><label for="holeH">Lochhöhe</label><input type="number" id="holeH" min="20" max="120" step="1"><span class="unit">mm</span></div>
+      <div class="row"><label for="encGap">Wand ↔ Rückwand Gehäuse<span class="hint">Außenseite der Rückwand</span></label><input type="number" id="encGap" min="10" max="300" step="1"><span class="unit">mm</span></div>
+      <div class="row"><label for="insert">Stutzen ragt hinein<span class="hint">Wandstärke des Gehäuses plus Überstand</span></label><input type="number" id="insert" min="3" max="60" step="1"><span class="unit">mm</span></div>
+    </section>
+
+    <section class="card">
+      <h2>3 · Rohr und Drucker</h2>
+      <div class="row"><label for="end">Anschluss unten</label>
+        <select id="end"><option value="muffe">Muffe – über das abgesägte Rohr</option><option value="spitz">Spitzende – in die HT-Muffe</option></select></div>
+      <div class="row"><label for="bed">Bauraum (Würfel)<span class="hint">Snapmaker U1: 270 mm</span></label><input type="number" id="bed" min="150" max="500" step="1"><span class="unit">mm</span></div>
+      <details>
+        <summary>Feinheiten</summary>
+        <div class="row"><label for="t">Wandstärke</label><input type="number" id="t" min="1.6" max="4" step="0.1"><span class="unit">mm</span></div>
+        <div class="row"><label for="clr">Spiel der Steckverbindungen<span class="hint">größer = lockerer</span></label><input type="number" id="clr" min="0" max="1" step="0.05"><span class="unit">mm</span></div>
+        <div class="row"><label for="collar">Länge des runden Anschlusses</label><input type="number" id="collar" min="20" max="80" step="1"><span class="unit">mm</span></div>
+        <div class="row"><button id="reset">Auf Ausgangswerte</button></div>
+      </details>
+    </section>
+  </aside>
+
+  <section class="main">
+    <div class="card">
+      <h2>Seitenansicht</h2>
+      <div class="sub">Schnitt von der Seite, maßstäblich. Links die Wand.</div>
+      <svg id="side" role="img" aria-label="Seitenansicht von Wand, Tisch, Gehäuse und Kanal"></svg>
+    </div>
+
+    <div class="card">
+      <h2>3D-Vorschau</h2>
+      <div class="sub">Ziehen = drehen · Rad / zwei Finger = zoomen</div>
+      <canvas class="v3" id="v3" aria-label="3D-Vorschau"></canvas>
+      <div class="warn hidden" id="v3warn"></div>
+      <div class="actions">
+        <button data-v="front">Von vorn</button>
+        <button data-v="side">Von der Seite</button>
+        <button id="ctx">Umgebung ausblenden</button>
+        <button id="explode">Auseinander</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Teile</h2>
+      <div class="sub" id="partsSub"></div>
+      <div class="parts" id="parts"></div>
+      <div class="actions"><button class="primary" id="zipBtn">Alle Teile als ZIP</button></div>
+      <div id="warns"></div>
+    </div>
+
+    <div class="card">
+      <h2>Kennzahlen</h2>
+      <dl class="facts" id="facts"></dl>
+    </div>
+
+    <div class="card wide">
+      <h2>Drucken und Einbauen</h2>
+      <ol>
+        <li><b>Material:</b> PETG oder ASA. PLA wird in warmer Abluft eines geschlossenen Gehäuses weich.</li>
+        <li><b>Ausrichtung:</b> Die STL-Dateien liegen schon so, wie sie gedruckt werden. Das Unterteil steht mit dem runden Anschluss auf dem Bett. Zwischenstück und Oberteil liegen auf der Seitenwand und sind, wo nötig, um 45° gedreht, damit sie diagonal aufs Bett passen. In Orca also nicht drehen und nicht automatisch anordnen.</li>
+        <li><b>Keine Stützen.</b> Die Übergänge sind auf höchstens etwa 41° Überhang gelegt. Bei den liegenden Teilen wird die obere Seitenwand über gut 2–3 cm überbrückt.</li>
+        <li><b>Wände voll drucken:</b> Bei 0,4-mm-Düse so viele Wandlinien einstellen, dass die Wand ohne Füllung voll wird (bei 2,4 mm sind das 5–6). Schichthöhe 0,2 mm.</li>
+        <li><b>Zusammenstecken:</b> Unterteil → Zwischenstück → Steckverbinder → Oberteil. Die Stöße außen mit Alu-Klebeband abdichten, dann zieht der Kanal keine Nebenluft.</li>
+        <li><b>An die Wand:</b> Die Rückseite ist durchgehend flach. Ein paar Streifen doppelseitiges Montageband halten den Kanal. Den Rest tragen Rohr und Gehäuseloch.</li>
+        <li><b>Rohr ablängen:</b> Das HT-Rohr endet dort, wo die Kennzahlen „Rohrende“ angeben. Bei „Muffe“ wird das abgesägte Rohr 4 cm in das Unterteil geschoben. Bei „Spitzende“ steckt das Unterteil in der Muffe eines Rohrs oder Bogens.</li>
+      </ol>
+    </div>
+  </section>
+</main>
+
+<script src="core.js"></script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const FIELDS = ['gap', 'desk', 'holeZ', 'holeW', 'holeH', 'encGap', 'insert', 'end', 'bed', 't', 'clr', 'collar'];
+  const KEY = 'flachkanal-dn75';
+  const fmt = (v, d = 0) => v.toLocaleString('de-DE', { minimumFractionDigits: d, maximumFractionDigits: d });
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const COLORS = ['--p1', '--p2', '--p3', '--p4'];
+  let plan = null;
+
+  function load() {
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) {}
+    const d = { ...Core.defaults(), ...saved };
+    for (const f of FIELDS) $('#' + f).value = d[f];
+  }
+  function read() {
+    const p = {};
+    for (const f of FIELDS) { const el = $('#' + f); p[f] = el.tagName === 'SELECT' ? el.value : parseFloat(el.value); }
+    const d = Core.defaults();
+    for (const f of FIELDS) if (typeof d[f] === 'number' && !isFinite(p[f])) p[f] = d[f];
+    try { localStorage.setItem(KEY, JSON.stringify(p)); } catch (e) {}
+    return p;
+  }
+
+  const partColor = pt => {
+    if (pt.id === 'unten') return css('--p1');
+    if (pt.id === 'oben') return css('--p3');
+    if (pt.id === 'koppler') return css('--p4');
+    return css('--p2');
+  };
+
+  /* ---------- Seitenansicht ---------- */
+  function drawSide(P) {
+    const p = P.p, svg = $('#side');
+    const unten = P.parts[0], oben = P.parts.find(x => x.id === 'oben');
+    const zMin = P.untenBottom - 110, zMax = P.zt + 90;
+    const yMin = -40, yMax = Math.max(p.encGap + 170, P.ye + 60, p.gap + 170);
+    const Wpx = 420, s = Wpx / (yMax - yMin), Hpx = (zMax - zMin) * s;
+    const X = y => (y - yMin) * s, Y = z => (zMax - z) * s;
+    svg.setAttribute('viewBox', `0 0 ${Wpx} ${Hpx.toFixed(1)}`);
+    const o = [];
+    const rect = (y0, z0, y1, z1, fill, extra = '') => o.push(`<rect x="${X(y0).toFixed(1)}" y="${Y(z1).toFixed(1)}" width="${((y1 - y0) * s).toFixed(1)}" height="${((z1 - z0) * s).toFixed(1)}" fill="${fill}" ${extra}/>`);
+    const poly = (pts, fill, extra = '') => o.push(`<polygon points="${pts.map(([y, z]) => X(y).toFixed(1) + ',' + Y(z).toFixed(1)).join(' ')}" fill="${fill}" ${extra}/>`);
+    const text = (y, z, t, anchor = 'start', cls = '') => o.push(`<text x="${X(y).toFixed(1)}" y="${Y(z).toFixed(1)}" text-anchor="${anchor}" class="${cls}" dominant-baseline="middle">${t}</text>`);
+    // Wand
+    rect(yMin, zMin, 0, zMax, css('--wall'));
+    text(-20, zMax - 20, 'Wand', 'middle');
+    // Tisch
+    rect(p.gap, -p.desk, yMax, 0, css('--desk'));
+    text(p.gap + 10, -p.desk / 2, 'Tisch', 'start');
+    // Gehäuse: Rückwand mit Loch, Boden auf dem Tisch
+    const encTop = Math.min(zMax - 10, p.holeZ + p.holeH + 70);
+    rect(p.encGap, 0, p.encGap + 4, p.holeZ, css('--enc'));
+    rect(p.encGap, p.holeZ + p.holeH, p.encGap + 4, encTop, css('--enc'));
+    rect(p.encGap, 0, yMax, 4, css('--enc'));
+    text(p.encGap + 14, p.holeZ - 60, 'Druckergehäuse', 'start');
+    // Rohr
+    const pa = P.pipeAxis, pt = P.pipeTop;
+    rect(pa - 37.5, zMin, pa + 37.5, pt, css('--pipe'), 'opacity=".85"');
+    text(pa + 44, zMin + 40, 'HT-Rohr DN 75', 'start');
+    // Teile
+    const outline = [];
+    const L = [], R = [];
+    for (const r of P.untenRings) { L.push([r.o[3] - r.o[1], unten.at + r.z]); R.push([r.o[3] + r.o[1], unten.at + r.z]); }
+    poly([...L, ...R.reverse()], partColor(unten));
+    for (const m of P.parts.filter(x => x.id.startsWith('mitte'))) rect(0, m.at, P.D, m.at + P.Lm, partColor(m));
+    const ol = oben.outline;
+    rect(0, oben.at, P.D, oben.at + ol.zb + 1, partColor(oben));
+    poly(ol.Po.map(([y, z]) => [y, z + oben.at]), partColor(oben));
+    // Stoßfugen
+    const joints = [P.flat0 + P.fu];
+    for (const m of P.parts.filter(x => x.id.startsWith('mitte'))) joints.push(m.at + P.Lm);
+    for (const z of joints) o.push(`<line x1="${X(-3)}" x2="${X(P.D + 3)}" y1="${Y(z)}" y2="${Y(z)}" stroke="${css('--bg')}" stroke-width="2"/>`);
+    // Beschriftung der Teile
+    const lab = (z, t, y0 = P.D) => { o.push(`<line x1="${X(y0 + 2)}" x2="${X(y0 + 16)}" y1="${Y(z)}" y2="${Y(z)}" class="dim"/>`); text(y0 + 19, z, t); };
+    lab(unten.at + 25, 'Unterteil', 2 * P.pipeAxis);
+    P.parts.filter(x => x.id.startsWith('mitte')).forEach(m => lab(m.at + P.Lm / 2, m.name));
+    lab(oben.at + (P.zt - oben.at) / 2 - 20, 'Oberteil');
+    // Maße rechts
+    const dimX = yMax - 34;
+    const vdim = (z0, z1, t) => {
+      o.push(`<line x1="${X(dimX)}" x2="${X(dimX)}" y1="${Y(z0)}" y2="${Y(z1)}" class="dim" marker-start="url(#a)" marker-end="url(#a)"/>`);
+      o.push(`<text x="${X(dimX) - 4}" y="${(Y(z0) + Y(z1)) / 2}" text-anchor="end" dominant-baseline="middle" class="dimt">${t}</text>`);
+    };
+    vdim(0, p.holeZ, fmt(p.holeZ) + ' mm');
+    vdim(pt, 0, fmt(-pt) + ' mm');
+    text(dimX + 6, pt, 'Rohrende', 'start', 'dimt');
+    svg.dataset.h = Hpx;
+    svg.innerHTML = `<defs><marker id="a" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,2 L5,5 L0,8" fill="none" stroke="${css('--muted')}"/></marker></defs>` + o.join('');
+  }
+
+  // Schrift in der Seitenansicht immer gleich groß auf dem Bildschirm
+  function fitSideText() {
+    const svg = $('#side'), h = svg.getBoundingClientRect().height, H = +svg.dataset.h;
+    if (h > 0 && H > 0) svg.style.setProperty('--fs', (11.5 * H / h).toFixed(1) + 'px');
+  }
+
+  /* ---------- Teileliste, Kennzahlen ---------- */
+  function listParts(P) {
+    const box = $('#parts'); box.innerHTML = '';
+    const printed = P.parts.reduce((s, x) => s + (x.count || 1), 0);
+    $('#partsSub').textContent = `${printed} Druckteile` + (P.n ? '' : ' – das Loch ist nah genug, es reichen zwei');
+    for (const pt of P.parts) {
+      const el = document.createElement('div'); el.className = 'part';
+      const size = pt.size.map(v => fmt(v)).join(' × ');
+      const how = pt.lying ? `liegend${pt.diagonal ? ', diagonal' : ''}` : 'stehend';
+      el.innerHTML = `<i style="background:${partColor(pt)}"></i><div><b>${pt.name}${pt.count > 1 ? ' ×' + pt.count : ''}</b><div class="d">${pt.what}<br>${size} mm, ${how}</div></div><button>STL</button>`;
+      el.querySelector('button').addEventListener('click', () => download(Core.stl(pt.print, pt.name), pt.file));
+      box.appendChild(el);
+    }
+    $('#warns').innerHTML = P.warn.map(w => `<div class="warn">${w}</div>`).join('');
+  }
+
+  function facts(P) {
+    const p = P.p, a = P.area;
+    const rows = [
+      ['Kanal außen', `${fmt(P.W)} × ${fmt(P.D)} mm`],
+      ['Querschnitt innen', `${fmt(a.duct / 100, 1)} cm² (Rohr ${fmt(a.pipe / 100, 1)} cm², Stutzen ${fmt(a.snout / 100, 1)} cm²)`],
+      ['Rohrende', `${fmt(-P.pipeTop)} mm unter der Tischoberkante`],
+      ['Rohrachse', `${fmt(P.pipeAxis, 1)} mm vor der Wand`],
+      ['Übergang rund → flach', `${fmt(P.H)} mm lang, Überhang ≤ ${fmt(P.overhang)}°`],
+      ['Flach ab', `${fmt(-P.flat0)} mm unter der Tischoberkante`],
+      ['Stutzen', `${fmt(P.W)} × ${fmt(p.holeH - 1)} mm, endet ${fmt(P.ye)} mm vor der Wand`],
+    ];
+    $('#facts').innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+  }
+
+  function download(u8, name) {
+    const url = URL.createObjectURL(new Blob([u8], { type: name.endsWith('.zip') ? 'application/zip' : 'model/stl' }));
+    const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+
+  /* ---------- ZIP (ohne Kompression) ---------- */
+  const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  const crc32 = u8 => { let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+  function zip(files) {
+    const enc = new TextEncoder(), chunks = [], central = [];
+    let offset = 0;
+    for (const f of files) {
+      const name = enc.encode(f.name), crc = crc32(f.data);
+      const lh = new DataView(new ArrayBuffer(30));
+      lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true);
+      lh.setUint32(14, crc, true); lh.setUint32(18, f.data.length, true); lh.setUint32(22, f.data.length, true); lh.setUint16(26, name.length, true);
+      chunks.push(new Uint8Array(lh.buffer), name, f.data);
+      const ch = new DataView(new ArrayBuffer(46));
+      ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true);
+      ch.setUint32(16, crc, true); ch.setUint32(20, f.data.length, true); ch.setUint32(24, f.data.length, true); ch.setUint16(28, name.length, true);
+      ch.setUint32(42, offset, true);
+      central.push(new Uint8Array(ch.buffer), name);
+      offset += 30 + name.length + f.data.length;
+    }
+    let cd = 0; for (const c of central) cd += c.length;
+    const end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+    end.setUint32(12, cd, true); end.setUint32(16, offset, true);
+    const all = [...chunks, ...central, new Uint8Array(end.buffer)];
+    let len = 0; for (const c of all) len += c.length;
+    const out = new Uint8Array(len); let q = 0;
+    for (const c of all) { out.set(c, q); q += c.length; }
+    return out;
+  }
+  $('#zipBtn').addEventListener('click', () => {
+    if (!plan) return;
+    download(zip(plan.parts.map(pt => ({ name: pt.file, data: Core.stl(pt.print, pt.name) }))), 'flachkanal-dn75.zip');
+  });
+
+  /* ---------- 3D ---------- */
+  const v3 = { T: null, theta: -1.05, phi: 1.2, dist: 1500, ctx: true, explode: false };
+  let threeP = null;
+  const loadThree = () => threeP || (threeP = new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+    s.onload = () => res(window.THREE);
+    s.onerror = () => { threeP = null; s.remove(); rej(new Error('three.js')); };
+    document.head.appendChild(s);
+  }));
+  {
+    const cv = $('#v3'), ptrs = new Map(), clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+    let pinch = 0;
+    cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]); });
+    cv.addEventListener('pointermove', e => {
+      const q = ptrs.get(e.pointerId); if (!q) return;
+      if (ptrs.size === 1) { v3.theta -= (e.clientX - q[0]) * 0.01; v3.phi = clamp(v3.phi - (e.clientY - q[1]) * 0.01, 0.05, Math.PI - 0.05); }
+      q[0] = e.clientX; q[1] = e.clientY;
+      if (ptrs.size === 2) {
+        const [a, b] = [...ptrs.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+        if (pinch) v3.dist = clamp(v3.dist * pinch / d, 300, 5000);
+        pinch = d;
+      }
+      render3D();
+    });
+    ['pointerup', 'pointercancel'].forEach(ev => cv.addEventListener(ev, e => { ptrs.delete(e.pointerId); pinch = 0; }));
+    cv.addEventListener('wheel', e => { e.preventDefault(); v3.dist = clamp(v3.dist * Math.exp(e.deltaY * 0.001), 300, 5000); render3D(); }, { passive: false });
+    document.querySelectorAll('[data-v]').forEach(b => b.addEventListener('click', () => {
+      if (b.dataset.v === 'front') { v3.theta = -1.05; v3.phi = 1.2; v3.dist = 1500; } else { v3.theta = 0; v3.phi = Math.PI / 2; v3.dist = 1500; }
+      render3D();
+    }));
+    $('#ctx').addEventListener('click', () => { v3.ctx = !v3.ctx; $('#ctx').textContent = v3.ctx ? 'Umgebung ausblenden' : 'Umgebung zeigen'; rebuild3D(); render3D(); });
+    $('#explode').addEventListener('click', () => { v3.explode = !v3.explode; $('#explode').textContent = v3.explode ? 'Zusammen' : 'Auseinander'; rebuild3D(); render3D(); });
+  }
+
+  function init3D(THREE) {
+    const r = new THREE.WebGLRenderer({ canvas: $('#v3'), antialias: true, alpha: true });
+    r.outputEncoding = THREE.sRGBEncoding;
+    const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(30, 1, 10, 20000);
+    cam.up.set(0, 0, 1);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x777777, 0.75));
+    const sun = new THREE.DirectionalLight(0xffffff, 0.7); sun.position.set(600, 900, 1200); scene.add(sun);
+    const group = new THREE.Group(); scene.add(group);
+    v3.T = { THREE, r, scene, cam, group };
+  }
+
+  function rebuild3D() {
+    const T = v3.T, P = plan; if (!T || !P) return;
+    const { THREE, group } = T, p = P.p;
+    group.children.forEach(o => { o.geometry && o.geometry.dispose(); o.material && o.material.dispose(); });
+    group.clear();
+    const col = c => new THREE.Color(c).convertSRGBToLinear();
+    const meshOf = (arr, color, opts = {}) => {
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.BufferAttribute(arr, 3));
+      g.computeVertexNormals();
+      return new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: col(color), roughness: 0.6, metalness: 0, side: THREE.DoubleSide, ...opts }));
+    };
+    const boxM = (x0, y0, z0, x1, y1, z1, color, opacity = 1) => {
+      const g = new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0);
+      const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: col(color), roughness: 0.9, transparent: opacity < 1, opacity, depthWrite: opacity === 1 }));
+      m.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
+      group.add(m);
+    };
+    const ex = v3.explode ? 40 : 0;
+    let k = 0;
+    for (const pt of P.parts) {
+      const ats = pt.atAll || [pt.at];
+      for (const at of ats) {
+        const m = meshOf(pt.local, partColor(pt));
+        m.position.set(0, 0, at + ex * (pt.id === 'koppler' ? k - 0.5 : k));
+        group.add(m);
+        if (pt.id !== 'koppler') k++;
+      }
+    }
+    if (v3.ctx) {
+      const pa = P.pipeAxis;
+      const cyl = new THREE.CylinderGeometry(37.5, 37.5, 260, 48, 1, true);
+      const pm = new THREE.Mesh(cyl, new THREE.MeshStandardMaterial({ color: col(css('--pipe')), roughness: 0.7, side: THREE.DoubleSide }));
+      pm.rotation.x = Math.PI / 2; pm.position.set(0, pa, P.pipeTop - 130 - ex); group.add(pm);
+      boxM(-450, -20, P.untenBottom - 300, 450, 0, P.zt + 250, css('--wall'));
+      boxM(-450, p.gap, -p.desk, 450, p.gap + 700, 0, css('--desk'), 0.55);
+      const e0 = p.encGap, e1 = p.encGap + 4, hw = p.holeW / 2, top = p.holeZ + p.holeH + 200, sideW = 230;
+      boxM(-sideW, e0, 0, sideW, e1, p.holeZ, css('--enc'), 0.45);
+      boxM(-sideW, e0, p.holeZ + p.holeH, sideW, e1, top, css('--enc'), 0.45);
+      boxM(-sideW, e0, p.holeZ, -hw, e1, p.holeZ + p.holeH, css('--enc'), 0.45);
+      boxM(hw, e0, p.holeZ, sideW, e1, p.holeZ + p.holeH, css('--enc'), 0.45);
+    }
+    v3.center = [0, 30, (P.untenBottom + P.zt) / 2];
+  }
+
+  function render3D() {
+    const T = v3.T; if (!T) return;
+    const cv = $('#v3'), W = cv.clientWidth || 400;
+    T.r.setPixelRatio(window.devicePixelRatio || 1); T.r.setSize(W, W, false);
+    T.cam.aspect = 1; T.cam.updateProjectionMatrix();
+    const [cx, cy, cz] = v3.center || [0, 0, 0], { theta, phi, dist } = v3;
+    T.cam.position.set(cx + dist * Math.sin(phi) * Math.cos(theta), cy + dist * Math.sin(phi) * Math.sin(theta) * -1, cz + dist * Math.cos(phi));
+    T.cam.lookAt(cx, cy, cz);
+    T.r.render(T.scene, T.cam);
+  }
+
+  async function update3D() {
+    const w = $('#v3warn');
+    try {
+      if (!v3.T) init3D(await loadThree());
+      rebuild3D(); render3D(); w.classList.add('hidden');
+    } catch (e) {
+      w.textContent = 'Die 3D-Vorschau lädt three.js aus dem Netz und braucht dafür beim ersten Mal eine Verbindung. Seitenansicht und STL-Dateien gehen auch ohne.';
+      w.classList.remove('hidden');
+    }
+  }
+
+  /* ---------- Ablauf ---------- */
+  let timer = 0;
+  function update() {
+    plan = Core.plan(read());
+    drawSide(plan); fitSideText(); listParts(plan); facts(plan);
+    clearTimeout(timer); timer = setTimeout(update3D, 120);
+  }
+  for (const f of FIELDS) $('#' + f).addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(update, 200); });
+  $('#reset').addEventListener('click', () => { try { localStorage.removeItem(KEY); } catch (e) {} load(); update(); });
+  window.addEventListener('resize', () => { render3D(); fitSideText(); });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => update());
+  load(); update();
+})();
+</script>
+</body>
+</html>
