@@ -95,6 +95,8 @@ li{margin:4px 0}
         <select id="widthMode"><option value="rohr">Querschnitt wie das Rohr</option><option value="loch">so breit wie das Loch</option><option value="eigen">eigene Breite</option></select></div>
       <div class="row"><label for="ribs">Stützrippen innen<span class="hint">Längsstege, damit der Kanal nicht eingedrückt wird</span></label>
         <select id="ribs"><option value="auto">automatisch</option><option value="0">keine</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></div>
+      <div class="row"><label for="ribStyle">Rippenform<span class="hint">kurze versetzte Stege sparen gut die Hälfte des Rippenmaterials</span></label>
+        <select id="ribStyle"><option value="versetzt">kurze Stege, versetzt</option><option value="durchgehend">durchgehend</option></select></div>
       <div class="row" id="widthRow"><label for="width">Breite außen</label><input type="number" id="width" min="20" max="400" step="1"><span class="unit">mm</span></div>
       <div class="row"><label for="desk">Tischplatte samt Zarge<span class="hint">so weit unter der Oberkante muss der Kanal noch flach sein</span></label><input type="number" id="desk" min="10" max="200" step="1"><span class="unit">mm</span></div>
     </section>
@@ -138,7 +140,8 @@ li{margin:4px 0}
       <div class="actions">
         <button data-v="front">Von vorn</button>
         <button data-v="side">Von der Seite</button>
-        <button id="ctx">Umgebung ausblenden</button>
+        <button id="ctx">Umgebung zeigen</button>
+        <button id="xray">Undurchsichtig</button>
         <button id="explode">Auseinander</button>
       </div>
     </div>
@@ -175,8 +178,8 @@ li{margin:4px 0}
 <script>
 (() => {
   const $ = s => document.querySelector(s);
-  const FIELDS = ['depth', 'widthMode', 'width', 'ribs', 'desk', 'holeZ', 'holeW', 'holeH', 'encGap', 'insert', 'end', 'bed', 't', 'clr', 'collar'];
-  const KEY = 'flachkanal-dn75';
+  const FIELDS = ['depth', 'widthMode', 'width', 'ribs', 'ribStyle', 'desk', 'holeZ', 'holeW', 'holeH', 'encGap', 'insert', 'end', 'bed', 't', 'clr', 'collar'];
+  const KEY = 'flachkanal-dn75-v3';   // neue Fassung = neue Ausgangswerte
   const fmt = (v, d = 0) => v.toLocaleString('de-DE', { minimumFractionDigits: d, maximumFractionDigits: d });
   const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   const COLORS = ['--p1', '--p2', '--p3', '--p4'];
@@ -344,7 +347,7 @@ li{margin:4px 0}
   });
 
   /* ---------- 3D ---------- */
-  const v3 = { T: null, theta: -1.05, phi: 1.2, dist: 1500, ctx: true, explode: false };
+  const v3 = { T: null, theta: -1.05, phi: 1.2, dist: 1500, ctx: false, xray: true, explode: false };
   let threeP = null;
   const loadThree = () => threeP || (threeP = new Promise((res, rej) => {
     const s = document.createElement('script');
@@ -375,6 +378,7 @@ li{margin:4px 0}
       render3D();
     }));
     $('#ctx').addEventListener('click', () => { v3.ctx = !v3.ctx; $('#ctx').textContent = v3.ctx ? 'Umgebung ausblenden' : 'Umgebung zeigen'; rebuild3D(); render3D(); });
+    $('#xray').addEventListener('click', () => { v3.xray = !v3.xray; $('#xray').textContent = v3.xray ? 'Undurchsichtig' : 'Durchsichtig'; rebuild3D(); render3D(); });
     $('#explode').addEventListener('click', () => { v3.explode = !v3.explode; $('#explode').textContent = v3.explode ? 'Zusammen' : 'Auseinander'; rebuild3D(); render3D(); });
   }
 
@@ -412,9 +416,15 @@ li{margin:4px 0}
     const ducts = P.parts.filter(x => x.id !== 'koppler');
     for (const pt of P.parts) {
       const below = ducts.filter(x => x.at < pt.at - 1e-6).length;
-      const m = meshOf(pt.local, partColor(pt));
-      m.position.set(0, 0, pt.at + ex * (pt.id === 'koppler' ? below - 0.5 : below));
-      group.add(m);
+      const dz = pt.at + ex * (pt.id === 'koppler' ? below - 0.5 : below);
+      // Hülle durchscheinend, Rippen kräftig – so sieht man, was innen steckt
+      const shell = meshOf(pt.shell, partColor(pt), v3.xray ? { transparent: true, opacity: 0.22, depthWrite: false } : {});
+      shell.position.set(0, 0, dz); shell.renderOrder = 1; group.add(shell);
+      if (pt.ribMesh.length) {
+        const rc = new THREE.Color(partColor(pt)).multiplyScalar(0.55);
+        const rib = meshOf(pt.ribMesh, '#' + rc.getHexString());
+        rib.position.set(0, 0, dz); group.add(rib);
+      }
     }
     if (v3.ctx) {
       const pa = P.pipeAxis;

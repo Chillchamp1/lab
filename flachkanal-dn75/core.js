@@ -140,6 +140,26 @@ const Core = (() => {
     for (const [a, b, c, d] of faces) tris.push(v(a), v(b), v(c), v(a), v(c), v(d));
     return flatten(tris);
   }
+  /* Rippe entlang einer Kurve: path = [[x, z], …], Querschnitt rt × (y0…y1) */
+  function ribSweep(path, rt, y0, y1) {
+    const tris = [];
+    const tri = (a, b, c, n) => {
+      const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], v = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+      const cr = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+      if (cr[0] * n[0] + cr[1] * n[1] + cr[2] * n[2] < 0) tris.push(a, c, b); else tris.push(a, b, c);
+    };
+    const ring = ([x, z]) => [[x - rt / 2, y0, z], [x + rt / 2, y0, z], [x + rt / 2, y1, z], [x - rt / 2, y1, z]];
+    const R = path.map(ring);
+    const out = [[0, -1, 0], [1, 0, 0], [0, 1, 0], [-1, 0, 0]];   // Seiten: y0, x+, y1, x−
+    for (let j = 0; j < R.length - 1; j++) for (let k = 0; k < 4; k++) {
+      const a = R[j][k], b = R[j][(k + 1) % 4], c = R[j + 1][(k + 1) % 4], d = R[j + 1][k], n = out[k];
+      tri(a, b, c, n); tri(a, c, d, n);
+    }
+    const f = R[0], l = R[R.length - 1];
+    tri(f[0], f[1], f[2], [0, 0, -1]); tri(f[0], f[2], f[3], [0, 0, -1]);
+    tri(l[0], l[1], l[2], [0, 0, 1]); tri(l[0], l[2], l[3], [0, 0, 1]);
+    return flatten(tris);
+  }
   const cat = (...ms) => { let n = 0; for (const m of ms) n += m.length; const o = new Float32Array(n); let q = 0; for (const m of ms) { o.set(m, q); q += m.length; } return o; };
 
   /* Verlauf der Verjüngung: Steigung als Trapez – sanft hinein, gerade, sanft heraus */
@@ -154,7 +174,7 @@ const Core = (() => {
       width: 150,       // Kanalbreite außen bei 'eigen'
       desk: 40,         // Tischplatte samt Zarge, so weit muss es unter der Oberkante flach sein
       holeZ: 600,       // Tischoberkante → Unterkante Loch
-      holeW: 70, holeH: 40,
+      holeW: 120, holeH: 40,
       encGap: 27,       // Wand ↔ Außenseite Gehäuserückwand
       insert: 5,        // so weit reicht der Stutzen von außen ins Loch – am besten nur die Wandstärke
       end: 'muffe',     // 'muffe' (über das Rohrende) | 'spitz' (in eine HT-Muffe)
@@ -162,6 +182,7 @@ const Core = (() => {
       clr: 0.3,         // Spiel zwischen Steckverbinder und Kanal
       bed: 270,         // Bauraum (Snapmaker U1: 270 × 270 × 270)
       collar: 40,       // Länge des runden Anschlusses
+      ribStyle: 'versetzt', // 'versetzt' = kurze Stege, gegeneinander versetzt | 'durchgehend'
       ribs: 'auto',     // Stützrippen: 'auto' (Felder so schmal, dass die Wand etwa so steif ist wie 2,4 mm auf 70 mm) oder Anzahl
     };
   }
@@ -172,7 +193,7 @@ const Core = (() => {
     const D = p.depth;
     const Ws0 = p.holeW - 1;                         // Stutzen: 1 mm kleiner als das Loch
     const pipeArea = Math.PI * (PIPE_ID / 2) ** 2;
-    const rt = t;                                    // Rippen so dick wie die Wand
+    const rt = Math.min(t, 0.8);                     // Rippen: 2 Linien – sie tragen nur Druck
     // Biegung einer Wand zwischen zwei Rippen wächst mit Feldbreite⁴ / Wandstärke³:
     // gleich steif wie 2,4 mm Wand auf 70 mm Feld
     const span = 70 * Math.pow(t / 2.4, 0.75);
@@ -272,9 +293,54 @@ const Core = (() => {
     // Stützrippen: Längsstege zwischen Vorder- und Rückwand, in Strömungsrichtung
     const wi = W - 2 * t;
     const nR = ribCount(W);
-    const ribX = Array.from({ length: nR }, (_, k) => -wi / 2 + wi * (k + 1) / (nR + 1));
-    const ribs = (z0r, z1r, yi = t) => cat(...ribX.map(x =>
-      z1r > z0r + 1 ? cuboid(x - rt / 2, x + rt / 2, yi - 0.4, D - yi + 0.4, z0r, z1r) : new Float32Array(0)));
+    // Rippen folgen den Stromlinien: jede bleibt auf ihrem Anteil der lichten
+    // Breite und wird mit dem Kanal schmaler – keine endet an der schrägen Wand
+    const ribFrac = Array.from({ length: nR }, (_, k) => (k + 1) / (nR + 1));
+    const ribXat = (f, w) => -W / 2 + t + (w - 2 * t) * f;
+    // Wo der Kanal schmaler wird, braucht es weniger Rippen. Überzählige enden
+    // frei in der Strömung (zwei Kanäle laufen zusammen) – nie an einer Wand.
+    // Reihenfolge: jeweils die Rippe weglassen, deren Fehlen das größte Feld am
+    // wenigsten wachsen lässt. rank[k] = Rippenzahl, bis zu der Rippe k bleibt.
+    const maxGap = fs => { const a = [0, ...fs.slice().sort((x, y) => x - y), 1]; let g = 0; for (let i = 1; i < a.length; i++) g = Math.max(g, a[i] - a[i - 1]); return g; };
+    const rank = new Array(nR).fill(1), gapFor = [1];
+    {
+      let cur = ribFrac.map((f, k) => k);
+      gapFor[nR] = maxGap(ribFrac);
+      for (let c = nR; c >= 1; c--) {
+        let best = -1, bestGap = Infinity;
+        for (const k of cur) { const g = maxGap(cur.filter(j => j !== k).map(j => ribFrac[j])); if (g < bestGap - 1e-9) { bestGap = g; best = k; } }
+        rank[best] = c; cur = cur.filter(j => j !== best); gapFor[c - 1] = bestGap;
+      }
+    }
+    const ribsNeeded = w => {          // so viele Rippen braucht die lichte Breite w − 2t
+      if (p.ribs !== 'auto') return nR;
+      for (let c = 0; c <= nR; c++) if (gapFor[c] * (w - 2 * t) <= span + 1e-6) return c;
+      return nR;
+    };
+    // Stützrippen eines Teils: Spalten auf ihren Stromlinien, durchgehend oder
+    // als kurze Stege, von Spalte zu Spalte um eine halbe Teilung versetzt. Der
+    // erste und letzte Steg sitzt genau an a bzw. b – dort stößt der
+    // Steckverbinder an. wOf(zl) = Kanalbreite an der Stelle zl des Teils.
+    const pitch = Math.max(20, span), lp = Math.min(12, pitch / 2);
+    const ribParts = (wOf, a, b, yi = t) => {
+      if (b <= a + 1) return new Float32Array(0);
+      return cat(...ribFrac.map((f, k) => {
+        let e = b;                                    // Spalte endet, wo sie nicht mehr gebraucht wird
+        for (let zl = a; zl <= b; zl += 1) if (ribsNeeded(wOf(zl)) < rank[k]) { e = zl; break; }
+        if (e <= a + 1) return new Float32Array(0);
+        const seg = (z0s, z1s) => {
+          const st = Math.max(1, Math.ceil((z1s - z0s) / 4));
+          return ribSweep(Array.from({ length: st + 1 }, (_, j) => { const zl = z0s + (z1s - z0s) * j / st; return [ribXat(f, wOf(zl)), zl]; }),
+            rt, yi - 0.4, D - yi + 0.4);
+        };
+        if (p.ribStyle === 'durchgehend' || e - a <= 3 * lp) return seg(a, e);
+        const reachEnd = e >= b - 1e-6, out = [seg(a, a + lp)];
+        const last = reachEnd ? b - lp - 4 : e;
+        for (let z = a + (k % 2 ? pitch / 2 : pitch); z + lp <= last; z += pitch) if (z >= a + lp + 4) out.push(seg(z, z + lp));
+        if (reachEnd) out.push(seg(b - lp, b));
+        return cat(...out);
+      }));
+    };
 
     const parts = [];
     // Unterteil
@@ -286,7 +352,7 @@ const Core = (() => {
     parts.push({
       id: 'unten', name: 'Unterteil', file: 'flachkanal-1-unterteil.stl',
       what: `${p.end === 'muffe' ? 'Muffe über das DN-75-Rohr' : 'Spitzende in eine DN-75-Muffe'} → Übergang auf flach`,
-      local: cat(tube(untenRings), ribs(z0 + H, z0 + H + fu - ribGap)), at: untenZ, lying: false,
+      shell: tube(untenRings), ribMesh: ribParts(() => W, z0 + H, z0 + H + fu - ribGap), at: untenZ, lying: false,
     });
     // Breite entlang des Kanals. Ab dem Stoß über dem Unterteil wird der Kanal
     // einseitig schmaler, bis kurz vor den Bogen – über Zwischenstück(e) und
@@ -315,13 +381,6 @@ const Core = (() => {
       for (let j = 0; j <= steps; j++) { const zl = L * j / steps, o = prof(zg0 + zl); rings.push({ z: zl, o, i: inset(o, t) }); }
       return rings;
     };
-    // Rippen eines liegenden Teils; jede endet, wo die schräge Wand sie erreicht
-    const ribsLying = (zg0, a, b, yi = t) => cat(...ribX.map(x => {
-      let z1 = b;
-      for (let zl = a; zl <= b; zl += 0.5) if (-W / 2 + wAt(zg0 + zl) <= x + rt / 2) { z1 = zl; break; }
-      return z1 > a + 1 ? cuboid(x - rt / 2, x + rt / 2, yi - 0.4, D - yi + 0.4, a, z1) : new Float32Array(0);
-    }));
-
     // Zwischenstücke: liegend gedruckt, beide Enden stumpf
     for (let i = 0; i < n; i++) {
       const zg0 = zL0 + i * Lm, narrows = wAt(zg0 + Lm) < wAt(zg0) - 0.5;
@@ -329,7 +388,7 @@ const Core = (() => {
         id: 'mitte' + i, name: n > 1 ? `Zwischenstück ${i + 1}` : 'Zwischenstück',
         file: `flachkanal-${2 + i}-zwischenstueck.stl`,
         what: narrows ? `Flachkanal, wird von ${Math.round(wAt(zg0))} auf ${Math.round(wAt(zg0 + Lm))} mm schmaler` : 'gerader Flachkanal',
-        local: cat(tube(lyingRings(zg0, zg0 + Lm)), ribsLying(zg0, ribGap, Lm - ribGap)),
+        shell: tube(lyingRings(zg0, zg0 + Lm)), ribMesh: ribParts(zl => wAt(zg0 + zl), ribGap, Lm - ribGap),
         at: zg0, lying: true,
       });
     }
@@ -337,14 +396,13 @@ const Core = (() => {
     const pieceName = i => (i === 0 ? 'Unterteil' : i <= n ? (n > 1 ? `Zwischenstück ${i}` : 'Zwischenstück') : 'Oberteil');
     joints.forEach((j, i) => {
       const pr = prof(j), w = wAt(j), dk = t + c, outer = inset(pr, dk), inner = inset(pr, dk + tk);
-      const kr = ribX.filter(x => x + rt / 2 <= -W / 2 + w - dk - tk);
-      const local = cat(tube([{ z: 0, o: outer, i: inner }, { z: Lk, o: outer, i: inner }]),
-        ...kr.map(x => cuboid(x - rt / 2, x + rt / 2, dk + tk - 0.4, D - dk - tk + 0.4, 0, Lk)));
+      const shell = tube([{ z: 0, o: outer, i: inner }, { z: Lk, o: outer, i: inner }]);
+      const ribMesh = cat(...ribFrac.map((f, k) => { if (ribsNeeded(w) < rank[k]) return new Float32Array(0); const x = ribXat(f, w); return cuboid(x - rt / 2, x + rt / 2, dk + tk - 0.4, D - dk - tk + 0.4, 0, Lk); }));
       parts.push({
         id: 'koppler', name: `Steckverbinder ${i + 1}`,
         file: `flachkanal-steckverbinder-${i + 1}.stl`,
         what: `${Math.round(w)} mm breit, steckt innen zwischen ${pieceName(i)} und ${pieceName(i + 1)}`,
-        local, at: j - Lk / 2, lying: false,
+        shell, ribMesh, at: j - Lk / 2, lying: false,
       });
     });
     // Oberteil: Rest der Verjüngung, Kasten mit Stutzen ins Gehäuse
@@ -354,10 +412,11 @@ const Core = (() => {
     const Q = [[t, zb], [D - t, zb], [D - t, hb_ + t], [ye, hb_ + t], [ye, zt_ - t], [k + t * r2, zt_ - t], [t, zt_ - k - t * r2]];
     const stub = tube(lyingRings(zOben, zbG + 5));
     const bx = box(Po, Q, [[0, 0], [3, 3]], Ws / 2, Ws / 2 - t, cxN);
-    const ob = cat(stub, bx, ribsLying(zOben, ribGap, zb));
+    const ob = cat(stub, bx);
     parts.push({
       id: 'oben', name: 'Oberteil', file: `flachkanal-${2 + n}-oberteil.stl`,
-      what: taper ? 'wird bis auf Lochbreite schmaler, Bogen und Stutzen ins Gehäuse' : 'Flachkanal mit Bogen und Stutzen ins Gehäuse', local: ob,
+      what: taper ? 'wird bis auf Lochbreite schmaler, Bogen und Stutzen ins Gehäuse' : 'Flachkanal mit Bogen und Stutzen ins Gehäuse',
+      shell: ob, ribMesh: ribParts(zl => wAt(zOben + zl), ribGap, zb),
       at: zOben, lying: true, outline: { Po, zb: zOben, D },
     });
     // steilste Stelle der Verjüngung
@@ -367,6 +426,7 @@ const Core = (() => {
 
     // Druckausrichtung, Maße
     for (const pt of parts) {
+      pt.local = cat(pt.shell, pt.ribMesh);
       pt.world = translate(pt.local, 0, 0, pt.at);
       const pr = toPrint(pt.local, pt.lying, hx, S);
       pt.print = pr.mesh; pt.diagonal = pr.diagonal;
