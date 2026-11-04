@@ -349,13 +349,17 @@ li{margin:4px 0}
   /* ---------- 3D ---------- */
   const v3 = { T: null, theta: -1.05, phi: 1.2, dist: 1500, ctx: false, xray: true, explode: false };
   let threeP = null;
-  const loadThree = () => threeP || (threeP = new Promise((res, rej) => {
+  // three.js liegt im Projektordner (drei/); das CDN ist nur Rückfall
+  const THREE_SRC = ['drei/three.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'];
+  const loadScript = src => new Promise((res, rej) => {
     const s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-    s.onload = () => res(window.THREE);
-    s.onerror = () => { threeP = null; s.remove(); rej(new Error('three.js')); };
+    s.src = src;
+    s.onload = () => (window.THREE ? res(window.THREE) : rej(new Error(src)));
+    s.onerror = () => { s.remove(); rej(new Error(src)); };
     document.head.appendChild(s);
-  }));
+  });
+  const loadThree = () => threeP || (threeP = THREE_SRC.reduce((p, src) => p.catch(() => loadScript(src)), Promise.reject())
+    .catch(e => { threeP = null; throw e; }));
   {
     const cv = $('#v3'), ptrs = new Map(), clamp = (x, a, b) => Math.max(a, Math.min(b, x));
     let pinch = 0;
@@ -459,7 +463,7 @@ li{margin:4px 0}
       if (!v3.T) init3D(await loadThree());
       rebuild3D(); render3D(); w.classList.add('hidden');
     } catch (e) {
-      w.textContent = 'Die 3D-Vorschau lädt three.js aus dem Netz und braucht dafür beim ersten Mal eine Verbindung. Seitenansicht und STL-Dateien gehen auch ohne.';
+      w.textContent = 'Die 3D-Vorschau konnte three.js nicht laden (drei/three.min.js). Seitenansicht und STL-Dateien gehen trotzdem.';
       w.classList.remove('hidden');
     }
   }
