@@ -6,8 +6,10 @@
 const Core = (() => {
   const PIPE_OD = 75;      // HT-Rohr DN 75: Außendurchmesser
   const PIPE_ID = 71.2;    // Wandstärke 1,9 mm
-  const N = 240;           // Punkte je Querschnitt
-  const LOFT_STEPS = 48;
+  // Auflösung; plan(…, { coarse: true }) setzt sie für die einfache Vorschau herab
+  let N = 240;             // Punkte je Querschnitt
+  let LOFT_STEPS = 48;
+  let RING_STEP = 4;       // mm zwischen zwei Ringen liegender Teile
 
   const lerp = (a, b, t) => a + (b - a) * t;
 
@@ -187,8 +189,9 @@ const Core = (() => {
     };
   }
 
-  function plan(inp) {
+  function plan(inp, opt = {}) {
     const p = { ...defaults(), ...inp };
+    N = opt.coarse ? 40 : 240; LOFT_STEPS = opt.coarse ? 16 : 48; RING_STEP = opt.coarse ? 15 : 4;
     const warn = [], t = p.t, c = p.clr;
     const D = p.depth;
     const Ws0 = p.holeW - 1;                         // Stutzen: 1 mm kleiner als das Loch
@@ -255,8 +258,8 @@ const Core = (() => {
       return out;
     };
     // Übergangslänge: so lang, dass keine Wand flacher als 45° überhängt
-    let H = 40, overhang = 90;
-    for (; H < 400; H += 5) {
+    let H = opt.H || 40, overhang = opt.H ? 0 : 90;    // grobe Vorschau übernimmt H, damit alles gleich liegt
+    for (; !opt.H && H < 400; H += 5) {
       overhang = maxOverhang(tube([ringsRound[ringsRound.length - 1], ...loftRings(H)]));
       if (overhang <= 42) break;
     }
@@ -377,7 +380,7 @@ const Core = (() => {
 
     // Ringe eines liegenden Teils von zg0 bis zg1 (global)
     const lyingRings = (zg0, zg1) => {
-      const L = zg1 - zg0, steps = Math.max(2, Math.ceil(L / 4)), rings = [];
+      const L = zg1 - zg0, steps = Math.max(2, Math.ceil(L / RING_STEP)), rings = [];
       for (let j = 0; j <= steps; j++) { const zl = L * j / steps, o = prof(zg0 + zl); rings.push({ z: zl, o, i: inset(o, t) }); }
       return rings;
     };
