@@ -34,18 +34,19 @@ fertig ausgerichtet für den Druck.
   der Tisch dagegen drückt. In der Grundeinstellung sitzen so viele Rippen,
   dass kein freies Feld breiter als 70 mm ist; bei 206 mm Breite sind das
   zwei. Die Rippen sitzen in allen Teilen an derselben Stelle. In den Muffen
-  fehlen sie, damit die Zunge hineinpasst. Im Oberteil enden sie dort, wo die
-  schräge Wand sie erreicht. Den Querschnitt, den die Rippen wegnehmen,
+  fehlen sie, damit die Zunge hineinpasst. Sie enden dort, wo die schräge Wand
+  der Verjüngung sie erreicht. Den Querschnitt, den die Rippen wegnehmen,
   gleicht die automatische Breite aus.
-- **Verjüngung im Oberteil:** Ist der Kanal breiter als das Loch, verjüngt
-  sich das Oberteil auf die Lochbreite. Die Verjüngung reicht über die ganze
-  Länge von der Muffe bis kurz vor den Bogen. Die Steigung beginnt und endet
-  sanft (Trapezprofil), dazwischen ist sie gerade. Das Oberteil bekommt dafür
-  in der Aufteilung so viel Länge wie möglich: Bei 600 mm Lochhöhe sind das
-  267 mm Verjüngung, an der steilsten Stelle 34°. Die Verjüngung geht nur zu
-  einer Seite, damit die Bettseite beim liegenden Druck gerade bleibt. Die
-  schräge Wand wird liegend über die Kanaltiefe (rund 2 cm) zwischen Vorder-
-  und Rückwand überbrückt und braucht deshalb keine 45°.
+- **Verjüngung:** Ist der Kanal breiter als das Loch, wird er nach der ersten
+  Muffe über dem Unterteil allmählich schmaler, über Zwischenstück(e) und
+  Oberteil hinweg bis kurz vor den Bogen. Die Steigung beginnt und endet sanft,
+  dazwischen ist sie gerade. An den Stößen zwischen liegenden Teilen pausiert
+  die Verjüngung für die Länge von Muffe und Steckverbinder, damit diese gerade
+  bleiben. Jeder Steckverbinder hat deshalb die Breite seines Stoßes. Bei
+  600 mm Lochhöhe ist die Verjüngung 538 mm lang, an der steilsten Stelle 18°.
+  Sie geht nur zu einer Seite, damit die Bettseite beim liegenden Druck gerade
+  bleibt. Die schräge Wand wird liegend über die Kanaltiefe (rund 2 cm)
+  zwischen Vorder- und Rückwand überbrückt.
 - **Übergang:** Der Übergang führt den Kreis über eine Schar abgerundeter
   Rechtecke in den Flachkanal über (Breite, Tiefe und Eckradius werden mit
   einer Smoothstep-Kurve überblendet). Die Rückseite läuft dabei auf die
