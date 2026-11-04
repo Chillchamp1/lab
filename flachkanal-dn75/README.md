@@ -97,5 +97,7 @@ sie beim Schneiden.
 - Die Maße der HT-Muffe. Die Werte für das Spitzende sind Normmaße, nicht
   nachgemessen.
 
-Die 3D-Vorschau lädt three.js (r128) von cdnjs. Seitenansicht und STL-Export
-gehen ohne.
+Die 3D-Vorschau nutzt three.js r128 (npm `three@0.128.0`, MIT, Lizenz in
+`drei/LICENSE`). Die Datei liegt im Projektordner unter `drei/three.min.js`;
+cdnjs dient nur als Rückfall. Seitenansicht und STL-Export gehen auch ohne
+three.js.
