@@ -131,6 +131,20 @@ const Core = (() => {
     return flatten(tris);
   }
 
+  /* Quader als geschlossener Körper (für Stützrippen) */
+  function cuboid(x0, x1, y0, y1, z0, z1) {
+    const v = (i) => [i & 1 ? x1 : x0, i & 2 ? y1 : y0, i & 4 ? z1 : z0];
+    // je Seite vier Ecken gegen den Uhrzeigersinn von außen gesehen
+    const faces = [[0, 4, 6, 2], [1, 3, 7, 5], [0, 1, 5, 4], [2, 6, 7, 3], [0, 2, 3, 1], [4, 5, 7, 6]];
+    const tris = [];
+    for (const [a, b, c, d] of faces) tris.push(v(a), v(b), v(c), v(a), v(c), v(d));
+    return flatten(tris);
+  }
+  const cat = (...ms) => { let n = 0; for (const m of ms) n += m.length; const o = new Float32Array(n); let q = 0; for (const m of ms) { o.set(m, q); q += m.length; } return o; };
+
+  /* Verlauf der Verjüngung: Steigung als Trapez – sanft hinein, gerade, sanft heraus */
+  const easeTaper = (s, f = 0.25) => (s < f ? s * s / (2 * f) : s <= 1 - f ? s - f / 2 : (1 - f) - (1 - s) * (1 - s) / (2 * f)) / (1 - f);
+
   /* ---------- Teile ---------- */
 
   function defaults() {
@@ -148,6 +162,7 @@ const Core = (() => {
       clr: 0.3,         // Spiel in der Steckverbindung
       bed: 270,         // Bauraum (Snapmaker U1: 270 × 270 × 270)
       collar: 40,       // Länge des runden Anschlusses
+      ribs: 'auto',     // Stützrippen im Flachkanal: 'auto' (Feld höchstens 70 mm breit) oder Anzahl
     };
   }
 
@@ -157,7 +172,11 @@ const Core = (() => {
     const D = p.depth;
     const Ws0 = p.holeW - 1;                         // Stutzen: 1 mm kleiner als das Loch
     const pipeArea = Math.PI * (PIPE_ID / 2) ** 2;
-    const Wrohr = Math.ceil(pipeArea / Math.max(1, D - 2 * t) + 2 * t);
+    const rt = 1.6;                                  // Rippendicke
+    const ribCount = w => p.ribs === 'auto' ? Math.max(0, Math.ceil((w - 2 * t) / 70) - 1) : Math.max(0, parseInt(p.ribs, 10) || 0);
+    // gleicher Querschnitt wie das Rohr – was die Rippen wegnehmen, kommt in der Breite dazu
+    let Wrohr = Math.ceil(pipeArea / Math.max(1, D - 2 * t) + 2 * t);
+    for (let i = 0; i < 3; i++) Wrohr = Math.ceil(pipeArea / Math.max(1, D - 2 * t) + 2 * t + ribCount(Wrohr) * rt);
     let W = p.widthMode === 'loch' ? Ws0 : p.widthMode === 'eigen' ? p.width : Wrohr;
     W = Math.max(W, 2 * t + 10);
     const Ws = Math.min(Ws0, W);
@@ -226,14 +245,16 @@ const Core = (() => {
     const fuMax = S - untenFixed;
     const LmMax = diag - D;                           // liegend, notfalls diagonal
     const LoMax = diag - ye;
-    // Oberteil: nach der Muffe verjüngt es sich einseitig auf Lochbreite. Die
-    // Bettseite (x = −W/2) bleibt gerade, die obere Wand fällt mit gut 49° ab.
+    // Oberteil: nach der Muffe verjüngt es sich einseitig auf Lochbreite, über
+    // die ganze Länge bis kurz vor den Bogen. Die Bettseite (x = −W/2) bleibt
+    // gerade; die schräge Wand wird liegend zwischen Vorder- und Rückwand
+    // überbrückt, braucht also keine 45°.
     const taper = W - Ws > 0.5;
-    const zT0 = sock + ch + 3, Lta = taper ? 0.85 * (W - Ws) : 0;
-    const zb = taper ? zT0 + Lta + 3 : sock + ch;      // ab hier ist das Oberteil ein Kasten
+    const zT0 = sock + ch + 3;
     const cxN = -W / 2 + Ws / 2;
     const NOUT = [Ws / 2, hy, Math.min(rcf, Ws / 2), hy, cxN], NREG = inset(NOUT, t);
-    const LoMin = zb + 10 + (zt - hb);
+    const LoMin = (taper ? zT0 + 0.6 * (W - Ws) + 3 : sock + ch) + 10 + (zt - hb);
+    const LmMin = 2 * (sock + ch) + 30;
     if (fuMax < 10) warn.push('Der Bauraum ist zu niedrig für das Unterteil.');
     let n = 0;
     while (n < 20 && fuMax + n * LmMax + LoMax < total) n++;
@@ -242,12 +263,20 @@ const Core = (() => {
     if (R < LoMin) { fu = Math.max(10, total - LoMin); Lo = total - fu; }
     else {
       fu = fuMax;
-      const k = R / (n * LmMax + LoMax);
-      Lo = Math.max(LoMin, k * LoMax);
+      // das Oberteil bekommt so viel Länge wie möglich, damit die Verjüngung flach wird
+      Lo = n ? Math.max(LoMin, Math.min(LoMax, R - n * LmMin)) : R;
       Lm = n ? (R - Lo) / n : 0;
-      if (!n) Lo = R;
     }
     if (Lo < LoMin - 1e-6) warn.push('Das Loch sitzt zu tief über dem Tisch für Bogen und Steckverbindung.');
+
+    // Stützrippen: Längsstege zwischen Vorder- und Rückwand, in Strömungsrichtung
+    const wi = W - 2 * t;
+    const nR = ribCount(W);
+    const ribX = Array.from({ length: nR }, (_, k) => -wi / 2 + wi * (k + 1) / (nR + 1));
+    const ribs = (z0r, z1r, yi = t, zEnd = () => z1r) => cat(...ribX.map(x => {
+      const z1 = zEnd(x);
+      return z1 > z0r + 1 ? cuboid(x - rt / 2, x + rt / 2, yi - 0.4, D - yi + 0.4, z0r, z1) : new Float32Array(0);
+    }));
 
     const parts = [];
     // Unterteil
@@ -261,7 +290,7 @@ const Core = (() => {
     parts.push({
       id: 'unten', name: 'Unterteil', file: 'flachkanal-1-unterteil.stl',
       what: `${p.end === 'muffe' ? 'Muffe über das DN-75-Rohr' : 'Spitzende in eine DN-75-Muffe'} → Übergang auf flach`,
-      local: tube(untenRings), at: untenZ, lying: false,
+      local: cat(tube(untenRings), ribs(z0 + H, z0 + H + fu + Lt)), at: untenZ, lying: false,
     });
     // Zwischenstücke: liegend gedruckt, darum an beiden Enden Muffen – eine
     // Zunge würde dort frei über dem Bett hängen. Verbunden wird mit einem
@@ -271,17 +300,17 @@ const Core = (() => {
       parts.push({
         id: 'mitte' + i, name: n > 1 ? `Zwischenstück ${i + 1}` : 'Zwischenstück',
         file: `flachkanal-${2 + i}-zwischenstueck.stl`, what: 'gerader Flachkanal, Muffen an beiden Enden',
-        local: tube([
+        local: cat(tube([
           { z: 0, o: OUT, i: SOCK }, { z: sock, o: OUT, i: SOCK }, { z: sock + ch, o: OUT, i: REG },
           { z: Lm - sock - ch, o: OUT, i: REG }, { z: Lm - sock, o: OUT, i: SOCK }, { z: Lm, o: OUT, i: SOCK },
-        ]),
+        ]), ribs(sock + ch, Lm - sock - ch)),
         at: zc, lying: true,
       });
       zc += Lm;
     }
     if (n) {
       let zk = flat0 + fu;
-      const local = tube([{ z: 0, o: TONG, i: inset(OUT, t + 0.6) }, { z: 2 * Lt, o: TONG, i: inset(OUT, t + 0.6) }]);
+      const local = cat(tube([{ z: 0, o: TONG, i: inset(OUT, t + 0.6) }, { z: 2 * Lt, o: TONG, i: inset(OUT, t + 0.6) }]), ribs(0, 2 * Lt, t + 0.6));
       const at = [];
       for (let i = 0; i < n; i++) { zk += Lm; at.push(zk - Lt); }
       parts.push({
@@ -292,6 +321,8 @@ const Core = (() => {
     }
     // Oberteil: Steckmuffe + Kasten mit Stutzen ins Gehäuse
     const zt_ = zt - zc, hb_ = hb - zc, k = 14;
+    const Lta = taper ? Math.max(0.6 * (W - Ws), hb_ - 10 - 3 - zT0) : 0;
+    const zb = taper ? zT0 + Lta + 3 : sock + ch;      // ab hier ist das Oberteil ein Kasten
     const r2 = Math.SQRT2 - 1;
     const Po = [[0, zb], [D, zb], [D, hb_], [ye, hb_], [ye, zt_], [k, zt_], [0, zt_ - k]];
     const Q = [[t, zb], [D - t, zb], [D - t, hb_ + t], [ye, hb_ + t], [ye, zt_ - t], [k + t * r2, zt_ - t], [t, zt_ - k - t * r2]];
@@ -299,18 +330,27 @@ const Core = (() => {
     if (taper) {
       const mix = (a, b, e) => a.map((v, j) => lerp(v, b[j] || 0, e));
       const A = [...OUT, 0], B = NOUT;
-      for (let j = 0; j <= 24; j++) {
-        const e = j / 24, o = mix(A, B, e);
-        stubRings.push({ z: zT0 + e * Lta, o, i: inset(o, t) });
+      for (let j = 0; j <= 48; j++) {
+        const s = j / 48, o = mix(A, B, easeTaper(s));
+        stubRings.push({ z: zT0 + s * Lta, o, i: inset(o, t) });
       }
     }
     stubRings.push({ z: zb + 5, o: taper ? NOUT : OUT, i: taper ? NREG : REG });
     const stub = tube(stubRings);
     const bx = box(Po, Q, [[0, 0], [3, 3]], Ws / 2, Ws / 2 - t, taper ? cxN : 0);
-    const ob = new Float32Array(stub.length + bx.length); ob.set(stub); ob.set(bx, stub.length);
+    // Rippen enden dort, wo die schräge Wand sie erreicht
+    const ribEnd = x => {
+      if (!taper) return zb;
+      for (let j = 0; j <= 400; j++) {
+        const s = j / 400, xo = W / 2 - easeTaper(s) * (W - Ws);
+        if (xo <= x + rt / 2) return zT0 + s * Lta;
+      }
+      return zb;
+    };
+    const ob = cat(stub, bx, ribs(sock + ch, zb, t, ribEnd));
     parts.push({
       id: 'oben', name: 'Oberteil', file: `flachkanal-${2 + n}-oberteil.stl`,
-      what: taper ? 'verjüngt sich auf Lochbreite, Bogen und Stutzen ins Gehäuse' : 'Flachkanal mit Bogen und Stutzen ins Gehäuse', local: ob, shells: [stub.length / 9, bx.length / 9],
+      what: taper ? 'verjüngt sich auf Lochbreite, Bogen und Stutzen ins Gehäuse' : 'Flachkanal mit Bogen und Stutzen ins Gehäuse', local: ob,
       at: zc, lying: true, outline: { Po, zb: zc, D },
     });
 
@@ -326,11 +366,11 @@ const Core = (() => {
 
     const innerArea = (pr) => { const [a, b, r] = pr; return 4 * a * b - (4 - Math.PI) * r * r; };
     return {
-      p, D, W, Ws, Wrohr, snoutX: taper ? cxN : 0, H, t, Rmax, n, fu, Lm, Lo, total, flat0, zt, hb, ye, overhang, warn, parts,
+      p, D, W, Ws, Wrohr, snoutX: taper ? cxN : 0, nR, ribGap: wi / (nR + 1), Lta, taperDeg: taper ? Math.atan((W - Ws) / Lta / 0.75) * 180 / Math.PI : 0, H, t, Rmax, n, fu, Lm, Lo, total, flat0, zt, hb, ye, overhang, warn, parts,
       pipeTop: untenZ + (p.end === 'muffe' ? p.collar : 0),   // Rohrende, Höhe über Tischoberkante
       pipeAxis: Rmax,
       untenBottom: untenZ,
-      area: { pipe: pipeArea, duct: innerArea(REG), snout: (Ws - 2 * t) * (p.holeH - 1 - 2 * t) },
+      area: { pipe: pipeArea, duct: innerArea(REG) - nR * rt * (D - 2 * t), snout: (Ws - 2 * t) * (p.holeH - 1 - 2 * t) },
       profiles: { OUT, REG },
       untenRings,
     };
