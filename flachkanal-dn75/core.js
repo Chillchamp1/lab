@@ -143,7 +143,7 @@ const Core = (() => {
   const cat = (...ms) => { let n = 0; for (const m of ms) n += m.length; const o = new Float32Array(n); let q = 0; for (const m of ms) { o.set(m, q); q += m.length; } return o; };
 
   /* Verlauf der Verjüngung: Steigung als Trapez – sanft hinein, gerade, sanft heraus */
-  const easeTaper = (s, f = 0.25) => (s < f ? s * s / (2 * f) : s <= 1 - f ? s - f / 2 : (1 - f) - (1 - s) * (1 - s) / (2 * f)) / (1 - f);
+  const easeTaper = (s, f = 0.15) => (s < f ? s * s / (2 * f) : s <= 1 - f ? s - f / 2 : (1 - f) - (1 - s) * (1 - s) / (2 * f)) / (1 - f);
 
   /* ---------- Teile ---------- */
 
@@ -245,14 +245,10 @@ const Core = (() => {
     const fuMax = S - untenFixed;
     const LmMax = diag - D;                           // liegend, notfalls diagonal
     const LoMax = diag - ye;
-    // Oberteil: nach der Muffe verjüngt es sich einseitig auf Lochbreite, über
-    // die ganze Länge bis kurz vor den Bogen. Die Bettseite (x = −W/2) bleibt
-    // gerade; die schräge Wand wird liegend zwischen Vorder- und Rückwand
-    // überbrückt, braucht also keine 45°.
+    // Verjüngung auf Lochbreite, siehe unten
     const taper = W - Ws > 0.5;
     const zT0 = sock + ch + 3;
     const cxN = -W / 2 + Ws / 2;
-    const NOUT = [Ws / 2, hy, Math.min(rcf, Ws / 2), hy, cxN], NREG = inset(NOUT, t);
     const LoMin = (taper ? zT0 + 0.6 * (W - Ws) + 3 : sock + ch) + 10 + (zt - hb);
     const LmMin = 2 * (sock + ch) + 30;
     if (fuMax < 10) warn.push('Der Bauraum ist zu niedrig für das Unterteil.');
@@ -263,7 +259,6 @@ const Core = (() => {
     if (R < LoMin) { fu = Math.max(10, total - LoMin); Lo = total - fu; }
     else {
       fu = fuMax;
-      // das Oberteil bekommt so viel Länge wie möglich, damit die Verjüngung flach wird
       Lo = n ? Math.max(LoMin, Math.min(LoMax, R - n * LmMin)) : R;
       Lm = n ? (R - Lo) / n : 0;
     }
@@ -292,67 +287,87 @@ const Core = (() => {
       what: `${p.end === 'muffe' ? 'Muffe über das DN-75-Rohr' : 'Spitzende in eine DN-75-Muffe'} → Übergang auf flach`,
       local: cat(tube(untenRings), ribs(z0 + H, z0 + H + fu + Lt)), at: untenZ, lying: false,
     });
+    // Breite entlang des Kanals. Ab der ersten Muffe über dem Unterteil wird der
+    // Kanal einseitig schmaler, bis kurz vor den Bogen – über Zwischenstück(e)
+    // und Oberteil hinweg. An den Stößen zwischen liegenden Teilen pausiert die
+    // Verjüngung kurz, damit Muffe und Steckverbinder gerade bleiben. Die
+    // Bettseite (x = −W/2) bleibt gerade; liegend gedruckt wird die schräge
+    // Wand zwischen Vorder- und Rückwand überbrückt.
+    const zL0 = flat0 + fu;                               // Beginn der liegenden Teile
+    const zOben = zL0 + n * Lm;                           // Beginn des Oberteils
+    const zbG = hb - 10;                                  // ab hier ist das Oberteil ein Kasten
+    const joints = Array.from({ length: n }, (_, i) => zL0 + (i + 1) * Lm);
+    const pause = sock + ch + 2;
+    const zs = zL0 + sock + ch + 3, ze = zbG - 3;
+    const active = z => {
+      const zz = Math.min(z, ze);
+      let u = Math.max(0, zz - zs);
+      for (const j of joints) u -= Math.max(0, Math.min(zz, j + pause) - Math.max(zs, j - pause));
+      return Math.max(0, u);
+    };
+    const activeLen = taper ? active(ze) : 0;
+    const wAt = z => (activeLen > 0 ? W - (W - Ws) * easeTaper(Math.min(1, active(z) / activeLen)) : W);
+    const prof = z => { const w = wAt(z); return [w / 2, hy, Math.min(rcf, w / 2), hy, -W / 2 + w / 2]; };
+
+    // Ringe eines liegenden Teils von zg0 bis zg1 (global), Muffe unten, oben wahlweise
+    const lyingRings = (zg0, zg1, sockTop) => {
+      const rings = [], at = zl => prof(zg0 + zl), L = zg1 - zg0;
+      const add = (zl, d) => { const o = at(zl); rings.push({ z: zl, o, i: inset(o, d) }); };
+      add(0, dS); add(sock, dS);
+      const top = sockTop ? L - sock - ch : L, steps = Math.max(2, Math.ceil((top - sock - ch) / 4));
+      for (let j = 0; j <= steps; j++) add(sock + ch + (top - sock - ch) * j / steps, t);
+      if (sockTop) { add(L - sock, dS); add(L, dS); }
+      return rings;
+    };
+    // Rippen eines liegenden Teils; jede endet, wo die schräge Wand sie erreicht
+    const ribsLying = (zg0, a, b, yi = t) => cat(...ribX.map(x => {
+      let z1 = b;
+      for (let zl = a; zl <= b; zl += 0.5) if (-W / 2 + wAt(zg0 + zl) <= x + rt / 2) { z1 = zl; break; }
+      return z1 > a + 1 ? cuboid(x - rt / 2, x + rt / 2, yi - 0.4, D - yi + 0.4, a, z1) : new Float32Array(0);
+    }));
+
     // Zwischenstücke: liegend gedruckt, darum an beiden Enden Muffen – eine
     // Zunge würde dort frei über dem Bett hängen. Verbunden wird mit einem
     // stehend gedruckten Steckverbinder.
-    let zc = flat0 + fu;
     for (let i = 0; i < n; i++) {
+      const zg0 = zL0 + i * Lm, narrows = wAt(zg0 + Lm) < wAt(zg0) - 0.5;
       parts.push({
         id: 'mitte' + i, name: n > 1 ? `Zwischenstück ${i + 1}` : 'Zwischenstück',
-        file: `flachkanal-${2 + i}-zwischenstueck.stl`, what: 'gerader Flachkanal, Muffen an beiden Enden',
-        local: cat(tube([
-          { z: 0, o: OUT, i: SOCK }, { z: sock, o: OUT, i: SOCK }, { z: sock + ch, o: OUT, i: REG },
-          { z: Lm - sock - ch, o: OUT, i: REG }, { z: Lm - sock, o: OUT, i: SOCK }, { z: Lm, o: OUT, i: SOCK },
-        ]), ribs(sock + ch, Lm - sock - ch)),
-        at: zc, lying: true,
+        file: `flachkanal-${2 + i}-zwischenstueck.stl`,
+        what: narrows ? `Flachkanal, wird von ${Math.round(wAt(zg0))} auf ${Math.round(wAt(zg0 + Lm))} mm schmaler` : 'gerader Flachkanal, Muffen an beiden Enden',
+        local: cat(tube(lyingRings(zg0, zg0 + Lm, true)), ribsLying(zg0, sock + ch, Lm - sock - ch)),
+        at: zg0, lying: true,
       });
-      zc += Lm;
     }
-    if (n) {
-      let zk = flat0 + fu;
-      const local = cat(tube([{ z: 0, o: TONG, i: inset(OUT, t + 0.6) }, { z: 2 * Lt, o: TONG, i: inset(OUT, t + 0.6) }]), ribs(0, 2 * Lt, t + 0.6));
-      const at = [];
-      for (let i = 0; i < n; i++) { zk += Lm; at.push(zk - Lt); }
+    joints.forEach((j, i) => {
+      const pr = prof(j), w = wAt(j), inner = inset(pr, t + 0.6);
+      const kr = ribX.filter(x => x + rt / 2 <= -W / 2 + w - t);
+      const local = cat(tube([{ z: 0, o: inset(pr, dT), i: inner }, { z: 2 * Lt, o: inset(pr, dT), i: inner }]),
+        ...kr.map(x => cuboid(x - rt / 2, x + rt / 2, t + 0.2, D - t - 0.2, 0, 2 * Lt)));
       parts.push({
-        id: 'koppler', name: 'Steckverbinder', count: n, file: 'flachkanal-steckverbinder.stl',
-        what: n > 1 ? `verbindet die liegenden Teile, ${n}× drucken` : 'verbindet Zwischenstück und Oberteil',
-        local, at: at[0], atAll: at, lying: false,
+        id: 'koppler', name: n > 1 ? `Steckverbinder ${i + 1}` : 'Steckverbinder',
+        file: `flachkanal-steckverbinder${n > 1 ? '-' + (i + 1) : ''}.stl`,
+        what: `${Math.round(w)} mm breit, verbindet ${i + 1 < n ? `Zwischenstück ${i + 1} und ${i + 2}` : n > 1 ? `Zwischenstück ${i + 1} und Oberteil` : 'Zwischenstück und Oberteil'}`,
+        local, at: j - Lt, lying: false,
       });
-    }
-    // Oberteil: Steckmuffe + Kasten mit Stutzen ins Gehäuse
-    const zt_ = zt - zc, hb_ = hb - zc, k = 14;
-    const Lta = taper ? Math.max(0.6 * (W - Ws), hb_ - 10 - 3 - zT0) : 0;
-    const zb = taper ? zT0 + Lta + 3 : sock + ch;      // ab hier ist das Oberteil ein Kasten
+    });
+    // Oberteil: Muffe, Rest der Verjüngung, Kasten mit Stutzen ins Gehäuse
+    const zt_ = zt - zOben, hb_ = hb - zOben, k = 14, zb = zbG - zOben;
     const r2 = Math.SQRT2 - 1;
     const Po = [[0, zb], [D, zb], [D, hb_], [ye, hb_], [ye, zt_], [k, zt_], [0, zt_ - k]];
     const Q = [[t, zb], [D - t, zb], [D - t, hb_ + t], [ye, hb_ + t], [ye, zt_ - t], [k + t * r2, zt_ - t], [t, zt_ - k - t * r2]];
-    const stubRings = [{ z: 0, o: OUT, i: SOCK }, { z: sock, o: OUT, i: SOCK }, { z: sock + ch, o: OUT, i: REG }];
-    if (taper) {
-      const mix = (a, b, e) => a.map((v, j) => lerp(v, b[j] || 0, e));
-      const A = [...OUT, 0], B = NOUT;
-      for (let j = 0; j <= 48; j++) {
-        const s = j / 48, o = mix(A, B, easeTaper(s));
-        stubRings.push({ z: zT0 + s * Lta, o, i: inset(o, t) });
-      }
-    }
-    stubRings.push({ z: zb + 5, o: taper ? NOUT : OUT, i: taper ? NREG : REG });
-    const stub = tube(stubRings);
-    const bx = box(Po, Q, [[0, 0], [3, 3]], Ws / 2, Ws / 2 - t, taper ? cxN : 0);
-    // Rippen enden dort, wo die schräge Wand sie erreicht
-    const ribEnd = x => {
-      if (!taper) return zb;
-      for (let j = 0; j <= 400; j++) {
-        const s = j / 400, xo = W / 2 - easeTaper(s) * (W - Ws);
-        if (xo <= x + rt / 2) return zT0 + s * Lta;
-      }
-      return zb;
-    };
-    const ob = cat(stub, bx, ribs(sock + ch, zb, t, ribEnd));
+    const stub = tube(lyingRings(zOben, zbG + 5, false));
+    const bx = box(Po, Q, [[0, 0], [3, 3]], Ws / 2, Ws / 2 - t, cxN);
+    const ob = cat(stub, bx, ribsLying(zOben, sock + ch, zb));
     parts.push({
       id: 'oben', name: 'Oberteil', file: `flachkanal-${2 + n}-oberteil.stl`,
-      what: taper ? 'verjüngt sich auf Lochbreite, Bogen und Stutzen ins Gehäuse' : 'Flachkanal mit Bogen und Stutzen ins Gehäuse', local: ob,
-      at: zc, lying: true, outline: { Po, zb: zc, D },
+      what: taper ? 'wird bis auf Lochbreite schmaler, Bogen und Stutzen ins Gehäuse' : 'Flachkanal mit Bogen und Stutzen ins Gehäuse', local: ob,
+      at: zOben, lying: true, outline: { Po, zb: zOben, D },
     });
+    // steilste Stelle der Verjüngung
+    let taperDeg = 0;
+    if (activeLen > 0) for (let z = zs; z < ze; z += 1) taperDeg = Math.max(taperDeg, Math.atan(wAt(z) - wAt(z + 1)) * 180 / Math.PI);
+    const Lta = taper ? ze - zs : 0;
 
     // Druckausrichtung, Maße
     for (const pt of parts) {
@@ -366,7 +381,7 @@ const Core = (() => {
 
     const innerArea = (pr) => { const [a, b, r] = pr; return 4 * a * b - (4 - Math.PI) * r * r; };
     return {
-      p, D, W, Ws, Wrohr, snoutX: taper ? cxN : 0, nR, ribGap: wi / (nR + 1), Lta, taperDeg: taper ? Math.atan((W - Ws) / Lta / 0.75) * 180 / Math.PI : 0, H, t, Rmax, n, fu, Lm, Lo, total, flat0, zt, hb, ye, overhang, warn, parts,
+      p, D, W, Ws, Wrohr, snoutX: taper ? cxN : 0, nR, ribGap: wi / (nR + 1), Lta, taperDeg, H, t, Rmax, n, fu, Lm, Lo, total, flat0, zt, hb, ye, overhang, warn, parts,
       pipeTop: untenZ + (p.end === 'muffe' ? p.collar : 0),   // Rohrende, Höhe über Tischoberkante
       pipeAxis: Rmax,
       untenBottom: untenZ,
