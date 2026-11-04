@@ -18,7 +18,7 @@ fertig ausgerichtet für den Druck.
 
 - **Querschnitt:** Die Dicke ist frei wählbar. Die Breite ist voreingestellt
   auf denselben Innenquerschnitt wie das Rohr (39,8 cm²): Bei 25 mm Dicke und
-  1,2 mm Wand ergibt das 184 mm außen. Wahlweise geht auch „so breit wie das
+  1,2 mm Wand ergibt das 182 mm außen. Wahlweise geht auch „so breit wie das
   Loch“ oder eine eigene Breite. Innen ist der Kanal ein Rechteck mit kleinen
   Rundungen. Er liegt mit der flachen Rückseite an der Wand.
 - **Warum breit, obwohl das Loch eng ist:** Druckverluste addieren sich. Das
@@ -29,17 +29,27 @@ fertig ausgerichtet für den Druck.
   0,8 Pa auf den Einlauf ins Loch. Ein Stutzen, der ins Gehäuse hineinragt,
   hat einen höheren Einlaufverlust als ein bündig endender. Deshalb steht er
   nur 5 mm tief im Loch.
-- **Wände und Rippen:** Fast das ganze Filament steckt in den Wänden, nicht in
-  den Rippen. Die Wände sind deshalb nur 1,2 mm dick, das sind 3 Linien mit
-  einer 0,4-mm-Düse. Dafür sitzen die Rippen enger. Eine Wand zwischen zwei
-  Rippen biegt sich mit Feldbreite⁴ / Wandstärke³ durch. Die automatische
-  Rippenzahl hält die Felder so schmal, dass die Wand etwa so steif ist wie
-  2,4 mm auf 70 mm Feld: bei 1,2 mm Wand höchstens 42 mm, also 4 Rippen bei
-  184 mm Breite. Die Rippen sind so dick wie die Wand und laufen in
-  Strömungsrichtung. Sie enden 15,5 mm vor jedem Stoß und dort, wo die
-  schräge Wand der Verjüngung sie erreicht. Den Querschnitt, den sie
-  wegnehmen, gleicht die automatische Breite aus. Bei 600 mm Lochhöhe sind
-  es zusammen rund 400 cm³ (≈ 510 g PETG). Mit 2,4 mm Wand waren es 700 cm³.
+- **Wände:** Fast das ganze Filament steckt in den Wänden. Sie sind deshalb
+  nur 1,2 mm dick, das sind 3 Linien mit einer 0,4-mm-Düse. Infill gibt es
+  keins, denn die Wand besteht nur aus Wandlinien. Was dann noch sparen kann,
+  ist weniger Fläche: ein schmalerer Kanal oder 0,8-mm-Wände.
+- **Stützrippen:** Die Rippen tragen nur Druck zwischen Vorder- und Rückwand.
+  Sie sind deshalb 0,8 mm dick (2 Linien). In der Grundeinstellung sind sie
+  kurze Stege von 12 mm, von Spalte zu Spalte um eine halbe Teilung versetzt.
+  Das spart gegenüber durchgehenden Rippen gut die Hälfte des Rippenmaterials.
+  Die Spalten liegen so eng, dass die Wand etwa so steif ist wie 2,4 mm auf
+  70 mm Feld. Die Durchbiegung wächst mit Feldbreite⁴ / Wandstärke³, bei
+  1,2 mm Wand ergibt das höchstens 42 mm Feld, also 4 Spalten. Jede Spalte
+  folgt einer Stromlinie: Sie behält ihren Anteil an der lichten Breite und
+  läuft mit der Verjüngung zusammen auf das Loch zu. Keine Rippe endet an der
+  schrägen Wand, es entstehen also keine Keile, in denen die Luft steht. Wo
+  der schmalere Kanal weniger Spalten braucht, enden überzählige frei in der
+  Strömung, dort laufen nur zwei Kanäle zusammen. Erster und letzter Steg
+  sitzen genau 15,5 mm vor jedem Stoß, daran stößt der Steckverbinder. Den
+  Querschnitt, den die Rippen wegnehmen, gleicht die automatische Breite aus.
+- **Filament:** Bei 600 mm Lochhöhe und 120 mm Lochbreite sind es rund
+  400 cm³ (≈ 510 g PETG). Mit 0,8-mm-Wänden und 120 mm Kanalbreite sind es
+  etwa 235 cm³ (≈ 300 g).
 - **Verjüngung:** Ist der Kanal breiter als das Loch, wird er nach der ersten
   Stoß über dem Unterteil allmählich schmaler, über Zwischenstück(e) und
   Oberteil hinweg bis kurz vor den Bogen. Die Steigung beginnt und endet sanft,
