@@ -158,11 +158,11 @@ const Core = (() => {
       encGap: 27,       // Wand ↔ Außenseite Gehäuserückwand
       insert: 5,        // so weit reicht der Stutzen von außen ins Loch – am besten nur die Wandstärke
       end: 'muffe',     // 'muffe' (über das Rohrende) | 'spitz' (in eine HT-Muffe)
-      t: 2.4,           // Wandstärke
-      clr: 0.3,         // Spiel in der Steckverbindung
+      t: 1.2,           // Wandstärke (3 Linien mit 0,4-mm-Düse)
+      clr: 0.3,         // Spiel zwischen Steckverbinder und Kanal
       bed: 270,         // Bauraum (Snapmaker U1: 270 × 270 × 270)
       collar: 40,       // Länge des runden Anschlusses
-      ribs: 'auto',     // Stützrippen im Flachkanal: 'auto' (Feld höchstens 70 mm breit) oder Anzahl
+      ribs: 'auto',     // Stützrippen: 'auto' (Felder so schmal, dass die Wand etwa so steif ist wie 2,4 mm auf 70 mm) oder Anzahl
     };
   }
 
@@ -172,8 +172,11 @@ const Core = (() => {
     const D = p.depth;
     const Ws0 = p.holeW - 1;                         // Stutzen: 1 mm kleiner als das Loch
     const pipeArea = Math.PI * (PIPE_ID / 2) ** 2;
-    const rt = 1.6;                                  // Rippendicke
-    const ribCount = w => p.ribs === 'auto' ? Math.max(0, Math.ceil((w - 2 * t) / 70) - 1) : Math.max(0, parseInt(p.ribs, 10) || 0);
+    const rt = t;                                    // Rippen so dick wie die Wand
+    // Biegung einer Wand zwischen zwei Rippen wächst mit Feldbreite⁴ / Wandstärke³:
+    // gleich steif wie 2,4 mm Wand auf 70 mm Feld
+    const span = 70 * Math.pow(t / 2.4, 0.75);
+    const ribCount = w => p.ribs === 'auto' ? Math.max(0, Math.ceil((w - 2 * t) / span) - 1) : Math.max(0, parseInt(p.ribs, 10) || 0);
     // gleicher Querschnitt wie das Rohr – was die Rippen wegnehmen, kommt in der Breite dazu
     let Wrohr = Math.ceil(pipeArea / Math.max(1, D - 2 * t) + 2 * t);
     for (let i = 0; i < 3; i++) Wrohr = Math.ceil(pipeArea / Math.max(1, D - 2 * t) + 2 * t + ribCount(Wrohr) * rt);
@@ -188,16 +191,18 @@ const Core = (() => {
 
     const OUT = [hx, hy, rcf, hy];
     const REG = inset(OUT, t);
-    const dS = (t - c) / 2, dT = (t + c) / 2;   // Muffe innen / Zunge außen
-    const SOCK = inset(OUT, dS), TONG = inset(OUT, dT);
-    const Lt = 15, sock = Lt + 0.5, ch = t - dS; // Zungenlänge, Muffentiefe, 45°-Fase
+    // Stöße: stumpf, innen steckt ein Steckverbinder. Die Rippen der Teile enden
+    // ribGap vor jedem Stoß; die Rippen des Steckverbinders füllen die Lücke und
+    // halten ihn mittig.
+    const Lk = 30, tk = Math.max(t, 1.2), ribGap = Lk / 2 + 0.5;
+    const tc = Math.max(t, 2);                    // runder Anschluss etwas kräftiger
 
     /* Unterteil: rund → flach, stehend gedruckt, runder Anschluss unten */
     const R0 = PIPE_ID / 2 + t;
     let Rmax, ringsRound, z0;
     const circ = (R, cy) => [R, R, R, cy];
     if (p.end === 'muffe') {
-      const Ri = (PIPE_OD + 0.8) / 2, Ro = Ri + t;
+      const Ri = (PIPE_OD + 0.8) / 2, Ro = Ri + tc;
       Rmax = Ro;
       z0 = p.collar + (Ri - (R0 - t));
       ringsRound = [
@@ -207,7 +212,7 @@ const Core = (() => {
         { z: z0, o: circ(R0, Rmax), i: circ(R0 - t, Rmax) },
       ];
     } else {
-      const Ro = (PIPE_OD - 0.6) / 2, Ri = Ro - t;
+      const Ro = (PIPE_OD - 0.6) / 2, Ri = Ro - tc;
       Rmax = Math.max(Ro, R0);
       z0 = p.collar + Math.max(0.5, R0 - Ro);
       ringsRound = [
@@ -241,16 +246,16 @@ const Core = (() => {
     const zt = p.holeZ + p.holeH - 0.5, hb = p.holeZ + 0.5;
     const total = zt - flat0;
     const ye = p.encGap + p.insert;
-    const untenFixed = z0 + H + Lt;
+    const untenFixed = z0 + H;
     const fuMax = S - untenFixed;
     const LmMax = diag - D;                           // liegend, notfalls diagonal
     const LoMax = diag - ye;
     // Verjüngung auf Lochbreite, siehe unten
     const taper = W - Ws > 0.5;
-    const zT0 = sock + ch + 3;
     const cxN = -W / 2 + Ws / 2;
-    const LoMin = (taper ? zT0 + 0.6 * (W - Ws) + 3 : sock + ch) + 10 + (zt - hb);
-    const LmMin = 2 * (sock + ch) + 30;
+    const pause = Lk / 2 + 2;
+    const LoMin = pause + (taper ? 0.6 * (W - Ws) + 4 : 0) + 10 + (zt - hb);
+    const LmMin = 2 * pause + 30;
     if (fuMax < 10) warn.push('Der Bauraum ist zu niedrig für das Unterteil.');
     let n = 0;
     while (n < 20 && fuMax + n * LmMax + LoMax < total) n++;
@@ -268,37 +273,32 @@ const Core = (() => {
     const wi = W - 2 * t;
     const nR = ribCount(W);
     const ribX = Array.from({ length: nR }, (_, k) => -wi / 2 + wi * (k + 1) / (nR + 1));
-    const ribs = (z0r, z1r, yi = t, zEnd = () => z1r) => cat(...ribX.map(x => {
-      const z1 = zEnd(x);
-      return z1 > z0r + 1 ? cuboid(x - rt / 2, x + rt / 2, yi - 0.4, D - yi + 0.4, z0r, z1) : new Float32Array(0);
-    }));
+    const ribs = (z0r, z1r, yi = t) => cat(...ribX.map(x =>
+      z1r > z0r + 1 ? cuboid(x - rt / 2, x + rt / 2, yi - 0.4, D - yi + 0.4, z0r, z1r) : new Float32Array(0)));
 
     const parts = [];
     // Unterteil
     const untenRings = [
       ...ringsRound, ...loftRings(H),
       { z: z0 + H + fu, o: OUT, i: REG },
-      { z: z0 + H + fu, o: TONG, i: REG },
-      { z: z0 + H + fu + Lt, o: TONG, i: REG },
     ];
     const untenZ = flat0 - z0 - H;
     parts.push({
       id: 'unten', name: 'Unterteil', file: 'flachkanal-1-unterteil.stl',
       what: `${p.end === 'muffe' ? 'Muffe über das DN-75-Rohr' : 'Spitzende in eine DN-75-Muffe'} → Übergang auf flach`,
-      local: cat(tube(untenRings), ribs(z0 + H, z0 + H + fu + Lt)), at: untenZ, lying: false,
+      local: cat(tube(untenRings), ribs(z0 + H, z0 + H + fu - ribGap)), at: untenZ, lying: false,
     });
-    // Breite entlang des Kanals. Ab der ersten Muffe über dem Unterteil wird der
-    // Kanal einseitig schmaler, bis kurz vor den Bogen – über Zwischenstück(e)
-    // und Oberteil hinweg. An den Stößen zwischen liegenden Teilen pausiert die
-    // Verjüngung kurz, damit Muffe und Steckverbinder gerade bleiben. Die
+    // Breite entlang des Kanals. Ab dem Stoß über dem Unterteil wird der Kanal
+    // einseitig schmaler, bis kurz vor den Bogen – über Zwischenstück(e) und
+    // Oberteil hinweg. An den Stößen pausiert die Verjüngung kurz, damit die
+    // Steckverbinder gerade bleiben. Die
     // Bettseite (x = −W/2) bleibt gerade; liegend gedruckt wird die schräge
     // Wand zwischen Vorder- und Rückwand überbrückt.
     const zL0 = flat0 + fu;                               // Beginn der liegenden Teile
     const zOben = zL0 + n * Lm;                           // Beginn des Oberteils
     const zbG = hb - 10;                                  // ab hier ist das Oberteil ein Kasten
-    const joints = Array.from({ length: n }, (_, i) => zL0 + (i + 1) * Lm);
-    const pause = sock + ch + 2;
-    const zs = zL0 + sock + ch + 3, ze = zbG - 3;
+    const joints = Array.from({ length: n + 1 }, (_, i) => zL0 + i * Lm);   // alle Stöße, der unterste über dem Unterteil
+    const zs = zL0 + pause + 1, ze = zbG - 3;
     const active = z => {
       const zz = Math.min(z, ze);
       let u = Math.max(0, zz - zs);
@@ -309,14 +309,10 @@ const Core = (() => {
     const wAt = z => (activeLen > 0 ? W - (W - Ws) * easeTaper(Math.min(1, active(z) / activeLen)) : W);
     const prof = z => { const w = wAt(z); return [w / 2, hy, Math.min(rcf, w / 2), hy, -W / 2 + w / 2]; };
 
-    // Ringe eines liegenden Teils von zg0 bis zg1 (global), Muffe unten, oben wahlweise
-    const lyingRings = (zg0, zg1, sockTop) => {
-      const rings = [], at = zl => prof(zg0 + zl), L = zg1 - zg0;
-      const add = (zl, d) => { const o = at(zl); rings.push({ z: zl, o, i: inset(o, d) }); };
-      add(0, dS); add(sock, dS);
-      const top = sockTop ? L - sock - ch : L, steps = Math.max(2, Math.ceil((top - sock - ch) / 4));
-      for (let j = 0; j <= steps; j++) add(sock + ch + (top - sock - ch) * j / steps, t);
-      if (sockTop) { add(L - sock, dS); add(L, dS); }
+    // Ringe eines liegenden Teils von zg0 bis zg1 (global)
+    const lyingRings = (zg0, zg1) => {
+      const L = zg1 - zg0, steps = Math.max(2, Math.ceil(L / 4)), rings = [];
+      for (let j = 0; j <= steps; j++) { const zl = L * j / steps, o = prof(zg0 + zl); rings.push({ z: zl, o, i: inset(o, t) }); }
       return rings;
     };
     // Rippen eines liegenden Teils; jede endet, wo die schräge Wand sie erreicht
@@ -326,39 +322,39 @@ const Core = (() => {
       return z1 > a + 1 ? cuboid(x - rt / 2, x + rt / 2, yi - 0.4, D - yi + 0.4, a, z1) : new Float32Array(0);
     }));
 
-    // Zwischenstücke: liegend gedruckt, darum an beiden Enden Muffen – eine
-    // Zunge würde dort frei über dem Bett hängen. Verbunden wird mit einem
-    // stehend gedruckten Steckverbinder.
+    // Zwischenstücke: liegend gedruckt, beide Enden stumpf
     for (let i = 0; i < n; i++) {
       const zg0 = zL0 + i * Lm, narrows = wAt(zg0 + Lm) < wAt(zg0) - 0.5;
       parts.push({
         id: 'mitte' + i, name: n > 1 ? `Zwischenstück ${i + 1}` : 'Zwischenstück',
         file: `flachkanal-${2 + i}-zwischenstueck.stl`,
-        what: narrows ? `Flachkanal, wird von ${Math.round(wAt(zg0))} auf ${Math.round(wAt(zg0 + Lm))} mm schmaler` : 'gerader Flachkanal, Muffen an beiden Enden',
-        local: cat(tube(lyingRings(zg0, zg0 + Lm, true)), ribsLying(zg0, sock + ch, Lm - sock - ch)),
+        what: narrows ? `Flachkanal, wird von ${Math.round(wAt(zg0))} auf ${Math.round(wAt(zg0 + Lm))} mm schmaler` : 'gerader Flachkanal',
+        local: cat(tube(lyingRings(zg0, zg0 + Lm)), ribsLying(zg0, ribGap, Lm - ribGap)),
         at: zg0, lying: true,
       });
     }
+    // Steckverbinder: innen in jedem Stoß, stehend gedruckt
+    const pieceName = i => (i === 0 ? 'Unterteil' : i <= n ? (n > 1 ? `Zwischenstück ${i}` : 'Zwischenstück') : 'Oberteil');
     joints.forEach((j, i) => {
-      const pr = prof(j), w = wAt(j), inner = inset(pr, t + 0.6);
-      const kr = ribX.filter(x => x + rt / 2 <= -W / 2 + w - t);
-      const local = cat(tube([{ z: 0, o: inset(pr, dT), i: inner }, { z: 2 * Lt, o: inset(pr, dT), i: inner }]),
-        ...kr.map(x => cuboid(x - rt / 2, x + rt / 2, t + 0.2, D - t - 0.2, 0, 2 * Lt)));
+      const pr = prof(j), w = wAt(j), dk = t + c, outer = inset(pr, dk), inner = inset(pr, dk + tk);
+      const kr = ribX.filter(x => x + rt / 2 <= -W / 2 + w - dk - tk);
+      const local = cat(tube([{ z: 0, o: outer, i: inner }, { z: Lk, o: outer, i: inner }]),
+        ...kr.map(x => cuboid(x - rt / 2, x + rt / 2, dk + tk - 0.4, D - dk - tk + 0.4, 0, Lk)));
       parts.push({
-        id: 'koppler', name: n > 1 ? `Steckverbinder ${i + 1}` : 'Steckverbinder',
-        file: `flachkanal-steckverbinder${n > 1 ? '-' + (i + 1) : ''}.stl`,
-        what: `${Math.round(w)} mm breit, verbindet ${i + 1 < n ? `Zwischenstück ${i + 1} und ${i + 2}` : n > 1 ? `Zwischenstück ${i + 1} und Oberteil` : 'Zwischenstück und Oberteil'}`,
-        local, at: j - Lt, lying: false,
+        id: 'koppler', name: `Steckverbinder ${i + 1}`,
+        file: `flachkanal-steckverbinder-${i + 1}.stl`,
+        what: `${Math.round(w)} mm breit, steckt innen zwischen ${pieceName(i)} und ${pieceName(i + 1)}`,
+        local, at: j - Lk / 2, lying: false,
       });
     });
-    // Oberteil: Muffe, Rest der Verjüngung, Kasten mit Stutzen ins Gehäuse
+    // Oberteil: Rest der Verjüngung, Kasten mit Stutzen ins Gehäuse
     const zt_ = zt - zOben, hb_ = hb - zOben, k = 14, zb = zbG - zOben;
     const r2 = Math.SQRT2 - 1;
     const Po = [[0, zb], [D, zb], [D, hb_], [ye, hb_], [ye, zt_], [k, zt_], [0, zt_ - k]];
     const Q = [[t, zb], [D - t, zb], [D - t, hb_ + t], [ye, hb_ + t], [ye, zt_ - t], [k + t * r2, zt_ - t], [t, zt_ - k - t * r2]];
-    const stub = tube(lyingRings(zOben, zbG + 5, false));
+    const stub = tube(lyingRings(zOben, zbG + 5));
     const bx = box(Po, Q, [[0, 0], [3, 3]], Ws / 2, Ws / 2 - t, cxN);
-    const ob = cat(stub, bx, ribsLying(zOben, sock + ch, zb));
+    const ob = cat(stub, bx, ribsLying(zOben, ribGap, zb));
     parts.push({
       id: 'oben', name: 'Oberteil', file: `flachkanal-${2 + n}-oberteil.stl`,
       what: taper ? 'wird bis auf Lochbreite schmaler, Bogen und Stutzen ins Gehäuse' : 'Flachkanal mit Bogen und Stutzen ins Gehäuse', local: ob,

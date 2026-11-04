@@ -11,14 +11,14 @@ fertig ausgerichtet für den Druck.
 
 | Teil | Druck | Was es tut |
 |---|---|---|
-| Unterteil | stehend, runder Anschluss unten | Muffe über das abgesägte Rohr (Innen-Ø 75,8) oder Spitzende in eine HT-Muffe (Außen-Ø 74,4), dann Übergang rund → flach, oben eine Steckzunge |
-| Zwischenstück(e) | liegend auf der Seitenwand, bei Bedarf um 45° gedreht | gerader Flachkanal, Muffen an beiden Enden |
-| Steckverbinder | stehend | kurzes Rohrstück in Zungenform, verbindet zwei liegende Teile |
-| Oberteil | liegend auf der Seitenwand | Muffe, Flachkanal, kastenförmiger Bogen und Stutzen ins Gehäuse |
+| Unterteil | stehend, runder Anschluss unten | Muffe über das abgesägte Rohr (Innen-Ø 75,8) oder Spitzende in eine HT-Muffe (Außen-Ø 74,4), dann Übergang rund → flach, oben stumpf |
+| Zwischenstück(e) | liegend auf der Seitenwand, bei Bedarf um 45° gedreht | Flachkanal, beide Enden stumpf, wird schmaler, wo die Verjüngung durchläuft |
+| Steckverbinder (einer je Stoß) | stehend | 30 mm langes Rohrstück mit Rippen, steckt innen im Stoß |
+| Oberteil | liegend auf der Seitenwand | Flachkanal, kastenförmiger Bogen und Stutzen ins Gehäuse |
 
 - **Querschnitt:** Die Dicke ist frei wählbar. Die Breite ist voreingestellt
   auf denselben Innenquerschnitt wie das Rohr (39,8 cm²): Bei 25 mm Dicke und
-  2,4 mm Wand ergibt das 202 mm außen. Wahlweise geht auch „so breit wie das
+  1,2 mm Wand ergibt das 184 mm außen. Wahlweise geht auch „so breit wie das
   Loch“ oder eine eigene Breite. Innen ist der Kanal ein Rechteck mit kleinen
   Rundungen. Er liegt mit der flachen Rückseite an der Wand.
 - **Warum breit, obwohl das Loch eng ist:** Druckverluste addieren sich. Das
@@ -29,21 +29,24 @@ fertig ausgerichtet für den Druck.
   0,8 Pa auf den Einlauf ins Loch. Ein Stutzen, der ins Gehäuse hineinragt,
   hat einen höheren Einlaufverlust als ein bündig endender. Deshalb steht er
   nur 5 mm tief im Loch.
-- **Stützrippen:** Längsstege von 1,6 mm verbinden Vorder- und Rückwand. Sie
-  laufen in Strömungsrichtung, damit der Kanal nicht eingedrückt wird, wenn
-  der Tisch dagegen drückt. In der Grundeinstellung sitzen so viele Rippen,
-  dass kein freies Feld breiter als 70 mm ist; bei 206 mm Breite sind das
-  zwei. Die Rippen sitzen in allen Teilen an derselben Stelle. In den Muffen
-  fehlen sie, damit die Zunge hineinpasst. Sie enden dort, wo die schräge Wand
-  der Verjüngung sie erreicht. Den Querschnitt, den die Rippen wegnehmen,
-  gleicht die automatische Breite aus.
+- **Wände und Rippen:** Fast das ganze Filament steckt in den Wänden, nicht in
+  den Rippen. Die Wände sind deshalb nur 1,2 mm dick, das sind 3 Linien mit
+  einer 0,4-mm-Düse. Dafür sitzen die Rippen enger. Eine Wand zwischen zwei
+  Rippen biegt sich mit Feldbreite⁴ / Wandstärke³ durch. Die automatische
+  Rippenzahl hält die Felder so schmal, dass die Wand etwa so steif ist wie
+  2,4 mm auf 70 mm Feld: bei 1,2 mm Wand höchstens 42 mm, also 4 Rippen bei
+  184 mm Breite. Die Rippen sind so dick wie die Wand und laufen in
+  Strömungsrichtung. Sie enden 15,5 mm vor jedem Stoß und dort, wo die
+  schräge Wand der Verjüngung sie erreicht. Den Querschnitt, den sie
+  wegnehmen, gleicht die automatische Breite aus. Bei 600 mm Lochhöhe sind
+  es zusammen rund 400 cm³ (≈ 510 g PETG). Mit 2,4 mm Wand waren es 700 cm³.
 - **Verjüngung:** Ist der Kanal breiter als das Loch, wird er nach der ersten
-  Muffe über dem Unterteil allmählich schmaler, über Zwischenstück(e) und
+  Stoß über dem Unterteil allmählich schmaler, über Zwischenstück(e) und
   Oberteil hinweg bis kurz vor den Bogen. Die Steigung beginnt und endet sanft,
   dazwischen ist sie gerade. An den Stößen zwischen liegenden Teilen pausiert
-  die Verjüngung für die Länge von Muffe und Steckverbinder, damit diese gerade
-  bleiben. Jeder Steckverbinder hat deshalb die Breite seines Stoßes. Bei
-  600 mm Lochhöhe ist die Verjüngung 538 mm lang, an der steilsten Stelle 18°.
+  die Verjüngung für die Länge des Steckverbinders, damit dieser gerade
+  bleibt. Jeder Steckverbinder hat deshalb die Breite seines Stoßes. Bei
+  600 mm Lochhöhe ist die Verjüngung gut 50 cm lang, an der steilsten Stelle 16°.
   Sie geht nur zu einer Seite, damit die Bettseite beim liegenden Druck gerade
   bleibt. Die schräge Wand wird liegend über die Kanaltiefe (rund 2 cm)
   zwischen Vorder- und Rückwand überbrückt.
@@ -52,18 +55,19 @@ fertig ausgerichtet für den Druck.
   einer Smoothstep-Kurve überblendet). Die Rückseite läuft dabei auf die
   Wand zu. Die Länge des Übergangs wird so lange erhöht, bis keine
   Dreiecksfläche mehr als 42° gegen die Senkrechte überhängt.
-- **Steckverbindungen:** Die Steckverbindungen sind überlappend gestoßen.
-  Zunge und Muffe haben je die halbe Wandstärke abzüglich des Spiels, so
-  bleiben Kanal innen und außen bündig. Am Muffengrund sitzt eine 45°-Fase,
-  damit auch liegend gedruckte Muffen ohne Stützen gehen. Liegende Teile
-  haben keine Zungen, weil eine Zunge dort frei über dem Bett hinge. Darum
-  gibt es den Steckverbinder.
+- **Stöße:** Alle Teile enden stumpf. In jedem Stoß steckt innen ein
+  Steckverbinder: 30 mm lang, außen 0,3 mm kleiner als der Kanal innen, mit
+  Rippen an denselben Stellen wie die Teile. Seine Rippen stoßen an die
+  Rippenenden der Teile und halten ihn so mittig. Früher waren die Stöße
+  überlappend: Zunge und Muffe hatten je die halbe Wandstärke. Das zwang zu
+  dicken Wänden. Der Steckverbinder engt den Kanal auf 3 cm Länge um 2 × 1,5 mm
+  ein, das kostet praktisch nichts.
 - **Aufteilung:** Die Länge der flachen Strecke reicht von 10 mm unter der
   Tischplatte bis zur Oberkante des Lochs. Sie wird auf die Teile verteilt:
   Das Unterteil bekommt, was in die Bauhöhe passt. Den Rest teilen sich das
   Oberteil und so wenige Zwischenstücke wie möglich, jeweils bis zur
   Bettdiagonale. Mit 270 mm Bauraum (Snapmaker U1) und 60 cm bis zum Loch
-  sind das drei Kanalteile plus ein Steckverbinder. Zwei Teile reichen erst,
+  sind das drei Kanalteile plus zwei Steckverbinder. Zwei Teile reichen erst,
   wenn das Loch höchstens etwa 35 cm über dem Tisch sitzt.
 
 ## Prüfung

@@ -94,7 +94,7 @@ li{margin:4px 0}
       <div class="row"><label for="widthMode">Kanalbreite</label>
         <select id="widthMode"><option value="rohr">Querschnitt wie das Rohr</option><option value="loch">so breit wie das Loch</option><option value="eigen">eigene Breite</option></select></div>
       <div class="row"><label for="ribs">Stützrippen innen<span class="hint">Längsstege, damit der Kanal nicht eingedrückt wird</span></label>
-        <select id="ribs"><option value="auto">automatisch (alle ≤ 7 cm)</option><option value="0">keine</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div>
+        <select id="ribs"><option value="auto">automatisch</option><option value="0">keine</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></div>
       <div class="row" id="widthRow"><label for="width">Breite außen</label><input type="number" id="width" min="20" max="400" step="1"><span class="unit">mm</span></div>
       <div class="row"><label for="desk">Tischplatte samt Zarge<span class="hint">so weit unter der Oberkante muss der Kanal noch flach sein</span></label><input type="number" id="desk" min="10" max="200" step="1"><span class="unit">mm</span></div>
     </section>
@@ -115,8 +115,8 @@ li{margin:4px 0}
       <div class="row"><label for="bed">Bauraum (Würfel)<span class="hint">Snapmaker U1: 270 mm</span></label><input type="number" id="bed" min="150" max="500" step="1"><span class="unit">mm</span></div>
       <details>
         <summary>Feinheiten</summary>
-        <div class="row"><label for="t">Wandstärke</label><input type="number" id="t" min="1.6" max="4" step="0.1"><span class="unit">mm</span></div>
-        <div class="row"><label for="clr">Spiel der Steckverbindungen<span class="hint">größer = lockerer</span></label><input type="number" id="clr" min="0" max="1" step="0.05"><span class="unit">mm</span></div>
+        <div class="row"><label for="t">Wandstärke<span class="hint">1,2 mm = 3 Linien mit 0,4-mm-Düse; dünner lässt mehr Rippen setzen</span></label><input type="number" id="t" min="0.8" max="4" step="0.1"><span class="unit">mm</span></div>
+        <div class="row"><label for="clr">Spiel der Steckverbinder<span class="hint">größer = lockerer</span></label><input type="number" id="clr" min="0" max="1" step="0.05"><span class="unit">mm</span></div>
         <div class="row"><label for="collar">Länge des runden Anschlusses</label><input type="number" id="collar" min="20" max="80" step="1"><span class="unit">mm</span></div>
         <div class="row"><button id="reset">Auf Ausgangswerte</button></div>
       </details>
@@ -162,8 +162,8 @@ li{margin:4px 0}
         <li><b>Material:</b> PETG oder ASA. PLA wird in warmer Abluft eines geschlossenen Gehäuses weich.</li>
         <li><b>Ausrichtung:</b> Die STL-Dateien liegen schon so, wie sie gedruckt werden. Das Unterteil steht mit dem runden Anschluss auf dem Bett. Zwischenstück und Oberteil liegen auf der Seitenwand und sind, wo nötig, um 45° gedreht, damit sie diagonal aufs Bett passen. In Orca also nicht drehen und nicht automatisch anordnen.</li>
         <li><b>Keine Stützen.</b> Der Übergang am Unterteil hängt höchstens etwa 41° über. Bei den liegenden Teilen werden die obere Seitenwand, die Stützrippen und die schräge Wand der Verjüngung zwischen Vorder- und Rückwand überbrückt, also nur über die Kanaltiefe von etwa 2 cm. Brückeneinstellungen im Slicer eingeschaltet lassen.</li>
-        <li><b>Wände voll drucken:</b> Bei 0,4-mm-Düse so viele Wandlinien einstellen, dass die Wand ohne Füllung voll wird (bei 2,4 mm sind das 5–6). Schichthöhe 0,2 mm.</li>
-        <li><b>Zusammenstecken:</b> Unterteil → Zwischenstück → Steckverbinder → Oberteil. Die Stöße außen mit Alu-Klebeband abdichten, dann zieht der Kanal keine Nebenluft.</li>
+        <li><b>Wände:</b> 1,2 mm sind bei 0,4-mm-Düse genau 3 Wandlinien; in Orca „Wandschleifen“ auf 3 stellen, dann bleibt keine Füllung übrig. Schichthöhe 0,2 mm.</li>
+        <li><b>Zusammenstecken:</b> Die Steckverbinder kommen innen in die Stöße, zur Hälfte in jedes Teil. Ihre Rippen stoßen an die Rippen der Teile, das hält sie mittig. Reihenfolge von unten: Unterteil, Steckverbinder 1, Zwischenstück, Steckverbinder 2, Oberteil. Die Stöße außen mit Alu-Klebeband abdichten, dann zieht der Kanal keine Nebenluft.</li>
         <li><b>An die Wand:</b> Die Rückseite ist durchgehend flach. Ein paar Streifen doppelseitiges Montageband halten den Kanal. Den Rest tragen Rohr und Gehäuseloch.</li>
         <li><b>Rohr ablängen:</b> Das HT-Rohr endet dort, wo die Kennzahlen „Rohrende“ angeben. Bei „Muffe“ wird das abgesägte Rohr 4 cm in das Unterteil geschoben. Bei „Spitzende“ steckt das Unterteil in der Muffe eines Rohrs oder Bogens.</li>
       </ol>
@@ -291,7 +291,7 @@ li{margin:4px 0}
     const rows = [
       ['Kanal außen', `${fmt(P.W)} × ${fmt(P.D)} mm`],
       ['Querschnitt innen', `${fmt(a.duct / 100, 1)} cm² (Rohr ${fmt(a.pipe / 100, 1)} cm², Stutzen ${fmt(a.snout / 100, 1)} cm²)`],
-      ['Stützrippen', P.nR ? `${P.nR} × 1,6 mm, freie Felder ${fmt(P.ribGap - 1.6)} mm` : 'keine'],
+      ['Stützrippen', P.nR ? `${P.nR} × ${fmt(P.t, 1)} mm, freie Felder ${fmt(P.ribGap - P.t)} mm` : 'keine'],
       ...(P.Lta ? [['Verjüngung oben', `${fmt(P.Lta)} mm lang, steilste Stelle ${fmt(P.taperDeg)}°`]] : []),
       ['Abstand Tisch–Wand', `mindestens ${fmt(P.D + 1)} mm`],
       ['Rohrende', `${fmt(-P.pipeTop)} mm unter der Tischoberkante`],
