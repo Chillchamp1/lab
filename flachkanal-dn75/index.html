@@ -174,6 +174,7 @@ li{margin:4px 0}
   </section>
 </main>
 
+<script src="drei/three.min.js"></script>
 <script src="core.js"></script>
 <script>
 (() => {
@@ -347,21 +348,19 @@ li{margin:4px 0}
   });
 
   /* ---------- 3D ---------- */
-  const v3 = { T: null, theta: -1.05, phi: 1.2, dist: 1500, ctx: false, xray: true, explode: false };
+  // mode: 'gl' (three.js/WebGL) oder '2d' (einfache Vorschau ohne WebGL)
+  const v3 = { T: null, mode: null, why: '', theta: -1.05, phi: 1.2, dist: 1500, ctx: false, xray: true, explode: false };
+  // three.js kommt fest eingebunden aus drei/; fehlt es, wird einmal das CDN versucht
   let threeP = null;
-  // three.js liegt im Projektordner (drei/); das CDN ist nur Rückfall
-  const THREE_SRC = ['drei/three.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'];
-  const loadScript = src => new Promise((res, rej) => {
+  const loadThree = () => threeP || (threeP = window.THREE ? Promise.resolve(window.THREE) : new Promise((res, rej) => {
     const s = document.createElement('script');
-    s.src = src;
-    s.onload = () => (window.THREE ? res(window.THREE) : rej(new Error(src)));
-    s.onerror = () => { s.remove(); rej(new Error(src)); };
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+    s.onload = () => (window.THREE ? res(window.THREE) : rej(new Error('three.js')));
+    s.onerror = () => { s.remove(); rej(new Error('three.js')); };
     document.head.appendChild(s);
-  });
-  const loadThree = () => threeP || (threeP = THREE_SRC.reduce((p, src) => p.catch(() => loadScript(src)), Promise.reject())
-    .catch(e => { threeP = null; throw e; }));
-  {
-    const cv = $('#v3'), ptrs = new Map(), clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+  }));
+  function bindView(cv) {
+    const ptrs = new Map(), clamp = (x, a, b) => Math.max(a, Math.min(b, x));
     let pinch = 0;
     cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]); });
     cv.addEventListener('pointermove', e => {
@@ -377,6 +376,9 @@ li{margin:4px 0}
     });
     ['pointerup', 'pointercancel'].forEach(ev => cv.addEventListener(ev, e => { ptrs.delete(e.pointerId); pinch = 0; }));
     cv.addEventListener('wheel', e => { e.preventDefault(); v3.dist = clamp(v3.dist * Math.exp(e.deltaY * 0.001), 300, 5000); render3D(); }, { passive: false });
+  }
+  bindView($('#v3'));
+  {
     document.querySelectorAll('[data-v]').forEach(b => b.addEventListener('click', () => {
       if (b.dataset.v === 'front') { v3.theta = -1.05; v3.phi = 1.2; v3.dist = 1500; } else { v3.theta = 0; v3.phi = Math.PI / 2; v3.dist = 1500; }
       render3D();
@@ -398,6 +400,12 @@ li{margin:4px 0}
   }
 
   function rebuild3D() {
+    if (plan) v3.center = [0, 30, (plan.untenBottom + plan.zt) / 2];
+    if (v3.mode === '2d') {
+      // grobe Fassung derselben Teile (gleiche Lage), damit das Zeichnen ohne WebGL flüssig bleibt
+      if (plan && v3.coarseFor !== plan) { v3.coarse = Core.plan(plan.p, { coarse: true, H: plan.H }); v3.coarseFor = plan; }
+      return;
+    }
     const T = v3.T, P = plan; if (!T || !P) return;
     const { THREE, group } = T, p = P.p;
     group.children.forEach(o => { o.geometry && o.geometry.dispose(); o.material && o.material.dispose(); });
@@ -447,6 +455,7 @@ li{margin:4px 0}
   }
 
   function render3D() {
+    if (v3.mode === '2d') return render2D();
     const T = v3.T; if (!T) return;
     const cv = $('#v3'), W = cv.clientWidth || 400;
     T.r.setPixelRatio(window.devicePixelRatio || 1); T.r.setSize(W, W, false);
@@ -457,15 +466,73 @@ li{margin:4px 0}
     T.r.render(T.scene, T.cam);
   }
 
+  /* Einfache Vorschau ohne WebGL: Dreiecke perspektivisch projiziert, von
+     hinten nach vorn gemalt (Maleralgorithmus), Hülle durchscheinend. */
+  let raf2 = 0;
+  function render2D() { if (!raf2) raf2 = requestAnimationFrame(() => { raf2 = 0; draw2D(); }); }
+  function draw2D() {
+    const P = v3.coarse, cv = $('#v3'), W = cv.clientWidth || 400, dpr = window.devicePixelRatio || 1;
+    const px = Math.round(W * dpr); if (cv.width !== px) cv.width = cv.height = px;
+    const g = cv.getContext('2d'); if (!g) return;
+    g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, W);
+    if (!P) return;
+    const [cx, cy, cz] = v3.center, { theta, phi, dist } = v3;
+    const ex = cx + dist * Math.sin(phi) * Math.cos(theta), ey = cy - dist * Math.sin(phi) * Math.sin(theta), ez = cz + dist * Math.cos(phi);
+    let fx = cx - ex, fy = cy - ey, fz = cz - ez; const fl = Math.hypot(fx, fy, fz); fx /= fl; fy /= fl; fz /= fl;
+    let rx = fy, ry = -fx; const rl = Math.hypot(rx, ry) || 1; rx /= rl; ry /= rl;          // rechts = Blick × oben
+    const ux = ry * fz, uy = -rx * fz, uz = rx * fy - ry * fx;                               // oben = rechts × Blick
+    const foc = (W / 2) / Math.tan(15 * Math.PI / 180);
+    const Lx = 0.35, Ly = 0.55, Lz = 0.76;
+    const rgb = h => { const n = parseInt(h.replace('#', '').slice(0, 6), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+    const items = [];
+    const exp = v3.explode ? 40 : 0, ducts = P.parts.filter(x => x.id !== 'koppler');
+    for (const pt of P.parts) {
+      const below = ducts.filter(x => x.at < pt.at - 1e-6).length;
+      const dz = pt.at + exp * (pt.id === 'koppler' ? below - 0.5 : below);
+      const base = rgb(partColor(pt));
+      for (const [m, k, a] of [[pt.shell, 1, v3.xray ? 0.2 : 1], [pt.ribMesh, 0.55, 1]]) {
+        for (let i = 0; i < m.length; i += 9) {
+          const s = [], q = [];
+          let zsum = 0, ok = true;
+          for (let v = 0; v < 3; v++) {
+            const X = m[i + 3 * v] - ex, Y = m[i + 3 * v + 1] - ey, Z = m[i + 3 * v + 2] + dz - ez;
+            const d = X * fx + Y * fy + Z * fz; if (d < 1) { ok = false; break; }
+            s.push(W / 2 + (X * rx + Y * ry) / d * foc, W / 2 - (X * ux + Y * uy + Z * uz) / d * foc); zsum += d;
+          }
+          if (!ok) continue;
+          const ax = m[i + 3] - m[i], ay = m[i + 4] - m[i + 1], az = m[i + 5] - m[i + 2];
+          const bx = m[i + 6] - m[i], by = m[i + 7] - m[i + 1], bz = m[i + 8] - m[i + 2];
+          const nx = ay * bz - az * by, ny = az * bx - ax * bz, nz = ax * by - ay * bx, nl = Math.hypot(nx, ny, nz) || 1;
+          const sh = (0.5 + 0.5 * Math.abs((nx * Lx + ny * Ly + nz * Lz) / nl)) * k;
+          items.push([zsum, s, `rgba(${base.map(c => Math.round(c * sh)).join(',')},${a})`, a]);
+        }
+      }
+    }
+    items.sort((p, q) => q[0] - p[0]);
+    g.lineJoin = 'round';
+    for (const [, s, c, a] of items) {
+      g.beginPath(); g.moveTo(s[0], s[1]); g.lineTo(s[2], s[3]); g.lineTo(s[4], s[5]); g.closePath();
+      g.fillStyle = c; g.fill();
+      if (a === 1) { g.strokeStyle = c; g.lineWidth = 0.6; g.stroke(); }   // Nähte zwischen Dreiecken schließen
+    }
+  }
+
   async function update3D() {
     const w = $('#v3warn');
-    try {
-      if (!v3.T) init3D(await loadThree());
-      rebuild3D(); render3D(); w.classList.add('hidden');
-    } catch (e) {
-      w.textContent = 'Die 3D-Vorschau konnte three.js nicht laden (drei/three.min.js). Seitenansicht und STL-Dateien gehen trotzdem.';
-      w.classList.remove('hidden');
+    if (v3.mode !== '2d' && !v3.T) {
+      let THREE = null;
+      try { THREE = await loadThree(); } catch (e) { v3.why = 'sich three.js nicht laden ließ'; }
+      if (THREE) try { init3D(THREE); } catch (e) { v3.why = 'dein Browser hier kein WebGL bereitstellt'; }
+      if (v3.T) v3.mode = 'gl';
+      else {
+        v3.mode = '2d';
+        let cv = $('#v3');
+        if (!cv.getContext('2d')) { const nc = cv.cloneNode(false); cv.replaceWith(nc); bindView(nc); }
+        w.className = 'muted'; w.style.fontSize = '12px'; w.style.marginTop = '8px';
+        w.textContent = `Einfache Vorschau, weil ${v3.why}. Drehen, Zoomen und die Knöpfe gehen trotzdem; die Umgebung wird hier nicht gezeichnet.`;
+      }
     }
+    rebuild3D(); render3D();
   }
 
   /* ---------- Ablauf ---------- */

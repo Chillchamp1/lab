@@ -98,6 +98,9 @@ sie beim Schneiden.
   nachgemessen.
 
 Die 3D-Vorschau nutzt three.js r128 (npm `three@0.128.0`, MIT, Lizenz in
-`drei/LICENSE`). Die Datei liegt im Projektordner unter `drei/three.min.js`;
-cdnjs dient nur als Rückfall. Seitenansicht und STL-Export gehen auch ohne
-three.js.
+`drei/LICENSE`), fest eingebunden aus `drei/three.min.js`; nur wenn die Datei
+fehlt, wird cdnjs versucht. Stellt der Browser kein WebGL bereit, zeichnet die
+Seite eine einfache Vorschau selbst: Dieselben Teile werden in grober
+Auflösung (40 statt 240 Punkte je Querschnitt) perspektivisch projiziert und
+von hinten nach vorn gemalt, die Hülle durchscheinend, die Stege kräftig.
+Seitenansicht und STL-Export brauchen weder three.js noch WebGL.
