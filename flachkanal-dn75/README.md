@@ -29,10 +29,23 @@ fertig ausgerichtet für den Druck.
   0,8 Pa auf den Einlauf ins Loch. Ein Stutzen, der ins Gehäuse hineinragt,
   hat einen höheren Einlaufverlust als ein bündig endender. Deshalb steht er
   nur 5 mm tief im Loch.
+- **Stützrippen:** Längsstege von 1,6 mm verbinden Vorder- und Rückwand. Sie
+  laufen in Strömungsrichtung, damit der Kanal nicht eingedrückt wird, wenn
+  der Tisch dagegen drückt. In der Grundeinstellung sitzen so viele Rippen,
+  dass kein freies Feld breiter als 70 mm ist; bei 206 mm Breite sind das
+  zwei. Die Rippen sitzen in allen Teilen an derselben Stelle. In den Muffen
+  fehlen sie, damit die Zunge hineinpasst. Im Oberteil enden sie dort, wo die
+  schräge Wand sie erreicht. Den Querschnitt, den die Rippen wegnehmen,
+  gleicht die automatische Breite aus.
 - **Verjüngung im Oberteil:** Ist der Kanal breiter als das Loch, verjüngt
-  sich das Oberteil nach der Muffe auf die Lochbreite. Das geschieht nur
-  einseitig, damit die Bettseite beim liegenden Druck gerade bleibt. Die
-  schräge Wand steht etwa 49° steil.
+  sich das Oberteil auf die Lochbreite. Die Verjüngung reicht über die ganze
+  Länge von der Muffe bis kurz vor den Bogen. Die Steigung beginnt und endet
+  sanft (Trapezprofil), dazwischen ist sie gerade. Das Oberteil bekommt dafür
+  in der Aufteilung so viel Länge wie möglich: Bei 600 mm Lochhöhe sind das
+  267 mm Verjüngung, an der steilsten Stelle 34°. Die Verjüngung geht nur zu
+  einer Seite, damit die Bettseite beim liegenden Druck gerade bleibt. Die
+  schräge Wand wird liegend über die Kanaltiefe (rund 2 cm) zwischen Vorder-
+  und Rückwand überbrückt und braucht deshalb keine 45°.
 - **Übergang:** Der Übergang führt den Kreis über eine Schar abgerundeter
   Rechtecke in den Flachkanal über (Breite, Tiefe und Eckradius werden mit
   einer Smoothstep-Kurve überblendet). Die Rückseite läuft dabei auf die
@@ -56,14 +69,16 @@ fertig ausgerichtet für den Druck.
 
 `core.js` läuft auch in Node. Für jedes Teil wurde geprüft, dass jede Kante
 genau zweimal gegenläufig vorkommt (geschlossener Körper), dass das Volumen
-positiv ist und dass das Teil in den Bauraum passt. Das Oberteil besteht aus
-zwei sich überlappenden geschlossenen Körpern, der Muffe und dem Kasten. Der
-Slicer vereinigt sie beim Schneiden.
+positiv ist und dass das Teil in den Bauraum passt. Rippen, Kasten und Rohrstück
+sind je eigene geschlossene Körper, die sich überlappen. Der Slicer vereinigt
+sie beim Schneiden.
 
 ## Noch nicht geprüft
 
 - Der Druck selbst. Offen ist, wie fest die Steckverbindungen mit 0,3 mm
   Spiel sitzen und wie sauber die liegenden Teile die obere Wand überbrücken.
+- Wie fest die Rippen den Kanal tatsächlich machen. Gerechnet ist das nicht,
+  nur so angelegt, dass die freien Felder höchstens 7 cm breit sind.
 - Die Maße der HT-Muffe. Die Werte für das Spitzende sind Normmaße, nicht
   nachgemessen.
 
