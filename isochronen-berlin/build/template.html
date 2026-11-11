@@ -152,7 +152,7 @@ input[type=range]{width:100%;accent-color:var(--accent);margin:0}
 const I18N={
 de:{
   loc:'de-DE',docTitle:'Isochronen ÖPNV + Rad',title:'ÖPNV + Rad',
-  sub:f=>'Ab '+f+', Di 8 Uhr. Jede Straße erscheint, sobald man sie mit Bahn und Rad erreicht.',
+  sub:f=>'Ab '+f+', Di, schnellste Verbindung mit Abfahrt 7–9 Uhr. Jede Straße erscheint, sobald man sie mit Bahn und Rad erreicht.',
   origins:{hbf:['Hauptbahnhof','Berlin Hauptbahnhof']},
   views:{near:'Umgebung',berlin:'Berlin',all:'Gesamtgebiet'},
   lStart:'Start',lView:'Ausschnitt',autocam:'Kamera folgt',autocamT:'Zoom folgt der Ausbreitung inkl. der äußersten Züge',
@@ -174,8 +174,8 @@ de:{
   legZones:'Innenstadt (dicht bebaut) · Stadtgrenze · Speckgürtel (Berliner Umland)',
   dataSum:'Daten & Annahmen',
   notes:[
-    'Start: Berlin Hauptbahnhof, Di 10.11.2026, Abfahrt 8:00/8:05/8:10/8:15 (Median der vier Abfahrten inkl. Wartezeit), Rechenhorizont 5 Stunden, Zeitauflösung 10 Sekunden.',
-    'Fahrplan-Routing (Connection Scan) auf VBB-GTFS (vbb.de, CC BY 4.0) plus bundesweitem Fern- und Regionalverkehr von gtfs.de (fv_free, rv_free; Daten DELFI e. V.), Fahrplanfenster 7:55–13:20. EuroCity-Züge nach Polen und Tschechien sind enthalten, deren Inlandsverkehr dort noch nicht.',
+    'Start: Berlin Hauptbahnhof, Di 10.11.2026. Für jeden Ort zählt die schnellste Verbindung mit Abfahrt zwischen 7:00 und 9:00 Uhr (alle 5 Minuten geprüft; Reisezeit ab der jeweiligen Abfahrt) – so hängt das Bild nicht vom Zufall der Startminute ab. Rechenhorizont 5 Stunden, Zeitauflösung 10 Sekunden.',
+    'Fahrplan-Routing (Connection Scan) auf VBB-GTFS (vbb.de, CC BY 4.0) plus bundesweitem Fern- und Regionalverkehr von gtfs.de (fv_free, rv_free; Daten DELFI e. V.), polnischem Bahnverkehr (GTFS von Mikołaj Kuranowski, mkuran.pl; Daten PKP PLK u. a.) und tschechischem Bahnverkehr (CZPTT-Fahrplan der Správa železnic, GTFS vom Projekt Oběhy, obehy.cz); Fahrplanfenster 6:55–14:30. Durchgehende Züge über die Grenze sind verknüpft.',
     'Rad mitnehmen, wo die Fahrplandaten es je Fahrt erlauben (S-Bahn, U-Bahn, Regionalbahn, Fähre, die meisten Trams; Busse nie); Fernverkehr als radtauglich angenommen (in der Praxis reservierungspflichtig). Wege im Bahnhof aus den GTFS-Pathways: Rad schieben ~1 m/s, Treppe tragen, Aufzug +60 s; Umstieg mit Aus- und Wiedereinsteigen.',
     'Mit dem Rad (Trekking, ca. 17 km/h, befestigte Feld- und Waldwege erlaubt) zum ersten Bahnhof und nach dem Aussteigen weiter – die erste Stunde aus Valhalla (OSM), darüber auf dem eigenen OSM-Netz, an den Valhalla-Zeiten kalibriert. An entfernten Bahnhöfen Wohnstraßen, Verbindungsstraßen, Radwege und befestigte Wege aus OpenStreetMap.',
     'Farbe „Verkehrsmittel“: das höchstrangige Verkehrsmittel der ganzen Reise (Fernzug > Regionalbahn > S-Bahn > U-Bahn > Tram > Fähre > Bus); grau = direkt mit dem Rad ab Start, wenn die Bahn nicht mindestens 1 min bzw. 10 % schneller ist.',
@@ -189,7 +189,7 @@ de:{
 },
 en:{
   loc:'en-GB',docTitle:'Isochrones: transit + bike',title:'Transit + bike',
-  sub:f=>'From '+f+', Tue 8 am. Every street appears as soon as you can reach it by train and bike.',
+  sub:f=>'From '+f+', Tue, fastest connection departing 7–9 am. Every street appears as soon as you can reach it by train and bike.',
   origins:{hbf:['Berlin Central Station','Berlin Central Station']},
   views:{near:'Nearby',berlin:'Berlin',all:'Whole area'},
   lStart:'Start',lView:'View',autocam:'Follow camera',autocamT:'Zoom follows the spread, including the outermost trains',
@@ -211,8 +211,8 @@ en:{
   legZones:'Inner city (densely built-up) · city limits · commuter belt (Berliner Umland)',
   dataSum:'Data & assumptions',
   notes:[
-    'Start: Berlin Central Station (Hauptbahnhof), Tue 10 Nov 2026, departures 8:00/8:05/8:10/8:15 (median of the four including waiting time), horizon 5 hours, time resolution 10 seconds.',
-    'Timetable routing (Connection Scan) on the VBB GTFS (vbb.de, CC BY 4.0) plus Germany-wide long-distance and regional rail from gtfs.de (fv_free, rv_free; data DELFI e. V.), timetable window 7:55–13:20. EuroCity trains into Poland and Czechia are included, their domestic trains there not yet.',
+    'Start: Berlin Central Station (Hauptbahnhof), Tue 10 Nov 2026. Every place uses the fastest connection departing between 7:00 and 9:00 am (checked every 5 minutes; travel time counted from that departure), so the picture does not depend on the luck of the start minute. Horizon 5 hours, time resolution 10 seconds.',
+    'Timetable routing (Connection Scan) on the VBB GTFS (vbb.de, CC BY 4.0) plus Germany-wide long-distance and regional rail from gtfs.de (fv_free, rv_free; data DELFI e. V.), Polish rail (GTFS by Mikołaj Kuranowski, mkuran.pl; data PKP PLK and others) and Czech rail (CZPTT timetable of Správa železnic, GTFS by the Oběhy project, obehy.cz); timetable window 6:55–14:30. Trains running through across the border are linked.',
     'Bikes are carried where the timetable data allows it per trip (S-Bahn, U-Bahn, regional trains, ferries, most trams; never buses); long-distance trains are assumed to take bikes (reservation required in practice). Paths inside stations from GTFS pathways: pushing the bike ~1 m/s, carrying it on stairs, +60 s for lifts; transfers include getting off and on again.',
     'By bike (trekking, about 17 km/h, paved field and forest tracks allowed) to the first station and onwards after getting off – the first hour from Valhalla (OSM), beyond that on our own OSM network calibrated to the Valhalla times. Around distant stations residential streets, connecting roads, cycle paths and paved tracks from OpenStreetMap.',
     'Colour \"Mode\": the highest-ranked mode of the whole journey (long-distance > regional > S-Bahn > U-Bahn > tram > ferry > bus); grey = directly by bike from the start when the train is not at least 1 min or 10 % faster.',
@@ -814,11 +814,13 @@ function camPadding(){
   const W=mr.width,H=mr.height;   // Panels berücksichtigen, aber immer genug Kartenfläche lassen
   return {paddingTopLeft:[Math.min(W*.4,side?ir.right+24:24),Math.min(H*.4,side?36:ir.bottom+20)],paddingBottomRight:[Math.min(W*.1,56),Math.min(H*.2,mr.bottom-tr.top+24)]};
 }
+let CAM_ZMIN=7;   // ~750 m/px: Radgebiete um die Bahnhöfe bleiben als Flächen erkennbar
 function camTarget(){
   const [x0,x1,y0,y1]=layer.extent(T),pad=Math.max(x1-x0,y1-y0)*.04+2e-5;
   const b=L.latLngBounds(unmerc(x0-pad,y1+pad),unmerc(x1+pad,y0-pad));
   const r=map._getBoundsCenterZoom(b,{...camPadding(),maxZoom:14.25});
-  r.zoom=Math.max(map.getMinZoom(),Math.min(14.25,r.zoom));
+  // nicht weiter herauszoomen als CAM_ZMIN (Radwege sollen erkennbar bleiben; ganz äußere Ausläufer dürfen aus dem Bild)
+  r.zoom=Math.max(map.getMinZoom(),CAM_ZMIN,Math.min(14.25,r.zoom));
   return r;
 }
 function camJump(){ if(!layer)return; const t=camTarget(); {const m=merc(t.center.lng,t.center.lat);camF={x:m[0],y:m[1],z:t.zoom};} camProg=true; map.setView(t.center,t.zoom,{animate:false}); camProg=false; }
@@ -983,7 +985,7 @@ const ScaleBar=L.Control.extend({options:{position:'bottomleft'},
 const scaleBar=new ScaleBar().addTo(map);
 map.attributionControl.setPrefix(false);
 // minZoom unter dem Karten-Minimum 6,75: GridLayer._pruneTiles entfernt sonst bei Kartenzoom < 7 sämtliche Kacheln (Karte leer)
-new OfflineTiles({minZoom:5.5,maxZoom:16,tileSize:256,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · <a href="https://openfreemap.org">OpenFreeMap</a> · VBB · DELFI'}).addTo(map);
+new OfflineTiles({minZoom:5.5,maxZoom:16,tileSize:256,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · <a href="https://openfreemap.org">OpenFreeMap</a> · VBB · DELFI · mkuran.pl · Oběhy'}).addTo(map);
 // Ortsnamen über allem außer Markern (600), Popups und Bedienelementen
 {const lp=map.createPane('labels');lp.style.zIndex=450;lp.style.pointerEvents='none';}
 new OfflineLabels({pane:'labels',minZoom:5.5,maxZoom:16,maxNativeZoom:14,tileSize:256}).addTo(map);
@@ -1093,7 +1095,7 @@ function tick(now){
 playBtn.onclick=()=>setPlaying(!playing);
 document.getElementById('t').addEventListener('input',e=>{setPlaying(false);T=+e.target.value;renderAll();});
 document.addEventListener('keydown',e=>{if(e.code==='Space'&&e.target.tagName!=='INPUT'){e.preventDefault();setPlaying(!playing);}});
-window.ISO={get T(){return T},set T(v){T=v;renderAll();},map,setPlaying,camJump,camStep,setLang,get layer(){return layer},speedTarget:()=>speedTarget(),setAuto};
+window.ISO={setCamZmin:z=>{CAM_ZMIN=z;},get T(){return T},set T(v){T=v;renderAll();},map,setPlaying,camJump,camStep,setLang,get layer(){return layer},speedTarget:()=>speedTarget(),setAuto};
 
 // --- Sprache umschalten: nur Texte neu setzen – Animation, Ansicht, Startort und Kamera bleiben unberührt ---
 function setLang(l){

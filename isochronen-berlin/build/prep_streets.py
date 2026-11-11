@@ -1,12 +1,15 @@
 """Compact street inputs for the 5-h extension: far5_segs.npz, overpass_major5.json (+ major5_segs.npz).
 Inputs in data/: overpass_far5.json (osm_extract.py), osm_major_de.json (osm_extract.py), overpass_major.json
 (major roads of the core area), far_missing.json + far_missing5.json (reach_areas.py).
-Usage: python -I -u prep_streets.py [--far-only] [--segs]   (peak_mb() uses the Windows API)"""
+Usage: python -I -u prep_streets.py [--far-only] [--segs]   (peak_mb() uses the Windows API)
+       python -I -u prep_streets.py --plcz   -> far6_segs.npz only, same format and classes, from overpass_far6.json and
+                                             far_missing6.json (osm_extract_plcz.py, reach_areas_plcz.py)"""
 import os, re, sys, json, time, ctypes, ctypes.wintypes as wt
 import numpy as np
 from scipy.spatial import cKDTree
 
 DD = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+R6 = "6" if "--plcz" in sys.argv else "5"          # 5 = German 5-h ring, 6 = Poland/Czechia extension
 T0 = time.time()
 
 
@@ -89,8 +92,8 @@ def way_segments(off):
     return i, way
 
 
-# ---------------- 1. far5 ----------------
-els, hdr, lat, lon, off = parse(os.path.join(DD, "overpass_far5.json"))
+# ---------------- 1. far5 (or far6 with --plcz) ----------------
+els, hdr, lat, lon, off = parse(os.path.join(DD, f"overpass_far{R6}.json"))
 del els
 X, Y = to_e5(lon), to_e5(lat)
 del lat, lon
@@ -131,8 +134,8 @@ cs = c[o].astype(np.int64)
 gmin = np.full(len(u), 99); np.minimum.at(gmin, grp, cs)
 conflicts = int((gmin != cs[first]).sum())
 F = dict(lon1=x1[u], lat1=y1[u], lon2=x2[u], lat2=y2[u], cls=c[u])
-# nearest station-area centre (far_missing5.json index) to the segment midpoint, great-circle km
-ctr = np.array([[a[0], a[1]] for a in json.load(open(os.path.join(DD, "far_missing5.json"), encoding="utf-8"))])
+# nearest station-area centre (far_missing5.json / far_missing6.json index) to the segment midpoint, great-circle km
+ctr = np.array([[a[0], a[1]] for a in json.load(open(os.path.join(DD, f"far_missing{R6}.json"), encoding="utf-8"))])
 def _xyz(la_, lo_):
     la_, lo_ = np.radians(la_), np.radians(lo_)
     return np.c_[np.cos(la_) * np.cos(lo_), np.cos(la_) * np.sin(lo_), np.sin(la_)]
@@ -144,12 +147,12 @@ F["dkm"] = (2 * 6371.0088 * np.arcsin(np.minimum(dch / 2, 1.0))).astype(np.float
 del mlon, mlat, dch, nn
 log("near/dkm: dkm min %.3f median %.2f p99 %.2f max %.2f" % (F["dkm"].min(), np.median(F["dkm"]),
     np.percentile(F["dkm"], 99), F["dkm"].max()), "share <=13 km %.4f" % (F["dkm"] <= 13).mean())
-np.savez_compressed(os.path.join(DD, "far5_segs.npz"), **F)
-log("far5: segments raw (non-zero)", nraw, "unique", len(u), "duplicate groups with differing classes", conflicts,
+np.savez_compressed(os.path.join(DD, f"far{R6}_segs.npz"), **F)
+log(f"far{R6}: segments raw (non-zero)", nraw, "unique", len(u), "duplicate groups with differing classes", conflicts,
     "per class", {int(k): int(v) for k, v in zip(*np.unique(F["cls"], return_counts=True))},
-    "file MB", round(os.path.getsize(os.path.join(DD, "far5_segs.npz")) / 2**20, 1))
+    "file MB", round(os.path.getsize(os.path.join(DD, f"far{R6}_segs.npz")) / 2**20, 1))
 del x1, y1, x2, y2, c, p1, p2, o, p1s, p2s, first, grp, cs, F, u, keep, sw
-if "--far-only" in sys.argv:
+if "--far-only" in sys.argv or R6 == "6":
     log("done (far only); peak working set %.0f MB, peak commit %.0f MB" % peak_mb())
     sys.exit(0)
 

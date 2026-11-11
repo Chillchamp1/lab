@@ -1,11 +1,14 @@
-"""ÖPNV + Rad bis 5 h mit eigenem Fahrplan-Routing (Connection Scan auf VBB + gtfs.de fv/rv),
+"""ÖPNV + Rad bis 5 h mit eigenem Fahrplan-Routing (Connection Scan auf VBB + gtfs.de fv/rv + Bahn Polen/Tschechien),
 Stationszeiten aus GTFS-pathways, Weiterweg mit dem Rad auf dem Straßennetz, Verkehrsmittel je Straße + gefahrene Linien.
+Schnellste Verbindung im Abfahrtsfenster 07:00-09:00 (alle 5 min, 25 Abfahrten): je Bahnsteig die beste Reisezeit ab
+der jeweiligen Abfahrt samt zugehöriger Fahrt, danach ein Rad-Dijkstra ab diesen Bestzeiten.
 
 Aufruf: python -I -u build_isochronen.py hbf 52.5251 13.3694 gtfs/vbb
   (Name, Breite, Länge, Ordner des VBB-GTFS für shapes.txt) -> data/hbf/streets_raw.json
-Eingaben in data/: gtfs_prep.pkl, hbf/exp_*.json (fetch_valhalla.py), overpass_major5.json und far5_segs.npz
-(prep_streets.py), overpass_far.json, overpass_far3.json, overpass_minor_main.json (siehe README).
-Laufzeit ca. 40 min, Spitzenbedarf ca. 16 GB RAM."""
+Eingaben in data/: gtfs_prep_plcz.pkl (gtfs_prep_plcz.py), hbf/exp_*.json (fetch_valhalla.py), far5_segs.npz
+(prep_streets.py), far6_segs.npz (prep_streets.py --plcz; ohne die Datei nur Deutschland), overpass_major6.json
+(osm_extract_plcz.py), overpass_far.json, overpass_far3.json, overpass_minor_main.json (siehe README).
+Laufzeit ca. 35 min, viel Arbeitsspeicher (siehe README)."""
 import sys, os, json, pickle, math, base64
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from isolib import *          # noqa
@@ -18,7 +21,7 @@ from scipy.spatial import cKDTree
 from scipy.sparse import coo_matrix
 from scipy.sparse.csgraph import dijkstra
 
-DEPS = [8 * 3600 + k * 300 for k in range(4)]          # 08:00, 08:05, 08:10, 08:15
+DEPS = [7 * 3600 + k * 300 for k in range(25)]         # 07:00 … 09:00 alle 5 min: schnellste Verbindung im Fenster
 MCODE = {"S": 1, "U": 2, "T": 3, "R": 4, "B": 5, "F": 6, "L": 7}
 TOL["biketransit"] = 4.0
 
@@ -30,7 +33,7 @@ bike90, Gb, Tb, fb = extend("bike", E["bike"], list(net) + list(E["bike"]), 17 /
 
 SPD = {"motorway": 120, "trunk": 95, "primary": 80, "secondary": 70, "tertiary": 60}
 car_segs, fast_pts, slow_segs, major_segs = [], [], [], []
-for w in json.load(open(os.path.join(DD, "overpass_major5.json"), encoding="utf-8"))["elements"]:
+for w in json.load(open(os.path.join(DD, "overpass_major6.json"), encoding="utf-8"))["elements"]:
     hw = w["tags"].get("highway", ""); base = hw.replace("_link", "")
     v = SPD.get(base, 50) if not hw.endswith("_link") else 45
     ms = w["tags"].get("maxspeed", "")
@@ -69,7 +72,21 @@ for w in (json.load(open(os.path.join(DD, "overpass_far.json"), encoding="utf-8"
         s_ = (round(p["lon"], 5), round(p["lat"], 5), round(q["lon"], 5), round(q["lat"], 5))
         if s_[:2] != s_[2:]:
             far_segs.add(s_)
-_F5 = np.load(os.path.join(DD, "far5_segs.npz"))
+_F5 = dict(np.load(os.path.join(DD, "far5_segs.npz")))
+if os.path.exists(os.path.join(DD, "far6_segs.npz")):
+    _F6 = np.load(os.path.join(DD, "far6_segs.npz"))
+    _KS = ("lon1", "lat1", "lon2", "lat2", "cls", "dkm")
+    _m5 = np.isin(_F5["cls"], [1, 2, 3, 4]) & (_F5["dkm"] <= 8.0)
+    _m6 = np.isin(_F6["cls"], [1, 2, 3, 4]) & (_F6["dkm"] <= 8.0)
+    _F5 = {_k: np.concatenate([_F5[_k][_m5], _F6[_k][_m6]]) for _k in _KS}; del _F6, _m5, _m6
+    # far5 und far6 überlappen (gleiche Wege an Bahnhöfen in beiden Kreisen): Doppelte entfernen (richtungsunabhängig)
+    _a = np.c_[_F5["lon1"], _F5["lat1"]].astype(np.int64); _b = np.c_[_F5["lon2"], _F5["lat2"]].astype(np.int64)
+    _sw = (_a[:, 0] > _b[:, 0]) | ((_a[:, 0] == _b[:, 0]) & (_a[:, 1] > _b[:, 1]))
+    _a[_sw], _b[_sw] = _b[_sw].copy(), _a[_sw].copy()
+    _key = np.ascontiguousarray(np.c_[_a, _b]).view(np.dtype((np.void, 32))).ravel(); del _a, _b, _sw
+    _, _ui = np.unique(_key, return_index=True); del _key
+    _ui.sort(); log("far5+far6 Wege", len(_F5["cls"]), "ohne Doppelte", len(_ui))
+    _F5 = {_k: _F5[_k][_ui] for _k in _KS}; del _ui
 # 5-h-Ring: Wohnstraßen, Verbindungsstraßen, Radwege, befestigte Feld-/Waldwege im 8-km-Umkreis der Bahnhöfe
 _k5 = np.isin(_F5["cls"], [1, 2, 3, 4]) & (_F5["dkm"] <= 8.0)
 _f5 = np.round(np.c_[_F5["lon1"], _F5["lat1"], _F5["lon2"], _F5["lat2"]][_k5].astype(np.float64) / 1e5, 5)
@@ -83,7 +100,7 @@ isolib.TMAX = TMAX
 log("Netz Rad", len(NBk.nodes), "Knoten")
 
 # ---------- Fahrplan ----------
-P = pickle.load(open(os.path.join(DD, "gtfs_prep.pkl"), "rb"))
+P = pickle.load(open(os.path.join(DD, "gtfs_prep_plcz.pkl"), "rb"))
 con, S, fp = P["con"], P["stops"], P["fp"]
 sid = {s: i for i, s in enumerate(S.stop_id)}
 CA = np.array([sid[s] for s in con.a]); CB = np.array([sid[s] for s in con.b])
@@ -241,72 +258,45 @@ def direct_times(G, direct):
 
 
 def run_profile(profile, G, f, direct, speed, tmax):
+    """Schnellste Verbindung im Abfahrtsfenster: je Bahnsteig die kürzeste Reisezeit (Ankunft auf der Straße minus
+    Abfahrt) über alle Abfahrten in DEPS, samt zugehöriger Fahrt; danach EIN Radweg-Dijkstra ab diesen Bestzeiten."""
     snapinfo = (*snap(G, None, speed, 300)[:2], speed)
-    KE = np.c_[G.nodes[G.u], G.nodes[G.v]]               # Kanten als Array (statt Millionen Tupel)
+    KE = np.c_[G.nodes[G.u], G.nodes[G.v]]
     dirt = direct_times(G, direct)
-    times, modes, hops, stl = [], [], [], []
+    best = np.full(nS, np.inf); bjm = np.zeros(nS, np.int64); bdep = np.zeros(nS, np.int64); legs = [None] * nS
     for dep in DEPS:
         street, plat_ptr, tau_ptr, plat = csa(profile, dep)
-        jm = np.zeros(len(street), np.int64)
-        for b_ in np.where(np.isfinite(street) & (street - dep <= tmax))[0]:
-            jm[b_] = journey_mode(b_, plat_ptr, tau_ptr)
-        JM[0] = jm
-        dist, mode, src = egress(G, f, snapinfo, street, plat_ptr, dep, tmax)
-        tu, tv = dist[G.u], dist[G.v]
-        te = np.minimum(np.maximum(tu, tv), np.minimum(tu, tv) + G.len / G.mps * f)
-        me = np.where(tu <= tv, mode[G.u], mode[G.v])
-        t = np.minimum(dirt, te); m = np.where(dirt <= te + np.where(np.isfinite(dirt), np.maximum(60.0, 0.1 * dirt), 0.0), 0, me)
-        times.append(t); modes.append(m)
-        # Bahnhöfe, ab denen das Rad tatsächlich Straßen gewinnt
-        se = np.where(tu <= tv, src[G.u], src[G.v])
-        win = (dirt > te) & (te <= tmax) & (se >= 0)
-        cnt = np.bincount(se[win], minlength=len(street))
-        stl.append({int(s_): (float(street[s_] - dep), int(cnt[s_]), int(jm[s_])) for s_ in np.where(cnt >= 3)[0]})
-        # gefahrene Abschnitte
-        used = {}
-        for b in np.where(np.isfinite(street) & (street - dep <= tmax))[0]:
-            for c0, c1 in legs_to(b, plat_ptr, tau_ptr):
-                for ci in trip_conns[CT[c0]]:
-                    if c0 <= ci <= c1 and ci not in used:
-                        used[ci] = (CTD[ci] - dep, CTA[ci] - dep)
-        hops.append(used)
-        log(profile, "Abfahrt", dep // 3600, ":", dep % 3600 // 60, "Halte", int(np.isfinite(street).sum()),
-            "Fahrtabschnitte", len(used), "Kanten<=max", int((t <= tmax).sum()))
-    T4 = np.vstack(times); M4 = np.vstack(modes)
-    o = np.argsort(T4, axis=0)
-    lo = np.take_along_axis(T4, o[1:2], 0)[0]; hi = np.take_along_axis(T4, o[2:3], 0)[0]
-    tmed = (lo + hi) / 2
-    mmed = np.take_along_axis(M4, o[1:2], 0)[0]
-    sel = np.where(tmed <= tmax)[0]
-    edges = (KE[sel], tmed[sel].astype(np.float64))
-    emode = mmed[sel].astype(np.int8)
-    del KE, T4, M4, o, lo, hi, times, modes
-    # Linien: je Halt-Paar die zweitfrüheste Ankunft über die 4 Abfahrten
-    hp = {}
-    for used in hops:
-        best = {}
-        for ci, (t0, t1) in used.items():
-            k = (CA[ci], CB[ci], CM[ci])
-            if k not in best or t1 < best[k][1]:
-                best[k] = (t0, t1, SHAPE[ci])
-        for k, v in best.items():
-            hp.setdefault(k, []).append(v)
-    hopl = []
-    for (a, b, m), vs in hp.items():
-        if len(vs) < 2:
-            continue
-        vs.sort(key=lambda v: v[1]); t0, t1, shp_ = vs[1]
-        hopl.append((int(a), int(b), int(t0), int(t1), int(m), shp_))
-    agg = {}
-    for sts in stl:
-        for s_, v in sts.items():
-            agg.setdefault(s_, []).append(v)
-    cand = []
-    for s_, v in agg.items():
-        if len(v) < 2:
-            continue
-        v.sort(); cand.append((v[1][0], s_, int(np.median([c for _, c, _ in v])), v[1][2]))
-    cand.sort()
+        rel = street - dep
+        imp = np.where(np.isfinite(street) & (rel <= tmax) & (rel < best))[0]
+        for b_ in imp:
+            best[b_] = rel[b_]; bdep[b_] = dep
+            bjm[b_] = journey_mode(b_, plat_ptr, tau_ptr)
+            legs[b_] = [ci for c0, c1 in legs_to(b_, plat_ptr, tau_ptr) for ci in trip_conns[CT[c0]] if c0 <= ci <= c1]
+        log(profile, "Abfahrt", dep // 3600, ":", dep % 3600 // 60, "Halte erreicht", int(np.isfinite(street).sum()), "verbessert", len(imp))
+    JM[0] = bjm
+    dist, mode, src = egress(G, f, snapinfo, best, None, 0, tmax)
+    tu, tv = dist[G.u], dist[G.v]
+    te = np.minimum(np.maximum(tu, tv), np.minimum(tu, tv) + G.len / G.mps * f)
+    me = np.where(tu <= tv, mode[G.u], mode[G.v])
+    t = np.minimum(dirt, te); m = np.where(dirt <= te + np.where(np.isfinite(dirt), np.maximum(60.0, 0.1 * dirt), 0.0), 0, me)
+    sel = np.where(t <= tmax)[0]
+    edges = (KE[sel], t[sel].astype(np.float64))
+    emode = m[sel].astype(np.int8)
+    # Bahnhöfe, ab denen das Rad tatsächlich Straßen gewinnt
+    se = np.where(tu <= tv, src[G.u], src[G.v])
+    win = (dirt > te) & (te <= tmax) & (se >= 0)
+    cnt = np.bincount(se[win], minlength=nS)
+    del KE, tu, tv, te, me, t, m, dist, mode, src
+    # gefahrene Abschnitte: aus der jeweils schnellsten Fahrt, Zeiten relativ zu deren Abfahrt; je Halt-Paar die früheste
+    best_h = {}
+    for b_ in np.where(np.isfinite(best))[0]:
+        dep = bdep[b_]
+        for ci in legs[b_] or ():
+            k = (CA[ci], CB[ci], CM[ci]); t0, t1 = CTD[ci] - dep, CTA[ci] - dep
+            if k not in best_h or t1 < best_h[k][1]:
+                best_h[k] = (t0, t1, SHAPE[ci])
+    hopl = [(int(a), int(b), int(t0), int(t1), int(m_), shp_) for (a, b, m_), (t0, t1, shp_) in best_h.items() if t1 <= tmax]
+    cand = sorted((float(best[s_]), int(s_), int(cnt[s_]), int(bjm[s_])) for s_ in np.where(cnt >= 3)[0])
     keep_st = []                                  # Bahnsteige derselben Station (250 m) zusammenfassen
     for t_, s_, c_, m_ in cand:
         x_, y_ = S.x.values[s_], S.y.values[s_]
@@ -319,7 +309,7 @@ def run_profile(profile, G, f, direct, speed, tmax):
     log(profile, "Ausstiegs-Bahnhöfe", len(keep_st))
     log(profile, "Kanten", len(emode), "Linienabschnitte", len(hopl),
         "Anteil je Verkehrsmittel", np.bincount(emode.astype(np.int64), minlength=8).tolist())
-    return edges, emode, hopl, (street, plat)
+    return edges, emode, hopl, (best, None)
 
 
 STATIONS = {}
@@ -334,7 +324,7 @@ pickle.dump({"S": S[["stop_id", "stop_name", "stop_lat", "stop_lon", "mode", "eg
 # ---------- Hauptnetz-Klassifikation (nur für die Darstellung) ----------
 def densify_tree(segs, step=8.0):
     a = np.asarray(segs, dtype=float)[:, :4]
-    box = (a[:, 1] > LAT - 4.5) & (a[:, 1] < LAT + 3.0) & (a[:, 0] > LON - 6.5) & (a[:, 0] < LON + 4.5)
+    box = (a[:, 1] > LAT - 4.5) & (a[:, 1] < LAT + 3.0) & (a[:, 0] > LON - 6.5) & (a[:, 0] < LON + 6.5)
     a = a[box]
     x1, y1 = fwd.transform(a[:, 0], a[:, 1]); x2, y2 = fwd.transform(a[:, 2], a[:, 3])
     n = np.maximum(1, np.ceil(np.hypot(x2 - x1, y2 - y1) / step)).astype(int)

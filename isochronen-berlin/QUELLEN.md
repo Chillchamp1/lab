@@ -10,6 +10,8 @@ steht in [build/README.md](build/README.md).
 | OpenFreeMap | gerenderte Grundkarte | Daten ODbL, Bedingungen laut openfreemap.org |
 | VBB-Fahrplan (GTFS) | Fahrplan Berlin-Brandenburg, Linienverläufe, Stationswege | CC BY 4.0 |
 | gtfs.de `fv_free`, `rv_free` | Fern- und Regionalverkehr Deutschland | Daten von DELFI e. V., Lizenz laut gtfs.de |
+| GTFS „polish_trains“ (mkuran.pl) | Bahnfahrplan Polen | Daten von PKP PLK und den Betreibern; Lizenz/Bedingungen laut Herausgeber |
+| CZPTT-GTFS vom Projekt Oběhy | Bahnfahrplan Tschechien | Daten der Správa železnic; Lizenz/Bedingungen laut Herausgeber |
 | Valhalla auf dem FOSSGIS-Server | Radzeiten der ersten 60 Minuten | Dienst: Nutzungsbedingungen des Betreibers; Daten ODbL |
 | LEP HR 2019 | Abgrenzung des Berliner Umlands | amtlicher Plan, nur die Gemeindeliste übernommen |
 | Leaflet | Kartenanzeige in der Seite | BSD-2-Clause |
@@ -20,19 +22,29 @@ steht in [build/README.md](build/README.md).
 **© OpenStreetMap-Mitwirkende**, Open Database License (ODbL) 1.0 —
 <https://www.openstreetmap.org/copyright>.
 
-Geladen als Länder-Extrakte von **Geofabrik**
-(<https://download.geofabrik.de/europe/germany/>): die sechzehn Bundesländer,
-dazu die polnischen Woiwodschaften Westpommern (`zachodniopomorskie`) und
-Lebus (`lubuskie`) für die Strecken über die Oder. Jede Datei wird gegen ihre
-MD5-Summe geprüft, verarbeitet und wieder gelöscht; eine ganze
-Deutschland-Datei wird nicht gebraucht. Daraus:
+Geladen als Regions-Extrakte von **Geofabrik**
+(<https://download.geofabrik.de/europe/germany/>,
+<https://download.geofabrik.de/europe/poland/>,
+<https://download.geofabrik.de/europe/czech-republic.html>): die sechzehn
+Bundesländer, die polnischen Woiwodschaften Lebus (`lubuskie`), Westpommern
+(`zachodniopomorskie`), Großpolen (`wielkopolskie`), Niederschlesien
+(`dolnoslaskie`), Kujawien-Pommern (`kujawsko-pomorskie`), Pommern
+(`pomorskie`), Oppeln (`opolskie`), Schlesien (`slaskie`), Łódź (`lodzkie`),
+Kleinpolen (`malopolskie`) und Ermland-Masuren (`warminsko-mazurskie`) sowie
+ganz Tschechien. Jede Datei wird gegen ihre MD5-Summe geprüft, verarbeitet und
+wieder gelöscht; eine ganze Deutschland- oder Polen-Datei wird nicht gebraucht.
+Daraus:
 
 - **Straßen und Wege** für das Rad: Wohnstraßen, Verbindungsstraßen, Radwege,
   Feld- und Waldwege (ohne `tracktype=grade5`), Fuß- und Reitwege nur mit
   Radfreigabe, ohne Privatwege; die großen Straßen (Autobahn bis
-  Kreisstraße) für das Hauptnetz.
+  Kreisstraße) für das Hauptnetz. Um die erreichten Bahnhöfe in Polen und
+  Tschechien und um die neu dazugekommenen in Deutschland stammen die Wege aus
+  den polnischen und tschechischen Extrakten und aus allen Bundesländern, in
+  denen solche Bahnhöfe liegen.
 - **Gleise** (`railway=rail|light_rail|subway|narrow_gauge`) für den
-  Gleisgraphen, auf dem Zugabschnitte ohne Linienverlauf geroutet werden.
+  Gleisgraphen, auf dem Zugabschnitte ohne Linienverlauf geroutet werden — in
+  Deutschland, Polen und Tschechien.
 - **Gebäudeumrisse und Flächennutzung** um Berlin für die Innenstadt-Zone.
 - **Verwaltungsgrenzen** für Berlin, die Umland-Gemeinden und Brandenburg, und
   die Grenzrelation Deutschlands (Relation 51477) für die Außengrenze.
@@ -71,9 +83,21 @@ Verkehrsverbünde:
 Beide nennen in ihrer `attributions.txt` DELFI e. V. und GTFS.de als
 Herausgeber. Lizenz laut gtfs.de (<https://gtfs.de/>).
 
+**Polen:** GTFS „polish_trains“ von **Mikołaj Kuranowski**
+(<https://mkuran.pl/gtfs/>), <https://mkuran.pl/gtfs/polish_trains.zip>. Die
+Daten stammen laut `attributions.txt` des Feeds von **PKP Polskie Linie
+Kolejowe S.A.** (offene Daten,
+<https://www.plk-sa.pl/klienci-i-kontrahenci/api-otwarte-dane>), von **Koleje
+Mazowieckie** und weiteren Betreibern. Lizenz/Bedingungen laut Herausgeber.
+
+**Tschechien:** GTFS aus dem **CZPTT**-Fahrplan der **Správa železnic**,
+erstellt vom Projekt **Oběhy** mit JrUtil (<https://obehy.cz>).
+Lizenz/Bedingungen laut Herausgeber.
+
 Gerechnet wird mit dem **Soll-Fahrplan vom Dienstag, 10. November 2026**,
-Fenster 07:55–13:20. Fahrten, die in zwei Feeds stehen, sind nur einmal
-gezählt (siehe README).
+Fenster 06:55–14:30. Fahrten, die in zwei Feeds stehen, sind nur einmal
+gezählt; Züge über die Grenze sind über die Feeds hinweg verknüpft (siehe
+README).
 
 ## 4. Routing
 
@@ -85,7 +109,8 @@ Auto, Fuß und ein schnelles Radprofil nur als Gerüst des Straßennetzes. Alles
 draußen, der Weiterweg nach jedem Ausstieg — ist eine eigene Rechnung auf dem
 OSM-Netz, kalibriert an diesen Valhalla-Zeiten.
 
-Der Fahrplan läuft über einen eigenen **Connection Scan** — Julian Dibbelt,
+Der Fahrplan läuft über einen eigenen **Connection Scan**, je Abfahrt im
+Fenster 07:00–09:00 einer — Julian Dibbelt,
 Thomas Pajor, Ben Strasser, Dorothea Wagner: *Intriguingly Simple and Fast
 Transit Routing*, SEA 2013.
 
