@@ -1,0 +1,1125 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Isochronen ÖPNV + Rad</title>
+<style>/*LEAFLET_CSS*/</style>
+<style>
+:root{
+  --bg:#0b0c0e; --glass:rgba(14,16,19,.86); --ink:#eceae6; --muted:#8b9099; --line:rgba(255,255,255,.09);
+  --accent:#ffb340; --chip:rgba(255,255,255,.05); --chip-on:#eceae6; --chip-on-ink:#0b0c0e;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color-scheme:dark}
+#map{position:absolute;inset:0;background:var(--bg)}
+.leaflet-container{font:inherit;background:var(--bg)}
+.leaflet-control-attribution{background:rgba(11,12,14,.7)!important;color:#6f757e;font-size:10.5px}
+.leaflet-control-attribution a{color:#99a0aa}
+.leaflet-bar{border:none!important;box-shadow:none!important}
+.leaflet-bar a{background:var(--glass);color:#ddd;border-color:var(--line)!important;backdrop-filter:blur(8px)}
+.leaflet-bar a:hover{background:#22262c}
+.leaflet-top.leaflet-right{margin-top:4px}
+.start-pin{width:12px;height:12px;border-radius:50%;background:#fff;border:2.5px solid #0b0c0e;box-shadow:0 0 0 1.5px #fff}
+.streets{position:absolute;left:0;top:0;pointer-events:none}
+.zone-lab span{display:inline-block;transform:translateX(-50%);font-size:13.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;white-space:nowrap;-webkit-text-stroke:3px rgba(5,6,8,.92);paint-order:stroke fill;
+  color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.9)}
+.zone-lab.zl-umland span{color:#ffd27a}.zone-lab.zl-berlin span{color:#e6e9ee}
+.zone-lab span{opacity:.85}
+.zone-el{transition:opacity 1.6s ease}
+.zone-off{opacity:0!important}
+.zone-lab.zl-country span{font-size:15px;letter-spacing:.18em;color:#dfe8ff}
+@keyframes zpulse{0%{stroke-opacity:.6}8%{stroke-opacity:1;stroke-width:5px}60%{stroke-opacity:1;stroke-width:4.5px}100%{}}
+@keyframes zcas{0%{}8%{stroke-opacity:.75;stroke-width:9px}60%{stroke-opacity:.7;stroke-width:8.5px}100%{}}
+@keyframes zlab{0%{opacity:.85;transform:translateX(-50%) scale(1)}8%{opacity:1;transform:translateX(-50%) scale(1.7)}60%{opacity:1;transform:translateX(-50%) scale(1.6)}100%{opacity:.85;transform:translateX(-50%) scale(1)}}
+.zone-path.pulse{animation:zpulse 6s ease-in-out}
+.zone-cas.pulse{animation:zcas 6s ease-in-out}
+.zone-lab.pulse span{animation:zlab 6s ease-in-out;transform-origin:50% 100%}
+.scalebar{margin:0 0 26px 14px!important;pointer-events:none;font-variant-numeric:tabular-nums;background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:12px 18px 14px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.scalebar .lab{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;color:var(--muted);margin-bottom:8px;white-space:nowrap;gap:12px}
+.scalebar .lab b{font-size:26px;color:var(--ink);font-weight:700;letter-spacing:-.01em}
+.scalebar .bar{height:12px;display:flex;border:2px solid #eceae6;border-radius:3px;overflow:hidden;transition:width .12s linear}
+.scalebar .bar i{flex:1;background:#eceae6}
+.scalebar .bar i:nth-child(2n){background:transparent}
+@media (max-width:760px){ .scalebar{margin:0 0 100px 8px!important;padding:6px 10px 8px} .scalebar .lab b{font-size:15px} }
+.fog-on .leaflet-tile-pane{filter:brightness(2.5) saturate(1.25)}
+
+.panel{position:absolute;z-index:1000;background:var(--glass);border:1px solid var(--line);border-radius:14px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#info{left:14px;top:14px;width:330px;max-width:calc(100% - 28px);padding:14px 16px 12px}
+h1{font-size:16px;margin:0;font-weight:650;letter-spacing:-.01em}
+.head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.lang{display:flex;flex:none;margin-top:-1px}
+.lang button.chip{padding:2px 7px;font-size:11px;line-height:1.3;border-radius:0}
+.lang button.chip:first-child{border-radius:999px 0 0 999px;border-right:none}
+.lang button.chip:last-child{border-radius:0 999px 999px 0}
+.sub{color:var(--muted);font-size:12.5px;margin-top:2px}
+.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px}
+.lbl{color:var(--muted);font-size:11.5px;width:100%;margin-bottom:-2px}
+button.chip{border:1px solid var(--line);background:var(--chip);color:var(--ink);padding:5px 10px;border-radius:999px;font:inherit;font-size:12.5px;cursor:pointer}
+button.chip:hover{border-color:rgba(255,255,255,.25)}
+button.chip[aria-pressed="true"]{background:var(--chip-on);color:var(--chip-on-ink);border-color:var(--chip-on)}
+.stat{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+.stat .big{font-size:22px;font-weight:650;letter-spacing:-.01em}
+.stat .big small{font-size:12.5px;color:var(--muted);font-weight:500}
+.now{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11.5px;color:var(--muted)}
+.now .bar{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.07);display:flex;overflow:hidden}
+.now .bar i{display:block;height:100%;transition:width .25s linear}
+.now .txt{margin-top:3px;font-size:11.5px;color:var(--muted);min-height:16px}
+.legend{margin-top:10px;display:grid;gap:5px;font-size:11.5px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:8px}
+.legend svg{flex:none}
+.legend .sw{display:inline-block;width:14px;height:4px;border-radius:2px;flex:none}
+details{margin-top:10px;font-size:11.5px;color:var(--muted)}
+details summary{cursor:pointer;color:#b9bdc4}
+details ul{margin:6px 0 0;padding-left:16px;max-height:34vh;overflow:auto}
+details li{margin-bottom:4px}
+
+#timebar{left:50%;transform:translateX(-50%);bottom:26px;width:min(860px,calc(100% - 28px));padding:10px 16px 8px;display:flex;align-items:center;gap:14px}
+button.play{width:40px;height:40px;border-radius:50%;border:none;background:var(--accent);color:#111;cursor:pointer;display:grid;place-items:center;flex:none}
+button.play svg{width:16px;height:16px;fill:currentColor}
+.timeval{font-variant-numeric:tabular-nums;font-weight:650;font-size:20px;min-width:108px;white-space:nowrap}
+.timeval small{font-size:12px;color:var(--muted);font-weight:500}
+.track{flex:1;min-width:0}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0}
+.ramp{height:5px;border-radius:3px;margin-top:3px}
+.ticks{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:2px}
+.speed{display:flex;flex-direction:column;gap:4px}
+.speed button.chip{padding:2px 8px;font-size:11px}
+@media (max-width:760px){
+  #info{left:8px;right:8px;top:8px;width:auto;padding:10px 12px}
+  #info .hide-s,#info .sub,#info .lbl{display:none}
+  #info h1{font-size:14.5px}
+  #info .row{flex-wrap:nowrap;overflow-x:auto;margin-top:7px;scrollbar-width:none}
+  #info .row::-webkit-scrollbar{display:none}
+  button.chip{padding:4px 9px;font-size:12px;white-space:nowrap}
+  .stat{margin-top:8px;padding-top:7px}
+  .stat .big{font-size:18px}
+  #timebar{bottom:22px;width:calc(100% - 16px);gap:10px;padding:8px 10px}
+  .timeval{font-size:16px;min-width:84px}
+  .speed{display:none}
+}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class="panel" id="info">
+  <div class="head">
+    <h1 id="title">ÖPNV + Rad</h1>
+    <span class="lang" role="group" aria-label="Sprache / Language"><button class="chip" data-lang="de" title="Deutsch" lang="de">DE</button><button class="chip" data-lang="en" title="English" lang="en">EN</button></span>
+  </div>
+  <div class="sub" id="subtitle"></div>
+  <span id="origins" hidden></span>
+  <div class="row"><span class="lbl" data-i18n="lView">Ausschnitt</span><button class="chip" id="autocam" aria-pressed="true" data-i18n="autocam" data-i18n-title="autocamT">Kamera folgt</button><span id="views" style="display:contents"></span></div>
+  <div class="row"><span class="lbl" data-i18n="lColor">Straßenfarbe</span>
+    <button class="chip" data-c="time" data-i18n="cTime">Reisezeit</button>
+    <button class="chip" data-c="mode" aria-pressed="true" data-i18n="cMode">Verkehrsmittel</button>
+  </div>
+  <div class="row"><span class="lbl" data-i18n="lZones">Stadtzonen</span>
+    <button class="chip" id="zones" aria-pressed="true" data-i18n="zones" data-i18n-title="zonesT">Innenstadt · Speckgürtel</button>
+  </div>
+  <div class="stat">
+    <div class="big" id="area">0 <small>km² erreicht</small></div>
+    <div class="now" data-i18n-title="nowT"><span data-i18n="nowL">neu erreicht</span><span class="bar" id="bar"></span></div>
+    <div class="now txt" id="nowtxt">–</div>
+  </div>
+  <div class="legend hide-s" id="legend"></div>
+  <details class="hide-s">
+    <summary data-i18n="dataSum">Daten &amp; Annahmen</summary>
+    <ul id="notes"></ul>
+  </details>
+</div>
+<div class="panel" id="timebar">
+  <button class="play" id="play" aria-label="Abspielen"><svg viewBox="0 0 16 16" id="playicon"><path d="M4 2l10 6-10 6z"/></svg></button>
+  <div class="timeval" id="tval">0 <small>min</small></div>
+  <div class="track">
+    <input type="range" id="t" min="0" max="180" step="any" value="0" aria-label="Reisezeit in Minuten" data-i18n-aria="slider">
+    <div class="ramp" id="ramp" style="opacity:.25"></div>
+    <div class="ticks" id="ticks"></div>
+  </div>
+  <div class="speed">
+    <button class="chip" data-speed="40" data-i18n="spFast">schnell</button>
+    <button class="chip" data-speed="75" aria-pressed="true" data-i18n="spNorm">normal</button>
+    <button class="chip" data-speed="140" data-i18n="spSlow">langsam</button>
+  </div>
+</div>
+<script>/*LEAFLET_JS*/</script>
+<script>const STREETS=/*STREETS_JSON*/;const TILES=/*TILES_JSON*/;const LTILES=/*LTILES_JSON*/;const ZONES=/*ZONES_JSON*/;const BORDERS=/*BORDERS_JSON*/;</script>
+<script>
+(function(){
+// --- Sprachen: statische Texte über data-i18n (Text), data-i18n-title (Tooltip), data-i18n-aria (aria-label);
+//     dynamische Texte holen sich ihre Wörter per tr() beim Zeichnen ---
+const I18N={
+de:{
+  loc:'de-DE',docTitle:'Isochronen ÖPNV + Rad',title:'ÖPNV + Rad',
+  sub:f=>'Ab '+f+', Di 8 Uhr. Jede Straße erscheint, sobald man sie mit Bahn und Rad erreicht.',
+  origins:{hbf:['Hauptbahnhof','Berlin Hauptbahnhof']},
+  views:{near:'Umgebung',berlin:'Berlin',all:'Gesamtgebiet'},
+  lStart:'Start',lView:'Ausschnitt',autocam:'Kamera folgt',autocamT:'Zoom folgt der Ausbreitung inkl. der äußersten Züge',
+  lColor:'Straßenfarbe',cTime:'Reisezeit',cMode:'Verkehrsmittel',
+  lCov:'Erschlossene Fläche',covOff:'Aus',covEdge:'Umriss',covArea:'Fläche',covNight:'🌙 Nacht → ☀️ Tag',
+  covOffT:'Erschlossene Fläche nicht hervorheben – nur die Straßen',
+  covEdgeT:'Feine Linie um die bereits erschlossene Fläche; die Karte bleibt überall sichtbar. Ringsum erreichte Flächen ohne Straßen (Flugfeld, See, Park) zählen mit.',
+  covAreaT:'Bereits erschlossene Fläche warm getönt, der Rest der Karte bleibt unverändert',
+  covNightT:'Nacht über der Karte – wo die Räder schon waren (samt ringsum erreichter Flächen), wird es Tag',
+  km2:'km² erreicht',nowL:'neu erreicht',nowT:'Womit die Straßen der letzten Minute erreicht wurden',
+  modes:['Rad ab Start','S-Bahn','U-Bahn','Tram','Regionalbahn','Bus','Fähre','Fernzug'],
+  nowMode:n=>'per Rad ab '+n,legMode:n=>'Rad nach '+n,
+  legHead:'Zug an der Spitze der Ausbreitung (Ring = Verkehrsmittel)',
+  legRing:'Bahnhof blitzt auf: als Erster in der Gegend erreicht, ab hier weiter mit dem Rad',
+  legEdge:'Umriss der bereits erschlossenen Fläche (inkl. umschlossener Flugfelder, Seen, Parks)',
+  legArea:'Getönt: bereits erschlossene Fläche (inkl. umschlossener Flugfelder, Seen, Parks)',
+  lZones:'Stadtzonen',zones:'Innenstadt · Speckgürtel',zonesT:'Umrisse von Innenstadt, Stadtgrenze und Speckgürtel ein-/ausblenden',
+  zInner:'Innenstadt',zBerlin:'Stadtgrenze',zUmland:'Speckgürtel',zBrandenburg:'Brandenburg',
+  legZones:'Innenstadt (dicht bebaut) · Stadtgrenze · Speckgürtel (Berliner Umland)',
+  dataSum:'Daten & Annahmen',
+  notes:[
+    'Start: Berlin Hauptbahnhof, Di 10.11.2026, Abfahrt 8:00/8:05/8:10/8:15 (Median der vier Abfahrten inkl. Wartezeit), Rechenhorizont 5 Stunden, Zeitauflösung 10 Sekunden.',
+    'Fahrplan-Routing (Connection Scan) auf VBB-GTFS (vbb.de, CC BY 4.0) plus bundesweitem Fern- und Regionalverkehr von gtfs.de (fv_free, rv_free; Daten DELFI e. V.), Fahrplanfenster 7:55–13:20. EuroCity-Züge nach Polen und Tschechien sind enthalten, deren Inlandsverkehr dort noch nicht.',
+    'Rad mitnehmen, wo die Fahrplandaten es je Fahrt erlauben (S-Bahn, U-Bahn, Regionalbahn, Fähre, die meisten Trams; Busse nie); Fernverkehr als radtauglich angenommen (in der Praxis reservierungspflichtig). Wege im Bahnhof aus den GTFS-Pathways: Rad schieben ~1 m/s, Treppe tragen, Aufzug +60 s; Umstieg mit Aus- und Wiedereinsteigen.',
+    'Mit dem Rad (Trekking, ca. 17 km/h, befestigte Feld- und Waldwege erlaubt) zum ersten Bahnhof und nach dem Aussteigen weiter – die erste Stunde aus Valhalla (OSM), darüber auf dem eigenen OSM-Netz, an den Valhalla-Zeiten kalibriert. An entfernten Bahnhöfen Wohnstraßen, Verbindungsstraßen, Radwege und befestigte Wege aus OpenStreetMap.',
+    'Farbe „Verkehrsmittel“: das höchstrangige Verkehrsmittel der ganzen Reise (Fernzug > Regionalbahn > S-Bahn > U-Bahn > Tram > Fähre > Bus); grau = direkt mit dem Rad ab Start, wenn die Bahn nicht mindestens 1 min bzw. 10 % schneller ist.',
+    'Leuchtender Punkt: Zug an der Spitze der Ausbreitung; gefahrene Abschnitte entlang der Gleise (GTFS-Shapes, sonst auf dem OSM-Gleisnetz geroutet). Aufblitzende Ringe: Bahnhöfe, die als Erste in ihrer Gegend erreicht werden und ab denen das Rad Straßen gewinnt.',
+    'Erschlossene Fläche (Tönung): 400-m-Zellen mit erreichter Straße, Lücken bis ~800 m geschlossen; umschlossene Lücken bis etwa 8 km² (Flugfelder, Seen, Parks) zählen mit, größere schlecht erreichbare Gebiete bleiben offen. Fläche in km² = 250-m-Zellen mit erreichter Straße.',
+    'Stadtzonen: Innenstadt = zusammenhängend dicht bebaute Stadt (Gebäude bedecken im Umkreis von 350 m mindestens 22 % der Fläche, aus OSM-Gebäudeumrissen; Tiergarten und Tempelhofer Feld eingeschlossen; 104 km²). Speckgürtel = Berliner Umland nach Landesentwicklungsplan Hauptstadtregion (LEP HR 2019, Ziel 1.1): Potsdam und 50 Städte/Gemeinden, 2 888 km². Dazu Stadtgrenze, Landesgrenze Brandenburg und Staatsgrenze (OSM).',
+    'Diese Webfassung ist ausgedünnt: bis 2 h alle Straßen und Wege, 2–3 h Hauptnetz mit Radwegen und befestigten Wegen, ab 3 h Fernstraßen; herausgezoomt werden zusätzlich nur Hauptnetz bzw. Fernstraßen gezeichnet. Die Flächenwerte stammen aus der vollen Rechnung.',
+    'Kartengrundlage: © OpenStreetMap-Mitwirkende (ODbL), aus OpenFreeMap-Vektordaten dunkel gerendert (doppelte Pixeldichte); Ortsnamen als eigene Ebene über den Straßen.'
+  ],
+  pct:' %',slider:'Reisezeit in Minuten',play:'Abspielen',pause:'Pause',spFast:'schnell',spNorm:'normal',spSlow:'langsam'
+},
+en:{
+  loc:'en-GB',docTitle:'Isochrones: transit + bike',title:'Transit + bike',
+  sub:f=>'From '+f+', Tue 8 am. Every street appears as soon as you can reach it by train and bike.',
+  origins:{hbf:['Berlin Central Station','Berlin Central Station']},
+  views:{near:'Nearby',berlin:'Berlin',all:'Whole area'},
+  lStart:'Start',lView:'View',autocam:'Follow camera',autocamT:'Zoom follows the spread, including the outermost trains',
+  lColor:'Street colour',cTime:'Travel time',cMode:'Mode',
+  lCov:'Covered area',covOff:'Off',covEdge:'Outline',covArea:'Area',covNight:'🌙 Night → ☀️ Day',
+  covOffT:'Don’t highlight the covered area – streets only',
+  covEdgeT:'Thin line around the area already covered; the map stays visible everywhere. Street-less areas enclosed by reached ones (airfield, lake, park) are included.',
+  covAreaT:'Area already covered gets a warm tint, the rest of the map stays unchanged',
+  covNightT:'Night over the map – wherever the bikes have already been (including enclosed areas), it turns to day',
+  km2:'km² reached',nowL:'newly reached',nowT:'How the streets of the last minute were reached',
+  modes:['Bike from start','S-Bahn','U-Bahn','Tram','Regional train','Bus','Ferry','Long-distance train'],
+  nowMode:n=>'bike after '+n,legMode:n=>'Bike after '+n,
+  legHead:'Train at the leading edge of the spread (ring = mode)',
+  legRing:'Station flashes: first one reached in its area, continue by bike from here',
+  legEdge:'Outline of the area already covered (incl. enclosed airfields, lakes, parks)',
+  legArea:'Tinted: area already covered (incl. enclosed airfields, lakes, parks)',
+  lZones:'City zones',zones:'Inner city · Commuter belt',zonesT:'Show/hide outlines of inner city, city limits and commuter belt',
+  zInner:'Inner city',zBerlin:'City limits',zUmland:'Commuter belt',zBrandenburg:'Brandenburg',
+  legZones:'Inner city (densely built-up) · city limits · commuter belt (Berliner Umland)',
+  dataSum:'Data & assumptions',
+  notes:[
+    'Start: Berlin Central Station (Hauptbahnhof), Tue 10 Nov 2026, departures 8:00/8:05/8:10/8:15 (median of the four including waiting time), horizon 5 hours, time resolution 10 seconds.',
+    'Timetable routing (Connection Scan) on the VBB GTFS (vbb.de, CC BY 4.0) plus Germany-wide long-distance and regional rail from gtfs.de (fv_free, rv_free; data DELFI e. V.), timetable window 7:55–13:20. EuroCity trains into Poland and Czechia are included, their domestic trains there not yet.',
+    'Bikes are carried where the timetable data allows it per trip (S-Bahn, U-Bahn, regional trains, ferries, most trams; never buses); long-distance trains are assumed to take bikes (reservation required in practice). Paths inside stations from GTFS pathways: pushing the bike ~1 m/s, carrying it on stairs, +60 s for lifts; transfers include getting off and on again.',
+    'By bike (trekking, about 17 km/h, paved field and forest tracks allowed) to the first station and onwards after getting off – the first hour from Valhalla (OSM), beyond that on our own OSM network calibrated to the Valhalla times. Around distant stations residential streets, connecting roads, cycle paths and paved tracks from OpenStreetMap.',
+    'Colour \"Mode\": the highest-ranked mode of the whole journey (long-distance > regional > S-Bahn > U-Bahn > tram > ferry > bus); grey = directly by bike from the start when the train is not at least 1 min or 10 % faster.',
+    'Glowing dot: train at the leading edge of the spread; ridden sections follow the tracks (GTFS shapes, otherwise routed on the OSM rail network). Flashing rings: stations that are the first ones reached in their area and from which the bike wins streets.',
+    'Covered area (tint): 400 m cells with a reached street, gaps up to ~800 m closed; enclosed gaps up to about 8 km² (airfields, lakes, parks) count as covered, larger poorly reachable areas stay open. Area in km² = 250 m cells with a reached street.',
+    'City zones: inner city = contiguous densely built-up city (buildings cover at least 22 % of the area within 350 m, from OSM building footprints; Tiergarten and Tempelhofer Feld included; 104 km²). Commuter belt = \"Berliner Umland\" as defined by the joint state development plan Berlin-Brandenburg (LEP HR 2019, objective 1.1): Potsdam plus 50 towns/municipalities, 2,888 km². Plus city limits, the Brandenburg state border and the national border (OSM).',
+    'This web version is thinned: all streets and paths up to 2 h, main network with cycle paths and paved tracks from 2 to 3 h, major roads beyond 3 h; when zoomed out only the main network or major roads are drawn. Area figures come from the full computation.',
+    'Base map: © OpenStreetMap contributors (ODbL), rendered dark from OpenFreeMap vector data (double pixel density); place names as a separate layer above the streets.'
+  ],
+  pct:'%',slider:'Travel time in minutes',play:'Play',pause:'Pause',spFast:'fast',spNorm:'normal',spSlow:'slow'
+}};
+let LANG=(()=>{let l=null;try{l=localStorage.getItem('iso-lang');}catch(e){}
+  if(l==='de'||l==='en')return l; return 'en';})();   // Standard: Englisch (Deutsch per Umschalter, wird gemerkt)
+const tr=k=>I18N[LANG][k];
+const oName=id=>tr('origins')[id][0],oFull=id=>tr('origins')[id][1];
+const ORIGINS=['hbf'].map(id=>({id,get name(){return oName(id);}}));
+let origin='hbf', O=STREETS.origins[origin], HOME=O.origin;
+const STEP=STREETS.step, AX=Math.round(STREETS.origins.hbf.modes.biketransit.tmax/60), NM=8;   // Achse = Rechenhorizont (3 oder 5 h)
+
+// Verkehrsmittel: 0 direkt mit dem Rad, 1 S, 2 U, 3 Tram, 4 Regionalbahn, 5 Bus, 6 Fähre, 7 Fernzug (Namen je Sprache: I18N.*.modes)
+const VM=['#9ea4ad','#2fb34a','#2f86e6','#ef3b3b','#ff9a1f','#b061e0','#27c6d9','#f2d64b'].map((c,m)=>({c,get n(){return tr('modes')[m];}}));
+
+// Farbrampe Reisezeit (nah = hell/warm, fern = kühl), über 0–180 min gestreckt
+const STOPS=[[0,[255,246,170]],[15,[255,210,63]],[30,[255,150,40]],[45,[255,84,92]],[60,[225,40,150]],[75,[150,70,230]],[90,[70,110,255]]];
+function rgb(t){
+  for(let i=1;i<STOPS.length;i++) if(t<=STOPS[i][0]){
+    const [a,ca]=STOPS[i-1],[b,cb]=STOPS[i],f=(t-a)/(b-a);
+    return ca.map((c,k)=>Math.round(c+(cb[k]-c)*f));
+  }
+  return STOPS[STOPS.length-1][1];
+}
+const color=(t,a=1)=>'rgba('+rgb(t*90/AX).join(',')+','+a+')';
+const NBK=AX*60/STEP;
+// Nebenstraßen etwas zurückgenommen, Hauptnetz voll
+const BC=[0,1,2].map(lv=>[...Array(NBK+1)].map((_,b)=>color((b-0.5)*STEP/60,lv?0.92:0.62)));
+const MC=[0,1,2].map(lv=>VM.map(v=>{const h=v.c.slice(1);return 'rgba('+[0,2,4].map(i=>parseInt(h.substr(i,2),16)).join(',')+','+(lv?0.92:0.62)+')';}));
+document.getElementById('ramp').style.background='linear-gradient(90deg,'+STOPS.map(s=>'rgb('+rgb(s[0]).join(',')+') '+(s[0]/90*100)+'%').join(',')+')';
+(()=>{const tk=document.getElementById('ticks'),st=AX<=180?30:60,n=AX/st;document.getElementById('t').max=AX;
+  for(let i=0;i<=n;i++){const m=i*st,sp=document.createElement('span');sp.textContent=i===0?'0 min':(m%60===0?(m/60)+' h':m+'');tk.appendChild(sp);}})();
+
+const merc=(lon,lat)=>{const s=Math.sin(lat*Math.PI/180);return [(lon+180)/360,0.5-Math.log((1+s)/(1-s))/(4*Math.PI)];};
+function bytes(b64){const bin=atob(b64),n=bin.length,u=new Uint8Array(n);for(let i=0;i<n;i++)u[i]=bin.charCodeAt(i);return u;}
+
+// --- Straßendaten (Varint/Zickzack-Deltas, 1e-5 Grad; Code = Verkehrsmittel | Rangstufe<<3) ---
+function decode(b64,HOME,NB){
+  const u=bytes(b64);let p=0;
+  const raw=()=>{let r=0,s=0,b;do{b=u[p++];r+=(b&127)*2**s;s+=7;}while(b&128);return r;};
+  const rd=()=>{const r=raw();return (r%2)?-(r+1)/2:r/2;};
+  const xs=[],ys=[],lineStart=[0],bucketLine=[0],lmode=[],llev=[],bb=[];
+  const len=new Float64Array((NB+1)*NM);
+  let px=0,py=0;
+  for(let b=1;b<=NB;b++){
+    const nl=rd();
+    for(let l=0;l<nl;l++){
+      const np=rd(),code=raw(),m=code&7;
+      let lx,ly,x0=9,x1=-9,y0=9,y1=-9;
+      for(let k=0;k<np;k++){
+        px+=rd();py+=rd();
+        const [mx,my]=merc(HOME[1]+px*1e-5,HOME[0]+py*1e-5);
+        if(k>0) len[b*NM+m]+=Math.hypot(mx-lx,my-ly);
+        xs.push(mx);ys.push(my);lx=mx;ly=my;
+        if(mx<x0)x0=mx;if(mx>x1)x1=mx;if(my<y0)y0=my;if(my>y1)y1=my;
+      }
+      lineStart.push(xs.length);lmode.push(m);llev.push(code>>3);bb.push(x0,x1,y0,y1);
+    }
+    bucketLine.push(lineStart.length-1);
+  }
+  const cbb=new Float64Array((NB+1)*4);let X0=9,X1=-9,Y0=9,Y1=-9;
+  for(let b=0;b<=NB;b++){ if(b>0) for(let l=bucketLine[b-1];l<bucketLine[b];l++){const o=l*4;X0=Math.min(X0,bb[o]);X1=Math.max(X1,bb[o+1]);Y0=Math.min(Y0,bb[o+2]);Y1=Math.max(Y1,bb[o+3]);} cbb.set([X0,X1,Y0,Y1],b*4); }
+  return {cbb,nb:NB,x:Float64Array.from(xs),y:Float64Array.from(ys),ls:Uint32Array.from(lineStart),bl:Uint32Array.from(bucketLine),lm:Uint8Array.from(lmode),lev:Uint8Array.from(llev),bb:Float64Array.from(bb),len};
+}
+function decodeHops(b64,HOME){
+  const u=bytes(b64),n=u.length;let p=0;
+  const raw=()=>{let r=0,s=0,b;do{b=u[p++];r+=(b&127)*2**s;s+=7;}while(b&128);return r;};
+  const rd=()=>{const r=raw();return (r%2)?-(r+1)/2:r/2;};
+  const xs=[],ys=[],cum=[],hs=[0],t0=[],t1=[],m=[],hb=[];
+  let px=0,py=0;
+  while(p<n){
+    const np=raw();t0.push(raw()/60);t1.push(raw()/60);m.push(raw());
+    let acc=0,lx,ly,x0=9,x1=-9,y0=9,y1=-9;
+    for(let k=0;k<np;k++){
+      px+=rd();py+=rd();
+      const [mx,my]=merc(HOME[1]+px*1e-5,HOME[0]+py*1e-5);
+      if(k>0)acc+=Math.hypot(mx-lx,my-ly);
+      xs.push(mx);ys.push(my);cum.push(acc);lx=mx;ly=my;
+      if(mx<x0)x0=mx;if(mx>x1)x1=mx;if(my<y0)y0=my;if(my>y1)y1=my;   // Bounding Box direkt mitführen (kein slice/Spread je Hop)
+    }
+    hb.push(x0,x1,y0,y1);
+    hs.push(xs.length);
+  }
+  return {n:t0.length,x:Float64Array.from(xs),y:Float64Array.from(ys),cum:Float64Array.from(cum),hs:Uint32Array.from(hs),
+          t0:Float32Array.from(t0),t1:Float32Array.from(t1),m:Uint8Array.from(m),bb:Float64Array.from(hb)};
+}
+function decodeStations(arr,HOME){
+  const st=arr.map(([dx,dy,t,c,m])=>{const [x,y]=merc(HOME[1]+dx*1e-5,HOME[0]+dy*1e-5);return {x,y,t:t/60,c,m,r:Math.max(0,Math.min(1,(Math.log10(Math.max(1,c))-2)/2.5))};});
+  return st.sort((a,b)=>a.t-b.t);
+}
+const DATA={};
+function getData(){ if(!DATA[origin]){const md=O.modes.biketransit;DATA[origin]=analyse({...decode(md.data,HOME,md.tmax/STEP),hops:decodeHops(md.hops,HOME),st:decodeStations(md.stations||[],HOME)});} return DATA[origin]; }
+// Erstankunft je Rasterzelle (~400 m). Daraus: welche Züge gerade Neuland erschließen (Speerspitze),
+// welche Bahnhöfe als Erste in ihrer Gegend erreicht werden (Aufblitzen) und der Kern der Ausbreitung (Kamera).
+function analyse(d){
+  const C=1.64e-5,cell=new Map(),NBIN=1024; d.cellT=cell; d.cellC=C;
+  const [gx0,gx1,gy0,gy1]=d.cbb.slice(d.nb*4,d.nb*4+4),hx=new Float64Array(NBIN),hy=new Float64Array(NBIN);
+  const bx=v=>Math.max(0,Math.min(NBIN-1,Math.floor((v-gx0)/(gx1-gx0+1e-12)*NBIN))),by=v=>Math.max(0,Math.min(NBIN-1,Math.floor((v-gy0)/(gy1-gy0+1e-12)*NBIN)));
+  const q=(h,tot,f)=>{let a=0;for(let i=0;i<NBIN;i++){a+=h[i];if(a>=tot*f)return i;}return NBIN-1;};
+  d.tbb=new Float64Array((d.nb+1)*4);const fx=[],fy=[],fogB=new Uint32Array(d.nb+1);let n=0;
+  for(let b=1;b<=d.nb;b++){
+    const t=b*STEP/60;
+    for(let l=d.bl[b-1];l<d.bl[b];l++)for(let i=d.ls[l];i<d.ls[l+1];i++){
+      const k=Math.floor(d.x[i]/C)*1e6+Math.floor(d.y[i]/C);
+      if(!cell.has(k)){cell.set(k,t);fx.push(Math.floor(d.x[i]/C));fy.push(Math.floor(d.y[i]/C));hx[bx(d.x[i])]++;hy[by(d.y[i])]++;n++;}
+    }
+    fogB[b]=fx.length;
+    if(n){const o=b*4,wx=(gx1-gx0)/NBIN,wy=(gy1-gy0)/NBIN;
+      d.tbb[o]=gx0+q(hx,n,.006)*wx;d.tbb[o+1]=gx0+(q(hx,n,.994)+1)*wx;d.tbb[o+2]=gy0+q(hy,n,.006)*wy;d.tbb[o+3]=gy0+(q(hy,n,.994)+1)*wy;}
+    else d.tbb.set([9,-9,9,-9],b*4);
+  }
+  d.tbb.set([9,-9,9,-9],0);
+  // Ausschnitt wächst nur (laufende Vereinigung): kein Hin- und Herspringen, wenn sich der Schwerpunkt verschiebt
+  for(let b=1;b<=d.nb;b++){const o=b*4,p=o-4;if(d.tbb[p]>d.tbb[p+1])continue;
+    if(d.tbb[o]>d.tbb[o+1]){d.tbb.set(d.tbb.subarray(p,p+4),o);continue;}
+    d.tbb[o]=Math.min(d.tbb[o],d.tbb[p]);d.tbb[o+1]=Math.max(d.tbb[o+1],d.tbb[p+1]);d.tbb[o+2]=Math.min(d.tbb[o+2],d.tbb[p+2]);d.tbb[o+3]=Math.max(d.tbb[o+3],d.tbb[p+3]);}
+  // Raster der erschlossenen Fläche: Zellindizes in Reihenfolge der Erstankunft, fogB[b] = Anzahl bis Takt b;
+  // Raster mit 4 Zellen Rand (Schließen + Außenring für das Fluten, s. covUpdate)
+  d.cix=Int32Array.from(fx);d.ciy=Int32Array.from(fy);d.fogB=fogB;d.C=C;
+  {let a=Infinity,b=-Infinity,c=Infinity,e=-Infinity;for(let i=0;i<fx.length;i++){a=Math.min(a,fx[i]);b=Math.max(b,fx[i]);c=Math.min(c,fy[i]);e=Math.max(e,fy[i]);}
+   if(!fx.length)a=b=c=e=0;
+   d.gx=a-4;d.gy=c-4;d.gw=(b-a+12)&~3;d.gh=e-c+9;}           // Breite durch 4 teilbar: Zeilen wortweise (32 Bit) prüfbar
+  const near=(x,y)=>{const cx=Math.floor(x/C),cy=Math.floor(y/C);let m=Infinity;
+    for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){const v=cell.get((cx+i)*1e6+cy+j);if(v!==undefined&&v<m)m=v;}return m;};
+  const h=d.hops;h.spear=new Uint8Array(h.n);
+  for(let i=0;i<h.n;i++){const e=h.hs[i+1]-1;h.spear[i]=near(h.x[e],h.y[e])>=h.t1[i]-1?1:0;}
+  d.st=d.st.filter(s=>near(s.x,s.y)>=s.t-1);
+  return d;
+}
+
+// --- Erschlossene Fläche: erreichte 400-m-Zellen, kleine Lücken geschlossen, umschlossene Flächen gefüllt --------
+// Je Startort (d.cov) und nur beim Wechsel des 10-s-Takts neu gerechnet. Ergebnis: geschlossene Konturen in
+// Rasterkoordinaten (relativ zu d.gx/d.gy; ganzzahlig = Zellmitte): Ring l = Punkte c.pts[c.lp[l] … c.lp[l+1]).
+const COV_R=1;                                   // Schließen mit Radius 1 Zelle: überbrückt Lücken bis 2 Zellen (~800 m)
+// Marching Squares: Ecken tl=8 tr=4 br=2 bl=1, Kanten T=0 R=1 B=2 L=3 (im Uhrzeigersinn; Kante e verbindet Ecke e
+// und e+1). Segmente je Fall von Kante → zu Kante, die erschlossene Seite liegt stets rechts; Sattel: diagonal
+// benachbarte erschlossene Zellen gelten als verbunden.
+const MS_SEG=(()=>{const t=[];for(let v=0;v<16;v++){
+  const c=[(v>>3)&1,(v>>2)&1,(v>>1)&1,v&1],s=[];
+  for(let e=0;e<4;e++)if(c[e]&&!c[(e+1)&3])for(let f=1;f<4;f++){const g=(e+f)&3;if(!c[g]&&c[(g+1)&3]){s.push(e,g);break;}}
+  t.push(s);}return t;})();
+const ONES=0x01010101;
+function covGrow(a,n){if(n<=a.length)return a;const t=new Int32Array(Math.max(n,a.length*2));t.set(a);return t;}
+// 3×3-Erosion/Dilatation auf Byte-Masken (je Byte eine Zelle, 0/1), gelesen als Int32-Wörter (bleibt in V8 ganzzahlig):
+// waagrecht per Byte-Verschiebung, senkrecht zeilenweise; außerhalb des Bereichs gilt 0. X = ONES invertiert die Quelle.
+function covH(s,X,t,er,Y0,Y1,w0,w1,WW){
+  for(let y=Y0;y<=Y1;y++){const o=y*WW,oe=o+w1;let pv=0,v=s[o+w0]^X,i=o+w0;
+    if(er){for(;i<oe;i++){const nv=s[i+1]^X;t[i]=v&(v<<8|pv>>>24)&(v>>>8|nv<<24);pv=v;v=nv;}t[oe]=v&(v<<8|pv>>>24)&(v>>>8);}
+    else{for(;i<oe;i++){const nv=s[i+1]^X;t[i]=v|v<<8|pv>>>24|v>>>8|nv<<24;pv=v;v=nv;}t[oe]=v|v<<8|pv>>>24|v>>>8;}}
+}
+function covV(s,t,er,Y0,Y1,w0,w1,WW){
+  for(let y=Y0;y<=Y1;y++){const o=y*WW,a=y>Y0,b=y<Y1;
+    if(er){if(!a||!b){t.fill(0,o+w0,o+w1+1);continue;}for(let w=o+w0;w<=o+w1;w++)t[w]=s[w]&s[w-WW]&s[w+WW];}
+    else for(let w=o+w0;w<=o+w1;w++)t[w]=s[w]|(a?s[w-WW]:0)|(b?s[w+WW]:0);}
+}
+function covUpdate(d,k){
+  const W=d.gw,H=d.gh,N=W*H,R=COV_R,Q=(2*R+1)*(2*R+1);
+  let c=d.cov;
+  if(!c){c=d.cov={k:-1,n:0,dil:new Uint8Array(N),z:new Uint8Array(N).fill(Q),cl:new Uint8Array(N),ext:new Uint8Array(N),tmp:new Uint8Array(N),sh:new Uint8Array(N),
+    rs:new Int32Array(1<<14),re:new Int32Array(1<<14),up:new Int32Array(1<<14),row:new Int32Array(H+1),
+    nx:new Int32Array(2*N),seg:new Int32Array(1<<14),pts:new Float32Array(1<<15),lp:new Int32Array(256),
+    nl:0,np:0,x0:new Int32Array(d.nb+1),x1:new Int32Array(d.nb+1),y0:new Int32Array(d.nb+1),y1:new Int32Array(d.nb+1)};
+    c.clw=new Int32Array(c.cl.buffer);c.exw=new Int32Array(c.ext.buffer);c.tw=new Int32Array(c.tmp.buffer);c.shw=new Int32Array(c.sh.buffer);
+    // Bounding Box der bis Takt t erreichten Zellen (Zellen liegen in Ankunftsreihenfolge vor)
+    let a=W,b=-1,e=H,f=-1,i=0;
+    for(let t=0;t<=d.nb;t++){for(;i<d.fogB[t];i++){const x=d.cix[i]-d.gx,y=d.ciy[i]-d.gy;if(x<a)a=x;if(x>b)b=x;if(y<e)e=y;if(y>f)f=y;}
+      c.x0[t]=a;c.x1[t]=b;c.y0[t]=e;c.y1[t]=f;}
+  }
+  k=Math.max(0,Math.min(d.nb,k));
+  if(k===c.k)return c;
+  // 1) Schließen, inkrementell: dil = Anzahl erreichter Zellen im (2R+1)²-Fenster, z = Anzahl Fenster-Zellen mit
+  //    dil 0; geschlossen ⇔ z 0 (Dilatation, dann Erosion). Vor- wie Zurückspulen kostet nur die geänderten Zellen.
+  const e=d.fogB[k]||0,{dil,z,cl,ext}=c;let ch=0;
+  const flip=(i,up)=>{                           // dil[j] wechselt 0↔1 → z im Fenster darum anpassen
+    for(let dy=-R;dy<=R;dy++)for(let dx=-R;dx<=R;dx++){const j=i+dy*W+dx;
+      if(up){if(--z[j]===0){cl[j]=1;ch++;}}else{if(z[j]++===0){cl[j]=0;ch++;}}}};
+  for(;c.n<e;c.n++){const i=(d.ciy[c.n]-d.gy)*W+d.cix[c.n]-d.gx;
+    for(let dy=-R;dy<=R;dy++)for(let dx=-R;dx<=R;dx++){const j=i+dy*W+dx;if(dil[j]++===0)flip(j,true);}}
+  for(;c.n>e;){c.n--;const i=(d.ciy[c.n]-d.gy)*W+d.cix[c.n]-d.gx;
+    for(let dy=-R;dy<=R;dy++)for(let dx=-R;dx<=R;dx++){const j=i+dy*W+dx;if(--dil[j]===0)flip(j,false);}}
+  c.k=k;
+  if(!ch&&c.ok)return c;                         // geschlossene Maske unverändert (neue Zellen lagen schon darin) → Kontur bleibt
+  c.nl=0;c.np=0;c.ok=false;
+  if(!e)return c;
+  // Arbeitsbereich: Bounding Box der erreichten Zellen plus Rand (der Rand ist sicher frei und zusammenhängend),
+  // waagrecht auf ganze 4er-Wörter erweitert
+  const M=R+2,X0=Math.max(0,c.x0[k]-M)&~3,X1=Math.min(W-1,(c.x1[k]+M)|3),Y0=Math.max(0,c.y0[k]-M),Y1=Math.min(H-1,c.y1[k]+M);
+  // 2) Außenbereich bestimmen: freie (nicht geschlossene) Zellen zeilenweise zu Läufen zusammenfassen, Läufe
+  //    benachbarter Zeilen mit Überlappung verbinden (Union-Find, 4er-Nachbarschaft). Was nicht mit dem Rand verbunden
+  //    ist, ist ringsum umschlossen (Flugfeld, See, Park ohne Wege) und zählt als erschlossen. Wortweise über
+  //    einheitliche Abschnitte springen.
+  const clw=c.clw;let rs=c.rs,re=c.re,up=c.up,nr=0;const row=c.row;
+  const find=i=>{while(up[i]!==i){up[i]=up[up[i]];i=up[i];}return i;};
+  for(let y=Y0;y<=Y1;y++){
+    row[y-Y0]=nr;const o=y*W;let x=X0;
+    while(x<=X1){
+      // Lauf freier Zellen ab x suchen
+      while(x<=X1&&cl[o+x]){if(!(x&3)&&x+3<=X1&&clw[(o+x)>>2]===ONES){x+=4;continue;}x++;}
+      if(x>X1)break;
+      const s=x;
+      while(x<=X1&&!cl[o+x]){if(!(x&3)&&x+3<=X1&&clw[(o+x)>>2]===0){x+=4;continue;}x++;}
+      if(nr>=rs.length){rs=c.rs=covGrow(rs,nr+1);re=c.re=covGrow(re,nr+1);up=c.up=covGrow(up,nr+1);}
+      rs[nr]=s;re[nr]=x-1;up[nr]=nr;nr++;
+    }
+  }
+  row[Y1-Y0+1]=nr;
+  // Rand: erster und letzter Lauf jeder Zeile berühren den Rand des Bereichs (Randring ist frei) → mit Lauf 0 verbinden
+  const join=(a,b)=>{a=find(a);b=find(b);if(a!==b){if(a<b)up[b]=a;else up[a]=b;}};
+  for(let y=0;y<=Y1-Y0;y++){const r0=row[y],r1=row[y+1]-1;if(r1<r0)continue;
+    if(y===0||y===Y1-Y0){for(let r=r0;r<=r1;r++)join(0,r);}else{join(0,r0);join(0,r1);}
+    if(y>0){let i=row[y-1],j=r0;const ie=r0,je=r1+1;          // Läufe der Vorzeile mit Überlappung verbinden
+      while(i<ie&&j<je){if(rs[i]<=re[j]&&rs[j]<=re[i])join(i,j);if(re[i]<re[j])i++;else j++;}}}
+  // ext: 1 = Außen (frei und mit dem Rand verbunden) oder größere Lücke, sonst erschlossen.
+  // Nur kleine umschlossene Lücken (≤ HOLE_MAX Zellen ≈ 8 km²: Flugfelder, Seen, Parks) gelten als erschlossen;
+  // größere, schlecht erreichbare Gebiete bleiben sichtbar offen.
+  const root=find(0),csz=new Int32Array(nr);
+  for(let r=0;r<nr;r++)csz[find(r)]+=re[r]-rs[r]+1;
+  for(let y=0;y<=Y1-Y0;y++){const o=(y+Y0)*W;ext.fill(0,o+X0,o+X1+1);
+    for(let r=row[y];r<row[y+1];r++){const f=find(r);if(f===root||csz[f]>HOLE_MAX)ext.fill(1,o+rs[r],o+re[r]+1);}}
+  // 3) Öffnen (Erosion, dann Dilatation, 3×3) der erschlossenen Fläche: entfernt alles, was schmaler als drei Zellen
+  //    ist – einzelne Straßenzüge ins Umland und Splitter –, damit der Umriss Flächen zeigt statt Haarlinien.
+  //    Wortweise: je Byte eine Zelle (0/1), Nachbarn per Byte-Verschiebung
+  const exw=c.exw,tw=c.tw,shw=c.shw,wx0=X0>>2,wx1=X1>>2,WW=W>>2;
+  covH(exw,ONES,tw,1,Y0,Y1,wx0,wx1,WW);covV(tw,shw,1,Y0,Y1,wx0,wx1,WW);      // Erosion
+  covH(shw,0,tw,0,Y0,Y1,wx0,wx1,WW);covV(tw,shw,0,Y0,Y1,wx0,wx1,WW);         // Dilatation
+  const sh=c.sh;
+  // 4) Marching Squares auf sh, Segmente als Nachfolger-Verweis zwischen Kanten-IDs (2·Zelle + 0 waagrecht zur rechten /
+  //    1 senkrecht zur unteren Nachbarzelle); einheitliche 4er-Blöcke beider Zeilen werden übersprungen
+  const nx=c.nx;let seg=c.seg,ns=0;
+  for(let y=Y0;y<Y1;y++){
+    let x=X0,p=y*W+x,tl=sh[p],bl=sh[p+W];
+    while(x<X1){
+      if(!(x&3)&&x+4<=X1){const w=shw[p>>2];
+        if(w===shw[(p+W)>>2]&&(w===0||w===ONES)){const v=w&1;if(sh[p+4]===v&&sh[p+W+4]===v){x+=4;p+=4;continue;}}}
+      const tr=sh[p+1],br=sh[p+W+1],v=tl<<3|tr<<2|br<<1|bl;tl=tr;bl=br;
+      if(v!==0&&v!==15){
+        const s=MS_SEG[v];
+        for(let m=0;m<s.length;m+=2){
+          const f=s[m],g=s[m+1];
+          const ef=f===0?2*p:f===1?2*(p+1)+1:f===2?2*(p+W):2*p+1,eg=g===0?2*p:g===1?2*(p+1)+1:g===2?2*(p+W):2*p+1;
+          nx[ef]=eg;
+          if(ns>=seg.length)seg=c.seg=covGrow(seg,ns+1);
+          seg[ns++]=ef;
+        }
+      }
+      x++;p++;
+    }
+  }
+  // 5) Zu Ringen verketten. Lage auf der Kante: Iso 0,5 von f = (Zelle + 3×3-Binomialmittel)/2 – erhält die Topologie
+  //    der Maske exakt (Fläche > 0,5 > frei), verschiebt die Punkte aber nach der Nachbarschaft (konvexe Ecken
+  //    nach innen, konkave nach außen) → keine Treppenstufen
+  const F=i=>.5*sh[i]+(sh[i-W-1]+2*sh[i-W]+sh[i-W+1]+2*sh[i-1]+4*sh[i]+2*sh[i+1]+sh[i+W-1]+2*sh[i+W]+sh[i+W+1])/32;
+  if(c.pts.length<ns*2)c.pts=new Float32Array(ns*2+4096);
+  const pts=c.pts;let np=0,nl=0,lp=c.lp;
+  for(let s=0;s<ns;s++){
+    let ed=seg[s];if(nx[ed]<0)continue;
+    if(nl>=lp.length)lp=c.lp=covGrow(lp,nl+1);
+    lp[nl++]=np;
+    const e0=ed;
+    do{
+      const cell=ed>>1,x=cell%W,y=(cell-x)/W,v=ed&1,fa=F(cell),fb=F(v?cell+W:cell+1),t=(.5-fa)/(fb-fa);
+      pts[np++]=v?x:x+t;pts[np++]=v?y+t:y;
+      const n=nx[ed];nx[ed]=-1;ed=n;
+    }while(ed!==e0&&ed>=0);
+  }
+  if(nl>=lp.length)lp=c.lp=covGrow(lp,nl+1);
+  lp[nl]=np;c.nl=nl;c.np=np;c.ok=true;
+  return c;
+}
+
+// --- Offline-Kacheln (512 px für scharfe Darstellung), Rückgriff auf gröbere Stufen ---
+const imgCache={};
+function getImg(key){
+  if(!(key in TILES))return null;
+  if(!imgCache[key]){const im=new Image();im.src=TILES[key]?'data:image/webp;base64,'+TILES[key]:'tiles/bg/'+key.replace(/\//g,'_')+'.webp';imgCache[key]=im;}
+  return imgCache[key];
+}
+const TS=512;
+// Bereits dekodierte Bilder sofort zeichnen und 'done' nur als Microtask melden (Leaflet trägt die Kachel erst nach
+// createTile ein): so ist die Kachel schon beim nächsten Paint sichtbar. Mit setTimeout blieb jede neue Kachel einen
+// Frame lang unsichtbar (.leaflet-tile ist bis 'loaded' hidden) – beim Zoomen blitzte die Karte leer.
+const imReady=im=>im.complete&&im.naturalWidth>0;
+const soon=f=>Promise.resolve().then(f);
+const whenLoaded=(im,f)=>{im.addEventListener('load',f,{once:true});im.addEventListener('error',f,{once:true});};
+const OfflineTiles=L.GridLayer.extend({
+  createTile:function(c,done){
+    const cv=document.createElement('canvas');cv.width=cv.height=TS;
+    const ctx=cv.getContext('2d');ctx.imageSmoothingQuality='high';
+    if(c.z<8){                       // weiter draußen als die gröbste Kachelstufe: aus Kacheln der Stufe 8 zusammensetzen
+      const n=1<<(8-c.z),sz=TS/n;let pending=0;
+      ctx.fillStyle='#0b0c0e';ctx.fillRect(0,0,TS,TS);
+      for(let i=0;i<n;i++)for(let j=0;j<n;j++){const im=getImg('8/'+(c.x*n+i)+'/'+(c.y*n+j));if(!im)continue;
+        if(imReady(im)){ctx.drawImage(im,i*sz,j*sz,sz,sz);continue;}
+        pending++;
+        whenLoaded(im,()=>{if(imReady(im))ctx.drawImage(im,i*sz,j*sz,sz,sz);if(--pending===0)done(null,cv);});}
+      if(!pending)soon(()=>done(null,cv));
+      return cv;
+    }
+    let z=c.z,x=c.x,y=c.y,im=null;
+    while(z>=8){im=getImg(z+'/'+x+'/'+y);if(im)break;x>>=1;y>>=1;z--;}
+    if(!im){ctx.fillStyle='#0b0c0e';ctx.fillRect(0,0,TS,TS);soon(()=>done(null,cv));return cv;}
+    const d=c.z-z,n=1<<d,sz=TS/n,sx=(c.x-(x<<d))*sz,sy=(c.y-(y<<d))*sz;
+    const draw=()=>{if(imReady(im))ctx.drawImage(im,sx,sy,sz,sz,0,0,TS,TS);else{ctx.fillStyle='#0b0c0e';ctx.fillRect(0,0,TS,TS);}};
+    if(imReady(im)){draw();soon(()=>done(null,cv));}else whenLoaded(im,()=>{draw();done(null,cv);});
+    return cv;
+  }
+});
+// --- Ortsnamen: transparente Beschriftungskacheln (512 px, Stufen 8–14) in eigener Ebene über den Straßen-Canvases
+// (overlayPane 400) und unter Markern (600). Ohne Kachel bleibt die Kachel leer; über z14 skaliert Leaflet die
+// z14-Kacheln (maxNativeZoom), unter z8 keine Beschriftung.
+const lImgCache={};
+function getLImg(key){
+  if(!(key in LTILES))return null;
+  if(!lImgCache[key]){const im=new Image();im.src=LTILES[key]?'data:image/webp;base64,'+LTILES[key]:'tiles/lab/'+key.replace(/\//g,'_')+'.webp';lImgCache[key]=im;}
+  return lImgCache[key];
+}
+const OfflineLabels=L.GridLayer.extend({
+  createTile:function(c,done){
+    const cv=document.createElement('canvas');cv.width=cv.height=TS;
+    let z=c.z,x=c.x,y=c.y;
+    if(z>14){const s=z-14;x>>=s;y>>=s;z=14;}          // Rückfall, falls Leaflet doch feiner anfragt
+    // Zoom-11-Beschriftung gibt es nur für Berlin/Brandenburg (Dateigröße); weiter draußen die Zoom-10-Kachel vergrößert
+    if(z===11&&!(x>=1080&&x<=1113&&y>=656&&y<=687)){x>>=1;y>>=1;z=10;}
+    const im=z>=6?getLImg(z+'/'+x+'/'+y):null;   // ab Zoom 6: Großstädte auch in der Deutschland-Übersicht
+    if(!im){soon(()=>done(null,cv));return cv;}
+    const ctx=cv.getContext('2d');ctx.imageSmoothingQuality='high';
+    const d=c.z-z,n=1<<d,sz=TS/n,sx=(c.x-(x<<d))*sz,sy=(c.y-(y<<d))*sz;
+    const draw=()=>{if(imReady(im))ctx.drawImage(im,sx,sy,sz,sz,0,0,TS,TS);};
+    if(imReady(im)){draw();soon(()=>done(null,cv));}else whenLoaded(im,()=>{draw();done(null,cv);});
+    return cv;
+  }
+});
+
+let colorBy='mode', dur=75;      // Sekunden je 90 Kartenminuten
+const flashLen=()=>1.4*90/dur;      // Dauer des Aufblitzens in Karten-Minuten (≈1,1 s beim Abspielen)
+// Erschlossene Fläche: 'off' | 'edge' (Umriss) | 'area' (getönte Fläche) | 'night' (Nacht über der Karte, erschlossen = Tag)
+let covMode='area';   // fest: erschlossene Fläche als warm getönte Fläche (andere Varianten verworfen)
+const NIGHT='rgba(2,4,12,.86)',DAY='rgba(255,236,200,.16)';
+const HOLE_MAX=50;                   // größte Lücke (400-m-Zellen ≈ 0,16 km²), die noch als erschlossen gilt
+let FADE=4;                          // so lange (Kartenminuten) leuchtet eine Speerspitzen-Linie nach
+
+// --- Straßen-Layer -------------------------------------------------------------------------
+// Basis-Canvas (erreichte Straßen) wird nur gelegentlich komplett gezeichnet: dazwischen wird es per
+// CSS verschoben/skaliert (flüssiges Zoomen, auch beim automatischen Mitzoomen). Linien-Canvas
+// (Züge, Bahnhöfe) wird jeden Frame in der aktuellen Ansicht gezeichnet.
+const MG=0.4;                                   // Rand des Basis-Canvas (Anteil der Fenstergröße)
+const K_LO=0.62,K_HI=1.6,BUDGET=7;               // Skalierungsbereich bis zum Neuaufbau; Zeitbudget (ms/Frame) für den Aufbau im Hintergrund
+const lineW=z=>Math.max(.5,Math.min(2.6,.5*Math.pow(1.34,z-8)));
+const levFor=z=>z<7.25?2:(z<8.25?1:0);   // Deutschland-Übersicht: Fernstraßen; mittel: Hauptnetz inkl. Radwege; ab 8,25 alle Wege
+const StreetLayer=L.Layer.extend({
+  initialize(){this.d=getData();this.drawn=0;this.T=0;},
+  onAdd(map){
+    this._map=map;
+    const pane=map.getPane('overlayPane');
+    this.fog=L.DomUtil.create('canvas','streets leaflet-zoom-animated',pane);   // Tönung/Nacht der erschlossenen Fläche: unter den Straßen
+    this.base=L.DomUtil.create('canvas','streets leaflet-zoom-animated',pane);
+    this.edge=L.DomUtil.create('canvas','streets leaflet-zoom-animated',pane);  // Umrisslinie: über den Straßen, unter Zügen/Bahnhöfen
+    this.rail=L.DomUtil.create('canvas','streets leaflet-zoom-animated',pane);
+    map.on('move zoom viewreset',this.onView,this);
+    map.on('moveend zoomend',this.settle,this);
+    map.on('resize',this.full,this);
+    map.on('zoomanim',this.anim,this);
+    this.full();
+  },
+  onRemove(map){
+    map.off('move zoom viewreset',this.onView,this); map.off('moveend zoomend',this.settle,this);
+    map.off('resize',this.full,this); map.off('zoomanim',this.anim,this);
+    clearTimeout(this._t); this.base.remove(); this.rail.remove(); this.fog.remove(); this.edge.remove();
+  },
+  view(){const map=this._map,z=map.getZoom(),c=map.getPixelBounds().min;return {z,S:256*Math.pow(2,z),ox:c.x,oy:c.y,size:map.getSize()};},
+  full(){
+    clearTimeout(this._t);
+    if(this._anim)return;          // während einer Zoomanimation nicht neu aufsetzen (Canvas spränge zurück); settle() holt es nach
+    this.pend=null;                // laufenden Hintergrund-Aufbau verwerfen, hier wird synchron gezeichnet
+    this._rk=null;                 // Linien-Canvas wird unten geleert → sicher neu zeichnen
+    const dpr=window.devicePixelRatio||1,v=this.view(),size=v.size;
+    const mx=Math.round(size.x*MG),my=Math.round(size.y*MG),W=size.x+2*mx,H=size.y+2*my;
+    for(const b of [this.base,this.fog,this.edge]){b.width=W*dpr;b.height=H*dpr;b.style.width=W+'px';b.style.height=H+'px';
+    b.getContext('2d').setTransform(dpr,0,0,dpr,0,0);}
+    const r=this.rail;r.width=size.x*dpr;r.height=size.y*dpr;r.style.width=size.x+'px';r.style.height=size.y+'px';
+    r.getContext('2d').setTransform(dpr,0,0,dpr,0,0);
+    Object.assign(this,{bz:v.z,bS:v.S,box:v.ox-mx,boy:v.oy-my,bW:W,bH:H,w:lineW(v.z),minLev:levFor(v.z)});
+    const m=10/v.S;
+    this.vx0=this.box/v.S-m;this.vx1=(this.box+W)/v.S+m;this.vy0=this.boy/v.S-m;this.vy1=(this.boy+H)/v.S+m;
+    this.drawn=0;this.drawBase(this.T,true);this.place();this.drawRail(this.T);
+    this.lastFull=performance.now();
+  },
+  place(){
+    const map=this._map,v=this.view(),k=v.S/this.bS,tl=map.containerPointToLayerPoint([0,0]);
+    for(const c of [this.base,this.fog,this.edge]) L.DomUtil.setTransform(c,L.point(this.box*k-v.ox+tl.x,this.boy*k-v.oy+tl.y),k);
+    L.DomUtil.setTransform(this.rail,tl,1);
+    return {k,v};
+  },
+  onView(){
+    if(this._anim)return;
+    const {k,v}=this.place(),s=v.size;
+    const cover=this.box*k-v.ox<=1&&this.boy*k-v.oy<=1&&(this.box+this.bW)*k-v.ox>=s.x-1&&(this.boy+this.bH)*k-v.oy>=s.y-1;
+    if(k<K_LO||k>K_HI||!cover){
+      // Neuaufbau anstoßen (bzw. neu beginnen, wenn auch der laufende Aufbau schon nicht mehr passt)
+      const pk=this.pend?v.S/this.pend.R.bS:0;
+      if(!this.pend||pk<K_LO||pk>K_HI) this.startPending();
+    }
+    if(this.pend) this.stepPending(BUDGET);
+    this.drawRail(this.T);
+  },
+  settle(){
+    this._anim=false; this.onView();
+    clearTimeout(this._t); this._t=setTimeout(()=>this.full(),220);   // nach Ruhe scharf neu zeichnen
+  },
+  anim(e){
+    // Leaflet-Zoomanimation: Canvas mitskalieren statt ausblenden
+    this._anim=true; clearTimeout(this._t);   // kein full() mitten in der Animation
+    // Leaflet setzt Zoom/Mitte direkt nach 'zoomanim' still auf das Ziel; das Linien-Canvas zeigt aber bis zum
+    // zoomend die alte Ansicht (per CSS skaliert) → drawRail zeichnet bis dahin in dieser alten Ansicht (_av).
+    const map=this._map,v=this._av=this.view();
+    for(const c of [this.base,this.fog,this.edge]) L.DomUtil.setTransform(c,map._latLngToNewLayerPoint(map.unproject([this.box,this.boy],this.bz),e.zoom,e.center),Math.pow(2,e.zoom-this.bz));
+    L.DomUtil.setTransform(this.rail,map._latLngToNewLayerPoint(map.unproject([v.ox,v.oy],v.z),e.zoom,e.center),Math.pow(2,e.zoom-v.z));
+  },
+  vis(l,R=this){
+    const bb=this.d.bb,o=l*4;
+    return this.d.lev[l]>=R.minLev&&bb[o+1]>=R.vx0&&bb[o]<=R.vx1&&bb[o+3]>=R.vy0&&bb[o+2]<=R.vy1;
+  },
+  strokeBucket(ctx,b,R=this){
+    const {x,y,ls,bl,lm,lev}=this.d,S=R.bS,ox=R.box,oy=R.boy,byMode=colorBy==='mode';
+    const paths={};
+    for(let l=bl[b-1];l<bl[b];l++){
+      if(!this.vis(l,R))continue;
+      const k=(lev[l]?1:0)*8+(byMode?lm[l]:0);
+      const p=paths[k]||(paths[k]=new Path2D());
+      let i=ls[l];const e=ls[l+1];
+      p.moveTo(x[i]*S-ox,y[i]*S-oy);
+      for(i++;i<e;i++)p.lineTo(x[i]*S-ox,y[i]*S-oy);
+    }
+    for(const k in paths){
+      const lv=k>=8?1:0,m=k%8;
+      ctx.lineWidth=lv?R.w:R.w*.7;
+      ctx.strokeStyle=byMode?MC[lv][m]:BC[lv][b];
+      ctx.stroke(paths[k]);
+    }
+  },
+  drawBase(T,force){
+    const k=Math.max(0,Math.min(this.d.nb,Math.floor(T*60/STEP+1e-9)));
+    const bctx=this.base.getContext('2d');
+    if(force||k<this.drawn){bctx.clearRect(0,0,this.bW,this.bH);this.drawn=0;}
+    bctx.lineCap='round';bctx.lineJoin='round';
+    for(let b=this.drawn+1;b<=k;b++)this.strokeBucket(bctx,b);
+    this.drawn=Math.max(this.drawn,k);
+    this.drawCov(k,force);
+  },
+  // Erschlossene Fläche zeichnen – nur wenn sich der 10-s-Takt, die Darstellung oder (force) die Ansicht geändert hat.
+  // Konturpfad als quadratischer B-Spline durch die Konturpunkte: glatt in jeder Zoomstufe, Linienbreite in Bildschirm-px.
+  drawCov(k,force){
+    if(!force&&k===this.covK&&covMode===this.covM)return;
+    const W=this.bW,H=this.bH,f=this.fog.getContext('2d'),g=this.edge.getContext('2d');
+    f.clearRect(0,0,W,H);g.clearRect(0,0,W,H);
+    this.covK=k;this.covM=covMode;
+    if(covMode==='off')return;
+    const d=this.d,c=covUpdate(d,k),cp=d.C*this.bS,ox=(d.gx+.5)*cp-this.box,oy=(d.gy+.5)*cp-this.boy,P=c.pts;
+    const p=new Path2D();
+    for(let l=0;l<c.nl;l++){
+      const s=c.lp[l],e=c.lp[l+1];
+      let x=P[e-2]*cp+ox,y=P[e-1]*cp+oy,nx=P[s]*cp+ox,ny=P[s+1]*cp+oy;
+      p.moveTo((x+nx)/2,(y+ny)/2);
+      for(let i=s;i<e;i+=2){x=nx;y=ny;const j=i+2<e?i+2:s;nx=P[j]*cp+ox;ny=P[j+1]*cp+oy;p.quadraticCurveTo(x,y,(x+nx)/2,(y+ny)/2);}
+      p.closePath();
+    }
+    const soft=r=>'blur('+Math.max(1.5,Math.min(14,cp*r)).toFixed(1)+'px)';
+    if(covMode==='edge'){
+      f.fillStyle='rgba(255,222,170,.045)';f.fill(p);                        // ganz leichte Tönung innen
+      g.lineJoin='round';
+      g.lineWidth=3.2;g.strokeStyle='rgba(8,9,11,.38)';g.stroke(p);          // schmale dunkle Unterlage: Linie bleibt auf bunten Straßen lesbar
+      g.lineWidth=1.3;g.strokeStyle='rgba(255,236,205,.68)';g.stroke(p);
+    }else if(covMode==='area'){
+      f.filter=soft(.35);f.fillStyle='rgba(255,196,120,.14)';f.fill(p);f.filter='none';
+    }else{                                                                    // Nacht → Tag
+      f.fillStyle=NIGHT;f.fillRect(0,0,W,H);
+      f.globalCompositeOperation='destination-out';f.filter=soft(.55);f.fillStyle='#000';f.fill(p);
+      f.globalCompositeOperation='destination-over';f.fillStyle=DAY;f.fill(p);  // warmes Tageslicht hinter dem Rest-Nebel
+      f.globalCompositeOperation='source-over';f.filter='none';
+    }
+  },
+  update(T){ this.T=T; this.drawBase(T,false); if(this.pend)this.stepPending(BUDGET); this.drawRail(T); },
+  // --- Neuaufbau im Hintergrund: neues Basis-Canvas über mehrere Frames zeichnen (Zeitbudget je Frame),
+  //     solange das alte per CSS skaliert weiter angezeigt wird; erst wenn fertig austauschen → kein Ruckeln.
+  refFor(v){
+    const size=v.size,mx=Math.round(size.x*MG),my=Math.round(size.y*MG),W=size.x+2*mx,H=size.y+2*my,m=10/v.S,box=v.ox-mx,boy=v.oy-my;
+    return {bz:v.z,bS:v.S,box,boy,bW:W,bH:H,w:lineW(v.z),minLev:levFor(v.z),vx0:box/v.S-m,vx1:(box+W)/v.S+m,vy0:boy/v.S-m,vy1:(boy+H)/v.S+m};
+  },
+  startPending(){
+    const R=this.refFor(this.view()),dpr=window.devicePixelRatio||1,c=document.createElement('canvas');
+    c.className='streets leaflet-zoom-animated';
+    c.width=R.bW*dpr;c.height=R.bH*dpr;c.style.width=R.bW+'px';c.style.height=R.bH+'px';
+    const ctx=c.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.lineCap='round';ctx.lineJoin='round';
+    this.pend={R,c,ctx,drawn:0};
+  },
+  stepPending(budget){
+    const P=this.pend; if(!P)return;
+    const k=Math.max(0,Math.min(this.d.nb,Math.floor(this.T*60/STEP+1e-9))),t0=performance.now();
+    if(P.drawn>k){this.pend=null;return;}                       // zurückgespult: verwerfen
+    while(P.drawn<k&&performance.now()-t0<budget) this.strokeBucket(P.ctx,++P.drawn,P.R);
+    if(P.drawn>=k) this.swapPending();
+  },
+  swapPending(){
+    const P=this.pend; this.pend=null;
+    this.base.parentNode.insertBefore(P.c,this.base); this.base.remove(); this.base=P.c;
+    Object.assign(this,P.R); this.drawn=P.drawn;
+    const dpr=window.devicePixelRatio||1;
+    for(const b of [this.fog,this.edge]){b.width=P.R.bW*dpr;b.height=P.R.bH*dpr;b.style.width=P.R.bW+'px';b.style.height=P.R.bH+'px';
+      b.getContext('2d').setTransform(dpr,0,0,dpr,0,0);}
+    this.drawCov(this.drawn,true); this.place(); this.lastFull=performance.now();
+  },
+  hopPath(i,T,p,S,ox,oy){
+    const h=this.d.hops,s0=h.hs[i],s1=h.hs[i+1],tot=h.cum[s1-1];
+    const lim=tot*Math.min(1,(T-h.t0[i])/Math.max(1e-3,h.t1[i]-h.t0[i]));
+    let hx=h.x[s0]*S-ox,hy=h.y[s0]*S-oy;
+    p.moveTo(hx,hy);
+    for(let k=s0+1;k<s1;k++){
+      if(h.cum[k]<=lim){hx=h.x[k]*S-ox;hy=h.y[k]*S-oy;p.lineTo(hx,hy);continue;}
+      const seg=h.cum[k]-h.cum[k-1],g=seg>0?(lim-h.cum[k-1])/seg:0;
+      hx=(h.x[k-1]+(h.x[k]-h.x[k-1])*g)*S-ox;hy=(h.y[k-1]+(h.y[k]-h.y[k-1])*g)*S-oy;p.lineTo(hx,hy);
+      break;
+    }
+    return [hx,hy];
+  },
+  drawRail(T){
+    const v=this._anim&&this._av||this.view();
+    // pro Frame feuern bei einer Kamerabewegung zoom/move/zoomend/moveend (+ renderAll): nur zeichnen, wenn sich etwas geändert hat
+    const key=T+'|'+v.z+'|'+v.ox+'|'+v.oy+'|'+v.size.x+'|'+v.size.y+'|'+colorBy+'|'+dur;
+    if(key===this._rk)return; this._rk=key;
+    const S=v.S,ox=v.ox,oy=v.oy,w=lineW(v.z),h=this.d.hops,ctx=this.rail.getContext('2d');
+    ctx.clearRect(0,0,v.size.x,v.size.y);
+    ctx.lineCap='round';ctx.lineJoin='round';
+    const byMode=colorBy==='mode',done=[],live=[];
+    // 1) gefahrenes Netz: zurückhaltend
+    for(let i=0;i<h.n&&h.t0[i]<T;i++){
+      if(T>=h.t1[i]+FADE){const k=byMode?h.m[i]:0;this.hopPath(i,T,done[k]||(done[k]=new Path2D()),S,ox,oy);} else live.push(i);
+    }
+    ctx.lineWidth=Math.max(.6,w*.5);
+    done.forEach((p,m)=>{if(p){ctx.strokeStyle=byMode?rgba(VM[m].c,.45):'rgba(255,255,255,.3)';ctx.stroke(p);}});
+    // 2) Speerspitze: fahrende Züge hell mit Kopf in der Farbe des Verkehrsmittels, danach verblassend
+    const heads=[];
+    const quiet=[];
+    for(const i of live){
+      if(!h.spear[i]){const k=byMode?h.m[i]:0;this.hopPath(i,T,quiet[k]||(quiet[k]=new Path2D()),S,ox,oy);continue;}
+      const p=new Path2D(),hd=this.hopPath(i,T,p,S,ox,oy),moving=T<h.t1[i],f=moving?1:1-(T-h.t1[i])/FADE;
+      ctx.lineWidth=Math.max(.6,w*.5)+1.1*f;
+      ctx.strokeStyle=byMode?rgba(VM[h.m[i]].c,.3+.65*f):'rgba(255,255,255,'+(.3+.65*f)+')';
+      ctx.stroke(p);
+      if(moving)heads.push([hd[0],hd[1],h.m[i]]);
+    }
+    ctx.lineWidth=Math.max(.6,w*.5);
+    quiet.forEach((p,m)=>{if(p){ctx.strokeStyle=byMode?rgba(VM[m].c,.55):'rgba(255,255,255,.42)';ctx.stroke(p);}});
+    const hr=Math.max(2.2,w*1.2);
+    for(const [x,y,m] of heads){
+      ctx.beginPath();ctx.arc(x,y,hr+1.6,0,7);ctx.fillStyle=VM[m].c;ctx.fill();
+      ctx.beginPath();ctx.arc(x,y,hr,0,7);ctx.fillStyle='#fff';ctx.fill();
+    }
+    // 3) Bahnhöfe, an denen das Radfahren beginnt: Aufblitzen, danach kleiner Ring
+    const st=this.d.st,FL=flashLen(),m_=20/S,vx0=ox/S-m_,vx1=(ox+v.size.x)/S+m_,vy0=oy/S-m_,vy1=(oy+v.size.y)/S+m_;
+    for(let i=0;i<st.length&&st[i].t<=T;i++){
+      const s=st[i];if(s.x<vx0||s.x>vx1||s.y<vy0||s.y>vy1)continue;
+      // weit herausgezoomt (viele Bahnhöfe gleichzeitig) kleiner und blasser, damit es nicht ablenkt
+      const fz=Math.max(.35,Math.min(1,(v.z-6.5)/3.5)),fa=.45+.55*fz;
+      const X=s.x*S-ox,Y=s.y*S-oy,age=T-s.t,rr=(1.6+1.6*s.r+(w-.5)*.6)*(.6+.4*fz);
+      if(age<FL){
+        const f=age/FL,e=1-Math.pow(1-f,3),R=rr+(10+22*s.r)*e*fz;
+        ctx.beginPath();ctx.arc(X,Y,R,0,7);ctx.lineWidth=(1.6*(1-f)+.4)*(.6+.4*fz);ctx.strokeStyle='rgba(255,255,255,'+(.9*(1-f)*fa)+')';ctx.stroke();
+        ctx.beginPath();ctx.arc(X,Y,rr+1.5*(1-f)*fz,0,7);ctx.fillStyle='rgba(255,255,255,'+((1-.6*f)*fa)+')';ctx.fill();
+      }
+    }
+  },
+  // Kern der Ausdehnung zum Zeitpunkt T (erreichte Fläche ohne die äußersten 0,6 % je Richtung), in Mercator
+  extent(T){
+    // k<0 (T minimal negativ) gäbe NaN → L.latLng wirft in camTarget und die Kamera-Schleife stirbt
+    const d=this.d,k=Math.max(0,Math.min(d.nb,Math.floor(T*60/STEP+1e-9))),c=d.tbb,HM=merc(HOME[1],HOME[0]),r=2.5e-5;
+    return [Math.min(c[k*4],HM[0]-r),Math.max(c[k*4+1],HM[0]+r),Math.min(c[k*4+2],HM[1]-r),Math.max(c[k*4+3],HM[1]+r)];
+  }
+});
+function headPt(h,i,T){
+  const s0=h.hs[i],s1=h.hs[i+1],tot=h.cum[s1-1],lim=tot*Math.min(1,Math.max(0,(T-h.t0[i])/Math.max(1e-3,h.t1[i]-h.t0[i])));
+  for(let k=s0+1;k<s1;k++) if(h.cum[k]>=lim){const seg=h.cum[k]-h.cum[k-1],g=seg>0?(lim-h.cum[k-1])/seg:0;return [h.x[k-1]+(h.x[k]-h.x[k-1])*g,h.y[k-1]+(h.y[k]-h.y[k-1])*g];}
+  return [h.x[s1-1],h.y[s1-1]];
+}
+function rgba(hex,a){const h=hex.slice(1);return 'rgba('+[0,2,4].map(i=>parseInt(h.substr(i,2),16)).join(',')+','+a+')';}
+const unmerc=(x,y)=>L.latLng(Math.atan(Math.sinh(Math.PI*(1-2*y)))*180/Math.PI,x*360-180);
+
+// --- Kamera folgt der Ausbreitung ---------------------------------------------------------
+let autoCam=true,camRaf=0,camLast=0,camProg=false;
+function camPadding(){
+  const mr=document.getElementById('map').getBoundingClientRect(),ir=document.getElementById('info').getBoundingClientRect(),tr=document.getElementById('timebar').getBoundingClientRect();
+  const side=ir.width<mr.width*.5;
+  const W=mr.width,H=mr.height;   // Panels berücksichtigen, aber immer genug Kartenfläche lassen
+  return {paddingTopLeft:[Math.min(W*.4,side?ir.right+24:24),Math.min(H*.4,side?36:ir.bottom+20)],paddingBottomRight:[Math.min(W*.1,56),Math.min(H*.2,mr.bottom-tr.top+24)]};
+}
+function camTarget(){
+  const [x0,x1,y0,y1]=layer.extent(T),pad=Math.max(x1-x0,y1-y0)*.04+2e-5;
+  const b=L.latLngBounds(unmerc(x0-pad,y1+pad),unmerc(x1+pad,y0-pad));
+  const r=map._getBoundsCenterZoom(b,{...camPadding(),maxZoom:14.25});
+  r.zoom=Math.max(map.getMinZoom(),Math.min(14.25,r.zoom));
+  return r;
+}
+function camJump(){ if(!layer)return; const t=camTarget(); {const m=merc(t.center.lng,t.center.lat);camF={x:m[0],y:m[1],z:t.zoom};} camProg=true; map.setView(t.center,t.zoom,{animate:false}); camProg=false; }
+// Ein Kameraschritt ohne setView: setView({animate:false}) läuft bei jeder Zoomänderung über _resetView →
+// 'viewprereset' → der GridLayer verwirft sämtliche Kacheln (Karte jeden Frame leer/neu aufgebaut); reine kleine
+// Verschiebungen kürzt panBy auf ganze Pixel (Kamera bleibt vor dem Ziel stehen). Daher wie Leaflets flyTo intern
+// über _move; {pinch:true} lässt auch bei reiner Verschiebung 'zoom' feuern (Kachel-Ebenen, Marker, Straßen-Layer
+// werden neu gesetzt), alte Kacheln bleiben stehen, bis die neuen da sind. Ereignisse wie bisher je Schritt.
+function camMove(center,zoom){
+  if(map._animatingZoom)return;
+  zoom=map._limitZoom(zoom); center=map._limitCenter(center,zoom,map.options.maxBounds);
+  const zc=zoom!==map.getZoom();
+  camProg=true;
+  try{
+    map._stop();
+    if(!camMoving){map._moveStart(zc,false);camMoving=true;}
+    map._move(center,zoom,{pinch:true});
+    // 'moveend' (Kacheln, Zonen-SVG, Marker …) nicht jeden Frame, sondern höchstens ~3×/s und einmal am Ende der Bewegung
+    const now=performance.now();
+    if(now-camLastEnd>300){map._moveEnd(true);camLastEnd=now;}
+    clearTimeout(camEndT);
+    camEndT=setTimeout(()=>{camProg=true;try{map._moveEnd(true);}finally{camProg=false;camMoving=false;}},160);
+  } finally{ camProg=false; }
+}
+let camMoving=false,camEndT=0,camLastEnd=0;
+let camS=null,camF=null;   // camF: geglättetes Ziel   // eigener, ungerundeter Kamerazustand (Mercator-Mitte, Zoom): Leaflet rundet den Pixel-Ursprung
+function camTick(now){
+  camRaf=0; if(!autoCam||!layer)return;
+  camRaf=requestAnimationFrame(camTick);   // vorab planen: eine Ausnahme unten soll die Kamera nicht dauerhaft anhalten
+  const dt=Math.max(0,Math.min(.1,(now-(camLast||now))/1000)); camLast=now;
+  if(playing)return;                       // beim Abspielen führt tick() die Kamera
+  camStep(dt);
+}
+// ein Kameraschritt mit fester Zeitspanne dt (s) – auch für Tests und den Video-Export (deterministisch)
+function camStep(dt){
+  const t=camTarget(),z=map.getZoom(),c=map.getCenter(),cc=merc(c.lng,c.lat),S=256*Math.pow(2,z);
+  // weiterführen, solange die Karte nicht anderweitig bewegt wurde (sonst vom tatsächlichen Stand ausgehen)
+  if(!camS||camS.z!==z||Math.abs(camS.x-cc[0])*S>1||Math.abs(camS.y-cc[1])*S>1) camS={x:cc[0],y:cc[1],z};
+  // zweistufiger Tiefpass: erst das Ziel glätten (träge, filtert das Wandern des Schwerpunkts), dann die Kamera nachführen
+  const tc=merc(t.center.lng,t.center.lat);
+  if(!camF) camF={x:tc[0],y:tc[1],z:t.zoom};
+  const f1=1-Math.exp(-dt/1.6),fz=1-Math.exp(-dt/1.0),a=1-Math.exp(-dt/.6);
+  camF.x+=(tc[0]-camF.x)*f1; camF.y+=(tc[1]-camF.y)*f1; camF.z+=(t.zoom-camF.z)*fz;
+  const nz=z+(camF.z-z)*a,nx=camS.x+(camF.x-camS.x)*a,ny=camS.y+(camF.y-camS.y)*a;
+  if(Math.abs(nz-z)>1e-4||Math.abs(nx-camS.x)*S>.05||Math.abs(ny-camS.y)*S>.05){
+    camMove(unmerc(nx,ny),nz);
+    camS={x:nx,y:ny,z:map.getZoom()};
+  }
+}
+function setAuto(on){
+  autoCam=on; document.getElementById('autocam').setAttribute('aria-pressed',on);
+  if(on){ document.querySelectorAll('#views button').forEach(x=>x.setAttribute('aria-pressed',false)); camLast=0; if(!camRaf)camRaf=requestAnimationFrame(camTick); }
+}
+
+const VIEWS=[
+  {id:'near',get name(){return tr('views').near;},fit:()=>L.latLngBounds([HOME[0]-.028,HOME[1]-.045],[HOME[0]+.028,HOME[1]+.045])},
+  {id:'berlin',get name(){return tr('views').berlin;},fit:()=>L.latLngBounds([52.36,13.1],[52.67,13.72])},
+  {id:'all',get name(){return tr('views').all;},fit:()=>L.latLngBounds(O.modes.biketransit.bounds)},
+];
+const maxB=ORIGINS.reduce((b,o)=>b.extend(STREETS.origins[o.id].modes.biketransit.bounds),L.latLngBounds(STREETS.origins.hbf.modes.biketransit.bounds)).pad(0.6);   // großzügig, damit die Kamera nicht anstößt
+let view=null,T=0,layer=null,pin=null;
+
+const map=L.map('map',{minZoom:6,maxZoom:16,maxBounds:maxB,maxBoundsViscosity:.8,zoomSnap:0,zoomDelta:.5,wheelPxPerZoomLevel:90,zoomControl:false,fadeAnimation:false});
+L.control.zoom({position:'topright'}).addTo(map);
+// --- Stadtzonen und Grenzen ------------------------------------------------------------------
+// Gestrichelte Linien mit dunklem Rand (lesbar über hellen Straßen), Beschriftung am Nordrand.
+// Jede Linie hat eine Regel, wann sie sichtbar ist (Zeit/Zoom); beim Erscheinen tritt sie kurz hervor,
+// beim Verschwinden blendet sie weich aus. Innenstadt/Stadtgrenze/Speckgürtel treten zusätzlich hervor,
+// sobald sie zum Großteil mit dem Rad erschlossen sind.
+map.createPane('zones').style.zIndex=440; map.getPane('zones').style.pointerEvents='none';
+const zoneRenderer=L.svg({pane:'zones',padding:.5});
+const ZSTYLE={inner:{color:'#ffffff',weight:1.5,opacity:.65,dashArray:'7 5'},
+              berlin:{color:'#dfe3ea',weight:1.6,opacity:.75,dashArray:'3 4'},
+              umland:{color:'#ffd27a',weight:1.5,opacity:.65,dashArray:'12 6'},
+              brandenburg:{color:'#b9d7ff',weight:1.8,opacity:.75,dashArray:'14 5 3 5'},
+              germany:{color:'#ffffff',weight:2.2,opacity:.8,dashArray:'16 5 3 5'}};
+const ZKEY={inner:'zInner',berlin:'zBerlin',umland:'zUmland',brandenburg:'zBrandenburg'};
+// Sichtbarkeit: Innenstadt bis 1:18; Stadtgrenze/Speckgürtel bis man weit herausgezoomt hat;
+// Brandenburg sobald das Land fast ganz ins Bild passt; Staatsgrenze sobald weit genug draußen und im Bild.
+const ZVIS={inner:(t,z)=>t<78,
+            berlin:(t,z)=>z>=7.7,
+            umland:(t,z)=>z>=7.1,
+            brandenburg:(t,z,vb,b)=>z<=8.3&&t>0,
+            germany:(t,z,vb,b)=>z<=7.6&&vb.intersects(b)};
+const ZONE={};
+const zoneIco='<svg width="22" height="10" viewBox="0 0 22 10"><path d="M1 5H21" stroke="#fff" stroke-width="1.8" stroke-dasharray="5 3"/></svg>';
+let zonesOn=true; const zoneGroup=L.layerGroup();
+function zoneLabel(ll,cls,key,txt){
+  return L.marker(ll,{pane:'zones',interactive:false,keyboard:false,
+    icon:L.divIcon({className:'zone-lab '+cls,html:'<span'+(key?' data-i18n="'+key+'"':'')+'>'+(key?tr(key):txt)+'</span>',iconSize:null,iconAnchor:[0,14]})});
+}
+function addZone(k,geo,isLine){
+  const opts={renderer:zoneRenderer,interactive:false,fill:false};
+  const mk=isLine?(g,o)=>L.polyline(g,o):(g,o)=>L.polygon(g,o);
+  const cas=mk(geo,{...opts,color:'#050608',weight:ZSTYLE[k].weight+2.4,opacity:.3,className:'zone-cas zone-el'});
+  const ln=mk(geo,{...opts,...ZSTYLE[k],className:'zone-path zone-el'});
+  zoneGroup.addLayer(cas); zoneGroup.addLayer(ln);
+  const labs=[];
+  if(!isLine){let top=null; for(const poly of geo) for(const p of poly[0]) if(!top||p[0]>top[0]) top=p;
+    labs.push(zoneLabel(top,'zone-el zl-'+k,ZKEY[k]));}
+  labs.forEach(l=>zoneGroup.addLayer(l));
+  ZONE[k]={ln,cas,labs,b:ln.getBounds(),shown:false,vis:true};
+}
+for(const k of ['umland','berlin','inner']){
+  const g=(ZONES[k]||[]).map(poly=>poly.map(ring=>ring.map(([lo,la])=>[la,lo]))); if(g.length) addZone(k,g,false);
+}
+if(BORDERS.brandenburg&&BORDERS.brandenburg.length)
+  addZone('brandenburg',BORDERS.brandenburg.map(poly=>poly.map(ring=>ring.map(([lo,la])=>[la,lo]))),false);
+if(BORDERS.germany&&BORDERS.germany.length){
+  addZone('germany',BORDERS.germany.map(line=>line.map(([lo,la])=>[la,lo])),true);
+  for(const c of (BORDERS.labels||[])){const l=L.marker([c.lat,c.lon],{pane:'zones',interactive:false,keyboard:false,
+      icon:L.divIcon({className:'zone-lab zone-el zl-country',html:'<span data-n-de="'+c.name_de+'" data-n-en="'+c.name_en+'">'+(LANG==='en'?c.name_en:c.name_de)+'</span>',iconSize:null,iconAnchor:[0,8]})});
+    zoneGroup.addLayer(l); ZONE.germany.labs.push(l);}
+}
+zoneGroup.addTo(map);
+const zEls=z=>[z.ln.getElement(),z.cas.getElement(),...z.labs.map(l=>l.getElement())].filter(Boolean);
+function zonePulse(z){ for(const el of zEls(z)){ el.classList.remove('pulse'); void el.getBoundingClientRect(); el.classList.add('pulse'); } }
+function zoneShow(z,on){ for(const el of zEls(z)) el.classList.toggle('zone-off',!on); }
+// Anteil erschlossener 400-m-Zellen je Zone (Innenstadt/Stadtgrenze ab 80 %, Speckgürtel ab 50 %)
+const ZTHR={inner:.8,berlin:.8,umland:.5};
+function zoneTimes(d){
+  if(d.zoneT)return d.zoneT;
+  const C=d.cellC,out={};
+  for(const k in ZTHR){ if(!ZONE[k]){out[k]=Infinity;continue;}
+    const rings=(ZONES[k]||[]).map(poly=>poly[0].map(([lo,la])=>merc(lo,la)));
+    let x0=9,x1=-9,y0=9,y1=-9; for(const r of rings)for(const [x,y] of r){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);}
+    const inside=(x,y)=>{let c=false;for(const r of rings)for(let i=0,j=r.length-1;i<r.length;j=i++){const [xi,yi]=r[i],[xj,yj]=r[j];
+      if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)c=!c;}return c;};
+    const ts=[];
+    for(const [key,t] of d.cellT){const cx=Math.floor(key/1e6),cy=key-cx*1e6,x=(cx+.5)*C,y=(cy+.5)*C;
+      if(x<x0||x>x1||y<y0||y>y1)continue; if(inside(x,y))ts.push(t);}
+    ts.sort((a,b)=>a-b);
+    out[k]=ts.length?ts[Math.min(ts.length-1,Math.floor(ts.length*ZTHR[k]))]:Infinity;
+  }
+  return d.zoneT=out;
+}
+function zoneCheck(){
+  if(!zonesOn||!layer)return;
+  const zt=zoneTimes(layer.d),z_=map.getZoom(),vb=map.getBounds();
+  for(const k in ZONE){const z=ZONE[k];
+    const vis=ZVIS[k](T,z_,vb,z.b);
+    if(vis!==z.vis){ z.vis=vis; zoneShow(z,vis); if(vis&&!(k in ZTHR)) zonePulse(z); }
+    if(k in ZTHR){
+      if(!z.shown&&T>=zt[k]){z.shown=true; if(z.vis)zonePulse(z);}
+      else if(z.shown&&T<zt[k])z.shown=false;
+    }
+  }
+}
+map.on('zoom moveend',zoneCheck);
+// Maßstab: folgt jedem Zoom-/Kameraschritt (Leaflets eigene Leiste aktualisiert erst am Ende einer Bewegung)
+const ScaleBar=L.Control.extend({options:{position:'bottomleft'},
+  onAdd(m){const el=L.DomUtil.create('div','scalebar');el.innerHTML='<div class="lab"><span>0</span><b></b></div><div class="bar"><i></i><i></i><i></i><i></i></div>';
+    this.lab=el.querySelector('.lab b');this.bar=el.lastChild;m.on('zoom move viewreset resize',this.update,this);
+    m.on('zoomanim',e=>this.update(null,e.zoom,e.center),this);setTimeout(()=>this.update());return el;},
+  update(_,z,c){
+    z=z??map.getZoom();c=c??map.getCenter();
+    const mpp=40075016.686*Math.cos(c.lat*Math.PI/180)/(256*Math.pow(2,z)),max=mpp*320;
+    const p=Math.pow(10,Math.floor(Math.log10(max))),f=max/p,d=(f>=5?5:f>=2?2:1)*p;
+    this.bar.style.width=(d/mpp).toFixed(1)+'px';
+    this.lab.textContent=d>=1000?(d/1000).toLocaleString(tr('loc'))+' km':d+' m';
+  }});
+const scaleBar=new ScaleBar().addTo(map);
+map.attributionControl.setPrefix(false);
+// minZoom unter dem Karten-Minimum 6,75: GridLayer._pruneTiles entfernt sonst bei Kartenzoom < 7 sämtliche Kacheln (Karte leer)
+new OfflineTiles({minZoom:5.5,maxZoom:16,tileSize:256,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · <a href="https://openfreemap.org">OpenFreeMap</a> · VBB · DELFI'}).addTo(map);
+// Ortsnamen über allem außer Markern (600), Popups und Bedienelementen
+{const lp=map.createPane('labels');lp.style.zIndex=450;lp.style.pointerEvents='none';}
+new OfflineLabels({pane:'labels',minZoom:5.5,maxZoom:16,maxNativeZoom:14,tileSize:256}).addTo(map);
+
+const bar=document.getElementById('bar');
+VM.forEach(v=>{const i=document.createElement('i');i.style.background=v.c;i.style.width='0';bar.appendChild(i);});
+const fmt=T=>{const s=Math.floor(T*60/STEP)*STEP;
+  if(s<3600) return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+' <small>min</small>';
+  return Math.floor(s/3600)+' h '+String(Math.floor(s%3600/60)).padStart(2,'0')+' <small>min</small>';};
+function renderAll(){
+  if(typeof zoneCheck==='function'&&typeof ZONE!=='undefined')zoneCheck();
+  document.getElementById('tval').innerHTML=fmt(T);
+  document.getElementById('t').value=T;
+  layer.update(T);
+  const d=layer.d,area=O.modes.biketransit.area,k=Math.floor(T*60/STEP+1e-9),a=k>0?area[Math.min(k,d.nb)-1]:0;
+  document.getElementById('area').innerHTML=a.toLocaleString(tr('loc'),{maximumFractionDigits:a<10?1:0})+' <small>'+tr('km2')+'</small>';
+  const tot=new Array(NM).fill(0);
+  for(let b=Math.max(1,k-5);b<=Math.min(k,d.nb);b++) for(let m=0;m<NM;m++) tot[m]+=d.len[b*NM+m];
+  const s=tot.reduce((x,y)=>x+y,0);
+  [...bar.children].forEach((el,m)=>{el.style.width=(s>0?tot[m]/s*100:0)+'%';});
+  const top=tot.map((v,m)=>[v,m]).filter(v=>v[0]>0).sort((a,b)=>b[0]-a[0]).slice(0,2);
+  document.getElementById('nowtxt').textContent=s>0?top.map(([v,m])=>(m===0?VM[0].n:tr('nowMode')(VM[m].n))+' '+Math.round(v/s*100)+tr('pct')).join(' · '):'–';
+}
+function originTexts(){
+  document.getElementById('title').textContent=tr('title')+' · '+oName(origin);
+  document.getElementById('subtitle').textContent=tr('sub')(oFull(origin));
+  if(pin){pin.options.title=oFull(origin);const el=pin.getElement();if(el)el.title=oFull(origin);}
+}
+function setOrigin(){
+  O=STREETS.origins[origin];HOME=O.origin;
+  if(layer)map.removeLayer(layer); if(pin)map.removeLayer(pin);
+  layer=new StreetLayer();
+  pin=L.marker(HOME,{icon:L.divIcon({className:'',html:'<div class="start-pin"></div>',iconSize:[17,17],iconAnchor:[8.5,8.5]}),title:oFull(origin),zIndexOffset:1000}).addTo(map);
+  originTexts();
+  // erst Ansicht setzen, dann Layer hinzufügen: onAdd zeichnet gleich in der Zielansicht (sonst doppelt gezeichnet
+  // und bis zu 220 ms ein verschobenes/skaliertes Basis-Canvas, weil full() kurz nach onAdd gedrosselt ist)
+  if(autoCam)camJump(); else applyView(); layer.addTo(map); renderAll(); legend();
+}
+let viewProg=false;
+function applyView(){ if(!view)return; viewProg=true; map.fitBounds(VIEWS.find(v=>v.id===view).fit(),{...camPadding(),animate:false}); viewProg=false; }
+const ring='<svg width="22" height="14" viewBox="0 0 22 14"><circle cx="11" cy="7" r="5.5" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.2"/><circle cx="11" cy="7" r="2.4" fill="#fff"/></svg>';
+const head='<svg width="22" height="14" viewBox="0 0 22 14"><path d="M1 7H14" stroke="rgba(255,255,255,.9)" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="4.2" fill="#2fb34a"/><circle cx="16" cy="7" r="2.6" fill="#fff"/></svg>';
+const edgeIco='<svg width="22" height="14" viewBox="0 0 22 14"><path d="M2 12C4 4 9 2 14 3S21 8 20 12" fill="rgba(255,222,170,.08)" stroke="rgba(255,236,205,.75)" stroke-width="1.3"/></svg>';
+function legend(){
+  const el=document.getElementById('legend');
+  let h='<span>'+head+tr('legHead')+'</span><span>'+ring+tr('legRing')+'</span>';
+  if(covMode==='edge')h+='<span>'+edgeIco+tr('legEdge')+'</span>';
+  else if(covMode==='area')h+='<span><i class="sw" style="height:10px;background:rgba(255,196,120,.3)"></i>'+tr('legArea')+'</span>';
+  if(zonesOn)h+='<span>'+zoneIco+tr('legZones')+'</span>';
+  if(colorBy==='mode'){
+    const L_=getData().len,used=new Set([0]);
+    for(let m=1;m<NM;m++){ for(let b=1;b<=getData().nb;b++) if(L_[b*NM+m]>0){used.add(m);break;} }
+    h+=VM.map((v,m)=>used.has(m)?'<span><i class="sw" style="background:'+v.c+'"></i>'+(m===0?v.n:tr('legMode')(v.n))+'</span>':'').join('');
+  }
+  el.innerHTML=h;
+}
+
+// --- Bedienelemente ---
+const chips=(el,items,cur,on)=>items.forEach(it=>{
+  const b=document.createElement('button');b.className='chip';b.textContent=it.name;b.dataset.id=it.id;
+  b.setAttribute('aria-pressed',it.id===cur);
+  b.onclick=()=>{el.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));on(it.id);};
+  el.appendChild(b);
+});
+chips(document.getElementById('origins'),ORIGINS,origin,id=>{if(id!==origin){origin=id;setOrigin();}});
+chips(document.getElementById('views'),VIEWS,view,id=>{setAuto(false);view=id;applyView();});
+document.getElementById('autocam').onclick=()=>setAuto(!autoCam);
+document.getElementById('zones').onclick=()=>{zonesOn=!zonesOn;document.getElementById('zones').setAttribute('aria-pressed',zonesOn);
+  if(zonesOn){zoneGroup.addTo(map);for(const k in ZONE){ZONE[k].shown=false;ZONE[k].vis=true;}zoneCheck();}else map.removeLayer(zoneGroup); legend();};
+document.querySelectorAll('[data-cov]').forEach(b=>b.onclick=()=>{
+  covMode=b.dataset.cov;
+  document.querySelectorAll('[data-cov]').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  document.body.classList.toggle('fog-on',covMode==='night');      // Nacht: Kacheln aufhellen, der Nebel dunkelt sie wieder ab
+  layer.drawCov(layer.covK||0,true); legend();
+});
+// eigenes Verschieben/Zoomen beendet das Mitzoomen
+map.on('zoomstart movestart',()=>{ if(!camProg&&!viewProg&&autoCam) setAuto(false); });
+map.getContainer().addEventListener('wheel',()=>{ if(autoCam)setAuto(false); },{passive:true});
+document.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{
+  colorBy=b.dataset.c;
+  document.querySelectorAll('[data-c]').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  document.getElementById('ramp').style.opacity=colorBy==='time'?1:.25;
+  layer.full(); legend();          // (StreetLayer hat kein reset(): warf TypeError, Farben blieben bis zum nächsten full())
+});
+let playing=false,last=0;
+document.querySelectorAll('[data-speed]').forEach(b=>b.onclick=()=>{dur=+b.dataset.speed;document.querySelectorAll('[data-speed]').forEach(x=>x.setAttribute('aria-pressed',x===b));});
+const playBtn=document.getElementById('play'),icon=document.getElementById('playicon');
+function setPlaying(p){playing=p;icon.innerHTML=p?'<path d="M3 2h4v12H3zM9 2h4v12H9z"/>':'<path d="M4 2l10 6-10 6z"/>';playBtn.setAttribute('aria-label',tr(p?'pause':'play'));
+  if(p){ if(T>=AX)T=0; last=performance.now(); requestAnimationFrame(tick);} }
+// Tempo passt sich der Ausdehnung an: bis ~1:20 unverändert, danach so viel schneller, wie die Karte herauszoomt
+// (gleiche sichtbare Ausbreitung pro Sekunde). Maß: Kantenlänge der Ausdehnung (Zoom-unabhängig vom Fenster).
+const T_REF=78,SPD_MAX=4;
+let spd=1;
+function zp(t){const [x0,x1,y0,y1]=layer.extent(t);return -Math.log2(Math.max(x1-x0,(y1-y0)*1.4,1e-6));}
+function speedTarget(){ if(!layer)return 1; const d=layer.d; if(d.zRef===undefined)d.zRef=zp(T_REF);
+  return Math.min(SPD_MAX,Math.pow(2,1.3*Math.max(0,d.zRef-zp(T)))); }
+function tick(now){
+  if(!playing)return;
+  const dt=Math.max(0,now-last)/1000;
+  spd+=(speedTarget()-spd)*(1-Math.exp(-dt/1.2));            // weich nachführen, keine Sprünge
+  T=Math.min(AX,T+dt*90/dur*spd); last=now;   // rAF-Zeitstempel kann vor performance.now() liegen → nie rückwärts (T<0)
+  if(autoCam&&layer) camStep(Math.min(.1,dt));   // Kamera im selben Schritt: Züge nur einmal je Frame zeichnen
+  renderAll();
+  if(T>=AX){setPlaying(false);return;}
+  requestAnimationFrame(tick);
+}
+playBtn.onclick=()=>setPlaying(!playing);
+document.getElementById('t').addEventListener('input',e=>{setPlaying(false);T=+e.target.value;renderAll();});
+document.addEventListener('keydown',e=>{if(e.code==='Space'&&e.target.tagName!=='INPUT'){e.preventDefault();setPlaying(!playing);}});
+window.ISO={get T(){return T},set T(v){T=v;renderAll();},map,setPlaying,camJump,camStep,setLang,get layer(){return layer},speedTarget:()=>speedTarget(),setAuto};
+
+// --- Sprache umschalten: nur Texte neu setzen – Animation, Ansicht, Startort und Kamera bleiben unberührt ---
+function setLang(l){
+  if(!(l in I18N))return;
+  LANG=l;try{localStorage.setItem('iso-lang',l);}catch(e){}
+  document.documentElement.lang=l;document.title=tr('docTitle');
+  document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=tr(el.dataset.i18n);});
+  document.querySelectorAll('[data-n-de]').forEach(el=>{el.textContent=l==='en'?el.dataset.nEn:el.dataset.nDe;});   // Ländernamen
+  document.querySelectorAll('[data-i18n-title]').forEach(el=>{el.title=tr(el.dataset.i18nTitle);});
+  document.querySelectorAll('[data-i18n-aria]').forEach(el=>{el.setAttribute('aria-label',tr(el.dataset.i18nAria));});
+  document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===l));
+  const ul=document.getElementById('notes');ul.textContent='';
+  for(const t of tr('notes')){const li=document.createElement('li');li.textContent=t;ul.appendChild(li);}
+  for(const [id,list] of [['origins',ORIGINS],['views',VIEWS]])
+    document.querySelectorAll('#'+id+' button').forEach(b=>{const it=list.find(x=>x.id===b.dataset.id);if(it)b.textContent=it.name;});
+  playBtn.setAttribute('aria-label',tr(playing?'pause':'play'));
+  if(map._loaded)scaleBar.update();               // vor der ersten Ansicht (Start) gibt es noch keine Kartenmitte
+  if(layer){originTexts();renderAll();legend();}
+}
+document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{if(b.dataset.lang!==LANG)setLang(b.dataset.lang);});
+setLang(LANG);
+
+setOrigin();
+setAuto(true);
+setTimeout(()=>setPlaying(true),700);
+})();
+</script>
+</body>
+</html>
