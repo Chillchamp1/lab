@@ -33,11 +33,11 @@ for kind, names, keep, d in (("bg", lists["bg"], keep_bg, tiles), ("lab", lists[
         if not keep(n) or not os.path.exists(src) or os.path.getsize(src) == 0: continue
         shutil.copyfile(src, os.path.join(dst, n + ".webp"))
         z, x, y = n.split("_"); d[f"{z}/{x}/{y}"] = 0          # 0 = Datei unter tiles/<kind>/
-LITE = os.path.join(H, "data", "streets_web_lite.json")   # ausgedünnt von lite_streets.py (leichter im Browser)
+LITE = os.path.join(H, "data", "hbf", "streets_web_lite.json")   # ausgedünnt von lite_streets.py (leichter im Browser)
 if os.path.exists(LITE):
     streets = open(LITE, encoding="utf-8").read()
 else:
-    fn = next(os.path.join(H, "data", f) for f in ("streets_v8_rr.json", "streets_v8.json") if os.path.exists(os.path.join(H, "data", f)))
+    fn = next(os.path.join(H, "data", "hbf", f) for f in ("streets_rr.json", "streets_raw.json") if os.path.exists(os.path.join(H, "data", "hbf", f)))
     d = json.load(open(fn))
     streets = json.dumps({"step": d["step"], "tmax": d["modes"]["biketransit"]["tmax"],
                           "origins": {"hbf": {"origin": d["origin"], "modes": {"biketransit": d["modes"]["biketransit"]}}}}, separators=(",", ":"))

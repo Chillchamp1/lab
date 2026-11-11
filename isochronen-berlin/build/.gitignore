@@ -3,6 +3,9 @@ gtfs/
 data/
 osm_pbf/
 osm_parts/
+plcz_pbf/
+plcz_parts/
+plcz_poly/
 zones_work/
 zones_pbf/
 borders_pbf/
