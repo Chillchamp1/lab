@@ -1,0 +1,21 @@
+# Rohdaten, Zwischenstände und Ausgaben der Kette – nichts davon gehört ins Repo
+gtfs/
+data/
+osm_pbf/
+osm_parts/
+zones_work/
+zones_pbf/
+borders_pbf/
+borders_parts/
+renders/
+tiles_bg/
+tiles_lab/
+tiles_lists.json
+vendor/
+video_out/
+video_ffmpeg.log
+__pycache__/
+*.pkl
+*.npz
+*.pbf
+*.mp4

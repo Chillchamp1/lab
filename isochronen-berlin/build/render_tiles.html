@@ -1,0 +1,79 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>render</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<style>body{margin:0} #m{position:absolute;left:0;top:0}</style></head>
+<body><div id="status">ready</div>
+<script>
+const M = 256; // Rand gegen abgeschnittene Beschriftungen
+function t2lon(x,z){return x/2**z*360-180}
+function t2lat(y,z){const n=Math.PI-2*Math.PI*y/2**z;return 180/Math.PI*Math.atan(Math.sinh(n))}
+window.renderRegion = async function(z,x0,y0,x1,y1,name){
+  const W=(x1-x0+1)*256+2*M, H=(y1-y0+1)*256+2*M;
+  document.getElementById('m')?.remove();
+  const d=document.createElement('div'); d.id='m'; d.style.width=W+'px'; d.style.height=H+'px'; document.body.appendChild(d);
+  const map=new maplibregl.Map({container:d,style:'https://tiles.openfreemap.org/styles/'+(window.STYLE||'dark'),
+    center:[t2lon((x0+x1+1)/2,z),t2lat((y0+y1+1)/2,z)],zoom:z-1,pixelRatio:window.PR||1,interactive:false,
+    preserveDrawingBuffer:true,attributionControl:false,fadeDuration:0});
+  await new Promise(r=>map.once('styledata',r));
+  // deutsche Beschriftungen
+  for(const l of map.getStyle().layers){
+    if(l.type!=='symbol')continue;
+    const tf=map.getLayoutProperty(l.id,'text-field');
+    if(tf && JSON.stringify(tf).includes('name')) map.setLayoutProperty(l.id,'text-field',['coalesce',['get','name:de'],['get','name']]);
+  }
+  // dezente Orientierung: Wasser und Wald leicht getönt
+  const set=(id,p,v)=>{ if(map.getLayer(id)) map.setPaintProperty(id,p,v); };
+  set('background','background-color','#0b0c0e');
+  set('water','fill-color','#0d1a26');
+  set('landcover_wood','fill-color','#0e1810'); set('landcover_wood','fill-opacity',1);
+  set('landuse_park','fill-color','#0f1911');
+  set('landuse_residential','fill-color','#111214');
+  if(window.CALM){
+    // Beschriftungen gestaffelt nach Zoom (MapLibre-Zoom = Kachel-Zoom - 1), gedämpfte Farben
+    const zr=(id,mn,mx)=>{ if(map.getLayer(id)) map.setLayerZoomRange(id,mn,mx??24); };
+    const hide=id=>{ if(map.getLayer(id)) map.setLayoutProperty(id,'visibility','none'); };
+    ['place_state','place_country_other','place_country_minor','road_oneway','road_oneway_opposite'].forEach(hide);
+    zr('place_town',8); zr('place_village',9.3); zr('place_suburb',10); zr('place_other',11.5);
+    zr('highway_name_other',13); zr('highway_name_motorway',11); zr('water_name',11);
+    for(const id of ['place_other','place_suburb','place_village','highway_name_other','water_name']){
+      set(id,'text-color','#6c727b'); set(id,'text-halo-color','#0b0c0e'); set(id,'text-halo-width',1.2);
+    }
+    for(const id of ['place_town','place_city','place_city_large','place_country_major']){
+      set(id,'text-color','#9aa0a8'); set(id,'text-halo-color','#0b0c0e'); set(id,'text-halo-width',1.4);
+    }
+    // Grundkarten-Straßen zurücknehmen, damit die Isochronen-Straßen klar davor stehen
+    set('highway_motorway_casing','line-color','rgba(52,54,58,.55)');
+    set('highway_major_casing','line-color','rgba(48,50,54,.5)');
+    if(window.BUILT){
+      // Bebauung dezent sichtbar: Wohngebiete als leichte Aufhellung, Gebäude erst nah
+      zr('landuse_residential',0,24); map.setFilter('landuse_residential',['match',['get','class'],['residential','suburb','neighbourhood','commercial','retail','industrial'],true,false]);
+      set('landuse_residential','fill-color',['match',['get','class'],['commercial','retail','industrial'],'#17181c','#1a1c21']); set('landuse_residential','fill-opacity',1);
+      set('building','fill-color','#1c1e23'); set('building','fill-outline-color','#1c1e23');
+    }
+  }
+  // Ebenen getrennt rendern: 'bg' = ohne Beschriftung, 'labels' = nur Beschriftung auf transparentem Grund
+  if(window.MODE==='bg'){ for(const l of map.getStyle().layers) if(l.type==='symbol') map.setLayoutProperty(l.id,'visibility','none'); }
+  if(window.MODE==='labels'){
+    for(const l of map.getStyle().layers) if(l.type!=='symbol') map.setLayoutProperty(l.id,'visibility','none');
+    // Beschriftung liegt über den hellen Isochronen-Straßen: hell mit kräftigem, scharfem dunklem Rand (keine Boxen)
+    for(const l of map.getStyle().layers){ if(l.type!=='symbol')continue;
+      const big=/place_(city|town|country)/.test(l.id);
+      set(l.id,'text-color',big?'#f3f1ec':'#d9dbdf'); set(l.id,'text-halo-color','rgba(5,6,8,0.95)');
+      set(l.id,'text-halo-width',big?1.6:1.35); set(l.id,'text-halo-blur',0.7); }
+  }
+  // ohne requestAnimationFrame (verstecktes Fenster): selbst neu zeichnen, bis alle Kacheln und Symbole geladen sind
+  // Warten per MessageChannel (wird in versteckten Seiten nicht wie setTimeout gedrosselt)
+  let stable=0;const t0=performance.now();
+  while(stable<3&&performance.now()-t0<120000){
+    await new Promise(r=>setTimeout(r,400));
+    map.redraw();
+    stable=map.areTilesLoaded()?stable+1:0;
+  }
+  map.redraw();
+  const blob=await new Promise(r=>map.getCanvas().toBlob(r,'image/png'));
+  const res=await fetch('/save?name='+(name||('d'+z)),{method:'POST',body:blob});
+  map.remove();
+  return {z,W,H,ok:res.ok,size:blob.size};
+};
+</script></body></html>
