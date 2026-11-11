@@ -2,7 +2,7 @@
   {
     "slug": "isochronen-berlin",
     "titel": "Five hours from Berlin Central Station by train and bike",
-    "beschreibung": "An animated isochrone map: every street appears the moment you can reach it from Berlin Hauptbahnhof by public transport with a bike carried on the train, starting Tuesday 8 am, for five hours. Streets are coloured by the highest-ranked train of the journey, the leading trains run on their real tracks, stations flash where the ride continues by bike, and the camera zooms out with the spread – from Berlin's inner city to Hamburg, Leipzig, Dresden and the Polish border. Timetables from VBB and DELFI (gtfs.de), streets and paths from OpenStreetMap. In English.",
+    "beschreibung": "An animated isochrone map: every street appears the moment you can reach it from Berlin Hauptbahnhof by public transport with a bike carried on the train, using the fastest connection departing between 7 and 9 am on a Tuesday, for five hours. Streets are coloured by the highest-ranked train of the journey, the leading trains run on their real tracks, stations flash where the ride continues by bike, and the camera zooms out with the spread – from Berlin's inner city to Hamburg, Munich, Poznań and Wrocław. Timetables from VBB, DELFI (gtfs.de), Polish and Czech rail, streets and paths from OpenStreetMap. In English.",
     "datum": "2026-11"
   },
   {

@@ -3,10 +3,12 @@
 → **https://chillchamp1.github.io/lab/isochronen-berlin/**
 
 Eine Isochronenkarte, die nicht in Ringen wächst, sondern **Straße für
-Straße**. Start ist **Berlin Hauptbahnhof**, Dienstag, 8 Uhr, mit dem Fahrrad.
-Man darf jeden Zug und jede Bahn nehmen, die das Rad mitnimmt, und nach dem
-Aussteigen weiterradeln. Jede Straße erscheint in dem Moment, in dem sie zum
-ersten Mal erreicht ist — bis fünf Stunden nach der Abfahrt.
+Straße**. Start ist **Berlin Hauptbahnhof** an einem Dienstagmorgen, mit dem
+Fahrrad; für jeden Ort zählt die schnellste Verbindung mit Abfahrt zwischen 7
+und 9 Uhr. Man darf jeden Zug und jede Bahn nehmen, die das Rad mitnimmt, und
+nach dem Aussteigen weiterradeln — auch über die Grenzen nach Polen und
+Tschechien. Jede Straße erscheint in dem Moment, in dem sie zum ersten Mal
+erreicht ist — bis fünf Stunden nach der Abfahrt.
 
 > Die Seite ist **auf Englisch**, mit einem Umschalter auf Deutsch (DE/EN oben
 > im Kasten, die Wahl wird gemerkt). Diese Dokumente — README, Quellen,
@@ -33,11 +35,12 @@ die gefahrene Strecke als blasse Linie stehen. Hervorgehoben sind die **Züge an
 der Spitze der Ausbreitung** — die, die gerade Neuland erschließen; ihr Ring
 zeigt das Verkehrsmittel. Die Linien folgen den Gleisen: aus den Linienverläufen
 des VBB-Fahrplans, und wo die fehlen (Fernverkehr, Regionalverkehr außerhalb
-des VBB), über einen Gleisgraphen aus OpenStreetMap geroutet.
+des VBB, Polen und Tschechien), über einen Gleisgraphen aus OpenStreetMap
+geroutet.
 
 **Die Bahnhöfe.** Ein Bahnhof **blitzt auf**, wenn man dort aussteigt und von
 dort aus mit dem Rad als Erster Straßen erreicht — nicht jeder Halt, an dem ein
-Zug vorbeikommt. Das sind **1.945 Ausstiegsbahnhöfe**.
+Zug vorbeikommt. Das sind **2.770 Ausstiegsbahnhöfe**.
 
 **Die erschlossene Fläche** ist warm getönt: ein Raster aus 400-m-Zellen mit
 erreichter Straße, Lücken bis etwa 800 m geschlossen. Was ringsum von
@@ -62,21 +65,27 @@ Namen der Nachbarländer — am Ende reicht die Karte über beide hinaus. Eine Z
 ## In Zahlen
 
 Erreichte Fläche, gezählt als 250-m-Rasterzellen mit mindestens einer
-erreichten Straße (Median über vier Abfahrten, siehe unten):
+erreichten Straße (schnellste Verbindung mit Abfahrt zwischen 7 und 9 Uhr,
+siehe unten):
 
 | nach | Fläche | zum Vergleich |
 |---|---:|---|
-| 1 h | **1.140 km²** | mehr als Berlin (891 km²) |
-| 2 h | **5.317 km²** | fast das Anderthalbfache von Berlin samt Speckgürtel (3.779 km²) |
-| 3 h | **20.879 km²** | etwa 70 % der Fläche Brandenburgs |
-| 4 h | **40.350 km²** | mehr als Brandenburg und Berlin zusammen (30.546 km²) |
-| 5 h | **67.539 km²** | knapp ein Fünftel Deutschlands |
+| 1 h | **1.700 km²** | fast doppelt so viel wie Berlin (891 km²) |
+| 2 h | **10.180 km²** | mehr als das Zweieinhalbfache von Berlin samt Speckgürtel (3.779 km²) |
+| 3 h | **29.474 km²** | fast so viel wie Brandenburg und Berlin zusammen (30.546 km²) |
+| 4 h | **57.837 km²** | fast das Doppelte von Brandenburg und Berlin zusammen |
+| 5 h | **94.724 km²** | mehr als ein Viertel der Fläche Deutschlands (rund 357.600 km²) |
 
 Zeitauflösung **10 Sekunden**: die Daten sind 1.800 Zeitschritte, und in jedem
-steht, welche Straßen neu dazukommen — zusammen **rund 5,5 Millionen
-Linienzüge**, von denen die Webfassung 2,4 Millionen ausliefert (siehe unten).
-Nach fünf Stunden reicht das Gebiet von 48,7° bis 54,8° Nord und von 7,8° bis
-15,9° Ost.
+steht, welche Straßen neu dazukommen — zusammen **rund 7,6 Millionen
+Linienzüge**, von denen die Webfassung 3,5 Millionen ausliefert (38 MB, siehe
+unten). Nach fünf Stunden reicht das Gebiet von 48,1° bis 54,8° Nord und von
+7,1° bis 18,7° Ost.
+
+Einige Ziele: **München Hbf** nach 4:51, **Poznań** nach 3:12, **Wrocław** nach
+etwa 4:56, **Děčín** nach 3:58, **Toruń** nach 4:55. **Prag** erreicht die Karte
+nicht: an diesem Dienstag steht in den Fahrplandaten im Abfahrtsfenster kein
+direkter Fernzug Berlin–Praha.
 
 ## Bedienung
 
@@ -87,8 +96,11 @@ Nach fünf Stunden reicht das Gebiet von 48,7° bis 54,8° Nord und von 7,8° bi
   die sichtbare Ausbreitung pro Sekunde ungefähr gleich, und die fünfte Stunde
   dauert nicht so lange wie die ganze Berliner Phase.
 - **Kamera folgt**: der Ausschnitt fährt mit der Ausbreitung mit, samt der
-  äußersten Züge, weich nachgeführt. Wer selbst zoomt oder schiebt, schaltet
-  sie ab; daneben drei feste Ausschnitte — Umgebung, Berlin, Gesamtgebiet.
+  äußersten Züge, weich nachgeführt. Dabei zoomt sie höchstens bis Zoomstufe 7
+  heraus (etwa 750 m pro Pixel), damit die Radgebiete um die Bahnhöfe als
+  Flächen erkennbar bleiben; die äußersten Orte, etwa München, dürfen am Ende
+  aus dem Bild laufen. Wer selbst zoomt oder schiebt, schaltet sie ab; daneben
+  drei feste Ausschnitte — Umgebung, Berlin, Gesamtgebiet.
 - **Straßenfarbe**: Verkehrsmittel oder Reisezeit.
 - **Stadtzonen** ein- und ausblenden.
 - Oben im Kasten die **erreichte Fläche** und ein Balken, **womit** die Straßen
@@ -99,18 +111,28 @@ Nach fünf Stunden reicht das Gebiet von 48,7° bis 54,8° Nord und von 7,8° bi
 
 ## Annahmen und Grenzen
 
-**Der Fahrplan.** Soll-Fahrplan vom **Dienstag, 10. November 2026**. Gerechnet
-wird für die Abfahrten **08:00, 08:05, 08:10 und 08:15**, Wartezeit
-eingerechnet; jede Straße bekommt den **Median** der vier Ankunftszeiten (das
-Mittel aus der zweit- und drittfrühesten), damit nicht der Zufall einer
-einzelnen Minute die Karte formt. Fahrplanfenster 07:55 bis 13:20.
-Verspätungen, Ausfälle und Baustellen stehen nicht darin.
+**Der Fahrplan.** Soll-Fahrplan vom **Dienstag, 10. November 2026**. Für jeden
+Ort zählt die **schnellste Verbindung** mit Abfahrt am Hauptbahnhof zwischen
+**07:00 und 09:00 Uhr**, geprüft alle 5 Minuten (25 Abfahrten). Die Reisezeit
+zählt ab dieser Abfahrt; Warten am Start zählt also nicht mit. Je Bahnsteig
+bleibt die beste Reisezeit über alle Abfahrten, samt der Fahrt, die sie
+erreicht; von diesen Bestzeiten aus rechnet dann ein einziger Rad-Dijkstra
+weiter. So hängt das Bild nicht vom Zufall der Startminute ab.
+Fahrplanfenster 06:55 bis 14:30. Verspätungen, Ausfälle und Baustellen stehen
+nicht darin.
 
-**Drei Fahrpläne zusammen.** Der VBB-Datensatz für Berlin und Brandenburg, der
-Fernverkehr aus dem gtfs.de-Feed `fv_free` und der Regionalverkehr ganz
-Deutschlands aus `rv_free`. Fahrten, die in zwei Feeds stehen, werden über
-gemeinsame Halte erkannt und nur einmal gezählt; wo eine Regionalbahn über die
-VBB-Grenze hinausfährt, bleibt man im selben Zug sitzen.
+**Fünf Fahrpläne zusammen.** Der VBB-Datensatz für Berlin und Brandenburg, der
+Fernverkehr aus dem gtfs.de-Feed `fv_free`, der Regionalverkehr ganz
+Deutschlands aus `rv_free`, dazu die **polnische Bahn** (GTFS „polish_trains“
+von Mikołaj Kuranowski, Daten von PKP PLK und den Bahnbetreibern) und die
+**tschechische Bahn** (der CZPTT-Fahrplan der Správa železnic, vom Projekt
+Oběhy mit JrUtil zu GTFS gemacht). Fahrten, die in zwei Feeds stehen, werden
+über gemeinsame Halte erkannt und nur einmal gezählt. Wo ein Zug über eine
+Grenze fährt, bleibt man im selben Zug sitzen: über die VBB-Grenze hinaus
+ohnehin, nach Polen und Tschechien, indem die deutsche Fahrt im polnischen
+oder tschechischen Feed unter ihrer Fahrt-ID weitergeführt wird. Regionalzüge,
+die der deutsche Feed an Grenzpunkten („(Gr)“) in zwei Fahrten teilt, werden
+wieder zu einer zusammengesetzt.
 
 **Wo das Rad mit darf.**
 
@@ -122,6 +144,9 @@ VBB-Grenze hinausfährt, bleibt man im selben Zug sitzen.
 - **Regionalverkehr außerhalb des VBB** (gtfs.de `rv_free`) gilt ebenfalls als
   radtauglich, außer Schienenersatzverkehr und Fahrten, die es ausdrücklich
   ausschließen.
+- **In Polen und Tschechien** gilt die Angabe je Fahrt, wo der Feed sie hat.
+  Der polnische Schnellzug **EIP** nimmt kein Rad mit, Ersatzbusse (ZKA, NAD)
+  nie; die übrigen Fernzüge gelten wie in Deutschland als radtauglich.
 
 **Das Rad.** Ein Trekkingrad mit **17 km/h**, Wald- und Feldwege erlaubt. Die
 ersten **60 Minuten** ab dem Hauptbahnhof kommen aus der Routing-Maschine
@@ -139,8 +164,8 @@ draußen werden Straßen nur um die Bahnhöfe herum geladen, an denen man
 ankommt: in den ersten drei Stunden die radtauglichen Wege in dem Umkreis, den
 die Restzeit hergibt (höchstens 12 km); im äußeren Ring bis fünf Stunden
 Wohn- und Verbindungsstraßen, Radwege und befestigte Feld- und Waldwege
-**innerhalb von 8 km** um die Bahnhöfe. Wer darüber hinaus radeln würde, kommt
-in der Karte nicht an.
+**innerhalb von 8 km** um die Bahnhöfe. Das gilt in Polen und Tschechien
+ebenso. Wer darüber hinaus radeln würde, kommt in der Karte nicht an.
 
 **Was gespeichert ist.** Gerechnet wird mit allen Straßen. Gespeichert sind
 bis drei Stunden alle, danach nur noch das Hauptnetz — sonst würde die Datei
@@ -149,8 +174,9 @@ flüssig läuft: bis zwei Stunden alle Straßen, bis drei Stunden das Hauptnetz
 mit Radwegen und befestigten Wegen, danach die großen Straßen.
 
 **Die Gleise.** Wo der Fahrplan keinen Linienverlauf mitliefert, wird jeder
-Abschnitt zwischen zwei Halten auf dem OSM-Gleisnetz geroutet. Gelingt das
-nicht, bleibt es bei der Luftlinie.
+Abschnitt zwischen zwei Halten auf dem OSM-Gleisnetz geroutet, das jetzt auch
+die Strecken in Polen und Tschechien enthält. Gelingt das nicht, bleibt es bei
+der Luftlinie.
 
 **Die Karte darunter** ist ein dunkler Stil von OpenFreeMap, einmal gerendert
 und als Kacheln mitgeliefert — die Seite lädt keine Kartendienste nach.
