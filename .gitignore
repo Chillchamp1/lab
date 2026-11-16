@@ -59,3 +59,6 @@ handgelenk-tests/build/node_modules
 handgelenk-tests/build/dist
 handgelenk-tests/build/dist-artifact
 handgelenk-tests/build/assets-src/
+# Rohaufnahmen und HRTF der Klangszenen, siehe raumklang/README.md
+raumklang/material/
+__pycache__/

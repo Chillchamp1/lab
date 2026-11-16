@@ -1,5 +1,11 @@
 [
   {
+    "slug": "raumklang",
+    "titel": "Im Ruderboot auf dem Meer",
+    "beschreibung": "Eine binaurale Klangszene für Kopfhörer, gerendert für jemanden, der auf dem Rücken liegt: Möwen kreisen und schießen dicht über das Boot, Wellen ringsum, Wasser klatscht gegen die Planken, das Holz knarzt. Alles aus echten, frei lizenzierten Aufnahmen, in Einzelereignisse zerlegt und mit einer Python-Pipeline neu im Raum gesetzt – mit schaukelndem Boot, Beugung über die Bordkante, Spiegelungen an den Bordwänden, Doppler beim Überflug und der HRTF CIPIC 040. Dazu jede Klanggruppe einzeln zum Anhören.",
+    "datum": "2026-11"
+  },
+  {
     "slug": "isochronen-berlin",
     "titel": "Five hours from Berlin Central Station by train and bike",
     "beschreibung": "An animated isochrone map: every street appears the moment you can reach it from Berlin Hauptbahnhof by public transport with a bike carried on the train, using the fastest connection departing between 7 and 9 am on a Tuesday, for five hours. Streets are coloured by the highest-ranked train of the journey, the leading trains run on their real tracks, stations flash where the ride continues by bike, and the camera zooms out with the spread – from Berlin's inner city to Hamburg, Munich, Poznań and Wrocław. Timetables from VBB, DELFI (gtfs.de), Polish and Czech rail, streets and paths from OpenStreetMap. In English.",
