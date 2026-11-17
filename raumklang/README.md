@@ -106,13 +106,26 @@ geklungen haben“:
   Rufen mit geschlossenem Maul, wie es Strauße, Emus und Krokodile können und
   wie es für viele Dinosaurier vermutet wird (Riede u. a. 2016).
 
+## HRTF-Auswahltest
+
+`hrtf-test/` ist der Hörtest, mit dem die HRTF ausgewählt wurde: 48 Rauschstöße
+aus 8 Richtungen mit 6 Kunstohren (MIT-KEMAR und 5 CIPIC-Köpfe, diffusfeld-
+entzerrt, mit frühen Reflexionen und leisem Nachhall), danach je HRTF ein Kreis
+um den Kopf. Die HRIRs liegen in `hrtf-test/hrtf.json`. Das Ergebnis bleibt im
+Browser (Fortsetzen möglich) und lässt sich kopieren oder als Datei speichern.
+
 ## Vergleich Stereo gegen Raumklang
+
+(Nicht mehr auf der Seite; die Werkzeuge bleiben.)
+
 
 `--stereo` rendert dieselbe Szene mit denselben Ereignissen in konventionellem
 Stereo: nur Links-rechts-Verteilung mit gleicher Leistung, Entfernung,
 Luftdämpfung und derselbe Nachhall – ohne HRTF, ohne Spiegelungen, ohne Beugung
 über die Bordkante, ohne Nahfeld. `--drehung` übernimmt den Startpunkt der
-räumlichen Fassung, damit beide deckungsgleich sind. `pipeline/wechsel.py`
+räumlichen Fassung, damit beide deckungsgleich sind – und zwar als
+`start_abtastwerte` aus deren Bericht: die gerundeten Sekunden verschoben die
+Fassungen um 2,8 ms (bis 17.11.). `pipeline/wechsel.py`
 schneidet beide im Wechsel zusammen (14 Abschnitte à 14,3 s, 0,6 s gleichstarke
 Überblendung, auch über die Schleifennaht).
 

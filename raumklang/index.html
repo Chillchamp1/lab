@@ -58,6 +58,9 @@
   <h1>Klangszenen für Kopfhörer</h1>
   <p class="unter">Binaural gerendert für eine liegende Hörhaltung: auf dem Rücken, Kopf auf einem Kissen, Blick schräg nach oben.</p>
 
+  <p class="hinweis"><b>Welche Ohren passen zu dir?</b> Die Szenen sind mit einem Satz gemessener Ohren (HRTF) gerechnet.
+  Im <a href="hrtf-test/">HRTF-Auswahltest</a> findest du in 6–8 Minuten heraus, welcher am besten zu deinen Ohrmuscheln passt.</p>
+
   <p class="hinweis"><b>So hören:</b> Kopfhörer auf (links/rechts richtig herum), hinlegen, Augen zu.
   Jede Szene läuft in Endlosschleife ohne hörbare Naht.</p>
 
@@ -81,7 +84,7 @@
   </details>
 </main>
 <script>
-const SZENEN = ['wald', 'boot', 'boot_ab', 'boot_weite'];
+const SZENEN = ['wald', 'boot', 'boot_weite'];
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const FS = 44100;
 let ctx = null, aktiv = null;

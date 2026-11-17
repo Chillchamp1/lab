@@ -1033,7 +1033,7 @@ def main():
     ap.add_argument('--blick', type=float, help='Blickwinkel über der Waagerechten (überschreibt die Szene)')
     ap.add_argument('--stereo', action='store_true', help='Vergleichsfassung in konventionellem Stereo (ohne HRTF und Spiegelungen)')
     ap.add_argument('--name', help='Name der Ausgabe (Vorgabe: Name der Szene)')
-    ap.add_argument('--drehung', type=float, help='Startpunkt der Schleife in s vorgeben (statt den ruhigsten Moment zu suchen)')
+    ap.add_argument('--drehung', type=float, help='Startpunkt der Schleife in Abtastwerten vorgeben (start_abtastwerte aus dem Bericht der Bezugsfassung; gerundete Sekunden verschieben um Millisekunden)')
     a = ap.parse_args()
 
     sz = json.loads(Path(a.szene).read_text())
@@ -1111,9 +1111,10 @@ def main():
         kand = (ruhig + np.arange(-int(1.5 * FS), int(1.5 * FS), int(0.01 * FS))) % len(e)
         ruhig = int(min(kand, key=lambda i: abs(pegel(i, -w, 0) - pegel(i, 0, w)) + 0.2 * (pegel(i, -w, w) - 10 * np.log10(glatt.min() + 1e-14))))
         if a.drehung is not None:
-            ruhig = int(round(a.drehung * FS)) % len(e)
+            ruhig = int(round(a.drehung)) % len(e)
         summe = np.roll(summe, -ruhig, axis=1)
         bericht['start_verschoben_s'] = round(ruhig / FS, 2)
+        bericht['start_abtastwerte'] = int(ruhig)          # genau – für Vergleichsfassungen (--drehung) diesen Wert nehmen
         bericht['begrenzer_max_db'] = round(weg, 1)
         bericht['lufs'] = round(lautheit(summe), 1)
         bericht['naht'] = nahtpruefung(summe)
