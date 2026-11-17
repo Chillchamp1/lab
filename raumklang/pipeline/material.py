@@ -27,7 +27,7 @@ def filt(x, f, art='highpass', ordnung=4):
 
 def huelle_db(x, fenster_ms=10):
     n = max(1, int(fenster_ms * FS / 1000))
-    return 10 * np.log10(uniform_filter1d(x ** 2, n) + 1e-14)
+    return 10 * np.log10(np.maximum(uniform_filter1d(x ** 2, n), 0) + 1e-14)
 
 
 def entrausche(x, staerke_db=14.0, boden_perzentil=20, nfft=1024, restpegel_db=-18.0):
@@ -50,7 +50,8 @@ def zerlege(x, schwelle_db=12.0, min_dauer=0.08, max_dauer=6.0, luecke=0.12, vor
     """Einzelereignisse finden: Stellen, an denen die Hüllkurve um schwelle_db über dem
     Grundpegel liegt. Rückgabe: Liste (start, ende) in Abtastwerten."""
     h = huelle_db(x, fenster_ms)
-    boden = np.percentile(h, boden_perzentil)
+    echt = h[h > -120]                         # digitale Stille zählt nicht zum Grundpegel
+    boden = np.percentile(echt if len(echt) else h, boden_perzentil)
     aktiv = h > boden + schwelle_db
     aktiv = maximum_filter1d(aktiv.astype(np.uint8), int(luecke * FS)) > 0  # kurze Lücken schließen
     kanten = np.flatnonzero(np.diff(np.concatenate([[0], aktiv.astype(np.int8), [0]])))
@@ -160,3 +161,20 @@ def roehre(x, f0=45.0, n=12, q=14.0, nass=0.85, abfall=0.5):
         y += lfilter(b, a, x) / k ** abfall
     rx, ry = np.sqrt((x ** 2).mean()) + 1e-12, np.sqrt((y ** 2).mean()) + 1e-12
     return (1 - nass) * x / rx + nass * y / ry
+
+
+def resonanz(x, moden):
+    """Tiefe Eigenschwingungen dazurechnen (z. B. Boden unter einem schweren Tritt): je Mode ein
+    Resonator mit Frequenz f, Nachklingzeit t60 und Anteil. Der Anteil bezieht sich auf die Spitze
+    des Aufpralls (50-ms-Hüllkurve): 0,7 heißt, die Mode setzt 3 dB unter dem Aufprall ein und
+    klingt dann über t60 ab. Der Aufprall selbst bleibt die Aufnahme."""
+    from scipy.signal import lfilter
+    y = x.copy()
+    spitze = np.sqrt(10 ** (huelle_db(x, 50).max() / 10))
+    for f, t60, anteil in moden:
+        r = 10 ** (-3 / (t60 * FS))
+        w = 2 * np.pi * f / FS
+        z = lfilter([1 - r], [1, -2 * r * np.cos(w), r * r], x)
+        zs = np.sqrt(10 ** (huelle_db(z, 50).max() / 10)) + 1e-12
+        y += anteil * spitze * z / zs
+    return y

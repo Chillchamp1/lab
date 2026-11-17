@@ -107,7 +107,7 @@ class Bibliothek:
         """Liste von dicts {sig, quelle, dauer, ...}; jedes Ereignis auf gleichen Spitzen-Kurzzeitpegel gebracht."""
         aus = []
         for spez in sammlung:
-            x = self.aufnahme({k: v for k, v in spez.items() if k not in ('zerlegen', 'stuecke', 'blende', 'abklingen', 'max_flach')})
+            x = self.aufnahme({k: v for k, v in spez.items() if k not in ('zerlegen', 'stuecke', 'blende', 'abklingen', 'max_flach', 'resonanz')})
             if 'stuecke' in spez:  # ganze Aufnahme in gleich lange Stücke teilen
                 L = int(spez['stuecke'] * FS)
                 stuecke = [(a, min(a + L, len(x))) for a in range(0, len(x) - L // 2, L)]
@@ -127,6 +127,9 @@ class Bibliothek:
                     hh = mat.huelle_db(y, 20)
                     if (hh > hh.max() - 6).mean() > spez['max_flach']:
                         continue          # flaches Rauschen statt Schlag mit Abklingen
+                if spez.get('resonanz'):          # nach dem Schneiden: der Nachklang darf über das Ereignis hinaus
+                    t60 = max(m[1] for m in spez['resonanz'])
+                    y = mat.resonanz(np.r_[y, np.zeros(int(1.2 * t60 * FS))], spez['resonanz'])
                 k = mat.kennwerte(y)
                 # Pegel am lautesten 50-ms-Fenster ausrichten
                 h = mat.huelle_db(y, 50).max()
@@ -850,6 +853,7 @@ def gen_gebruell(kx, g, spur, bus):
     Verzögerung, Dämpfung und Richtung ergeben sich aus der Lage."""
     rng = kx.rng
     ev = kx.bib.ereignisse(g['sammlung'])
+    schichten = {sch['schluessel']: kx.bib.ereignisse(g[sch['schluessel']]) for sch in g.get('schichten', [])}
     k = kx.boot.kopf
     t = rng.uniform(*g.get('erster_s', [20, 40]))
     erster = t
@@ -860,6 +864,14 @@ def gen_gebruell(kx, g, spur, bus):
         az = rng.uniform(0, 2 * np.pi)
         p = np.array([k[0] + d * np.cos(az), k[1] + d * np.sin(az), g.get('hoehe', 8.0)])
         sig = _variante(rng, e['sig'], 1.0)
+        for schicht in g.get('schichten', []):            # weitere Stimmen übereinander: tiefer, rauer
+            es = _wahl(rng, schichten[schicht['schluessel']])['sig']
+            vers = int(rng.uniform(0, schicht.get('versatz_s', 0.15)) * FS)
+            lang = max(len(sig), vers + len(es))
+            neu_sig = np.zeros(lang, np.float32)
+            neu_sig[:len(sig)] += sig
+            neu_sig[vers:vers + len(es)] += schicht.get('pegel', 0.5) * es
+            sig = neu_sig
         if g.get('folge'):                      # mehrere Stöße hintereinander (Wummern wie beim Emu)
             n = int(rng.integers(g['folge'][0], g['folge'][1] + 1))
             teile, pos = [], 0
