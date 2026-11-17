@@ -106,6 +106,16 @@ geklungen haben“:
   Rufen mit geschlossenem Maul, wie es Strauße, Emus und Krokodile können und
   wie es für viele Dinosaurier vermutet wird (Riede u. a. 2016).
 
+## Vergleich Stereo gegen Raumklang
+
+`--stereo` rendert dieselbe Szene mit denselben Ereignissen in konventionellem
+Stereo: nur Links-rechts-Verteilung mit gleicher Leistung, Entfernung,
+Luftdämpfung und derselbe Nachhall – ohne HRTF, ohne Spiegelungen, ohne Beugung
+über die Bordkante, ohne Nahfeld. `--drehung` übernimmt den Startpunkt der
+räumlichen Fassung, damit beide deckungsgleich sind. `pipeline/wechsel.py`
+schneidet beide im Wechsel zusammen (14 Abschnitte à 14,3 s, 0,6 s gleichstarke
+Überblendung, auch über die Schleifennaht).
+
 ## Endlosschleife
 
 Die Szene ist auf einer kreisförmigen Zeitachse gerechnet: Was über das Ende

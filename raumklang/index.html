@@ -34,6 +34,9 @@
   .spieler a { flex: none; font-size: .8rem; }
   .werte { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: .82rem; color: var(--leise); margin-top: 10px; }
   .werte b { color: var(--text); font-weight: 600; }
+  .jetzt { margin-top: 12px; font-size: 1.05rem; color: var(--leise); padding: 8px 12px; border-radius: 8px; background: var(--grund); }
+  .jetzt b { color: var(--warn); }
+  .jetzt.b b { color: var(--akzent); }
   details { margin-top: 14px; border-top: 1px solid var(--rand); padding-top: 10px; }
   summary { cursor: pointer; color: var(--akzent); font-size: .92rem; }
   .baustein { padding: 12px 0; border-bottom: 1px solid var(--rand); }
@@ -78,7 +81,7 @@
   </details>
 </main>
 <script>
-const SZENEN = ['wald', 'boot'];
+const SZENEN = ['wald', 'boot', 'boot_ab'];
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const FS = 44100;
 let ctx = null, aktiv = null;
@@ -86,7 +89,7 @@ const zeit = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2
 
 // Spieler mit nahtloser Schleife: die Datei wird dekodiert und über die Web-Audio-Schnittstelle
 // sample-genau wiederholt. Ein <audio loop> setzt an der Naht je nach Browser kurz aus.
-function spieler(el, src, soll) {
+function spieler(el, src, soll, beimTick) {
   el.innerHTML = `<button aria-label="Abspielen">▶</button><div class="leiste"><span></span></div>` +
     `<span class="zeit">0:00</span><a href="${src}" download>MP3</a>`;
   const knopf = el.querySelector('button'), leiste = el.querySelector('.leiste'), balken = leiste.querySelector('span'), anz = el.querySelector('.zeit');
@@ -130,6 +133,7 @@ function spieler(el, src, soll) {
       const p = position();
       balken.style.width = (100 * p / puffer.duration) + '%';
       anz.textContent = `${zeit(p)} / ${zeit(puffer.duration)}`;
+      if (beimTick) beimTick(p);
       requestAnimationFrame(tick);
     })();
   }
@@ -157,16 +161,23 @@ function spieler(el, src, soll) {
     el.innerHTML =
       `<h2>${esc(b.titel || name)}</h2><p>${esc(b.text || '')}</p>` +
       `<div class="spieler gross" data-haupt></div>` +
+      (b.wechsel ? `<div class="jetzt" data-jetzt>${esc(b.wechsel.a)} · ${esc(b.wechsel.b)} im Wechsel</div>` : '') +
       `<div class="werte"><span><b>${zeit(b.dauer)}</b> in Schleife</span><span>Stand <b>${esc(b.stand)}</b></span>` +
       `<span>HRTF <b>${esc(b.hrtf.replace('.sofa', ''))}</b></span><span>Blick <b>${b.blick}°</b></span></div>` +
-      `<details><summary>Bausteine einzeln anhören, Aufnahmen</summary>` +
+      `<details><summary>${b.gruppen.length ? 'Bausteine einzeln anhören, Aufnahmen' : 'Verwendete Aufnahmen'}</summary>` +
       b.gruppen.map(g => `<div class="baustein"><h3>${esc(g.titel)}</h3><p>${esc(g.text)}</p><div class="spieler" data-name="${esc(g.name)}"></div></div>`).join('') +
-      `<h4>Verwendete Aufnahmen</h4><div class="tabelle"><table><thead><tr><th>Aufnahme</th><th>Von</th><th>Lizenz</th></tr></thead><tbody>` +
+      (b.gruppen.length ? `<h4>Verwendete Aufnahmen</h4>` : '') + `<div class="tabelle"><table><thead><tr><th>Aufnahme</th><th>Von</th><th>Lizenz</th></tr></thead><tbody>` +
       (b.quellen || []).map(i => nachId[i]).filter(Boolean).map(e =>
         `<tr><td><a href="${esc(e.seite)}">${esc(e.titel || e.datei)}</a></td><td>${esc(e.urheber || '–')}</td><td>${esc(e.lizenz)}</td></tr>`).join('') +
       `</tbody></table></div></details>`;
     box.appendChild(el);
-    spieler(el.querySelector('[data-haupt]'), `audio/${name}.mp3`, b.abtastwerte);
+    const jetzt = el.querySelector('[data-jetzt]');
+    const anzeige = b.wechsel ? (p => {
+      const i = Math.floor(p / b.wechsel.abschnitt_s) % 2;
+      jetzt.innerHTML = `Jetzt: <b>${esc(i ? b.wechsel.b : b.wechsel.a)}</b>`;
+      jetzt.classList.toggle('b', i === 1);
+    }) : null;
+    spieler(el.querySelector('[data-haupt]'), `audio/${name}.mp3`, b.abtastwerte, anzeige);
     for (const g of b.gruppen) spieler(el.querySelector(`.spieler[data-name="${g.name}"]`), `audio/${name}_${g.name}.mp3`, g.probe_abtastwerte);
   }
 })();
