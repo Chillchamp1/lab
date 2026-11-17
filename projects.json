@@ -1,8 +1,8 @@
 [
   {
     "slug": "raumklang",
-    "titel": "Im Ruderboot auf dem Meer",
-    "beschreibung": "Eine binaurale Klangszene für Kopfhörer, gerendert für jemanden, der auf dem Rücken liegt: Möwen kreisen und schießen dicht über das Boot, Wellen ringsum, Wasser klatscht gegen die Planken, das Holz knarzt. Alles aus echten, frei lizenzierten Aufnahmen, in Einzelereignisse zerlegt und mit einer Python-Pipeline neu im Raum gesetzt – mit schaukelndem Boot, Beugung über die Bordkante, Spiegelungen an den Bordwänden, Doppler beim Überflug und der HRTF CIPIC 040. Dazu jede Klanggruppe einzeln zum Anhören.",
+    "titel": "Klangszenen für Kopfhörer",
+    "beschreibung": "Binaurale Ambient-Szenen zum Liegend-Hören, in Endlosschleife: ein Dinosaurierwald im Herbstregen – Regen auf dem Laub, ein Rinnsal, ferne Pflanzenfresser, einer stapft vorbei, einer kommt zum Äsen nah heran und schnuppert, ein Flugsaurier zieht über die Kronen – und ein Ruderboot auf dem Meer mit Möwen, Wellen, knarzendem Holz und schlaffem Segel. Alles aus frei lizenzierten Aufnahmen, mit einer Python-Pipeline im Raum gesetzt: HRTF CIPIC 040, Reflexionen an Boden, Stamm oder Bordwand, Nachhall, Doppler, nahtlose Schleife.",
     "datum": "2026-11"
   },
   {

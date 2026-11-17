@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Raumklang: Im Ruderboot auf dem Meer</title>
+<title>Klangszenen für Kopfhörer</title>
 <style>
   :root {
     --grund: #0d1418; --flaeche: #152027; --rand: #24343d; --text: #dfe8ea; --leise: #8fa3ab;
@@ -16,80 +16,69 @@
   body { margin: 0; background: var(--grund); color: var(--text); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
   main { max-width: 760px; margin: 0 auto; padding: 28px 16px 64px; }
   h1 { font-size: 1.7rem; line-height: 1.2; margin: 0 0 6px; }
-  h2 { font-size: 1.15rem; margin: 40px 0 10px; }
+  h2 { font-size: 1.25rem; margin: 0 0 6px; line-height: 1.3; }
+  h3 { font-size: 1rem; margin: 0 0 4px; }
   p { margin: 0 0 12px; }
   .unter { color: var(--leise); margin-bottom: 22px; }
-  .karte { background: var(--flaeche); border: 1px solid var(--rand); border-radius: 12px; padding: 16px; margin: 12px 0; }
-  .karte h3 { margin: 0 0 4px; font-size: 1rem; }
-  .karte p { color: var(--leise); font-size: .93rem; margin: 0 0 10px; }
-  audio { width: 100%; height: 40px; display: block; }
-  .haupt { border-color: var(--akzent); }
-  .hinweis { border-left: 3px solid var(--warn); padding: 8px 12px; background: var(--flaeche); border-radius: 0 8px 8px 0; font-size: .95rem; }
+  .hinweis { border-left: 3px solid var(--warn); padding: 8px 12px; background: var(--flaeche); border-radius: 0 8px 8px 0; font-size: .95rem; margin-bottom: 28px; }
+  .szene { background: var(--flaeche); border: 1px solid var(--rand); border-radius: 14px; padding: 18px; margin: 0 0 22px; }
+  .szene > p { color: var(--leise); font-size: .95rem; }
   .spieler { display: flex; align-items: center; gap: 12px; }
   .spieler button { flex: none; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--akzent); background: transparent;
     color: var(--akzent); font-size: 17px; cursor: pointer; display: grid; place-items: center; padding: 0; }
+  .spieler.gross button { width: 54px; height: 54px; font-size: 20px; }
   .spieler button:hover { background: color-mix(in srgb, var(--akzent) 14%, transparent); }
   .spieler .leiste { flex: 1; height: 6px; background: var(--rand); border-radius: 3px; position: relative; cursor: pointer; }
   .spieler .leiste span { position: absolute; inset: 0 auto 0 0; background: var(--akzent); border-radius: 3px; width: 0; }
   .spieler .zeit { flex: none; font-size: .8rem; color: var(--leise); font-variant-numeric: tabular-nums; min-width: 86px; text-align: right; }
   .spieler a { flex: none; font-size: .8rem; }
-  .werte { flex; flex-wrap: wrap; gap: 6px 18px; font-size: .85rem; color: var(--leise); margin-top: 10px; }
+  .werte { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: .82rem; color: var(--leise); margin-top: 10px; }
   .werte b { color: var(--text); font-weight: 600; }
-  table { border-collapse: collapse; width: 100%; font-size: .85rem; }
+  details { margin-top: 14px; border-top: 1px solid var(--rand); padding-top: 10px; }
+  summary { cursor: pointer; color: var(--akzent); font-size: .92rem; }
+  .baustein { padding: 12px 0; border-bottom: 1px solid var(--rand); }
+  .baustein:last-child { border-bottom: 0; }
+  .baustein p { color: var(--leise); font-size: .88rem; margin: 0 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: .82rem; }
   td, th { text-align: left; padding: 5px 8px 5px 0; border-bottom: 1px solid var(--rand); vertical-align: top; }
   th { color: var(--leise); font-weight: 600; }
   a { color: var(--akzent); }
   .tabelle { overflow-x: auto; }
-  ul { padding-left: 20px; margin: 0 0 12px; }
+  ul { padding-left: 20px; margin: 0 0 12px; font-size: .92rem; }
   li { margin-bottom: 4px; }
-  code { font-size: .88em; }
+  h4 { font-size: .92rem; margin: 18px 0 6px; }
+  .allgemein { font-size: .92rem; }
 </style>
 </head>
 <body>
 <main>
-  <h1>Im Ruderboot auf dem Meer</h1>
-  <p class="unter">Binaurale Klangszene für Kopfhörer, gerendert für eine liegende Hörhaltung.</p>
+  <h1>Klangszenen für Kopfhörer</h1>
+  <p class="unter">Binaural gerendert für eine liegende Hörhaltung: auf dem Rücken, Kopf auf einem Kissen, Blick schräg nach oben.</p>
 
-  <p class="hinweis"><b>So hören:</b> Alles läuft in Endlosschleife, ohne hörbare Naht.
-   Kopfhörer auf (links/rechts richtig herum), auf den Rücken legen, Kopf auf ein Kissen,
-  Augen zu. Lautstärke so, dass die ferne See leise ist – die Möwe über dem Boot darf deutlich lauter werden.</p>
+  <p class="hinweis"><b>So hören:</b> Kopfhörer auf (links/rechts richtig herum), hinlegen, Augen zu.
+  Jede Szene läuft in Endlosschleife ohne hörbare Naht.</p>
 
-  <div class="karte haupt">
-    <h3 id="haupt-titel">Die ganze Szene</h3>
-    <p id="haupt-text">Du liegst im Boot, Füße zum Bug. Das Boot rollt und stampft; alles außerhalb wandert deshalb sanft um den Kopf,
-    das Holz des Boots bleibt, wo es ist.</p>
-    <div class="spieler" id="haupt" data-src="audio/boot.mp3"></div>
-    <div class="werte" id="werte"></div>
-  </div>
+  <div id="szenen"></div>
 
-  <h2>Die Bausteine einzeln</h2>
-  <p class="unter">Jede Klanggruppe für sich, etwas lauter als in der Mischung. So lässt sich sagen, was überzeugt und was noch plump klingt.</p>
-  <div id="gruppen"></div>
-
-  <h2>Wie es gebaut ist</h2>
-  <ul>
-    <li><b>Echte Aufnahmen</b> (gemeinfrei, CC0 oder CC BY). Ausnahmen, solange es keine passende freie Aufnahme gibt: Beim Segel sind Füllen und
-      Knattern nachgebildet, beim Fahrtwind der Möwe der Takt der Flügelschläge – das Rauschen selbst ist jeweils echter Wind. Aus den Aufnahmen werden einzelne Rufe, Schwapps und Knarzer
-      herausgeschnitten und in der Szene neu gesetzt.</li>
-    <li><b>Kopfbezug:</b> HRTF CIPIC&nbsp;040 (SOFA), diffusfeld-entzerrt. Der Hörer liegt, Blick 55° über der Waagerechten; ohne Head-Tracking.</li>
-    <li><b>Das Boot als Raum:</b> Die Ohren liegen unter der Bordkante. Was vom Horizont kommt, wird über die Kante gebeugt und klingt gedämpfter;
-      was von oben kommt, ist frei. Dazu Spiegelungen an beiden Bordwänden und am Boden, das Spiegelbild der Möwen auf dem Wasser und ein sehr leiser Rest-Nachhall.</li>
-    <li><b>Bewegung:</b> Rollen ±5° (Periode gut 4 s, unregelmäßig), Stampfen, Heben, langsames Drehen. Möwen fliegen auf Bahnen; die Laufzeit wird
-      mitgerechnet, daraus entsteht der Doppler-Effekt beim Überflug. Die Richtungsfilter werden stetig zwischen den Messrichtungen
-      überblendet, damit eine Möwe gleitet statt zu springen.</li>
-    <li><b>Wasser am Holz</b> fällt auf die Umkehrpunkte des Rollens, auf die Seite, die gerade eintaucht – einmal als Luftschall über die Kante,
-      einmal dumpf durch die Planke.</li>
-    <li><b>Endlosschleife:</b> Die Szene ist auf einer kreisförmigen Zeitachse gerechnet. Was über das Ende hinausklingt, läuft am Anfang weiter;
-      Schaukeln, Flugbahnen und Böen stehen nach einem Durchlauf genau wieder am Anfang.</li>
-    <li><b>Pegel:</b> Jede Gruppe wird einzeln auf einen Zielwert (LUFS) gebracht, seltene Spitzen fängt ein Begrenzer mit Vorschau ab.</li>
-  </ul>
-  <p>Skripte, Szenenbeschreibung und Quellenverzeichnis liegen im
-    <a href="https://github.com/chillchamp1/lab/tree/main/raumklang">Projektordner</a>.</p>
-
-  <h2>Verwendete Aufnahmen</h2>
-  <div class="tabelle"><table id="quellen"><thead><tr><th>Aufnahme</th><th>Von</th><th>Lizenz</th></tr></thead><tbody></tbody></table></div>
+  <details class="allgemein">
+    <summary>Wie die Szenen gebaut sind</summary>
+    <ul>
+      <li><b>Echte Aufnahmen</b> (gemeinfrei, CC0 oder CC BY), in einzelne Ereignisse zerlegt – Rufe, Tropfen, Schritte, Schwapps – und in der Szene
+        neu im Raum gesetzt. Tiere, die es nicht mehr gibt, sind aus echten Tierlauten gemacht, langsamer und tiefer abgespielt. Ausnahmen, solange es
+        keine passende freie Aufnahme gibt: beim Segel Füllen und Knattern, bei Flügelschlägen der Takt; die Musik im Wald ist synthetisch.</li>
+      <li><b>Kopfbezug:</b> HRTF CIPIC&nbsp;040 (SOFA), diffusfeld-entzerrt, stetig zwischen den Messrichtungen überblendet; ohne Head-Tracking.</li>
+      <li><b>Raum:</b> Jede Quelle kommt auf mehreren Wegen an – direkt, gespiegelt an Boden, Bordwand oder Baumstamm, gebeugt über eine Kante –
+        dazu ein Nachhall. Ohne Raum klingt alles im Kopf.</li>
+      <li><b>Bewegung:</b> Quellen bewegen sich auf Bahnen; die Laufzeit wird mitgerechnet, daraus entsteht der Doppler-Effekt beim Vorbeiflug.</li>
+      <li><b>Endlosschleife:</b> gerechnet auf einer kreisförmigen Zeitachse; was über das Ende hinausklingt, läuft am Anfang weiter.</li>
+      <li><b>Pegel:</b> Jede Klanggruppe einzeln auf einen Zielwert (LUFS), seltene Spitzen fängt ein Begrenzer mit Vorschau ab.</li>
+    </ul>
+    <p>Skripte, Szenenbeschreibungen und Quellenverzeichnis im
+      <a href="https://github.com/chillchamp1/lab/tree/main/raumklang">Projektordner</a>.</p>
+  </details>
 </main>
 <script>
+const SZENEN = ['wald', 'boot'];
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const FS = 44100;
 let ctx = null, aktiv = null;
@@ -115,6 +104,7 @@ function spieler(el, src, soll) {
       puffer = b;
     } else puffer = roh;
   }
+  function position() { return laeuft ? (ctx.currentTime - start) % puffer.duration : ab; }
   function stopp(sanft = true) {
     if (!quelle) return;
     const q = quelle, v = verst, t = ctx.currentTime;
@@ -122,7 +112,6 @@ function spieler(el, src, soll) {
     q.stop(t + 0.3);
     ab = position(); quelle = null; laeuft = false; knopf.textContent = '▶'; knopf.setAttribute('aria-label', 'Abspielen');
   }
-  function position() { return laeuft ? (ctx.currentTime - start) % puffer.duration : ab; }
   async function spielen(von = ab) {
     if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
     await ctx.resume();
@@ -147,7 +136,8 @@ function spieler(el, src, soll) {
   knopf.addEventListener('click', () => laeuft ? stopp() : spielen());
   leiste.addEventListener('click', async e => {
     const r = leiste.getBoundingClientRect();
-    if (!puffer) { if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); await laden(); }
+    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+    await laden();
     const ziel = (e.clientX - r.left) / r.width * puffer.duration;
     if (laeuft) spielen(ziel); else { ab = ziel; balken.style.width = (100 * ziel / puffer.duration) + '%'; anz.textContent = `${zeit(ziel)} / ${zeit(puffer.duration)}`; }
   });
@@ -155,18 +145,31 @@ function spieler(el, src, soll) {
   return api;
 }
 
-Promise.all([fetch('audio/boot.json').then(r => r.json()), fetch('quellen.json').then(r => r.json())]).then(([b, q]) => {
-  document.getElementById('werte').innerHTML =
-    `<span><b>${Math.round(b.dauer / 60 * 10) / 10} min</b>, Endlosschleife</span><span>HRTF <b>${esc(b.hrtf.replace('.sofa',''))}</b></span>` +
-    `<span>Blick <b>${b.blick}°</b></span><span>Lautheit <b>${b.lufs} LUFS</b></span><span>Stand <b>${esc(b.stand)}</b></span>`;
-  spieler(document.getElementById('haupt'), 'audio/boot.mp3', b.abtastwerte);
-  document.getElementById('gruppen').innerHTML = b.gruppen.map(g =>
-    `<div class="karte"><h3>${esc(g.titel)}</h3><p>${esc(g.text)}</p><div class="spieler" data-name="${esc(g.name)}"></div></div>`).join('');
-  for (const g of b.gruppen) spieler(document.querySelector(`.spieler[data-name="${g.name}"]`), `audio/boot_${g.name}.mp3`, g.probe_abtastwerte);
-  const benutzt = new Set(b.quellen);
-  document.querySelector('#quellen tbody').innerHTML = q.filter(e => benutzt.has(e.id)).map(e =>
-    `<tr><td><a href="${esc(e.seite)}">${esc(e.titel || e.datei)}</a></td><td>${esc(e.urheber || '–')}</td><td>${esc(e.lizenz)}</td></tr>`).join('');
-});
+(async () => {
+  const quellen = await fetch('quellen.json').then(r => r.json());
+  const nachId = Object.fromEntries(quellen.map(q => [q.id, q]));
+  const box = document.getElementById('szenen');
+  for (const name of SZENEN) {
+    let b;
+    try { b = await fetch(`audio/${name}.json`).then(r => { if (!r.ok) throw 0; return r.json(); }); } catch { continue; }
+    const el = document.createElement('section');
+    el.className = 'szene';
+    el.innerHTML =
+      `<h2>${esc(b.titel || name)}</h2><p>${esc(b.text || '')}</p>` +
+      `<div class="spieler gross" data-haupt></div>` +
+      `<div class="werte"><span><b>${zeit(b.dauer)}</b> in Schleife</span><span>Stand <b>${esc(b.stand)}</b></span>` +
+      `<span>HRTF <b>${esc(b.hrtf.replace('.sofa', ''))}</b></span><span>Blick <b>${b.blick}°</b></span></div>` +
+      `<details><summary>Bausteine einzeln anhören, Aufnahmen</summary>` +
+      b.gruppen.map(g => `<div class="baustein"><h3>${esc(g.titel)}</h3><p>${esc(g.text)}</p><div class="spieler" data-name="${esc(g.name)}"></div></div>`).join('') +
+      `<h4>Verwendete Aufnahmen</h4><div class="tabelle"><table><thead><tr><th>Aufnahme</th><th>Von</th><th>Lizenz</th></tr></thead><tbody>` +
+      (b.quellen || []).map(i => nachId[i]).filter(Boolean).map(e =>
+        `<tr><td><a href="${esc(e.seite)}">${esc(e.titel || e.datei)}</a></td><td>${esc(e.urheber || '–')}</td><td>${esc(e.lizenz)}</td></tr>`).join('') +
+      `</tbody></table></div></details>`;
+    box.appendChild(el);
+    spieler(el.querySelector('[data-haupt]'), `audio/${name}.mp3`, b.abtastwerte);
+    for (const g of b.gruppen) spieler(el.querySelector(`.spieler[data-name="${g.name}"]`), `audio/${name}_${g.name}.mp3`, g.probe_abtastwerte);
+  }
+})();
 </script>
 </body>
 </html>

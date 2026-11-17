@@ -43,6 +43,12 @@ class Bibliothek:
         x = mat.lade(WURZEL / 'material' / 'roh' / q['lokal'], spez.get('kanal', 'mitte'))
         a, b = int(spez.get('von', 0) * FS), int(spez.get('bis', 1e9) * FS)
         x = x[a:b]
+        if spez.get('tempo_faktor'):
+            # langsamer und tiefer abspielen (Faktor < 1): das Tier klingt größer – Formanten wandern mit
+            from fractions import Fraction
+            from scipy.signal import resample_poly
+            fr = Fraction(1 / spez['tempo_faktor']).limit_denominator(50)
+            x = resample_poly(x, fr.numerator, fr.denominator)
         if spez.get('hochpass'):
             x = mat.filt(x, spez['hochpass'], 'highpass')
         if spez.get('tiefpass'):
@@ -217,14 +223,18 @@ def gen_bett(kx, g, spur, bus):
         sig = kx.bib.flickwerk(g['sammlung'], n, rng)
         az0 = 2 * np.pi * (i + rng.uniform(-0.3, 0.3)) / anz
         r0 = rng.uniform(*g.get('entfernung', [50, 90]))
+        punkt = np.array(g['punkte'][i % len(g['punkte'])], float) if g.get('punkte') else None
         drift = rng.uniform(-1, 1) * np.radians(g.get('drift_grad', 25))
         z = g.get('hoehe', 0.3)
+        z = rng.uniform(*z) if isinstance(z, list) else z
         nk = int(round(kx.dauer * 4))
         atem = _rauschkurve(rng, nk, 4.0, g.get('atem_hz', 0.08))   # periodisch über die Szenendauer
         tk = np.arange(nk) / 4.0
         tiefe = g.get('atem_db', 3.0)
 
-        def ort(t, az0=az0, r0=r0, drift=drift):
+        def ort(t, az0=az0, r0=r0, drift=drift, z=z, punkt=punkt):
+            if punkt is not None:                       # feste Stelle (z. B. Abschnitt eines Rinnsals)
+                return np.tile(punkt, (len(t), 1))
             az = az0 + drift * np.sin(2 * np.pi * t / kx.dauer + az0)
             return np.stack([r0 * np.cos(az), r0 * np.sin(az), np.full(len(t), z)], 1)
 
@@ -234,7 +244,8 @@ def gen_bett(kx, g, spur, bus):
                 p = p * 10 ** (g['boe_db'] * kx.boe(t) / 20)
             return p
 
-        rendere_kreis(kx, spur, bus, sig.astype(np.float32), ort, True, r0, g.get('hall', 0.0), pg)
+        bezug = r0 if punkt is None else g.get('bezug_m', 3.0)
+        rendere_kreis(kx, spur, bus, sig.astype(np.float32), ort, True, bezug, g.get('hall', 0.0), pg)
 
 
 def gen_ereignisse(kx, g, spur, bus):
@@ -256,7 +267,8 @@ def gen_ereignisse(kx, g, spur, bus):
         e = ev[k]
         r = np.sqrt(rng.uniform(rmin ** 2, rmax ** 2))
         az = rng.uniform(0, 2 * np.pi)
-        p0 = np.array([r * np.cos(az), r * np.sin(az), 0.15])
+        hz = g.get('hoehe', 0.15)
+        p0 = np.array([r * np.cos(az), r * np.sin(az), rng.uniform(*hz) if isinstance(hz, list) else hz])
         ziel = np.array([np.cos(wind), np.sin(wind), 0]) * v
         staerke = 10 ** (rng.normal(0, g.get('streuung_db', 3.0)) / 20)
 
@@ -264,7 +276,7 @@ def gen_ereignisse(kx, g, spur, bus):
             return p0[None, :] + (tt - t0)[:, None] * ziel[None, :]
 
         # Bezugsentfernung: ein Kamm in 12 m hat den Nennpegel
-        rendere_quelle(kx, spur, bus, e['sig'], t, ort, True, 12.0 * staerke, g.get('hall', 0.0))
+        rendere_quelle(kx, spur, bus, e['sig'], t, ort, True, g.get('bezug_m', 12.0) * staerke, g.get('hall', 0.0))
         t += rng.exponential(g.get('abstand_s', 2.5))
 
 
@@ -331,9 +343,9 @@ def gen_schwarm(kx, g, spur, bus):
             e = wahl[int(rng.integers(len(wahl)))]
             staerke = 10 ** (rng.normal(0, 2.5) / 20)
             # leichte Tonhöhenvariation je Ruf, damit sich nichts hörbar wiederholt
-            fak = 2 ** (rng.normal(0, 0.35) / 12)
+            fak = 2 ** (rng.normal(0, g.get('tonhoehe_streuung_ht', 0.35)) / 12)
             sig = np.interp(np.arange(0, len(e['sig']) - 1, fak), np.arange(len(e['sig'])), e['sig']).astype(np.float32)
-            rendere_quelle(kx, spur, bus, sig, tt, voegel[j].ort, True, 15.0 * staerke, g.get('hall', 0.0))
+            rendere_quelle(kx, spur, bus, sig, tt, voegel[j].ort, True, g.get('bezug_m', 15.0) * staerke, g.get('hall', 0.0))
             n_rufe += 1
             tt += e['dauer'] * rng.uniform(0.5, 1.1) + rng.uniform(0.1, 0.9)
         t += rng.exponential(g.get('abstand_s', 4.0))
@@ -357,7 +369,7 @@ def gen_ueberflug(kx, g, spur, bus):
         steig = rng.uniform(-0.06, 0.06)
         ri = np.array([np.cos(kurs), np.sin(kurs), steig])
         quer = np.array([-np.sin(kurs), np.cos(kurs), 0])
-        boot_k = np.array([-0.9, 0.0, 0.0])
+        boot_k = np.array([kx.boot.kopf[0], kx.boot.kopf[1], 0.0])
 
         def ort(tt, t=t, ri=ri, quer=quer, v=v, h=h, seit=seit):
             s = (tt - t) * v
@@ -402,7 +414,7 @@ def gen_fluegel(kx, g, spur, bus, stuecke, ort, t_nah, v, rng):
     x /= np.sqrt((x ** 2).mean()) + 1e-12
     tt = np.arange(n) / FS
     # Schläge: im Anflug einige Schläge mit ~3 Hz, über dem Boot gleitet sie
-    f_schlag = rng.uniform(2.7, 3.6)
+    f_schlag = rng.uniform(*g.get('fluegel_takt', [2.7, 3.6]))
     n_schlaege = int(rng.integers(*g.get('fluegel_schlaege', [3, 7])))
     t0 = rng.uniform(0.2, 0.6)
     huelle = np.full(n, g.get('fluegel_gleiten', 0.35))
@@ -566,8 +578,239 @@ def gen_segel(kx, g, spur, bus):
     return dict(faenge=int(len(starts)))
 
 
+def _sammlung(kx, g, schluessel):
+    return kx.bib.ereignisse(g[schluessel]) if g.get(schluessel) else []
+
+
+def _wahl(rng, liste):
+    return liste[int(rng.integers(len(liste)))]
+
+
+def _variante(rng, sig, ht=0.6):
+    """Leichte Tonhöhen-/Tempovariation, damit sich ein Ereignis nicht hörbar wiederholt."""
+    fak = 2 ** (rng.normal(0, ht) / 12)
+    return np.interp(np.arange(0, len(sig) - 1, fak), np.arange(len(sig)), sig).astype(np.float32)
+
+
+def _fest(p):
+    return lambda tt, p=np.array(p, float): np.tile(p, (len(tt), 1))
+
+
+def _gang(kx, g, spur, bus, rng, bahn, t_a, t_b, sets, staerke=1.0, nah=False):
+    """Ein Saurier geht eine Bahn ab (bahn(t) -> Fußpunkt am Boden). Je Schritt ein schwerer Tritt,
+    dazu nach Wahrscheinlichkeit Matschen, knackende Äste; Laubrascheln auf Körperhöhe."""
+    schritt = g.get('schritt_s', [0.75, 1.0])
+    t = t_a + rng.uniform(0, 0.5)
+    seite = 1
+    n = 0
+    b = g.get('bezug_m', 20.0) * staerke
+    while t < t_b:
+        p = bahn(np.array([t]))[0]
+        richtung = bahn(np.array([t + 0.5]))[0] - p
+        quer = np.array([-richtung[1], richtung[0], 0])
+        quer /= np.linalg.norm(quer) + 1e-9
+        fuss = p + seite * g.get('spur_m', 0.7) * quer
+        fuss[2] = 0.05
+        seite = -seite
+        if sets['tritte']:
+            e = _wahl(rng, sets['tritte'])
+            st = 10 ** (rng.normal(0, 2) / 20)
+            rendere_quelle(kx, spur, bus, _variante(rng, e['sig'], 0.8), t, _fest(fuss), True, b * st, g.get('hall', 0.0))
+        if sets['matsch'] and rng.random() < g.get('matsch_wahrsch', 0.45):
+            e = _wahl(rng, sets['matsch'])
+            rendere_quelle(kx, spur, bus, _variante(rng, e['sig']), t + rng.uniform(0.03, 0.15), _fest(fuss), True,
+                           b * g.get('matsch_pegel', 0.6), g.get('hall', 0.0))
+        if sets['knacken'] and rng.random() < g.get('knack_wahrsch', 0.12):
+            e = _wahl(rng, sets['knacken'])
+            rendere_quelle(kx, spur, bus, _variante(rng, e['sig'], 1.5), t + rng.uniform(0.0, 0.2), _fest(fuss + [0, 0, 0.2]), True,
+                           b * g.get('knack_pegel', 0.7), g.get('hall', 0.0))
+        if sets['rascheln'] and rng.random() < g.get('rascheln_wahrsch', 0.5):
+            e = _wahl(rng, sets['rascheln'])
+            koerper = p + np.array([0, 0, rng.uniform(*g.get('koerper_hoehe', [1.5, 4.0]))])
+            rendere_quelle(kx, spur, bus, _variante(rng, e['sig']), t + rng.uniform(0, 0.4), _fest(koerper), True,
+                           b * g.get('rascheln_pegel', 0.7), g.get('hall', 0.0))
+        t += rng.uniform(*schritt) * (1.3 if nah else 1.0)
+        n += 1
+    return n
+
+
+def _saurier_sets(kx, g):
+    return {k: _sammlung(kx, g, k) for k in ('tritte', 'matsch', 'knacken', 'rascheln', 'schnauben', 'atem', 'zupfen', 'kauen')}
+
+
+def gen_vorbeigang(kx, g, spur, bus):
+    """Ab und zu läuft in mittlerer Entfernung ein Saurier vorbei: gerade Bahn, die in 15–35 m am
+    Hörer vorbeiführt, mit Tritten, Matschen, Knacken, Rascheln und selten einem ruhigen Schnauben."""
+    rng = kx.rng
+    sets = _saurier_sets(kx, g)
+    k = kx.boot.kopf
+    t = rng.uniform(*g.get('erster_s', [5, 20]))
+    erster = t
+    liste = []
+    while t < kx.dauer + erster - g.get('abstand_s', [50, 80])[0]:
+        d = rng.uniform(*g.get('entfernung', [15, 35]))
+        v = rng.uniform(*g.get('tempo', [0.8, 1.3]))
+        L = g.get('weglaenge_m', 60)
+        kurs = rng.uniform(0, 2 * np.pi)
+        ri = np.array([np.cos(kurs), np.sin(kurs), 0])
+        quer = np.array([-ri[1], ri[0], 0])
+        t_mitte = t + L / 2 / v
+
+        def bahn(tt, ri=ri, quer=quer, d=d, v=v, t_mitte=t_mitte):
+            s_ = (tt - t_mitte) * v
+            return np.array([k[0], k[1], 0])[None, :] + d * quer[None, :] + s_[:, None] * ri[None, :]
+
+        _gang(kx, g, spur, bus, rng, bahn, t, t + L / v, sets)
+        if sets['schnauben'] and rng.random() < g.get('schnauben_wahrsch', 0.5):
+            ts = t_mitte + rng.uniform(-10, 10)
+            kopfpunkt = bahn(np.array([ts]))[0] + [0, 0, rng.uniform(*g.get('kopf_hoehe', [3, 5]))]
+            e = _wahl(rng, sets['schnauben'])
+            rendere_quelle(kx, spur, bus, _variante(rng, e['sig']), ts, _fest(kopfpunkt), True,
+                           g.get('bezug_m', 20.0) * g.get('schnauben_pegel', 0.8), g.get('hall', 0.0))
+        liste.append(round(float(t_mitte) % kx.dauer, 1))
+        t += L / v + rng.uniform(*g.get('pause_s', [5, 25]))
+    return dict(vorbeigaenge=liste)
+
+
+def gen_besuch(kx, g, spur, bus):
+    """Ein Saurier kommt näher: läuft heran, äst an einem Baum (Blätter abzupfen, kauen, schmatzen),
+    senkt dann den Kopf bis auf einen halben bis einen Meter an den Hörer heran, schnuppert ruhig
+    und geht wieder. Nichts daran soll bedrohlich klingen: leise Schritte, kein Knurren."""
+    rng = kx.rng
+    sets = _saurier_sets(kx, g)
+    k = kx.boot.kopf
+    starts = g.get('starts_s', [40])
+    info = []
+    for t0 in starts:
+        az = np.radians(rng.uniform(*g.get('richtung_grad', [-60, 60])))      # aus dem Blickfeld
+        ri = np.array([np.cos(az), np.sin(az), 0])
+        quer = np.array([-ri[1], ri[0], 0])
+        fern = np.array([k[0], k[1], 0]) + 28 * ri + 6 * quer
+        fern[2] = 0.0
+        baum = np.array([k[0], k[1], 0]) + rng.uniform(3.0, 4.0) * ri + rng.uniform(-1.5, 1.5) * quer
+        T = g.get('phasen_s', dict(heran=24, aesen=28, naeher=5, schnuppern=14, weg=24))
+        t_heran, t_aesen = t0, t0 + T['heran']
+        t_naeher = t_aesen + T['aesen']
+        t_schn = t_naeher + T['naeher']
+        t_weg = t_schn + T['schnuppern']
+        t_ende = t_weg + T['weg']
+
+        # Rumpf (Fußpunkt) über Stützstellen: aus der Ferne zum Baum, beim Schnuppern einen Schritt
+        # näher (Hals reicht den Rest), dann denselben Weg zurück
+        boden_k = np.array([k[0], k[1], 0.0])
+        nah = baum + 0.4 * (boden_k - baum)
+        stuetz_t = [t_heran, t_aesen - 2, t_naeher, t_schn, t_weg, t_ende - 2]
+        stuetz_p = np.array([fern, baum, baum, nah, nah, fern])
+
+        def bahn(tt, stuetz_t=stuetz_t, stuetz_p=stuetz_p):
+            return np.stack([np.interp(tt, stuetz_t, stuetz_p[:, j]) for j in range(3)], 1)
+
+        # Kopf: beim Äsen oben im Laub, beim Schnuppern tief und nah am Hörer (0,5–1 m)
+        naehe = rng.uniform(*g.get('naehe_m', [0.6, 0.9]))
+        zum_baum = (baum - boden_k)[:2] / np.linalg.norm((baum - boden_k)[:2])
+        seitlich = np.array([-zum_baum[1], zum_baum[0], 0.0])
+        laub = baum + np.array([0, 0, rng.uniform(2.8, 3.6)]) + 0.6 * seitlich
+        schnauze = np.array([k[0] + zum_baum[0] * naehe, k[1] + zum_baum[1] * naehe, k[2] + rng.uniform(0.05, 0.25)])
+
+        def kopf(tt):
+            p_aes = laub
+            out = np.empty((len(tt), 3))
+            for i, x in enumerate(tt):
+                if x < t_naeher:
+                    out[i] = p_aes + 0.25 * np.array([np.sin(0.7 * x), np.cos(0.5 * x), 0.3 * np.sin(0.9 * x)])
+                elif x < t_schn:
+                    u = (x - t_naeher) / (t_schn - t_naeher)
+                    u = u * u * (3 - 2 * u)
+                    out[i] = p_aes + u * (schnauze - p_aes)
+                elif x < t_weg:
+                    # neugieriges Hin und Her vor dem Gesicht
+                    w = 0.18 * np.array([np.sin(1.3 * x), np.sin(0.9 * x + 1), 0.4 * np.sin(1.7 * x)])
+                    out[i] = schnauze + w
+                else:
+                    u = np.clip((x - t_weg) / 3.0, 0, 1)
+                    u = u * u * (3 - 2 * u)
+                    out[i] = schnauze + u * (p_aes - schnauze)
+            return out
+
+        b = g.get('bezug_m', 4.0)
+        n_schritte = _gang(kx, g, spur, bus, rng, bahn, t_heran, t_aesen - 1, sets, g.get('schritt_pegel', 0.7), nah=True)
+        n_schritte += _gang(kx, g, spur, bus, rng, bahn, t_weg + 1, t_ende, sets, g.get('schritt_pegel', 0.7), nah=True)
+        # Äsen: abzupfen, dazwischen kauen und schmatzen
+        t = t_aesen + rng.uniform(0.5, 2)
+        while t < t_naeher - 1:
+            if sets['zupfen']:
+                e = _wahl(rng, sets['zupfen'])
+                pz = laub + rng.normal(0, 0.3, 3)
+                rendere_quelle(kx, spur, bus, _variante(rng, e['sig']), t, _fest(pz), True, b * g.get('zupf_pegel', 1.0), g.get('hall', 0.0))
+                t += e['dauer'] + rng.uniform(0.2, 0.6)
+            if sets['kauen']:
+                for _ in range(int(rng.integers(1, 3))):
+                    e = _wahl(rng, sets['kauen'])
+                    rendere_quelle(kx, spur, bus, _variante(rng, e['sig'], 0.3), t, kopf, True, b * g.get('kau_pegel', 0.8), g.get('hall', 0.0))
+                    t += e['dauer'] + rng.uniform(0.1, 0.5)
+            t += rng.uniform(0.5, 2.0)
+        # Schnuppern nah am Hörer: kurze Schnauber und ruhiger Atem
+        t = t_schn - 1.5
+        while t < t_weg - 0.5:
+            pool = sets['schnauben'] if (sets['schnauben'] and rng.random() < 0.6) else sets['atem']
+            if not pool:
+                break
+            e = _wahl(rng, pool)
+            rendere_quelle(kx, spur, bus, _variante(rng, e['sig'], 0.4), t, kopf, True,
+                           b * g.get('schnupper_pegel', 0.35), g.get('hall', 0.0))
+            t += e['dauer'] + rng.uniform(0.3, 1.2)
+        info.append(dict(start=round(t0, 1), ende=round(t_ende, 1), naehe_m=round(float(naehe), 2), schritte=n_schritte))
+    return dict(besuche=info)
+
+
+def gen_musik(kx, g, spur, bus):
+    """Ganz leise Musik: langsame Akkordfläche aus wenigen Sinus-Teiltönen, weich überblendet,
+    weit im Stereobild, mit langem Hall. Periodisch über die Szenendauer. Nicht räumlich gerendert –
+    sie gehört nicht in die Szene, sie liegt darüber."""
+    rng = kx.rng
+    n = int(round(kx.dauer * FS))
+    akkorde = g.get('akkorde', [[50, 57, 62, 66, 69], [47, 54, 59, 62, 66], [43, 50, 55, 59, 66], [40, 52, 55, 59, 62],
+                                [50, 57, 61, 64, 69], [42, 54, 57, 61, 66], [43, 55, 59, 62, 69], [45, 52, 57, 59, 64]])
+    T = n / len(akkorde)
+    ueber = g.get('ueberblend_s', 9.0) * FS
+    L = int(T + 2 * ueber)
+    t = np.arange(L) / FS
+    huelle = np.ones(L)
+    ue = int(ueber)
+    huelle[:2 * ue] = np.sin(np.linspace(0, np.pi / 2, 2 * ue)) ** 2
+    huelle[-2 * ue:] = np.cos(np.linspace(0, np.pi / 2, 2 * ue)) ** 2
+    y = np.zeros((2, n))
+    for i, ak in enumerate(akkorde):
+        seg = np.zeros((2, L))
+        for j, note in enumerate(ak):
+            f0 = 440 * 2 ** ((note - 69) / 12)
+            pan = (j / max(len(ak) - 1, 1) - 0.5) * 1.2 + rng.normal(0, 0.1)
+            gl, gr = np.cos((pan + 1) * np.pi / 4), np.sin((pan + 1) * np.pi / 4)
+            trem = 1 + 0.25 * np.sin(2 * np.pi * rng.uniform(0.05, 0.12) * t + rng.uniform(0, 6.3))
+            for e, (teil, amp) in enumerate([(1, 1.0), (2, 0.25), (3, 0.08)]):
+                for kan, gk, verst in ((0, gl, 0.999), (1, gr, 1.001)):     # leichte Verstimmung L/R
+                    seg[kan] += gk * amp * trem * np.sin(2 * np.pi * f0 * teil * verst * t + rng.uniform(0, 6.3)) / (1 + 0.15 * j)
+        seg *= huelle
+        a = int(i * T - ueber)
+        idx = (a + np.arange(L)) % n
+        for kan in range(2):
+            y[kan] += np.bincount(idx, weights=seg[kan], minlength=n)
+    # weich: Tiefpass und langer, kreisförmiger Hall
+    y = np.stack([mat.filt(y[k], g.get('tiefpass', 1800), 'lowpass', 2) for k in range(2)])
+    hl = int(g.get('hall_s', 5.0) * FS)
+    ir_t = np.arange(hl) / FS
+    for kan in range(2):
+        ir = np.random.default_rng(kan + 5).normal(size=hl) * 10 ** (-3 * ir_t / g.get('hall_t60', 4.0))
+        ir = mat.filt(ir, 2500, 'lowpass', 2)
+        ir /= np.sqrt((ir ** 2).sum())
+        y[kan] = 0.5 * y[kan] + 0.8 * kreisfaltung(y[kan], ir)
+    spur.addiere(y.astype(np.float32), 0)
+    return dict(akkorde=len(akkorde))
+
+
 GENERATOREN = dict(bett=gen_bett, ereignisse=gen_ereignisse, schwarm=gen_schwarm, ueberflug=gen_ueberflug,
-                   rumpf=gen_rumpf, knarzen=gen_knarzen, segel=gen_segel)
+                   rumpf=gen_rumpf, knarzen=gen_knarzen, segel=gen_segel,
+                   vorbeigang=gen_vorbeigang, besuch=gen_besuch, musik=gen_musik)
 
 
 # ---------------------------------------------------------------- Pegel und Ausgabe
@@ -648,17 +891,23 @@ def main():
     sz = json.loads(Path(a.szene).read_text())
     dauer = a.dauer or sz.get('dauer', 180)
     if a.blick is not None:
-        sz['boot']['blick'] = a.blick
+        sz['wald' if 'wald' in sz else 'boot']['blick'] = a.blick
     t_start = time.time()
     hrtf = HRTF(a.hrtf, FS)
-    boot = Boot(sz['boot'], dauer, sz.get('saat', 1))
+    if 'wald' in sz:
+        from wald import Wald
+        umg_cfg = sz['wald']
+        boot = Wald(umg_cfg, dauer, sz.get('saat', 1))
+    else:
+        umg_cfg = sz['boot']
+        boot = Boot(umg_cfg, dauer, sz.get('saat', 1))
     bib = Bibliothek(json.loads((WURZEL / 'quellen.json').read_text()))
     nur = set(filter(None, a.nur.split(',')))
     hall_ir = diffuser_nachhall(hrtf, **sz.get('nachhall', {}))
     boe = boeenkurve(np.random.default_rng(sz.get('saat', 1) * 7 + 3), dauer, sz.get('boeen', {}))
     name = sz['name']
     bericht = dict(szene=name, stand=datetime.now(ZoneInfo('Europe/Berlin')).strftime('%d.%m.%Y %H:%M'), dauer=dauer, schleife=True, abtastwerte=int(round(dauer * FS)),
-                   hrtf=Path(a.hrtf).name, blick=sz['boot'].get('blick', 55), gruppen=[])
+                   hrtf=Path(a.hrtf).name, blick=umg_cfg.get('blick', 55), titel=sz.get('titel', name), text=sz.get('text', ''), gruppen=[])
     summe = np.zeros((2, int(round(dauer * FS))), np.float32)
     for i, g in enumerate(sz['gruppen']):
         if nur and g['name'] not in nur:
@@ -699,6 +948,13 @@ def main():
         k = np.ones(4 * FS) / (4 * FS)
         glatt = np.real(np.fft.ifft(np.fft.fft(e) * np.fft.fft(np.r_[k, np.zeros(len(e) - len(k))])))   # kreisförmig
         ruhig = (int(np.argmin(glatt)) - 2 * FS) % len(e)        # glatt[i] mittelt e[i-4s+1 .. i]
+        # innerhalb von ±1,5 s die Stelle, an der sich der Pegel am wenigsten ändert (kein Einsatz an der Naht)
+        w = int(0.1 * FS)
+        kum = np.concatenate([[0], np.cumsum(np.r_[e[-w:], e, e[:w]])])
+        def pegel(i, a, b):
+            return 10 * np.log10((kum[i + w + b] - kum[i + w + a]) / (b - a) + 1e-14)
+        kand = (ruhig + np.arange(-int(1.5 * FS), int(1.5 * FS), int(0.01 * FS))) % len(e)
+        ruhig = int(min(kand, key=lambda i: abs(pegel(i, -w, 0) - pegel(i, 0, w)) + 0.2 * (pegel(i, -w, w) - 10 * np.log10(glatt.min() + 1e-14))))
         summe = np.roll(summe, -ruhig, axis=1)
         bericht['start_verschoben_s'] = round(ruhig / FS, 2)
         bericht['begrenzer_max_db'] = round(weg, 1)

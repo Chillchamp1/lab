@@ -44,6 +44,9 @@ def freesound_url(nr):
 def main():
     ROH.mkdir(parents=True, exist_ok=True)
     quellen = json.loads((WURZEL / 'quellen.json').read_text())
+    if len(sys.argv) > 1:                       # nur die genannten ids, in dieser Reihenfolge
+        nach_id = {q['id']: q for q in quellen}
+        quellen = [nach_id[i] for i in sys.argv[1:]]
     for q in quellen:
         ziel = ROH / q['lokal']
         if ziel.exists() and ziel.stat().st_size > 1000:

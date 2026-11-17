@@ -1,7 +1,9 @@
 # Raumklang
 
-Binaurale Ambient-Klangszenen für Kopfhörer, gebaut aus echten Aufnahmen. Erste
-Szene: liegend in einem knarzenden Ruderboot auf dem Meer.
+Binaurale Ambient-Klangszenen für Kopfhörer, gebaut aus echten Aufnahmen:
+liegend in einem knarzenden Ruderboot auf dem Meer (`szenen/boot.json`) und
+angelehnt an einen Baumstamm in einem Dinosaurierwald im Herbstregen
+(`szenen/wald.json`).
 
 ## Aufbau
 
@@ -9,6 +11,7 @@ Szene: liegend in einem knarzenden Ruderboot auf dem Meer.
 pipeline/hrtf.py            SOFA laden, diffusfeld-entzerren, stetig zwischen Richtungen interpolieren
 pipeline/kern.py            Renderkern: bewegte Quelle → Schallweg → binaural (blockweise, mit Laufzeit)
 pipeline/boot.py            das Boot als Raum: Schaukeln, Bordkante, Bordwände, Boden, Wasserspiegel
+pipeline/wald.py            der Wald als Raum: Waldboden, Stamm im Rücken, Blätterdach, Zusatzdämpfung des Waldes
 pipeline/material.py        Aufnahmen laden, entrauschen, in Einzelereignisse zerlegen
 pipeline/material_holen.py  lädt alles aus quellen.json nach material/roh/
 pipeline/szene.py           Szenenbeschreibung → Klanggruppen → Pegel → Mischung → MP3
@@ -59,6 +62,26 @@ Doppler-Effekt (bei 10–15 m/s rund ±0,5–0,75 Halbtöne, nachgemessen). Beim
 innerhalb eines Rufs kippt. Nahe Quellen bekommen zusätzlich den Pegelunterschied zwischen
 den Ohren aus dem Abstand zu jedem Ohr. Bootsfeste Quellen (Knarzen, Wasser am
 Rumpf) stehen im Kopfbezug still, alles draußen wandert mit dem Schaukeln.
+
+## Der Dinosaurierwald
+
+Der Hörer sitzt am Boden, halb liegend an einen Stamm gelehnt, Blick 55° schräg
+ins Blätterdach – dieselbe Kopfhaltung wie beim Liegen, damit die Szene zur
+echten Hörhaltung passt. Schallwege: direkt (mit einer Zusatzdämpfung des Waldes
+von 0,1 dB/m bei 3 kHz ab 3 m, für Quellen über dem Blätterdach zusätzlich das
+Laub), gespiegelt am nassen Laubboden (schluckt die Höhen) und am Stamm im
+Rücken; Nachhall T60 1,0 s tief / 0,45 s hoch.
+
+Saurier gibt es nicht als Aufnahme. Ihre Laute sind echte Tierlaute, langsamer
+und tiefer abgespielt (`tempo_faktor`): Kühe, Bullen und Kraniche als ferne
+Rufe, Schweine-Schnauben und ruhiges Schlafatmen beim Schnuppern, fressende
+Schweine und ein fressender Grizzly (Yellowstone, gemeinfrei) beim Kauen,
+Schritte auf Waldboden, Kies und Laub als Tritte, nasser Schnee als Matsch,
+Knackser aus Feueraufnahmen als brechende Äste. Generatoren: `vorbeigang`
+(Bahn in 15–35 m mit Tritten, Matsch, Knacken, Rascheln), `besuch`
+(heranlaufen, äsen – abzupfen, kauen –, Kopf bis 0,6–0,9 m an den Hörer,
+schnuppern, weggehen), `musik` (ganz leise synthetische Akkordfläche,
+periodisch, nicht räumlich gerendert).
 
 ## Endlosschleife
 
