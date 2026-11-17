@@ -61,7 +61,8 @@ def _ola(rahmen):
     return aus
 
 
-def rendere_pfad(hrtf, sig, entf, richt, gang=None, pegel=None, ohr=None, bus=None, hall_pegel=0.0, streu=None, start=0):
+def rendere_pfad(hrtf, sig, entf, richt, gang=None, pegel=None, ohr=None, bus=None, hall_pegel=0.0, streu=None, start=0,
+                 bus2=None, bus2_gewicht=None):
     """Rendert einen Pfad.
 
     sig    Mono-Signal der Quelle
@@ -71,6 +72,7 @@ def rendere_pfad(hrtf, sig, entf, richt, gang=None, pegel=None, ohr=None, bus=No
     pegel  (n_b,) zusätzlicher Faktor oder None
     ohr    (n_b, 2) Faktor je Ohr (Nahfeld) oder None
     start  Startzeit des Signals in Abtastwerten (für den Hallanteil auf dem Bus)
+    bus2   zweiter Hallbus mit Gewicht je Block (bus2_gewicht, (n_b,))
     streu  (nf,) Spektrum eines kurzen Streukerns (raue Fläche statt Spiegel) oder None
     Rückgabe: (2, n) Stereo und Versatz in Abtastwerten (kann negativ sein: -VORHALT)
     """
@@ -101,11 +103,17 @@ def rendere_pfad(hrtf, sig, entf, richt, gang=None, pegel=None, ohr=None, bus=No
         aus_teile.append(Y)
     stereo = _ola(np.concatenate(aus_teile))
     versatz = int(round(verz.min() * FS)) - VORHALT
-    if bus is not None and hall_pegel > 0:
+    if (bus is not None and hall_pegel > 0) or bus2 is not None:
         # Hall-Anteil: verzögertes Signal mit Entfernungsabnahme, ohne Richtung
-        g = np.interp(np.arange(n_aus), np.arange(n_b) * HOP + BLOCK / 2, amp)
+        tb = np.arange(n_b) * HOP + BLOCK / 2
+        g = np.interp(np.arange(n_aus), tb, amp)
         # Startzeit des Ereignisses mitgeben – sonst landet der Hallanteil jedes Ereignisses bei 0 s
-        bus.addiere(y * g * hall_pegel, start + int(round(verz.min() * FS)))
+        if bus is not None and hall_pegel > 0:
+            bus.addiere(y * g * hall_pegel, start + int(round(verz.min() * FS)))
+        if bus2 is not None:       # zweiter Bus, je Block gewichtet (z. B. Weite nur für ferne Quellen)
+            g2 = np.interp(np.arange(n_aus), tb, amp * bus2_gewicht)
+            if g2.max() > 0:
+                bus2.addiere(y * g2, start + int(round(verz.min() * FS)))
     return stereo, versatz
 
 

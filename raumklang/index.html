@@ -81,7 +81,7 @@
   </details>
 </main>
 <script>
-const SZENEN = ['wald', 'boot', 'boot_ab'];
+const SZENEN = ['wald', 'boot', 'boot_ab', 'boot_weite'];
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const FS = 44100;
 let ctx = null, aktiv = null;
@@ -164,7 +164,7 @@ function spieler(el, src, soll, beimTick) {
       (b.wechsel ? `<div class="jetzt" data-jetzt>${esc(b.wechsel.a)} · ${esc(b.wechsel.b)} im Wechsel</div>` : '') +
       `<div class="werte"><span><b>${zeit(b.dauer)}</b> in Schleife</span><span>Stand <b>${esc(b.stand)}</b></span>` +
       `<span>HRTF <b>${esc(b.hrtf.replace('.sofa', ''))}</b></span><span>Blick <b>${b.blick}°</b></span></div>` +
-      `<details><summary>${b.gruppen.length ? 'Bausteine einzeln anhören, Aufnahmen' : 'Verwendete Aufnahmen'}</summary>` +
+      `<details><summary>${esc(b.details_titel || (b.gruppen.length ? 'Bausteine einzeln anhören, Aufnahmen' : 'Verwendete Aufnahmen'))}</summary>` +
       b.gruppen.map(g => `<div class="baustein"><h3>${esc(g.titel)}</h3><p>${esc(g.text)}</p><div class="spieler" data-name="${esc(g.name)}"></div></div>`).join('') +
       (b.gruppen.length ? `<h4>Verwendete Aufnahmen</h4>` : '') + `<div class="tabelle"><table><thead><tr><th>Aufnahme</th><th>Von</th><th>Lizenz</th></tr></thead><tbody>` +
       (b.quellen || []).map(i => nachId[i]).filter(Boolean).map(e =>

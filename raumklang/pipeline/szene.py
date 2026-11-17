@@ -143,6 +143,9 @@ class Kontext:
     def __init__(self, hrtf, boot, bib, dauer, rng, boe=None):
         self.hrtf, self.boot, self.bib, self.dauer, self.rng = hrtf, boot, bib, dauer, rng
         self._boe = boe
+        self.weite = None        # dict(ab_m, voll_m, ...): ferne Quellen speisen einen langen, dumpfen Weitenhall
+        self.bus_weite = None
+        self.flimmern = None     # dict(ab_m, voll_m, db, hz): Luftflimmern ferner Quellen
 
     def boe(self, t):
         """Gemeinsame Böenkurve der Szene (Mittel 0, Streuung 1, periodisch): Wind und Segel
@@ -194,10 +197,38 @@ def rendere_quelle(kx, spur, bus, sig, t0, ort_fn, aussen=True, pegel=1.0, hall=
         w0 = wege[0]
         k = np.broadcast_to(kx.boot.kopf, pb.shape)
         wege = [dict(w0, richt=kx.boot._kopfbezug(pb - k), entf=np.linalg.norm(pb - k, axis=1), gang=None, ohr=None, streu=None)]
+    # Entfernung des direkten Wegs: daraus Weitenhall-Anteil und Luftflimmern (nur draußen)
+    r = wege[0]['entf']
+    bus2, gew2 = None, None
+    if kx.weite and aussen and kx.bus_weite is not None:
+        w = kx.weite
+        gew2 = np.clip((r - w['ab_m']) / (w['voll_m'] - w['ab_m']), 0, 1) ** w.get('exponent', 0.7) * (r / w.get('bezug_m', 30.0))
+        if gew2.max() > 0:
+            bus2 = kx.bus_weite
+    if kx.flimmern and aussen:
+        f = kx.flimmern
+        anteil = np.clip((r - f['ab_m']) / (f['voll_m'] - f['ab_m']), 0, 1)
+        if anteil.max() > 0:
+            # eigene, feste Zufallsquelle je Ereignis: die Ereignisfolge der Szene bleibt unverändert
+            frng = np.random.default_rng((int(t0 * 1000) * 7919 + len(sig)) % (2 ** 32))
+            rate = FS / 512
+            def kurve():
+                X = np.fft.rfft(frng.normal(size=nb + 64))
+                X *= np.exp(-0.5 * (np.fft.rfftfreq(nb + 64, 1 / rate) / f.get('hz', 0.7)) ** 2)
+                z = np.fft.irfft(X, nb + 64)[:nb]
+                return z / (z.std() + 1e-12)
+            gemeinsam, l_, r_ = kurve(), kurve(), kurve()
+            k = f.get('korrelation', 0.6)
+            fl = np.stack([np.sqrt(k) * gemeinsam + np.sqrt(1 - k) * l_, np.sqrt(k) * gemeinsam + np.sqrt(1 - k) * r_], 1)
+            faktor = 10 ** (f['db'] * anteil[:, None] * fl / 20)
+            w0 = wege[0]
+            wege[0] = dict(w0, ohr=faktor if w0['ohr'] is None else w0['ohr'] * faktor)
     for weg in wege:
         start = int(round(t0 * FS))
+        ist_direkt = weg is wege[0]
         st, v = rendere_pfad(kx.hrtf, sig, weg['entf'], weg['richt'], weg['gang'], pg, weg['ohr'],
-                             bus if weg['hall'] else None, hall, weg.get('streu'), start)
+                             bus if weg['hall'] else None, hall, weg.get('streu'), start,
+                             bus2 if ist_direkt else None, gew2)
         spur.addiere(st, start + v)
 
 
@@ -1004,6 +1035,7 @@ def main():
     bib = Bibliothek(json.loads((WURZEL / 'quellen.json').read_text()))
     nur = set(filter(None, a.nur.split(',')))
     hall_ir = diffuser_nachhall(hrtf, **sz.get('nachhall', {}))
+    weite_ir = diffuser_nachhall(hrtf, **sz['weite']['nachhall']) if sz.get('weite') else None
     boe = boeenkurve(np.random.default_rng(sz.get('saat', 1) * 7 + 3), dauer, sz.get('boeen', {}))
     name = a.name or sz['name']
     bericht = dict(szene=name, stand=datetime.now(ZoneInfo('Europe/Berlin')).strftime('%d.%m.%Y %H:%M'), dauer=dauer, schleife=True, abtastwerte=int(round(dauer * FS)),
@@ -1015,11 +1047,16 @@ def main():
         t0 = time.time()
         kx = Kontext(hrtf, boot, bib, dauer, np.random.default_rng(sz.get('saat', 1) * 1000 + i), boe)
         spur, bus = Spur(dauer), Spur(dauer, 1)
+        kx.weite, kx.flimmern = sz.get('weite'), sz.get('flimmern')
+        kx.bus_weite = Spur(dauer, 1) if kx.weite else None
         info = GENERATOREN[g['typ']](kx, g, spur, bus) or {}
         x = spur.x
         if np.abs(bus.x).max() > 0:
             for e in range(2):
                 x[e] += kreisfaltung(bus.x[0], hall_ir[e]).astype(np.float32) * 10 ** (sz.get('nachhall_pegel_db', -16) / 20)
+        if kx.bus_weite is not None and np.abs(kx.bus_weite.x).max() > 0:
+            for e in range(2):
+                x[e] += kreisfaltung(kx.bus_weite.x[0], weite_ir[e]).astype(np.float32) * 10 ** (kx.weite.get('pegel_db', -14) / 20)
         art = g.get('pegel_art', 'integriert')
         ist = lautheit(x, art)
         x *= 10 ** ((g['ziel_lufs'] - ist) / 20)

@@ -116,6 +116,25 @@ räumlichen Fassung, damit beide deckungsgleich sind. `pipeline/wechsel.py`
 schneidet beide im Wechsel zusammen (14 Abschnitte à 14,3 s, 0,6 s gleichstarke
 Überblendung, auch über die Schleifennaht).
 
+## Mehr Weite (Vergleich A/B/C)
+
+Drei Fassungen der Meeresszene mit denselben Ereignissen (`szenen/boot.json`,
+`boot_weite_b.json`, `boot_weite_c.json`):
+
+- **B** – Raumanteil nach Entfernung: Quellen ab 25 m speisen zusätzlich einen
+  langen, dumpfen Weitenhall (Nachklingzeit 3 s tief, 0,8 s hoch); sein Anteil
+  nimmt mit der Entfernung nicht ab, der Direktschall schon – das Verhältnis
+  kippt mit der Entfernung zum Raum hin. Dazu Luftflimmern ab 30 m: langsame
+  Pegel- und Klangschwankung bis 3 dB, für beide Ohren teils verschieden (eigene
+  Zufallsquelle je Ereignis, damit die Ereignisfolge gleich bleibt).
+- **C** – B plus ferne Schicht: Brandung am Horizont in 400–1200 m, eine
+  Möwenkolonie in 150–450 m, bis 70 m hoch (hinten angehängt, damit die
+  übrigen Gruppen ihre Zufallsfolge behalten).
+
+Gemessen (mittlere Übereinstimmung linkes/rechtes Ohr in 200–800 / 800–3000 /
+3000–8000 Hz): Stereo 0,67 / 0,69 / 0,69, A 0,39 / 0,20 / 0,14, B 0,30 / 0,15 /
+0,11, C 0,29 / 0,13 / 0,11.
+
 ## Endlosschleife
 
 Die Szene ist auf einer kreisförmigen Zeitachse gerechnet: Was über das Ende
