@@ -144,10 +144,22 @@ class HRTF:
             w[f] = wf / np.maximum(wf.sum(1, keepdims=True), 1e-12)
         return i, w
 
+    stereo = False   # True: konventionelles Stereo statt HRTF (nur Links-rechts-Verteilung, zum Vergleich)
+
     def filter(self, vek, ohrabstand_extra=None):
         """Filterpaare für Richtungen vek (n, 3) im Kopfbezug -> (n, 2, nfft/2+1) komplex."""
         vek = np.asarray(vek, float)
         vek = vek / np.maximum(np.linalg.norm(vek, axis=-1, keepdims=True), 1e-9)
+        if self.stereo:
+            # Panorama mit gleicher Leistung: nur die Links-rechts-Komponente zählt, kein Laufzeit-
+            # unterschied, keine Ohrmuschel-Färbung – so wie eine übliche Stereomischung
+            pan = np.clip(vek[:, 1], -1, 1)
+            gl, gr = np.sqrt((1 + pan) / 2), np.sqrt((1 - pan) / 2)
+            H = np.zeros((len(vek), 2, len(self.freq)), np.complex64)
+            verz = np.exp(-2j * np.pi * self.freq * self.vorlauf / self.fs).astype(np.complex64)
+            H[:, 0, :] = gl[:, None] * verz
+            H[:, 1, :] = gr[:, None] * verz
+            return H
         i, w = self.gewichte(vek)
         H = np.einsum('nk,nkef->nef', w.astype(np.float32), self.H[i])
         tau = np.einsum('nk,nke->ne', w, self.tau[i])

@@ -187,7 +187,14 @@ def rendere_quelle(kx, spur, bus, sig, t0, ort_fn, aussen=True, pegel=1.0, hall=
     else:
         pb = p
     pg = np.full(nb, pegel) if pegel_fn is None else pegel * pegel_fn(t)
-    for weg in kx.boot.pfade(pb, aussen, bild, spiegelungen):
+    wege = kx.boot.pfade(pb, aussen, bild, spiegelungen and not kx.hrtf.stereo)
+    if kx.hrtf.stereo:
+        # Vergleichsfassung: nur der direkte Weg aus der Richtung der Quelle, ohne Beugung über die
+        # Kante und ohne Nahfeld-Pegelunterschied; Entfernung, Luftdämpfung und Nachhall bleiben
+        w0 = wege[0]
+        k = np.broadcast_to(kx.boot.kopf, pb.shape)
+        wege = [dict(w0, richt=kx.boot._kopfbezug(pb - k), entf=np.linalg.norm(pb - k, axis=1), gang=None, ohr=None, streu=None)]
+    for weg in wege:
         start = int(round(t0 * FS))
         st, v = rendere_pfad(kx.hrtf, sig, weg['entf'], weg['richt'], weg['gang'], pg, weg['ohr'],
                              bus if weg['hall'] else None, hall, weg.get('streu'), start)
@@ -975,6 +982,9 @@ def main():
     ap.add_argument('--aus', default=str(WURZEL / 'audio'))
     ap.add_argument('--proben', action='store_true', help='je Gruppe eine kurze Hörprobe schreiben')
     ap.add_argument('--blick', type=float, help='Blickwinkel über der Waagerechten (überschreibt die Szene)')
+    ap.add_argument('--stereo', action='store_true', help='Vergleichsfassung in konventionellem Stereo (ohne HRTF und Spiegelungen)')
+    ap.add_argument('--name', help='Name der Ausgabe (Vorgabe: Name der Szene)')
+    ap.add_argument('--drehung', type=float, help='Startpunkt der Schleife in s vorgeben (statt den ruhigsten Moment zu suchen)')
     a = ap.parse_args()
 
     sz = json.loads(Path(a.szene).read_text())
@@ -983,6 +993,7 @@ def main():
         sz['wald' if 'wald' in sz else 'boot']['blick'] = a.blick
     t_start = time.time()
     hrtf = HRTF(a.hrtf, FS)
+    hrtf.stereo = a.stereo
     if 'wald' in sz:
         from wald import Wald
         umg_cfg = sz['wald']
@@ -994,7 +1005,7 @@ def main():
     nur = set(filter(None, a.nur.split(',')))
     hall_ir = diffuser_nachhall(hrtf, **sz.get('nachhall', {}))
     boe = boeenkurve(np.random.default_rng(sz.get('saat', 1) * 7 + 3), dauer, sz.get('boeen', {}))
-    name = sz['name']
+    name = a.name or sz['name']
     bericht = dict(szene=name, stand=datetime.now(ZoneInfo('Europe/Berlin')).strftime('%d.%m.%Y %H:%M'), dauer=dauer, schleife=True, abtastwerte=int(round(dauer * FS)),
                    hrtf=Path(a.hrtf).name, blick=umg_cfg.get('blick', 55), titel=sz.get('titel', name), text=sz.get('text', ''), gruppen=[])
     summe = np.zeros((2, int(round(dauer * FS))), np.float32)
@@ -1044,6 +1055,8 @@ def main():
             return 10 * np.log10((kum[i + w + b] - kum[i + w + a]) / (b - a) + 1e-14)
         kand = (ruhig + np.arange(-int(1.5 * FS), int(1.5 * FS), int(0.01 * FS))) % len(e)
         ruhig = int(min(kand, key=lambda i: abs(pegel(i, -w, 0) - pegel(i, 0, w)) + 0.2 * (pegel(i, -w, w) - 10 * np.log10(glatt.min() + 1e-14))))
+        if a.drehung is not None:
+            ruhig = int(round(a.drehung * FS)) % len(e)
         summe = np.roll(summe, -ruhig, axis=1)
         bericht['start_verschoben_s'] = round(ruhig / FS, 2)
         bericht['begrenzer_max_db'] = round(weg, 1)
