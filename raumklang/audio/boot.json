@@ -1,6 +1,6 @@
 {
  "szene": "boot",
- "stand": "17.11.2026 10:45",
+ "stand": "17.11.2026 11:21",
  "dauer": 200,
  "schleife": true,
  "abtastwerte": 8820000,
@@ -14,9 +14,9 @@
    "typ": "bett",
    "ziel_lufs": -29,
    "pegel_art": "integriert",
-   "spitze_db": -14.1,
+   "spitze_db": -14.0,
    "begrenzt_db": 0.0,
-   "sekunden": 160.1,
+   "sekunden": 108.7,
    "probe_abtastwerte": 1323000
   },
   {
@@ -28,7 +28,7 @@
    "pegel_art": "integriert",
    "spitze_db": -14.5,
    "begrenzt_db": 0.0,
-   "sekunden": 182.9,
+   "sekunden": 119.4,
    "probe_abtastwerte": 1323000
   },
   {
@@ -38,9 +38,9 @@
    "typ": "ereignisse",
    "ziel_lufs": -29,
    "pegel_art": "spitzen",
-   "spitze_db": -10.9,
+   "spitze_db": -10.8,
    "begrenzt_db": 0.0,
-   "sekunden": 21.1,
+   "sekunden": 20.6,
    "probe_abtastwerte": 1323000
   },
   {
@@ -50,9 +50,9 @@
    "typ": "rumpf",
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
-   "spitze_db": -9.0,
-   "begrenzt_db": 10.4,
-   "sekunden": 16.6,
+   "spitze_db": -10.0,
+   "begrenzt_db": 0.0,
+   "sekunden": 15.4,
    "ereignisse": 170,
    "probe_abtastwerte": 1323000
   },
@@ -63,9 +63,9 @@
    "typ": "knarzen",
    "ziel_lufs": -32,
    "pegel_art": "spitzen",
-   "spitze_db": -11.7,
+   "spitze_db": -11.6,
    "begrenzt_db": 0.0,
-   "sekunden": 5.8,
+   "sekunden": 5.5,
    "ereignisse": 39,
    "probe_abtastwerte": 1323000
   },
@@ -76,9 +76,9 @@
    "typ": "segel",
    "ziel_lufs": -33,
    "pegel_art": "spitzen",
-   "spitze_db": -11.7,
+   "spitze_db": -11.6,
    "begrenzt_db": 0.0,
-   "sekunden": 89.7,
+   "sekunden": 92.1,
    "faenge": 7,
    "probe_abtastwerte": 2646000
   },
@@ -91,7 +91,7 @@
    "pegel_art": "integriert",
    "spitze_db": -17.6,
    "begrenzt_db": 0.0,
-   "sekunden": 100.6,
+   "sekunden": 108.4,
    "probe_abtastwerte": 1323000
   },
   {
@@ -103,7 +103,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
    "begrenzt_db": 0.0,
-   "sekunden": 13.4,
+   "sekunden": 14.4,
    "rufe": 88,
    "probe_abtastwerte": 1323000
   },
@@ -114,9 +114,9 @@
    "typ": "ueberflug",
    "ziel_lufs": -22,
    "pegel_art": "spitzen",
-   "spitze_db": -12.3,
+   "spitze_db": -12.6,
    "begrenzt_db": 0.0,
-   "sekunden": 6.6,
+   "sekunden": 7.4,
    "zeiten": [
     13.7,
     43.6,
@@ -130,13 +130,14 @@
    "probe_abtastwerte": 1764000
   }
  ],
+ "start_verschoben_s": 196.63,
  "begrenzer_max_db": 0.0,
  "lufs": -21.0,
  "naht": {
-  "sprung_naht": 0.0091,
-  "sprung_typisch_999": 0.0685,
-  "pegelsprung_naht_db": 7.27,
-  "pegelsprung_typisch_95_db": 2.76
+  "sprung_naht": 0.0055,
+  "sprung_typisch_999": 0.0659,
+  "pegelsprung_naht_db": 0.7,
+  "pegelsprung_typisch_95_db": 2.62
  },
  "quellen": [
   "esc_1-28135-A",

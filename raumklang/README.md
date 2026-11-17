@@ -78,6 +78,17 @@ kurz aus). Der Bericht `audio/boot.json` enthält die Soll-Länge in
 Abtastwerten; hängt ein Browser beim Dekodieren die Stille des MP3-Kodierers
 an, schneidet die Seite darauf zurück.
 
+Die Datei beginnt in der Mitte des ruhigsten 4-s-Fensters der Schleife (der
+Kreis ist frei drehbar); so startet sie nicht mit einem Ereignis.
+
+## Selbsttest
+
+`python3 pipeline/selbsttest.py` läuft in Sekunden und prüft Fehler, die es schon
+gab: Ereignis und Hallanteil an der richtigen Zeit (bis 17.11. landete der
+Hallanteil aller Ereignisse bei 0 s und stapelte sich dort zu einem Knall),
+Kreisspur und Kreisfaltung, stetige HRTF-Interpolation, periodische Bewegung.
+Vor jedem vollen Rendern laufen lassen.
+
 ## Ereignisse schneiden
 
 Wellen und Schwapps werden von Tal zu Tal der Hüllkurve geschnitten statt über
