@@ -8,6 +8,8 @@ eine Sammlung von Aufnahmen und einen Zielpegel. Jede Gruppe wird einzeln gerend
 auf ihren Zielpegel gebracht und erst dann gemischt.
 """
 import argparse, json, os, subprocess, sys, time
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from pathlib import Path
 import numpy as np
 from scipy.signal import fftconvolve
@@ -655,7 +657,7 @@ def main():
     hall_ir = diffuser_nachhall(hrtf, **sz.get('nachhall', {}))
     boe = boeenkurve(np.random.default_rng(sz.get('saat', 1) * 7 + 3), dauer, sz.get('boeen', {}))
     name = sz['name']
-    bericht = dict(szene=name, stand=time.strftime('%d.%m.%Y %H:%M'), dauer=dauer, schleife=True, abtastwerte=int(round(dauer * FS)),
+    bericht = dict(szene=name, stand=datetime.now(ZoneInfo('Europe/Berlin')).strftime('%d.%m.%Y %H:%M'), dauer=dauer, schleife=True, abtastwerte=int(round(dauer * FS)),
                    hrtf=Path(a.hrtf).name, blick=sz['boot'].get('blick', 55), gruppen=[])
     summe = np.zeros((2, int(round(dauer * FS))), np.float32)
     for i, g in enumerate(sz['gruppen']):
