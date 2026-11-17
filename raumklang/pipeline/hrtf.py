@@ -9,7 +9,7 @@ SourcePosition in Kugelkoordinaten funktioniert (CIPIC, eigene Messung, ...).
 import numpy as np
 import h5py
 from scipy.signal import resample_poly
-from scipy.spatial import cKDTree
+from scipy.spatial import cKDTree, ConvexHull
 from fractions import Fraction
 
 C_SCHALL = 343.0
@@ -62,6 +62,18 @@ class HRTF:
         self.fs, self.nfft, self.k = fs, nfft, nachbarn
         self.vek = v
         self.baum = cKDTree(v)
+        # Dreiecksnetz auf der Kugel: zwischen drei Messrichtungen wird baryzentrisch gemischt.
+        # Das ist stetig – anders als „die k nächsten nach Abstand“, deren Auswahl beim Wechsel springt.
+        self.dreiecke = ConvexHull(v).simplices
+        ecken = v[self.dreiecke]                       # (T, 3 Ecken, 3 Koordinaten)
+        self.dreieck_inv = np.linalg.inv(np.transpose(ecken, (0, 2, 1)))
+        anz = np.bincount(self.dreiecke.ravel(), minlength=len(v))
+        self.an_ecke = np.full((len(v), anz.max()), -1)
+        fuell = np.zeros(len(v), int)
+        for t, tri in enumerate(self.dreiecke):
+            for e in tri:
+                self.an_ecke[e, fuell[e]] = t
+                fuell[e] += 1
         self.freq = np.fft.rfftfreq(nfft, 1 / fs)
         M = ir.shape[0]
 
@@ -106,15 +118,37 @@ class HRTF:
         self.H = H.astype(np.complex64)
         self.min_el = float(np.degrees(np.arcsin(v[:, 2].min())))
 
+    def gewichte(self, vek):
+        """Drei Messrichtungen und ihre baryzentrischen Gewichte je Richtung."""
+        n = len(vek)
+        _, nah = self.baum.query(vek, k=3)
+        kand = self.an_ecke[nah].reshape(n, -1)                       # Dreiecke an den 3 nächsten Ecken
+        gueltig = kand >= 0
+        kk = np.where(gueltig, kand, 0)
+        lam = np.einsum('ncij,nj->nci', self.dreieck_inv[kk], vek)    # (n, C, 3)
+        innen = gueltig & (lam.min(-1) >= -1e-9) & (lam.sum(-1) > 0)
+        wahl = np.argmax(innen, 1)
+        treffer = innen[np.arange(n), wahl]
+        t = kk[np.arange(n), wahl]
+        w = lam[np.arange(n), wahl]
+        w = np.clip(w, 0, None)
+        w /= np.maximum(w.sum(1, keepdims=True), 1e-12)
+        i = self.dreiecke[t]
+        if not treffer.all():  # große Dreiecke (z. B. in der Messlücke unten): alle Dreiecke prüfen
+            f = np.flatnonzero(~treffer)
+            lam = np.einsum('tij,nj->nti', self.dreieck_inv, vek[f])
+            innen = (lam.min(-1) >= -1e-9) & (lam.sum(-1) > 0)
+            t = np.argmax(innen, 1)
+            wf = np.clip(lam[np.arange(len(f)), t], 0, None)
+            i[f] = self.dreiecke[t]
+            w[f] = wf / np.maximum(wf.sum(1, keepdims=True), 1e-12)
+        return i, w
+
     def filter(self, vek, ohrabstand_extra=None):
         """Filterpaare für Richtungen vek (n, 3) im Kopfbezug -> (n, 2, nfft/2+1) komplex."""
         vek = np.asarray(vek, float)
         vek = vek / np.maximum(np.linalg.norm(vek, axis=-1, keepdims=True), 1e-9)
-        d, i = self.baum.query(vek, k=self.k)
-        if self.k == 1:
-            d, i = d[:, None], i[:, None]
-        w = 1.0 / np.maximum(d, 1e-4) ** 2
-        w /= w.sum(1, keepdims=True)
+        i, w = self.gewichte(vek)
         H = np.einsum('nk,nkef->nef', w.astype(np.float32), self.H[i])
         tau = np.einsum('nk,nke->ne', w, self.tau[i])
         H = H * np.exp(-2j * np.pi * self.freq[None, None, :] * tau[:, :, None]).astype(np.complex64)

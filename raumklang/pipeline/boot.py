@@ -15,6 +15,7 @@ Schallwege zum Kopf:
 """
 import numpy as np
 from kern import FREQ, beugung_db, streukern
+from scipy.ndimage import uniform_filter1d
 from hrtf import hoerer_basis
 
 
@@ -149,11 +150,15 @@ class Boot:
             vb = bild - k
             t = (yw - k[:, 1]) / np.where(np.abs(vb[:, 1]) < 1e-6, 1e-6, vb[:, 1])
             q = k + t[:, None] * vb
-            w = (_sig((self.rand - q[:, 2]) / 0.03) * _sig((q[:, 2] - self.boden) / 0.03)
-                 * _sig((1.7 - np.abs(q[:, 0])) / 0.1) * _sig((yw * sgn - p[:, 1] * sgn) / 0.05) * (t > 0) * (t < 1))
+            w = (_sig((self.rand - q[:, 2]) / 0.06) * _sig((q[:, 2] - self.boden) / 0.06)
+                 * _sig((1.7 - np.abs(q[:, 0])) / 0.15) * _sig((yw * sgn - p[:, 1] * sgn) / 0.08) * (t > 0) * (t < 1))
             if w.max() < 0.02:
                 continue
-            gq = self._gang_kante(p, q)[0]
+            # Kante zwischen Quelle und Wandpunkt: den Wandpunkt auf die Rumpfkontur legen, damit er
+            # sicher innen liegt (die Wand als Ebene y = ±b und der Rumpf als Ellipse passen sonst nicht zusammen)
+            qi = q.copy()
+            qi[:, 1] = sgn * 0.97 * self.b * np.sqrt(np.clip(1 - (q[:, 0] / self.a) ** 2, 0.05, 1))
+            gq = self._gang_kante(p, qi)[0]
             wege.append(dict(name='bordwand', streu=self.streu[f'wand{sgn}'], entf=np.linalg.norm(vb, axis=1), richt=self._kopfbezug(vb),
                              gang=(gq * holz[None, :] * w[:, None]).astype(np.float32), ohr=None, hall=False))
         # Bodenbretter
@@ -164,14 +169,24 @@ class Boot:
         q = k + t[:, None] * vb
         w = _sig((0.8 - (q[:, 0] / self.a) ** 2 - (q[:, 1] / self.b) ** 2) / 0.08) * (p[:, 2] > self.boden) * (t > 0) * (t < 1)
         if w.max() > 0.02:
-            gq = self._gang_kante(p, q)[0]
+            gq = self._gang_kante(p, q * np.array([0.97, 0.97, 1.0]))[0]
             wege.append(dict(name='boden', streu=self.streu['boden'], entf=np.linalg.norm(vb, axis=1), richt=self._kopfbezug(vb),
                              gang=(gq * (self.boden_r * holz[None, :]) * w[:, None]).astype(np.float32), ohr=None, hall=False))
         # Spiegelbild an der Wasserfläche
         if aussen and p_wasserbild is not None:
             g, innen, frei, umweg, r = self._gang_kante(p_wasserbild, k)
             vw = p_wasserbild - k
+            # Spiegelpunkt auf dem Wasser: liegt er unter dem Rumpf, verdeckt das Boot den Weg ganz
+            t = -k[:, 2] / np.where(vw[:, 2] < -1e-6, vw[:, 2], -1e-6)
+            q = k + np.clip(t, 0, 1)[:, None] * vw
+            rho = np.sqrt((q[:, 0] / self.a) ** 2 + (q[:, 1] / self.b) ** 2)
+            w = _sig((rho - 1.15) / 0.06)
             richt = np.where((~frei)[:, None], r - k, vw)
-            wege.append(dict(name='wasser', streu=self.streu['wasser'], entf=np.linalg.norm(vw, axis=1) + umweg, richt=self._kopfbezug(richt),
-                             gang=(0.9 * g).astype(np.float32), ohr=None, hall=False))
+            if w.max() > 0.02:
+                wege.append(dict(name='wasser', streu=self.streu['wasser'], entf=np.linalg.norm(vw, axis=1) + umweg, richt=self._kopfbezug(richt),
+                                 gang=(0.9 * g * w[:, None]).astype(np.float32), ohr=None, hall=False))
+        # Spiegelungen: Gültigkeitsgrenzen über ~60 ms verschleifen, damit kein Weg hart ein- oder aussetzt
+        for weg in wege[1:]:
+            if len(weg['gang']) > 5:
+                weg['gang'] = uniform_filter1d(weg['gang'], 5, axis=0, mode='nearest')
         return wege

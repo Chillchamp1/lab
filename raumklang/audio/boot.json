@@ -1,6 +1,6 @@
 {
  "szene": "boot",
- "stand": "16.11.2026 22:40",
+ "stand": "17.11.2026 10:06",
  "dauer": 200,
  "hrtf": "subject_040.sofa",
  "blick": 55,
@@ -12,9 +12,9 @@
    "typ": "bett",
    "ziel_lufs": -29,
    "pegel_art": "integriert",
-   "spitze_db": -15.5,
+   "spitze_db": -15.4,
    "begrenzt_db": 0.0,
-   "sekunden": 98.9
+   "sekunden": 130.9
   },
   {
    "name": "wind",
@@ -23,9 +23,9 @@
    "typ": "bett",
    "ziel_lufs": -37,
    "pegel_art": "integriert",
-   "spitze_db": -19.6,
+   "spitze_db": -19.4,
    "begrenzt_db": 0.0,
-   "sekunden": 108.5
+   "sekunden": 133.3
   },
   {
    "name": "wellen",
@@ -36,7 +36,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -10.1,
    "begrenzt_db": 0.0,
-   "sekunden": 12.2
+   "sekunden": 14.0
   },
   {
    "name": "rumpf",
@@ -46,8 +46,8 @@
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
-   "begrenzt_db": 11.1,
-   "sekunden": 10.8,
+   "begrenzt_db": 12.7,
+   "sekunden": 13.6,
    "ereignisse": 160
   },
   {
@@ -57,9 +57,9 @@
    "typ": "knarzen",
    "ziel_lufs": -32,
    "pegel_art": "spitzen",
-   "spitze_db": -9.0,
-   "begrenzt_db": 1.2,
-   "sekunden": 4.5,
+   "spitze_db": -9.8,
+   "begrenzt_db": 0.0,
+   "sekunden": 5.1,
    "ereignisse": 40
   },
   {
@@ -69,9 +69,9 @@
    "typ": "bett",
    "ziel_lufs": -39,
    "pegel_art": "integriert",
-   "spitze_db": -17.3,
+   "spitze_db": -16.8,
    "begrenzt_db": 0.0,
-   "sekunden": 70.6
+   "sekunden": 80.2
   },
   {
    "name": "moewen",
@@ -80,34 +80,34 @@
    "typ": "schwarm",
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
-   "spitze_db": -8.9,
+   "spitze_db": -9.0,
    "begrenzt_db": 0.0,
-   "sekunden": 12.7,
+   "sekunden": 11.8,
    "rufe": 86
   },
   {
    "name": "ueberflug",
    "titel": "Möwe dicht über dem Boot",
-   "text": "Alle 20 bis 30 Sekunden schießt eine Möwe in 2 bis 4,5 m Höhe rufend über das Boot hinweg.",
+   "text": "Alle 20 bis 30 Sekunden schießt eine Möwe in 2 bis 4,5 m Höhe über das Boot. Ein Ruf liegt genau über dem Boot, seine Tonhöhe kippt beim Vorbeiflug (Doppler). Dazu Fahrtwind mit einigen Flügelschlägen.",
    "typ": "ueberflug",
    "ziel_lufs": -22,
    "pegel_art": "spitzen",
-   "spitze_db": -8.1,
+   "spitze_db": -5.8,
    "begrenzt_db": 0.0,
-   "sekunden": 3.7,
+   "sekunden": 6.5,
    "zeiten": [
     8.1,
-    36.5,
-    54.8,
-    83.9,
-    107.5,
-    132.2,
-    157.2,
-    176.5
+    38.2,
+    61.9,
+    80.7,
+    109.3,
+    132.4,
+    156.9,
+    186.0
    ]
   }
  ],
- "begrenzer_max_db": 0.0,
+ "begrenzer_max_db": 0.2,
  "lufs": -21.0,
  "quellen": [
   "esc_1-28135-A",
