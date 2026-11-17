@@ -39,7 +39,7 @@
    "typ": "bett",
    "titel": "Regen im Blätterdach",
    "text": "Leiser Herbstregen auf dem Laub über und um dich, mal dichter, mal lichter; in den Böen etwas mehr.",
-   "ziel_lufs": -27,
+   "ziel_lufs": -31,
    "anzahl": 10,
    "entfernung": [
     5,
@@ -57,51 +57,63 @@
    "sammlung": [
     {
      "quelle": "esc_3-157149-A",
-     "tiefpass": 9000
+     "tiefpass": 9000,
+     "hochpass": 250
     },
     {
      "quelle": "esc_4-163264-A",
-     "tiefpass": 9000
+     "tiefpass": 9000,
+     "hochpass": 250
     },
     {
      "quelle": "esc_4-181286-A",
-     "tiefpass": 9000
+     "tiefpass": 9000,
+     "hochpass": 250
     },
     {
      "quelle": "esc_1-21189-A",
-     "tiefpass": 9000
+     "tiefpass": 9000,
+     "hochpass": 250
     },
     {
      "quelle": "esc_5-188655-A",
-     "tiefpass": 9000
+     "tiefpass": 9000,
+     "hochpass": 250
     },
     {
      "quelle": "esc_2-87781-A",
-     "tiefpass": 9000
+     "tiefpass": 9000,
+     "hochpass": 250
     },
     {
      "quelle": "esc_4-180380-A",
-     "tiefpass": 9000
+     "tiefpass": 9000,
+     "hochpass": 250
     },
     {
      "quelle": "esc_5-198321-A",
-     "tiefpass": 9000
+     "tiefpass": 9000,
+     "hochpass": 250
     },
     {
      "quelle": "esc_1-54958-A",
-     "tiefpass": 9000
+     "tiefpass": 9000,
+     "hochpass": 250
     },
     {
      "quelle": "esc_1-56311-A",
-     "tiefpass": 9000
+     "tiefpass": 9000,
+     "hochpass": 250
     },
     {
      "quelle": "esc_5-181766-A",
-     "tiefpass": 9000
+     "tiefpass": 9000,
+     "hochpass": 250
     },
     {
      "quelle": "esc_2-101676-A",
-     "tiefpass": 9000
+     "tiefpass": 9000,
+     "hochpass": 250
     }
    ],
    "decke_db": -6.0
@@ -111,7 +123,7 @@
    "typ": "bett",
    "titel": "Wind in den Kronen",
    "text": "Wind, der in Böen durch die Baumkronen zieht.",
-   "ziel_lufs": -34,
+   "ziel_lufs": -37,
    "anzahl": 6,
    "entfernung": [
     12,
@@ -159,7 +171,7 @@
    "typ": "bett",
    "titel": "Regen auf großen Blättern",
    "text": "Regen trommelt auf große Blätter direkt über und neben dir – wie auf einem Zeltdach.",
-   "ziel_lufs": -30,
+   "ziel_lufs": -34,
    "anzahl": 5,
    "punkte": [
     [
@@ -197,11 +209,13 @@
    "sammlung": [
     {
      "quelle": "esc_2-117625-A",
-     "tiefpass": 8000
+     "tiefpass": 8000,
+     "hochpass": 250
     },
     {
      "quelle": "esc_2-82367-A",
-     "tiefpass": 8000
+     "tiefpass": 8000,
+     "hochpass": 250
     }
    ]
   },
@@ -210,7 +224,7 @@
    "typ": "ereignisse",
    "titel": "Tropfen auf Blättern",
    "text": "Einzelne dicke Tropfen, die von den Blättern über dir auf tiefere Blätter fallen.",
-   "ziel_lufs": -33,
+   "ziel_lufs": -35,
    "pegel_art": "spitzen",
    "entfernung": [
     1.6,
@@ -324,7 +338,7 @@
    "typ": "ereignisse",
    "titel": "Tropfen in Pfützen",
    "text": "Tropfen, die neben dir in kleine Pfützen fallen.",
-   "ziel_lufs": -35,
+   "ziel_lufs": -37,
    "pegel_art": "spitzen",
    "entfernung": [
     1.0,
@@ -492,7 +506,7 @@
    "typ": "bett",
    "titel": "Bach",
    "text": "Ein kleiner Bach, der rechts neben dir in drei bis sechs Metern durchs Laub fließt.",
-   "ziel_lufs": -33,
+   "ziel_lufs": -36,
    "anzahl": 6,
    "punkte": [
     [
@@ -543,7 +557,7 @@
    "typ": "schwarm",
    "titel": "Pflanzenfresser in der Ferne",
    "text": "Eine Herde großer Pflanzenfresser weit entfernt im Wald; manchmal ruft einer, ein anderer antwortet.",
-   "ziel_lufs": -31,
+   "ziel_lufs": -28,
    "pegel_art": "spitzen",
    "anzahl": 5,
    "radius": [
@@ -761,7 +775,8 @@
       "nachlauf": 0.3
      }
     }
-   ]
+   ],
+   "decke_db": -2.0
   },
   {
    "name": "voegel",
@@ -1005,7 +1020,7 @@
    "typ": "gebruell",
    "titel": "Gröhlen über dem Tal",
    "text": "Manchmal gröhlt weit weg etwas von enormer Größe, und der Ruf schallt von den Talhängen zurück.",
-   "ziel_lufs": -29,
+   "ziel_lufs": -25,
    "pegel_art": "spitzen",
    "erster_s": [
     20,
@@ -1178,14 +1193,15 @@
       "max_endpegel_db": -3
      }
     }
-   ]
+   ],
+   "decke_db": -2.0
   },
   {
    "name": "kammrufe",
    "typ": "gebruell",
    "titel": "Kammrufe",
    "text": "Hohle, posaunenartige Rufe von Entenschnabelsauriern weit weg im Tal – ihr Schädelkamm ist eine lange Röhre, die den Ruf färbt.",
-   "ziel_lufs": -31,
+   "ziel_lufs": -26,
    "pegel_art": "spitzen",
    "erster_s": [
     8,
@@ -1400,14 +1416,15 @@
       "max_endpegel_db": -3
      }
     }
-   ]
+   ],
+   "decke_db": -2.0
   },
   {
    "name": "wummern",
    "typ": "gebruell",
    "titel": "Wummern",
    "text": "Tiefes, pulsierendes Wummern mit geschlossenem Maul, wie es Strauße, Emus und Krokodile können – so haben viele Dinosaurier vermutlich gerufen.",
-   "ziel_lufs": -32,
+   "ziel_lufs": -27,
    "pegel_art": "spitzen",
    "erster_s": [
     15,
@@ -1567,14 +1584,15 @@
    "folge": [
     3,
     6
-   ]
+   ],
+   "decke_db": -2.0
   },
   {
    "name": "vorbeigang",
    "typ": "vorbeigang",
    "titel": "Ein Saurier stapft vorbei",
    "text": "Ab und zu stapft in 15 bis 30 Metern ein großer Saurier vorbei: schwere, tiefe Tritte im nassen Boden, Matsch, raschelndes Laub – und manchmal knarrt und bricht ein großer Ast.",
-   "ziel_lufs": -27,
+   "ziel_lufs": -23,
    "pegel_art": "spitzen",
    "erster_s": [
     8,
@@ -1613,14 +1631,14 @@
    "bezug_m": 20,
    "hall": 1.0,
    "matsch_wahrsch": 0.5,
-   "knack_wahrsch": 0.15,
+   "knack_wahrsch": 0.3,
    "rascheln_wahrsch": 0.5,
    "schnauben_wahrsch": 0.5,
    "tritte": [
     {
      "quelle": "esc_4-117630-A",
-     "tempo_faktor": 0.42,
-     "tiefpass": 2500,
+     "tempo_faktor": 0.6,
+     "tiefpass": 7000,
      "zerlegen": {
       "schwelle_db": 10,
       "luecke": 0.08,
@@ -1638,8 +1656,8 @@
     },
     {
      "quelle": "esc_4-218304-A",
-     "tempo_faktor": 0.42,
-     "tiefpass": 2500,
+     "tempo_faktor": 0.6,
+     "tiefpass": 7000,
      "zerlegen": {
       "schwelle_db": 10,
       "luecke": 0.08,
@@ -1657,8 +1675,8 @@
     },
     {
      "quelle": "esc_4-218304-B",
-     "tempo_faktor": 0.42,
-     "tiefpass": 2500,
+     "tempo_faktor": 0.6,
+     "tiefpass": 7000,
      "zerlegen": {
       "schwelle_db": 10,
       "luecke": 0.08,
@@ -1676,8 +1694,8 @@
     },
     {
      "quelle": "esc_5-243025-A",
-     "tempo_faktor": 0.42,
-     "tiefpass": 2500,
+     "tempo_faktor": 0.6,
+     "tiefpass": 7000,
      "zerlegen": {
       "schwelle_db": 10,
       "luecke": 0.08,
@@ -1698,7 +1716,7 @@
     {
      "quelle": "esc_5-263501-A",
      "tempo_faktor": 0.7,
-     "tiefpass": 4000,
+     "tiefpass": 7000,
      "zerlegen": {
       "schwelle_db": 10,
       "luecke": 0.08,
@@ -1717,7 +1735,7 @@
     {
      "quelle": "esc_5-263490-A",
      "tempo_faktor": 0.7,
-     "tiefpass": 4000,
+     "tiefpass": 7000,
      "zerlegen": {
       "schwelle_db": 10,
       "luecke": 0.08,
@@ -1856,7 +1874,7 @@
     }
    ],
    "rascheln_pegel": 0.1,
-   "decke_db": -6.0,
+   "decke_db": -2.0,
    "stampfen": [
     {
      "quelle": "esc_2-133889-A",
@@ -2237,18 +2255,20 @@
     }
    ],
    "stampf_pegel": 1.6,
-   "ast_wahrsch": 0.07,
+   "ast_wahrsch": 0.09,
    "ast_pegel": 1.3,
    "knarr_pegel": 0.5,
    "laub_fall_pegel": 0.35,
-   "aufschlag_pegel": 0.7
+   "aufschlag_pegel": 0.7,
+   "matsch_pegel": 0.8,
+   "knack_pegel": 1.0
   },
   {
    "name": "besuch",
    "typ": "besuch",
    "titel": "Ein Saurier kommt nah heran",
    "text": "Einer kommt näher, zupft Blätter vom Baum vor dir, kaut und schmatzt, senkt dann den Kopf bis auf einen halben, einen Meter an dich heran, schnuppert ruhig und geht wieder.",
-   "ziel_lufs": -31,
+   "ziel_lufs": -26,
    "pegel_art": "spitzen",
    "starts_s": [
     70
@@ -2393,8 +2413,8 @@
    "tritte": [
     {
      "quelle": "esc_4-117630-A",
-     "tempo_faktor": 0.42,
-     "tiefpass": 2500,
+     "tempo_faktor": 0.6,
+     "tiefpass": 7000,
      "zerlegen": {
       "schwelle_db": 10,
       "luecke": 0.08,
@@ -2412,8 +2432,8 @@
     },
     {
      "quelle": "esc_4-218304-A",
-     "tempo_faktor": 0.42,
-     "tiefpass": 2500,
+     "tempo_faktor": 0.6,
+     "tiefpass": 7000,
      "zerlegen": {
       "schwelle_db": 10,
       "luecke": 0.08,
@@ -2431,8 +2451,8 @@
     },
     {
      "quelle": "esc_4-218304-B",
-     "tempo_faktor": 0.42,
-     "tiefpass": 2500,
+     "tempo_faktor": 0.6,
+     "tiefpass": 7000,
      "zerlegen": {
       "schwelle_db": 10,
       "luecke": 0.08,
@@ -2450,8 +2470,8 @@
     },
     {
      "quelle": "esc_5-243025-A",
-     "tempo_faktor": 0.42,
-     "tiefpass": 2500,
+     "tempo_faktor": 0.6,
+     "tiefpass": 7000,
      "zerlegen": {
       "schwelle_db": 10,
       "luecke": 0.08,
@@ -2472,7 +2492,7 @@
     {
      "quelle": "esc_5-263501-A",
      "tempo_faktor": 0.7,
-     "tiefpass": 4000,
+     "tiefpass": 7000,
      "zerlegen": {
       "schwelle_db": 10,
       "luecke": 0.08,
@@ -2491,7 +2511,7 @@
     {
      "quelle": "esc_5-263490-A",
      "tempo_faktor": 0.7,
-     "tiefpass": 4000,
+     "tiefpass": 7000,
      "zerlegen": {
       "schwelle_db": 10,
       "luecke": 0.08,
@@ -3010,14 +3030,17 @@
     }
    ],
    "stampf_pegel": 1.2,
-   "ast_wahrsch": 0.0
+   "ast_wahrsch": 0.0,
+   "matsch_pegel": 0.8,
+   "knack_pegel": 1.0,
+   "decke_db": -2.0
   },
   {
    "name": "flugsaurier",
    "typ": "ueberflug",
    "titel": "Flugsaurier über dem Blätterdach",
    "text": "Ab und zu zieht ein Flugsaurier über die Kronen, mit langsamen, schweren Flügelschlägen und einem Ruf.",
-   "ziel_lufs": -31,
+   "ziel_lufs": -27,
    "pegel_art": "spitzen",
    "erster_s": [
     30,
@@ -3091,14 +3114,15 @@
    "fluegel_schlaege": [
     3,
     6
-   ]
+   ],
+   "decke_db": -2.0
   },
   {
    "name": "musik",
    "typ": "musik",
    "titel": "Musik",
    "text": "Ganz leise, langsame Akkordfläche im Hintergrund.",
-   "ziel_lufs": -43,
+   "ziel_lufs": -44,
    "probe_plus_db": 10
   }
  ]
