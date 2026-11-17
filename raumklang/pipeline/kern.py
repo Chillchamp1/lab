@@ -9,6 +9,7 @@ gefiltert und überlappend addiert.
 """
 import numpy as np
 from scipy.ndimage import map_coordinates
+from scipy.signal import fftconvolve
 from hrtf import C_SCHALL
 
 FS = 44100
@@ -107,20 +108,41 @@ def rendere_pfad(hrtf, sig, entf, richt, gang=None, pegel=None, ohr=None, bus=No
 
 
 class Spur:
-    """Stereo-Summenspur mit Zeitachse der Szene."""
+    """Stereo-Summenspur auf einer kreisförmigen Zeitachse: was über das Ende hinausklingt,
+    läuft am Anfang weiter (und umgekehrt). So lässt sich die Szene nahtlos endlos wiederholen."""
 
     def __init__(self, dauer_s, kanaele=2):
-        self.n = int(dauer_s * FS)
+        self.n = int(round(dauer_s * FS))
         self.x = np.zeros((kanaele, self.n), np.float32)
 
     def addiere(self, sig, start):
         sig = np.atleast_2d(sig)
-        a, b = start, start + sig.shape[1]
-        qa = max(0, -a)
-        a = max(a, 0)
-        b = min(b, self.n)
-        if b > a:
-            self.x[:, a:b] += sig[:, qa:qa + b - a]
+        pos = start % self.n
+        i = 0
+        while i < sig.shape[1]:
+            m = min(sig.shape[1] - i, self.n - pos)
+            self.x[:, pos:pos + m] += sig[:, i:i + m]
+            i += m
+            pos = 0
+
+
+def kreisfaltung(x, ir):
+    """Faltung auf der kreisförmigen Zeitachse (Nachhall des Endes klingt am Anfang aus)."""
+    y = fftconvolve(x, ir)
+    n = len(x)
+    aus = y[:n].copy()
+    rest = y[n:]
+    for a in range(0, len(rest), n):
+        aus[:len(rest[a:a + n])] += rest[a:a + n]
+    return aus
+
+
+def begrenzer_kreis(x, decke_db=-1.0):
+    """Begrenzer für eine Schleife: Vorschau und Rücklauf reichen über die Naht."""
+    rand = int(0.5 * FS)
+    erw = np.concatenate([x[:, -rand:], x, x[:, :rand]], 1)
+    y, weg = begrenzer(erw, decke_db)
+    return y[:, rand:-rand], weg
 
 
 def streukern(saat, dauer_ms=3.0):

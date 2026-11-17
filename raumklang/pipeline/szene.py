@@ -7,7 +7,7 @@ Die Beschreibung nennt Klanggruppen. Jede Gruppe hat einen Typ (siehe GENERATORE
 eine Sammlung von Aufnahmen und einen Zielpegel. Jede Gruppe wird einzeln gerendert,
 auf ihren Zielpegel gebracht und erst dann gemischt.
 """
-import argparse, json, subprocess, sys, time
+import argparse, json, os, subprocess, sys, time
 from pathlib import Path
 import numpy as np
 from scipy.signal import fftconvolve
@@ -15,7 +15,7 @@ import pyloudnorm
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from hrtf import HRTF
-from kern import FS, Spur, rendere_pfad, n_bloecke, blockzeiten, diffuser_nachhall, begrenzer
+from kern import FS, Spur, rendere_pfad, n_bloecke, blockzeiten, diffuser_nachhall, begrenzer, begrenzer_kreis, kreisfaltung
 from boot import Boot
 import material as mat
 
@@ -62,13 +62,14 @@ class Bibliothek:
                 x = x[leise[0]:leise[-1]]
             if len(x) > 3 * ueberblend * FS:
                 clips.append(x)
-        if len(clips) == 1:
-            return mat.schleife(clips[0], n, start=int(rng.uniform(0, len(clips[0]))))
         ub = int(ueberblend * FS)
         ein, aus = np.sin(np.linspace(0, np.pi / 2, ub)), np.cos(np.linspace(0, np.pi / 2, ub))
-        y = np.zeros(n + 12 * FS)
+        if len(clips) == 1:
+            y = mat.schleife(clips[0], n + 2 * ub, start=int(rng.uniform(0, len(clips[0]))))
+            return self._ringschluss(y[ub:], n, ein, aus)
+        y = np.zeros(n + 14 * FS)
         pos, letzter = 0, -1
-        while pos < n:
+        while pos < n + 2 * ub:
             k = int(rng.integers(len(clips)))
             if k == letzter:
                 k = (k + 1) % len(clips)
@@ -81,20 +82,41 @@ class Bibliothek:
             c[-ub:] *= aus
             y[pos:pos + len(c)] += c
             pos += len(c) - ub
-        return y[:n]
+        return self._ringschluss(y[ub:], n, ein, aus)   # erste Einblendung überspringen
+
+    @staticmethod
+    def _ringschluss(y, n, ein, aus):
+        """Aus y (länger als n) ein periodisches Stück der Länge n machen: was über n
+        hinausläuft, wird gleichstark in den Anfang überblendet."""
+        ub = len(ein)
+        z = y[:n].copy()
+        z[:ub] = y[:ub] * ein + y[n:n + ub] * aus
+        return z
 
     def ereignisse(self, sammlung):
         """Liste von dicts {sig, quelle, dauer, ...}; jedes Ereignis auf gleichen Spitzen-Kurzzeitpegel gebracht."""
         aus = []
         for spez in sammlung:
-            x = self.aufnahme({k: v for k, v in spez.items() if k not in ('zerlegen', 'stuecke', 'blende')})
+            x = self.aufnahme({k: v for k, v in spez.items() if k not in ('zerlegen', 'stuecke', 'blende', 'abklingen', 'max_flach')})
             if 'stuecke' in spez:  # ganze Aufnahme in gleich lange Stücke teilen
                 L = int(spez['stuecke'] * FS)
                 stuecke = [(a, min(a + L, len(x))) for a in range(0, len(x) - L // 2, L)]
+            elif spez.get('zerlegen', {}).get('methode') == 'taeler':
+                z = {k: v for k, v in spez['zerlegen'].items() if k != 'methode'}
+                stuecke = mat.zerlege_taeler(x, **z)
             else:
                 stuecke = mat.zerlege(x, **dict(spez.get('zerlegen', {})))
             for a, b in stuecke:
-                y = mat.schneide(x, a, b, *spez.get('blende', [8, 60]))
+                if spez.get('abklingen'):
+                    y = mat.schneide_abklingend(x, a, b, **spez['abklingen'])
+                    if y is None:
+                        continue
+                else:
+                    y = mat.schneide(x, a, b, *spez.get('blende', [8, 60]))
+                if spez.get('max_flach'):
+                    hh = mat.huelle_db(y, 20)
+                    if (hh > hh.max() - 6).mean() > spez['max_flach']:
+                        continue          # flaches Rauschen statt Schlag mit Abklingen
                 k = mat.kennwerte(y)
                 # Pegel am lautesten 50-ms-Fenster ausrichten
                 h = mat.huelle_db(y, 50).max()
@@ -105,8 +127,35 @@ class Bibliothek:
 
 # ---------------------------------------------------------------- Hilfen
 class Kontext:
-    def __init__(self, hrtf, boot, bib, dauer, rng):
+    def __init__(self, hrtf, boot, bib, dauer, rng, boe=None):
         self.hrtf, self.boot, self.bib, self.dauer, self.rng = hrtf, boot, bib, dauer, rng
+        self._boe = boe
+
+    def boe(self, t):
+        """Gemeinsame Böenkurve der Szene (Mittel 0, Streuung 1, periodisch): Wind und Segel
+        hören dieselben Böen."""
+        tk, b = self._boe
+        return np.interp(t, tk, b, period=self.dauer)
+
+
+def boeenkurve(rng, dauer, cfg):
+    """Langsames Grundwehen plus einzelne Böen von einigen Sekunden; periodisch über die Dauer."""
+    rate = 10.0
+    n = int(round(dauer * rate))
+    grund = _rauschkurve(rng, n, rate, cfg.get('grund_hz', 0.03))
+    boeen = np.zeros(n)
+    t = np.arange(n) / rate
+    tb = rng.uniform(0, cfg.get('abstand_s', 22))
+    while tb < dauer:
+        d = rng.uniform(*cfg.get('dauer_s', [3, 8]))
+        st = rng.uniform(0.6, 1.4)
+        for k in (-1, 0, 1):                        # kreisförmig: Böen über die Naht
+            u = (t - tb - k * dauer) / d
+            boeen += st * np.where((u > 0) & (u < 1), np.clip(np.sin(np.pi * u), 0, None) ** 1.5 * (1 + 0.25 * np.sin(2 * np.pi * 3 * u)), 0)
+        tb += rng.exponential(cfg.get('abstand_s', 22)) + d
+    b = 0.6 * grund + 2.2 * boeen
+    b = (b - b.mean()) / b.std()
+    return t, b
 
 
 def rendere_quelle(kx, spur, bus, sig, t0, ort_fn, aussen=True, pegel=1.0, hall=1.0, spiegelungen=True, pegel_fn=None):
@@ -131,6 +180,21 @@ def rendere_quelle(kx, spur, bus, sig, t0, ort_fn, aussen=True, pegel=1.0, hall=
         spur.addiere(st, int(t0 * FS) + v)
 
 
+def rendere_kreis(kx, spur, bus, sig, ort_fn, aussen=True, pegel=1.0, hall=1.0, pegel_fn=None, vorlauf_s=0.5):
+    """Ein durchlaufendes, periodisches Signal (Länge = Szenendauer) nahtlos rendern: es wird
+    vorn und hinten um ein Stück aus sich selbst verlängert und mit gleichstarken Rampen
+    gewichtet. Was über die Naht hinausreicht, summiert sich dort genau zu 1 – die Blendränder
+    der Blockverarbeitung liegen im ausgeblendeten Teil."""
+    n = len(sig)
+    P = int(vorlauf_s * FS)
+    ext = np.concatenate([sig[-P:], sig, sig[:P]]).astype(np.float32)
+    w = np.ones(len(ext), np.float32)
+    phi = np.linspace(0, np.pi / 2, 2 * P, endpoint=False)
+    w[:2 * P] = np.sin(phi) ** 2
+    w[-2 * P:] = np.cos(phi) ** 2
+    rendere_quelle(kx, spur, bus, ext * w, -P / FS, ort_fn, aussen, pegel, hall, True, pegel_fn)
+
+
 def _rauschkurve(rng, n, rate, grenz_hz):
     X = np.fft.rfft(rng.normal(size=n))
     f = np.fft.rfftfreq(n, 1 / rate)
@@ -152,8 +216,8 @@ def gen_bett(kx, g, spur, bus):
         r0 = rng.uniform(*g.get('entfernung', [50, 90]))
         drift = rng.uniform(-1, 1) * np.radians(g.get('drift_grad', 25))
         z = g.get('hoehe', 0.3)
-        nk = int(kx.dauer * 4) + 8
-        atem = _rauschkurve(rng, nk, 4.0, g.get('atem_hz', 0.08))
+        nk = int(round(kx.dauer * 4))
+        atem = _rauschkurve(rng, nk, 4.0, g.get('atem_hz', 0.08))   # periodisch über die Szenendauer
         tk = np.arange(nk) / 4.0
         tiefe = g.get('atem_db', 3.0)
 
@@ -162,9 +226,12 @@ def gen_bett(kx, g, spur, bus):
             return np.stack([r0 * np.cos(az), r0 * np.sin(az), np.full(len(t), z)], 1)
 
         def pg(t, atem=atem):
-            return 10 ** (tiefe * np.interp(t, tk, atem) / 20)
+            p = 10 ** (tiefe * np.interp(t, tk, atem, period=kx.dauer) / 20)
+            if g.get('boe_db'):
+                p = p * 10 ** (g['boe_db'] * kx.boe(t) / 20)
+            return p
 
-        rendere_quelle(kx, spur, bus, sig.astype(np.float32), 0.0, ort, True, r0, g.get('hall', 0.0), True, pg)
+        rendere_kreis(kx, spur, bus, sig.astype(np.float32), ort, True, r0, g.get('hall', 0.0), pg)
 
 
 def gen_ereignisse(kx, g, spur, bus):
@@ -178,7 +245,7 @@ def gen_ereignisse(kx, g, spur, bus):
     v = g.get('treibt_m_s', 1.5)
     rmin, rmax = g.get('entfernung', [7, 35])
     letzte = -1
-    while t < kx.dauer - 1:
+    while t < kx.dauer:
         k = int(rng.integers(len(ev)))
         if k == letzte:
             k = (k + 1) % len(ev)
@@ -206,22 +273,35 @@ class Vogel:
         self.h = rng.uniform(*g.get('hoehe', [6, 25]))
         self.v = rng.uniform(*g.get('tempo', [7, 12])) * rng.choice([-1, 1])
         self.ph = rng.uniform(0, 2 * np.pi)
-        nk = int(dauer) + 30
-        self.tk = np.arange(nk) - 10.0
+        # alle Verläufe periodisch über die Szenendauer, damit die Schleife keine Naht hat
+        self.P = float(dauer)
+        nk = int(round(dauer))
+        self.tk = np.arange(nk) * (self.P / nk)
         self.dr = _rauschkurve(rng, nk, 1.0, 0.03) * 0.3 * self.rm
         self.dh = _rauschkurve(rng, nk, 1.0, 0.04) * 0.25 * self.h
         self.mx = _rauschkurve(rng, nk, 1.0, 0.012) * g.get('mitte_streuung', 10)
         self.my = _rauschkurve(rng, nk, 1.0, 0.012) * g.get('mitte_streuung', 10)
-        # Winkel aus dem Tempo integrieren
+        # Winkel aus dem Tempo integrieren; auf eine ganze Zahl von Runden je Durchlauf runden
         r = np.maximum(self.rm + self.dr, 4)
-        self.win = self.ph + np.cumsum(self.v / r)
+        schritt = np.abs(self.v) / r * (self.P / nk)
+        runden = max(1, round(schritt.sum() / (2 * np.pi)))
+        schritt *= runden * 2 * np.pi / schritt.sum()
+        win = np.concatenate([[0.0], np.cumsum(schritt)]) * np.sign(self.v) + self.ph
+        self.tk_w = np.append(self.tk, self.P)
+        self.win = win
+        self.runden = runden * np.sign(self.v)
+
+    def _p(self, t, kurve):
+        return np.interp(t, self.tk, kurve, period=self.P)
 
     def ort(self, t):
-        r = np.maximum(self.rm + np.interp(t, self.tk, self.dr), 4)
-        w = np.interp(t, self.tk, self.win)
-        h = np.maximum(self.h + np.interp(t, self.tk, self.dh), 3)
-        return np.stack([np.interp(t, self.tk, self.mx) + r * np.cos(w),
-                         np.interp(t, self.tk, self.my) + r * np.sin(w), h], 1)
+        t = np.asarray(t, float)
+        r = np.maximum(self.rm + self._p(t, self.dr), 4)
+        tm = np.mod(t, self.P)
+        w = np.interp(tm, self.tk_w, self.win) + np.floor(t / self.P) * self.runden * 2 * np.pi
+        h = np.maximum(self.h + self._p(t, self.dh), 3)
+        return np.stack([self._p(t, self.mx) + r * np.cos(w),
+                         self._p(t, self.my) + r * np.sin(w), h], 1)
 
 
 def gen_schwarm(kx, g, spur, bus):
@@ -235,7 +315,7 @@ def gen_schwarm(kx, g, spur, bus):
     nach_stimme = {q: [e for e in ev if e['quelle'] == q] for q in quellen}
     t = rng.uniform(0.5, 3)
     n_rufe = 0
-    while t < kx.dauer - 2:
+    while t < kx.dauer:
         i = int(rng.integers(len(voegel)))
         kette = [i]
         if rng.random() < g.get('antwort_wahrsch', 0.45):
@@ -265,7 +345,8 @@ def gen_ueberflug(kx, g, spur, bus):
     fluegel = kx.bib.ereignisse(g['fluegel']) if g.get('fluegel') else None
     t = rng.uniform(*g.get('erster_s', [8, 14]))
     liste = []
-    while t < kx.dauer - 6:
+    erster = t
+    while t < kx.dauer + erster - g.get('abstand_s', [18, 32])[0]:   # Abstand gilt auch über die Naht
         kurs = rng.uniform(0, 2 * np.pi)
         v = rng.uniform(*g.get('tempo', [10, 15]))
         h = rng.uniform(*g.get('hoehe', [2.0, 4.5]))
@@ -347,11 +428,11 @@ def gen_rumpf(kx, g, spur, bus):
     n3 = max(1, len(ev) // 3)
     klein, gross = ev[:len(ev) - n3], ev[len(ev) - n3:]
     zeiten = []
-    for t, seite, staerke in kx.boot.rollumkehr(1.0, kx.dauer - 2):
+    for t, seite, staerke in kx.boot.rollumkehr(0.0, kx.dauer):
         if rng.random() < g.get('schlag_wahrsch', 0.75) * (0.4 + 0.6 * staerke):
             zeiten.append((t + rng.normal(0, 0.12), seite, 0.5 + 0.5 * staerke, gross if staerke > 0.5 else klein))
     t = rng.uniform(0, 2)
-    while t < kx.dauer - 2:
+    while t < kx.dauer:
         zeiten.append((t, rng.choice([-1, 1]), rng.uniform(0.2, 0.45), klein))
         t += rng.exponential(g.get('schwapp_abstand_s', 1.8))
     for t, seite, staerke, wahl in zeiten:
@@ -361,10 +442,10 @@ def gen_rumpf(kx, g, spur, bus):
         pi[1] -= seite * 0.09
         pi[2] = 0.12
         staerke *= np.sqrt(np.linalg.norm(pi - kx.boot.kopf))  # Nähe zählt, aber nur halb so stark wie 1/r
-        rendere_quelle(kx, spur, bus, e['sig'], max(t, 0), lambda tt, pa=pa: np.tile(pa, (len(tt), 1)), False,
+        rendere_quelle(kx, spur, bus, e['sig'], t, lambda tt, pa=pa: np.tile(pa, (len(tt), 1)), False,
                        staerke, g.get('hall', 0.0))
         dumpf = mat.filt(e['sig'].astype(np.float64), g.get('planke_tiefpass', 450), 'lowpass', 2).astype(np.float32)
-        rendere_quelle(kx, spur, bus, dumpf, max(t, 0), lambda tt, pi=pi: np.tile(pi, (len(tt), 1)), False,
+        rendere_quelle(kx, spur, bus, dumpf, t, lambda tt, pi=pi: np.tile(pi, (len(tt), 1)), False,
                        staerke * g.get('planke_pegel', 0.8), g.get('hall', 0.0))
     return dict(ereignisse=len(zeiten))
 
@@ -383,7 +464,7 @@ def gen_knarzen(kx, g, spur, bus):
         [1.7, 0.0, 0.3]])]                            # Bug
     letzte = -1
     n = 0
-    for t, seite, staerke in b.rollumkehr(1.0, kx.dauer - 3):
+    for t, seite, staerke in b.rollumkehr(0.0, kx.dauer):
         if rng.random() > g.get('wahrsch', 0.55) * (0.3 + 0.7 * staerke):
             continue
         for _ in range(int(rng.integers(1, 3))):
@@ -401,8 +482,89 @@ def gen_knarzen(kx, g, spur, bus):
     return dict(ereignisse=n)
 
 
+def gen_segel(kx, g, spur, bus):
+    """Schlaffes Segel am Mast vor den Knien. Ohne Wind hängt es und raschelt kaum; eine Böe
+    fängt sich (ein weicher Schlag, wenn das Tuch sich füllt), dann knattert das Achterliek
+    unregelmäßig, bis die Böe nachlässt und das Tuch wieder einfällt.
+
+    Notlösung, solange keine echte Segelaufnahme da ist: das Stoffrauschen ist echtes
+    Windrauschen aus `sammlung`, die Struktur (Füllen, Knattern, Einfallen) ist nachgebildet.
+    Alles hängt an der gemeinsamen Böenkurve der Szene."""
+    rng = kx.rng
+    D = kx.dauer
+    n = int(round(D * FS))
+    t = np.arange(n) / FS
+    b = kx.boe(t)
+    schwelle = g.get('fang_schwelle', 0.7)
+    roh = kx.bib.flickwerk(g['sammlung'], n, rng)
+    roh = mat.filt(roh, [g.get('band', [300, 7000])[0], g.get('band', [300, 7000])[1]], 'bandpass', 2)
+    roh /= np.sqrt((roh ** 2).mean()) + 1e-12
+
+    def huelle_glatt(x, ms):
+        from scipy.ndimage import uniform_filter1d
+        return uniform_filter1d(x, int(ms * FS / 1000), mode='wrap')
+
+    # Stärke des Winds im Segel: 0 bei Flaute, wächst über der Schwelle
+    wind = np.clip(b - g.get('ruhe', -0.3), 0, None)
+    wind = huelle_glatt(wind, 300)
+
+    # 1) leises Rascheln des hängenden Tuchs: Rauschen mit knisternder Feinstruktur
+    knister = np.zeros(n)
+    rate = 6 + 40 * wind                                   # Knistern je Sekunde
+    k = rng.random(n) < rate / FS
+    knister[k] = rng.lognormal(0, 0.6, k.sum())
+    knister = huelle_glatt(knister, 6)
+    rascheln = roh * (0.08 + 0.22 * wind) * (0.4 + knister / (knister.mean() + 1e-9) * 0.6)
+
+    # 2) Knattern des Achterlieks in der Böe: kurze Schläge mit 4–9 Hz, unregelmäßig
+    knattern = np.zeros(n)
+    tt = 0.0
+    while tt < D:
+        w = wind[int(tt * FS) % n]
+        if w > g.get('knatter_ab', 1.0):
+            f = 4 + 2.5 * min(w, 2) + rng.normal(0, 0.8)
+            i = int(tt * FS)
+            L = int(rng.uniform(0.012, 0.03) * FS)
+            amp = (w - g.get('knatter_ab', 1.0)) ** 0.7 * rng.lognormal(0, 0.35)
+            idx = (i + np.arange(L)) % n
+            knattern[idx] += amp * roh[idx] * np.exp(-np.arange(L) / (L / 3)) * 5.0
+            tt += 1 / max(f, 2.5)
+        else:
+            tt += 0.05
+    knattern = mat.filt(knattern, [250, 5000], 'bandpass', 2)
+
+    # 3) Füllen: wenn die Böe die Schwelle steigend überschreitet, ein weicher, tiefer Schlag
+    fuellen = np.zeros(n)
+    ueber = b > schwelle
+    starts = np.flatnonzero(ueber & ~np.roll(ueber, 1))
+    tief = mat.filt(roh, [60, 400], 'bandpass', 2)
+    for i in starts:
+        L = int(0.25 * FS)
+        idx = (i + int(rng.uniform(0.1, 0.6) * FS) + np.arange(L)) % n
+        hk = np.exp(-np.arange(L) / (0.045 * FS)) * (1 - np.exp(-np.arange(L) / (0.004 * FS)))
+        st = min(b[i:i + int(2 * FS)].max() if i + int(2 * FS) < n else b[i], 3) * rng.uniform(0.7, 1.2)
+        fuellen[idx] += st * (2.5 * tief[idx] + 0.8 * roh[idx]) * hk
+
+    sig = (rascheln + g.get('knatter_pegel', 1.0) * knattern + g.get('fang_pegel', 1.0) * fuellen) * 0.01
+    # über drei Stellen des Tuchs verteilen (Vorliek oben, Mitte, Achterliek), leicht verschieden
+    stellen = [np.array(p, float) for p in g.get('stellen', [[1.0, 0.0, 2.2], [1.35, 0.05, 1.3], [1.7, 0.1, 0.9]])]
+    anteile = g.get('anteile', [0.6, 1.0, 0.8])
+    luv = g.get('auslenkung_m', 0.35)
+    for p0, an in zip(stellen, anteile):
+        verz = int(rng.uniform(0, 0.03) * FS)
+        s_i = np.roll(sig, verz) * an
+
+        def ort(tt, p0=p0):
+            p = np.tile(p0, (len(tt), 1))
+            p[:, 1] += luv * np.tanh(np.clip(kx.boe(tt), 0, None))   # Tuch weht in der Böe zur Seite
+            return p
+
+        rendere_kreis(kx, spur, bus, s_i.astype(np.float32), ort, False, 1.0, g.get('hall', 0.0))
+    return dict(faenge=int(len(starts)))
+
+
 GENERATOREN = dict(bett=gen_bett, ereignisse=gen_ereignisse, schwarm=gen_schwarm, ueberflug=gen_ueberflug,
-                   rumpf=gen_rumpf, knarzen=gen_knarzen)
+                   rumpf=gen_rumpf, knarzen=gen_knarzen, segel=gen_segel)
 
 
 # ---------------------------------------------------------------- Pegel und Ausgabe
@@ -434,6 +596,33 @@ def schreibe(pfad, x, bitrate='192k'):
                    input=daten, check=True)
 
 
+def schleifenstueck(x, ab_s, dauer_s, ueberblend_s=3.0):
+    """Ausschnitt aus der Kreisspur, der selbst nahtlos schleift: das Stück nach dem Ende wird
+    gleichstark in den Anfang überblendet."""
+    n = x.shape[1]
+    a, L, ub = int(ab_s * FS), int(dauer_s * FS), int(ueberblend_s * FS)
+    idx = (a + np.arange(L + ub)) % n
+    y = x[:, idx]
+    z = y[:, :L].copy()
+    ein = np.sin(np.linspace(0, np.pi / 2, ub))
+    z[:, :ub] = y[:, :ub] * ein + y[:, L:L + ub] * np.cos(np.linspace(0, np.pi / 2, ub))
+    return z
+
+
+def nahtpruefung(x):
+    """Vergleicht den Übergang Ende→Anfang mit gewöhnlichen Stellen im Stück: Sprung von
+    Abtastwert zu Abtastwert und Pegelsprung über 50 ms."""
+    d_naht = float(np.abs(x[:, 0] - x[:, -1]).max())
+    d_typ = float(np.percentile(np.abs(np.diff(x, axis=1)).max(0), 99.9))
+    w = int(0.05 * FS)
+    rms = lambda y: float(10 * np.log10((y.astype(np.float64) ** 2).mean() + 1e-12))
+    vor, nach = rms(x[:, -w:]), rms(x[:, :w])
+    stellen = np.random.default_rng(0).integers(w, x.shape[1] - w, 400)
+    typ = np.percentile([abs(rms(x[:, k - w:k]) - rms(x[:, k:k + w])) for k in stellen], 95)
+    return dict(sprung_naht=round(d_naht, 4), sprung_typisch_999=round(d_typ, 4),
+                pegelsprung_naht_db=round(abs(vor - nach), 2), pegelsprung_typisch_95_db=round(float(typ), 2))
+
+
 def blende(x, ein=1.5, aus=3.0):
     x = x.copy()
     ne, na = int(ein * FS), int(aus * FS)
@@ -463,42 +652,47 @@ def main():
     bib = Bibliothek(json.loads((WURZEL / 'quellen.json').read_text()))
     nur = set(filter(None, a.nur.split(',')))
     hall_ir = diffuser_nachhall(hrtf, **sz.get('nachhall', {}))
+    boe = boeenkurve(np.random.default_rng(sz.get('saat', 1) * 7 + 3), dauer, sz.get('boeen', {}))
     name = sz['name']
-    bericht = dict(szene=name, stand=time.strftime('%d.%m.%Y %H:%M'), dauer=dauer, hrtf=Path(a.hrtf).name, blick=sz['boot'].get('blick', 55), gruppen=[])
-    summe = np.zeros((2, int(dauer * FS)), np.float32)
+    bericht = dict(szene=name, stand=time.strftime('%d.%m.%Y %H:%M'), dauer=dauer, schleife=True, abtastwerte=int(round(dauer * FS)),
+                   hrtf=Path(a.hrtf).name, blick=sz['boot'].get('blick', 55), gruppen=[])
+    summe = np.zeros((2, int(round(dauer * FS))), np.float32)
     for i, g in enumerate(sz['gruppen']):
         if nur and g['name'] not in nur:
             continue
         t0 = time.time()
-        kx = Kontext(hrtf, boot, bib, dauer, np.random.default_rng(sz.get('saat', 1) * 1000 + i))
+        kx = Kontext(hrtf, boot, bib, dauer, np.random.default_rng(sz.get('saat', 1) * 1000 + i), boe)
         spur, bus = Spur(dauer), Spur(dauer, 1)
         info = GENERATOREN[g['typ']](kx, g, spur, bus) or {}
         x = spur.x
         if np.abs(bus.x).max() > 0:
             for e in range(2):
-                x[e] += fftconvolve(bus.x[0], hall_ir[e])[:x.shape[1]] * 10 ** (sz.get('nachhall_pegel_db', -16) / 20)
+                x[e] += kreisfaltung(bus.x[0], hall_ir[e]).astype(np.float32) * 10 ** (sz.get('nachhall_pegel_db', -16) / 20)
         art = g.get('pegel_art', 'integriert')
         ist = lautheit(x, art)
         x *= 10 ** ((g['ziel_lufs'] - ist) / 20)
         # einzelne Ausreißer schon in der Gruppe abfangen, damit sie in der Mischung nichts mitreißen
-        x, weg_g = begrenzer(x, g.get('decke_db', -9.0))
+        x, weg_g = begrenzer_kreis(x, g.get('decke_db', -9.0))
         summe += x
+        if os.environ.get('RAUMKLANG_NAHT'):
+            np.save(Path(os.environ['RAUMKLANG_NAHT']) / f"naht_{g['name']}.npy", np.concatenate([x[:, -3 * FS:], x[:, :3 * FS]], 1))
         eintrag = dict(name=g['name'], titel=g.get('titel', g['name']), text=g.get('text', ''), typ=g['typ'], ziel_lufs=g['ziel_lufs'], pegel_art=art,
                        spitze_db=round(float(20 * np.log10(np.abs(x).max() + 1e-9)), 1), begrenzt_db=round(weg_g, 1), sekunden=round(time.time() - t0, 1), **info)
         bericht['gruppen'].append(eintrag)
         print(eintrag, flush=True)
         if a.proben:
-            pa = int(g.get('probe_ab', 20) * FS)
-            pb = min(pa + int(g.get('probe_dauer', 30) * FS), x.shape[1])
-            probe, _ = begrenzer(x[:, pa:pb] * 10 ** (g.get('probe_plus_db', 6) / 20))
-            schreibe(Path(a.aus) / f"{name}_{g['name']}.mp3", blende(probe, 0.5, 1.5), '160k')
+            probe = schleifenstueck(x, g.get('probe_ab', 20), g.get('probe_dauer', 30))
+            probe, _ = begrenzer_kreis(probe * 10 ** (g.get('probe_plus_db', 6) / 20))
+            schreibe(Path(a.aus) / f"{name}_{g['name']}.mp3", probe, '160k')
+            eintrag['probe_abtastwerte'] = int(probe.shape[1])
     if not nur:
         ist = lautheit(summe)
         summe *= 10 ** ((sz.get('ziel_lufs', -21) - ist) / 20)
-        summe, weg = begrenzer(summe, -1.0)
+        summe, weg = begrenzer_kreis(summe, -1.0)
         bericht['begrenzer_max_db'] = round(weg, 1)
         bericht['lufs'] = round(lautheit(summe), 1)
-        schreibe(Path(a.aus) / f'{name}.mp3', blende(summe), '224k')
+        bericht['naht'] = nahtpruefung(summe)
+        schreibe(Path(a.aus) / f'{name}.mp3', summe, '224k')
         bericht['quellen'] = sorted(bib.benutzt)
         (Path(a.aus) / f'{name}.json').write_text(json.dumps(bericht, ensure_ascii=False, indent=1))
     print('fertig in', round(time.time() - t_start), 's', flush=True)

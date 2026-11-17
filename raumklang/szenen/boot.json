@@ -165,7 +165,8 @@
      "hochpass": 120
     }
    ],
-   "text": "Ein schwacher Wind von oben, der langsam an- und abschwillt."
+   "text": "Ein schwacher Wind, der langsam an- und abschwillt; in den Böen frischt er auf – dieselben Böen, die das Segel füllen.",
+   "boe_db": 4.0
   },
   {
    "name": "wellen",
@@ -184,259 +185,452 @@
    "hall": 0.4,
    "sammlung": [
     {
-     "quelle": "esc_2-125966-A",
+     "quelle": "esc_1-28135-A",
      "zerlegen": {
-      "schwelle_db": 5,
-      "luecke": 0.4,
-      "min_dauer": 0.6,
-      "max_dauer": 7.0,
-      "vorlauf": 0.4,
-      "nachlauf": 0.9,
-      "boden_perzentil": 25,
-      "fenster_ms": 80
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
      },
-     "blende": [
-      350,
-      900
-     ]
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
     },
     {
-     "quelle": "esc_2-132157-A",
+     "quelle": "esc_1-28135-B",
      "zerlegen": {
-      "schwelle_db": 5,
-      "luecke": 0.4,
-      "min_dauer": 0.6,
-      "max_dauer": 7.0,
-      "vorlauf": 0.4,
-      "nachlauf": 0.9,
-      "boden_perzentil": 25,
-      "fenster_ms": 80
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
      },
-     "blende": [
-      350,
-      900
-     ]
-    },
-    {
-     "quelle": "esc_2-132157-B",
-     "zerlegen": {
-      "schwelle_db": 5,
-      "luecke": 0.4,
-      "min_dauer": 0.6,
-      "max_dauer": 7.0,
-      "vorlauf": 0.4,
-      "nachlauf": 0.9,
-      "boden_perzentil": 25,
-      "fenster_ms": 80
-     },
-     "blende": [
-      350,
-      900
-     ]
-    },
-    {
-     "quelle": "esc_2-124662-A",
-     "zerlegen": {
-      "schwelle_db": 5,
-      "luecke": 0.4,
-      "min_dauer": 0.6,
-      "max_dauer": 7.0,
-      "vorlauf": 0.4,
-      "nachlauf": 0.9,
-      "boden_perzentil": 25,
-      "fenster_ms": 80
-     },
-     "blende": [
-      350,
-      900
-     ]
-    },
-    {
-     "quelle": "esc_2-133863-A",
-     "zerlegen": {
-      "schwelle_db": 5,
-      "luecke": 0.4,
-      "min_dauer": 0.6,
-      "max_dauer": 7.0,
-      "vorlauf": 0.4,
-      "nachlauf": 0.9,
-      "boden_perzentil": 25,
-      "fenster_ms": 80
-     },
-     "blende": [
-      350,
-      900
-     ]
-    },
-    {
-     "quelle": "esc_4-167063-A",
-     "zerlegen": {
-      "schwelle_db": 5,
-      "luecke": 0.4,
-      "min_dauer": 0.6,
-      "max_dauer": 7.0,
-      "vorlauf": 0.4,
-      "nachlauf": 0.9,
-      "boden_perzentil": 25,
-      "fenster_ms": 80
-     },
-     "blende": [
-      350,
-      900
-     ]
-    },
-    {
-     "quelle": "esc_4-167063-B",
-     "zerlegen": {
-      "schwelle_db": 5,
-      "luecke": 0.4,
-      "min_dauer": 0.6,
-      "max_dauer": 7.0,
-      "vorlauf": 0.4,
-      "nachlauf": 0.9,
-      "boden_perzentil": 25,
-      "fenster_ms": 80
-     },
-     "blende": [
-      350,
-      900
-     ]
-    },
-    {
-     "quelle": "esc_4-167063-C",
-     "zerlegen": {
-      "schwelle_db": 5,
-      "luecke": 0.4,
-      "min_dauer": 0.6,
-      "max_dauer": 7.0,
-      "vorlauf": 0.4,
-      "nachlauf": 0.9,
-      "boden_perzentil": 25,
-      "fenster_ms": 80
-     },
-     "blende": [
-      350,
-      900
-     ]
-    },
-    {
-     "quelle": "esc_4-195497-A",
-     "zerlegen": {
-      "schwelle_db": 5,
-      "luecke": 0.4,
-      "min_dauer": 0.6,
-      "max_dauer": 7.0,
-      "vorlauf": 0.4,
-      "nachlauf": 0.9,
-      "boden_perzentil": 25,
-      "fenster_ms": 80
-     },
-     "blende": [
-      350,
-      900
-     ]
-    },
-    {
-     "quelle": "esc_4-195497-B",
-     "zerlegen": {
-      "schwelle_db": 5,
-      "luecke": 0.4,
-      "min_dauer": 0.6,
-      "max_dauer": 7.0,
-      "vorlauf": 0.4,
-      "nachlauf": 0.9,
-      "boden_perzentil": 25,
-      "fenster_ms": 80
-     },
-     "blende": [
-      350,
-      900
-     ]
-    },
-    {
-     "quelle": "esc_5-200461-A",
-     "zerlegen": {
-      "schwelle_db": 5,
-      "luecke": 0.4,
-      "min_dauer": 0.6,
-      "max_dauer": 7.0,
-      "vorlauf": 0.4,
-      "nachlauf": 0.9,
-      "boden_perzentil": 25,
-      "fenster_ms": 80
-     },
-     "blende": [
-      350,
-      900
-     ]
-    },
-    {
-     "quelle": "esc_5-200461-B",
-     "zerlegen": {
-      "schwelle_db": 5,
-      "luecke": 0.4,
-      "min_dauer": 0.6,
-      "max_dauer": 7.0,
-      "vorlauf": 0.4,
-      "nachlauf": 0.9,
-      "boden_perzentil": 25,
-      "fenster_ms": 80
-     },
-     "blende": [
-      350,
-      900
-     ]
-    },
-    {
-     "quelle": "esc_5-219379-A",
-     "zerlegen": {
-      "schwelle_db": 5,
-      "luecke": 0.4,
-      "min_dauer": 0.6,
-      "max_dauer": 7.0,
-      "vorlauf": 0.4,
-      "nachlauf": 0.9,
-      "boden_perzentil": 25,
-      "fenster_ms": 80
-     },
-     "blende": [
-      350,
-      900
-     ]
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
     },
     {
      "quelle": "esc_1-43760-A",
      "zerlegen": {
-      "schwelle_db": 5,
-      "luecke": 0.4,
-      "min_dauer": 0.6,
-      "max_dauer": 7.0,
-      "vorlauf": 0.4,
-      "nachlauf": 0.9,
-      "boden_perzentil": 25,
-      "fenster_ms": 80
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
      },
-     "blende": [
-      350,
-      900
-     ]
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_1-61252-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_1-91359-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_2-124662-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_2-125966-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_2-132157-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_2-132157-B",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_2-133863-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_2-137162-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_2-155801-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_3-144827-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
     },
     {
      "quelle": "esc_3-144827-B",
      "zerlegen": {
-      "schwelle_db": 5,
-      "luecke": 0.4,
-      "min_dauer": 0.6,
-      "max_dauer": 7.0,
-      "vorlauf": 0.4,
-      "nachlauf": 0.9,
-      "boden_perzentil": 25,
-      "fenster_ms": 80
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
      },
-     "blende": [
-      350,
-      900
-     ]
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_3-155642-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_3-155642-B",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_4-167063-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_4-167063-B",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_4-167063-C",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_4-182613-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_4-182613-B",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_4-195497-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_4-195497-B",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_5-200461-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_5-200461-B",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_5-208810-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_5-208810-B",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_5-219379-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_5-219379-B",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "esc_5-219379-C",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "wellen_wws_klein",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
+    },
+    {
+     "quelle": "wellen_felsstrand",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     }
     }
    ],
    "text": "Einzelne Wellenkämme in 7 bis 32 m Entfernung, jeder an einer anderen Stelle; sie treiben mit dem Wind."
@@ -456,121 +650,82 @@
     {
      "quelle": "esc_1-39901-A",
      "zerlegen": {
-      "schwelle_db": 6,
-      "luecke": 0.15,
-      "min_dauer": 0.15,
-      "max_dauer": 2.5,
-      "vorlauf": 0.03,
-      "nachlauf": 0.2,
-      "boden_perzentil": 30,
-      "fenster_ms": 30
+      "methode": "taeler",
+      "glatt_ms": 40,
+      "prominenz_db": 6,
+      "min_dauer": 0.2,
+      "max_dauer": 1.5
      },
-     "blende": [
-      12,
-      160
-     ]
+     "abklingen": {
+      "ein_ms": 10,
+      "min_ausklang_s": 0.2,
+      "glatt_ms": 20
+     },
+     "max_flach": 0.5
     },
     {
      "quelle": "esc_1-39901-B",
      "zerlegen": {
-      "schwelle_db": 6,
-      "luecke": 0.15,
-      "min_dauer": 0.15,
-      "max_dauer": 2.5,
-      "vorlauf": 0.03,
-      "nachlauf": 0.2,
-      "boden_perzentil": 30,
-      "fenster_ms": 30
+      "methode": "taeler",
+      "glatt_ms": 40,
+      "prominenz_db": 6,
+      "min_dauer": 0.2,
+      "max_dauer": 1.5
      },
-     "blende": [
-      12,
-      160
-     ]
+     "abklingen": {
+      "ein_ms": 10,
+      "min_ausklang_s": 0.2,
+      "glatt_ms": 20
+     },
+     "max_flach": 0.5
     },
     {
      "quelle": "esc_2-91912-A",
      "zerlegen": {
-      "schwelle_db": 6,
-      "luecke": 0.15,
-      "min_dauer": 0.15,
-      "max_dauer": 2.5,
-      "vorlauf": 0.03,
-      "nachlauf": 0.2,
-      "boden_perzentil": 30,
-      "fenster_ms": 30
+      "methode": "taeler",
+      "glatt_ms": 40,
+      "prominenz_db": 6,
+      "min_dauer": 0.2,
+      "max_dauer": 1.5
      },
-     "blende": [
-      12,
-      160
-     ]
+     "abklingen": {
+      "ein_ms": 10,
+      "min_ausklang_s": 0.2,
+      "glatt_ms": 20
+     },
+     "max_flach": 0.5
     },
     {
      "quelle": "esc_2-91912-B",
      "zerlegen": {
-      "schwelle_db": 6,
-      "luecke": 0.15,
-      "min_dauer": 0.15,
-      "max_dauer": 2.5,
-      "vorlauf": 0.03,
-      "nachlauf": 0.2,
-      "boden_perzentil": 30,
-      "fenster_ms": 30
+      "methode": "taeler",
+      "glatt_ms": 40,
+      "prominenz_db": 6,
+      "min_dauer": 0.2,
+      "max_dauer": 1.5
      },
-     "blende": [
-      12,
-      160
-     ]
-    },
-    {
-     "quelle": "esc_4-167063-A",
-     "zerlegen": {
-      "schwelle_db": 6,
-      "luecke": 0.15,
-      "min_dauer": 0.15,
-      "max_dauer": 2.5,
-      "vorlauf": 0.03,
-      "nachlauf": 0.2,
-      "boden_perzentil": 30,
-      "fenster_ms": 30
+     "abklingen": {
+      "ein_ms": 10,
+      "min_ausklang_s": 0.2,
+      "glatt_ms": 20
      },
-     "blende": [
-      12,
-      160
-     ]
-    },
-    {
-     "quelle": "esc_4-167063-B",
-     "zerlegen": {
-      "schwelle_db": 6,
-      "luecke": 0.15,
-      "min_dauer": 0.15,
-      "max_dauer": 2.5,
-      "vorlauf": 0.03,
-      "nachlauf": 0.2,
-      "boden_perzentil": 30,
-      "fenster_ms": 30
-     },
-     "blende": [
-      12,
-      160
-     ]
+     "max_flach": 0.5
     },
     {
      "quelle": "esc_2-125966-A",
      "zerlegen": {
-      "schwelle_db": 6,
-      "luecke": 0.15,
-      "min_dauer": 0.15,
-      "max_dauer": 2.5,
-      "vorlauf": 0.03,
-      "nachlauf": 0.2,
-      "boden_perzentil": 30,
-      "fenster_ms": 30
+      "methode": "taeler",
+      "glatt_ms": 40,
+      "prominenz_db": 6,
+      "min_dauer": 0.2,
+      "max_dauer": 1.5
      },
-     "blende": [
-      12,
-      160
-     ]
+     "abklingen": {
+      "ein_ms": 10,
+      "min_ausklang_s": 0.2,
+      "glatt_ms": 20
+     },
+     "max_flach": 0.5
     }
    ],
    "text": "Schwapps und Klatscher gegen die Planken – auf der Seite, die beim Rollen gerade eintaucht."
@@ -593,6 +748,13 @@
       "max_dauer": 2.2,
       "nachlauf": 0.12,
       "boden_perzentil": 20
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.08,
+      "glatt_ms": 15,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
      }
     },
     {
@@ -604,6 +766,13 @@
       "max_dauer": 2.2,
       "nachlauf": 0.12,
       "boden_perzentil": 20
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.08,
+      "glatt_ms": 15,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
      }
     },
     {
@@ -615,6 +784,13 @@
       "max_dauer": 2.2,
       "nachlauf": 0.12,
       "boden_perzentil": 20
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.08,
+      "glatt_ms": 15,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
      }
     },
     {
@@ -626,6 +802,13 @@
       "max_dauer": 2.2,
       "nachlauf": 0.12,
       "boden_perzentil": 20
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.08,
+      "glatt_ms": 15,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
      }
     },
     {
@@ -637,6 +820,13 @@
       "max_dauer": 2.2,
       "nachlauf": 0.12,
       "boden_perzentil": 20
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.08,
+      "glatt_ms": 15,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
      }
     },
     {
@@ -648,6 +838,13 @@
       "max_dauer": 2.2,
       "nachlauf": 0.12,
       "boden_perzentil": 20
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.08,
+      "glatt_ms": 15,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
      }
     },
     {
@@ -659,6 +856,13 @@
       "max_dauer": 2.2,
       "nachlauf": 0.12,
       "boden_perzentil": 20
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.08,
+      "glatt_ms": 15,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
      }
     },
     {
@@ -670,6 +874,13 @@
       "max_dauer": 2.2,
       "nachlauf": 0.12,
       "boden_perzentil": 20
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.08,
+      "glatt_ms": 15,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
      }
     },
     {
@@ -681,6 +892,13 @@
       "max_dauer": 2.2,
       "nachlauf": 0.12,
       "boden_perzentil": 20
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.08,
+      "glatt_ms": 15,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
      }
     },
     {
@@ -692,6 +910,13 @@
       "max_dauer": 2.2,
       "nachlauf": 0.12,
       "boden_perzentil": 20
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.08,
+      "glatt_ms": 15,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
      }
     },
     {
@@ -703,10 +928,45 @@
       "max_dauer": 2.2,
       "nachlauf": 0.12,
       "boden_perzentil": 20
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.08,
+      "glatt_ms": 15,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
      }
     }
    ],
    "text": "Dollen, Duchten und Spanten arbeiten, wenn das Boot sich neigt. Diese Klänge bleiben fest am Boot."
+  },
+  {
+   "name": "segel",
+   "typ": "segel",
+   "titel": "Schlaffes Segel",
+   "ziel_lufs": -33,
+   "pegel_art": "spitzen",
+   "hall": 0.8,
+   "text": "Das Segel hängt schlaff am Mast vor den Knien. In einer Böe fängt sich der Wind: das Tuch füllt sich mit einem weichen Schlag, knattert am Rand und fällt wieder ein. Notlösung: Stoffrauschen aus echtem Wind, Füllen und Knattern nachgebildet.",
+   "sammlung": [
+    {
+     "quelle": "esc_3-117504-A"
+    },
+    {
+     "quelle": "esc_3-117504-B"
+    },
+    {
+     "quelle": "esc_5-117773-A"
+    },
+    {
+     "quelle": "esc_1-51035-A"
+    }
+   ],
+   "fang_schwelle": 0.7,
+   "knatter_ab": 1.0,
+   "ruhe": -0.3,
+   "probe_ab": 0,
+   "probe_dauer": 60
   },
   {
    "name": "moewen_fern",
@@ -989,5 +1249,13 @@
    "fluegel_dauer_s": 2.8,
    "fluegel_vorlauf_s": 1.7
   }
- ]
+ ],
+ "boeen": {
+  "grund_hz": 0.03,
+  "abstand_s": 22,
+  "dauer_s": [
+   3,
+   8
+  ]
+ }
 }
