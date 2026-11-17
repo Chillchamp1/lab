@@ -144,3 +144,19 @@ def schneide_abklingend(x, a, b, ein_ms=250, ziel_db=-40.0, min_ausklang_s=0.6, 
     if ne > 0:
         y[:ne] *= np.sin(np.linspace(0, np.pi / 2, ne)) ** 2
     return y
+
+
+def roehre(x, f0=45.0, n=12, q=14.0, nass=0.85, abfall=0.5):
+    """Resonanz einer langen Röhre (wie der hohle Kamm eines Entenschnabelsauriers): eine Reihe
+    schmaler Resonanzen bei Vielfachen des Grundtons f0. Ein geräuschhafter oder rauer Tierruf
+    bekommt dadurch einen hohlen, hornartigen Ton. nass = Anteil des Röhrenklangs."""
+    from scipy.signal import iirpeak, lfilter
+    y = np.zeros_like(x)
+    for k in range(1, n + 1):
+        f = k * f0
+        if f > 0.45 * FS:
+            break
+        b, a = iirpeak(f, q, fs=FS)
+        y += lfilter(b, a, x) / k ** abfall
+    rx, ry = np.sqrt((x ** 2).mean()) + 1e-12, np.sqrt((y ** 2).mean()) + 1e-12
+    return (1 - nass) * x / rx + nass * y / ry

@@ -33,6 +33,7 @@ class Wald:
         self.dach = cfg.get('blaetterdach_hoehe', 9.0)
         self.dach_db = cfg.get('blaetterdach_db', 7.0)          # Dämpfung bei 4 kHz durch das Laub
         self.wald_db_m = cfg.get('wald_db_m', 0.10)             # Zusatzdämpfung je Meter bei 3 kHz
+        self.wald_max_m = cfg.get('wald_max_m', 80.0)           # weiter weg läuft der Schall über die Kronen
         f = np.clip(FREQ / 3000, 0, 1.6)
         self._wald_gang = (0.15 + 0.85 * f ** 0.8).astype(np.float32)        # Form über der Frequenz
         self._dach_gang = np.clip(FREQ / 4000, 0, 1.5).astype(np.float32)
@@ -52,7 +53,7 @@ class Wald:
         return v @ self.basis.T
 
     def _direkt_gang(self, p, entf):
-        weg = np.maximum(entf - 3.0, 0)                                    # erst ab einigen Metern
+        weg = np.clip(entf - 3.0, 0, self.wald_max_m)                      # nur die letzten Meter durch den Wald
         db = self.wald_db_m * weg[:, None] * self._wald_gang[None, :]
         ueber = _sig((p[:, 2] - self.dach) / 1.5)                          # Quelle über dem Blätterdach
         db = db + ueber[:, None] * self.dach_db * self._dach_gang[None, :]
