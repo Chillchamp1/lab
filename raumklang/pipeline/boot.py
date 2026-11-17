@@ -47,7 +47,10 @@ class Boot:
         self.streu = {n: streukern(saat * 10 + i) for i, n in enumerate(['wand1.0', 'wand-1.0', 'boden', 'wasser'])}
         self.boden_r = cfg.get('boden_reflexion', 0.5)  # relativ zur Wand: Kissen und Körper decken den Boden ab
         rng = np.random.default_rng(saat)
-        n = int((dauer + 20) * self.RATE)
+        # Bewegung als periodisches Signal mit genau der Szenendauer: nach einem Durchlauf
+        # steht das Boot wieder wie am Anfang, die Schleife hat keine Naht
+        self.periode = dauer
+        n = int(round(dauer * self.RATE))
         bw = cfg.get('bewegung', {})
         g = np.radians
         self.t = np.arange(n) / self.RATE
@@ -58,8 +61,9 @@ class Boot:
 
     # --- Bewegung ---------------------------------------------------------
     def winkel(self, t):
-        return (np.interp(t, self.t, self.roll), np.interp(t, self.t, self.stampf),
-                np.interp(t, self.t, self.gier), np.interp(t, self.t, self.hub))
+        P = self.periode
+        return (np.interp(t, self.t, self.roll, period=P), np.interp(t, self.t, self.stampf, period=P),
+                np.interp(t, self.t, self.gier, period=P), np.interp(t, self.t, self.hub, period=P))
 
     def welt_zu_boot(self, p, t):
         """Punkte p (n, 3) im Weltbezug zu Zeiten t (n,) in den Bootsbezug."""
@@ -82,14 +86,15 @@ class Boot:
     def rollumkehr(self, t0, t1):
         """Zeitpunkte, an denen das Rollen umkehrt: (t, Seite, Stärke 0..1).
         Seite +1 = Backbord taucht ein, -1 = Steuerbord."""
-        i0, i1 = int(t0 * self.RATE), int(t1 * self.RATE)
-        r = self.roll[i0:i1]
-        d = np.diff(r)
-        k = np.flatnonzero(np.sign(d[1:]) != np.sign(d[:-1])) + 1
+        r = self.roll
+        d = np.roll(r, -1) - r                       # kreisförmig: auch über die Naht
+        k = np.flatnonzero(np.sign(d) != np.sign(np.roll(d, 1)))
         aus = []
-        gr = np.abs(self.roll).max()
+        gr = np.abs(r).max()
         for i in k:
-            aus.append(((i0 + i) / self.RATE, -1 if r[i] > 0 else 1, abs(r[i]) / gr))
+            t = i / self.RATE
+            if t0 <= t < t1:
+                aus.append((t, -1 if r[i] > 0 else 1, abs(r[i]) / gr))
         return aus
 
     # --- Geometrie --------------------------------------------------------

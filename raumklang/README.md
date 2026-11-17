@@ -60,6 +60,44 @@ innerhalb eines Rufs kippt. Nahe Quellen bekommen zusätzlich den Pegelunterschi
 den Ohren aus dem Abstand zu jedem Ohr. Bootsfeste Quellen (Knarzen, Wasser am
 Rumpf) stehen im Kopfbezug still, alles draußen wandert mit dem Schaukeln.
 
+## Endlosschleife
+
+Die Szene ist auf einer kreisförmigen Zeitachse gerechnet: Was über das Ende
+hinausklingt (ein Ruf, ein Nachhall, eine Welle), läuft am Anfang weiter.
+Schaukeln, Böen, das Atmen der Flächen und die Flugbahnen der Möwen sind
+periodisch über die Szenendauer gebaut; eine kreisende Möwe fliegt eine ganze
+Zahl von Runden. Durchlaufende Signale werden vorn und hinten um ein Stück aus
+sich selbst verlängert und mit gleichstarken Rampen gewichtet, damit auch die
+Blockverarbeitung an der Naht keine Delle hinterlässt. Es gibt keine Ein- und
+Ausblendung. Die Hörproben der einzelnen Gruppen sind Ausschnitte, deren Ende
+über drei Sekunden in den Anfang überblendet ist.
+
+Die Seite spielt mit der Web-Audio-Schnittstelle: Die Datei wird dekodiert und
+sample-genau wiederholt (ein `<audio loop>` setzt je nach Browser an der Naht
+kurz aus). Der Bericht `audio/boot.json` enthält die Soll-Länge in
+Abtastwerten; hängt ein Browser beim Dekodieren die Stille des MP3-Kodierers
+an, schneidet die Seite darauf zurück.
+
+## Ereignisse schneiden
+
+Wellen und Schwapps werden von Tal zu Tal der Hüllkurve geschnitten statt über
+einen Schwellwert über dem Grundrauschen. In Brandungsaufnahmen ist das
+Grundrauschen selbst laut; der Schwellwert schnitt deshalb mitten im Auslaufen
+(Median −8 dB unter der Spitze) und blendete in unter einer Sekunde aus – das
+klang abgerissen. Jetzt fällt ab der Spitze eine in dB gerade Abklingkurve auf
+−40 dB, und der eigene Auslauf der Aufnahme bleibt darunter erhalten.
+Ereignisse mit zu kurzem Auslauf, am Aufnahmeende noch lauten Schnitten oder
+flachem Rauschen statt Schlag werden verworfen.
+
+## Segel und Böen
+
+Eine gemeinsame Böenkurve (langsames Grundwehen plus einzelne Böen von 3 bis
+8 s, im Mittel alle 22 s) steuert den Wind und das Segel. Das Segel hängt
+schlaff am Mast vor den Knien; in einer Böe füllt es sich mit einem weichen
+Schlag, das Achterliek knattert, und das Tuch weht etwas zur Seite. Für Stoff
+gab es keine freie Aufnahme: Das Rauschen ist echter Wind (CC0), Füllen,
+Knattern und Knistern sind nachgebildet.
+
 ## Material
 
 Keine Synthese, bis auf die Schlag-Hüllkurve des Fahrtwinds (siehe Grenzen). Quellen:
@@ -78,6 +116,9 @@ Die Seite listet genau die Aufnahmen, die in der gerenderten Fassung stecken.
   zwischen den Rändern der Messung gemischt, das ist dort nur grob.
 - Fünf-Sekunden-Clips: Flächenklänge sind aus vielen kurzen Stücken genäht.
 - Möwen: rund 30 verschiedene Rufe aus fünf Aufnahmen, auf 5–10 kHz bandbegrenzt.
+- Segel: Notlösung (siehe oben), bis eine echte Aufnahme eines schlaffen Segels
+  oder einer Flagge im Wind da ist. Der Generator `segel` nimmt sie dann als
+  `sammlung`.
 - Flügelschläge: Es gab keine saubere freie Aufnahme. Der Fahrtwind beim
   Überflug ist echtes Windrauschen (CC0), die Schlag-Hüllkurve (3 bis 6 Schläge
   mit etwa 3 Hz, dann Gleiten) ist vorgegeben. Abschalten: `fluegel` aus der

@@ -94,3 +94,53 @@ def schleife(x, n, ueberblend=2.0, start=0):
     start %= len(kern)
     wdh = int(np.ceil((n + start) / len(kern)))
     return np.tile(kern, wdh)[start:start + n]
+
+
+def zerlege_taeler(x, glatt_ms=150, prominenz_db=6.0, min_dauer=0.5, max_dauer=8.0):
+    """Ereignisse von Tal zu Tal der Hüllkurve: jede Welle (jeder Schwapp) beginnt im Tal vor
+    ihrer Spitze und endet im Tal danach. Anders als ein Schwellwert schneidet das eine
+    Welle nicht mitten im Auslaufen ab, nur weil das Grundrauschen der Aufnahme laut ist."""
+    from scipy.signal import find_peaks
+    h = huelle_db(x, glatt_ms)
+    spitzen, eig = find_peaks(h, prominence=prominenz_db, distance=int(0.25 * FS))
+    aus = []
+    for i, p in enumerate(spitzen):
+        a = eig['left_bases'][i]
+        b = eig['right_bases'][i]
+        # Basis kann weit weg liegen (über andere Spitzen hinweg): auf das tiefste Tal bis zur
+        # nächsten Spitze begrenzen
+        if i > 0:
+            a = max(a, spitzen[i - 1] + int(np.argmin(h[spitzen[i - 1]:p])))
+        if i + 1 < len(spitzen):
+            b = min(b, p + int(np.argmin(h[p:spitzen[i + 1]])))
+        d = (b - a) / FS
+        if min_dauer <= d <= max_dauer:
+            aus.append((int(a), int(b)))
+    return aus
+
+
+def schneide_abklingend(x, a, b, ein_ms=250, ziel_db=-40.0, min_ausklang_s=0.6, max_endpegel_db=-6.0, glatt_ms=60):
+    """Ereignis ausschneiden und natürlich ausklingen lassen: ab der Spitze fällt eine in dB
+    gerade Abklingkurve bis zum Schnittende auf ziel_db. So endet eine Welle wie eine Welle,
+    statt nach kurzer Blende abzureißen. Ereignisse, die nach der Spitze zu wenig Auslauf haben
+    oder am Ende noch fast so laut sind wie in der Spitze, werden verworfen (None)."""
+    y = x[a:b].copy()
+    h = huelle_db(y, glatt_ms)
+    p = int(np.argmax(h))
+    ausklang = (len(y) - p) / FS
+    if ausklang < min_ausklang_s:
+        return None
+    if h[-int(0.05 * FS):].mean() - h[p] > max_endpegel_db and b >= len(x) - int(0.02 * FS):
+        return None  # am Ende der Aufnahme abgeschnitten, und dort noch laut
+    # Abklingkurve: zusätzliche Absenkung, die von 0 dB (Spitze + 15 % des Auslaufs) bis ziel_db
+    # am Ende geht – der eigene Auslauf der Aufnahme bleibt darunter erhalten
+    s = p + int(0.15 * (len(y) - p))
+    k = np.zeros(len(y))
+    k[s:] = np.linspace(0, 1, len(y) - s)
+    eigen = np.clip(h - h[p], ziel_db, 0)           # wie weit die Aufnahme selbst schon gefallen ist
+    noetig = np.minimum(0, ziel_db * k - eigen)     # nur so viel nachhelfen, wie noch fehlt
+    y *= 10 ** (np.clip(noetig, ziel_db, 0) * (k > 0) / 20)
+    ne = min(int(ein_ms * FS / 1000), p)
+    if ne > 0:
+        y[:ne] *= np.sin(np.linspace(0, np.pi / 2, ne)) ** 2
+    return y

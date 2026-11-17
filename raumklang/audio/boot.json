@@ -1,7 +1,9 @@
 {
  "szene": "boot",
- "stand": "17.11.2026 10:06",
+ "stand": "17.11.2026 10:45",
  "dauer": 200,
+ "schleife": true,
+ "abtastwerte": 8820000,
  "hrtf": "subject_040.sofa",
  "blick": 55,
  "gruppen": [
@@ -12,20 +14,22 @@
    "typ": "bett",
    "ziel_lufs": -29,
    "pegel_art": "integriert",
-   "spitze_db": -15.4,
+   "spitze_db": -14.1,
    "begrenzt_db": 0.0,
-   "sekunden": 130.9
+   "sekunden": 160.1,
+   "probe_abtastwerte": 1323000
   },
   {
    "name": "wind",
    "titel": "Leiser Wind",
-   "text": "Ein schwacher Wind von oben, der langsam an- und abschwillt.",
+   "text": "Ein schwacher Wind, der langsam an- und abschwillt; in den Böen frischt er auf – dieselben Böen, die das Segel füllen.",
    "typ": "bett",
    "ziel_lufs": -37,
    "pegel_art": "integriert",
-   "spitze_db": -19.4,
+   "spitze_db": -14.5,
    "begrenzt_db": 0.0,
-   "sekunden": 133.3
+   "sekunden": 182.9,
+   "probe_abtastwerte": 1323000
   },
   {
    "name": "wellen",
@@ -34,9 +38,10 @@
    "typ": "ereignisse",
    "ziel_lufs": -29,
    "pegel_art": "spitzen",
-   "spitze_db": -10.1,
+   "spitze_db": -10.9,
    "begrenzt_db": 0.0,
-   "sekunden": 14.0
+   "sekunden": 21.1,
+   "probe_abtastwerte": 1323000
   },
   {
    "name": "rumpf",
@@ -46,9 +51,10 @@
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
-   "begrenzt_db": 12.7,
-   "sekunden": 13.6,
-   "ereignisse": 160
+   "begrenzt_db": 10.4,
+   "sekunden": 16.6,
+   "ereignisse": 170,
+   "probe_abtastwerte": 1323000
   },
   {
    "name": "knarzen",
@@ -57,10 +63,24 @@
    "typ": "knarzen",
    "ziel_lufs": -32,
    "pegel_art": "spitzen",
-   "spitze_db": -9.8,
+   "spitze_db": -11.7,
    "begrenzt_db": 0.0,
-   "sekunden": 5.1,
-   "ereignisse": 40
+   "sekunden": 5.8,
+   "ereignisse": 39,
+   "probe_abtastwerte": 1323000
+  },
+  {
+   "name": "segel",
+   "titel": "Schlaffes Segel",
+   "text": "Das Segel hängt schlaff am Mast vor den Knien. In einer Böe fängt sich der Wind: das Tuch füllt sich mit einem weichen Schlag, knattert am Rand und fällt wieder ein. Notlösung: Stoffrauschen aus echtem Wind, Füllen und Knattern nachgebildet.",
+   "typ": "segel",
+   "ziel_lufs": -33,
+   "pegel_art": "spitzen",
+   "spitze_db": -11.7,
+   "begrenzt_db": 0.0,
+   "sekunden": 89.7,
+   "faenge": 7,
+   "probe_abtastwerte": 2646000
   },
   {
    "name": "moewen_fern",
@@ -69,9 +89,10 @@
    "typ": "bett",
    "ziel_lufs": -39,
    "pegel_art": "integriert",
-   "spitze_db": -16.8,
+   "spitze_db": -17.6,
    "begrenzt_db": 0.0,
-   "sekunden": 80.2
+   "sekunden": 100.6,
+   "probe_abtastwerte": 1323000
   },
   {
    "name": "moewen",
@@ -82,8 +103,9 @@
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
    "begrenzt_db": 0.0,
-   "sekunden": 11.8,
-   "rufe": 86
+   "sekunden": 13.4,
+   "rufe": 88,
+   "probe_abtastwerte": 1323000
   },
   {
    "name": "ueberflug",
@@ -92,23 +114,30 @@
    "typ": "ueberflug",
    "ziel_lufs": -22,
    "pegel_art": "spitzen",
-   "spitze_db": -5.8,
+   "spitze_db": -12.3,
    "begrenzt_db": 0.0,
-   "sekunden": 6.5,
+   "sekunden": 6.6,
    "zeiten": [
-    8.1,
-    38.2,
-    61.9,
-    80.7,
-    109.3,
-    132.4,
-    156.9,
-    186.0
-   ]
+    13.7,
+    43.6,
+    69.8,
+    88.2,
+    112.8,
+    143.7,
+    166.5,
+    190.6
+   ],
+   "probe_abtastwerte": 1764000
   }
  ],
- "begrenzer_max_db": 0.2,
+ "begrenzer_max_db": 0.0,
  "lufs": -21.0,
+ "naht": {
+  "sprung_naht": 0.0091,
+  "sprung_typisch_999": 0.0685,
+  "pegelsprung_naht_db": 7.27,
+  "pegelsprung_typisch_95_db": 2.76
+ },
  "quellen": [
   "esc_1-28135-A",
   "esc_1-28135-B",
@@ -167,6 +196,8 @@
   "moewe_gull2",
   "moewe_lyme",
   "moewe_silber_xc707075",
-  "wellen_gravity"
+  "wellen_felsstrand",
+  "wellen_gravity",
+  "wellen_wws_klein"
  ]
 }
