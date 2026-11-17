@@ -1,9 +1,9 @@
 {
  "szene": "boot_weite",
  "titel": "Meer: mehr Weite – Vergleich",
- "text": "Dieselbe Meeresszene, abwechselnd etwa 14 Sekunden wie bisher und 14 Sekunden mit mehr Weite: ferne Quellen bekommen mehr Raumanteil und einen langen, dumpfen Nachhall, über große Entfernung flimmert die Luft, und ganz weit weg grollt Brandung am Horizont, eine Möwenkolonie ruft aus 150 bis 450 Metern, manche hoch am Himmel. Darunter alle drei Fassungen einzeln.",
- "details_titel": "Fassungen A, B, C einzeln anhören, Aufnahmen",
- "stand": "17.11.2026 16:33",
+ "text": "Dieselbe Meeresszene, abwechselnd etwa 14 Sekunden wie bisher (A) und 14 Sekunden mit mehr Weite (D): eine Möwenkolonie ruft aus 150 bis 450 Metern, ferne Möwen bekommen mehr Raumanteil und flimmern leicht, und Windböen tragen ihren Schall – in der Böe werden Möwen auf der Windseite lauter und heller, auf der anderen leiser und dumpfer. Brandung und Wellen bleiben wie in A.",
+ "details_titel": "Fassungen A und D einzeln anhören, Aufnahmen",
+ "stand": "17.11.2026 19:46",
  "dauer": 200,
  "schleife": true,
  "abtastwerte": 8820000,
@@ -75,7 +75,7 @@
  "wechsel": {
   "abschnitt_s": 14.286,
   "a": "Bisher (A)",
-  "b": "Mehr Weite (C)"
+  "b": "Mehr Weite (D)"
  },
  "gruppen": [
   {
@@ -85,15 +85,9 @@
    "probe_abtastwerte": 8820000
   },
   {
-   "name": "b",
-   "titel": "B – Raumanteil nach Entfernung und Luftflimmern",
-   "text": "Ferne Quellen speisen zusätzlich einen langen, dumpfen Weitenhall (Nachklingzeit 3 s tief, 0,8 s hoch); ihr Raumanteil nimmt mit der Entfernung nicht ab, der Direktschall schon. Ab 30 m schwanken Pegel und Klang langsam, für beide Ohren etwas verschieden (bis 3 dB).",
-   "probe_abtastwerte": 8820000
-  },
-  {
-   "name": "c",
-   "titel": "C – B plus ferne Schicht",
-   "text": "Dazu Brandung am Horizont in 400–1200 m (nur noch dumpfes Grollen) und eine Möwenkolonie in 150–450 m, manche bis 70 m hoch.",
+   "name": "d",
+   "titel": "D – ferne Kolonie, Weite nur für Möwen, Böen tragen den Schall",
+   "text": "Weitenhall und Luftflimmern wirken nur noch auf Möwen (auf Brandung und Wellen machten sie Rauschen). Keine Brandung am Horizont. Neu: die Böen, die man in Wind und Segel hört, verändern Lautstärke und Klang der Möwen je nach Windseite (bis etwa 6 dB in den Höhen).",
    "probe_abtastwerte": 8820000
   }
  ]

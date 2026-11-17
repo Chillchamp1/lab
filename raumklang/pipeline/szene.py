@@ -17,6 +17,7 @@ import pyloudnorm
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from hrtf import HRTF
+from kern import FREQ as FREQ_K
 from kern import FS, Spur, rendere_pfad, n_bloecke, blockzeiten, diffuser_nachhall, begrenzer, begrenzer_kreis, kreisfaltung
 from boot import Boot
 import material as mat
@@ -200,12 +201,29 @@ def rendere_quelle(kx, spur, bus, sig, t0, ort_fn, aussen=True, pegel=1.0, hall=
     # Entfernung des direkten Wegs: daraus Weitenhall-Anteil und Luftflimmern (nur draußen)
     r = wege[0]['entf']
     bus2, gew2 = None, None
-    if kx.weite and aussen and kx.bus_weite is not None:
+    gname = getattr(kx, 'gruppe', None)
+    def gilt(cfg):          # Wirkung auf bestimmte Gruppen beschränkbar (sonst wird Brandung zu Rauschen)
+        return bool(cfg) and aussen and (not cfg.get('gruppen') or gname in cfg['gruppen'])
+    wt = getattr(kx, 'windtragen', None)
+    if gilt(wt):
+        # Böen tragen den Schall: Quellen in Luv (woher der Wind kommt) werden in der Böe lauter und
+        # heller, Quellen in Lee leiser und dumpfer. Gleiche Böenkurve wie Wind und Segel.
+        anteil = np.clip((r - wt['ab_m']) / (wt['voll_m'] - wt['ab_m']), 0, 1)
+        if anteil.max() > 0:
+            az = np.arctan2(p[:, 1], p[:, 0])
+            luv = np.cos(az - np.radians(wt.get('wind_von_grad', 20.0)))
+            boe = np.clip(kx.boe(t), -1.0, 2.5)
+            db = wt.get('db', 5.0) * boe * luv * anteil
+            form = 0.35 + 0.65 * np.clip(FREQ_K / 4000.0, 0, 1)        # Höhen reagieren stärker
+            zus = 10 ** (db[:, None] * form[None, :] / 20)
+            w0 = wege[0]
+            wege[0] = dict(w0, gang=zus.astype(np.float32) if w0['gang'] is None else (w0['gang'] * zus).astype(np.float32))
+    if gilt(kx.weite) and kx.bus_weite is not None:
         w = kx.weite
         gew2 = np.clip((r - w['ab_m']) / (w['voll_m'] - w['ab_m']), 0, 1) ** w.get('exponent', 0.7) * (r / w.get('bezug_m', 30.0))
         if gew2.max() > 0:
             bus2 = kx.bus_weite
-    if kx.flimmern and aussen:
+    if gilt(kx.flimmern):
         f = kx.flimmern
         anteil = np.clip((r - f['ab_m']) / (f['voll_m'] - f['ab_m']), 0, 1)
         if anteil.max() > 0:
@@ -1047,7 +1065,7 @@ def main():
         t0 = time.time()
         kx = Kontext(hrtf, boot, bib, dauer, np.random.default_rng(sz.get('saat', 1) * 1000 + i), boe)
         spur, bus = Spur(dauer), Spur(dauer, 1)
-        kx.weite, kx.flimmern = sz.get('weite'), sz.get('flimmern')
+        kx.weite, kx.flimmern, kx.windtragen, kx.gruppe = sz.get('weite'), sz.get('flimmern'), sz.get('windtragen'), g['name']
         kx.bus_weite = Spur(dauer, 1) if kx.weite else None
         info = GENERATOREN[g['typ']](kx, g, spur, bus) or {}
         x = spur.x

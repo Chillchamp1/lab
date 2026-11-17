@@ -131,6 +131,16 @@ Drei Fassungen der Meeresszene mit denselben Ereignissen (`szenen/boot.json`,
   Möwenkolonie in 150–450 m, bis 70 m hoch (hinten angehängt, damit die
   übrigen Gruppen ihre Zufallsfolge behalten).
 
+Benjamins Urteil: in B und C ist zu viel los, die Brandung wird zu Rauschen, das
+anderes ertränkt; die ferne Kolonie und die Behandlung der Möwen sind gut.
+Daraus **D** (`boot_weite_d.json`, auf der Seite im Wechsel mit A): Weitenhall
+und Luftflimmern nur noch für die Möwengruppen (`gruppen` in `weite` und
+`flimmern`), keine Horizont-Brandung, ferne Kolonie bleibt. Neu `windtragen`:
+die gemeinsame Böenkurve ändert Pegel und Klang der Möwen je nach Windseite –
+in Luv lauter und heller, in Lee leiser und dumpfer (2,5 dB je Böenstärke in den
+Höhen, 35 % davon im Bass, ab 12 m, voll ab 60 m). B und C sind nicht mehr auf
+der Seite.
+
 Gemessen (mittlere Übereinstimmung linkes/rechtes Ohr in 200–800 / 800–3000 /
 3000–8000 Hz): Stereo 0,67 / 0,69 / 0,69, A 0,39 / 0,20 / 0,14, B 0,30 / 0,15 /
 0,11, C 0,29 / 0,13 / 0,11.
