@@ -1020,7 +1020,7 @@
    "typ": "gebruell",
    "titel": "Gröhlen über dem Tal",
    "text": "Manchmal gröhlt weit weg etwas von enormer Größe, und der Ruf schallt von den Talhängen zurück.",
-   "ziel_lufs": -25,
+   "ziel_lufs": -22,
    "pegel_art": "spitzen",
    "erster_s": [
     20,
@@ -1031,11 +1031,11 @@
     75
    ],
    "entfernung": [
-    350,
-    650
+    200,
+    450
    ],
    "hoehe": 8.0,
-   "echos": 10,
+   "echos": 12,
    "echo_umweg_m": [
     200,
     1800
@@ -1194,7 +1194,290 @@
      }
     }
    ],
-   "decke_db": -2.0
+   "decke_db": -2.0,
+   "schichten": [
+    {
+     "schluessel": "tief",
+     "pegel": 0.8,
+     "versatz_s": 0.12
+    },
+    {
+     "schluessel": "rau",
+     "pegel": 0.45,
+     "versatz_s": 0.25
+    }
+   ],
+   "tief": [
+    {
+     "quelle": "esc_2-103423-A",
+     "tempo_faktor": 0.26,
+     "hochpass": 20,
+     "tiefpass": 350,
+     "entrauschen": 10,
+     "rest_db": -26,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.4,
+      "max_dauer": 6.0,
+      "nachlauf": 0.6
+     },
+     "abklingen": {
+      "ein_ms": 60,
+      "min_ausklang_s": 0.4,
+      "glatt_ms": 60,
+      "ziel_db": -45,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_2-103424-A",
+     "tempo_faktor": 0.26,
+     "hochpass": 20,
+     "tiefpass": 350,
+     "entrauschen": 10,
+     "rest_db": -26,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.4,
+      "max_dauer": 6.0,
+      "nachlauf": 0.6
+     },
+     "abklingen": {
+      "ein_ms": 60,
+      "min_ausklang_s": 0.4,
+      "glatt_ms": 60,
+      "ziel_db": -45,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_2-103426-A",
+     "tempo_faktor": 0.26,
+     "hochpass": 20,
+     "tiefpass": 350,
+     "entrauschen": 10,
+     "rest_db": -26,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.4,
+      "max_dauer": 6.0,
+      "nachlauf": 0.6
+     },
+     "abklingen": {
+      "ein_ms": 60,
+      "min_ausklang_s": 0.4,
+      "glatt_ms": 60,
+      "ziel_db": -45,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_2-103427-A",
+     "tempo_faktor": 0.26,
+     "hochpass": 20,
+     "tiefpass": 350,
+     "entrauschen": 10,
+     "rest_db": -26,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.4,
+      "max_dauer": 6.0,
+      "nachlauf": 0.6
+     },
+     "abklingen": {
+      "ein_ms": 60,
+      "min_ausklang_s": 0.4,
+      "glatt_ms": 60,
+      "ziel_db": -45,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_2-103428-A",
+     "tempo_faktor": 0.26,
+     "hochpass": 20,
+     "tiefpass": 350,
+     "entrauschen": 10,
+     "rest_db": -26,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.4,
+      "max_dauer": 6.0,
+      "nachlauf": 0.6
+     },
+     "abklingen": {
+      "ein_ms": 60,
+      "min_ausklang_s": 0.4,
+      "glatt_ms": 60,
+      "ziel_db": -45,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_1-202111-A",
+     "tempo_faktor": 0.26,
+     "hochpass": 20,
+     "tiefpass": 350,
+     "entrauschen": 10,
+     "rest_db": -26,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.4,
+      "max_dauer": 6.0,
+      "nachlauf": 0.6
+     },
+     "abklingen": {
+      "ein_ms": 60,
+      "min_ausklang_s": 0.4,
+      "glatt_ms": 60,
+      "ziel_db": -45,
+      "max_endpegel_db": -3
+     }
+    }
+   ],
+   "rau": [
+    {
+     "quelle": "esc_2-158746-A",
+     "tempo_faktor": 0.33,
+     "hochpass": 40,
+     "tiefpass": 1500,
+     "roehre": {
+      "f0": 36,
+      "n": 8,
+      "q": 6,
+      "nass": 0.5,
+      "abfall": 0.7
+     },
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.3,
+      "max_dauer": 6.0,
+      "nachlauf": 0.6
+     },
+     "abklingen": {
+      "ein_ms": 60,
+      "min_ausklang_s": 0.4,
+      "glatt_ms": 60,
+      "ziel_db": -45,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_2-158746-B",
+     "tempo_faktor": 0.33,
+     "hochpass": 40,
+     "tiefpass": 1500,
+     "roehre": {
+      "f0": 36,
+      "n": 8,
+      "q": 6,
+      "nass": 0.5,
+      "abfall": 0.7
+     },
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.3,
+      "max_dauer": 6.0,
+      "nachlauf": 0.6
+     },
+     "abklingen": {
+      "ein_ms": 60,
+      "min_ausklang_s": 0.4,
+      "glatt_ms": 60,
+      "ziel_db": -45,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_2-158746-C",
+     "tempo_faktor": 0.33,
+     "hochpass": 40,
+     "tiefpass": 1500,
+     "roehre": {
+      "f0": 36,
+      "n": 8,
+      "q": 6,
+      "nass": 0.5,
+      "abfall": 0.7
+     },
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.3,
+      "max_dauer": 6.0,
+      "nachlauf": 0.6
+     },
+     "abklingen": {
+      "ein_ms": 60,
+      "min_ausklang_s": 0.4,
+      "glatt_ms": 60,
+      "ziel_db": -45,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_2-158746-D",
+     "tempo_faktor": 0.33,
+     "hochpass": 40,
+     "tiefpass": 1500,
+     "roehre": {
+      "f0": 36,
+      "n": 8,
+      "q": 6,
+      "nass": 0.5,
+      "abfall": 0.7
+     },
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.3,
+      "max_dauer": 6.0,
+      "nachlauf": 0.6
+     },
+     "abklingen": {
+      "ein_ms": 60,
+      "min_ausklang_s": 0.4,
+      "glatt_ms": 60,
+      "ziel_db": -45,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_3-257858-A",
+     "tempo_faktor": 0.33,
+     "hochpass": 40,
+     "tiefpass": 1500,
+     "roehre": {
+      "f0": 36,
+      "n": 8,
+      "q": 6,
+      "nass": 0.5,
+      "abfall": 0.7
+     },
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.3,
+      "max_dauer": 6.0,
+      "nachlauf": 0.6
+     },
+     "abklingen": {
+      "ein_ms": 60,
+      "min_ausklang_s": 0.4,
+      "glatt_ms": 60,
+      "ziel_db": -45,
+      "max_endpegel_db": -3
+     }
+    }
+   ]
   },
   {
    "name": "kammrufe",
@@ -1607,8 +1890,8 @@
     25
    ],
    "entfernung": [
-    15,
-    32
+    8,
+    22
    ],
    "tempo": [
     0.8,
@@ -1884,17 +2167,34 @@
       "schwelle_db": 8,
       "luecke": 0.02,
       "min_dauer": 0.05,
-      "max_dauer": 0.8,
-      "nachlauf": 0.25,
+      "max_dauer": 1.6,
+      "nachlauf": 0.7,
       "boden_perzentil": 40
      },
      "abklingen": {
       "ein_ms": 4,
-      "min_ausklang_s": 0.08,
+      "min_ausklang_s": 0.06,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "resonanz": [
+      [
+       30,
+       2.0,
+       0.6
+      ],
+      [
+       46,
+       1.4,
+       0.4
+      ],
+      [
+       72,
+       0.8,
+       0.25
+      ]
+     ]
     },
     {
      "quelle": "esc_2-140841-A",
@@ -1904,17 +2204,34 @@
       "schwelle_db": 8,
       "luecke": 0.02,
       "min_dauer": 0.05,
-      "max_dauer": 0.8,
-      "nachlauf": 0.25,
+      "max_dauer": 1.6,
+      "nachlauf": 0.7,
       "boden_perzentil": 40
      },
      "abklingen": {
       "ein_ms": 4,
-      "min_ausklang_s": 0.08,
+      "min_ausklang_s": 0.06,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "resonanz": [
+      [
+       30,
+       2.0,
+       0.6
+      ],
+      [
+       46,
+       1.4,
+       0.4
+      ],
+      [
+       72,
+       0.8,
+       0.25
+      ]
+     ]
     },
     {
      "quelle": "esc_3-180147-A",
@@ -1924,17 +2241,34 @@
       "schwelle_db": 8,
       "luecke": 0.02,
       "min_dauer": 0.05,
-      "max_dauer": 0.8,
-      "nachlauf": 0.25,
+      "max_dauer": 1.6,
+      "nachlauf": 0.7,
       "boden_perzentil": 40
      },
      "abklingen": {
       "ein_ms": 4,
-      "min_ausklang_s": 0.08,
+      "min_ausklang_s": 0.06,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "resonanz": [
+      [
+       30,
+       2.0,
+       0.6
+      ],
+      [
+       46,
+       1.4,
+       0.4
+      ],
+      [
+       72,
+       0.8,
+       0.25
+      ]
+     ]
     },
     {
      "quelle": "esc_5-251426-A",
@@ -1944,17 +2278,34 @@
       "schwelle_db": 8,
       "luecke": 0.02,
       "min_dauer": 0.05,
-      "max_dauer": 0.8,
-      "nachlauf": 0.25,
+      "max_dauer": 1.6,
+      "nachlauf": 0.7,
       "boden_perzentil": 40
      },
      "abklingen": {
       "ein_ms": 4,
-      "min_ausklang_s": 0.08,
+      "min_ausklang_s": 0.06,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "resonanz": [
+      [
+       30,
+       2.0,
+       0.6
+      ],
+      [
+       46,
+       1.4,
+       0.4
+      ],
+      [
+       72,
+       0.8,
+       0.25
+      ]
+     ]
     },
     {
      "quelle": "esc_5-251426-B",
@@ -1964,17 +2315,34 @@
       "schwelle_db": 8,
       "luecke": 0.02,
       "min_dauer": 0.05,
-      "max_dauer": 0.8,
-      "nachlauf": 0.25,
+      "max_dauer": 1.6,
+      "nachlauf": 0.7,
       "boden_perzentil": 40
      },
      "abklingen": {
       "ein_ms": 4,
-      "min_ausklang_s": 0.08,
+      "min_ausklang_s": 0.06,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "resonanz": [
+      [
+       30,
+       2.0,
+       0.6
+      ],
+      [
+       46,
+       1.4,
+       0.4
+      ],
+      [
+       72,
+       0.8,
+       0.25
+      ]
+     ]
     },
     {
      "quelle": "esc_1-52290-A",
@@ -1984,17 +2352,34 @@
       "schwelle_db": 8,
       "luecke": 0.02,
       "min_dauer": 0.05,
-      "max_dauer": 0.8,
-      "nachlauf": 0.25,
+      "max_dauer": 1.6,
+      "nachlauf": 0.7,
       "boden_perzentil": 40
      },
      "abklingen": {
       "ein_ms": 4,
-      "min_ausklang_s": 0.08,
+      "min_ausklang_s": 0.06,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "resonanz": [
+      [
+       30,
+       2.0,
+       0.6
+      ],
+      [
+       46,
+       1.4,
+       0.4
+      ],
+      [
+       72,
+       0.8,
+       0.25
+      ]
+     ]
     },
     {
      "quelle": "esc_3-154378-A",
@@ -2004,17 +2389,34 @@
       "schwelle_db": 8,
       "luecke": 0.02,
       "min_dauer": 0.05,
-      "max_dauer": 0.8,
-      "nachlauf": 0.25,
+      "max_dauer": 1.6,
+      "nachlauf": 0.7,
       "boden_perzentil": 40
      },
      "abklingen": {
       "ein_ms": 4,
-      "min_ausklang_s": 0.08,
+      "min_ausklang_s": 0.06,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "resonanz": [
+      [
+       30,
+       2.0,
+       0.6
+      ],
+      [
+       46,
+       1.4,
+       0.4
+      ],
+      [
+       72,
+       0.8,
+       0.25
+      ]
+     ]
     },
     {
      "quelle": "esc_5-235644-A",
@@ -2024,17 +2426,34 @@
       "schwelle_db": 8,
       "luecke": 0.02,
       "min_dauer": 0.05,
-      "max_dauer": 0.8,
-      "nachlauf": 0.25,
+      "max_dauer": 1.6,
+      "nachlauf": 0.7,
       "boden_perzentil": 40
      },
      "abklingen": {
       "ein_ms": 4,
-      "min_ausklang_s": 0.08,
+      "min_ausklang_s": 0.06,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "resonanz": [
+      [
+       30,
+       2.0,
+       0.6
+      ],
+      [
+       46,
+       1.4,
+       0.4
+      ],
+      [
+       72,
+       0.8,
+       0.25
+      ]
+     ]
     },
     {
      "quelle": "esc_2-134915-A",
@@ -2044,17 +2463,34 @@
       "schwelle_db": 8,
       "luecke": 0.02,
       "min_dauer": 0.05,
-      "max_dauer": 0.8,
-      "nachlauf": 0.25,
+      "max_dauer": 1.6,
+      "nachlauf": 0.7,
       "boden_perzentil": 40
      },
      "abklingen": {
       "ein_ms": 4,
-      "min_ausklang_s": 0.08,
+      "min_ausklang_s": 0.06,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "resonanz": [
+      [
+       30,
+       2.0,
+       0.6
+      ],
+      [
+       46,
+       1.4,
+       0.4
+      ],
+      [
+       72,
+       0.8,
+       0.25
+      ]
+     ]
     }
    ],
    "knarren": [
@@ -2254,7 +2690,7 @@
      ]
     }
    ],
-   "stampf_pegel": 1.6,
+   "stampf_pegel": 2.4,
    "ast_wahrsch": 0.09,
    "ast_pegel": 1.3,
    "knarr_pegel": 0.5,
@@ -2659,17 +3095,34 @@
       "schwelle_db": 8,
       "luecke": 0.02,
       "min_dauer": 0.05,
-      "max_dauer": 0.8,
-      "nachlauf": 0.25,
+      "max_dauer": 1.6,
+      "nachlauf": 0.7,
       "boden_perzentil": 40
      },
      "abklingen": {
       "ein_ms": 4,
-      "min_ausklang_s": 0.08,
+      "min_ausklang_s": 0.06,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "resonanz": [
+      [
+       30,
+       2.0,
+       0.6
+      ],
+      [
+       46,
+       1.4,
+       0.4
+      ],
+      [
+       72,
+       0.8,
+       0.25
+      ]
+     ]
     },
     {
      "quelle": "esc_2-140841-A",
@@ -2679,17 +3132,34 @@
       "schwelle_db": 8,
       "luecke": 0.02,
       "min_dauer": 0.05,
-      "max_dauer": 0.8,
-      "nachlauf": 0.25,
+      "max_dauer": 1.6,
+      "nachlauf": 0.7,
       "boden_perzentil": 40
      },
      "abklingen": {
       "ein_ms": 4,
-      "min_ausklang_s": 0.08,
+      "min_ausklang_s": 0.06,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "resonanz": [
+      [
+       30,
+       2.0,
+       0.6
+      ],
+      [
+       46,
+       1.4,
+       0.4
+      ],
+      [
+       72,
+       0.8,
+       0.25
+      ]
+     ]
     },
     {
      "quelle": "esc_3-180147-A",
@@ -2699,17 +3169,34 @@
       "schwelle_db": 8,
       "luecke": 0.02,
       "min_dauer": 0.05,
-      "max_dauer": 0.8,
-      "nachlauf": 0.25,
+      "max_dauer": 1.6,
+      "nachlauf": 0.7,
       "boden_perzentil": 40
      },
      "abklingen": {
       "ein_ms": 4,
-      "min_ausklang_s": 0.08,
+      "min_ausklang_s": 0.06,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "resonanz": [
+      [
+       30,
+       2.0,
+       0.6
+      ],
+      [
+       46,
+       1.4,
+       0.4
+      ],
+      [
+       72,
+       0.8,
+       0.25
+      ]
+     ]
     },
     {
      "quelle": "esc_5-251426-A",
@@ -2719,17 +3206,34 @@
       "schwelle_db": 8,
       "luecke": 0.02,
       "min_dauer": 0.05,
-      "max_dauer": 0.8,
-      "nachlauf": 0.25,
+      "max_dauer": 1.6,
+      "nachlauf": 0.7,
       "boden_perzentil": 40
      },
      "abklingen": {
       "ein_ms": 4,
-      "min_ausklang_s": 0.08,
+      "min_ausklang_s": 0.06,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "resonanz": [
+      [
+       30,
+       2.0,
+       0.6
+      ],
+      [
+       46,
+       1.4,
+       0.4
+      ],
+      [
+       72,
+       0.8,
+       0.25
+      ]
+     ]
     },
     {
      "quelle": "esc_5-251426-B",
@@ -2739,17 +3243,34 @@
       "schwelle_db": 8,
       "luecke": 0.02,
       "min_dauer": 0.05,
-      "max_dauer": 0.8,
-      "nachlauf": 0.25,
+      "max_dauer": 1.6,
+      "nachlauf": 0.7,
       "boden_perzentil": 40
      },
      "abklingen": {
       "ein_ms": 4,
-      "min_ausklang_s": 0.08,
+      "min_ausklang_s": 0.06,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "resonanz": [
+      [
+       30,
+       2.0,
+       0.6
+      ],
+      [
+       46,
+       1.4,
+       0.4
+      ],
+      [
+       72,
+       0.8,
+       0.25
+      ]
+     ]
     },
     {
      "quelle": "esc_1-52290-A",
@@ -2759,17 +3280,34 @@
       "schwelle_db": 8,
       "luecke": 0.02,
       "min_dauer": 0.05,
-      "max_dauer": 0.8,
-      "nachlauf": 0.25,
+      "max_dauer": 1.6,
+      "nachlauf": 0.7,
       "boden_perzentil": 40
      },
      "abklingen": {
       "ein_ms": 4,
-      "min_ausklang_s": 0.08,
+      "min_ausklang_s": 0.06,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "resonanz": [
+      [
+       30,
+       2.0,
+       0.6
+      ],
+      [
+       46,
+       1.4,
+       0.4
+      ],
+      [
+       72,
+       0.8,
+       0.25
+      ]
+     ]
     },
     {
      "quelle": "esc_3-154378-A",
@@ -2779,17 +3317,34 @@
       "schwelle_db": 8,
       "luecke": 0.02,
       "min_dauer": 0.05,
-      "max_dauer": 0.8,
-      "nachlauf": 0.25,
+      "max_dauer": 1.6,
+      "nachlauf": 0.7,
       "boden_perzentil": 40
      },
      "abklingen": {
       "ein_ms": 4,
-      "min_ausklang_s": 0.08,
+      "min_ausklang_s": 0.06,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "resonanz": [
+      [
+       30,
+       2.0,
+       0.6
+      ],
+      [
+       46,
+       1.4,
+       0.4
+      ],
+      [
+       72,
+       0.8,
+       0.25
+      ]
+     ]
     },
     {
      "quelle": "esc_5-235644-A",
@@ -2799,17 +3354,34 @@
       "schwelle_db": 8,
       "luecke": 0.02,
       "min_dauer": 0.05,
-      "max_dauer": 0.8,
-      "nachlauf": 0.25,
+      "max_dauer": 1.6,
+      "nachlauf": 0.7,
       "boden_perzentil": 40
      },
      "abklingen": {
       "ein_ms": 4,
-      "min_ausklang_s": 0.08,
+      "min_ausklang_s": 0.06,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "resonanz": [
+      [
+       30,
+       2.0,
+       0.6
+      ],
+      [
+       46,
+       1.4,
+       0.4
+      ],
+      [
+       72,
+       0.8,
+       0.25
+      ]
+     ]
     },
     {
      "quelle": "esc_2-134915-A",
@@ -2819,17 +3391,34 @@
       "schwelle_db": 8,
       "luecke": 0.02,
       "min_dauer": 0.05,
-      "max_dauer": 0.8,
-      "nachlauf": 0.25,
+      "max_dauer": 1.6,
+      "nachlauf": 0.7,
       "boden_perzentil": 40
      },
      "abklingen": {
       "ein_ms": 4,
-      "min_ausklang_s": 0.08,
+      "min_ausklang_s": 0.06,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "resonanz": [
+      [
+       30,
+       2.0,
+       0.6
+      ],
+      [
+       46,
+       1.4,
+       0.4
+      ],
+      [
+       72,
+       0.8,
+       0.25
+      ]
+     ]
     }
    ],
    "knarren": [
@@ -3029,7 +3618,7 @@
      ]
     }
    ],
-   "stampf_pegel": 1.2,
+   "stampf_pegel": 1.6,
    "ast_wahrsch": 0.0,
    "matsch_pegel": 0.8,
    "knack_pegel": 1.0,

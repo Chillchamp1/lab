@@ -1,6 +1,6 @@
 {
  "szene": "wald",
- "stand": "17.11.2026 14:32",
+ "stand": "17.11.2026 14:58",
  "dauer": 240,
  "schleife": true,
  "abtastwerte": 10584000,
@@ -18,7 +18,7 @@
    "pegel_art": "integriert",
    "spitze_db": -7.0,
    "begrenzt_db": 0.0,
-   "sekunden": 176.8,
+   "sekunden": 187.6,
    "probe_abtastwerte": 1323000
   },
   {
@@ -30,7 +30,7 @@
    "pegel_art": "integriert",
    "spitze_db": -10.5,
    "begrenzt_db": 0.0,
-   "sekunden": 119.3,
+   "sekunden": 121.2,
    "probe_abtastwerte": 1323000
   },
   {
@@ -42,7 +42,7 @@
    "pegel_art": "integriert",
    "spitze_db": -6.0,
    "begrenzt_db": 1.8,
-   "sekunden": 97.0,
+   "sekunden": 106.2,
    "probe_abtastwerte": 1323000
   },
   {
@@ -54,7 +54,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -6.0,
    "begrenzt_db": 2.2,
-   "sekunden": 6.8,
+   "sekunden": 7.5,
    "probe_abtastwerte": 1323000
   },
   {
@@ -64,9 +64,9 @@
    "typ": "ereignisse",
    "ziel_lufs": -37,
    "pegel_art": "spitzen",
-   "spitze_db": -8.5,
+   "spitze_db": -7.4,
    "begrenzt_db": 0.0,
-   "sekunden": 5.2,
+   "sekunden": 6.7,
    "probe_abtastwerte": 1323000
   },
   {
@@ -78,7 +78,7 @@
    "pegel_art": "integriert",
    "spitze_db": -17.6,
    "begrenzt_db": 0.0,
-   "sekunden": 105.2,
+   "sekunden": 111.6,
    "probe_abtastwerte": 1323000
   },
   {
@@ -88,10 +88,10 @@
    "typ": "schwarm",
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
-   "spitze_db": -6.9,
+   "spitze_db": -12.0,
    "begrenzt_db": 0.0,
-   "sekunden": 13.4,
-   "rufe": 34,
+   "sekunden": 12.8,
+   "rufe": 38,
    "probe_abtastwerte": 1323000
   },
   {
@@ -103,7 +103,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
    "begrenzt_db": 3.0,
-   "sekunden": 13.1,
+   "sekunden": 13.7,
    "rufe": 126,
    "probe_abtastwerte": 1323000
   },
@@ -112,16 +112,16 @@
    "titel": "Gröhlen über dem Tal",
    "text": "Manchmal gröhlt weit weg etwas von enormer Größe, und der Ruf schallt von den Talhängen zurück.",
    "typ": "gebruell",
-   "ziel_lufs": -25,
+   "ziel_lufs": -22,
    "pegel_art": "spitzen",
-   "spitze_db": -10.9,
+   "spitze_db": -9.9,
    "begrenzt_db": 0.0,
-   "sekunden": 14.0,
+   "sekunden": 14.7,
    "rufe": [
     34.6,
-    103.6,
-    162.8,
-    214.6
+    85.6,
+    136.9,
+    191.8
    ],
    "probe_abtastwerte": 2646000
   },
@@ -132,9 +132,9 @@
    "typ": "gebruell",
    "ziel_lufs": -26,
    "pegel_art": "spitzen",
-   "spitze_db": -14.5,
+   "spitze_db": -14.1,
    "begrenzt_db": 0.0,
-   "sekunden": 15.7,
+   "sekunden": 14.9,
    "rufe": [
     18.3,
     68.3,
@@ -153,7 +153,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -8.0,
    "begrenzt_db": 0.0,
-   "sekunden": 8.4,
+   "sekunden": 8.9,
    "rufe": [
     29.2,
     75.7,
@@ -171,8 +171,8 @@
    "ziel_lufs": -23,
    "pegel_art": "spitzen",
    "spitze_db": -2.0,
-   "begrenzt_db": 4.2,
-   "sekunden": 18.0,
+   "begrenzt_db": 6.5,
+   "sekunden": 36.1,
    "vorbeigaenge": [
     45.4,
     126.1,
@@ -189,7 +189,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -2.0,
    "begrenzt_db": 1.5,
-   "sekunden": 10.4,
+   "sekunden": 18.6,
    "besuche": [
     {
      "start": 70,
@@ -207,9 +207,9 @@
    "typ": "ueberflug",
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
-   "spitze_db": -13.6,
+   "spitze_db": -13.5,
    "begrenzt_db": 0.0,
-   "sekunden": 5.2,
+   "sekunden": 5.6,
    "zeiten": [
     42.1,
     113.1,
@@ -226,19 +226,19 @@
    "pegel_art": "integriert",
    "spitze_db": -32.5,
    "begrenzt_db": 0.0,
-   "sekunden": 15.7,
+   "sekunden": 15.1,
    "akkorde": 8,
    "probe_abtastwerte": 1323000
   }
  ],
  "start_verschoben_s": 8.97,
- "begrenzer_max_db": 1.6,
+ "begrenzer_max_db": 1.3,
  "lufs": -23.0,
  "naht": {
-  "sprung_naht": 0.0203,
-  "sprung_typisch_999": 0.0956,
+  "sprung_naht": 0.0208,
+  "sprung_typisch_999": 0.0975,
   "pegelsprung_naht_db": 0.15,
-  "pegelsprung_typisch_95_db": 3.58
+  "pegelsprung_typisch_95_db": 3.3
  },
  "quellen": [
   "bach_flowing",
