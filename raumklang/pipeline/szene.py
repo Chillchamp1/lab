@@ -175,9 +175,10 @@ def rendere_quelle(kx, spur, bus, sig, t0, ort_fn, aussen=True, pegel=1.0, hall=
         pb = p
     pg = np.full(nb, pegel) if pegel_fn is None else pegel * pegel_fn(t)
     for weg in kx.boot.pfade(pb, aussen, bild, spiegelungen):
+        start = int(round(t0 * FS))
         st, v = rendere_pfad(kx.hrtf, sig, weg['entf'], weg['richt'], weg['gang'], pg, weg['ohr'],
-                             bus if weg['hall'] else None, hall, weg.get('streu'))
-        spur.addiere(st, int(t0 * FS) + v)
+                             bus if weg['hall'] else None, hall, weg.get('streu'), start)
+        spur.addiere(st, start + v)
 
 
 def rendere_kreis(kx, spur, bus, sig, ort_fn, aussen=True, pegel=1.0, hall=1.0, pegel_fn=None, vorlauf_s=0.5):
@@ -689,6 +690,15 @@ def main():
         ist = lautheit(summe)
         summe *= 10 ** ((sz.get('ziel_lufs', -21) - ist) / 20)
         summe, weg = begrenzer_kreis(summe, -1.0)
+        # Die Schleife hat keinen Anfang – also dort beginnen, wo es am ruhigsten ist: Mitte des
+        # leisesten 4-s-Fensters. So startet die Datei nicht mit einem Ereignis, und die Naht
+        # liegt in einem ruhigen Moment.
+        e = (summe.astype(np.float64) ** 2).mean(0)
+        k = np.ones(4 * FS) / (4 * FS)
+        glatt = np.real(np.fft.ifft(np.fft.fft(e) * np.fft.fft(np.r_[k, np.zeros(len(e) - len(k))])))   # kreisförmig
+        ruhig = (int(np.argmin(glatt)) - 2 * FS) % len(e)        # glatt[i] mittelt e[i-4s+1 .. i]
+        summe = np.roll(summe, -ruhig, axis=1)
+        bericht['start_verschoben_s'] = round(ruhig / FS, 2)
         bericht['begrenzer_max_db'] = round(weg, 1)
         bericht['lufs'] = round(lautheit(summe), 1)
         bericht['naht'] = nahtpruefung(summe)

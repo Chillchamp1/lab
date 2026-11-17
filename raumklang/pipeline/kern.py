@@ -61,7 +61,7 @@ def _ola(rahmen):
     return aus
 
 
-def rendere_pfad(hrtf, sig, entf, richt, gang=None, pegel=None, ohr=None, bus=None, hall_pegel=0.0, streu=None):
+def rendere_pfad(hrtf, sig, entf, richt, gang=None, pegel=None, ohr=None, bus=None, hall_pegel=0.0, streu=None, start=0):
     """Rendert einen Pfad.
 
     sig    Mono-Signal der Quelle
@@ -70,6 +70,7 @@ def rendere_pfad(hrtf, sig, entf, richt, gang=None, pegel=None, ohr=None, bus=No
     gang   (n_b, nf) zusätzlicher Betragsgang (linear) oder None
     pegel  (n_b,) zusätzlicher Faktor oder None
     ohr    (n_b, 2) Faktor je Ohr (Nahfeld) oder None
+    start  Startzeit des Signals in Abtastwerten (für den Hallanteil auf dem Bus)
     streu  (nf,) Spektrum eines kurzen Streukerns (raue Fläche statt Spiegel) oder None
     Rückgabe: (2, n) Stereo und Versatz in Abtastwerten (kann negativ sein: -VORHALT)
     """
@@ -103,7 +104,8 @@ def rendere_pfad(hrtf, sig, entf, richt, gang=None, pegel=None, ohr=None, bus=No
     if bus is not None and hall_pegel > 0:
         # Hall-Anteil: verzögertes Signal mit Entfernungsabnahme, ohne Richtung
         g = np.interp(np.arange(n_aus), np.arange(n_b) * HOP + BLOCK / 2, amp)
-        bus.addiere(y * g * hall_pegel, int(round(verz.min() * FS)))
+        # Startzeit des Ereignisses mitgeben – sonst landet der Hallanteil jedes Ereignisses bei 0 s
+        bus.addiere(y * g * hall_pegel, start + int(round(verz.min() * FS)))
     return stereo, versatz
 
 
