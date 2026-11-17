@@ -83,6 +83,29 @@ Knackser aus Feueraufnahmen als brechende Äste. Generatoren: `vorbeigang`
 schnuppern, weggehen), `musik` (ganz leise synthetische Akkordfläche,
 periodisch, nicht räumlich gerendert).
 
+Zweite Runde nach Benjamins Urteil („die Saurier sind noch zu subtil“): Waldvögel
+(ESC-50-Waldaufnahmen, zerlegt, in den Bäumen ringsum), Regen auf großen
+Blättern direkt über dem Hörer (Aufnahmen von Regen auf Zeltplane und
+Kunststoffdach), ein Bach statt des Blubberns, schwerere Tritte (Klopfen an eine
+schwere Holztür auf 35 % verlangsamt – daraus wird ein tiefer Stampfer, 71 % der
+Energie unter 100 Hz), brechende Äste (Knarren, Krachen, herabfallendes Laub,
+Aufschlag). Dazu Rufe, bei denen man denken soll „so könnte ein Dinosaurier
+geklungen haben“:
+
+- **Gröhlen über dem Tal** (`gebruell`): Bullen, auf 38 % verlangsamt, in 350–650 m;
+  die Echos sind Spiegelquellen an den Talhängen in anderen Richtungen und
+  150–1800 m weiter weg – Verzögerung und Dämpfung ergeben sich aus dem Weg.
+  Die Walddämpfung gilt nur für die letzten 80 m; darüber läuft der Schall über
+  die Kronen.
+- **Kammrufe**: Rufe von Kranich und Kühen, tief gelegt und durch eine
+  Röhrenresonanz geschickt (`roehre`: schmale Resonanzen bei Vielfachen von
+  38–55 Hz) – so färbt der hohle Schädelkamm eines Entenschnabelsauriers wie
+  Parasaurolophus den Ruf zu einem hohlen, posaunenartigen Ton.
+- **Wummern**: kurze Schweinegrunzer, auf 30 % verlangsamt, durch eine kurze,
+  stark gedämpfte Röhre (26–34 Hz), als Folge von drei bis sechs Stößen – das
+  Rufen mit geschlossenem Maul, wie es Strauße, Emus und Krokodile können und
+  wie es für viele Dinosaurier vermutet wird (Riede u. a. 2016).
+
 ## Endlosschleife
 
 Die Szene ist auf einer kreisförmigen Zeitachse gerechnet: Was über das Ende

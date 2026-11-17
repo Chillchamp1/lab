@@ -6,7 +6,7 @@ ESC-50: Fünf-Sekunden-Ausschnitte von Freesound-Aufnahmen aus github.com/karolp
 Freesound: HQ-Vorschau über die API (Schlüssel in FREESOUND_API_KEY; in der
 Claude-Cloud-Umgebung setzt der Netz-Proxy ihn selbst ein).
 """
-import hashlib, json, os, sys, time, urllib.parse, urllib.request
+import hashlib, json, os, sys, time, urllib.error, urllib.parse, urllib.request
 from pathlib import Path
 
 WURZEL = Path(__file__).resolve().parent.parent
@@ -14,15 +14,21 @@ ROH = WURZEL / 'material' / 'roh'
 KOPF = {'User-Agent': 'raumklang-pipeline/0.1 (audio research script)'}
 
 
-def hole(url, ziel, kopf=KOPF):
-    for versuch in range(6):
+def hole(url, ziel, kopf=KOPF, versuche=4):
+    """Lädt eine Datei. Bei HTTP 429 wird die vom Server verlangte Wartezeit (Retry-After)
+    eingehalten – häufiges Nachfragen verlängert die Sperre bei Wikimedia nur."""
+    for versuch in range(versuche):
         try:
-            with urllib.request.urlopen(urllib.request.Request(url, headers=kopf), timeout=120) as r:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=kopf), timeout=300) as r:
                 ziel.write_bytes(r.read())
             return True
+        except urllib.error.HTTPError as e:
+            warte = int(e.headers.get('Retry-After') or 60) + 15 if e.code == 429 else 20 + 20 * versuch
+            print(f'    HTTP {e.code} – warte {warte} s', flush=True)
+            time.sleep(warte)
         except Exception as e:
-            print('   ', type(e).__name__, e, '– warte', flush=True)
-            time.sleep(8 + 6 * versuch)
+            print('   ', type(e).__name__, e, '– warte 30 s', flush=True)
+            time.sleep(30)
     return False
 
 
@@ -60,7 +66,7 @@ def main():
         print(q['lokal'], '<-', url, flush=True)
         ok = hole(url, ziel)
         print('   ok' if ok else '   FEHLGESCHLAGEN', flush=True)
-        time.sleep(2)
+        time.sleep(20)
 
 
 if __name__ == '__main__':

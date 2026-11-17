@@ -49,6 +49,8 @@ class Bibliothek:
             from scipy.signal import resample_poly
             fr = Fraction(1 / spez['tempo_faktor']).limit_denominator(50)
             x = resample_poly(x, fr.numerator, fr.denominator)
+        if spez.get('roehre'):
+            x = mat.roehre(x, **spez['roehre'])
         if spez.get('hochpass'):
             x = mat.filt(x, spez['hochpass'], 'highpass')
         if spez.get('tiefpass'):
@@ -612,10 +614,15 @@ def _gang(kx, g, spur, bus, rng, bahn, t_a, t_b, sets, staerke=1.0, nah=False):
         fuss = p + seite * g.get('spur_m', 0.7) * quer
         fuss[2] = 0.05
         seite = -seite
+        st = 10 ** (rng.normal(0, 2) / 20)
         if sets['tritte']:
             e = _wahl(rng, sets['tritte'])
-            st = 10 ** (rng.normal(0, 2) / 20)
             rendere_quelle(kx, spur, bus, _variante(rng, e['sig'], 0.8), t, _fest(fuss), True, b * st, g.get('hall', 0.0))
+        if sets['stampfen']:                              # der schwere, tiefe Teil des Tritts
+            e = _wahl(rng, sets['stampfen'])
+            rendere_quelle(kx, spur, bus, _variante(rng, e['sig'], 1.5), t, _fest(fuss), True, b * st * g.get('stampf_pegel', 1.5), g.get('hall', 0.0))
+        if sets['ast'] and rng.random() < g.get('ast_wahrsch', 0.0):
+            _ast_bruch(kx, g, spur, bus, rng, t + rng.uniform(0.1, 0.4), p, sets, b)
         if sets['matsch'] and rng.random() < g.get('matsch_wahrsch', 0.45):
             e = _wahl(rng, sets['matsch'])
             rendere_quelle(kx, spur, bus, _variante(rng, e['sig']), t + rng.uniform(0.03, 0.15), _fest(fuss), True,
@@ -635,7 +642,36 @@ def _gang(kx, g, spur, bus, rng, bahn, t_a, t_b, sets, staerke=1.0, nah=False):
 
 
 def _saurier_sets(kx, g):
-    return {k: _sammlung(kx, g, k) for k in ('tritte', 'matsch', 'knacken', 'rascheln', 'schnauben', 'atem', 'zupfen', 'kauen')}
+    return {k: _sammlung(kx, g, k) for k in ('tritte', 'stampfen', 'matsch', 'knacken', 'rascheln', 'schnauben', 'atem', 'zupfen', 'kauen',
+                                              'ast', 'knarren', 'laub_fall')}
+
+
+def _ast_bruch(kx, g, spur, bus, rng, t, ort_koerper, sets, b):
+    """Ein großer Ast bricht: Holz knarrt unter Last, bricht mit einem Krachen, Laub rauscht mit
+    herab, der Ast schlägt dumpf auf dem Boden auf."""
+    hoch = ort_koerper + np.array([rng.normal(0, 1.0), rng.normal(0, 1.0), rng.uniform(2.5, 5.0)])
+    boden = hoch.copy()
+    boden[2] = 0.1
+    tt = t
+    if sets['knarren']:
+        e = _wahl(rng, sets['knarren'])
+        rendere_quelle(kx, spur, bus, _variante(rng, e['sig'], 1.0), tt, _fest(hoch), True, b * g.get('knarr_pegel', 0.5), g.get('hall', 0.0))
+        tt += min(e['dauer'], 0.8) * rng.uniform(0.6, 0.9)
+    for _ in range(int(rng.integers(1, 3))):                      # Bruch, manchmal zweistufig
+        e = _wahl(rng, sets['ast'])
+        rendere_quelle(kx, spur, bus, _variante(rng, e['sig'], 1.2), tt, _fest(hoch), True, b * g.get('ast_pegel', 1.2), g.get('hall', 0.0))
+        tt += rng.uniform(0.08, 0.35)
+    fall = rng.uniform(0.5, 0.9)
+    if sets['laub_fall']:
+        e = _wahl(rng, sets['laub_fall'])
+
+        def herab(x, t0=tt, hoch=hoch, boden=boden, fall=fall):
+            u = np.clip((x - t0) / fall, 0, 1)[:, None]
+            return hoch[None, :] + u * u * (boden - hoch)[None, :]
+        rendere_quelle(kx, spur, bus, _variante(rng, e['sig']), tt, herab, True, b * g.get('laub_fall_pegel', 0.4), g.get('hall', 0.0))
+    if sets['stampfen']:
+        e = _wahl(rng, sets['stampfen'])
+        rendere_quelle(kx, spur, bus, _variante(rng, e['sig'], 2.0), tt + fall, _fest(boden), True, b * g.get('aufschlag_pegel', 0.8), g.get('hall', 0.0))
 
 
 def gen_vorbeigang(kx, g, spur, bus):
@@ -808,9 +844,50 @@ def gen_musik(kx, g, spur, bus):
     return dict(akkorde=len(akkorde))
 
 
+def gen_gebruell(kx, g, spur, bus):
+    """Ab und zu gröhlt weit weg ein riesiges Tier; der Ruf schallt über das Tal. Die Echos sind
+    Spiegelquellen an den Talhängen: dasselbe Signal von weiter weg und aus anderen Richtungen –
+    Verzögerung, Dämpfung und Richtung ergeben sich aus der Lage."""
+    rng = kx.rng
+    ev = kx.bib.ereignisse(g['sammlung'])
+    k = kx.boot.kopf
+    t = rng.uniform(*g.get('erster_s', [20, 40]))
+    erster = t
+    liste = []
+    while t < kx.dauer + erster - g.get('abstand_s', [35, 70])[0]:
+        e = _wahl(rng, ev)
+        d = rng.uniform(*g.get('entfernung', [350, 700]))
+        az = rng.uniform(0, 2 * np.pi)
+        p = np.array([k[0] + d * np.cos(az), k[1] + d * np.sin(az), g.get('hoehe', 8.0)])
+        sig = _variante(rng, e['sig'], 1.0)
+        if g.get('folge'):                      # mehrere Stöße hintereinander (Wummern wie beim Emu)
+            n = int(rng.integers(g['folge'][0], g['folge'][1] + 1))
+            teile, pos = [], 0
+            for j in range(n):
+                ej = _wahl(rng, ev)['sig']
+                st = 0.6 + 0.4 * np.sin(np.pi * (j + 0.5) / n)          # schwillt an und ab
+                teile.append((pos, _variante(rng, ej, 0.5) * st))
+                pos += int(len(ej) * rng.uniform(0.55, 0.8))
+            sig = np.zeros(pos + max(len(t_) for _, t_ in teile), np.float32)
+            for a0, t_ in teile:
+                sig[a0:a0 + len(t_)] += t_
+        rendere_quelle(kx, spur, bus, sig, t, _fest(p), True, g.get('bezug_m', 400.0), g.get('hall', 1.0))
+        for j in range(g.get('echos', 6)):
+            umweg = rng.uniform(*g.get('echo_umweg_m', [150, 900]))
+            a2 = az + rng.uniform(0.6, np.pi * 1.4) * rng.choice([-1, 1])     # Hang auf einer anderen Seite
+            d2 = d + umweg
+            p2 = np.array([k[0] + d2 * np.cos(a2), k[1] + d2 * np.sin(a2), g.get('hoehe', 8.0)])
+            # gleicher Rufbeginn; die Verspätung des Echos ergibt sich aus dem längeren Weg
+            rendere_quelle(kx, spur, bus, sig, t, _fest(p2), True,
+                           g.get('bezug_m', 400.0) * g.get('echo_reflexion', 0.55) * rng.uniform(0.6, 1.0), g.get('hall', 1.0))
+        liste.append(round(float(t) % kx.dauer, 1))
+        t += rng.uniform(*g.get('abstand_s', [35, 70]))
+    return dict(rufe=liste)
+
+
 GENERATOREN = dict(bett=gen_bett, ereignisse=gen_ereignisse, schwarm=gen_schwarm, ueberflug=gen_ueberflug,
                    rumpf=gen_rumpf, knarzen=gen_knarzen, segel=gen_segel,
-                   vorbeigang=gen_vorbeigang, besuch=gen_besuch, musik=gen_musik)
+                   vorbeigang=gen_vorbeigang, besuch=gen_besuch, musik=gen_musik, gebruell=gen_gebruell)
 
 
 # ---------------------------------------------------------------- Pegel und Ausgabe
