@@ -258,10 +258,11 @@ def gen_schwarm(kx, g, spur, bus):
 
 
 def gen_ueberflug(kx, g, spur, bus):
-    """Einzelne Möwe schießt dicht über das Boot: gerade Bahn, 2–5 m hoch, ruft kurz vor
-    dem nächsten Punkt – der Doppler entsteht aus der Bahn."""
+    """Einzelne Möwe schießt dicht über das Boot: gerade Bahn, 2–5 m hoch. Der Doppler
+    entsteht aus der Bahn (gleitende Laufzeit), nicht aus einer Tonhöhenkurve."""
     rng = kx.rng
     ev = [e for e in kx.bib.ereignisse(g['sammlung']) if e['dauer'] >= g.get('min_dauer', 0.5)]
+    fluegel = kx.bib.ereignisse(g['fluegel']) if g.get('fluegel') else None
     t = rng.uniform(*g.get('erster_s', [8, 14]))
     liste = []
     while t < kx.dauer - 6:
@@ -280,18 +281,54 @@ def gen_ueberflug(kx, g, spur, bus):
             p[:, 2] = np.maximum(h + s * ri[2], 1.5)
             return p
 
-        # zwei bis drei Rufe um den nächsten Punkt herum
-        n = int(rng.integers(2, 4))
-        ts = t - rng.uniform(1.6, 2.4)
-        e0 = ev[int(rng.integers(len(ev)))]
-        gleiche = [e for e in ev if e['quelle'] == e0['quelle']]
-        for _ in range(n):
+        # Hauptruf liegt über dem nächsten Punkt: er beginnt im Anflug (etwas höher) und endet im
+        # Wegflug (etwas tiefer) – so kippt die Tonhöhe hörbar innerhalb eines Rufs.
+        lang = [e for e in ev if e['dauer'] >= g.get('haupt_min_s', 0.8)]
+        haupt = lang[int(rng.integers(len(lang)))]
+        gleiche = [e for e in ev if e['quelle'] == haupt['quelle'] and e is not haupt] or [haupt]
+        t_haupt = t - rng.uniform(0.4, 0.55) * haupt['dauer']
+        rufe = [(t_haupt, haupt)]
+        if rng.random() < g.get('vorruf_wahrsch', 0.7):            # Ruf im Anflug, endet vor dem Hauptruf
             e = gleiche[int(rng.integers(len(gleiche)))]
+            rufe.append((t_haupt - e['dauer'] - rng.uniform(0.15, 0.6), e))
+        if rng.random() < g.get('nachruf_wahrsch', 0.4):           # Ruf im Wegflug
+            e = gleiche[int(rng.integers(len(gleiche)))]
+            rufe.append((t_haupt + haupt['dauer'] + rng.uniform(0.2, 0.7), e))
+        for ts, e in rufe:
             rendere_quelle(kx, spur, bus, e['sig'], ts, ort, True, g.get('bezug_m', 5.0), g.get('hall', 0.0))
-            ts += e['dauer'] + rng.uniform(0.05, 0.5)
+        if fluegel:
+            gen_fluegel(kx, g, spur, bus, fluegel, ort, t, v, rng)
         liste.append(round(float(t), 1))
         t += rng.uniform(*g.get('abstand_s', [18, 32]))
     return dict(zeiten=liste)
+
+
+def gen_fluegel(kx, g, spur, bus, stuecke, ort, t_nah, v, rng):
+    """Fahrtwind und Flügelschläge einer vorbeifliegenden Möwe. Rohstoff ist echtes Windrauschen;
+    nur die Hüllkurve (einige Schläge im Möwentakt, dann Gleiten) ist vorgegeben. Die Quelle fliegt
+    auf der Bahn der Möwe mit – Anschwellen, Doppler und Richtung kommen aus dem Renderer."""
+    e = stuecke[int(rng.integers(len(stuecke)))]
+    dauer = g.get('fluegel_dauer_s', 3.2)
+    n = int(dauer * FS)
+    x = e['sig'].astype(np.float64)
+    if len(x) < n:
+        x = np.tile(x, int(np.ceil(n / len(x))))
+    a = int(rng.uniform(0, len(x) - n + 1))
+    x = mat.filt(x[a:a + n], g.get('fluegel_band', [350, 6000]), 'bandpass', 2)
+    x /= np.sqrt((x ** 2).mean()) + 1e-12
+    tt = np.arange(n) / FS
+    # Schläge: im Anflug einige Schläge mit ~3 Hz, über dem Boot gleitet sie
+    f_schlag = rng.uniform(2.7, 3.6)
+    n_schlaege = int(rng.integers(*g.get('fluegel_schlaege', [3, 7])))
+    t0 = rng.uniform(0.2, 0.6)
+    huelle = np.full(n, g.get('fluegel_gleiten', 0.35))
+    for k in range(n_schlaege):
+        tk = t0 + k / f_schlag
+        huelle += 0.9 * np.exp(-0.5 * ((tt - tk) / 0.045) ** 2)   # Abschlag: kurzer Luftstoß
+    huelle *= np.minimum(1, tt / 0.3) * np.minimum(1, (dauer - tt) / 0.6)
+    sig = (x * huelle * 10 ** ((-20 + g.get('fluegel_db', -12)) / 20) * np.sqrt(2)).astype(np.float32)
+    start = t_nah - g.get('fluegel_vorlauf_s', 1.9)
+    rendere_quelle(kx, spur, bus, sig, start, ort, True, g.get('bezug_m', 5.0), g.get('hall', 0.0))
 
 
 def _rumpfpunkt(boot, rng, seite, aussen=True):

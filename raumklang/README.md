@@ -6,7 +6,7 @@ Szene: liegend in einem knarzenden Ruderboot auf dem Meer.
 ## Aufbau
 
 ```
-pipeline/hrtf.py            SOFA laden, diffusfeld-entzerren, zwischen Richtungen interpolieren
+pipeline/hrtf.py            SOFA laden, diffusfeld-entzerren, stetig zwischen Richtungen interpolieren
 pipeline/kern.py            Renderkern: bewegte Quelle → Schallweg → binaural (blockweise, mit Laufzeit)
 pipeline/boot.py            das Boot als Raum: Schaukeln, Bordkante, Bordwände, Boden, Wasserspiegel
 pipeline/material.py        Aufnahmen laden, entrauschen, in Einzelereignisse zerlegen
@@ -44,14 +44,25 @@ Weglänge, eine Einfallsrichtung im Kopfbezug und einen Frequenzgang:
   kommt nur gebeugt herein.
 - **Rest-Nachhall** – sehr kurz und leise; ohne ihn sitzt der Klang im Kopf.
 
+Die HRTF wird über ein Dreiecksnetz auf der Kugel interpoliert: Jede Richtung
+mischt die drei Messrichtungen des umgebenden Dreiecks baryzentrisch, Laufzeit
+und Klangfarbe getrennt. Die erste Fassung mischte die drei *nächsten*
+Messrichtungen nach Abstand; wechselte dabei eine davon, sprang die
+Laufzeitdifferenz um bis zu 65 µs (6–8°) – eine bewegte Möwe ruckelte. Die
+Spiegelung auf dem Wasser wird ausgeblendet, sobald ihr Spiegelpunkt unter dem
+Rumpf liegt, und die Gültigkeitsgrenzen aller Spiegelungen sind über 60 ms
+verschliffen.
+
 Die Laufzeit wird als gleitende Verzögerung gelesen, daraus ergibt sich der
-Doppler-Effekt. Nahe Quellen bekommen zusätzlich den Pegelunterschied zwischen
+Doppler-Effekt (bei 10–15 m/s rund ±0,5–0,75 Halbtöne, nachgemessen). Beim
+Überflug liegt ein langer Ruf genau über dem nächsten Punkt, damit die Tonhöhe
+innerhalb eines Rufs kippt. Nahe Quellen bekommen zusätzlich den Pegelunterschied zwischen
 den Ohren aus dem Abstand zu jedem Ohr. Bootsfeste Quellen (Knarzen, Wasser am
 Rumpf) stehen im Kopfbezug still, alles draußen wandert mit dem Schaukeln.
 
 ## Material
 
-Keine Synthese. Quellen:
+Keine Synthese, bis auf die Schlag-Hüllkurve des Fahrtwinds (siehe Grenzen). Quellen:
 
 - Wikimedia Commons, gemeinfrei, CC0 oder CC BY (Möwen).
 - [ESC-50](https://github.com/karolpiczak/ESC-50): Fünf-Sekunden-Ausschnitte aus
@@ -63,10 +74,13 @@ Die Seite listet genau die Aufnahmen, die in der gerenderten Fassung stecken.
 
 ## Grenzen
 
-- Die HRTF reicht nur bis −50° Elevation; tiefere Richtungen fallen auf den
-  Rand der Messung.
+- Die HRTF reicht nur bis −50° Elevation; darunter wird über große Dreiecke
+  zwischen den Rändern der Messung gemischt, das ist dort nur grob.
 - Fünf-Sekunden-Clips: Flächenklänge sind aus vielen kurzen Stücken genäht.
 - Möwen: rund 30 verschiedene Rufe aus fünf Aufnahmen, auf 5–10 kHz bandbegrenzt.
-  Flügelschläge fehlen, weil es dafür keine passende freie Aufnahme gab.
+- Flügelschläge: Es gab keine saubere freie Aufnahme. Der Fahrtwind beim
+  Überflug ist echtes Windrauschen (CC0), die Schlag-Hüllkurve (3 bis 6 Schläge
+  mit etwa 3 Hz, dann Gleiten) ist vorgegeben. Abschalten: `fluegel` aus der
+  Gruppe `ueberflug` in `szenen/boot.json` entfernen.
 - Geprüft ist messtechnisch (Pegel, Spektren, Links-rechts-Verlauf), nicht nach
   Gehör – das Urteil fällt am Kopfhörer.

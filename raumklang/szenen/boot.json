@@ -964,8 +964,30 @@
      ]
     }
    ],
-   "text": "Alle 20 bis 30 Sekunden schießt eine Möwe in 2 bis 4,5 m Höhe rufend über das Boot hinweg.",
-   "decke_db": -4.0
+   "text": "Alle 20 bis 30 Sekunden schießt eine Möwe in 2 bis 4,5 m Höhe über das Boot. Ein Ruf liegt genau über dem Boot, seine Tonhöhe kippt beim Vorbeiflug (Doppler). Dazu Fahrtwind mit einigen Flügelschlägen.",
+   "decke_db": -4.0,
+   "fluegel": [
+    {
+     "quelle": "esc_3-117504-A",
+     "stuecke": 4.8
+    },
+    {
+     "quelle": "esc_3-117504-B",
+     "stuecke": 4.8
+    },
+    {
+     "quelle": "esc_5-117773-A",
+     "stuecke": 4.8
+    },
+    {
+     "quelle": "esc_1-51035-A",
+     "stuecke": 4.8
+    }
+   ],
+   "fluegel_db": -18,
+   "haupt_min_s": 0.8,
+   "fluegel_dauer_s": 2.8,
+   "fluegel_vorlauf_s": 1.7
   }
  ]
 }
