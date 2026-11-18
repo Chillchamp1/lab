@@ -28,6 +28,17 @@ curl -o material/hrtf/subject_040.sofa https://sofacoustics.org/data/database/ci
 python3 pipeline/szene.py szenen/boot.json --proben
 ```
 
+Wo Wikimedia oder Freesound den Download sperren (Claude-Cloud-Umgebung), lädt der
+Workflow „Raumklang-Material holen“ (`.github/workflows/raumklang-material.yml`) die
+Dateien auf einem GitHub-Runner und legt sie auf den Zweig `raumklang-material`.
+Starten mit den gewünschten ids aus `quellen.json`, danach:
+
+```
+git fetch origin raumklang-material && git archive FETCH_HEAD | tar -x -C material/roh
+```
+
+Für Freesound braucht der Workflow das Repo-Secret `FREESOUND_API_KEY`.
+
 `material/` wird nicht eingecheckt. Andere HRTF: `--hrtf pfad/zur/datei.sofa`;
 andere Haltung: `--blick 90` (flach auf dem Rücken) bis `--blick 0` (aufrecht).
 
