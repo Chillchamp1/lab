@@ -11,7 +11,8 @@ from pathlib import Path
 
 WURZEL = Path(__file__).resolve().parent.parent
 ROH = WURZEL / 'material' / 'roh'
-KOPF = {'User-Agent': 'raumklang-pipeline/0.1 (audio research script)'}
+# Wikimedia verlangt eine Kontaktangabe im User-Agent, sonst gilt ein deutlich strengeres Limit.
+KOPF = {'User-Agent': 'raumklang-pipeline/0.2 (https://github.com/chillchamp1/lab; Audio-Forschungsskript)'}
 
 
 def hole(url, ziel, kopf=KOPF, versuche=4):
@@ -62,7 +63,11 @@ def main():
         elif q['herkunft'] == 'esc50':
             url = 'https://raw.githubusercontent.com/karolpiczak/ESC-50/master/audio/' + q['datei']
         else:
-            url = freesound_url(q['nummer'])
+            try:
+                url = freesound_url(q['nummer'])
+            except Exception as e:
+                print(q['lokal'], 'Freesound nicht erreichbar:', e, flush=True)
+                continue
         print(q['lokal'], '<-', url, flush=True)
         ok = hole(url, ziel)
         print('   ok' if ok else '   FEHLGESCHLAGEN', flush=True)

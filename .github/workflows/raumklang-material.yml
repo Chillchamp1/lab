@@ -1,0 +1,60 @@
+# Lädt die Aufnahmen aus raumklang/quellen.json auf einem GitHub-Runner herunter
+# (Wikimedia und Freesound sperren die Cloud-Umgebung der Claude-Sitzungen) und legt
+# sie auf dem Zweig "raumklang-material" ab. Die Pipeline holt sie dort per git.
+name: Raumklang-Material holen
+
+on:
+  workflow_dispatch:
+    inputs:
+      ids:
+        description: 'ids aus quellen.json, durch Leerzeichen getrennt (leer = alle fehlenden)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: raumklang-material
+  cancel-in-progress: false
+
+jobs:
+  holen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bisheriges Material vom Zweig holen
+        run: |
+          if git ls-remote --exit-code --heads origin raumklang-material >/dev/null; then
+            git fetch --depth 1 origin raumklang-material
+            git worktree add material-zweig FETCH_HEAD
+          else
+            git worktree add --detach material-zweig
+            git -C material-zweig checkout --orphan raumklang-material
+            git -C material-zweig rm -rfq .
+          fi
+          mkdir -p raumklang/material
+          ln -sfn "$PWD/material-zweig" raumklang/material/roh
+
+      - name: Erreichbarkeit prüfen
+        run: |
+          for u in "https://freesound.org/apiv2/" "https://upload.wikimedia.org/wikipedia/commons/a/a9/Example.jpg"; do
+            echo "$u -> $(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$u")"
+          done
+
+      - name: Herunterladen
+        env:
+          FREESOUND_API_KEY: ${{ secrets.FREESOUND_API_KEY }}
+        run: python3 raumklang/pipeline/material_holen.py ${{ inputs.ids }}
+
+      - name: Auf den Zweig schreiben
+        run: |
+          cd material-zweig
+          git add -A
+          if git diff --cached --quiet; then echo "nichts Neues"; exit 0; fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -qm "Material aktualisiert (Lauf ${{ github.run_id }})"
+          git push origin HEAD:raumklang-material
+          git log --stat -1 | tail -40
