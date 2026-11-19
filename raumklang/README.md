@@ -125,49 +125,27 @@ entzerrt, mit frühen Reflexionen und leisem Nachhall), danach je HRTF ein Kreis
 um den Kopf. Die HRIRs liegen in `hrtf-test/hrtf.json`. Das Ergebnis bleibt im
 Browser (Fortsetzen möglich) und lässt sich kopieren oder als Datei speichern.
 
-## Vergleich Stereo gegen Raumklang
+## Fassungen und Blindvergleich
 
-(Nicht mehr auf der Seite; die Werkzeuge bleiben.)
+Auf der Seite stehen nur noch die aktuellen Fassungen: Wald, Meer (**A**) und
+– nur im Blindvergleich – Meer mit mehr Weite (**D**, `szenen/boot_weite_d.json`).
+D ist A mit denselben Ereignissen plus ferner Möwenkolonie (150–450 m),
+Weitenhall und Luftflimmern nur für die Möwen (`gruppen` in `weite` und
+`flimmern`) und `windtragen`: die Böenkurve ändert Pegel und Klang der Möwen je
+nach Windseite (Luv lauter und heller, Lee leiser und dumpfer).
 
+`vergleich/` ist ein Blindvergleich: 10 Durchgänge an verteilten Stellen, je
+ein 20-s-Ausschnitt beider Fassungen, die synchron laufen; X/Y zufällig, aber
+ausgeglichen zugeordnet; Fragen nach Weite, Natürlichkeit, Entspannung
+(X / gleich / Y). Auswertung je Frage mit exaktem Binomialtest ohne die
+Gleich-Antworten. Ergebnis bleibt im Browser, kopieren oder als Datei
+speichern. Neue Vergleiche in `VERGLEICHE` eintragen (zwei gleich lange,
+deckungsgleich gerenderte Dateien; `--drehung` mit `start_abtastwerte` der
+ersten Fassung).
 
-`--stereo` rendert dieselbe Szene mit denselben Ereignissen in konventionellem
-Stereo: nur Links-rechts-Verteilung mit gleicher Leistung, Entfernung,
-Luftdämpfung und derselbe Nachhall – ohne HRTF, ohne Spiegelungen, ohne Beugung
-über die Bordkante, ohne Nahfeld. `--drehung` übernimmt den Startpunkt der
-räumlichen Fassung, damit beide deckungsgleich sind – und zwar als
-`start_abtastwerte` aus deren Bericht: die gerundeten Sekunden verschoben die
-Fassungen um 2,8 ms (bis 17.11.). `pipeline/wechsel.py`
-schneidet beide im Wechsel zusammen (14 Abschnitte à 14,3 s, 0,6 s gleichstarke
-Überblendung, auch über die Schleifennaht).
-
-## Mehr Weite (Vergleich A/B/C)
-
-Drei Fassungen der Meeresszene mit denselben Ereignissen (`szenen/boot.json`,
-`boot_weite_b.json`, `boot_weite_c.json`):
-
-- **B** – Raumanteil nach Entfernung: Quellen ab 25 m speisen zusätzlich einen
-  langen, dumpfen Weitenhall (Nachklingzeit 3 s tief, 0,8 s hoch); sein Anteil
-  nimmt mit der Entfernung nicht ab, der Direktschall schon – das Verhältnis
-  kippt mit der Entfernung zum Raum hin. Dazu Luftflimmern ab 30 m: langsame
-  Pegel- und Klangschwankung bis 3 dB, für beide Ohren teils verschieden (eigene
-  Zufallsquelle je Ereignis, damit die Ereignisfolge gleich bleibt).
-- **C** – B plus ferne Schicht: Brandung am Horizont in 400–1200 m, eine
-  Möwenkolonie in 150–450 m, bis 70 m hoch (hinten angehängt, damit die
-  übrigen Gruppen ihre Zufallsfolge behalten).
-
-Benjamins Urteil: in B und C ist zu viel los, die Brandung wird zu Rauschen, das
-anderes ertränkt; die ferne Kolonie und die Behandlung der Möwen sind gut.
-Daraus **D** (`boot_weite_d.json`, auf der Seite im Wechsel mit A): Weitenhall
-und Luftflimmern nur noch für die Möwengruppen (`gruppen` in `weite` und
-`flimmern`), keine Horizont-Brandung, ferne Kolonie bleibt. Neu `windtragen`:
-die gemeinsame Böenkurve ändert Pegel und Klang der Möwen je nach Windseite –
-in Luv lauter und heller, in Lee leiser und dumpfer (2,5 dB je Böenstärke in den
-Höhen, 35 % davon im Bass, ab 12 m, voll ab 60 m). B und C sind nicht mehr auf
-der Seite.
-
-Gemessen (mittlere Übereinstimmung linkes/rechtes Ohr in 200–800 / 800–3000 /
-3000–8000 Hz): Stereo 0,67 / 0,69 / 0,69, A 0,39 / 0,20 / 0,14, B 0,30 / 0,15 /
-0,11, C 0,29 / 0,13 / 0,11.
+Verworfen (17.11.): B (Weitenhall ab 25 m für alle fernen Quellen), C (B plus
+Brandung am Horizont) – „zu viel los, die Brandung wird zu Rauschen“; der
+Wechsel Stereo/räumlich (`--stereo` bleibt im Renderer).
 
 ## Endlosschleife
 
