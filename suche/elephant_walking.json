@@ -1,0 +1,76 @@
+[
+ {
+  "id": 390570,
+  "url": "https://freesound.org/people/jos1964/sounds/390570/",
+  "name": "pasostapete5.wav",
+  "tags": [
+   "rug",
+   "steps",
+   "walking"
+  ],
+  "description": "este audio hace parte del foley de \"the Elephant's dream\"",
+  "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+  "type": "wav",
+  "channels": 2,
+  "duration": 3.66156,
+  "samplerate": 44100.0,
+  "username": "jos1964",
+  "num_downloads": 490,
+  "avg_rating": 2.3333333333333335,
+  "num_ratings": 3
+ },
+ {
+  "id": 343363,
+  "url": "https://freesound.org/people/Kalou/sounds/343363/",
+  "name": "Elephant & Castle - Walking through underpass 2.wav",
+  "tags": [
+   "ambiance",
+   "ambience",
+   "ambient",
+   "atmosphere",
+   "background-sound",
+   "city",
+   "field-recording",
+   "general-noise",
+   "london",
+   "soundscape"
+  ],
+  "description": "Elephant & Castle - Walking through underpass 2",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "type": "wav",
+  "channels": 2,
+  "duration": 74.5687,
+  "samplerate": 44100.0,
+  "username": "Kalou",
+  "num_downloads": 36,
+  "avg_rating": 0.0,
+  "num_ratings": 0
+ },
+ {
+  "id": 343362,
+  "url": "https://freesound.org/people/Kalou/sounds/343362/",
+  "name": "Elephant & Castle - Walking through underpass.wav",
+  "tags": [
+   "ambiance",
+   "ambience",
+   "ambient",
+   "atmosphere",
+   "background-sound",
+   "city",
+   "field-recording",
+   "general-noise",
+   "london",
+   "soundscape"
+  ],
+  "description": "Elephant & Castle - Walking through underpass",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "type": "wav",
+  "channels": 2,
+  "duration": 52.6422,
+  "samplerate": 44100.0,
+  "username": "Kalou",
+  "num_downloads": 46,
+  "avg_rating": 0.0,
+  "num_ratings": 0
+ }
+]

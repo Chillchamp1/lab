@@ -1,0 +1,68 @@
+[
+ {
+  "id": 43607,
+  "url": "https://freesound.org/people/FreqMan/sounds/43607/",
+  "name": "sandbag.wav",
+  "tags": [
+   "crash",
+   "foley",
+   "sandbag",
+   "soundeffect",
+   "thud"
+  ],
+  "description": "Theatrical Sandbag dropped near microphone on concrete floor.   \nRecorded with AKG condenser microphone M-Audio Delta AP",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "type": "wav",
+  "channels": 1,
+  "duration": 1.74692,
+  "samplerate": 44100.0,
+  "username": "FreqMan",
+  "num_downloads": 1360,
+  "avg_rating": 4.27777777777778,
+  "num_ratings": 9
+ },
+ {
+  "id": 395025,
+  "url": "https://freesound.org/people/genel/sounds/395025/",
+  "name": "Body Hitting StageProcessed.wav",
+  "tags": [
+   "Body",
+   "Echo",
+   "Reverb",
+   "Sandbag",
+   "Stage",
+   "ZoomH2n"
+  ],
+  "description": "For \"Man of La Mancha\" I needed the sound of Don Quixote hitting the stage while off stage fighting windmills.  I dropped a sandbag a few times, and added the sounds together. You can hear the slight reverb from our walls. I wanted the slight echo effect of the stage, so that the audience thought he really fell.",
+  "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+  "type": "wav",
+  "channels": 2,
+  "duration": 2.37215,
+  "samplerate": 44100.0,
+  "username": "genel",
+  "num_downloads": 1453,
+  "avg_rating": 5.0,
+  "num_ratings": 6
+ },
+ {
+  "id": 623691,
+  "url": "https://freesound.org/people/launchsite/sounds/623691/",
+  "name": "sandbag pick up and drop.wav",
+  "tags": [
+   "crash",
+   "impact",
+   "sandbag",
+   "thud"
+  ],
+  "description": "Wav file\nMono\n48000Hz\n16Bit Rate",
+  "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+  "type": "wav",
+  "channels": 1,
+  "duration": 2.70131,
+  "samplerate": 48000.0,
+  "username": "launchsite",
+  "num_downloads": 151,
+  "avg_rating": 4.666666666666667,
+  "num_ratings": 3
+ }
+]
