@@ -97,9 +97,9 @@ periodisch, nicht räumlich gerendert).
 Zweite Runde nach Benjamins Urteil („die Saurier sind noch zu subtil“): Waldvögel
 (ESC-50-Waldaufnahmen, zerlegt, in den Bäumen ringsum), Regen auf großen
 Blättern direkt über dem Hörer (Aufnahmen von Regen auf Zeltplane und
-Kunststoffdach), ein Bach statt des Blubberns, schwerere Tritte (Klopfen an eine
-schwere Holztür auf 35 % verlangsamt – daraus wird ein tiefer Stampfer, 71 % der
-Energie unter 100 Hz), brechende Äste (Knarren, Krachen, herabfallendes Laub,
+Kunststoffdach), ein Bach statt des Blubberns, schwerere Tritte (damals Klopfen
+an eine schwere Holztür, verlangsamt – seit dem 19.11. ersetzt durch echte schwere
+Aufpralle auf Waldboden und Erde mit Wucht-Schicht, siehe unten), brechende Äste (Knarren, Krachen, herabfallendes Laub,
 Aufschlag). Dazu Rufe, bei denen man denken soll „so könnte ein Dinosaurier
 geklungen haben“:
 
@@ -192,15 +192,39 @@ flachem Rauschen statt Schlag werden verworfen.
 Eine gemeinsame Böenkurve (langsames Grundwehen plus einzelne Böen von 3 bis
 8 s, im Mittel alle 22 s) steuert den Wind und das Segel. Das Segel hängt
 schlaff am Mast vor den Knien; in einer Böe füllt es sich mit einem weichen
-Schlag, das Achterliek knattert, und das Tuch weht etwas zur Seite. Für Stoff
-gab es keine freie Aufnahme: Das Rauschen ist echter Wind (CC0), Füllen,
-Knattern und Knistern sind nachgebildet.
+Schlag, das Achterliek knattert, und das Tuch weht etwas zur Seite. Den Klang
+trägt echtes Stoffflattern (Freesound, CC0/CC BY: Baumwolle, Flaggen) – in der
+Flaute fast still, mit der Böe lauter. Die frühere Nachbildung aus Windrauschen
+(Füllen, Knattern, Knistern) liegt leise darunter (`nachbildung_pegel`).
+
+## Wucht
+
+Was mit viel Kraft passiert – ein Brecher, ein harter Schlag gegen den Rumpf,
+der Tritt eines Riesen, ein Gebrüll aus einem großen Brustkorb – bekommt eine
+tiefe Schicht (`wucht` in der Sammlung, `material.wucht`):
+
+- **Moden**: Eigenschwingungen, angeregt vom Ereignis selbst (Rumpf 68/97/142 Hz,
+  Waldboden 52/71/104 Hz, Brustkorb 62/88 Hz).
+- **Grollen**: tiefes Rauschen (35–150 Hz), das der Hüllkurve folgt – mitgerissene
+  Luft und Wasser beim Brecher.
+- **Obertöne**: weiche, unsymmetrische Sättigung der tiefen Schicht. Offene
+  Kopfhörer wie der Grado geben unter 50 Hz kaum etwas wieder (RS1: −10 dB bei
+  30 Hz); die Obertöne 2f und 3f kommen an, das Ohr ergänzt den Grundton.
+
+Die Schicht bleibt getrennt und wächst überproportional mit der Stärke des
+Ereignisses (`wucht_pegel · Stärke^wucht_exponent`, Exponent 2–3): leichte
+Schwapps bleiben schlank, harte Schläge wummern. Die frühere Bodenresonanz bei
+30/46/72 Hz lag größtenteils unterhalb dessen, was der Kopfhörer abstrahlt.
 
 ## Material
 
-Keine Synthese, bis auf die Schlag-Hüllkurve des Fahrtwinds (siehe Grenzen). Quellen:
+Echte Aufnahmen; synthetisch sind nur die Wucht-Schicht (siehe oben), die leise
+Segel-Nachbildung unter dem echten Stoff und die Musik im Wald. Quellen:
 
-- Wikimedia Commons, gemeinfrei, CC0 oder CC BY (Möwen).
+- Wikimedia Commons, gemeinfrei, CC0 oder CC BY.
+- Freesound, nur CC0 oder CC BY (über den Workflow, siehe oben): Stoff und
+  Flaggen, Flügelschläge, Möwen nah, Holzboot und Wasser, Brecher, schwere
+  Aufpralle, Matsch, Äste, Bäche.
 - [ESC-50](https://github.com/karolpiczak/ESC-50): Fünf-Sekunden-Ausschnitte aus
   Freesound-Aufnahmen. Der Datensatz als Ganzes ist CC BY-NC; hier werden nur
   Clips benutzt, deren Original laut `LICENSE` des Datensatzes CC0 oder CC BY
@@ -213,13 +237,8 @@ Die Seite listet genau die Aufnahmen, die in der gerenderten Fassung stecken.
 - Die HRTF reicht nur bis −50° Elevation; darunter wird über große Dreiecke
   zwischen den Rändern der Messung gemischt, das ist dort nur grob.
 - Fünf-Sekunden-Clips: Flächenklänge sind aus vielen kurzen Stücken genäht.
-- Möwen: rund 30 verschiedene Rufe aus fünf Aufnahmen, auf 5–10 kHz bandbegrenzt.
-- Segel: Notlösung (siehe oben), bis eine echte Aufnahme eines schlaffen Segels
-  oder einer Flagge im Wind da ist. Der Generator `segel` nimmt sie dann als
-  `sammlung`.
-- Flügelschläge: Es gab keine saubere freie Aufnahme. Der Fahrtwind beim
-  Überflug ist echtes Windrauschen (CC0), die Schlag-Hüllkurve (3 bis 6 Schläge
-  mit etwa 3 Hz, dann Gleiten) ist vorgegeben. Abschalten: `fluegel` aus der
-  Gruppe `ueberflug` in `szenen/boot.json` entfernen.
+- Möwen: acht Aufnahmen; einige ältere sind auf 5–10 kHz bandbegrenzt.
+- Flügelschläge sind echte Aufnahmen (`fluegel_echt`); der Fahrtwind darunter ist
+  echtes Windrauschen ohne eigene Schläge.
 - Geprüft ist messtechnisch (Pegel, Spektren, Links-rechts-Verlauf), nicht nach
   Gehör – das Urteil fällt am Kopfhörer.

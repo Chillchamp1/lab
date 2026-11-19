@@ -59,6 +59,7 @@
   Erst am Ende siehst du, was hinter X und Y steckte.</p>
 
   <section class="karte" id="start">
+    <p class="leise" id="auswahl"></p>
     <h2 id="v-titel"></h2>
     <p class="leise" id="v-text"></p>
     <ul class="leise">
@@ -89,7 +90,7 @@
     <p class="leise" id="t-hinweis">Hör dir beide an.</p>
     <div id="fragen"></div>
     <label class="feld" style="margin-top:8px">Notiz (optional)
-      <textarea id="notiz" placeholder="z. B. bei Y kommen die Möwen mehr von oben"></textarea></label>
+      <textarea id="notiz" placeholder="z. B. bei Y wummern die Tritte mehr, klingt aber künstlich"></textarea></label>
     <button class="haupt" id="b-weiter" disabled>Weiter</button>
   </section>
 
@@ -106,26 +107,33 @@
   </section>
 </main>
 <script>
-// Ein Vergleich: zwei Dateien gleicher Länge mit identischen Ereignissen, nur in einer Eigenschaft verschieden.
+// Ein Vergleich: zwei Dateien gleicher Länge auf derselben Zeitachse (gleicher Schleifenstart).
 // Neue Vergleiche hier eintragen; die Seite nimmt den ersten (oder ?v=<id>).
+const KRAFT = { id: 'kraft', text: 'Wo hat es mehr <b>Wucht</b> – spürst du die kräftigen Momente (Brecher, Schläge, Tritte) mehr im Körper?' };
+const NATUR = { id: 'natur', text: 'Welche klingt <b>natürlicher</b> – mehr wie wirklich draußen?' };
+const RUHE = { id: 'ruhe', text: 'Bei welcher würdest du dich lieber <b>hinlegen und entspannen</b>?' };
 const VERGLEICHE = [{
-  id: 'meer_a_d',
-  titel: 'Meer: bisher (A) gegen mehr Weite (D)',
-  text: 'Gleiche Szene, gleiche Ereignisse, gleich laut. Eine der beiden Fassungen hat eine ferne Möwenkolonie, mehr Raum und Luftflimmern bei fernen Möwen, und Böen tragen den Möwenklang.',
-  a: { name: 'A – bisher', datei: '../audio/boot.mp3' },
-  b: { name: 'D – mehr Weite', datei: '../audio/boot_weite_d.mp3' },
-  abtastwerte: 8820000, fs: 44100, durchgaenge: 10, ausschnitt_s: 20,
+  id: 'wald_neu',
+  titel: 'Wald: bisher gegen neu',
+  text: 'Gleich laut, gleiche Zeitachse. Neu: Tritte aus echten schweren Aufprallen auf Waldboden statt Türklopfen, der Boden schwingt bei jedem Tritt mit; Gebrüll mit Brustkorb-Resonanz; echte Äste, echter Bach, Regen auf Blättern.',
+  a: { name: 'bisher', datei: '../audio/vergleich/wald_bisher.mp3' },
+  b: { name: 'neu', datei: '../audio/wald.mp3' },
+  abtastwerte: 10584000, fs: 44100, durchgaenge: 10, ausschnitt_s: 20, fragen: [KRAFT, NATUR, RUHE],
+}, {
+  id: 'meer_neu',
+  titel: 'Meer: bisher gegen neu',
+  text: 'Gleich laut, gleiche Zeitachse. Neu: harte Brecher grollen tief, Schläge gegen den Rumpf bringen das Holz zum Schwingen; echtes Segeltuch, echte Flügelschläge, mehr Möwenstimmen.',
+  a: { name: 'bisher', datei: '../audio/vergleich/boot_bisher.mp3' },
+  b: { name: 'neu', datei: '../audio/boot.mp3' },
+  abtastwerte: 8820000, fs: 44100, durchgaenge: 10, ausschnitt_s: 20, fragen: [KRAFT, NATUR, RUHE],
 }];
-const FRAGEN = [
-  { id: 'weite', text: 'Welche wirkt <b>weiter</b> – mehr Raum, mehr Ferne um dich herum?' },
-  { id: 'natur', text: 'Welche klingt <b>natürlicher</b> – mehr wie wirklich draußen?' },
-  { id: 'ruhe', text: 'Bei welcher würdest du dich lieber <b>hinlegen und entspannen</b>?' },
-];
 
 const V = VERGLEICHE.find(v => v.id === new URLSearchParams(location.search).get('v')) || VERGLEICHE[0];
 const SCHLUESSEL = 'blindvergleich-v2-' + V.id;
+const FRAGEN = V.fragen;
 const $ = id => document.getElementById(id);
 $('v-titel').textContent = V.titel; $('v-text').textContent = V.text;
+$('auswahl').innerHTML = 'Vergleich: ' + VERGLEICHE.map(v => v === V ? `<b>${v.titel}</b>` : `<a href="?v=${v.id}">${v.titel}</a>`).join(' · ');
 
 let stand = laden() || neuerStand();
 function neuerStand() {
@@ -268,8 +276,8 @@ function auswerten() {
       if (w === 'gleich') g++; else if ((w === 'x') === d.xIstA) a++; else b++;
     }
     const p = binomP(Math.min(a, b), a + b);
-    const urteil = a + b === 0 ? 'kein Unterschied gehört' : p < 0.05 ? `klar ${a > b ? V.a.name.split(' ')[0] : V.b.name.split(' ')[0]}` :
-      p < 0.2 ? `Tendenz ${a > b ? V.a.name.split(' ')[0] : V.b.name.split(' ')[0]}` : 'kein klarer Unterschied';
+    const urteil = a + b === 0 ? 'kein Unterschied gehört' : p < 0.05 ? `klar ${a > b ? V.a.name : V.b.name}` :
+      p < 0.2 ? `Tendenz ${a > b ? V.a.name : V.b.name}` : 'kein klarer Unterschied';
     return { frage: f.id, text: f.text.replace(/<[^>]+>/g, ''), a, b, gleich: g, p: +p.toFixed(3), urteil };
   });
   return { vergleich: V.id, titel: V.titel, a: V.a.name, b: V.b.name, kopfhoerer: stand.kh, begonnen: stand.begonnen,

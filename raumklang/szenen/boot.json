@@ -196,6 +196,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -210,6 +221,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -224,6 +246,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -238,6 +271,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -252,6 +296,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -266,6 +321,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -280,6 +346,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -294,6 +371,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -308,6 +396,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -322,6 +421,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -336,6 +446,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -350,6 +471,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -364,6 +496,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -378,6 +521,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -392,6 +546,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -406,6 +571,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -420,6 +596,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -434,6 +621,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -448,6 +646,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -462,6 +671,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -476,6 +696,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -490,6 +721,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -504,6 +746,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -518,6 +771,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -532,6 +796,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -546,6 +821,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -560,6 +846,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -574,6 +871,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -588,6 +896,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -602,6 +921,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -616,6 +946,17 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     },
     {
@@ -630,10 +971,73 @@
      "abklingen": {
       "ein_ms": 300,
       "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "brecher_felsen",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "brecher_buhne",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
      }
     }
    ],
-   "text": "Einzelne Wellenkämme in 7 bis 32 m Entfernung, jeder an einer anderen Stelle; sie treiben mit dem Wind."
+   "text": "Einzelne Wellenkämme in 7 bis 32 m Entfernung, jeder an einer anderen Stelle; sie treiben mit dem Wind. Brechen sie mit viel Kraft, grollt es tief.",
+   "wucht_pegel": 0.15,
+   "wucht_exponent": 3.0
   },
   {
    "name": "rumpf",
@@ -661,7 +1065,35 @@
       "min_ausklang_s": 0.2,
       "glatt_ms": 20
      },
-     "max_flach": 0.5
+     "max_flach": 0.5,
+     "wucht": {
+      "moden": [
+       [
+        68,
+        0.22,
+        1.0
+       ],
+       [
+        97,
+        0.16,
+        0.7
+       ],
+       [
+        142,
+        0.1,
+        0.45
+       ]
+      ],
+      "grollen": {
+       "band": [
+        40,
+        140
+       ],
+       "anteil": 0.6,
+       "glatt_ms": 40
+      },
+      "obertoene": 0.35
+     }
     },
     {
      "quelle": "esc_1-39901-B",
@@ -677,7 +1109,35 @@
       "min_ausklang_s": 0.2,
       "glatt_ms": 20
      },
-     "max_flach": 0.5
+     "max_flach": 0.5,
+     "wucht": {
+      "moden": [
+       [
+        68,
+        0.22,
+        1.0
+       ],
+       [
+        97,
+        0.16,
+        0.7
+       ],
+       [
+        142,
+        0.1,
+        0.45
+       ]
+      ],
+      "grollen": {
+       "band": [
+        40,
+        140
+       ],
+       "anteil": 0.6,
+       "glatt_ms": 40
+      },
+      "obertoene": 0.35
+     }
     },
     {
      "quelle": "esc_2-91912-A",
@@ -693,7 +1153,35 @@
       "min_ausklang_s": 0.2,
       "glatt_ms": 20
      },
-     "max_flach": 0.5
+     "max_flach": 0.5,
+     "wucht": {
+      "moden": [
+       [
+        68,
+        0.22,
+        1.0
+       ],
+       [
+        97,
+        0.16,
+        0.7
+       ],
+       [
+        142,
+        0.1,
+        0.45
+       ]
+      ],
+      "grollen": {
+       "band": [
+        40,
+        140
+       ],
+       "anteil": 0.6,
+       "glatt_ms": 40
+      },
+      "obertoene": 0.35
+     }
     },
     {
      "quelle": "esc_2-91912-B",
@@ -709,7 +1197,35 @@
       "min_ausklang_s": 0.2,
       "glatt_ms": 20
      },
-     "max_flach": 0.5
+     "max_flach": 0.5,
+     "wucht": {
+      "moden": [
+       [
+        68,
+        0.22,
+        1.0
+       ],
+       [
+        97,
+        0.16,
+        0.7
+       ],
+       [
+        142,
+        0.1,
+        0.45
+       ]
+      ],
+      "grollen": {
+       "band": [
+        40,
+        140
+       ],
+       "anteil": 0.6,
+       "glatt_ms": 40
+      },
+      "obertoene": 0.35
+     }
     },
     {
      "quelle": "esc_2-125966-A",
@@ -725,10 +1241,266 @@
       "min_ausklang_s": 0.2,
       "glatt_ms": 20
      },
-     "max_flach": 0.5
+     "max_flach": 0.5,
+     "wucht": {
+      "moden": [
+       [
+        68,
+        0.22,
+        1.0
+       ],
+       [
+        97,
+        0.16,
+        0.7
+       ],
+       [
+        142,
+        0.1,
+        0.45
+       ]
+      ],
+      "grollen": {
+       "band": [
+        40,
+        140
+       ],
+       "anteil": 0.6,
+       "glatt_ms": 40
+      },
+      "obertoene": 0.35
+     }
+    },
+    {
+     "quelle": "boot_holz_wasser",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 40,
+      "prominenz_db": 6,
+      "min_dauer": 0.2,
+      "max_dauer": 1.5
+     },
+     "abklingen": {
+      "ein_ms": 10,
+      "min_ausklang_s": 0.2,
+      "glatt_ms": 20
+     },
+     "max_flach": 0.5,
+     "wucht": {
+      "moden": [
+       [
+        68,
+        0.22,
+        1.0
+       ],
+       [
+        97,
+        0.16,
+        0.7
+       ],
+       [
+        142,
+        0.1,
+        0.45
+       ]
+      ],
+      "grollen": {
+       "band": [
+        40,
+        140
+       ],
+       "anteil": 0.6,
+       "glatt_ms": 40
+      },
+      "obertoene": 0.35
+     },
+     "hochpass": 90
+    },
+    {
+     "quelle": "boot_holz_steg",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 40,
+      "prominenz_db": 6,
+      "min_dauer": 0.2,
+      "max_dauer": 1.5
+     },
+     "abklingen": {
+      "ein_ms": 10,
+      "min_ausklang_s": 0.2,
+      "glatt_ms": 20
+     },
+     "max_flach": 0.5,
+     "wucht": {
+      "moden": [
+       [
+        68,
+        0.22,
+        1.0
+       ],
+       [
+        97,
+        0.16,
+        0.7
+       ],
+       [
+        142,
+        0.1,
+        0.45
+       ]
+      ],
+      "grollen": {
+       "band": [
+        40,
+        140
+       ],
+       "anteil": 0.6,
+       "glatt_ms": 40
+      },
+      "obertoene": 0.35
+     },
+     "hochpass": 90
+    },
+    {
+     "quelle": "boot_steg1",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 40,
+      "prominenz_db": 6,
+      "min_dauer": 0.2,
+      "max_dauer": 1.5
+     },
+     "abklingen": {
+      "ein_ms": 10,
+      "min_ausklang_s": 0.2,
+      "glatt_ms": 20
+     },
+     "max_flach": 0.5,
+     "wucht": {
+      "moden": [
+       [
+        68,
+        0.22,
+        1.0
+       ],
+       [
+        97,
+        0.16,
+        0.7
+       ],
+       [
+        142,
+        0.1,
+        0.45
+       ]
+      ],
+      "grollen": {
+       "band": [
+        40,
+        140
+       ],
+       "anteil": 0.6,
+       "glatt_ms": 40
+      },
+      "obertoene": 0.35
+     },
+     "hochpass": 90
+    },
+    {
+     "quelle": "boot_steg2",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 40,
+      "prominenz_db": 6,
+      "min_dauer": 0.2,
+      "max_dauer": 1.5
+     },
+     "abklingen": {
+      "ein_ms": 10,
+      "min_ausklang_s": 0.2,
+      "glatt_ms": 20
+     },
+     "max_flach": 0.5,
+     "wucht": {
+      "moden": [
+       [
+        68,
+        0.22,
+        1.0
+       ],
+       [
+        97,
+        0.16,
+        0.7
+       ],
+       [
+        142,
+        0.1,
+        0.45
+       ]
+      ],
+      "grollen": {
+       "band": [
+        40,
+        140
+       ],
+       "anteil": 0.6,
+       "glatt_ms": 40
+      },
+      "obertoene": 0.35
+     },
+     "hochpass": 90
+    },
+    {
+     "quelle": "boot_steg3",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 40,
+      "prominenz_db": 6,
+      "min_dauer": 0.2,
+      "max_dauer": 1.5
+     },
+     "abklingen": {
+      "ein_ms": 10,
+      "min_ausklang_s": 0.2,
+      "glatt_ms": 20
+     },
+     "max_flach": 0.5,
+     "wucht": {
+      "moden": [
+       [
+        68,
+        0.22,
+        1.0
+       ],
+       [
+        97,
+        0.16,
+        0.7
+       ],
+       [
+        142,
+        0.1,
+        0.45
+       ]
+      ],
+      "grollen": {
+       "band": [
+        40,
+        140
+       ],
+       "anteil": 0.6,
+       "glatt_ms": 40
+      },
+      "obertoene": 0.35
+     },
+     "hochpass": 90
     }
    ],
-   "text": "Schwapps und Klatscher gegen die Planken – auf der Seite, die beim Rollen gerade eintaucht."
+   "text": "Schwapps und Klatscher gegen die Planken – auf der Seite, die beim Rollen gerade eintaucht. Harte Schläge bringen den Rumpf zum Schwingen: tiefe Eigenschwingungen des Holzes, die man im liegenden Körper spüren würde.",
+   "wucht_pegel": 0.4,
+   "wucht_exponent": 2.0,
+   "wucht_bezug": 0.75
   },
   {
    "name": "knarzen",
@@ -947,7 +1719,7 @@
    "ziel_lufs": -33,
    "pegel_art": "spitzen",
    "hall": 0.8,
-   "text": "Das Segel hängt schlaff am Mast vor den Knien. In einer Böe fängt sich der Wind: das Tuch füllt sich mit einem weichen Schlag, knattert am Rand und fällt wieder ein. Notlösung: Stoffrauschen aus echtem Wind, Füllen und Knattern nachgebildet.",
+   "text": "Das Segel hängt schlaff am Mast vor den Knien. In einer Böe fängt sich der Wind: echtes Stoffflattern schwillt an, das Tuch füllt sich mit einem weichen Schlag und fällt wieder ein.",
    "sammlung": [
     {
      "quelle": "esc_3-117504-A"
@@ -966,7 +1738,25 @@
    "knatter_ab": 1.0,
    "ruhe": -0.3,
    "probe_ab": 0,
-   "probe_dauer": 60
+   "probe_dauer": 60,
+   "stoff": [
+    {
+     "quelle": "segel_baumwolle",
+     "hochpass": 120
+    },
+    {
+     "quelle": "segel_flagge_blume",
+     "hochpass": 120
+    },
+    {
+     "quelle": "segel_stoff",
+     "hochpass": 120
+    },
+    {
+     "quelle": "segel_flagge_hopkins",
+     "hochpass": 120
+    }
+   ]
   },
   {
    "name": "moewen_fern",
@@ -1110,6 +1900,57 @@
       10,
       90
      ]
+    },
+    {
+     "quelle": "moewen_nah",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_hering",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_vurca",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
     }
    ],
    "text": "Sieben Möwen kreisen in 6 bis 26 m Höhe ums Boot, rufen und antworten einander.",
@@ -1222,9 +2063,60 @@
       10,
       90
      ]
+    },
+    {
+     "quelle": "moewen_nah",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_hering",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_vurca",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
     }
    ],
-   "text": "Alle 20 bis 30 Sekunden schießt eine Möwe in 2 bis 4,5 m Höhe über das Boot. Ein Ruf liegt genau über dem Boot, seine Tonhöhe kippt beim Vorbeiflug (Doppler). Dazu Fahrtwind mit einigen Flügelschlägen.",
+   "text": "Alle 20 bis 30 Sekunden schießt eine Möwe in 2 bis 4,5 m Höhe über das Boot. Ein Ruf liegt genau über dem Boot, seine Tonhöhe kippt beim Vorbeiflug (Doppler). Im Anflug echte Flügelschläge, darunter Fahrtwind.",
    "decke_db": -4.0,
    "fluegel": [
     {
@@ -1244,10 +2136,244 @@
      "stuecke": 4.8
     }
    ],
-   "fluegel_db": -18,
+   "fluegel_db": -10,
    "haupt_min_s": 0.8,
    "fluegel_dauer_s": 2.8,
-   "fluegel_vorlauf_s": 1.7
+   "fluegel_vorlauf_s": 1.7,
+   "fluegel_echt": [
+    {
+     "quelle": "fluegel_schlagen",
+     "hochpass": 250,
+     "entrauschen": 8,
+     "rest_db": -30,
+     "zerlegen": {
+      "schwelle_db": 9,
+      "luecke": 0.45,
+      "min_dauer": 0.5,
+      "max_dauer": 3.0,
+      "nachlauf": 0.1
+     },
+     "blende": [
+      10,
+      120
+     ]
+    },
+    {
+     "quelle": "fluegel_elster",
+     "hochpass": 250,
+     "entrauschen": 8,
+     "rest_db": -30,
+     "zerlegen": {
+      "schwelle_db": 9,
+      "luecke": 0.45,
+      "min_dauer": 0.5,
+      "max_dauer": 3.0,
+      "nachlauf": 0.1
+     },
+     "blende": [
+      10,
+      120
+     ]
+    },
+    {
+     "quelle": "fluegel_gross",
+     "hochpass": 250,
+     "entrauschen": 8,
+     "rest_db": -30,
+     "zerlegen": {
+      "schwelle_db": 9,
+      "luecke": 0.45,
+      "min_dauer": 0.5,
+      "max_dauer": 3.0,
+      "nachlauf": 0.1
+     },
+     "blende": [
+      10,
+      120
+     ]
+    },
+    {
+     "quelle": "fluegel_leicht",
+     "hochpass": 250,
+     "entrauschen": 8,
+     "rest_db": -30,
+     "zerlegen": {
+      "schwelle_db": 9,
+      "luecke": 0.45,
+      "min_dauer": 0.5,
+      "max_dauer": 3.0,
+      "nachlauf": 0.1
+     },
+     "blende": [
+      10,
+      120
+     ]
+    }
+   ]
+  },
+  {
+   "name": "moewen_weit",
+   "typ": "schwarm",
+   "titel": "Möwenkolonie weit weg",
+   "text": "Eine Möwenkolonie in 150 bis 450 Metern, manche hoch oben am Himmel.",
+   "ziel_lufs": -38,
+   "pegel_art": "spitzen",
+   "anzahl": 8,
+   "radius": [
+    150,
+    450
+   ],
+   "hoehe": [
+    15,
+    70
+   ],
+   "tempo": [
+    7,
+    12
+   ],
+   "mitte_streuung": 60,
+   "abstand_s": 5,
+   "antwort_wahrsch": 0.5,
+   "bezug_m": 15,
+   "hall": 0.4,
+   "sammlung": [
+    {
+     "quelle": "moewe_gull1",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_gull2",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_silber_xc707075",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_lyme",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_atricilla",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewen_nah",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_hering",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_vurca",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    }
+   ]
   }
  ],
  "boeen": {
@@ -1258,5 +2384,49 @@
    8
   ]
  },
- "text": "Du liegst im Ruderboot, Füße zum Bug. Möwen kreisen und schießen dicht über dich hinweg, ringsum Wellen, Wasser schwappt gegen das Holz, das Boot knarzt, im schlaffen Segel fängt sich ab und zu der Wind."
+ "text": "Du liegst im Ruderboot, Füße zum Bug. Möwen kreisen und schießen dicht über dich hinweg, ringsum Wellen, Wasser schwappt gegen das Holz, das Boot knarzt, im schlaffen Segel fängt sich ab und zu der Wind.",
+ "weite": {
+  "ab_m": 25,
+  "voll_m": 150,
+  "exponent": 0.7,
+  "bezug_m": 30,
+  "pegel_db": -12,
+  "nachhall": {
+   "t60_tief": 3.0,
+   "t60_hoch": 0.8,
+   "dauer": 4.5,
+   "verzug": 0.08
+  },
+  "gruppen": [
+   "moewen",
+   "moewen_weit",
+   "moewen_fern",
+   "ueberflug"
+  ]
+ },
+ "flimmern": {
+  "ab_m": 30,
+  "voll_m": 200,
+  "db": 3.0,
+  "hz": 0.6,
+  "korrelation": 0.5,
+  "gruppen": [
+   "moewen",
+   "moewen_weit",
+   "moewen_fern",
+   "ueberflug"
+  ]
+ },
+ "windtragen": {
+  "ab_m": 12,
+  "voll_m": 60,
+  "db": 2.5,
+  "wind_von_grad": 20,
+  "gruppen": [
+   "moewen",
+   "moewen_weit",
+   "moewen_fern",
+   "ueberflug"
+  ]
+ }
 }
