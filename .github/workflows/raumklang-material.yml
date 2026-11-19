@@ -10,6 +10,10 @@ on:
         description: 'ids aus quellen.json, durch Leerzeichen getrennt (leer = alle fehlenden)'
         required: false
         default: ''
+      suche:
+        description: 'Freesound-Suchbegriffe, durch Semikolon getrennt (Treffer nach suche/)'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -44,10 +48,19 @@ jobs:
             echo "$u -> $(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$u")"
           done
 
-      - name: Herunterladen
+      - name: Freesound durchsuchen
+        if: ${{ inputs.suche != '' }}
         env:
           FREESOUND_API_KEY: ${{ secrets.FREESOUND_API_KEY }}
-        run: python3 raumklang/pipeline/material_holen.py ${{ inputs.ids }}
+          SUCHE: ${{ inputs.suche }}
+        run: python3 raumklang/pipeline/freesound_suche.py "$SUCHE"
+
+      - name: Herunterladen
+        if: ${{ inputs.ids != '' || inputs.suche == '' }}
+        env:
+          FREESOUND_API_KEY: ${{ secrets.FREESOUND_API_KEY }}
+          IDS: ${{ inputs.ids }}
+        run: python3 raumklang/pipeline/material_holen.py $IDS
 
       - name: Auf den Zweig schreiben
         run: |
