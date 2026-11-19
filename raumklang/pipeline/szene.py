@@ -343,8 +343,12 @@ def gen_ereignisse(kx, g, spur, bus):
         az = rng.uniform(0, 2 * np.pi)
         hz = g.get('hoehe', 0.15)
         p0 = np.array([r * np.cos(az), r * np.sin(az), rng.uniform(*hz) if isinstance(hz, list) else hz])
+        if g.get('punkt'):            # feste Stelle in der Welt (z. B. ein Felsen), Brecher streuen entlang
+            p0 = np.array(g['punkt'], float) + np.r_[rng.normal(0, g.get('punkt_streuung_m', 3.0), 2), 0]
         ziel = np.array([np.cos(wind), np.sin(wind), 0]) * v
         staerke = 10 ** (rng.normal(0, g.get('streuung_db', 3.0)) / 20)
+        if rng.random() < g.get('ausreisser_wahrsch', 0.0):     # ab und zu eine deutlich stärkere
+            staerke *= 10 ** (rng.uniform(*g.get('ausreisser_db', [4, 8])) / 20)
 
         def ort(tt, p0=p0, t0=t, ziel=ziel):
             return p0[None, :] + (tt - t0)[:, None] * ziel[None, :]

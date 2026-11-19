@@ -172,7 +172,7 @@
    "name": "wellen",
    "typ": "ereignisse",
    "titel": "Wellenkämme ringsum",
-   "ziel_lufs": -29,
+   "ziel_lufs": -27,
    "pegel_art": "spitzen",
    "abstand_s": 2.2,
    "entfernung": [
@@ -983,61 +983,17 @@
       },
       "obertoene": 0.3
      }
-    },
-    {
-     "quelle": "brecher_felsen",
-     "zerlegen": {
-      "methode": "taeler",
-      "glatt_ms": 150,
-      "prominenz_db": 5,
-      "min_dauer": 1.0,
-      "max_dauer": 8
-     },
-     "abklingen": {
-      "ein_ms": 300,
-      "min_ausklang_s": 0.9
-     },
-     "wucht": {
-      "grollen": {
-       "band": [
-        35,
-        130
-       ],
-       "anteil": 1.2,
-       "glatt_ms": 120
-      },
-      "obertoene": 0.3
-     }
-    },
-    {
-     "quelle": "brecher_buhne",
-     "zerlegen": {
-      "methode": "taeler",
-      "glatt_ms": 150,
-      "prominenz_db": 5,
-      "min_dauer": 1.0,
-      "max_dauer": 8
-     },
-     "abklingen": {
-      "ein_ms": 300,
-      "min_ausklang_s": 0.9
-     },
-     "wucht": {
-      "grollen": {
-       "band": [
-        35,
-        130
-       ],
-       "anteil": 1.2,
-       "glatt_ms": 120
-      },
-      "obertoene": 0.3
-     }
     }
    ],
    "text": "Einzelne Wellenkämme in 7 bis 32 m Entfernung, jeder an einer anderen Stelle; sie treiben mit dem Wind. Brechen sie mit viel Kraft, grollt es tief.",
    "wucht_pegel": 0.15,
-   "wucht_exponent": 3.0
+   "wucht_exponent": 2.0,
+   "ausreisser_wahrsch": 0.08,
+   "ausreisser_db": [
+    4,
+    8
+   ],
+   "wucht_max": 0.8
   },
   {
    "name": "rumpf",
@@ -2372,6 +2328,109 @@
       10,
       90
      ]
+    }
+   ]
+  },
+  {
+   "name": "felsen",
+   "typ": "ereignisse",
+   "titel": "Brecher am Felsen",
+   "text": "Ein Felsen ragt rund 35 m entfernt aus dem Wasser. Ab und zu bricht dort eine Welle mit Wucht – das Boot dreht sich langsam, so wandert der Felsen um dich herum.",
+   "ziel_lufs": -27,
+   "pegel_art": "spitzen",
+   "abstand_s": 22,
+   "punkt": [
+    -28.0,
+    22.0,
+    0.5
+   ],
+   "punkt_streuung_m": 2.5,
+   "treibt_m_s": 0,
+   "streuung_db": 3,
+   "ausreisser_wahrsch": 0.15,
+   "ausreisser_db": [
+    3,
+    6
+   ],
+   "bezug_m": 30,
+   "hall": 0.6,
+   "decke_db": -4.0,
+   "wucht_pegel": 0.35,
+   "wucht_exponent": 2.5,
+   "sammlung": [
+    {
+     "quelle": "brecher_felsen",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "moden": [
+       [
+        48,
+        0.6,
+        0.5
+       ],
+       [
+        70,
+        0.4,
+        0.35
+       ]
+      ],
+      "obertoene": 0.35
+     }
+    },
+    {
+     "quelle": "brecher_buhne",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "moden": [
+       [
+        48,
+        0.6,
+        0.5
+       ],
+       [
+        70,
+        0.4,
+        0.35
+       ]
+      ],
+      "obertoene": 0.35
+     }
     }
    ]
   }
