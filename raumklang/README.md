@@ -117,6 +117,27 @@ geklungen haben“:
   Rufen mit geschlossenem Maul, wie es Strauße, Emus und Krokodile können und
   wie es für viele Dinosaurier vermutet wird (Riede u. a. 2016).
 
+## Die Glaskuppel am Meeresgrund
+
+`szenen/kuppel.json`, Umgebung `pipeline/kuppel.py`: Der Hörer liegt in einer
+luftgefüllten Acrylkuppel (Radius 2,5 m) auf dem Sand, 12 m unter der
+Oberfläche, Blick 55° nach oben ins Wasser.
+
+- **Wasserschall:** Laufzeit mit 1500 m/s (Doppler 4,4-mal kleiner als in
+  Luft); der Kern rechnet mit Luftschall, deshalb wird der Weg für die Laufzeit
+  gestaucht und die Pegelabnahme auf die wahre Entfernung zurückgerechnet.
+  Keine Luftdämpfung – ferne Wale bleiben klar.
+- **Kuppel:** Acryl lässt Tiefen durch und dämpft ab 1,5 kHz bis −14 dB;
+  innen frühe Spiegelungen an Boden und gegenüberliegender Wand, kurzer heller
+  Nachhall. Außen ein Echo der Wasseroberfläche (tiefe Frequenzen löschen sich
+  dort aus) und ein langer Weitenhall für ferne Quellen.
+- **Komposition** (Leitfaden Abschnitt 0): Riff als konstanter Grund, Delfine
+  als Charaktere mit Varianz, zwei Delfine dicht über der Kuppel, Buckelwale in
+  der Ferne – und genau einmal pro Durchlauf gleitet ein Wal langsam über dich
+  hinweg (mit tiefer Wucht-Schicht). Die Höhepunkte liegen zeitlich getrennt.
+- Material: Freesound, CC0/CC BY (Buckelwale über Hydrophon, Delfine aus
+  Karibik, La Gomera und Amazonas, Riff, Blasen).
+
 ## HRTF-Auswahltest
 
 `hrtf-test/` ist der Hörtest, mit dem die HRTF ausgewählt wurde: 48 Rauschstöße
