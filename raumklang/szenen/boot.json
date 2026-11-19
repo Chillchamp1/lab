@@ -1248,6 +1248,119 @@
    "haupt_min_s": 0.8,
    "fluegel_dauer_s": 2.8,
    "fluegel_vorlauf_s": 1.7
+  },
+  {
+   "name": "moewen_weit",
+   "typ": "schwarm",
+   "titel": "Möwenkolonie weit weg",
+   "text": "Eine Möwenkolonie in 150 bis 450 Metern, manche hoch oben am Himmel.",
+   "ziel_lufs": -38,
+   "pegel_art": "spitzen",
+   "anzahl": 8,
+   "radius": [
+    150,
+    450
+   ],
+   "hoehe": [
+    15,
+    70
+   ],
+   "tempo": [
+    7,
+    12
+   ],
+   "mitte_streuung": 60,
+   "abstand_s": 5,
+   "antwort_wahrsch": 0.5,
+   "bezug_m": 15,
+   "hall": 0.4,
+   "sammlung": [
+    {
+     "quelle": "moewe_gull1",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_gull2",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_silber_xc707075",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_lyme",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_atricilla",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    }
+   ]
   }
  ],
  "boeen": {
@@ -1258,5 +1371,49 @@
    8
   ]
  },
- "text": "Du liegst im Ruderboot, Füße zum Bug. Möwen kreisen und schießen dicht über dich hinweg, ringsum Wellen, Wasser schwappt gegen das Holz, das Boot knarzt, im schlaffen Segel fängt sich ab und zu der Wind."
+ "text": "Du liegst im Ruderboot, Füße zum Bug. Möwen kreisen und schießen dicht über dich hinweg, ringsum Wellen, Wasser schwappt gegen das Holz, das Boot knarzt, im schlaffen Segel fängt sich ab und zu der Wind.",
+ "weite": {
+  "ab_m": 25,
+  "voll_m": 150,
+  "exponent": 0.7,
+  "bezug_m": 30,
+  "pegel_db": -12,
+  "nachhall": {
+   "t60_tief": 3.0,
+   "t60_hoch": 0.8,
+   "dauer": 4.5,
+   "verzug": 0.08
+  },
+  "gruppen": [
+   "moewen",
+   "moewen_weit",
+   "moewen_fern",
+   "ueberflug"
+  ]
+ },
+ "flimmern": {
+  "ab_m": 30,
+  "voll_m": 200,
+  "db": 3.0,
+  "hz": 0.6,
+  "korrelation": 0.5,
+  "gruppen": [
+   "moewen",
+   "moewen_weit",
+   "moewen_fern",
+   "ueberflug"
+  ]
+ },
+ "windtragen": {
+  "ab_m": 12,
+  "voll_m": 60,
+  "db": 2.5,
+  "wind_von_grad": 20,
+  "gruppen": [
+   "moewen",
+   "moewen_weit",
+   "moewen_fern",
+   "ueberflug"
+  ]
+ }
 }
