@@ -1,0 +1,23 @@
+[
+ {
+  "id": 797762,
+  "url": "https://freesound.org/people/raiden04/sounds/797762/",
+  "name": "humpback_whales_and_orcas_ambient_underwater_recording",
+  "tags": [
+   "humpback",
+   "hydrophone",
+   "orca",
+   "underwater"
+  ],
+  "description": "Some background in how the recordings are rendered if you are interested in this:\n\n<a href=\"https://www.researchgate.net/publication/384687411_3D_Audio_Recording_of_Complex_Underwater_Sound_Fields\" rel=\"nofollow\">https://www.researchgate.net/publication/384687411_3D_Audio_Recording_of_Complex_Underwater_Sound_Fields</a>\n\nSpatial audio recording for headphone playback of songs and calls of Humpback whales and Orcas\nRecordings based on data publication by Rychen et al. (2023): <a href=\"http://zenodo.org/record/7657352\" rel=\"nofollow\">zenodo.org/record/7657352</a>\n© ETH Zürich 2023, CC BY 4.0",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "type": "wav",
+  "channels": 2,
+  "duration": 414.525,
+  "samplerate": 48000.0,
+  "username": "raiden04",
+  "num_downloads": 661,
+  "avg_rating": 5.0,
+  "num_ratings": 42
+ }
+]

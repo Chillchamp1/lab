@@ -1,0 +1,67 @@
+[
+ {
+  "id": 727605,
+  "url": "https://freesound.org/people/nathanwolek/sounds/727605/",
+  "name": "ANMLAqua-dolphin-eldora-20240224",
+  "tags": [
+   "dolphin",
+   "hydrophone",
+   "snapping-shrimp",
+   "underwater"
+  ],
+  "description": "The sound of dolphin using echolocation as it chases a fish. At 35 seconds, the dolphin lets out a whistle. Snapping shrimp can be heard in the background throughout.\n\nRecorded at Canaveral National Seashore by Nathan Wolek &amp; Julian Rocha.\nCaptured with Zoom F6 recorder and Ambient hydrophones.",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "type": "wav",
+  "channels": 2,
+  "duration": 51.0,
+  "samplerate": 48000.0,
+  "username": "nathanwolek",
+  "num_downloads": 240,
+  "avg_rating": 4.916666666666667,
+  "num_ratings": 12
+ },
+ {
+  "id": 437947,
+  "url": "https://freesound.org/people/craigsmith/sounds/437947/",
+  "name": "G12-15-Dolphins Underwater.wav",
+  "tags": [
+   "Animals",
+   "Marine",
+   "Optical",
+   "Vintage"
+  ],
+  "description": "Sounds produced by a marine animal underwater. Dolphins whistling, whining, squealing. Burst-pulsed sounds.",
+  "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+  "type": "wav",
+  "channels": 1,
+  "duration": 24.8482,
+  "samplerate": 48000.0,
+  "username": "craigsmith",
+  "num_downloads": 414,
+  "avg_rating": 4.6,
+  "num_ratings": 10
+ },
+ {
+  "id": 856979,
+  "url": "https://freesound.org/people/life_is/sounds/856979/",
+  "name": "[life_is] 116BPM Reason Rack guitar jam (acoustic)",
+  "tags": [
+   "acoustic",
+   "delay",
+   "distortion",
+   "feedback",
+   "looping",
+   "reasonrack"
+  ],
+  "description": "-recorded 31st MARCH 2025\n-using Reason Rack as a plugin in FL Studio\n-acoustic guitar &gt; SM57(?) &gt; Tascam M-106 &gt; Focusrite Scarlett 2i2 Gen4 \n-some whistling and talking at the end adding ambiance and sonar that made me think back to playing Ecco the Dolphin for the SEGA\n-was probably just testing signal flow and saturation textures achievable through the scream module\n- brisbane, australia home studio",
+  "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+  "type": "wav",
+  "channels": 2,
+  "duration": 203.287,
+  "samplerate": 48000.0,
+  "username": "life_is",
+  "num_downloads": 42,
+  "avg_rating": 5.0,
+  "num_ratings": 3
+ }
+]
