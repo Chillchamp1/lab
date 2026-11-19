@@ -108,7 +108,7 @@ class Bibliothek:
         """Liste von dicts {sig, quelle, dauer, ...}; jedes Ereignis auf gleichen Spitzen-Kurzzeitpegel gebracht."""
         aus = []
         for spez in sammlung:
-            x = self.aufnahme({k: v for k, v in spez.items() if k not in ('zerlegen', 'stuecke', 'blende', 'abklingen', 'max_flach', 'resonanz')})
+            x = self.aufnahme({k: v for k, v in spez.items() if k not in ('zerlegen', 'stuecke', 'blende', 'abklingen', 'max_flach', 'resonanz', 'wucht')})
             if 'stuecke' in spez:  # ganze Aufnahme in gleich lange Stücke teilen
                 L = int(spez['stuecke'] * FS)
                 stuecke = [(a, min(a + L, len(x))) for a in range(0, len(x) - L // 2, L)]
@@ -131,11 +131,20 @@ class Bibliothek:
                 if spez.get('resonanz'):          # nach dem Schneiden: der Nachklang darf über das Ereignis hinaus
                     t60 = max(m[1] for m in spez['resonanz'])
                     y = mat.resonanz(np.r_[y, np.zeros(int(1.2 * t60 * FS))], spez['resonanz'])
+                tief = None
+                if spez.get('wucht'):             # tiefe Schicht für kraftvolle Ereignisse, getrennt gehalten
+                    wz = spez['wucht']
+                    nach = max([m[1] for m in wz.get('moden', [])] + [0.3])
+                    y = np.r_[y, np.zeros(int(1.0 * nach * FS))]
+                    tief = mat.wucht(y, wz.get('moden', []), wz.get('grollen'), wz.get('obertoene', 0.0), saat=len(aus))
                 k = mat.kennwerte(y)
                 # Pegel am lautesten 50-ms-Fenster ausrichten
                 h = mat.huelle_db(y, 50).max()
-                y = y * 10 ** ((-20 - h) / 20)
-                aus.append(dict(sig=y.astype(np.float32), quelle=spez['quelle'], **k))
+                fak = 10 ** ((-20 - h) / 20)
+                e = dict(sig=(y * fak).astype(np.float32), quelle=spez['quelle'], **k)
+                if tief is not None:
+                    e['tief'] = (tief * fak).astype(np.float32)
+                aus.append(e)
         return aus
 
 
@@ -337,7 +346,7 @@ def gen_ereignisse(kx, g, spur, bus):
             return p0[None, :] + (tt - t0)[:, None] * ziel[None, :]
 
         # Bezugsentfernung: ein Kamm in 12 m hat den Nennpegel
-        rendere_quelle(kx, spur, bus, e['sig'], t, ort, True, g.get('bezug_m', 12.0) * staerke, g.get('hall', 0.0))
+        rendere_quelle(kx, spur, bus, kraft(e, staerke, g), t, ort, True, g.get('bezug_m', 12.0) * staerke, g.get('hall', 0.0))
         t += rng.exponential(g.get('abstand_s', 2.5))
 
 
@@ -419,6 +428,7 @@ def gen_ueberflug(kx, g, spur, bus):
     rng = kx.rng
     ev = [e for e in kx.bib.ereignisse(g['sammlung']) if e['dauer'] >= g.get('min_dauer', 0.5)]
     fluegel = kx.bib.ereignisse(g['fluegel']) if g.get('fluegel') else None
+    echt = kx.bib.ereignisse(g['fluegel_echt']) if g.get('fluegel_echt') else None
     t = rng.uniform(*g.get('erster_s', [8, 14]))
     liste = []
     erster = t
@@ -453,7 +463,14 @@ def gen_ueberflug(kx, g, spur, bus):
             rufe.append((t_haupt + haupt['dauer'] + rng.uniform(0.2, 0.7), e))
         for ts, e in rufe:
             rendere_quelle(kx, spur, bus, e['sig'], ts, ort, True, g.get('bezug_m', 5.0), g.get('hall', 0.0))
-        if fluegel:
+        if echt:
+            # echte Flügelschläge: eine Schlagfolge im Anflug, endet kurz vor dem nächsten Punkt (dort gleitet sie)
+            e = echt[int(rng.integers(len(echt)))]
+            sig = _variante(rng, e['sig'], 1.0) * 10 ** (g.get('fluegel_db', -12) / 20)
+            rendere_quelle(kx, spur, bus, sig, t - e['dauer'] - rng.uniform(0.1, 0.5), ort, True, g.get('bezug_m', 5.0), g.get('hall', 0.0))
+            if fluegel:          # Fahrtwind ohne eigene Schläge darunter
+                gen_fluegel(kx, dict(g, fluegel_schlaege=[0, 1]), spur, bus, fluegel, ort, t, v, rng)
+        elif fluegel:
             gen_fluegel(kx, g, spur, bus, fluegel, ort, t, v, rng)
         liste.append(round(float(t), 1))
         t += rng.uniform(*g.get('abstand_s', [18, 32]))
@@ -513,14 +530,15 @@ def gen_rumpf(kx, g, spur, bus):
         t += rng.exponential(g.get('schwapp_abstand_s', 1.8))
     for t, seite, staerke, wahl in zeiten:
         e = wahl[int(rng.integers(len(wahl)))]
+        sig = kraft(e, staerke / g.get('wucht_bezug', 0.75), g)
         pa = _rumpfpunkt(kx.boot, rng, seite, True)
         pi = pa.copy()
         pi[1] -= seite * 0.09
         pi[2] = 0.12
         staerke *= np.sqrt(np.linalg.norm(pi - kx.boot.kopf))  # Nähe zählt, aber nur halb so stark wie 1/r
-        rendere_quelle(kx, spur, bus, e['sig'], t, lambda tt, pa=pa: np.tile(pa, (len(tt), 1)), False,
+        rendere_quelle(kx, spur, bus, sig, t, lambda tt, pa=pa: np.tile(pa, (len(tt), 1)), False,
                        staerke, g.get('hall', 0.0))
-        dumpf = mat.filt(e['sig'].astype(np.float64), g.get('planke_tiefpass', 450), 'lowpass', 2).astype(np.float32)
+        dumpf = mat.filt(sig.astype(np.float64), g.get('planke_tiefpass', 450), 'lowpass', 2).astype(np.float32)
         rendere_quelle(kx, spur, bus, dumpf, t, lambda tt, pi=pi: np.tile(pi, (len(tt), 1)), False,
                        staerke * g.get('planke_pegel', 0.8), g.get('hall', 0.0))
     return dict(ereignisse=len(zeiten))
@@ -563,9 +581,9 @@ def gen_segel(kx, g, spur, bus):
     fängt sich (ein weicher Schlag, wenn das Tuch sich füllt), dann knattert das Achterliek
     unregelmäßig, bis die Böe nachlässt und das Tuch wieder einfällt.
 
-    Notlösung, solange keine echte Segelaufnahme da ist: das Stoffrauschen ist echtes
-    Windrauschen aus `sammlung`, die Struktur (Füllen, Knattern, Einfallen) ist nachgebildet.
-    Alles hängt an der gemeinsamen Böenkurve der Szene."""
+    Mit `stoff` (echte Aufnahmen flatternden Stoffs) trägt die Aufnahme den Klang, die Nachbildung
+    aus Windrauschen (`sammlung`: Füllen, Knattern, Einfallen) liegt leise darunter. Alles hängt
+    an der gemeinsamen Böenkurve der Szene."""
     rng = kx.rng
     D = kx.dauer
     n = int(round(D * FS))
@@ -622,6 +640,14 @@ def gen_segel(kx, g, spur, bus):
         fuellen[idx] += st * (2.5 * tief[idx] + 0.8 * roh[idx]) * hk
 
     sig = (rascheln + g.get('knatter_pegel', 1.0) * knattern + g.get('fang_pegel', 1.0) * fuellen) * 0.01
+    if g.get('stoff'):
+        # echte Aufnahmen von flatterndem Stoff: in der Flaute fast still (das Tuch hängt), mit der
+        # Böe lauter; das nachgebildete Knattern tritt dann zurück
+        stoff = kx.bib.flickwerk(g['stoff'], n, rng, ueberblend=0.8)
+        stoff = mat.filt(stoff, g.get('stoff_hochpass', 120), 'highpass', 2)
+        stoff /= np.sqrt((stoff ** 2).mean()) + 1e-12
+        an = g.get('stoff_ruhe', 0.04) + np.clip(wind / 1.5, 0, 1.5) ** 1.5
+        sig = sig * g.get('nachbildung_pegel', 0.4) + 0.01 * g.get('stoff_pegel', 1.0) * stoff * huelle_glatt(an, 200)
     # über drei Stellen des Tuchs verteilen (Vorliek oben, Mitte, Achterliek), leicht verschieden
     stellen = [np.array(p, float) for p in g.get('stellen', [[1.0, 0.0, 2.2], [1.35, 0.05, 1.3], [1.7, 0.1, 0.9]])]
     anteile = g.get('anteile', [0.6, 1.0, 0.8])
@@ -637,6 +663,16 @@ def gen_segel(kx, g, spur, bus):
 
         rendere_kreis(kx, spur, bus, s_i.astype(np.float32), ort, False, 1.0, g.get('hall', 0.0))
     return dict(faenge=int(len(starts)))
+
+
+def kraft(e, staerke=1.0, g=None):
+    """Ereignis samt tiefer Schicht: die Schicht wächst überproportional mit der Stärke
+    (Exponent wucht_exponent, Standard 2) – leichte Schwapps bleiben schlank, harte Schläge wummern."""
+    g = g or {}
+    if 'tief' not in e:
+        return e['sig']
+    w = g.get('wucht_pegel', 1.0) * max(staerke, 0.0) ** g.get('wucht_exponent', 2.0)
+    return (e['sig'] + min(w, g.get('wucht_max', 4.0)) * e['tief']).astype(np.float32)
 
 
 def _sammlung(kx, g, schluessel):
@@ -679,7 +715,7 @@ def _gang(kx, g, spur, bus, rng, bahn, t_a, t_b, sets, staerke=1.0, nah=False):
             rendere_quelle(kx, spur, bus, _variante(rng, e['sig'], 0.8), t, _fest(fuss), True, b * st, g.get('hall', 0.0))
         if sets['stampfen']:                              # der schwere, tiefe Teil des Tritts
             e = _wahl(rng, sets['stampfen'])
-            rendere_quelle(kx, spur, bus, _variante(rng, e['sig'], 1.5), t, _fest(fuss), True, b * st * g.get('stampf_pegel', 1.5), g.get('hall', 0.0))
+            rendere_quelle(kx, spur, bus, _variante(rng, kraft(e, st, g), 1.5), t, _fest(fuss), True, b * st * g.get('stampf_pegel', 1.5), g.get('hall', 0.0))
         if sets['ast'] and rng.random() < g.get('ast_wahrsch', 0.0):
             _ast_bruch(kx, g, spur, bus, rng, t + rng.uniform(0.1, 0.4), p, sets, b)
         if sets['matsch'] and rng.random() < g.get('matsch_wahrsch', 0.45):
@@ -730,7 +766,7 @@ def _ast_bruch(kx, g, spur, bus, rng, t, ort_koerper, sets, b):
         rendere_quelle(kx, spur, bus, _variante(rng, e['sig']), tt, herab, True, b * g.get('laub_fall_pegel', 0.4), g.get('hall', 0.0))
     if sets['stampfen']:
         e = _wahl(rng, sets['stampfen'])
-        rendere_quelle(kx, spur, bus, _variante(rng, e['sig'], 2.0), tt + fall, _fest(boden), True, b * g.get('aufschlag_pegel', 0.8), g.get('hall', 0.0))
+        rendere_quelle(kx, spur, bus, _variante(rng, kraft(e, 1.0, g), 2.0), tt + fall, _fest(boden), True, b * g.get('aufschlag_pegel', 0.8), g.get('hall', 0.0))
 
 
 def gen_vorbeigang(kx, g, spur, bus):
@@ -919,7 +955,7 @@ def gen_gebruell(kx, g, spur, bus):
         d = rng.uniform(*g.get('entfernung', [350, 700]))
         az = rng.uniform(0, 2 * np.pi)
         p = np.array([k[0] + d * np.cos(az), k[1] + d * np.sin(az), g.get('hoehe', 8.0)])
-        sig = _variante(rng, e['sig'], 1.0)
+        sig = _variante(rng, kraft(e, 1.0, g), 1.0)
         for schicht in g.get('schichten', []):            # weitere Stimmen übereinander: tiefer, rauer
             es = _wahl(rng, schichten[schicht['schluessel']])['sig']
             vers = int(rng.uniform(0, schicht.get('versatz_s', 0.15)) * FS)
@@ -932,7 +968,7 @@ def gen_gebruell(kx, g, spur, bus):
             n = int(rng.integers(g['folge'][0], g['folge'][1] + 1))
             teile, pos = [], 0
             for j in range(n):
-                ej = _wahl(rng, ev)['sig']
+                ej = kraft(_wahl(rng, ev), 1.0, g)
                 st = 0.6 + 0.4 * np.sin(np.pi * (j + 0.5) / n)          # schwillt an und ab
                 teile.append((pos, _variante(rng, ej, 0.5) * st))
                 pos += int(len(ej) * rng.uniform(0.55, 0.8))

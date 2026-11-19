@@ -178,3 +178,42 @@ def resonanz(x, moden):
         zs = np.sqrt(10 ** (huelle_db(z, 50).max() / 10)) + 1e-12
         y += anteil * spitze * z / zs
     return y
+
+
+def wucht(y, moden=(), grollen=None, obertoene=0.0, saat=0):
+    """Tiefe Schicht für Ereignisse mit viel Kraft (Brecher, Schlag gegen den Rumpf, Tritt eines
+    Riesen). Kommt getrennt zurück, damit der Generator sie mit der Stärke des Ereignisses
+    überproportional wachsen lassen kann: ein starker Schlag bekommt viel mehr Bass als ein
+    schwacher – so wie in echt die Masse erst bei viel Kraft mitschwingt.
+
+    moden:     [[f, t60, anteil], ...] – Eigenschwingungen (Rumpf, Boden, Brustkorb), angeregt
+               vom Ereignis selbst; anteil bezogen auf die Spitze des Ereignisses.
+    grollen:   {band: [lo, hi], anteil, glatt_ms} – tiefes Rauschen, das der Hüllkurve des
+               Ereignisses folgt (Luft und Wasser, die bei einem Brecher mitgerissen werden).
+    obertoene: 0..1 – Anteil einer weichen Sättigung der tiefen Schicht. Sie erzeugt
+               Obertöne der Grundschwingung (2f, 3f), die auch ein Kopfhörer wiedergibt, der
+               unter 50 Hz kaum noch etwas abstrahlt; das Ohr ergänzt den Grundton.
+    Rückgabe: Signal gleicher Länge wie y."""
+    from scipy.signal import lfilter
+    spitze = np.sqrt(10 ** (huelle_db(y, 50).max() / 10))
+    z = np.zeros_like(y)
+    for f, t60, anteil in moden:
+        r = 10 ** (-3 / (t60 * FS))
+        w = 2 * np.pi * f / FS
+        m = lfilter([1 - r], [1, -2 * r * np.cos(w), r * r], y)
+        ms = np.sqrt(10 ** (huelle_db(m, 50).max() / 10)) + 1e-12
+        z += anteil * spitze * m / ms
+    if grollen:
+        lo, hi = grollen.get('band', [35, 150])
+        rng = np.random.default_rng(saat + len(y))
+        rausch = filt(rng.normal(size=len(y)), [lo, hi], 'bandpass', 2)
+        rausch /= np.sqrt((rausch ** 2).mean()) + 1e-12
+        h = np.sqrt(np.maximum(uniform_filter1d(y ** 2, int(grollen.get('glatt_ms', 60) * FS / 1000)), 0))
+        z += grollen.get('anteil', 1.0) * h * rausch
+    if obertoene > 0 and np.abs(z).max() > 0:
+        m = np.abs(z).max()
+        u = z / m
+        h = np.tanh(2.5 * (u + 0.3 * u * u)) / np.tanh(2.5)        # unsymmetrisch: gerade und ungerade Obertöne
+        h = filt(h, 30, 'highpass', 2) * m
+        z = (1 - obertoene) * z + obertoene * h
+    return z
