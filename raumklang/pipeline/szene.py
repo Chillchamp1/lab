@@ -240,10 +240,14 @@ def rendere_quelle(kx, spur, bus, sig, t0, ort_fn, aussen=True, pegel=1.0, hall=
             frng = np.random.default_rng((int(t0 * 1000) * 7919 + len(sig)) % (2 ** 32))
             rate = FS / 512
             def kurve():
-                X = np.fft.rfft(frng.normal(size=nb + 64))
-                X *= np.exp(-0.5 * (np.fft.rfftfreq(nb + 64, 1 / rate) / f.get('hz', 0.7)) ** 2)
-                z = np.fft.irfft(X, nb + 64)[:nb]
-                return z / (z.std() + 1e-12)
+                # Streuung über eine lange Folge bestimmen: bei kurzen Ereignissen (< 1 s) ist das
+                # langsame Rauschen fast konstant, seine eigene Streuung fast null – geteilt durch sie
+                # wurde der Faktor riesig (Fehler bis 19.11.: Möwengruppe mit 59 dB über Vollaussteuerung)
+                L = nb + int(20 * rate)
+                X = np.fft.rfft(frng.normal(size=L))
+                X *= np.exp(-0.5 * (np.fft.rfftfreq(L, 1 / rate) / f.get('hz', 0.7)) ** 2)
+                z = np.fft.irfft(X, L)
+                return np.clip(z[:nb] / (z.std() + 1e-12), -3, 3)
             gemeinsam, l_, r_ = kurve(), kurve(), kurve()
             k = f.get('korrelation', 0.6)
             fl = np.stack([np.sqrt(k) * gemeinsam + np.sqrt(1 - k) * l_, np.sqrt(k) * gemeinsam + np.sqrt(1 - k) * r_], 1)

@@ -1036,7 +1036,7 @@
     }
    ],
    "text": "Einzelne Wellenkämme in 7 bis 32 m Entfernung, jeder an einer anderen Stelle; sie treiben mit dem Wind. Brechen sie mit viel Kraft, grollt es tief.",
-   "wucht_pegel": 0.8,
+   "wucht_pegel": 0.15,
    "wucht_exponent": 3.0
   },
   {
