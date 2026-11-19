@@ -1,6 +1,6 @@
 {
  "szene": "boot",
- "stand": "19.11.2026 23:34",
+ "stand": "19.11.2026 23:45",
  "dauer": 200,
  "schleife": true,
  "abtastwerte": 8820000,
@@ -18,7 +18,7 @@
    "pegel_art": "integriert",
    "spitze_db": -14.0,
    "begrenzt_db": 0.0,
-   "sekunden": 89.8,
+   "sekunden": 90.4,
    "probe_abtastwerte": 1323000
   },
   {
@@ -30,7 +30,7 @@
    "pegel_art": "integriert",
    "spitze_db": -14.5,
    "begrenzt_db": 0.0,
-   "sekunden": 99.8,
+   "sekunden": 98.7,
    "probe_abtastwerte": 1323000
   },
   {
@@ -40,9 +40,9 @@
    "typ": "ereignisse",
    "ziel_lufs": -29,
    "pegel_art": "spitzen",
-   "spitze_db": -11.3,
-   "begrenzt_db": 0.0,
-   "sekunden": 21.2,
+   "spitze_db": -9.0,
+   "begrenzt_db": 0.4,
+   "sekunden": 21.4,
    "probe_abtastwerte": 1323000
   },
   {
@@ -54,7 +54,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -11.0,
    "begrenzt_db": 0.0,
-   "sekunden": 27.0,
+   "sekunden": 27.8,
    "ereignisse": 170,
    "probe_abtastwerte": 1323000
   },
@@ -67,7 +67,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -11.2,
    "begrenzt_db": 0.0,
-   "sekunden": 4.3,
+   "sekunden": 4.4,
    "ereignisse": 39,
    "probe_abtastwerte": 1323000
   },
@@ -80,7 +80,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -11.1,
    "begrenzt_db": 0.0,
-   "sekunden": 52.2,
+   "sekunden": 52.7,
    "faenge": 7,
    "probe_abtastwerte": 2646000
   },
@@ -91,9 +91,9 @@
    "typ": "bett",
    "ziel_lufs": -39,
    "pegel_art": "integriert",
-   "spitze_db": -22.0,
+   "spitze_db": -21.9,
    "begrenzt_db": 0.0,
-   "sekunden": 64.4,
+   "sekunden": 64.7,
    "probe_abtastwerte": 1323000
   },
   {
@@ -103,9 +103,9 @@
    "typ": "schwarm",
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
-   "spitze_db": -7.0,
-   "begrenzt_db": 11.7,
-   "sekunden": 14.7,
+   "spitze_db": -9.4,
+   "begrenzt_db": 0.0,
+   "sekunden": 15.0,
    "rufe": 88,
    "probe_abtastwerte": 1323000
   },
@@ -118,7 +118,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -9.5,
    "begrenzt_db": 0.0,
-   "sekunden": 8.8,
+   "sekunden": 8.6,
    "zeiten": [
     13.7,
     45.1,
@@ -138,22 +138,22 @@
    "typ": "schwarm",
    "ziel_lufs": -38,
    "pegel_art": "spitzen",
-   "spitze_db": 59.5,
-   "begrenzt_db": NaN,
-   "sekunden": 8.1,
+   "spitze_db": -25.9,
+   "begrenzt_db": 0.0,
+   "sekunden": 7.8,
    "rufe": 66,
    "probe_abtastwerte": 1323000
   }
  ],
- "start_verschoben_s": 84.26,
- "start_abtastwerte": 3715872,
+ "start_verschoben_s": 84.17,
+ "start_abtastwerte": 3712099,
  "begrenzer_max_db": 0.0,
- "lufs": -19.3,
+ "lufs": -21.0,
  "naht": {
-  "sprung_naht": 0.0,
-  "sprung_typisch_999": 0.0037,
-  "pegelsprung_naht_db": 0.01,
-  "pegelsprung_typisch_95_db": 2.58
+  "sprung_naht": 0.0069,
+  "sprung_typisch_999": 0.0841,
+  "pegelsprung_naht_db": 0.5,
+  "pegelsprung_typisch_95_db": 2.29
  },
  "quellen": [
   "boot_holz_steg",
