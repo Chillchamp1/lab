@@ -34,9 +34,6 @@
   .spieler a { flex: none; font-size: .8rem; }
   .werte { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: .82rem; color: var(--leise); margin-top: 10px; }
   .werte b { color: var(--text); font-weight: 600; }
-  .jetzt { margin-top: 12px; font-size: 1.05rem; color: var(--leise); padding: 8px 12px; border-radius: 8px; background: var(--grund); }
-  .jetzt b { color: var(--warn); }
-  .jetzt.b b { color: var(--akzent); }
   details { margin-top: 14px; border-top: 1px solid var(--rand); padding-top: 10px; }
   summary { cursor: pointer; color: var(--akzent); font-size: .92rem; }
   .baustein { padding: 12px 0; border-bottom: 1px solid var(--rand); }
@@ -61,6 +58,9 @@
   <p class="hinweis"><b>Welche Ohren passen zu dir?</b> Die Szenen sind mit einem Satz gemessener Ohren (HRTF) gerechnet.
   Im <a href="hrtf-test/">HRTF-Auswahltest</a> findest du in 6–8 Minuten heraus, welcher am besten zu deinen Ohrmuscheln passt.</p>
 
+  <p class="hinweis"><b>Was klingt besser?</b> Im <a href="vergleich/">Blindvergleich</a> hörst du zwei Fassungen derselben Stelle,
+  ohne zu wissen, welche welche ist, und bewertest sie – gerade: Meer bisher gegen Meer mit mehr Weite.</p>
+
   <p class="hinweis"><b>So hören:</b> Kopfhörer auf (links/rechts richtig herum), hinlegen, Augen zu.
   Jede Szene läuft in Endlosschleife ohne hörbare Naht.</p>
 
@@ -84,7 +84,7 @@
   </details>
 </main>
 <script>
-const SZENEN = ['wald', 'boot', 'boot_weite'];
+const SZENEN = ['wald', 'boot'];
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const FS = 44100;
 let ctx = null, aktiv = null;
@@ -92,7 +92,7 @@ const zeit = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2
 
 // Spieler mit nahtloser Schleife: die Datei wird dekodiert und über die Web-Audio-Schnittstelle
 // sample-genau wiederholt. Ein <audio loop> setzt an der Naht je nach Browser kurz aus.
-function spieler(el, src, soll, beimTick) {
+function spieler(el, src, soll) {
   el.innerHTML = `<button aria-label="Abspielen">▶</button><div class="leiste"><span></span></div>` +
     `<span class="zeit">0:00</span><a href="${src}" download>MP3</a>`;
   const knopf = el.querySelector('button'), leiste = el.querySelector('.leiste'), balken = leiste.querySelector('span'), anz = el.querySelector('.zeit');
@@ -136,7 +136,6 @@ function spieler(el, src, soll, beimTick) {
       const p = position();
       balken.style.width = (100 * p / puffer.duration) + '%';
       anz.textContent = `${zeit(p)} / ${zeit(puffer.duration)}`;
-      if (beimTick) beimTick(p);
       requestAnimationFrame(tick);
     })();
   }
@@ -164,7 +163,6 @@ function spieler(el, src, soll, beimTick) {
     el.innerHTML =
       `<h2>${esc(b.titel || name)}</h2><p>${esc(b.text || '')}</p>` +
       `<div class="spieler gross" data-haupt></div>` +
-      (b.wechsel ? `<div class="jetzt" data-jetzt>${esc(b.wechsel.a)} · ${esc(b.wechsel.b)} im Wechsel</div>` : '') +
       `<div class="werte"><span><b>${zeit(b.dauer)}</b> in Schleife</span><span>Stand <b>${esc(b.stand)}</b></span>` +
       `<span>HRTF <b>${esc(b.hrtf.replace('.sofa', ''))}</b></span><span>Blick <b>${b.blick}°</b></span></div>` +
       `<details><summary>${esc(b.details_titel || (b.gruppen.length ? 'Bausteine einzeln anhören, Aufnahmen' : 'Verwendete Aufnahmen'))}</summary>` +
@@ -174,13 +172,7 @@ function spieler(el, src, soll, beimTick) {
         `<tr><td><a href="${esc(e.seite)}">${esc(e.titel || e.datei)}</a></td><td>${esc(e.urheber || '–')}</td><td>${esc(e.lizenz)}</td></tr>`).join('') +
       `</tbody></table></div></details>`;
     box.appendChild(el);
-    const jetzt = el.querySelector('[data-jetzt]');
-    const anzeige = b.wechsel ? (p => {
-      const i = Math.floor(p / b.wechsel.abschnitt_s) % 2;
-      jetzt.innerHTML = `Jetzt: <b>${esc(i ? b.wechsel.b : b.wechsel.a)}</b>`;
-      jetzt.classList.toggle('b', i === 1);
-    }) : null;
-    spieler(el.querySelector('[data-haupt]'), `audio/${name}.mp3`, b.abtastwerte, anzeige);
+    spieler(el.querySelector('[data-haupt]'), `audio/${name}.mp3`, b.abtastwerte);
     for (const g of b.gruppen) spieler(el.querySelector(`.spieler[data-name="${g.name}"]`), `audio/${name}_${g.name}.mp3`, g.probe_abtastwerte);
   }
 })();
