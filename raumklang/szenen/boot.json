@@ -983,9 +983,59 @@
       },
       "obertoene": 0.3
      }
+    },
+    {
+     "quelle": "brecher_felsen",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "brecher_buhne",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 1.2,
+       "glatt_ms": 120
+      },
+      "obertoene": 0.3
+     }
     }
    ],
-   "text": "Einzelne Wellenkämme in 7 bis 32 m Entfernung, jeder an einer anderen Stelle; sie treiben mit dem Wind.",
+   "text": "Einzelne Wellenkämme in 7 bis 32 m Entfernung, jeder an einer anderen Stelle; sie treiben mit dem Wind. Brechen sie mit viel Kraft, grollt es tief.",
    "wucht_pegel": 0.8,
    "wucht_exponent": 3.0
   },
