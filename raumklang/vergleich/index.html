@@ -123,7 +123,7 @@ const FRAGEN = [
 ];
 
 const V = VERGLEICHE.find(v => v.id === new URLSearchParams(location.search).get('v')) || VERGLEICHE[0];
-const SCHLUESSEL = 'blindvergleich-' + V.id;
+const SCHLUESSEL = 'blindvergleich-v2-' + V.id;
 const $ = id => document.getElementById(id);
 $('v-titel').textContent = V.titel; $('v-text').textContent = V.text;
 
@@ -133,7 +133,9 @@ function neuerStand() {
   // Startpunkte gleichmäßig über das Stück verteilt, Reihenfolge gemischt; Zuordnung X/Y je Durchgang zufällig, aber ausgeglichen
   const starts = Array.from({ length: n }, (_, i) => +((i + Math.random() * 0.8) * (dauer - V.ausschnitt_s) / n).toFixed(2));
   const tausch = mische(Array.from({ length: n }, (_, i) => i % 2 === 1));
-  return { v: V.id, kh: '', begonnen: null, i: 0, durchgaenge: mische(starts).map((t, k) => ({ t, xIstA: !tausch[k], a: {}, notiz: '' })) };
+  // welche Seite zuerst läuft, ebenfalls zufällig: sonst gewinnt leicht die zuletzt gehörte (Y)
+  const zuerst = mische(Array.from({ length: n }, (_, i) => i % 2 ? 'y' : 'x'));
+  return { v: V.id, kh: '', begonnen: null, i: 0, durchgaenge: mische(starts).map((t, k) => ({ t, xIstA: !tausch[k], zuerst: zuerst[k], a: {}, notiz: '' })) };
 }
 function mische(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function speichern() { try { localStorage.setItem(SCHLUESSEL, JSON.stringify(stand)); } catch {} }
@@ -214,7 +216,7 @@ function zeigeDurchgang() {
     }
   }
   $('notiz').value = d.notiz || '';
-  waehle('x');
+  waehle(d.zuerst || 'x');
   pruefe();
 }
 function pruefe() {
@@ -272,7 +274,9 @@ function auswerten() {
   });
   return { vergleich: V.id, titel: V.titel, a: V.a.name, b: V.b.name, kopfhoerer: stand.kh, begonnen: stand.begonnen,
     beendet: new Date().toISOString(), zeilen,
-    durchgaenge: stand.durchgaenge.map(d => ({ stelle_s: d.t, x: d.xIstA ? 'A' : 'B', antworten: d.a, notiz: d.notiz || undefined })) };
+    // Kontrolle: wie oft X bzw. Y gewählt wurde, unabhängig davon, was dahinter steckte
+    seiten: stand.durchgaenge.reduce((z, d) => { for (const w of Object.values(d.a)) z[w] = (z[w] || 0) + 1; return z; }, {}),
+    durchgaenge: stand.durchgaenge.map(d => ({ stelle_s: d.t, x: d.xIstA ? 'A' : 'B', zuerst: d.zuerst, antworten: d.a, notiz: d.notiz || undefined })) };
 }
 function zeigeEnde() {
   $('test').classList.add('versteckt'); $('start').classList.add('versteckt'); $('ende').classList.remove('versteckt');
