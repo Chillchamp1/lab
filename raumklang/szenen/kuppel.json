@@ -384,8 +384,8 @@
    "ziel_lufs": -24,
    "pegel_art": "spitzen",
    "erster_s": [
-    120,
-    140
+    188,
+    192
    ],
    "abstand_s": [
     400,
@@ -405,7 +405,7 @@
    "hall": 1.0,
    "vorruf_wahrsch": 1.0,
    "nachruf_wahrsch": 1.0,
-   "probe_ab": 105,
+   "probe_ab": 165,
    "probe_dauer": 60,
    "sammlung": [
     {
