@@ -208,7 +208,7 @@ def rendere_quelle(kx, spur, bus, sig, t0, ort_fn, aussen=True, pegel=1.0, hall=
         k = np.broadcast_to(kx.boot.kopf, pb.shape)
         wege = [dict(w0, richt=kx.boot._kopfbezug(pb - k), entf=np.linalg.norm(pb - k, axis=1), gang=None, ohr=None, streu=None)]
     # Entfernung des direkten Wegs: daraus Weitenhall-Anteil und Luftflimmern (nur draußen)
-    r = wege[0]['entf']
+    r = wege[0].get('entf_wahr', wege[0]['entf'])        # Unterwasser: Laufzeitweg ist gestaucht
     bus2, gew2 = None, None
     gname = getattr(kx, 'gruppe', None)
     def gilt(cfg):          # Wirkung auf bestimmte Gruppen beschränkbar (sonst wird Brandung zu Rauschen)
@@ -343,8 +343,12 @@ def gen_ereignisse(kx, g, spur, bus):
         az = rng.uniform(0, 2 * np.pi)
         hz = g.get('hoehe', 0.15)
         p0 = np.array([r * np.cos(az), r * np.sin(az), rng.uniform(*hz) if isinstance(hz, list) else hz])
+        if g.get('punkt'):            # feste Stelle in der Welt (z. B. ein Felsen), Brecher streuen entlang
+            p0 = np.array(g['punkt'], float) + np.r_[rng.normal(0, g.get('punkt_streuung_m', 3.0), 2), 0]
         ziel = np.array([np.cos(wind), np.sin(wind), 0]) * v
         staerke = 10 ** (rng.normal(0, g.get('streuung_db', 3.0)) / 20)
+        if rng.random() < g.get('ausreisser_wahrsch', 0.0):     # ab und zu eine deutlich stärkere
+            staerke *= 10 ** (rng.uniform(*g.get('ausreisser_db', [4, 8])) / 20)
 
         def ort(tt, p0=p0, t0=t, ziel=ziel):
             return p0[None, :] + (tt - t0)[:, None] * ziel[None, :]
@@ -436,7 +440,7 @@ def gen_ueberflug(kx, g, spur, bus):
     t = rng.uniform(*g.get('erster_s', [8, 14]))
     liste = []
     erster = t
-    while t < kx.dauer + erster - g.get('abstand_s', [18, 32])[0]:   # Abstand gilt auch über die Naht
+    while not liste or t < kx.dauer + erster - g.get('abstand_s', [18, 32])[0]:   # Abstand gilt auch über die Naht; mindestens einer
         kurs = rng.uniform(0, 2 * np.pi)
         v = rng.uniform(*g.get('tempo', [10, 15]))
         h = rng.uniform(*g.get('hoehe', [2.0, 4.5]))
@@ -466,7 +470,7 @@ def gen_ueberflug(kx, g, spur, bus):
             e = gleiche[int(rng.integers(len(gleiche)))]
             rufe.append((t_haupt + haupt['dauer'] + rng.uniform(0.2, 0.7), e))
         for ts, e in rufe:
-            rendere_quelle(kx, spur, bus, e['sig'], ts, ort, True, g.get('bezug_m', 5.0), g.get('hall', 0.0))
+            rendere_quelle(kx, spur, bus, kraft(e, 1.0, g), ts, ort, True, g.get('bezug_m', 5.0), g.get('hall', 0.0))
         if echt:
             # echte Flügelschläge: eine Schlagfolge im Anflug, endet kurz vor dem nächsten Punkt (dort gleitet sie)
             e = echt[int(rng.integers(len(echt)))]
@@ -1079,7 +1083,7 @@ def main():
     sz = json.loads(Path(a.szene).read_text())
     dauer = a.dauer or sz.get('dauer', 180)
     if a.blick is not None:
-        sz['wald' if 'wald' in sz else 'boot']['blick'] = a.blick
+        sz[next(k for k in ('wald', 'kuppel', 'boot') if k in sz)]['blick'] = a.blick
     t_start = time.time()
     hrtf = HRTF(a.hrtf, FS)
     hrtf.stereo = a.stereo
@@ -1087,6 +1091,10 @@ def main():
         from wald import Wald
         umg_cfg = sz['wald']
         boot = Wald(umg_cfg, dauer, sz.get('saat', 1))
+    elif 'kuppel' in sz:
+        from kuppel import Kuppel
+        umg_cfg = sz['kuppel']
+        boot = Kuppel(umg_cfg, dauer, sz.get('saat', 1))
     else:
         umg_cfg = sz['boot']
         boot = Boot(umg_cfg, dauer, sz.get('saat', 1))

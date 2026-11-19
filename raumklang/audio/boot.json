@@ -1,6 +1,6 @@
 {
  "szene": "boot",
- "stand": "19.11.2026 23:45",
+ "stand": "20.11.2026 00:09",
  "dauer": 200,
  "schleife": true,
  "abtastwerte": 8820000,
@@ -18,7 +18,7 @@
    "pegel_art": "integriert",
    "spitze_db": -14.0,
    "begrenzt_db": 0.0,
-   "sekunden": 90.4,
+   "sekunden": 89.3,
    "probe_abtastwerte": 1323000
   },
   {
@@ -30,7 +30,7 @@
    "pegel_art": "integriert",
    "spitze_db": -14.5,
    "begrenzt_db": 0.0,
-   "sekunden": 98.7,
+   "sekunden": 109.8,
    "probe_abtastwerte": 1323000
   },
   {
@@ -38,11 +38,11 @@
    "titel": "Wellenkämme ringsum",
    "text": "Einzelne Wellenkämme in 7 bis 32 m Entfernung, jeder an einer anderen Stelle; sie treiben mit dem Wind. Brechen sie mit viel Kraft, grollt es tief.",
    "typ": "ereignisse",
-   "ziel_lufs": -29,
+   "ziel_lufs": -27,
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
-   "begrenzt_db": 0.4,
-   "sekunden": 21.4,
+   "begrenzt_db": 0.3,
+   "sekunden": 16.9,
    "probe_abtastwerte": 1323000
   },
   {
@@ -54,7 +54,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -11.0,
    "begrenzt_db": 0.0,
-   "sekunden": 27.8,
+   "sekunden": 30.3,
    "ereignisse": 170,
    "probe_abtastwerte": 1323000
   },
@@ -67,7 +67,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -11.2,
    "begrenzt_db": 0.0,
-   "sekunden": 4.4,
+   "sekunden": 5.1,
    "ereignisse": 39,
    "probe_abtastwerte": 1323000
   },
@@ -80,7 +80,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -11.1,
    "begrenzt_db": 0.0,
-   "sekunden": 52.7,
+   "sekunden": 57.4,
    "faenge": 7,
    "probe_abtastwerte": 2646000
   },
@@ -93,7 +93,7 @@
    "pegel_art": "integriert",
    "spitze_db": -21.9,
    "begrenzt_db": 0.0,
-   "sekunden": 64.7,
+   "sekunden": 70.8,
    "probe_abtastwerte": 1323000
   },
   {
@@ -105,7 +105,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -9.4,
    "begrenzt_db": 0.0,
-   "sekunden": 15.0,
+   "sekunden": 16.6,
    "rufe": 88,
    "probe_abtastwerte": 1323000
   },
@@ -118,7 +118,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -9.5,
    "begrenzt_db": 0.0,
-   "sekunden": 8.6,
+   "sekunden": 9.6,
    "zeiten": [
     13.7,
     45.1,
@@ -140,20 +140,32 @@
    "pegel_art": "spitzen",
    "spitze_db": -25.9,
    "begrenzt_db": 0.0,
-   "sekunden": 7.8,
+   "sekunden": 8.6,
    "rufe": 66,
+   "probe_abtastwerte": 1323000
+  },
+  {
+   "name": "felsen",
+   "titel": "Brecher am Felsen",
+   "text": "Ein Felsen ragt rund 35 m entfernt aus dem Wasser. Ab und zu bricht dort eine Welle mit Wucht – das Boot dreht sich langsam, so wandert der Felsen um dich herum.",
+   "typ": "ereignisse",
+   "ziel_lufs": -27,
+   "pegel_art": "spitzen",
+   "spitze_db": -13.6,
+   "begrenzt_db": 0.0,
+   "sekunden": 5.4,
    "probe_abtastwerte": 1323000
   }
  ],
- "start_verschoben_s": 84.17,
- "start_abtastwerte": 3712099,
+ "start_verschoben_s": 84.57,
+ "start_abtastwerte": 3729568,
  "begrenzer_max_db": 0.0,
  "lufs": -21.0,
  "naht": {
-  "sprung_naht": 0.0069,
-  "sprung_typisch_999": 0.0841,
-  "pegelsprung_naht_db": 0.5,
-  "pegelsprung_typisch_95_db": 2.29
+  "sprung_naht": 0.0042,
+  "sprung_typisch_999": 0.0831,
+  "pegelsprung_naht_db": 0.58,
+  "pegelsprung_typisch_95_db": 2.2
  },
  "quellen": [
   "boot_holz_steg",
