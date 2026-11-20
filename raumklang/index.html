@@ -84,7 +84,7 @@
   </details>
 </main>
 <script>
-const SZENEN = ['wald', 'boot', 'kuppel'];
+const SZENEN = ['wald', 'boot', 'ruine', 'elefanten', 'ozean'];
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const FS = 44100;
 let ctx = null, aktiv = null;
@@ -165,6 +165,8 @@ function spieler(el, src, soll) {
       `<div class="spieler gross" data-haupt></div>` +
       `<div class="werte"><span><b>${zeit(b.dauer)}</b> in Schleife</span><span>Stand <b>${esc(b.stand)}</b></span>` +
       `<span>HRTF <b>${esc(b.hrtf.replace('.sofa', ''))}</b></span><span>Blick <b>${b.blick}°</b></span></div>` +
+      ((b.drehbuch && b.drehbuch.length) ? `<details><summary>Drehbuch – was in der Szene passiert</summary><ul>` +
+        b.drehbuch.map(([t, x]) => `<li><b>${zeit(t)}</b> ${esc(x)}</li>`).join('') + `</ul></details>` : '') +
       `<details><summary>${esc(b.details_titel || (b.gruppen.length ? 'Bausteine einzeln anhören, Aufnahmen' : 'Verwendete Aufnahmen'))}</summary>` +
       b.gruppen.map(g => `<div class="baustein"><h3>${esc(g.titel)}</h3><p>${esc(g.text)}</p><div class="spieler" data-name="${esc(g.name)}"></div></div>`).join('') +
       (b.gruppen.length ? `<h4>Verwendete Aufnahmen</h4>` : '') + `<div class="tabelle"><table><thead><tr><th>Aufnahme</th><th>Von</th><th>Lizenz</th></tr></thead><tbody>` +

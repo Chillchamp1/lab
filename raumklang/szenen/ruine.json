@@ -1,0 +1,778 @@
+{
+ "name": "ruine",
+ "titel": "In der Klosterruine bei Nacht",
+ "text": "Du liegst im Mittelschiff einer Klosterruine auf den Steinplatten. Das Gewölbe ist eingestürzt, über dir der Nachthimmel zwischen hohen Mauern. Draußen regnet es leise, Wind pfeift durch ein leeres Fenster, Tropfen fallen auf den Stein, zwei Käuze rufen sich zu. Manchmal fliegen Tauben im Gemäuer auf, fern über dem Tal schlägt eine Glocke – und einmal weht von weit her Gesang herüber.",
+ "dauer": 120,
+ "saat": 41,
+ "ziel_lufs": -23,
+ "ruine": {
+  "blick": 55,
+  "kopf": [
+   0.0,
+   0.0,
+   0.25
+  ],
+  "halbe_breite": 5.5,
+  "chor_abstand": 12.0,
+  "hinten_abstand": -18.0,
+  "mauerhoehe": 9.0,
+  "mauer_db": 18.0,
+  "stein_reflexion": 0.8,
+  "boden_reflexion": 0.75
+ },
+ "nachhall": {
+  "t60_tief": 2.2,
+  "t60_hoch": 1.0,
+  "dauer": 3.2,
+  "verzug": 0.03
+ },
+ "nachhall_pegel_db": -6,
+ "boeen": {
+  "grund_hz": 0.03,
+  "abstand_s": 28,
+  "dauer_s": [
+   4,
+   10
+  ]
+ },
+ "weite": {
+  "ab_m": 40,
+  "voll_m": 400,
+  "exponent": 0.7,
+  "bezug_m": 40,
+  "pegel_db": -10,
+  "nachhall": {
+   "t60_tief": 3.5,
+   "t60_hoch": 1.2,
+   "dauer": 5.0,
+   "verzug": 0.08
+  },
+  "gruppen": [
+   "kauz",
+   "glocke",
+   "gesang"
+  ]
+ },
+ "gruppen": [
+  {
+   "name": "regen",
+   "typ": "bett",
+   "titel": "Regen draußen",
+   "text": "Leiser Regen jenseits der Mauern und über der offenen Ruine.",
+   "ziel_lufs": -31,
+   "anzahl": 8,
+   "entfernung": [
+    8,
+    25
+   ],
+   "hoehe": [
+    4,
+    12
+   ],
+   "drift_grad": 30,
+   "atem_db": 2.5,
+   "atem_hz": 0.04,
+   "boe_db": 2.0,
+   "hall": 0.4,
+   "sammlung": [
+    {
+     "quelle": "esc_3-157149-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_4-163264-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_4-181286-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_1-21189-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_5-188655-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_2-87781-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_4-180380-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_5-198321-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_1-54958-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_1-56311-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_5-181766-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_2-101676-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    }
+   ],
+   "decke_db": -6.0,
+   "folgt": {
+    "kurve": "regen",
+    "db": [
+     -8,
+     3
+    ]
+   }
+  },
+  {
+   "name": "raum",
+   "typ": "bett",
+   "titel": "Der Steinraum",
+   "text": "Die Stille des leeren Raums – ganz leise, man spürt sie mehr, als man sie hört.",
+   "ziel_lufs": -42,
+   "anzahl": 3,
+   "punkte": [
+    [
+     6,
+     3,
+     2
+    ],
+    [
+     -8,
+     -3,
+     2
+    ],
+    [
+     2,
+     -4,
+     4
+    ]
+   ],
+   "bezug_m": 4,
+   "atem_db": 2,
+   "atem_hz": 0.03,
+   "hall": 0.6,
+   "sammlung": [
+    {
+     "quelle": "kirche_leer_bokhoven",
+     "hochpass": 80
+    }
+   ]
+  },
+  {
+   "name": "wind",
+   "typ": "bett",
+   "titel": "Wind über den Mauern",
+   "text": "Wind streicht über die Mauerkronen, in Böen stärker.",
+   "ziel_lufs": -36,
+   "anzahl": 6,
+   "entfernung": [
+    10,
+    25
+   ],
+   "hoehe": [
+    10,
+    16
+   ],
+   "drift_grad": 60,
+   "atem_db": 4,
+   "atem_hz": 0.08,
+   "boe_db": 6,
+   "hall": 0.3,
+   "sammlung": [
+    {
+     "quelle": "esc_3-136608-A",
+     "hochpass": 150
+    },
+    {
+     "quelle": "esc_1-69760-A",
+     "hochpass": 150
+    },
+    {
+     "quelle": "esc_3-117504-A",
+     "hochpass": 150
+    },
+    {
+     "quelle": "esc_3-117504-B",
+     "hochpass": 150
+    },
+    {
+     "quelle": "esc_1-51035-A",
+     "hochpass": 150
+    },
+    {
+     "quelle": "esc_1-51036-A",
+     "hochpass": 150
+    }
+   ],
+   "folgt": {
+    "kurve": "wind",
+    "db": [
+     -5,
+     4
+    ]
+   }
+  },
+  {
+   "name": "fenster",
+   "typ": "bett",
+   "titel": "Wind im leeren Fenster",
+   "text": "In einem Fensterbogen hoch oben links pfeift der Wind, wenn eine Böe kommt.",
+   "ziel_lufs": -37,
+   "anzahl": 1,
+   "punkte": [
+    [
+     4.0,
+     5.5,
+     6.5
+    ]
+   ],
+   "bezug_m": 7,
+   "atem_db": 2,
+   "atem_hz": 0.05,
+   "boe_db": 7,
+   "hall": 0.6,
+   "sammlung": [
+    {
+     "quelle": "kirche_wind_fenster",
+     "hochpass": 150
+    }
+   ],
+   "folgt": {
+    "kurve": "wind",
+    "db": [
+     -8,
+     4
+    ]
+   }
+  },
+  {
+   "name": "tropfen",
+   "typ": "ereignisse",
+   "titel": "Tropfen auf Stein",
+   "text": "Hier und da fällt ein Tropfen von der Mauer auf die Steinplatten – jeder an einer anderen Stelle.",
+   "ziel_lufs": -35,
+   "pegel_art": "spitzen",
+   "entfernung": [
+    1.5,
+    9
+   ],
+   "hoehe": [
+    0,
+    0.05
+   ],
+   "treibt_m_s": 0,
+   "abstand_s": 2.5,
+   "bezug_m": 2.0,
+   "streuung_db": 5,
+   "ausreisser_wahrsch": 0.05,
+   "ausreisser_db": [
+    3,
+    6
+   ],
+   "hall": 1.0,
+   "sammlung": [
+    {
+     "quelle": "esc_4-212604-A",
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.8,
+      "nachlauf": 0.15
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_4-212604-B",
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.8,
+      "nachlauf": 0.15
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_4-212604-C",
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.8,
+      "nachlauf": 0.15
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_3-156907-A",
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.8,
+      "nachlauf": 0.15
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_4-188293-A",
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.8,
+      "nachlauf": 0.15
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_4-188293-B",
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.8,
+      "nachlauf": 0.15
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_4-168155-A",
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.8,
+      "nachlauf": 0.15
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_1-90797-A",
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.8,
+      "nachlauf": 0.15
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     }
+    }
+   ],
+   "decke_db": -12.0,
+   "folgt": {
+    "kurve": "regen",
+    "rate": [
+     0.4,
+     1.6
+    ]
+   }
+  },
+  {
+   "name": "kauz",
+   "typ": "schwarm",
+   "titel": "Zwei Käuze",
+   "text": "Draußen rufen sich zwei Waldkäuze zu, mal links, mal rechts, mal weiter weg.",
+   "ziel_lufs": -31,
+   "pegel_art": "spitzen",
+   "anzahl": 2,
+   "radius": [
+    25,
+    70
+   ],
+   "hoehe": [
+    6,
+    15
+   ],
+   "tempo": [
+    0.3,
+    1.0
+   ],
+   "mitte_streuung": 20,
+   "abstand_s": 22,
+   "antwort_wahrsch": 0.7,
+   "bezug_m": 25,
+   "tonhoehe_streuung_ht": 0.3,
+   "hall": 1.0,
+   "sammlung": [
+    {
+     "quelle": "kauz_benboncan",
+     "hochpass": 200,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.3,
+      "max_dauer": 4.0,
+      "nachlauf": 0.3
+     },
+     "abklingen": {
+      "ein_ms": 20,
+      "min_ausklang_s": 0.2,
+      "glatt_ms": 30,
+      "ziel_db": -45,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "eule_ruf",
+     "hochpass": 200,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.3,
+      "max_dauer": 4.0,
+      "nachlauf": 0.3
+     },
+     "abklingen": {
+      "ein_ms": 20,
+      "min_ausklang_s": 0.2,
+      "glatt_ms": 30,
+      "ziel_db": -45,
+      "max_endpegel_db": -3
+     }
+    }
+   ],
+   "decke_db": -10.0
+  },
+  {
+   "name": "tauben",
+   "typ": "ueberflug",
+   "titel": "Tauben fliegen auf",
+   "text": "Zweimal pro Durchlauf schrecken Tauben im Gemäuer auf und flattern über dich hinweg zum Himmel.",
+   "ziel_lufs": -28,
+   "pegel_art": "spitzen",
+   "erster_s": [
+    32.0,
+    34.0
+   ],
+   "abstand_s": [
+    100,
+    110
+   ],
+   "hoehe": [
+    4,
+    7
+   ],
+   "tempo": [
+    5,
+    8
+   ],
+   "min_dauer": 0.3,
+   "haupt_min_s": 0.5,
+   "bezug_m": 5.0,
+   "hall": 1.0,
+   "vorruf_wahrsch": 0.5,
+   "nachruf_wahrsch": 0.3,
+   "probe_ab": 10.0,
+   "probe_dauer": 40,
+   "sammlung": [
+    {
+     "quelle": "tauben_auffliegen",
+     "hochpass": 200,
+     "zerlegen": {
+      "schwelle_db": 8,
+      "luecke": 0.3,
+      "min_dauer": 0.3,
+      "max_dauer": 4.0,
+      "nachlauf": 0.2
+     },
+     "blende": [
+      10,
+      150
+     ]
+    },
+    {
+     "quelle": "tauben_fluegel",
+     "hochpass": 200,
+     "zerlegen": {
+      "schwelle_db": 8,
+      "luecke": 0.3,
+      "min_dauer": 0.3,
+      "max_dauer": 4.0,
+      "nachlauf": 0.2
+     },
+     "blende": [
+      10,
+      150
+     ]
+    }
+   ],
+   "decke_db": -7.0
+  },
+  {
+   "name": "glocke",
+   "typ": "gebruell",
+   "titel": "Glocke über dem Tal",
+   "text": "Einmal pro Durchlauf schlägt fern über dem Tal eine Glocke; der Klang kommt von den Hängen mehrfach zurück.",
+   "ziel_lufs": -30,
+   "pegel_art": "spitzen",
+   "erster_s": [
+    71.5,
+    73.5
+   ],
+   "abstand_s": [
+    200.0,
+    250.0
+   ],
+   "entfernung": [
+    700,
+    1100
+   ],
+   "hoehe": 20.0,
+   "echos": 5,
+   "echo_umweg_m": [
+    200,
+    1200
+   ],
+   "echo_reflexion": 0.6,
+   "bezug_m": 600,
+   "hall": 1.0,
+   "probe_ab": 65.0,
+   "probe_dauer": 40,
+   "sammlung": [
+    {
+     "quelle": "glocke_fern_inspectorj",
+     "hochpass": 150,
+     "stuecke": 11.0,
+     "blende": [
+      600,
+      3000
+     ]
+    },
+    {
+     "quelle": "glocke_fern_ivolipa",
+     "hochpass": 200,
+     "stuecke": 12.0,
+     "blende": [
+      600,
+      3000
+     ]
+    }
+   ]
+  },
+  {
+   "name": "gesang",
+   "typ": "gebruell",
+   "titel": "Gesang von fern",
+   "text": "Genau einmal weht von weit her Gesang herüber, aus einem Kloster jenseits des Tals – so leise, dass man nicht sicher ist, ob man ihn wirklich gehört hat.",
+   "ziel_lufs": -36,
+   "pegel_art": "spitzen",
+   "erster_s": [
+    98.0,
+    100.0
+   ],
+   "abstand_s": [
+    200.0,
+    250.0
+   ],
+   "entfernung": [
+    400,
+    600
+   ],
+   "hoehe": 15.0,
+   "echos": 3,
+   "echo_umweg_m": [
+    200,
+    800
+   ],
+   "echo_reflexion": 0.5,
+   "bezug_m": 400,
+   "hall": 1.0,
+   "probe_ab": 92.5,
+   "probe_dauer": 40,
+   "sammlung": [
+    {
+     "quelle": "kloster_moenche_glocken",
+     "hochpass": 120,
+     "stuecke": 16.0,
+     "blende": [
+      2500,
+      4000
+     ]
+    }
+   ]
+  }
+ ],
+ "drehbuch": {
+  "glatt_s": 7.0,
+  "kurven": {
+   "wind": [
+    [
+     0.0,
+     0.25
+    ],
+    [
+     22.5,
+     0.4
+    ],
+    [
+     32.5,
+     0.9
+    ],
+    [
+     42.5,
+     0.8
+    ],
+    [
+     55.0,
+     0.5
+    ],
+    [
+     70.0,
+     0.15
+    ],
+    [
+     100.0,
+     0.15
+    ],
+    [
+     120.0,
+     0.25
+    ]
+   ],
+   "regen": [
+    [
+     0.0,
+     0.3
+    ],
+    [
+     35.0,
+     0.4
+    ],
+    [
+     45.0,
+     0.9
+    ],
+    [
+     60.0,
+     0.8
+    ],
+    [
+     72.5,
+     0.3
+    ],
+    [
+     85.0,
+     0.1
+    ],
+    [
+     105.0,
+     0.1
+    ],
+    [
+     120.0,
+     0.3
+    ]
+   ]
+  },
+  "text": [
+   [
+    0.0,
+    "Nieselregen, zwei Käuze rufen sich zu."
+   ],
+   [
+    27.5,
+    "Eine Böe – das leere Fenster pfeift, Tauben schrecken im Gemäuer auf."
+   ],
+   [
+    45.0,
+    "Der Regen wird stärker, mehr Tropfen fallen innen auf den Stein."
+   ],
+   [
+    70.0,
+    "Der Wind legt sich, fern über dem Tal schlägt eine Glocke."
+   ],
+   [
+    87.5,
+    "Stille, nur noch Tropfen."
+   ],
+   [
+    100.0,
+    "Von weit her weht Gesang herüber."
+   ],
+   [
+    112.5,
+    "Nieselregen setzt wieder ein."
+   ]
+  ]
+ }
+}

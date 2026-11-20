@@ -118,7 +118,14 @@
      "tiefpass": 3000
     }
    ],
-   "text": "Brandung und Dünung weit draußen, rund um den Horizont. Sie kommt über die Bordkante herein und ist deshalb gedämpft."
+   "text": "Brandung und Dünung weit draußen, rund um den Horizont. Sie kommt über die Bordkante herein und ist deshalb gedämpft.",
+   "folgt": {
+    "kurve": "see",
+    "db": [
+     -3,
+     3
+    ]
+   }
   },
   {
    "name": "wind",
@@ -166,7 +173,14 @@
     }
    ],
    "text": "Ein schwacher Wind, der langsam an- und abschwillt; in den Böen frischt er auf – dieselben Böen, die das Segel füllen.",
-   "boe_db": 4.0
+   "boe_db": 4.0,
+   "folgt": {
+    "kurve": "wind",
+    "db": [
+     -3,
+     3
+    ]
+   }
   },
   {
    "name": "wellen",
@@ -993,7 +1007,18 @@
     4,
     8
    ],
-   "wucht_max": 0.8
+   "wucht_max": 0.8,
+   "folgt": {
+    "kurve": "see",
+    "rate": [
+     0.6,
+     1.6
+    ],
+    "db": [
+     -3,
+     3
+    ]
+   }
   },
   {
    "name": "rumpf",
@@ -1456,7 +1481,14 @@
    "text": "Schwapps und Klatscher gegen die Planken – auf der Seite, die beim Rollen gerade eintaucht. Harte Schläge bringen den Rumpf zum Schwingen: tiefe Eigenschwingungen des Holzes, die man im liegenden Körper spüren würde.",
    "wucht_pegel": 0.4,
    "wucht_exponent": 2.0,
-   "wucht_bezug": 0.75
+   "wucht_bezug": 0.75,
+   "folgt": {
+    "kurve": "see",
+    "db": [
+     -3,
+     3
+    ]
+   }
   },
   {
    "name": "knarzen",
@@ -1666,7 +1698,14 @@
      }
     }
    ],
-   "text": "Dollen, Duchten und Spanten arbeiten, wenn das Boot sich neigt. Diese Klänge bleiben fest am Boot."
+   "text": "Dollen, Duchten und Spanten arbeiten, wenn das Boot sich neigt. Diese Klänge bleiben fest am Boot.",
+   "folgt": {
+    "kurve": "see",
+    "rate": [
+     0.7,
+     1.4
+    ]
+   }
   },
   {
    "name": "segel",
@@ -1910,7 +1949,96 @@
     }
    ],
    "text": "Sieben Möwen kreisen in 6 bis 26 m Höhe ums Boot, rufen und antworten einander.",
-   "decke_db": -7.0
+   "decke_db": -7.0,
+   "folgt": {
+    "kurve": "wind",
+    "rate": [
+     0.8,
+     1.3
+    ]
+   },
+   "aufschrecken": {
+    "schwelle": 1.3,
+    "wahrsch": 0.8,
+    "abstand_s": 30,
+    "rufe": [
+     3,
+     6
+    ],
+    "pegel": 1.4,
+    "flatter_wahrsch": 0.5,
+    "flatter_pegel": 0.4
+   },
+   "flattern": [
+    {
+     "quelle": "fluegel_schlagen",
+     "hochpass": 250,
+     "entrauschen": 8,
+     "rest_db": -30,
+     "zerlegen": {
+      "schwelle_db": 9,
+      "luecke": 0.45,
+      "min_dauer": 0.5,
+      "max_dauer": 3.0,
+      "nachlauf": 0.1
+     },
+     "blende": [
+      10,
+      120
+     ]
+    },
+    {
+     "quelle": "fluegel_elster",
+     "hochpass": 250,
+     "entrauschen": 8,
+     "rest_db": -30,
+     "zerlegen": {
+      "schwelle_db": 9,
+      "luecke": 0.45,
+      "min_dauer": 0.5,
+      "max_dauer": 3.0,
+      "nachlauf": 0.1
+     },
+     "blende": [
+      10,
+      120
+     ]
+    },
+    {
+     "quelle": "fluegel_gross",
+     "hochpass": 250,
+     "entrauschen": 8,
+     "rest_db": -30,
+     "zerlegen": {
+      "schwelle_db": 9,
+      "luecke": 0.45,
+      "min_dauer": 0.5,
+      "max_dauer": 3.0,
+      "nachlauf": 0.1
+     },
+     "blende": [
+      10,
+      120
+     ]
+    },
+    {
+     "quelle": "fluegel_leicht",
+     "hochpass": 250,
+     "entrauschen": 8,
+     "rest_db": -30,
+     "zerlegen": {
+      "schwelle_db": 9,
+      "luecke": 0.45,
+      "min_dauer": 0.5,
+      "max_dauer": 3.0,
+      "nachlauf": 0.1
+     },
+     "blende": [
+      10,
+      120
+     ]
+    }
+   ]
   },
   {
    "name": "ueberflug",
@@ -2432,7 +2560,18 @@
       "obertoene": 0.35
      }
     }
-   ]
+   ],
+   "folgt": {
+    "kurve": "see",
+    "rate": [
+     0.2,
+     2.6
+    ],
+    "db": [
+     -4,
+     3
+    ]
+   }
   }
  ],
  "boeen": {
@@ -2486,6 +2625,101 @@
    "moewen_weit",
    "moewen_fern",
    "ueberflug"
+  ]
+ },
+ "drehbuch": {
+  "glatt_s": 12,
+  "kurven": {
+   "wind": [
+    [
+     0,
+     0.25
+    ],
+    [
+     40,
+     0.35
+    ],
+    [
+     70,
+     0.75
+    ],
+    [
+     100,
+     0.95
+    ],
+    [
+     125,
+     0.8
+    ],
+    [
+     150,
+     0.4
+    ],
+    [
+     180,
+     0.25
+    ],
+    [
+     200,
+     0.25
+    ]
+   ],
+   "see": [
+    [
+     0,
+     0.3
+    ],
+    [
+     60,
+     0.35
+    ],
+    [
+     95,
+     0.75
+    ],
+    [
+     125,
+     1.0
+    ],
+    [
+     150,
+     0.8
+    ],
+    [
+     175,
+     0.4
+    ],
+    [
+     200,
+     0.3
+    ]
+   ]
+  },
+  "text": [
+   [
+    0,
+    "Ruhige See, die Möwen kreisen entspannt."
+   ],
+   [
+    45,
+    "Der Wind frischt auf, das Segel fängt sich öfter."
+   ],
+   [
+    80,
+    "Die Wellen werden höher, der Rumpf schlägt härter; die Möwen rufen aufgeregter, ihre Schreie klingen verweht."
+   ],
+   [
+    112,
+    "Schwere See: Brecher schlagen dicht hintereinander an den Felsen."
+   ],
+   [
+    150,
+    "Der Wind flaut ab, die See beruhigt sich."
+   ],
+   [
+    178,
+    "Ruhe – die Möwen kreisen wieder gelassen."
+   ]
   ]
  }
 }
