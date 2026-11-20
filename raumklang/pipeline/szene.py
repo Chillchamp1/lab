@@ -1083,7 +1083,7 @@ def main():
     sz = json.loads(Path(a.szene).read_text())
     dauer = a.dauer or sz.get('dauer', 180)
     if a.blick is not None:
-        sz[next(k for k in ('wald', 'ruine', 'kuppel', 'boot') if k in sz)]['blick'] = a.blick
+        sz[next(k for k in ('wald', 'ruine', 'ozean', 'kuppel', 'boot') if k in sz)]['blick'] = a.blick
     t_start = time.time()
     hrtf = HRTF(a.hrtf, FS)
     hrtf.stereo = a.stereo
@@ -1095,6 +1095,10 @@ def main():
         from ruine import Ruine
         umg_cfg = sz['ruine']
         boot = Ruine(umg_cfg, dauer, sz.get('saat', 1))
+    elif 'ozean' in sz:
+        from ozean import Ozean
+        umg_cfg = sz['ozean']
+        boot = Ozean(umg_cfg, dauer, sz.get('saat', 1))
     elif 'kuppel' in sz:
         from kuppel import Kuppel
         umg_cfg = sz['kuppel']
