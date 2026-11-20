@@ -259,7 +259,7 @@ def rendere_quelle(kx, spur, bus, sig, t0, ort_fn, aussen=True, pegel=1.0, hall=
         ist_direkt = weg is wege[0]
         st, v = rendere_pfad(kx.hrtf, sig, weg['entf'], weg['richt'], weg['gang'], pg, weg['ohr'],
                              bus if weg['hall'] else None, hall, weg.get('streu'), start,
-                             bus2 if ist_direkt else None, gew2)
+                             bus2 if ist_direkt else None, gew2, weg.get('luft', True))
         spur.addiere(st, start + v)
 
 

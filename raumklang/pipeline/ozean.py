@@ -89,7 +89,7 @@ class Ozean:
             e_k = r * self.stauch
             # Pegel: Kern rechnet 1/e_k und Luftdämpfung über e_k – zurück auf 1/r, Wasserdämpfung über r,
             # zylindrischer Ausgleich jenseits zyl_ab
-            zurueck = 10 ** ((LUFT_DB_M[None, :] * e_k[:, None] - self._thorp[None, :] * r[:, None]) / 20)
+            zurueck = 10 ** (-self._thorp[None, :] * r[:, None] / 20)        # Kern ohne Luftdämpfung (luft=False)
             amp = e_k / r * np.sqrt(np.maximum(r / self.zyl_ab, 1.0))
             refl = (-self.r_oben) ** n_oben * self.r_grund ** n_grund
             form = self._oben_gang ** n_oben * self._grund_gang ** n_grund
@@ -102,7 +102,7 @@ class Ozean:
                 dl = np.linalg.norm(p - (k + links), axis=1)
                 dr = np.linalg.norm(p - (k - links), axis=1)
                 ohr = np.clip(np.stack([r / dl, r / dr], 1), 0.6, 1.8)
-            weg = dict(name=f'bild_{vz}_{versch:.0f}', entf=e_k, entf_wahr=r, richt=self._kopfbezug(v), gang=gang, ohr=ohr,
+            weg = dict(name=f'bild_{vz}_{versch:.0f}', luft=False, entf=e_k, entf_wahr=r, richt=self._kopfbezug(v), gang=gang, ohr=ohr,
                        hall=not (n_oben or n_grund))
             if len(gang) > 5 and (n_oben or n_grund):
                 weg['gang'] = uniform_filter1d(gang, 5, axis=0, mode='nearest')

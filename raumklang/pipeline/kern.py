@@ -62,7 +62,7 @@ def _ola(rahmen):
 
 
 def rendere_pfad(hrtf, sig, entf, richt, gang=None, pegel=None, ohr=None, bus=None, hall_pegel=0.0, streu=None, start=0,
-                 bus2=None, bus2_gewicht=None):
+                 bus2=None, bus2_gewicht=None, luft=True):
     """Rendert einen Pfad.
 
     sig    Mono-Signal der Quelle
@@ -89,9 +89,12 @@ def rendere_pfad(hrtf, sig, entf, richt, gang=None, pegel=None, ohr=None, bus=No
     for a in range(0, n_b, schritt):
         b = min(a + schritt, n_b)
         X = np.fft.rfft(y[idx[a:b]] * FENSTER, NFFT, axis=-1).astype(np.complex64)
-        G = (10 ** (-LUFT_DB_M[None, :] * entf[a:b, None] / 20)).astype(np.float32)
-        if gang is not None:
-            G = G * gang[a:b]
+        if luft:
+            G = (10 ** (-LUFT_DB_M[None, :] * entf[a:b, None] / 20)).astype(np.float32)
+            if gang is not None:
+                G = G * gang[a:b]
+        else:              # Weg ohne Luft (z. B. im Wasser): Dämpfung steckt im Frequenzgang des Wegs
+            G = np.ones((b - a, len(FREQ)), np.float32) if gang is None else gang[a:b].astype(np.float32)
         G = G * amp[a:b, None].astype(np.float32)
         X = X * G * _PHASE_VORHALT
         if streu is not None:
