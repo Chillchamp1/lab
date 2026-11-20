@@ -1,0 +1,137 @@
+{
+ "szene": "ozean",
+ "stand": "20.11.2026 12:05",
+ "dauer": 120,
+ "schleife": true,
+ "abtastwerte": 5292000,
+ "hrtf": "subject_040.sofa",
+ "blick": 55,
+ "titel": "Hören wie ein Meerestier",
+ "text": "Keine Kuppel: Du schwebst selbst im offenen Meer, achtzehn Meter tief, und hörst, wie ein Tier dort hören könnte. Schall trägt im Wasser kilometerweit – Wale singen aus vielen Kilometern Entfernung, jeder Ruf kommt über Oberfläche und Grund mehrfach an und rollt lange nach. Delfine ziehen vorbei, das Riff knistert fern, und einmal schwimmt ein Wal ganz nah an dir vorbei.",
+ "gruppen": [
+  {
+   "name": "riff",
+   "titel": "Das Meer ringsum",
+   "text": "Fernes Knistern vom Riff und das Rauschen der Oberfläche, aus allen Richtungen.",
+   "typ": "bett",
+   "ziel_lufs": -33,
+   "pegel_art": "integriert",
+   "spitze_db": -17.1,
+   "begrenzt_db": 0.0,
+   "sekunden": 320.5,
+   "probe_abtastwerte": 1323000
+  },
+  {
+   "name": "delfine",
+   "titel": "Delfine in der Nähe",
+   "text": "Eine Gruppe Delfine zieht in 20 bis 150 Metern vorbei, pfeift und klickt; die Pfiffe kommen über Oberfläche und Grund mehrfach an.",
+   "typ": "schwarm",
+   "ziel_lufs": -27,
+   "pegel_art": "spitzen",
+   "spitze_db": -10.9,
+   "begrenzt_db": 0.0,
+   "sekunden": 28.6,
+   "rufe": 27,
+   "aufgeschreckt": 0,
+   "probe_abtastwerte": 1323000
+  },
+  {
+   "name": "delfin_nah",
+   "titel": "Ein Delfin schaut vorbei",
+   "text": "Zwei-, dreimal pro Durchlauf schießt ein Delfin dicht an dir vorbei.",
+   "typ": "ueberflug",
+   "ziel_lufs": -25,
+   "pegel_art": "spitzen",
+   "spitze_db": -11.8,
+   "begrenzt_db": 0.0,
+   "sekunden": 1.8,
+   "zeiten": [
+    20.3
+   ],
+   "probe_abtastwerte": 1323000
+  },
+  {
+   "name": "wale",
+   "titel": "Buckelwale in der Ferne",
+   "text": "Buckelwale singen aus 1,5 bis 9 Kilometern – im Wasser trägt der Schall so weit, und jeder Ruf rollt lange nach.",
+   "typ": "gebruell",
+   "ziel_lufs": -27,
+   "pegel_art": "spitzen",
+   "spitze_db": -15.7,
+   "begrenzt_db": 0.0,
+   "sekunden": 35.8,
+   "rufe": [
+    4.8,
+    27.2,
+    48.6,
+    81.9
+   ],
+   "probe_abtastwerte": 1764000
+  },
+  {
+   "name": "wal_nah",
+   "titel": "Ein Wal schwimmt vorbei",
+   "text": "Einmal pro Durchlauf zieht ein Wal in wenigen Metern an dir vorbei und singt dabei tief und lang.",
+   "typ": "ueberflug",
+   "ziel_lufs": -24,
+   "pegel_art": "spitzen",
+   "spitze_db": -13.7,
+   "begrenzt_db": 0.0,
+   "sekunden": 7.2,
+   "zeiten": [
+    65.6
+   ],
+   "probe_abtastwerte": 1764000
+  }
+ ],
+ "drehbuch": [
+  [
+   8.4,
+   "Die Delfine ziehen weiter; die Wale kommen näher, ihr Gesang wird voller."
+  ],
+  [
+   28.4,
+   "Ein Wal schwimmt dicht an dir vorbei."
+  ],
+  [
+   48.4,
+   "Die Delfine kommen zurück."
+  ],
+  [
+   65.9,
+   "Die Wale entfernen sich wieder in die Weite."
+  ],
+  [
+   83.4,
+   "Stille Weite, ganz fern singt ein Wal – sein Lied kommt aus vielen Kilometern."
+  ],
+  [
+   98.4,
+   "Eine Delfingruppe kommt vorbei, pfeift und klickt."
+  ]
+ ],
+ "start_verschoben_s": 36.63,
+ "start_abtastwerte": 1615185,
+ "begrenzer_max_db": 0.0,
+ "lufs": -23.0,
+ "naht": {
+  "sprung_naht": 0.0017,
+  "sprung_typisch_999": 0.2626,
+  "pegelsprung_naht_db": 0.14,
+  "pegelsprung_typisch_95_db": 3.69
+ },
+ "quellen": [
+  "delfin_amazonas",
+  "delfin_gomera",
+  "delfin_karibik",
+  "delfin_unterwasser",
+  "unterwasser_fission",
+  "unterwasser_kinoton",
+  "unterwasser_riff",
+  "wal_buckel_aus",
+  "wal_buckel_orca",
+  "wal_gesang",
+  "wal_tauchen",
+  "wal_tief"
+ ]
+}

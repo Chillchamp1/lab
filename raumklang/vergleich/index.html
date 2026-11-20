@@ -112,22 +112,13 @@
 const KRAFT = { id: 'kraft', text: 'Wo hat es mehr <b>Wucht</b> – spürst du die kräftigen Momente (Brecher, Schläge, Tritte) mehr im Körper?' };
 const NATUR = { id: 'natur', text: 'Welche klingt <b>natürlicher</b> – mehr wie wirklich draußen?' };
 const RUHE = { id: 'ruhe', text: 'Bei welcher würdest du dich lieber <b>hinlegen und entspannen</b>?' };
-const VERGLEICHE = [{
-  id: 'wald_neu',
-  titel: 'Wald: bisher gegen neu',
-  text: 'Gleich laut, gleiche Zeitachse. Neu: Tritte aus echten schweren Aufprallen auf Waldboden statt Türklopfen, der Boden schwingt bei jedem Tritt mit; Gebrüll mit Brustkorb-Resonanz; echte Äste, echter Bach, Regen auf Blättern.',
-  a: { name: 'bisher', datei: '../audio/vergleich/wald_bisher.mp3' },
-  b: { name: 'neu', datei: '../audio/wald.mp3' },
-  abtastwerte: 10584000, fs: 44100, durchgaenge: 10, ausschnitt_s: 20, fragen: [KRAFT, NATUR, RUHE],
-}, {
-  id: 'meer_neu',
-  titel: 'Meer: bisher gegen neu',
-  text: 'Gleich laut, gleiche Zeitachse. Neu: harte Brecher grollen tief, Schläge gegen den Rumpf bringen das Holz zum Schwingen; echtes Segeltuch, echte Flügelschläge, mehr Möwenstimmen.',
-  a: { name: 'bisher', datei: '../audio/vergleich/boot_bisher.mp3' },
-  b: { name: 'neu', datei: '../audio/boot.mp3' },
-  abtastwerte: 8820000, fs: 44100, durchgaenge: 10, ausschnitt_s: 20, fragen: [KRAFT, NATUR, RUHE],
-}];
+const VERGLEICHE = [];   // gerade kein Vergleich: Wald und Meer sind jetzt 10 Minuten lang, die alten Fassungen passen nicht mehr daneben
 
+if (!VERGLEICHE.length) {
+  document.querySelector('main').insertAdjacentHTML('beforeend', '<section class="karte"><h2>Gerade kein Vergleich</h2><p class="leise">Der nächste Blindvergleich kommt, sobald es zwei Fassungen zum Gegenüberstellen gibt.</p></section>');
+  document.getElementById('start').remove();
+  throw new Error('kein Vergleich');
+}
 const V = VERGLEICHE.find(v => v.id === new URLSearchParams(location.search).get('v')) || VERGLEICHE[0];
 const SCHLUESSEL = 'blindvergleich-v2-' + V.id;
 const FRAGEN = V.fragen;

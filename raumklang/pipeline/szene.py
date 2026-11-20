@@ -156,6 +156,28 @@ class Kontext:
         self.weite = None        # dict(ab_m, voll_m, ...): ferne Quellen speisen einen langen, dumpfen Weitenhall
         self.bus_weite = None
         self.flimmern = None     # dict(ab_m, voll_m, db, hz): Luftflimmern ferner Quellen
+        self.kurven = {}         # Drehbuch: name -> (tk, werte 0..1), periodisch über die Szenendauer
+
+    def kurve(self, name, t):
+        """Wert einer Drehbuch-Kurve (0..1) zur Zeit t; ohne Drehbuch 0,5."""
+        if name not in self.kurven:
+            return np.full(np.shape(t), 0.5) if np.ndim(t) else 0.5
+        tk, v = self.kurven[name]
+        return np.interp(t, tk, v, period=self.dauer)
+
+    def folge(self, g, t):
+        """Wie stark eine Gruppe dem Drehbuch folgt: (Ratenfaktor, Pegelfaktor) zur Zeit t.
+        g['folgt'] = {kurve, rate: [bei 0, bei 1], db: [bei 0, bei 1], invers}"""
+        f = g.get('folgt')
+        if not f:
+            return (np.ones(np.shape(t)), np.ones(np.shape(t))) if np.ndim(t) else (1.0, 1.0)
+        v = self.kurve(f['kurve'], t)
+        if f.get('invers'):
+            v = 1 - v
+        v = v ** f.get('exponent', 1.0)        # > 1: erst kurz vor dem Ende der Kurve deutlich
+        r0, r1 = f.get('rate', [1, 1])
+        d0, d1 = f.get('db', [0, 0])
+        return r0 + (r1 - r0) * v, 10 ** ((d0 + (d1 - d0) * v) / 20)
 
     def boe(self, t):
         """Gemeinsame Böenkurve der Szene (Mittel 0, Streuung 1, periodisch): Wind und Segel
@@ -164,22 +186,42 @@ class Kontext:
         return np.interp(t, tk, b, period=self.dauer)
 
 
-def boeenkurve(rng, dauer, cfg):
-    """Langsames Grundwehen plus einzelne Böen von einigen Sekunden; periodisch über die Dauer."""
+def baue_kurven(sz, dauer):
+    """Drehbuch-Kurven aus Stützstellen [[t, wert], ...] (Wert 0..1): weich und periodisch, damit
+    der Bogen in der Schleife aufgeht."""
+    from scipy.ndimage import uniform_filter1d
+    rate = 10.0
+    tk = np.arange(int(round(dauer * rate))) / rate
+    aus = {}
+    for name, punkte in (sz.get('drehbuch', {}).get('kurven') or {}).items():
+        pt = np.array(punkte, float)
+        v = np.interp(tk, pt[:, 0], pt[:, 1], period=dauer)
+        v = uniform_filter1d(v, int(sz['drehbuch'].get('glatt_s', 12) * rate), mode='wrap')
+        aus[name] = (tk, np.clip(v, 0, 1))
+    return aus
+
+
+def boeenkurve(rng, dauer, cfg, wind=None):
+    """Langsames Grundwehen plus einzelne Böen von einigen Sekunden; periodisch über die Dauer.
+    Mit Drehbuch-Kurve `wind` (tk, 0..1): Böen werden bei viel Wind häufiger und stärker, und das
+    Grundwehen folgt der Kurve."""
     rate = 10.0
     n = int(round(dauer * rate))
     grund = _rauschkurve(rng, n, rate, cfg.get('grund_hz', 0.03))
     boeen = np.zeros(n)
     t = np.arange(n) / rate
+    w_t = (lambda x: float(np.interp(x, wind[0], wind[1], period=dauer))) if wind else (lambda x: 0.5)
     tb = rng.uniform(0, cfg.get('abstand_s', 22))
     while tb < dauer:
         d = rng.uniform(*cfg.get('dauer_s', [3, 8]))
-        st = rng.uniform(0.6, 1.4)
+        st = rng.uniform(0.6, 1.4) * (0.3 + 1.4 * w_t(tb))
         for k in (-1, 0, 1):                        # kreisförmig: Böen über die Naht
             u = (t - tb - k * dauer) / d
             boeen += st * np.where((u > 0) & (u < 1), np.clip(np.sin(np.pi * u), 0, None) ** 1.5 * (1 + 0.25 * np.sin(2 * np.pi * 3 * u)), 0)
-        tb += rng.exponential(cfg.get('abstand_s', 22)) + d
+        tb += rng.exponential(cfg.get('abstand_s', 22)) * (1.5 - w_t(tb)) + d
     b = 0.6 * grund + 2.2 * boeen
+    if wind:
+        b = b + cfg.get('wind_gewicht', 2.5) * (np.interp(t, wind[0], wind[1], period=dauer) - 0.5)
     b = (b - b.mean()) / b.std()
     return t, b
 
@@ -259,7 +301,7 @@ def rendere_quelle(kx, spur, bus, sig, t0, ort_fn, aussen=True, pegel=1.0, hall=
         ist_direkt = weg is wege[0]
         st, v = rendere_pfad(kx.hrtf, sig, weg['entf'], weg['richt'], weg['gang'], pg, weg['ohr'],
                              bus if weg['hall'] else None, hall, weg.get('streu'), start,
-                             bus2 if ist_direkt else None, gew2)
+                             bus2 if ist_direkt else None, gew2, weg.get('luft', True))
         spur.addiere(st, start + v)
 
 
@@ -316,7 +358,7 @@ def gen_bett(kx, g, spur, bus):
             p = 10 ** (tiefe * np.interp(t, tk, atem, period=kx.dauer) / 20)
             if g.get('boe_db'):
                 p = p * 10 ** (g['boe_db'] * kx.boe(t) / 20)
-            return p
+            return p * kx.folge(g, t)[1]
 
         bezug = r0 if punkt is None else g.get('bezug_m', 3.0)
         rendere_kreis(kx, spur, bus, sig.astype(np.float32), ort, True, bezug, g.get('hall', 0.0), pg)
@@ -346,7 +388,7 @@ def gen_ereignisse(kx, g, spur, bus):
         if g.get('punkt'):            # feste Stelle in der Welt (z. B. ein Felsen), Brecher streuen entlang
             p0 = np.array(g['punkt'], float) + np.r_[rng.normal(0, g.get('punkt_streuung_m', 3.0), 2), 0]
         ziel = np.array([np.cos(wind), np.sin(wind), 0]) * v
-        staerke = 10 ** (rng.normal(0, g.get('streuung_db', 3.0)) / 20)
+        staerke = 10 ** (rng.normal(0, g.get('streuung_db', 3.0)) / 20) * kx.folge(g, t)[1]
         if rng.random() < g.get('ausreisser_wahrsch', 0.0):     # ab und zu eine deutlich stärkere
             staerke *= 10 ** (rng.uniform(*g.get('ausreisser_db', [4, 8])) / 20)
 
@@ -355,7 +397,7 @@ def gen_ereignisse(kx, g, spur, bus):
 
         # Bezugsentfernung: ein Kamm in 12 m hat den Nennpegel
         rendere_quelle(kx, spur, bus, kraft(e, staerke, g), t, ort, True, g.get('bezug_m', 12.0) * staerke, g.get('hall', 0.0))
-        t += rng.exponential(g.get('abstand_s', 2.5))
+        t += rng.exponential(g.get('abstand_s', 2.5)) / max(kx.folge(g, t)[0], 0.02)
 
 
 class Vogel:
@@ -419,15 +461,44 @@ def gen_schwarm(kx, g, spur, bus):
         for j in kette:
             wahl = nach_stimme[stimmen[j]]
             e = wahl[int(rng.integers(len(wahl)))]
-            staerke = 10 ** (rng.normal(0, 2.5) / 20)
+            staerke = 10 ** (rng.normal(0, 2.5) / 20) * kx.folge(g, tt)[1]
             # leichte Tonhöhenvariation je Ruf, damit sich nichts hörbar wiederholt
             fak = 2 ** (rng.normal(0, g.get('tonhoehe_streuung_ht', 0.35)) / 12)
             sig = np.interp(np.arange(0, len(e['sig']) - 1, fak), np.arange(len(e['sig'])), e['sig']).astype(np.float32)
             rendere_quelle(kx, spur, bus, sig, tt, voegel[j].ort, True, g.get('bezug_m', 15.0) * staerke, g.get('hall', 0.0))
             n_rufe += 1
             tt += e['dauer'] * rng.uniform(0.5, 1.1) + rng.uniform(0.1, 0.9)
-        t += rng.exponential(g.get('abstand_s', 4.0))
-    return dict(rufe=n_rufe)
+        t += rng.exponential(g.get('abstand_s', 4.0)) / max(kx.folge(g, t)[0], 0.02)
+    n_auf = 0
+    a = g.get('aufschrecken')
+    if a:
+        # Böe über der Schwelle: Vögel schrecken auf – ein Schwall aufgeregter Rufe, einige fliegen
+        # flatternd los. Nur steigende Durchgänge, mit Mindestabstand.
+        flattern = kx.bib.ereignisse(g['flattern']) if g.get('flattern') else []
+        tk = np.arange(int(kx.dauer * 10)) / 10.0
+        b = kx.boe(tk)
+        ueber = b > a.get('schwelle', 1.2)
+        letzt = -1e9
+        for i in np.flatnonzero(ueber & ~np.roll(ueber, 1)):
+            tc = tk[i]
+            if tc - letzt < a.get('abstand_s', 25) or rng.random() > a.get('wahrsch', 0.8):
+                continue
+            letzt = tc
+            n_auf += 1
+            tt = tc + rng.uniform(0.2, 1.0)
+            for _ in range(int(rng.integers(*a.get('rufe', [3, 7])))):
+                j = int(rng.integers(len(voegel)))
+                wahl = nach_stimme[stimmen[j]]
+                e = wahl[int(rng.integers(len(wahl)))]
+                fak = 2 ** (rng.normal(0.5, 0.4) / 12)          # aufgeregt: etwas höher
+                sig = np.interp(np.arange(0, len(e['sig']) - 1, fak), np.arange(len(e['sig'])), e['sig']).astype(np.float32)
+                rendere_quelle(kx, spur, bus, sig, tt, voegel[j].ort, True, g.get('bezug_m', 15.0) * a.get('pegel', 1.4), g.get('hall', 0.0))
+                if flattern and rng.random() < a.get('flatter_wahrsch', 0.6):
+                    f = flattern[int(rng.integers(len(flattern)))]
+                    rendere_quelle(kx, spur, bus, _variante(rng, f['sig'], 1.0), tt - rng.uniform(0, 0.4), voegel[j].ort, True,
+                                   g.get('bezug_m', 15.0) * a.get('flatter_pegel', 0.5), g.get('hall', 0.0))
+                tt += rng.uniform(0.15, 0.7)
+    return dict(rufe=n_rufe, aufgeschreckt=n_auf)
 
 
 def gen_ueberflug(kx, g, spur, bus):
@@ -538,6 +609,7 @@ def gen_rumpf(kx, g, spur, bus):
         t += rng.exponential(g.get('schwapp_abstand_s', 1.8))
     for t, seite, staerke, wahl in zeiten:
         e = wahl[int(rng.integers(len(wahl)))]
+        staerke = staerke * kx.folge(g, t)[1]
         sig = kraft(e, staerke / g.get('wucht_bezug', 0.75), g)
         pa = _rumpfpunkt(kx.boot, rng, seite, True)
         pi = pa.copy()
@@ -567,7 +639,7 @@ def gen_knarzen(kx, g, spur, bus):
     letzte = -1
     n = 0
     for t, seite, staerke in b.rollumkehr(0.0, kx.dauer):
-        if rng.random() > g.get('wahrsch', 0.55) * (0.3 + 0.7 * staerke):
+        if rng.random() > g.get('wahrsch', 0.55) * (0.3 + 0.7 * staerke) * kx.folge(g, t)[0]:
             continue
         for _ in range(int(rng.integers(1, 3))):
             k = int(rng.integers(len(stellen)))
@@ -958,9 +1030,13 @@ def gen_gebruell(kx, g, spur, bus):
     t = rng.uniform(*g.get('erster_s', [20, 40]))
     erster = t
     liste = []
-    while t < kx.dauer + erster - g.get('abstand_s', [35, 70])[0]:
+    while not liste or t < kx.dauer + erster - g.get('abstand_s', [35, 70])[0]:   # mindestens einer
         e = _wahl(rng, ev)
         d = rng.uniform(*g.get('entfernung', [350, 700]))
+        if g.get('naehe_folgt'):            # Drehbuch: die Rufer kommen näher und ziehen wieder weg
+            v = kx.kurve(g['naehe_folgt'], t % kx.dauer)
+            e0, e1 = g.get('entfernung', [350, 700])
+            d = e1 + (e0 - e1) * v * rng.uniform(0.8, 1.0)
         az = rng.uniform(0, 2 * np.pi)
         p = np.array([k[0] + d * np.cos(az), k[1] + d * np.sin(az), g.get('hoehe', 8.0)])
         sig = _variante(rng, kraft(e, 1.0, g), 1.0)
@@ -993,7 +1069,7 @@ def gen_gebruell(kx, g, spur, bus):
             rendere_quelle(kx, spur, bus, sig, t, _fest(p2), True,
                            g.get('bezug_m', 400.0) * g.get('echo_reflexion', 0.55) * rng.uniform(0.6, 1.0), g.get('hall', 1.0))
         liste.append(round(float(t) % kx.dauer, 1))
-        t += rng.uniform(*g.get('abstand_s', [35, 70]))
+        t += rng.uniform(*g.get('abstand_s', [35, 70])) / max(kx.folge(g, t % kx.dauer)[0], 0.05)
     return dict(rufe=liste)
 
 
@@ -1083,7 +1159,7 @@ def main():
     sz = json.loads(Path(a.szene).read_text())
     dauer = a.dauer or sz.get('dauer', 180)
     if a.blick is not None:
-        sz[next(k for k in ('wald', 'kuppel', 'boot') if k in sz)]['blick'] = a.blick
+        sz[next(k for k in ('wald', 'ruine', 'ozean', 'kuppel', 'boot') if k in sz)]['blick'] = a.blick
     t_start = time.time()
     hrtf = HRTF(a.hrtf, FS)
     hrtf.stereo = a.stereo
@@ -1091,6 +1167,14 @@ def main():
         from wald import Wald
         umg_cfg = sz['wald']
         boot = Wald(umg_cfg, dauer, sz.get('saat', 1))
+    elif 'ruine' in sz:
+        from ruine import Ruine
+        umg_cfg = sz['ruine']
+        boot = Ruine(umg_cfg, dauer, sz.get('saat', 1))
+    elif 'ozean' in sz:
+        from ozean import Ozean
+        umg_cfg = sz['ozean']
+        boot = Ozean(umg_cfg, dauer, sz.get('saat', 1))
     elif 'kuppel' in sz:
         from kuppel import Kuppel
         umg_cfg = sz['kuppel']
@@ -1102,16 +1186,19 @@ def main():
     nur = set(filter(None, a.nur.split(',')))
     hall_ir = diffuser_nachhall(hrtf, **sz.get('nachhall', {}))
     weite_ir = diffuser_nachhall(hrtf, **sz['weite']['nachhall']) if sz.get('weite') else None
-    boe = boeenkurve(np.random.default_rng(sz.get('saat', 1) * 7 + 3), dauer, sz.get('boeen', {}))
+    kurven = baue_kurven(sz, dauer)
+    boe = boeenkurve(np.random.default_rng(sz.get('saat', 1) * 7 + 3), dauer, sz.get('boeen', {}), kurven.get('wind'))
     name = a.name or sz['name']
     bericht = dict(szene=name, stand=datetime.now(ZoneInfo('Europe/Berlin')).strftime('%d.%m.%Y %H:%M'), dauer=dauer, schleife=True, abtastwerte=int(round(dauer * FS)),
-                   hrtf=Path(a.hrtf).name, blick=umg_cfg.get('blick', 55), titel=sz.get('titel', name), text=sz.get('text', ''), gruppen=[])
+                   hrtf=Path(a.hrtf).name, blick=umg_cfg.get('blick', 55), titel=sz.get('titel', name), text=sz.get('text', ''), gruppen=[],
+                   drehbuch=sz.get('drehbuch', {}).get('text', []))
     summe = np.zeros((2, int(round(dauer * FS))), np.float32)
     for i, g in enumerate(sz['gruppen']):
         if nur and g['name'] not in nur:
             continue
         t0 = time.time()
         kx = Kontext(hrtf, boot, bib, dauer, np.random.default_rng(sz.get('saat', 1) * 1000 + i), boe)
+        kx.kurven = kurven
         spur, bus = Spur(dauer), Spur(dauer, 1)
         kx.weite, kx.flimmern, kx.windtragen, kx.gruppe = sz.get('weite'), sz.get('flimmern'), sz.get('windtragen'), g['name']
         kx.bus_weite = Spur(dauer, 1) if kx.weite else None
@@ -1163,6 +1250,8 @@ def main():
         summe = np.roll(summe, -ruhig, axis=1)
         bericht['start_verschoben_s'] = round(ruhig / FS, 2)
         bericht['start_abtastwerte'] = int(ruhig)          # genau – für Vergleichsfassungen (--drehung) diesen Wert nehmen
+        # Drehbuch-Zeiten auf die Datei beziehen (die Schleife beginnt bei `ruhig`)
+        bericht['drehbuch'] = sorted([[round((tt - ruhig / FS) % dauer, 1), x] for tt, x in bericht['drehbuch']])
         bericht['begrenzer_max_db'] = round(weg, 1)
         bericht['lufs'] = round(lautheit(summe), 1)
         bericht['naht'] = nahtpruefung(summe)

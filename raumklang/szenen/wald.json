@@ -2,7 +2,7 @@
  "name": "wald",
  "titel": "Im Dinosaurierwald im Herbstregen",
  "text": "Du sitzt angelehnt an einen Baumstamm unter dem Blätterdach. Es regnet, auf großen Blättern über dir trommelt es wie auf einem Zeltdach, ein Bach fließt rechts neben dir, Vögel singen in den Bäumen. Weit weg rufen Pflanzenfresser, manchmal gröhlt etwas Riesiges über das Tal; ab und zu stapft einer vorbei und bricht Äste, einer kommt zum Äsen nah heran und schnuppert an dir.",
- "dauer": 240,
+ "dauer": 600,
  "saat": 21,
  "ziel_lufs": -23,
  "wald": {
@@ -116,7 +116,14 @@
      "hochpass": 250
     }
    ],
-   "decke_db": -6.0
+   "decke_db": -6.0,
+   "folgt": {
+    "kurve": "regen",
+    "db": [
+     -9,
+     3
+    ]
+   }
   },
   {
    "name": "wind",
@@ -164,7 +171,14 @@
      "hochpass": 150
     }
    ],
-   "decke_db": -6.0
+   "decke_db": -6.0,
+   "folgt": {
+    "kurve": "wind",
+    "db": [
+     -4,
+     4
+    ]
+   }
   },
   {
    "name": "regen_blaetter",
@@ -222,7 +236,14 @@
      "tiefpass": 8000,
      "hochpass": 250
     }
-   ]
+   ],
+   "folgt": {
+    "kurve": "regen",
+    "db": [
+     -10,
+     3
+    ]
+   }
   },
   {
    "name": "tropfen_blatt",
@@ -336,7 +357,14 @@
      }
     }
    ],
-   "decke_db": -6.0
+   "decke_db": -6.0,
+   "folgt": {
+    "kurve": "regen",
+    "rate": [
+     0.6,
+     1.5
+    ]
+   }
   },
   {
    "name": "tropfen_pfuetze",
@@ -504,7 +532,14 @@
      }
     }
    ],
-   "decke_db": -6.0
+   "decke_db": -6.0,
+   "folgt": {
+    "kurve": "regen",
+    "rate": [
+     0.3,
+     1.6
+    ]
+   }
   },
   {
    "name": "rinnsal",
@@ -563,7 +598,14 @@
      "hochpass": 100
     }
    ],
-   "decke_db": -6.0
+   "decke_db": -6.0,
+   "folgt": {
+    "kurve": "regen",
+    "db": [
+     -2,
+     2
+    ]
+   }
   },
   {
    "name": "herde",
@@ -794,8 +836,8 @@
   {
    "name": "voegel",
    "typ": "schwarm",
-   "titel": "Waldvögel",
-   "text": "Ein paar Vögel in den Bäumen ringsum, die auch im Regen singen und einander antworten.",
+   "titel": "Vögel in der Regenpause",
+   "text": "Gesang nur, wenn der Regen nachlässt – vorsichtig erst, dann lebhafter.",
    "ziel_lufs": -32,
    "pegel_art": "spitzen",
    "anzahl": 7,
@@ -1026,7 +1068,20 @@
       "nachlauf": 0.15
      }
     }
-   ]
+   ],
+   "folgt": {
+    "kurve": "regen",
+    "invers": true,
+    "rate": [
+     0.02,
+     1.6
+    ],
+    "db": [
+     -6,
+     0
+    ],
+    "exponent": 4.0
+   }
   },
   {
    "name": "gebruell",
@@ -1056,7 +1111,7 @@
    "echo_reflexion": 0.7,
    "bezug_m": 400,
    "hall": 1.2,
-   "probe_ab": 10,
+   "probe_ab": 25.0,
    "probe_dauer": 60,
    "sammlung": [
     {
@@ -1663,7 +1718,7 @@
    "echo_reflexion": 0.65,
    "bezug_m": 250,
    "hall": 1.2,
-   "probe_ab": 0,
+   "probe_ab": 0.0,
    "probe_dauer": 60,
    "sammlung": [
     {
@@ -1886,7 +1941,7 @@
    "echo_reflexion": 0.5,
    "bezug_m": 60,
    "hall": 1.0,
-   "probe_ab": 0,
+   "probe_ab": 0.0,
    "probe_dauer": 60,
    "sammlung": [
     {
@@ -3061,7 +3116,8 @@
    "ziel_lufs": -26,
    "pegel_art": "spitzen",
    "starts_s": [
-    70
+    150,
+    420
    ],
    "richtung_grad": [
     -50,
@@ -3089,7 +3145,7 @@
    "matsch_wahrsch": 0.5,
    "knack_wahrsch": 0.1,
    "rascheln_wahrsch": 0.6,
-   "probe_ab": 60,
+   "probe_ab": 150.0,
    "probe_dauer": 105,
    "zupfen": [
     {
@@ -4128,7 +4184,7 @@
    "hall": 1.0,
    "vorruf_wahrsch": 0.4,
    "nachruf_wahrsch": 0.3,
-   "probe_ab": 25,
+   "probe_ab": 62.5,
    "probe_dauer": 40,
    "sammlung": [
     {
@@ -4188,6 +4244,450 @@
    "text": "Ganz leise, langsame Akkordfläche im Hintergrund.",
    "ziel_lufs": -44,
    "probe_plus_db": 10
+  },
+  {
+   "name": "voegel_rufe",
+   "typ": "schwarm",
+   "titel": "Rufe aus der Deckung",
+   "text": "Bei Regen singen Vögel kaum: nur kurze Kontakt- und Warnrufe, gedämpft aus dem Unterholz. Reißt eine Böe an den Kronen, fliegen einige schimpfend auf.",
+   "ziel_lufs": -35,
+   "pegel_art": "spitzen",
+   "anzahl": 6,
+   "radius": [
+    6,
+    28
+   ],
+   "hoehe": [
+    1.5,
+    6
+   ],
+   "tempo": [
+    0.3,
+    1.2
+   ],
+   "mitte_streuung": 6,
+   "abstand_s": 6,
+   "antwort_wahrsch": 0.4,
+   "bezug_m": 10,
+   "tonhoehe_streuung_ht": 0.3,
+   "hall": 0.8,
+   "sammlung": [
+    {
+     "quelle": "esc_1-54918-A",
+     "hochpass": 1200,
+     "entrauschen": 12,
+     "rest_db": -26,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.15,
+      "min_dauer": 0.04,
+      "max_dauer": 0.35,
+      "nachlauf": 0.15
+     },
+     "tiefpass": 6000
+    },
+    {
+     "quelle": "esc_1-54918-B",
+     "hochpass": 1200,
+     "entrauschen": 12,
+     "rest_db": -26,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.15,
+      "min_dauer": 0.04,
+      "max_dauer": 0.35,
+      "nachlauf": 0.15
+     },
+     "tiefpass": 6000
+    },
+    {
+     "quelle": "esc_2-122616-A",
+     "hochpass": 1200,
+     "entrauschen": 12,
+     "rest_db": -26,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.15,
+      "min_dauer": 0.04,
+      "max_dauer": 0.35,
+      "nachlauf": 0.15
+     },
+     "tiefpass": 6000
+    },
+    {
+     "quelle": "esc_3-156581-A",
+     "hochpass": 1200,
+     "entrauschen": 12,
+     "rest_db": -26,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.15,
+      "min_dauer": 0.04,
+      "max_dauer": 0.35,
+      "nachlauf": 0.15
+     },
+     "tiefpass": 6000
+    },
+    {
+     "quelle": "esc_3-156581-B",
+     "hochpass": 1200,
+     "entrauschen": 12,
+     "rest_db": -26,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.15,
+      "min_dauer": 0.04,
+      "max_dauer": 0.35,
+      "nachlauf": 0.15
+     },
+     "tiefpass": 6000
+    },
+    {
+     "quelle": "esc_4-159609-A",
+     "hochpass": 1200,
+     "entrauschen": 12,
+     "rest_db": -26,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.15,
+      "min_dauer": 0.04,
+      "max_dauer": 0.35,
+      "nachlauf": 0.15
+     },
+     "tiefpass": 6000
+    },
+    {
+     "quelle": "esc_4-159609-B",
+     "hochpass": 1200,
+     "entrauschen": 12,
+     "rest_db": -26,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.15,
+      "min_dauer": 0.04,
+      "max_dauer": 0.35,
+      "nachlauf": 0.15
+     },
+     "tiefpass": 6000
+    },
+    {
+     "quelle": "esc_5-242491-A",
+     "hochpass": 1200,
+     "entrauschen": 12,
+     "rest_db": -26,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.15,
+      "min_dauer": 0.04,
+      "max_dauer": 0.35,
+      "nachlauf": 0.15
+     },
+     "tiefpass": 6000
+    },
+    {
+     "quelle": "esc_2-108760-A",
+     "hochpass": 1200,
+     "entrauschen": 12,
+     "rest_db": -26,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.15,
+      "min_dauer": 0.04,
+      "max_dauer": 0.35,
+      "nachlauf": 0.15
+     },
+     "tiefpass": 6000
+    },
+    {
+     "quelle": "esc_2-108760-B",
+     "hochpass": 1200,
+     "entrauschen": 12,
+     "rest_db": -26,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.15,
+      "min_dauer": 0.04,
+      "max_dauer": 0.35,
+      "nachlauf": 0.15
+     },
+     "tiefpass": 6000
+    },
+    {
+     "quelle": "esc_4-223127-A",
+     "hochpass": 1200,
+     "entrauschen": 12,
+     "rest_db": -26,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.15,
+      "min_dauer": 0.04,
+      "max_dauer": 0.35,
+      "nachlauf": 0.15
+     },
+     "tiefpass": 6000
+    },
+    {
+     "quelle": "esc_3-181132-A",
+     "hochpass": 1200,
+     "entrauschen": 12,
+     "rest_db": -26,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.15,
+      "min_dauer": 0.04,
+      "max_dauer": 0.35,
+      "nachlauf": 0.15
+     },
+     "tiefpass": 6000
+    },
+    {
+     "quelle": "esc_4-182795-A",
+     "hochpass": 1200,
+     "entrauschen": 12,
+     "rest_db": -26,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.15,
+      "min_dauer": 0.04,
+      "max_dauer": 0.35,
+      "nachlauf": 0.15
+     },
+     "tiefpass": 6000
+    },
+    {
+     "quelle": "esc_1-38559-A",
+     "hochpass": 1200,
+     "entrauschen": 12,
+     "rest_db": -26,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.15,
+      "min_dauer": 0.04,
+      "max_dauer": 0.35,
+      "nachlauf": 0.15
+     },
+     "tiefpass": 6000
+    },
+    {
+     "quelle": "esc_1-38560-A",
+     "hochpass": 1200,
+     "entrauschen": 12,
+     "rest_db": -26,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.15,
+      "min_dauer": 0.04,
+      "max_dauer": 0.35,
+      "nachlauf": 0.15
+     },
+     "tiefpass": 6000
+    },
+    {
+     "quelle": "esc_5-242490-A",
+     "hochpass": 1200,
+     "entrauschen": 12,
+     "rest_db": -26,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.15,
+      "min_dauer": 0.04,
+      "max_dauer": 0.35,
+      "nachlauf": 0.15
+     },
+     "tiefpass": 6000
+    }
+   ],
+   "folgt": {
+    "kurve": "regen",
+    "rate": [
+     1.3,
+     0.7
+    ]
+   },
+   "aufschrecken": {
+    "schwelle": 1.2,
+    "wahrsch": 0.85,
+    "abstand_s": 25,
+    "rufe": [
+     4,
+     8
+    ],
+    "pegel": 1.5,
+    "flatter_wahrsch": 0.6,
+    "flatter_pegel": 0.5
+   },
+   "flattern": [
+    {
+     "quelle": "fluegel_leicht",
+     "hochpass": 300,
+     "entrauschen": 8,
+     "rest_db": -30,
+     "zerlegen": {
+      "schwelle_db": 9,
+      "luecke": 0.3,
+      "min_dauer": 0.3,
+      "max_dauer": 2.0,
+      "nachlauf": 0.1
+     },
+     "blende": [
+      10,
+      120
+     ]
+    },
+    {
+     "quelle": "fluegel_elster",
+     "hochpass": 300,
+     "entrauschen": 8,
+     "rest_db": -30,
+     "zerlegen": {
+      "schwelle_db": 9,
+      "luecke": 0.3,
+      "min_dauer": 0.3,
+      "max_dauer": 2.0,
+      "nachlauf": 0.1
+     },
+     "blende": [
+      10,
+      120
+     ]
+    },
+    {
+     "quelle": "fluegel_schlagen",
+     "hochpass": 300,
+     "entrauschen": 8,
+     "rest_db": -30,
+     "zerlegen": {
+      "schwelle_db": 9,
+      "luecke": 0.3,
+      "min_dauer": 0.3,
+      "max_dauer": 2.0,
+      "nachlauf": 0.1
+     },
+     "blende": [
+      10,
+      120
+     ]
+    }
+   ]
   }
- ]
+ ],
+ "drehbuch": {
+  "glatt_s": 28,
+  "kurven": {
+   "wind": [
+    [
+     0.0,
+     0.2
+    ],
+    [
+     75.0,
+     0.25
+    ],
+    [
+     112.5,
+     0.7
+    ],
+    [
+     175.0,
+     0.6
+    ],
+    [
+     250.0,
+     0.9
+    ],
+    [
+     300.0,
+     0.7
+    ],
+    [
+     375.0,
+     0.35
+    ],
+    [
+     425.0,
+     0.15
+    ],
+    [
+     550.0,
+     0.15
+    ],
+    [
+     600.0,
+     0.2
+    ]
+   ],
+   "regen": [
+    [
+     0.0,
+     0.3
+    ],
+    [
+     125.0,
+     0.35
+    ],
+    [
+     162.5,
+     0.8
+    ],
+    [
+     250.0,
+     1.0
+    ],
+    [
+     325.0,
+     0.85
+    ],
+    [
+     387.5,
+     0.4
+    ],
+    [
+     437.5,
+     0.05
+    ],
+    [
+     512.5,
+     0.05
+    ],
+    [
+     555.0,
+     0.3
+    ],
+    [
+     600.0,
+     0.3
+    ]
+   ]
+  },
+  "text": [
+   [
+    0.0,
+    "Leichter Regen. Die Vögel sitzen still in der Deckung, nur ab und zu ein kurzer Ruf."
+   ],
+   [
+    100.0,
+    "Der Wind frischt auf und kündigt mehr Regen an; die Kronen rauschen, ein paar Vögel fliegen schimpfend auf."
+   ],
+   [
+    162.5,
+    "Der Regen wird kräftig, auf den großen Blättern trommelt es, der Bach schwillt an."
+   ],
+   [
+    250.0,
+    "Höhepunkt: Sturm in den Kronen."
+   ],
+   [
+    350.0,
+    "Der Regen lässt nach, es tropft weiter von den Blättern."
+   ],
+   [
+    437.5,
+    "Regenpause – die ersten Vögel trauen sich wieder und singen."
+   ],
+   [
+    550.0,
+    "Leichter Regen setzt wieder ein."
+   ]
+  ]
+ }
 }

@@ -1,0 +1,209 @@
+{
+ "szene": "ruine",
+ "stand": "20.11.2026 12:02",
+ "dauer": 120,
+ "schleife": true,
+ "abtastwerte": 5292000,
+ "hrtf": "subject_040.sofa",
+ "blick": 55,
+ "titel": "In der Klosterruine bei Nacht",
+ "text": "Du liegst im Mittelschiff einer Klosterruine auf den Steinplatten. Das Gewölbe ist eingestürzt, über dir der Nachthimmel zwischen hohen Mauern. Draußen regnet es leise, Wind pfeift durch ein leeres Fenster, Tropfen fallen auf den Stein, zwei Käuze rufen sich zu. Manchmal fliegen Tauben im Gemäuer auf, fern über dem Tal schlägt eine Glocke – und einmal weht von weit her Gesang herüber.",
+ "gruppen": [
+  {
+   "name": "regen",
+   "titel": "Regen draußen",
+   "text": "Leiser Regen jenseits der Mauern und über der offenen Ruine.",
+   "typ": "bett",
+   "ziel_lufs": -31,
+   "pegel_art": "integriert",
+   "spitze_db": -9.5,
+   "begrenzt_db": 0.0,
+   "sekunden": 63.5,
+   "probe_abtastwerte": 1323000
+  },
+  {
+   "name": "raum",
+   "titel": "Der Steinraum",
+   "text": "Die Stille des leeren Raums – ganz leise, man spürt sie mehr, als man sie hört.",
+   "typ": "bett",
+   "ziel_lufs": -42,
+   "pegel_art": "integriert",
+   "spitze_db": -27.8,
+   "begrenzt_db": 0.0,
+   "sekunden": 45.2,
+   "probe_abtastwerte": 1323000
+  },
+  {
+   "name": "wind",
+   "titel": "Wind über den Mauern",
+   "text": "Wind streicht über die Mauerkronen, in Böen stärker.",
+   "typ": "bett",
+   "ziel_lufs": -36,
+   "pegel_art": "integriert",
+   "spitze_db": -14.1,
+   "begrenzt_db": 0.0,
+   "sekunden": 54.3,
+   "probe_abtastwerte": 1323000
+  },
+  {
+   "name": "fenster",
+   "titel": "Wind im leeren Fenster",
+   "text": "In einem Fensterbogen hoch oben links pfeift der Wind, wenn eine Böe kommt.",
+   "typ": "bett",
+   "ziel_lufs": -37,
+   "pegel_art": "integriert",
+   "spitze_db": -13.1,
+   "begrenzt_db": 0.0,
+   "sekunden": 7.5,
+   "probe_abtastwerte": 1323000
+  },
+  {
+   "name": "tropfen",
+   "titel": "Tropfen auf Stein",
+   "text": "Hier und da fällt ein Tropfen von der Mauer auf die Steinplatten – jeder an einer anderen Stelle.",
+   "typ": "ereignisse",
+   "ziel_lufs": -35,
+   "pegel_art": "spitzen",
+   "spitze_db": -12.0,
+   "begrenzt_db": 3.1,
+   "sekunden": 3.0,
+   "probe_abtastwerte": 1323000
+  },
+  {
+   "name": "kauz",
+   "titel": "Zwei Käuze",
+   "text": "Draußen rufen sich zwei Waldkäuze zu, mal links, mal rechts, mal weiter weg.",
+   "typ": "schwarm",
+   "ziel_lufs": -31,
+   "pegel_art": "spitzen",
+   "spitze_db": -20.2,
+   "begrenzt_db": 0.0,
+   "sekunden": 5.4,
+   "rufe": 16,
+   "aufgeschreckt": 0,
+   "probe_abtastwerte": 1323000
+  },
+  {
+   "name": "tauben",
+   "titel": "Tauben fliegen auf",
+   "text": "Zweimal pro Durchlauf schrecken Tauben im Gemäuer auf und flattern über dich hinweg zum Himmel.",
+   "typ": "ueberflug",
+   "ziel_lufs": -28,
+   "pegel_art": "spitzen",
+   "spitze_db": -7.0,
+   "begrenzt_db": 6.0,
+   "sekunden": 1.4,
+   "zeiten": [
+    33.6
+   ],
+   "probe_abtastwerte": 1764000
+  },
+  {
+   "name": "glocke",
+   "titel": "Glocke über dem Tal",
+   "text": "Einmal pro Durchlauf schlägt fern über dem Tal eine Glocke; der Klang kommt von den Hängen mehrfach zurück.",
+   "typ": "gebruell",
+   "ziel_lufs": -30,
+   "pegel_art": "spitzen",
+   "spitze_db": -20.1,
+   "begrenzt_db": 0.0,
+   "sekunden": 4.6,
+   "rufe": [
+    72.0
+   ],
+   "probe_abtastwerte": 1764000
+  },
+  {
+   "name": "gesang",
+   "titel": "Gesang von fern",
+   "text": "Genau einmal weht von weit her Gesang herüber, aus einem Kloster jenseits des Tals – so leise, dass man nicht sicher ist, ob man ihn wirklich gehört hat.",
+   "typ": "gebruell",
+   "ziel_lufs": -36,
+   "pegel_art": "spitzen",
+   "spitze_db": -25.7,
+   "begrenzt_db": 0.0,
+   "sekunden": 4.4,
+   "rufe": [
+    99.7
+   ],
+   "probe_abtastwerte": 1764000
+  }
+ ],
+ "drehbuch": [
+  [
+   8.3,
+   "Von weit her weht Gesang herüber."
+  ],
+  [
+   20.8,
+   "Nieselregen setzt wieder ein."
+  ],
+  [
+   28.3,
+   "Nieselregen, zwei Käuze rufen sich zu."
+  ],
+  [
+   55.8,
+   "Eine Böe – das leere Fenster pfeift, Tauben schrecken im Gemäuer auf."
+  ],
+  [
+   73.3,
+   "Der Regen wird stärker, mehr Tropfen fallen innen auf den Stein."
+  ],
+  [
+   98.3,
+   "Der Wind legt sich, fern über dem Tal schlägt eine Glocke."
+  ],
+  [
+   115.8,
+   "Stille, nur noch Tropfen."
+  ]
+ ],
+ "start_verschoben_s": 91.65,
+ "start_abtastwerte": 4041905,
+ "begrenzer_max_db": 0.9,
+ "lufs": -23.0,
+ "naht": {
+  "sprung_naht": 0.0042,
+  "sprung_typisch_999": 0.0827,
+  "pegelsprung_naht_db": 0.9,
+  "pegelsprung_typisch_95_db": 1.87
+ },
+ "quellen": [
+  "esc_1-21189-A",
+  "esc_1-51035-A",
+  "esc_1-51036-A",
+  "esc_1-54958-A",
+  "esc_1-56311-A",
+  "esc_1-69760-A",
+  "esc_1-90797-A",
+  "esc_2-101676-A",
+  "esc_2-87781-A",
+  "esc_3-117504-A",
+  "esc_3-117504-B",
+  "esc_3-136608-A",
+  "esc_3-156907-A",
+  "esc_3-157149-A",
+  "esc_4-163264-A",
+  "esc_4-168155-A",
+  "esc_4-180380-A",
+  "esc_4-181286-A",
+  "esc_4-188293-A",
+  "esc_4-188293-B",
+  "esc_4-212604-A",
+  "esc_4-212604-B",
+  "esc_4-212604-C",
+  "esc_5-181766-A",
+  "esc_5-188655-A",
+  "esc_5-198321-A",
+  "eule_ruf",
+  "glocke_fern_inspectorj",
+  "glocke_fern_ivolipa",
+  "kauz_benboncan",
+  "kirche_leer_bokhoven",
+  "kirche_wind_fenster",
+  "kloster_moenche_glocken",
+  "tauben_auffliegen",
+  "tauben_fluegel"
+ ]
+}
