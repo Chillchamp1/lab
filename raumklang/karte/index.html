@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Szenenkarte</title>
+<style>
+  :root { --grund: #0d1418; --flaeche: #152027; --rand: #24343d; --text: #dfe8ea; --leise: #8fa3ab; --akzent: #7fc4c9; }
+  @media (prefers-color-scheme: light) {
+    :root { --grund: #f3f6f6; --flaeche: #ffffff; --rand: #d5dfe1; --text: #17252b; --leise: #5b6f77; --akzent: #1f7f86; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--grund); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 820px; margin: 0 auto; padding: 20px 16px 48px; }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  .leise { color: var(--leise); font-size: .9rem; }
+  .reihe { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0; }
+  button, select { font: inherit; border: 1px solid var(--rand); background: var(--flaeche); color: var(--text); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+  button.an { border-color: var(--akzent); color: var(--akzent); }
+  input[type=range] { flex: 1; min-width: 160px; }
+  canvas { width: 100%; aspect-ratio: 1 / 1; max-height: 78vh; background: var(--flaeche); border: 1px solid var(--rand); border-radius: 12px; display: block; }
+  #zeit { font-variant-numeric: tabular-nums; min-width: 92px; }
+  #ereignis { min-height: 2.6em; margin: 8px 0; }
+  .legende { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: .85rem; }
+  .legende span { display: inline-flex; align-items: center; gap: 6px; }
+  .legende i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  a { color: var(--akzent); }
+</style>
+</head>
+<body>
+<main>
+  <p class="leise"><a href="../">← Klangszenen</a></p>
+  <h1 id="titel">Szenenkarte</h1>
+  <p class="leise">Draufsicht: du in der Mitte, der Strich zeigt deine Blickrichtung. Jede Klangquelle ist ein Punkt mit kurzer Spur, so wie der Renderer sie gerechnet hat.</p>
+  <div class="reihe">
+    <select id="szene"></select>
+    <button id="b-spiel">▶ Abspielen</button>
+    <button data-tempo="1">×1 mit Ton</button>
+    <button data-tempo="10" class="an">×10</button>
+    <button data-tempo="40">×40</button>
+    <select id="massstab"><option value="0">Maßstab: automatisch</option><option value="8">8 m</option><option value="25">25 m</option><option value="60">60 m</option><option value="200">200 m</option><option value="1000">1 km</option><option value="10000">10 km</option></select>
+  </div>
+  <div class="reihe"><input type="range" id="regler" min="0" max="1000" value="0"><span id="zeit">0:00</span></div>
+  <canvas id="bild" width="1200" height="1200"></canvas>
+  <p id="ereignis" class="leise"></p>
+  <div class="legende" id="legende"></div>
+  <audio id="ton" preload="none"></audio>
+</main>
+<script>
+const SZENEN = ['wald', 'boot', 'ruine', 'elefanten', 'ozean'];
+const FARBEN = ['#7fc4c9', '#e2b866', '#d9826b', '#9ccf7f', '#b39ddb', '#f0a1c2', '#6fa8dc', '#c9c97f', '#e07f7f', '#7fd4b0', '#d4a373', '#8fa3ab', '#a3c4f3', '#f6bd60', '#84a59d', '#cdb4db', '#90be6d'];
+const $ = id => document.getElementById(id);
+let K = null, t = 0, spielt = false, tempo = 10, letzt = 0, farbe = {};
+const zeit = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+for (const s of SZENEN) $('szene').insertAdjacentHTML('beforeend', `<option value="${s}">${s}</option>`);
+const start = new URLSearchParams(location.search).get('s');
+if (SZENEN.includes(start)) $('szene').value = start;
+$('szene').addEventListener('change', () => { history.replaceState(null, '', '?s=' + $('szene').value); laden(); });
+
+async function laden() {
+  anhalten();
+  const s = $('szene').value;
+  K = await fetch(`../audio/${s}_karte.json`).then(r => r.json());
+  $('titel').textContent = K.titel;
+  $('ton').src = `../audio/${s}.mp3`;
+  farbe = {};
+  K.gruppen.forEach((g, i) => farbe[g.name] = FARBEN[i % FARBEN.length]);
+  $('legende').innerHTML = K.gruppen.map(g => `<span><i style="background:${farbe[g.name]}"></i>${esc(g.titel)}</span>`).join('');
+  // Ortsdaten in Dateizeit vorbereiten: jede Quelle kennt Beginn und Ende
+  for (const q of K.quellen) { q.n = q.p.length; q.ende = q.t0 + (q.n - 1) * q.dt; }
+  t = 0; zeichne();
+}
+
+function ort(q, ts) {        // Ort einer Quelle zur Szenenzeit ts (oder null)
+  for (const k of [0, -K.dauer, K.dauer]) {
+    const x = ts + k;
+    if (x >= q.t0 - 0.25 && x <= q.ende + 0.25) {
+      const f = Math.min(Math.max((x - q.t0) / q.dt, 0), q.n - 1), i = Math.floor(f), j = Math.min(i + 1, q.n - 1), u = f - i;
+      return q.p[i].map((v, a) => v + u * (q.p[j][a] - v));
+    }
+  }
+  return null;
+}
+
+function zeichne() {
+  const c = $('bild'), g = c.getContext('2d'), W = c.width, M = W / 2;
+  const ts = (t + K.start_s) % K.dauer;        // Szenenzeit
+  const aktiv = [];
+  for (const q of K.quellen) { const p = ort(q, ts); if (p) aktiv.push([q, p]); }
+  let R = +$('massstab').value;
+  if (!R) {             // automatisch: alle aktiven Quellen außer fernen Flächen
+    // Flächen (durchlaufende Quellen) und Echos zählen nicht: sonst schrumpft das Nahe zu Punkten
+    const nah = aktiv.filter(([q]) => q.dt < 1 && q.art !== 'echo');
+    const d = (nah.length ? nah : aktiv).map(([q, p]) => Math.hypot(p[0] - K.kopf[0], p[1] - K.kopf[1])).sort((a, b) => a - b);
+    R = Math.max(6, (d[Math.floor(d.length * 0.85)] || 10) * 1.15);
+  }
+  const s = M / R;
+  const dunkel = matchMedia('(prefers-color-scheme: dark)').matches;
+  g.clearRect(0, 0, W, W);
+  // Abstandsringe
+  g.strokeStyle = dunkel ? '#24343d' : '#d5dfe1'; g.fillStyle = dunkel ? '#8fa3ab' : '#5b6f77'; g.lineWidth = 2; g.font = '22px system-ui';
+  const stufe = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000].find(x => x * 4 >= R) || 10000;
+  for (let r = stufe; r <= R * 1.5; r += stufe) { g.beginPath(); g.arc(M, M, r * s, 0, 7); g.stroke(); g.fillText(r >= 1000 ? `${r / 1000} km` : `${r} m`, M + r * s * 0.71 + 4, M - r * s * 0.71 - 4); }
+  // Hörer, Blick nach vorn (x) = oben im Bild; links (y) = links
+  const px = p => M - (p[1] - K.kopf[1]) * s, py = p => M - (p[0] - K.kopf[0]) * s;
+  g.fillStyle = dunkel ? '#dfe8ea' : '#17252b'; g.beginPath(); g.arc(M, M, 9, 0, 7); g.fill();
+  g.strokeStyle = g.fillStyle; g.lineWidth = 4; g.beginPath(); g.moveTo(M, M - 8); g.lineTo(M, M - 44); g.stroke();
+  g.beginPath(); g.moveTo(M - 10, M - 34); g.lineTo(M, M - 48); g.lineTo(M + 10, M - 34); g.stroke();
+  g.fillText('Blick', M + 14, M - 40);
+  // Spuren und Punkte
+  for (const [q, p] of aktiv) {
+    const f = farbe[q.g] || '#888';
+    g.strokeStyle = f; g.globalAlpha = 0.35; g.lineWidth = 3; g.beginPath();
+    for (let k = 0; k <= 6; k++) { const pp = ort(q, ts - k); if (!pp) break; k ? g.lineTo(px(pp), py(pp)) : g.moveTo(px(pp), py(pp)); }
+    g.stroke(); g.globalAlpha = q.art === 'echo' ? 0.35 : 1;
+    g.fillStyle = f; g.beginPath(); g.arc(px(p), py(p), q.dt > 1 ? 6 : 10, 0, 7); g.fill(); g.globalAlpha = 1;
+  }
+  $('zeit').textContent = `${zeit(t)} / ${zeit(K.dauer)}`;
+  $('regler').value = Math.round(1000 * t / K.dauer);
+  const db = (K.drehbuch || []).map(([z, x]) => [((z - K.start_s) % K.dauer + K.dauer) % K.dauer, x]).sort((a, b) => a[0] - b[0]);
+  const jetzt = db.filter(([z]) => z <= t).pop() || db[db.length - 1];
+  $('ereignis').textContent = jetzt ? `Drehbuch: ${jetzt[1]}` : '';
+}
+
+function schritt(jetzt) {
+  if (!spielt) return;
+  const dt = (jetzt - letzt) / 1000; letzt = jetzt;
+  t = tempo === 1 && !$('ton').paused ? $('ton').currentTime % K.dauer : (t + dt * tempo) % K.dauer;
+  zeichne(); requestAnimationFrame(schritt);
+}
+function anhalten() { spielt = false; $('ton').pause(); $('b-spiel').textContent = '▶ Abspielen'; }
+$('b-spiel').addEventListener('click', () => {
+  if (spielt) return anhalten();
+  spielt = true; $('b-spiel').textContent = '❚❚ Anhalten'; letzt = performance.now();
+  if (tempo === 1) { $('ton').currentTime = t; $('ton').play(); }
+  requestAnimationFrame(schritt);
+});
+for (const b of document.querySelectorAll('[data-tempo]')) b.addEventListener('click', () => {
+  tempo = +b.dataset.tempo;
+  document.querySelectorAll('[data-tempo]').forEach(x => x.classList.toggle('an', x === b));
+  if (tempo === 1 && spielt) { $('ton').currentTime = t; $('ton').play(); } else $('ton').pause();
+});
+$('regler').addEventListener('input', e => { t = e.target.value / 1000 * K.dauer; if (tempo === 1 && spielt) $('ton').currentTime = t; zeichne(); });
+$('massstab').addEventListener('change', zeichne);
+laden();
+</script>
+</body>
+</html>

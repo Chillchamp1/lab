@@ -1,6 +1,6 @@
 {
  "szene": "elefanten",
- "stand": "20.11.2026 11:58",
+ "stand": "20.11.2026 13:04",
  "dauer": 120,
  "schleife": true,
  "abtastwerte": 5292000,
@@ -18,7 +18,7 @@
    "pegel_art": "integriert",
    "spitze_db": -15.5,
    "begrenzt_db": 0.0,
-   "sekunden": 87.8,
+   "sekunden": 78.4,
    "probe_abtastwerte": 1323000
   },
   {
@@ -30,7 +30,7 @@
    "pegel_art": "integriert",
    "spitze_db": -11.9,
    "begrenzt_db": 0.0,
-   "sekunden": 30.4,
+   "sekunden": 30.9,
    "probe_abtastwerte": 1323000
   },
   {
@@ -42,7 +42,7 @@
    "pegel_art": "integriert",
    "spitze_db": -18.7,
    "begrenzt_db": 0.0,
-   "sekunden": 46.8,
+   "sekunden": 47.7,
    "probe_abtastwerte": 1323000
   },
   {
@@ -54,7 +54,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -14.9,
    "begrenzt_db": 0.0,
-   "sekunden": 7.1,
+   "sekunden": 6.6,
    "rufe": [
     12.2,
     72.0
@@ -64,13 +64,13 @@
   {
    "name": "herde",
    "titel": "Die Herde am Wasserloch",
-   "text": "Vier, fünf Elefanten stehen am Wasserloch in 18 bis 40 Metern und unterhalten sich mit tiefem Grollen – mal links, mal rechts.",
+   "text": "Vier, fünf Elefanten stehen am Wasserloch rund 25 Meter vor dir, wandern langsam am Ufer entlang und unterhalten sich mit tiefem Grollen.",
    "typ": "schwarm",
    "ziel_lufs": -26,
    "pegel_art": "spitzen",
-   "spitze_db": -10.0,
+   "spitze_db": -12.0,
    "begrenzt_db": 0.0,
-   "sekunden": 9.4,
+   "sekunden": 9.1,
    "rufe": 43,
    "aufgeschreckt": 0,
    "probe_abtastwerte": 1323000
@@ -84,7 +84,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -10.4,
    "begrenzt_db": 0.0,
-   "sekunden": 2.8,
+   "sekunden": 2.6,
    "probe_abtastwerte": 1323000
   },
   {
@@ -95,8 +95,8 @@
    "ziel_lufs": -25,
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
-   "begrenzt_db": 0.7,
-   "sekunden": 6.9,
+   "begrenzt_db": 0.0,
+   "sekunden": 5.1,
    "rufe": [
     44.2
    ],
@@ -109,10 +109,12 @@
    "typ": "vorbeigang",
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
-   "spitze_db": -180.0,
+   "spitze_db": -4.2,
    "begrenzt_db": 0.0,
-   "sekunden": 9.7,
-   "vorbeigaenge": [],
+   "sekunden": 10.7,
+   "vorbeigaenge": [
+    39.1
+   ],
    "probe_abtastwerte": 1764000
   },
   {
@@ -124,7 +126,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -4.0,
    "begrenzt_db": 3.7,
-   "sekunden": 7.0,
+   "sekunden": 6.2,
    "besuche": [
     {
      "start": 58,
@@ -168,13 +170,13 @@
  ],
  "start_verschoben_s": 96.87,
  "start_abtastwerte": 4271928,
- "begrenzer_max_db": 0.7,
+ "begrenzer_max_db": 0.2,
  "lufs": -23.0,
  "naht": {
-  "sprung_naht": 0.0083,
-  "sprung_typisch_999": 0.0894,
+  "sprung_naht": 0.0079,
+  "sprung_typisch_999": 0.0859,
   "pegelsprung_naht_db": 0.3,
-  "pegelsprung_typisch_95_db": 4.06
+  "pegelsprung_typisch_95_db": 4.99
  },
  "quellen": [
   "aeste_knacken",

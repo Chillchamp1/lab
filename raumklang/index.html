@@ -161,7 +161,7 @@ function spieler(el, src, soll, dateiname) {
       `<h2>${esc(b.titel || name)}</h2><p>${esc(b.text || '')}</p>` +
       `<div class="spieler gross" data-haupt></div>` +
       `<div class="werte"><span><b>${zeit(b.dauer)}</b> in Schleife</span><span>Stand <b>${esc(b.stand)}</b></span>` +
-      `<span>HRTF <b>${esc(b.hrtf.replace('.sofa', ''))}</b></span><span>Blick <b>${b.blick}°</b></span></div>` +
+      `<span>HRTF <b>${esc(b.hrtf.replace('.sofa', ''))}</b></span><span>Blick <b>${b.blick}°</b></span><span><a href="karte/?s=${name}">Szenenkarte</a></span></div>` +
       ((b.drehbuch && b.drehbuch.length) ? `<details><summary>Drehbuch – was in der Szene passiert</summary><ul>` +
         b.drehbuch.map(([t, x]) => `<li><b>${zeit(t)}</b> ${esc(x)}</li>`).join('') + `</ul></details>` : '') +
       `<details><summary>${esc(b.details_titel || (b.gruppen.length ? 'Bausteine einzeln anhören, Aufnahmen' : 'Verwendete Aufnahmen'))}</summary>` +

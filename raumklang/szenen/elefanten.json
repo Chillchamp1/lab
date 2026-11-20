@@ -331,23 +331,23 @@
    "name": "herde",
    "typ": "schwarm",
    "titel": "Die Herde am Wasserloch",
-   "text": "Vier, fünf Elefanten stehen am Wasserloch in 18 bis 40 Metern und unterhalten sich mit tiefem Grollen – mal links, mal rechts.",
+   "text": "Vier, fünf Elefanten stehen am Wasserloch rund 25 Meter vor dir, wandern langsam am Ufer entlang und unterhalten sich mit tiefem Grollen.",
    "ziel_lufs": -26,
    "pegel_art": "spitzen",
    "anzahl": 5,
    "radius": [
-    18,
-    40
+    3,
+    10
    ],
    "hoehe": [
-    2.5,
-    3.5
+    3.0,
+    3.4
    ],
    "tempo": [
-    0.2,
-    0.6
+    0.15,
+    0.4
    ],
-   "mitte_streuung": 6,
+   "mitte_streuung": 3,
    "abstand_s": 8,
    "antwort_wahrsch": 0.6,
    "bezug_m": 20,
@@ -567,6 +567,13 @@
      -8,
      0
     ]
+   },
+   "mitte": [
+    26.0,
+    -3.0
+   ],
+   "pruefung": {
+    "tempo_max": 2.0
    }
   },
   {
@@ -742,7 +749,12 @@
       "max_endpegel_db": -3
      }
     }
-   ]
+   ],
+   "punkt": [
+    26.0,
+    -3.0
+   ],
+   "punkt_streuung_m": 6.0
   },
   {
    "name": "vorbeigang",
@@ -1317,7 +1329,10 @@
    "wucht_pegel": 0.5,
    "wucht_exponent": 2.0,
    "probe_ab": 8,
-   "probe_dauer": 40
+   "probe_dauer": 40,
+   "pruefung": {
+    "tempo_max": 2.5
+   }
   },
   {
    "name": "besuch",
@@ -1955,7 +1970,10 @@
    "wucht_pegel": 0.4,
    "wucht_exponent": 2.0,
    "probe_ab": 55,
-   "probe_dauer": 40
+   "probe_dauer": 40,
+   "pruefung": {
+    "tempo_max": 2.5
+   }
   }
  ],
  "drehbuch": {

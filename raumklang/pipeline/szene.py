@@ -232,6 +232,19 @@ def rendere_quelle(kx, spur, bus, sig, t0, ort_fn, aussen=True, pegel=1.0, hall=
     nb = n_bloecke(len(sig))
     t = blockzeiten(t0, nb)
     p = ort_fn(t)
+    if getattr(kx, 'karte', None) is not None:
+        # Ereignisprotokoll für die Szenenkarte: Ort im Hörerbezug (Boot bzw. Umgebung), 2 Hz,
+        # bei durchlaufenden Quellen 0,5 Hz
+        dauer = len(sig) / FS
+        schritt = 2.0 if dauer > 60 else 0.5
+        ts = t0 + np.arange(0, dauer + 1e-6, schritt)
+        pk = ort_fn(ts)
+        if aussen:
+            pk = kx.boot.welt_zu_boot(pk, ts)
+        kx.karte.append(dict(g=getattr(kx, 'gruppe', ''), art=getattr(kx, 'etikett', None) or 'quelle', t0=round(float(t0), 2), dt=schritt,
+                             p=np.round(pk, 1).tolist(), pegel=round(float(20 * np.log10(max(pegel, 1e-9))), 1)))
+        if getattr(kx, 'nur_karte', False):
+            return
     bild = None
     if aussen:
         pb = kx.boot.welt_zu_boot(p, t)
@@ -405,6 +418,7 @@ class Vogel:
 
     def __init__(self, rng, dauer, g):
         self.rm = rng.uniform(*g.get('radius', [10, 35]))
+        self.m0 = g.get('mitte', [0.0, 0.0])          # Mittelpunkt der Bahnen (z. B. das Wasserloch statt des Hörers)
         self.h = rng.uniform(*g.get('hoehe', [6, 25]))
         self.v = rng.uniform(*g.get('tempo', [7, 12])) * rng.choice([-1, 1])
         self.ph = rng.uniform(0, 2 * np.pi)
@@ -412,7 +426,7 @@ class Vogel:
         self.P = float(dauer)
         nk = int(round(dauer))
         self.tk = np.arange(nk) * (self.P / nk)
-        self.dr = _rauschkurve(rng, nk, 1.0, 0.03) * 0.3 * self.rm
+        self.dr = _rauschkurve(rng, nk, 1.0, 0.03) * g.get('radius_streuung', 0.3) * self.rm
         self.dh = _rauschkurve(rng, nk, 1.0, 0.04) * 0.25 * self.h
         self.mx = _rauschkurve(rng, nk, 1.0, 0.012) * g.get('mitte_streuung', 10)
         self.my = _rauschkurve(rng, nk, 1.0, 0.012) * g.get('mitte_streuung', 10)
@@ -422,6 +436,13 @@ class Vogel:
         runden = max(1, round(schritt.sum() / (2 * np.pi)))
         schritt *= runden * 2 * np.pi / schritt.sum()
         win = np.concatenate([[0.0], np.cumsum(schritt)]) * np.sign(self.v) + self.ph
+        if g.get('pendeln_grad'):
+            # langsame Tiere: kein Kreisen um den Mittelpunkt, sondern hin und her an einem Ufer/Hang
+            # (periodisch, Tempo aus Amplitude und Szenendauer)
+            amp = np.radians(g['pendeln_grad'])
+            tw = np.append(self.tk, self.P)
+            win = self.ph + amp * np.sin(2 * np.pi * tw / self.P * rng.integers(1, 3) + rng.uniform(0, 6.3))
+            runden = 0
         self.tk_w = np.append(self.tk, self.P)
         self.win = win
         self.runden = runden * np.sign(self.v)
@@ -435,8 +456,8 @@ class Vogel:
         tm = np.mod(t, self.P)
         w = np.interp(tm, self.tk_w, self.win) + np.floor(t / self.P) * self.runden * 2 * np.pi
         h = np.maximum(self.h + self._p(t, self.dh), 3)
-        return np.stack([self._p(t, self.mx) + r * np.cos(w),
-                         self._p(t, self.my) + r * np.sin(w), h], 1)
+        return np.stack([self.m0[0] + self._p(t, self.mx) + r * np.cos(w),
+                         self.m0[1] + self._p(t, self.my) + r * np.sin(w), h], 1)
 
 
 def gen_schwarm(kx, g, spur, bus):
@@ -858,7 +879,7 @@ def gen_vorbeigang(kx, g, spur, bus):
     t = rng.uniform(*g.get('erster_s', [5, 20]))
     erster = t
     liste = []
-    while t < kx.dauer + erster - g.get('abstand_s', [50, 80])[0]:
+    while not liste or t < kx.dauer + erster - g.get('abstand_s', [50, 80])[0]:   # mindestens einer
         d = rng.uniform(*g.get('entfernung', [15, 35]))
         v = rng.uniform(*g.get('tempo', [0.8, 1.3]))
         L = g.get('weglaenge_m', 60)
@@ -1033,11 +1054,14 @@ def gen_gebruell(kx, g, spur, bus):
     while not liste or t < kx.dauer + erster - g.get('abstand_s', [35, 70])[0]:   # mindestens einer
         e = _wahl(rng, ev)
         d = rng.uniform(*g.get('entfernung', [350, 700]))
+        az = rng.uniform(0, 2 * np.pi)
+        if g.get('punkt'):                  # fester Ort (z. B. die Herde am Wasserloch)
+            pp = np.array(g['punkt'][:2], float) + rng.normal(0, g.get('punkt_streuung_m', 3.0), 2) - k[:2]
+            d, az = float(np.linalg.norm(pp)), float(np.arctan2(pp[1], pp[0]))
         if g.get('naehe_folgt'):            # Drehbuch: die Rufer kommen näher und ziehen wieder weg
             v = kx.kurve(g['naehe_folgt'], t % kx.dauer)
             e0, e1 = g.get('entfernung', [350, 700])
             d = e1 + (e0 - e1) * v * rng.uniform(0.8, 1.0)
-        az = rng.uniform(0, 2 * np.pi)
         p = np.array([k[0] + d * np.cos(az), k[1] + d * np.sin(az), g.get('hoehe', 8.0)])
         sig = _variante(rng, kraft(e, 1.0, g), 1.0)
         for schicht in g.get('schichten', []):            # weitere Stimmen übereinander: tiefer, rauer
@@ -1060,6 +1084,7 @@ def gen_gebruell(kx, g, spur, bus):
             for a0, t_ in teile:
                 sig[a0:a0 + len(t_)] += t_
         rendere_quelle(kx, spur, bus, sig, t, _fest(p), True, g.get('bezug_m', 400.0), g.get('hall', 1.0))
+        kx.etikett = 'echo'
         for j in range(g.get('echos', 6)):
             umweg = rng.uniform(*g.get('echo_umweg_m', [150, 900]))
             a2 = az + rng.uniform(0.6, np.pi * 1.4) * rng.choice([-1, 1])     # Hang auf einer anderen Seite
@@ -1068,6 +1093,7 @@ def gen_gebruell(kx, g, spur, bus):
             # gleicher Rufbeginn; die Verspätung des Echos ergibt sich aus dem längeren Weg
             rendere_quelle(kx, spur, bus, sig, t, _fest(p2), True,
                            g.get('bezug_m', 400.0) * g.get('echo_reflexion', 0.55) * rng.uniform(0.6, 1.0), g.get('hall', 1.0))
+        kx.etikett = None
         liste.append(round(float(t) % kx.dauer, 1))
         t += rng.uniform(*g.get('abstand_s', [35, 70])) / max(kx.folge(g, t % kx.dauer)[0], 0.05)
     return dict(rufe=liste)
@@ -1153,6 +1179,7 @@ def main():
     ap.add_argument('--blick', type=float, help='Blickwinkel über der Waagerechten (überschreibt die Szene)')
     ap.add_argument('--stereo', action='store_true', help='Vergleichsfassung in konventionellem Stereo (ohne HRTF und Spiegelungen)')
     ap.add_argument('--name', help='Name der Ausgabe (Vorgabe: Name der Szene)')
+    ap.add_argument('--karte', action='store_true', help='nur das Ereignisprotokoll (Szenenkarte) schreiben, ohne Audio – gleiche Ereignisse wie beim Rendern')
     ap.add_argument('--drehung', type=float, help='Startpunkt der Schleife in Abtastwerten vorgeben (start_abtastwerte aus dem Bericht der Bezugsfassung; gerundete Sekunden verschieben um Millisekunden)')
     a = ap.parse_args()
 
@@ -1193,6 +1220,7 @@ def main():
                    hrtf=Path(a.hrtf).name, blick=umg_cfg.get('blick', 55), titel=sz.get('titel', name), text=sz.get('text', ''), gruppen=[],
                    drehbuch=sz.get('drehbuch', {}).get('text', []))
     summe = np.zeros((2, int(round(dauer * FS))), np.float32)
+    karte = []
     for i, g in enumerate(sz['gruppen']):
         if nur and g['name'] not in nur:
             continue
@@ -1202,7 +1230,12 @@ def main():
         spur, bus = Spur(dauer), Spur(dauer, 1)
         kx.weite, kx.flimmern, kx.windtragen, kx.gruppe = sz.get('weite'), sz.get('flimmern'), sz.get('windtragen'), g['name']
         kx.bus_weite = Spur(dauer, 1) if kx.weite else None
+        kx.karte = karte
+        kx.nur_karte = a.karte
         info = GENERATOREN[g['typ']](kx, g, spur, bus) or {}
+        if a.karte:
+            print(g['name'], 'Quellen im Protokoll:', sum(1 for q in karte if q['g'] == g['name']), flush=True)
+            continue
         x = spur.x
         if np.abs(bus.x).max() > 0:
             for e in range(2):
@@ -1227,6 +1260,21 @@ def main():
             probe, _ = begrenzer_kreis(probe * 10 ** (g.get('probe_plus_db', 6) / 20))
             schreibe(Path(a.aus) / f"{name}_{g['name']}.mp3", probe, '160k')
             eintrag['probe_abtastwerte'] = int(probe.shape[1])
+    def schreibe_karte(start_s):
+        """Szenenkarte: alle Quellen mit Ort über die Zeit im Hörerbezug (maschinenlesbar, für die
+        Plausibilitätsprüfung `pruefe_karte.py` und die Ansicht `karte/`)."""
+        k = dict(szene=name, titel=sz.get('titel', name), dauer=dauer, start_s=round(start_s, 3), kopf=np.round(boot.kopf, 2).tolist(),
+                 blick=umg_cfg.get('blick', 55), umgebung=next((x for x in ('wald', 'ruine', 'ozean', 'kuppel', 'boot') if x in sz), 'boot'),
+                 orte=sz.get('orte', {}), drehbuch=sz.get('drehbuch', {}).get('text', []),
+                 gruppen=[dict(name=g['name'], titel=g.get('titel', g['name']), typ=g['typ']) for g in sz['gruppen']], quellen=karte)
+        (Path(a.aus) / f'{name}_karte.json').write_text(json.dumps(k, ensure_ascii=False, separators=(',', ':')))
+        print('Karte:', len(karte), 'Quellen', flush=True)
+
+    if a.karte:
+        alt = Path(a.aus) / f'{name}.json'
+        start = json.loads(alt.read_text()).get('start_abtastwerte', 0) / FS if alt.exists() else 0.0
+        schreibe_karte(start)
+        return
     if not nur:
         ist = lautheit(summe)
         summe *= 10 ** ((sz.get('ziel_lufs', -21) - ist) / 20)
@@ -1255,6 +1303,7 @@ def main():
         bericht['begrenzer_max_db'] = round(weg, 1)
         bericht['lufs'] = round(lautheit(summe), 1)
         bericht['naht'] = nahtpruefung(summe)
+        schreibe_karte(ruhig / FS)
         schreibe(Path(a.aus) / f'{name}.mp3', summe, '224k')
         bericht['quellen'] = sorted(bib.benutzt)
         (Path(a.aus) / f'{name}.json').write_text(json.dumps(bericht, ensure_ascii=False, indent=1))

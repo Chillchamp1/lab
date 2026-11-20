@@ -136,6 +136,25 @@ geht in der Schleife auf), etwa `wind`, `regen`, `see`, `herde`, `wale`.
 Fertige Wetter-Szenen sind 10 Minuten lang (ein ganzer Bogen ruhig → Sturm →
 ruhig); neue Szenen werden zum Ausprobieren erst mit 2 Minuten gerendert.
 
+## Szenenkarte und Plausibilitätsprüfung
+
+Beim Rendern schreibt der Renderer `audio/<szene>_karte.json`: jede Quelle mit
+Gruppe, Art (Quelle/Echo), Startzeit und Ort im Hörerbezug (x vorn, y links,
+z oben; 2 Hz, durchlaufende Quellen 0,5 Hz), dazu Kopf, Blick, Schleifenstart
+und Drehbuch. `--karte` schreibt nur die Karte, ohne Audio – mit denselben
+Ereignissen wie das gerenderte Stück.
+
+`python3 pipeline/pruefe_karte.py audio/<szene>_karte.json` prüft je Gruppe
+Entfernung, Tempo und Höhe gegen Grenzen (`pruefung` je Gruppe in der Szene),
+meldet stumme Gruppen, Quellen am Kopf und seltene, nahe Ereignisse, die
+weniger als 8 s auseinanderliegen. Gefunden hat sie bisher: einen stummen
+Vorbeigang, eine Elefantenherde, die mit bis zu 5 m/s um das Zelt kreiste,
+eine Trompete von hinten, eine Saurierherde mit 11 m/s, eine Möwenkolonie mit
+39 m/s.
+
+`karte/?s=<szene>` zeigt die Karte als Draufsicht im Browser, im
+Schnelldurchlauf oder synchron mit dem Ton.
+
 ## Klosterruine, Elefanten, Meerestier
 
 - `ruine.py`: Mittelschiff ohne Gewölbe, Längsmauern und Chorwand spiegeln, was
