@@ -117,26 +117,36 @@ geklungen haben“:
   Rufen mit geschlossenem Maul, wie es Strauße, Emus und Krokodile können und
   wie es für viele Dinosaurier vermutet wird (Riede u. a. 2016).
 
-## Die Glaskuppel am Meeresgrund
+## Drehbuch
 
-`szenen/kuppel.json`, Umgebung `pipeline/kuppel.py`: Der Hörer liegt in einer
-luftgefüllten Acrylkuppel (Radius 2,5 m) auf dem Sand, 12 m unter der
-Oberfläche, Blick 55° nach oben ins Wasser.
+Jede Szene hat ein kleines Drehbuch (`drehbuch` in `szenen/*.json`): langsame
+Kurven 0…1 über die Szenendauer (Stützstellen, geglättet, periodisch – der Bogen
+geht in der Schleife auf), etwa `wind`, `regen`, `see`, `herde`, `wale`.
 
-- **Wasserschall:** Laufzeit mit 1500 m/s (Doppler 4,4-mal kleiner als in
-  Luft); der Kern rechnet mit Luftschall, deshalb wird der Weg für die Laufzeit
-  gestaucht und die Pegelabnahme auf die wahre Entfernung zurückgerechnet.
-  Keine Luftdämpfung – ferne Wale bleiben klar.
-- **Kuppel:** Acryl lässt Tiefen durch und dämpft ab 1,5 kHz bis −14 dB;
-  innen frühe Spiegelungen an Boden und gegenüberliegender Wand, kurzer heller
-  Nachhall. Außen ein Echo der Wasseroberfläche (tiefe Frequenzen löschen sich
-  dort aus) und ein langer Weitenhall für ferne Quellen.
-- **Komposition** (Leitfaden Abschnitt 0): Riff als konstanter Grund, Delfine
-  als Charaktere mit Varianz, zwei Delfine dicht über der Kuppel, Buckelwale in
-  der Ferne – und genau einmal pro Durchlauf gleitet ein Wal langsam über dich
-  hinweg (mit tiefer Wucht-Schicht). Die Höhepunkte liegen zeitlich getrennt.
-- Material: Freesound, CC0/CC BY (Buckelwale über Hydrophon, Delfine aus
-  Karibik, La Gomera und Amazonas, Riff, Blasen).
+- Die Böenkurve folgt `wind`: bei viel Wind häufigere und stärkere Böen.
+- Gruppen folgen einer Kurve (`folgt`: Rate und Pegel je Kurvenwert, `invers`,
+  `exponent`): Regen und Tropfen dem Regen, Wellen, Rumpf und Brecher am Felsen
+  der See (die ihrem Wind 20–30 s nachläuft), Gesang nur in der Regenpause.
+- Reaktionen: Steigt eine Böe über die Schwelle, schrecken Vögel auf
+  (`aufschrecken`: Schwall aufgeregter Rufe, Flügelschläge). Ferne Rufer kommen
+  näher und ziehen weg (`naehe_folgt`).
+- Der Bericht und die Seite zeigen das Drehbuch als Zeitleiste, bezogen auf den
+  Anfang der Datei.
+
+Fertige Wetter-Szenen sind 10 Minuten lang (ein ganzer Bogen ruhig → Sturm →
+ruhig); neue Szenen werden zum Ausprobieren erst mit 2 Minuten gerendert.
+
+## Klosterruine, Elefanten, Meerestier
+
+- `ruine.py`: Mittelschiff ohne Gewölbe, Längsmauern und Chorwand spiegeln, was
+  im Schiff ist; was dahinter liegt, kommt gedämpft durch oder über die
+  Mauerkrone. Langer Steinhall.
+- Elefanten am Wasserloch: Umgebung `wald.py` als offene Savanne (kein
+  Blätterdach, Zeltwand statt Stamm). Herde, Trinken, Vorbeigang, Besuch am Zelt.
+- `ozean.py`: frei im Wasser – Spiegelquellen an Oberfläche (Vorzeichenwechsel)
+  und Grund bis zur 3. Ordnung, zylindrische Ausbreitung jenseits der doppelten
+  Wassertiefe, Absorption nach Thorp, Laufzeit mit 1500 m/s. Der Kern kann Wege
+  ohne Luftdämpfung rechnen (`luft=False`).
 
 ## HRTF-Auswahltest
 
