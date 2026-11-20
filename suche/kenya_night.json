@@ -1,0 +1,32 @@
+[
+ {
+  "id": 202876,
+  "url": "https://freesound.org/people/AugustSandberg/sounds/202876/",
+  "name": "African savanna 2.wav",
+  "tags": [
+   "Africa",
+   "Animals",
+   "Buffalo",
+   "Crickets",
+   "Elephant",
+   "Evening",
+   "Field-recording",
+   "Howl",
+   "Hyeena",
+   "Lion",
+   "Nature",
+   "Night",
+   "Savanna"
+  ],
+  "description": "Midnight under full moon in Masai Mara National Park, Kenya. \r\n\r\nRecorded with a matched stereo-pair of Behringer C-4 microphones, (XY) and a Sound Devices 702 at 192kHz, 24 bit.",
+  "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+  "type": "wav",
+  "channels": 2,
+  "duration": 113.837,
+  "samplerate": 192000.0,
+  "username": "AugustSandberg",
+  "num_downloads": 1706,
+  "avg_rating": 4.733333333333333,
+  "num_ratings": 30
+ }
+]

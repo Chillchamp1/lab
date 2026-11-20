@@ -1,0 +1,67 @@
+[
+ {
+  "id": 819668,
+  "url": "https://freesound.org/people/ikbenraar/sounds/819668/",
+  "name": "Elephant sound",
+  "tags": [
+   "call",
+   "elephant",
+   "field-recording",
+   "growl",
+   "trumpet",
+   "zoo"
+  ],
+  "description": "Field Recording of an Elephant in the Zoo.",
+  "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+  "type": "wav",
+  "channels": 2,
+  "duration": 7.8,
+  "samplerate": 48000.0,
+  "username": "ikbenraar",
+  "num_downloads": 743,
+  "avg_rating": 4.7894736842105265,
+  "num_ratings": 19
+ },
+ {
+  "id": 80368,
+  "url": "https://freesound.org/people/miastodzwiekow/sounds/80368/",
+  "name": "ambience sloniarni.mp3",
+  "tags": [
+   "ambience",
+   "echo",
+   "elephantarium",
+   "poznan",
+   "zoo"
+  ],
+  "description": "20.09.09: about 17.00, the New Zoo in Poznan. I am inside the elephantarium. There is no elephants only few people. some water, echoing voices are audible. So general ambience of almost empty elephantarium.",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "type": "mp3",
+  "channels": 2,
+  "duration": 29.642,
+  "samplerate": 24000.0,
+  "username": "miastodzwiekow",
+  "num_downloads": 82,
+  "avg_rating": 3.0,
+  "num_ratings": 2
+ },
+ {
+  "id": 188949,
+  "url": "https://freesound.org/people/FK_Prod/sounds/188949/",
+  "name": "Monster Growl Ashtur.wav",
+  "tags": [
+   "Ashtur",
+   "growl",
+   "monster"
+  ],
+  "description": "I created this Monster growl for Ashtur's Lovecraft character in a live action role playing game I organized.\r\nI used lion and elephant growls I recorded in a zoo with my Ipod equipped with Tascam iM2X mic.",
+  "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+  "type": "wav",
+  "channels": 2,
+  "duration": 7.5,
+  "samplerate": 48000.0,
+  "username": "FK_Prod",
+  "num_downloads": 1598,
+  "avg_rating": 4.8,
+  "num_ratings": 20
+ }
+]
