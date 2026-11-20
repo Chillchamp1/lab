@@ -627,7 +627,7 @@
     0.4,
     1.0
    ],
-   "mitte_streuung": 25,
+   "mitte_streuung": 5,
    "abstand_s": 11,
    "antwort_wahrsch": 0.5,
    "bezug_m": 60,
@@ -831,7 +831,12 @@
      }
     }
    ],
-   "decke_db": -2.0
+   "decke_db": -2.0,
+   "pendeln_grad": 35,
+   "radius_streuung": 0.04,
+   "pruefung": {
+    "tempo_max": 3.0
+   }
   },
   {
    "name": "voegel",
@@ -3106,7 +3111,10 @@
    "matsch_pegel": 0.8,
    "knack_pegel": 1.0,
    "wucht_pegel": 0.6,
-   "wucht_exponent": 2.0
+   "wucht_exponent": 2.0,
+   "pruefung": {
+    "tempo_max": 2.5
+   }
   },
   {
    "name": "besuch",
@@ -4153,7 +4161,10 @@
    "knack_pegel": 1.0,
    "decke_db": -2.0,
    "wucht_pegel": 0.6,
-   "wucht_exponent": 2.0
+   "wucht_exponent": 2.0,
+   "pruefung": {
+    "tempo_max": 2.5
+   }
   },
   {
    "name": "flugsaurier",

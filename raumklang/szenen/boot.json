@@ -2036,7 +2036,10 @@
       120
      ]
     }
-   ]
+   ],
+   "pruefung": {
+    "tempo_max": 20.0
+   }
   },
   {
    "name": "ueberflug",
@@ -2291,7 +2294,10 @@
       120
      ]
     }
-   ]
+   ],
+   "pruefung": {
+    "tempo_max": 20.0
+   }
   },
   {
    "name": "moewen_weit",
@@ -2455,7 +2461,11 @@
       90
      ]
     }
-   ]
+   ],
+   "radius_streuung": 0.05,
+   "pruefung": {
+    "tempo_max": 20.0
+   }
   },
   {
    "name": "felsen",
