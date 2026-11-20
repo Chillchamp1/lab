@@ -47,7 +47,9 @@
     railAboveZones: false,                         // page order: rail canvas (overlayPane 400) below zones (440)
     hud: true, title: null, subtitle: null, lang: null,
     pageCamera: true,                              // use ISO.camStep/ISO.camJump (page code); false = built-in copy
-    show: true, dryRun: false, logEvery: 120, keep: false, tileCache: 520
+    show: true, dryRun: false, logEvery: 120, keep: false, tileCache: 520,
+    boost: null,                                   // {t0, t1, f}: playback speed × f, eased in between map-minute t0 and t1
+    noJump: false, frameOffset: 0                  // continue a stopped export: keep the page camera, offset the video clock
   };
   const FONT = 'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';
   const INK = '#eceae6', MUTED = '#8b9099', LINE = 'rgba(255,255,255,.09)', GLASS = 'rgba(14,16,19,.86)', ACCENT = '#ffb340', BG = '#0b0c0e';
@@ -104,15 +106,16 @@
 
   // ---- time: page rule (tick/speedTarget) with fixed dt -----------------------------------------------------
   function zp(t) { const [x0, x1, y0, y1] = layer().extent(t); return -Math.log2(Math.max(x1 - x0, (y1 - y0) * 1.4, 1e-6)); }
-  function spdTarget(t) { const d = layer().d; if (d.zRef === undefined) d.zRef = zp(78); return Math.min(4, Math.pow(2, 1.3 * Math.max(0, d.zRef - zp(t)))); }
+  function boostF(t, b) { if (!b || t <= b.t0) return 1; const u = Math.min(1, (t - b.t0) / Math.max(1e-6, b.t1 - b.t0)); return 1 + (b.f - 1) * u * u * (3 - 2 * u); }
+  function spdTarget(t, o) { const d = layer().d; if (d.zRef === undefined) d.zRef = zp(78); return Math.min(4, Math.pow(2, 1.3 * Math.max(0, d.zRef - zp(t)))) * boostF(t, o && o.boost); }
   function schedule(o) {
     const dt = 1 / o.fps, k = 90 / o.dur, out = [];
     let T = 0, spd = 1;
-    while (T < o.from - 1e-12) { spd += (spdTarget(T) - spd) * (1 - Math.exp(-dt / 1.2)); T = Math.min(o.from, T + dt * k * spd); }  // speed state at `from`
+    while (T < o.from - 1e-12) { spd += (spdTarget(T, o) - spd) * (1 - Math.exp(-dt / 1.2)); T = Math.min(o.from, T + dt * k * spd); }  // speed state at `from`
     T = o.from;
     const push = v => { if (out.length < o.maxFrames) out.push(v); };
     for (let i = 0; i < Math.round(o.holdStart * o.fps); i++) push(T);
-    while (T < o.to - 1e-12 && out.length < o.maxFrames) { spd += (spdTarget(T) - spd) * (1 - Math.exp(-dt / 1.2)); T = Math.min(o.to, T + dt * k * spd); push(T); }
+    while (T < o.to - 1e-12 && out.length < o.maxFrames) { spd += (spdTarget(T, o) - spd) * (1 - Math.exp(-dt / 1.2)); T = Math.min(o.to, T + dt * k * spd); push(T); }
     for (let i = 0; i < Math.round(o.holdEnd * o.fps); i++) push(o.to);
     return Float64Array.from(out);
   }
@@ -530,7 +533,9 @@
     const ctx = S.ctx;
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.filter = 'none'; ctx.globalCompositeOperation = 'source-over';
     ctx.fillStyle = BG; ctx.fillRect(0, 0, S.cv.width, S.cv.height);
-    drawTiles(ctx, jb);
+    { const bl = ISO.bgLift ? ISO.bgLift(v.z) : 1;            // page brightens the base map when zoomed out
+      if (bl > 1.001) { ctx.save(); ctx.filter = 'brightness(' + bl.toFixed(3) + ')'; ctx.fillStyle = BG; ctx.fillRect(0, 0, S.cv.width, S.cv.height); drawTiles(ctx, jb); ctx.restore(); }
+      else drawTiles(ctx, jb); }
     ctx.setTransform(ss, 0, 0, ss, 0, 0); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
     const k = v.S / ly.bS, dx = ly.box * k - v.ox, dy = ly.boy * k - v.oy, bw = ly.bW * k, bh = ly.bH * k;
     ctx.drawImage(ly.fog, dx, dy, bw, bh);
@@ -595,7 +600,7 @@
       const t0 = performance.now(); let prev = Promise.resolve(), inflight = [];
       for (let i = 0; i < N; i++) {
         if (S.stopReq) break;
-        P.fulls += await renderFrame(sched[i], i / o.fps, dt, o, i === 0);
+        P.fulls += await renderFrame(sched[i], (i + (o.frameOffset || 0)) / o.fps, dt, o, i === 0 && !o.noJump);
         const blobP = toBlob(S.cv, mime, o.quality);      // bitmap is copied now; encoding runs while the next frame renders
         const idx = i, before = prev;
         const up = (async () => { const b = await blobP; await before; if (!o.dryRun) await post(o, '/frame?i=' + idx, b, mime); P.bytes = (P.bytes || 0) + b.size; })();
