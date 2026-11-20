@@ -1,9 +1,9 @@
 {
  "szene": "wald",
- "stand": "19.11.2026 23:34",
- "dauer": 240,
+ "stand": "20.11.2026 12:25",
+ "dauer": 600,
  "schleife": true,
- "abtastwerte": 10584000,
+ "abtastwerte": 26460000,
  "hrtf": "subject_040.sofa",
  "blick": 55,
  "titel": "Im Dinosaurierwald im Herbstregen",
@@ -16,9 +16,9 @@
    "typ": "bett",
    "ziel_lufs": -31,
    "pegel_art": "integriert",
-   "spitze_db": -7.0,
-   "begrenzt_db": 0.0,
-   "sekunden": 114.0,
+   "spitze_db": -6.0,
+   "begrenzt_db": 2.9,
+   "sekunden": 435.9,
    "probe_abtastwerte": 1323000
   },
   {
@@ -28,9 +28,9 @@
    "typ": "bett",
    "ziel_lufs": -37,
    "pegel_art": "integriert",
-   "spitze_db": -10.5,
+   "spitze_db": -6.0,
    "begrenzt_db": 0.0,
-   "sekunden": 76.0,
+   "sekunden": 271.9,
    "probe_abtastwerte": 1323000
   },
   {
@@ -40,9 +40,9 @@
    "typ": "bett",
    "ziel_lufs": -34,
    "pegel_art": "integriert",
-   "spitze_db": -10.4,
+   "spitze_db": -8.8,
    "begrenzt_db": 0.0,
-   "sekunden": 64.2,
+   "sekunden": 242.2,
    "probe_abtastwerte": 1323000
   },
   {
@@ -53,8 +53,8 @@
    "ziel_lufs": -35,
    "pegel_art": "spitzen",
    "spitze_db": -6.0,
-   "begrenzt_db": 2.2,
-   "sekunden": 6.0,
+   "begrenzt_db": 2.0,
+   "sekunden": 18.6,
    "probe_abtastwerte": 1323000
   },
   {
@@ -64,9 +64,9 @@
    "typ": "ereignisse",
    "ziel_lufs": -37,
    "pegel_art": "spitzen",
-   "spitze_db": -7.4,
-   "begrenzt_db": 0.0,
-   "sekunden": 4.4,
+   "spitze_db": -6.0,
+   "begrenzt_db": 2.1,
+   "sekunden": 14.6,
    "probe_abtastwerte": 1323000
   },
   {
@@ -77,8 +77,8 @@
    "ziel_lufs": -36,
    "pegel_art": "integriert",
    "spitze_db": -6.0,
-   "begrenzt_db": 0.4,
-   "sekunden": 74.1,
+   "begrenzt_db": 1.4,
+   "sekunden": 275.3,
    "probe_abtastwerte": 1323000
   },
   {
@@ -88,23 +88,25 @@
    "typ": "schwarm",
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
-   "spitze_db": -12.0,
+   "spitze_db": -13.9,
    "begrenzt_db": 0.0,
-   "sekunden": 9.9,
-   "rufe": 38,
+   "sekunden": 21.6,
+   "rufe": 78,
+   "aufgeschreckt": 0,
    "probe_abtastwerte": 1323000
   },
   {
    "name": "voegel",
-   "titel": "Waldvögel",
-   "text": "Ein paar Vögel in den Bäumen ringsum, die auch im Regen singen und einander antworten.",
+   "titel": "Vögel in der Regenpause",
+   "text": "Gesang nur, wenn der Regen nachlässt – vorsichtig erst, dann lebhafter.",
    "typ": "schwarm",
    "ziel_lufs": -32,
    "pegel_art": "spitzen",
-   "spitze_db": -9.0,
-   "begrenzt_db": 3.0,
-   "sekunden": 10.2,
-   "rufe": 126,
+   "spitze_db": -14.4,
+   "begrenzt_db": 0.0,
+   "sekunden": 12.8,
+   "rufe": 58,
+   "aufgeschreckt": 0,
    "probe_abtastwerte": 1323000
   },
   {
@@ -114,14 +116,20 @@
    "typ": "gebruell",
    "ziel_lufs": -22,
    "pegel_art": "spitzen",
-   "spitze_db": -4.2,
+   "spitze_db": -5.6,
    "begrenzt_db": 0.0,
-   "sekunden": 13.9,
+   "sekunden": 38.7,
    "rufe": [
     34.6,
     85.6,
     136.9,
-    191.8
+    191.8,
+    264.6,
+    309.4,
+    381.8,
+    441.1,
+    500.5,
+    560.3
    ],
    "probe_abtastwerte": 2646000
   },
@@ -132,15 +140,24 @@
    "typ": "gebruell",
    "ziel_lufs": -26,
    "pegel_art": "spitzen",
-   "spitze_db": -14.1,
+   "spitze_db": -12.0,
    "begrenzt_db": 0.0,
-   "sekunden": 11.1,
+   "sekunden": 25.5,
    "rufe": [
     18.3,
     68.3,
     116.9,
     165.8,
-    212.2
+    212.2,
+    242.5,
+    293.0,
+    326.0,
+    374.7,
+    407.6,
+    453.4,
+    490.3,
+    520.6,
+    564.9
    ],
    "probe_abtastwerte": 2646000
   },
@@ -151,15 +168,22 @@
    "typ": "gebruell",
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
-   "spitze_db": -7.5,
+   "spitze_db": -7.8,
    "begrenzt_db": 0.0,
-   "sekunden": 8.0,
+   "sekunden": 23.2,
    "rufe": [
     29.2,
     75.7,
     121.9,
     178.1,
-    233.5
+    233.5,
+    288.1,
+    328.4,
+    369.7,
+    418.4,
+    469.2,
+    526.1,
+    579.4
    ],
    "probe_abtastwerte": 2646000
   },
@@ -171,12 +195,17 @@
    "ziel_lufs": -23,
    "pegel_art": "spitzen",
    "spitze_db": -2.0,
-   "begrenzt_db": 2.4,
-   "sekunden": 22.0,
+   "begrenzt_db": 3.2,
+   "sekunden": 47.6,
    "vorbeigaenge": [
     45.4,
     126.1,
-    195.8
+    195.8,
+    259.9,
+    318.3,
+    390.0,
+    466.0,
+    533.3
    ],
    "probe_abtastwerte": 1323000
   },
@@ -189,13 +218,19 @@
    "pegel_art": "spitzen",
    "spitze_db": -2.0,
    "begrenzt_db": 1.5,
-   "sekunden": 9.8,
+   "sekunden": 21.5,
    "besuche": [
     {
-     "start": 70,
-     "ende": 165,
+     "start": 150,
+     "ende": 245,
      "naehe_m": 0.87,
      "schritte": 32
+    },
+    {
+     "start": 420,
+     "ende": 515,
+     "naehe_m": 0.8,
+     "schritte": 33
     }
    ],
    "probe_abtastwerte": 4630500
@@ -207,13 +242,16 @@
    "typ": "ueberflug",
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
-   "spitze_db": -13.5,
+   "spitze_db": -13.3,
    "begrenzt_db": 0.0,
-   "sekunden": 3.6,
+   "sekunden": 10.7,
    "zeiten": [
     42.1,
     113.1,
-    208.6
+    208.6,
+    283.6,
+    377.7,
+    476.0
    ],
    "probe_abtastwerte": 1764000
   },
@@ -226,20 +264,64 @@
    "pegel_art": "integriert",
    "spitze_db": -32.5,
    "begrenzt_db": 0.0,
-   "sekunden": 10.4,
+   "sekunden": 35.8,
    "akkorde": 8,
+   "probe_abtastwerte": 1323000
+  },
+  {
+   "name": "voegel_rufe",
+   "titel": "Rufe aus der Deckung",
+   "text": "Bei Regen singen Vögel kaum: nur kurze Kontakt- und Warnrufe, gedämpft aus dem Unterholz. Reißt eine Böe an den Kronen, fliegen einige schimpfend auf.",
+   "typ": "schwarm",
+   "ziel_lufs": -35,
+   "pegel_art": "spitzen",
+   "spitze_db": -14.7,
+   "begrenzt_db": 0.0,
+   "sekunden": 16.9,
+   "rufe": 133,
+   "aufgeschreckt": 7,
    "probe_abtastwerte": 1323000
   }
  ],
- "start_verschoben_s": 7.27,
- "start_abtastwerte": 320404,
- "begrenzer_max_db": 1.7,
+ "drehbuch": [
+  [
+   52.2,
+   "Leichter Regen setzt wieder ein."
+  ],
+  [
+   102.2,
+   "Leichter Regen. Die Vögel sitzen still in der Deckung, nur ab und zu ein kurzer Ruf."
+  ],
+  [
+   202.2,
+   "Der Wind frischt auf und kündigt mehr Regen an; die Kronen rauschen, ein paar Vögel fliegen schimpfend auf."
+  ],
+  [
+   264.7,
+   "Der Regen wird kräftig, auf den großen Blättern trommelt es, der Bach schwillt an."
+  ],
+  [
+   352.2,
+   "Höhepunkt: Sturm in den Kronen."
+  ],
+  [
+   452.2,
+   "Der Regen lässt nach, es tropft weiter von den Blättern."
+  ],
+  [
+   539.7,
+   "Regenpause – die ersten Vögel trauen sich wieder und singen."
+  ]
+ ],
+ "start_verschoben_s": 497.79,
+ "start_abtastwerte": 21952456,
+ "begrenzer_max_db": 2.4,
  "lufs": -23.0,
  "naht": {
-  "sprung_naht": 0.0014,
-  "sprung_typisch_999": 0.1068,
-  "pegelsprung_naht_db": 0.78,
-  "pegelsprung_typisch_95_db": 4.19
+  "sprung_naht": 0.0068,
+  "sprung_typisch_999": 0.1109,
+  "pegelsprung_naht_db": 0.14,
+  "pegelsprung_typisch_95_db": 4.27
  },
  "quellen": [
   "aeste_knacken",
@@ -346,6 +428,9 @@
   "esc_5-243025-A",
   "esc_5-263490-A",
   "esc_5-263501-A",
+  "fluegel_elster",
+  "fluegel_leicht",
+  "fluegel_schlagen",
   "matsch_dick",
   "matsch_wandern",
   "regen_blaetter_gravity",

@@ -92,9 +92,9 @@ const zeit = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2
 
 // Spieler mit nahtloser Schleife: die Datei wird dekodiert und über die Web-Audio-Schnittstelle
 // sample-genau wiederholt. Ein <audio loop> setzt an der Naht je nach Browser kurz aus.
-function spieler(el, src, soll) {
+function spieler(el, src, soll, dateiname) {
   el.innerHTML = `<button aria-label="Abspielen">▶</button><div class="leiste"><span></span></div>` +
-    `<span class="zeit">0:00</span><a href="${src}" download>MP3</a>`;
+    `<span class="zeit">0:00</span><a href="${src}" download="${esc(dateiname || '')}">MP3</a>`;
   const knopf = el.querySelector('button'), leiste = el.querySelector('.leiste'), balken = leiste.querySelector('span'), anz = el.querySelector('.zeit');
   let puffer = null, quelle = null, verst = null, start = 0, ab = 0, laeuft = false;
   async function laden() {
@@ -174,8 +174,11 @@ function spieler(el, src, soll) {
         `<tr><td><a href="${esc(e.seite)}">${esc(e.titel || e.datei)}</a></td><td>${esc(e.urheber || '–')}</td><td>${esc(e.lizenz)}</td></tr>`).join('') +
       `</tbody></table></div></details>`;
     box.appendChild(el);
-    spieler(el.querySelector('[data-haupt]'), `audio/${name}.mp3`, b.abtastwerte);
-    for (const g of b.gruppen) spieler(el.querySelector(`.spieler[data-name="${g.name}"]`), `audio/${name}_${g.name}.mp3`, g.probe_abtastwerte);
+    // Dateiname beim Herunterladen mit dem Stand der Fassung, z. B. wald_2026-11-20_14-05.mp3
+    const m = String(b.stand || '').match(/(\d+)\.(\d+)\.(\d+)\s+(\d+):(\d+)/);
+    const stand = m ? `_${m[3]}-${m[2]}-${m[1]}_${m[4]}-${m[5]}` : '';
+    spieler(el.querySelector('[data-haupt]'), `audio/${name}.mp3`, b.abtastwerte, `${name}${stand}.mp3`);
+    for (const g of b.gruppen) spieler(el.querySelector(`.spieler[data-name="${g.name}"]`), `audio/${name}_${g.name}.mp3`, g.probe_abtastwerte, `${name}_${g.name}${stand}.mp3`);
   }
 })();
 </script>
