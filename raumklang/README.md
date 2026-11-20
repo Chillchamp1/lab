@@ -15,6 +15,7 @@ pipeline/wald.py            der Wald als Raum: Waldboden, Stamm im Rücken, Blä
 pipeline/material.py        Aufnahmen laden, entrauschen, in Einzelereignisse zerlegen
 pipeline/material_holen.py  lädt alles aus quellen.json nach material/roh/
 pipeline/szene.py           Szenenbeschreibung → Klanggruppen → Pegel → Mischung → MP3
+pipeline/ohrmessung.py      Ohrmessung (messung/) → Kopfhörer-EQ und eigene HRTF (SOFA)
 szenen/boot.json            die Szene als Daten
 quellen.json                jede Aufnahme mit Herkunft, Urheber und Lizenz
 audio/                      Ergebnis: Mischung, eine Hörprobe je Klanggruppe, Bericht (boot.json)
@@ -174,6 +175,38 @@ aus 8 Richtungen mit 6 Kunstohren (MIT-KEMAR und 5 CIPIC-Köpfe, diffusfeld-
 entzerrt, mit frühen Reflexionen und leisem Nachhall), danach je HRTF ein Kreis
 um den Kopf. Die HRIRs liegen in `hrtf-test/hrtf.json`. Das Ergebnis bleibt im
 Browser (Fortsetzen möglich) und lässt sich kopieren oder als Datei speichern.
+
+## Ohrmessung: Kopfhörer-Entzerrung und eigene HRTF
+
+`messung/` misst im Browser mit In-Ear-Mikrofonen (OKM am Zoom H5) den Kopfhörer am
+eigenen Ohr (5 Sitze) und bis zu 20 Richtungen mit einem Lautsprecher samt Referenz;
+das Ergebnis ist eine JSON-Datei mit Impulsantworten. Ausgewertet wird sie mit
+
+```
+python3 pipeline/ohrmessung.py ohrmessung_<datum>.json [--aus material/eigen]
+```
+
+- **eigen_hrtf.sofa** – CIPIC 040 (`--basis`) mit den eigenen Ohren: An den gemessenen
+  Richtungen wird die Klangfarbe über ~500 Hz auf die Messung gezogen (Ohr ÷ Referenz,
+  Zeitfenster bis kurz vor die Bodenreflexion), dazwischen über die Kugel interpoliert;
+  fern von jeder Messung bleibt die Basis. Die Laufzeit zwischen den Ohren wird auf die
+  eigene Kopfgröße skaliert, der Rest je Richtung ebenso interpoliert. Jede Richtung ist
+  minimalphasig plus reine Verzögerung: Die Korrektur direkt auf die CIPIC-Antwort zu
+  falten, verformte deren erste Welle – `hrtf.py` richtet an der 15-%-Schwelle aus, die
+  lag dann je Gitterpunkt anders, Nachbarn löschten sich beim Mischen aus. Für die Szenen:
+  `--hrtf material/eigen/eigen_hrtf.sofa`.
+- **kh_eq_qudelix.txt / kh_eq_apo.txt / kh_eq_fir_48k.wav** – Kopfhörer-Entzerrung auf
+  das eigene Diffusfeld am Messpunkt (passt zur diffusfeld-entzerrten HRTF in `hrtf.py`,
+  für die eigene HRTF exakt). Anhebungen begrenzt (unter 50 Hz +3 dB, über 6 kHz +4 dB).
+- **bericht.txt, bericht.json, uebersicht.png** – Fenster, Kopfgröße, Abstand zur Basis,
+  Streuung zwischen den Sitzen, Plausibilität je Richtung.
+
+`pipeline/ohrmessung_probe.py` ist der Prüfstand: Er erzeugt eine künstliche Messdatei im
+Format der Seite mit bekannter Wahrheit (CIPIC 003 als „Ohren“, Lautsprecherfärbung,
+Bodenreflexion nach 3,9 ms, Nachhall, zwei leicht verschiedene Mikrofone, Kopfhörer mit
+Streuung zwischen den Sitzen) und prüft, ob die Auswertung sie zurückgewinnt. Stand
+20.11.: Fenster 3,6 ms, Kopfgröße 1,143 (wahr 1,144), Klangfarbe 1–14 kHz an den
+Messrichtungen 1,3 dB neben der Wahrheit (Basis: 3,9 dB), Laufzeit auf 13 µs.
 
 ## Fassungen und Blindvergleich
 
