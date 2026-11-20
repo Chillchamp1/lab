@@ -1,0 +1,227 @@
+{
+ "szene": "elefanten",
+ "stand": "20.11.2026 11:58",
+ "dauer": 120,
+ "schleife": true,
+ "abtastwerte": 5292000,
+ "hrtf": "subject_040.sofa",
+ "blick": 55,
+ "titel": "Elefanten am Wasserloch",
+ "text": "Nacht in der Savanne. Du liegst im Zelt, ein paar Meter vor dir ein Wasserloch. Grillen zirpen, Frösche quaken am Ufer, weit draußen grunzen Flusspferde. Eine Elefantenherde kommt zum Trinken: tiefes Grollen, mit dem sie sich unterhalten, Rüssel schlürfen und spritzen Wasser. Einer stapft am Zelt vorbei – und einmal kommt einer ganz nah und schnuppert am Zelt.",
+ "gruppen": [
+  {
+   "name": "grillen",
+   "titel": "Grillen in der Nacht",
+   "text": "Grillen zirpen ringsum im Gras – der ruhige Grund der Szene.",
+   "typ": "bett",
+   "ziel_lufs": -30,
+   "pegel_art": "integriert",
+   "spitze_db": -15.5,
+   "begrenzt_db": 0.0,
+   "sekunden": 87.8,
+   "probe_abtastwerte": 1323000
+  },
+  {
+   "name": "froesche",
+   "titel": "Frösche am Ufer",
+   "text": "Am Ufer des Wasserlochs vor dir quaken Frösche.",
+   "typ": "bett",
+   "ziel_lufs": -34,
+   "pegel_art": "integriert",
+   "spitze_db": -11.9,
+   "begrenzt_db": 0.0,
+   "sekunden": 30.4,
+   "probe_abtastwerte": 1323000
+  },
+  {
+   "name": "ferne",
+   "titel": "Die Savanne weit draußen",
+   "text": "Ferne Nachtgeräusche aus dem Busch.",
+   "typ": "bett",
+   "ziel_lufs": -38,
+   "pegel_art": "integriert",
+   "spitze_db": -18.7,
+   "begrenzt_db": 0.0,
+   "sekunden": 46.8,
+   "probe_abtastwerte": 1323000
+  },
+  {
+   "name": "flusspferde",
+   "titel": "Flusspferde in der Ferne",
+   "text": "Weit draußen im Fluss grunzen Flusspferde, tief und rollend.",
+   "typ": "gebruell",
+   "ziel_lufs": -30,
+   "pegel_art": "spitzen",
+   "spitze_db": -14.9,
+   "begrenzt_db": 0.0,
+   "sekunden": 7.1,
+   "rufe": [
+    12.2,
+    72.0
+   ],
+   "probe_abtastwerte": 1323000
+  },
+  {
+   "name": "herde",
+   "titel": "Die Herde am Wasserloch",
+   "text": "Vier, fünf Elefanten stehen am Wasserloch in 18 bis 40 Metern und unterhalten sich mit tiefem Grollen – mal links, mal rechts.",
+   "typ": "schwarm",
+   "ziel_lufs": -26,
+   "pegel_art": "spitzen",
+   "spitze_db": -10.0,
+   "begrenzt_db": 0.0,
+   "sekunden": 9.4,
+   "rufe": 43,
+   "aufgeschreckt": 0,
+   "probe_abtastwerte": 1323000
+  },
+  {
+   "name": "trinken",
+   "titel": "Rüssel im Wasser",
+   "text": "Am Wasserloch saugen Rüssel Wasser, spritzen und schlürfen.",
+   "typ": "ereignisse",
+   "ziel_lufs": -30,
+   "pegel_art": "spitzen",
+   "spitze_db": -10.4,
+   "begrenzt_db": 0.0,
+   "sekunden": 2.8,
+   "probe_abtastwerte": 1323000
+  },
+  {
+   "name": "trompete",
+   "titel": "Ein Elefant trompetet",
+   "text": "Einmal pro Durchlauf trompetet ein Elefant aus der Herde – laut, aber fröhlich, nicht gegen dich.",
+   "typ": "gebruell",
+   "ziel_lufs": -25,
+   "pegel_art": "spitzen",
+   "spitze_db": -9.0,
+   "begrenzt_db": 0.7,
+   "sekunden": 6.9,
+   "rufe": [
+    44.2
+   ],
+   "probe_abtastwerte": 1764000
+  },
+  {
+   "name": "vorbeigang",
+   "titel": "Ein Elefant stapft vorbei",
+   "text": "Einmal pro Durchlauf geht ein Elefant in 8 bis 14 Metern am Zelt vorbei: weiche, schwere Schritte, Gras raschelt, er schnaubt.",
+   "typ": "vorbeigang",
+   "ziel_lufs": -27,
+   "pegel_art": "spitzen",
+   "spitze_db": -180.0,
+   "begrenzt_db": 0.0,
+   "sekunden": 9.7,
+   "vorbeigaenge": [],
+   "probe_abtastwerte": 1764000
+  },
+  {
+   "name": "besuch",
+   "titel": "Einer schnuppert am Zelt",
+   "text": "Einmal kommt ein junger Elefant ganz nah ans Zelt, rupft Gras, kaut, schnuppert mit dem Rüssel an der Zeltwand – und geht wieder zur Herde.",
+   "typ": "besuch",
+   "ziel_lufs": -27,
+   "pegel_art": "spitzen",
+   "spitze_db": -4.0,
+   "begrenzt_db": 3.7,
+   "sekunden": 7.0,
+   "besuche": [
+    {
+     "start": 58,
+     "ende": 109.1,
+     "naehe_m": 2.63,
+     "schritte": 16
+    }
+   ],
+   "probe_abtastwerte": 1764000
+  }
+ ],
+ "drehbuch": [
+  [
+   5.1,
+   "Er trottet zurück, die Herde zieht weiter."
+  ],
+  [
+   23.1,
+   "Grillen, Frösche am Ufer – eine Elefantenherde nähert sich, ihr Grollen kommt näher."
+  ],
+  [
+   37.1,
+   "Einer stapft dicht am Zelt vorbei."
+  ],
+  [
+   51.1,
+   "Die Herde ist am Wasserloch: Rüssel schlürfen und spritzen, tiefes Grollen."
+  ],
+  [
+   68.1,
+   "Ein Elefant trompetet – die Frösche verstummen kurz."
+  ],
+  [
+   81.1,
+   "Ein junger Elefant kommt heran, rupft Gras und kaut."
+  ],
+  [
+   111.1,
+   "Er schnuppert an der Zeltwand; selbst die Grillen halten inne."
+  ]
+ ],
+ "start_verschoben_s": 96.87,
+ "start_abtastwerte": 4271928,
+ "begrenzer_max_db": 0.7,
+ "lufs": -23.0,
+ "naht": {
+  "sprung_naht": 0.0083,
+  "sprung_typisch_999": 0.0894,
+  "pegelsprung_naht_db": 0.3,
+  "pegelsprung_typisch_95_db": 4.06
+ },
+ "quellen": [
+  "aeste_knacken",
+  "ast_holz_knacken",
+  "ast_knacken_stephan",
+  "aufprall_koerper_erde",
+  "aufprall_koerper_gras",
+  "aufprall_stamm_waldboden",
+  "baer_fressen1",
+  "elefant_grollen_tz",
+  "elefant_rueps_tz",
+  "elefant_ruf_tz",
+  "elefant_schnauben",
+  "elefant_serengeti_nacht",
+  "elefant_trinken_tz",
+  "elefant_trompete",
+  "elefant_trompete2",
+  "elefant_trompete_kurz",
+  "elefant_wasser2_tz",
+  "elefant_wasser_tz",
+  "elefant_zoo",
+  "esc_3-145774-A",
+  "esc_3-94342-A",
+  "esc_4-117630-A",
+  "esc_4-181563-A",
+  "esc_4-182368-A",
+  "esc_4-182369-A",
+  "esc_4-194979-A",
+  "esc_4-218304-A",
+  "esc_4-218304-B",
+  "esc_5-127990-A",
+  "esc_5-243025-A",
+  "esc_5-263490-A",
+  "esc_5-263501-A",
+  "flusspferd1",
+  "flusspferd2",
+  "flusspferd_shipandeni",
+  "froesche_grillen_a",
+  "froesche_grillen_b",
+  "grillen_merloth",
+  "grillen_merloth1",
+  "kruger_nacht",
+  "matsch_dick",
+  "matsch_wandern",
+  "nacht_tiere_tz",
+  "okavango_nacht1",
+  "okavango_nacht2",
+  "savanne_abend"
+ ]
+}

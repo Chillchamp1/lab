@@ -1,9 +1,9 @@
 {
  "szene": "ruine",
- "stand": "20.11.2026 11:34",
- "dauer": 240,
+ "stand": "20.11.2026 12:02",
+ "dauer": 120,
  "schleife": true,
- "abtastwerte": 10584000,
+ "abtastwerte": 5292000,
  "hrtf": "subject_040.sofa",
  "blick": 55,
  "titel": "In der Klosterruine bei Nacht",
@@ -16,9 +16,9 @@
    "typ": "bett",
    "ziel_lufs": -31,
    "pegel_art": "integriert",
-   "spitze_db": -6.7,
+   "spitze_db": -9.5,
    "begrenzt_db": 0.0,
-   "sekunden": 132.8,
+   "sekunden": 63.5,
    "probe_abtastwerte": 1323000
   },
   {
@@ -30,7 +30,7 @@
    "pegel_art": "integriert",
    "spitze_db": -27.8,
    "begrenzt_db": 0.0,
-   "sekunden": 90.4,
+   "sekunden": 45.2,
    "probe_abtastwerte": 1323000
   },
   {
@@ -40,9 +40,9 @@
    "typ": "bett",
    "ziel_lufs": -36,
    "pegel_art": "integriert",
-   "spitze_db": -9.7,
+   "spitze_db": -14.1,
    "begrenzt_db": 0.0,
-   "sekunden": 91.4,
+   "sekunden": 54.3,
    "probe_abtastwerte": 1323000
   },
   {
@@ -52,9 +52,9 @@
    "typ": "bett",
    "ziel_lufs": -37,
    "pegel_art": "integriert",
-   "spitze_db": -9.2,
+   "spitze_db": -13.1,
    "begrenzt_db": 0.0,
-   "sekunden": 17.3,
+   "sekunden": 7.5,
    "probe_abtastwerte": 1323000
   },
   {
@@ -64,9 +64,9 @@
    "typ": "ereignisse",
    "ziel_lufs": -35,
    "pegel_art": "spitzen",
-   "spitze_db": -9.0,
-   "begrenzt_db": 0.8,
-   "sekunden": 6.5,
+   "spitze_db": -12.0,
+   "begrenzt_db": 3.1,
+   "sekunden": 3.0,
    "probe_abtastwerte": 1323000
   },
   {
@@ -76,10 +76,11 @@
    "typ": "schwarm",
    "ziel_lufs": -31,
    "pegel_art": "spitzen",
-   "spitze_db": -18.5,
+   "spitze_db": -20.2,
    "begrenzt_db": 0.0,
-   "sekunden": 8.5,
-   "rufe": 22,
+   "sekunden": 5.4,
+   "rufe": 16,
+   "aufgeschreckt": 0,
    "probe_abtastwerte": 1323000
   },
   {
@@ -89,12 +90,11 @@
    "typ": "ueberflug",
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
-   "spitze_db": -3.0,
-   "begrenzt_db": 1.0,
-   "sekunden": 3.2,
+   "spitze_db": -7.0,
+   "begrenzt_db": 6.0,
+   "sekunden": 1.4,
    "zeiten": [
-    38.1,
-    155.5
+    33.6
    ],
    "probe_abtastwerte": 1764000
   },
@@ -107,11 +107,11 @@
    "pegel_art": "spitzen",
    "spitze_db": -20.1,
    "begrenzt_db": 0.0,
-   "sekunden": 6.6,
+   "sekunden": 4.6,
    "rufe": [
-    88.9
+    72.0
    ],
-   "probe_abtastwerte": 1984500
+   "probe_abtastwerte": 1764000
   },
   {
    "name": "gesang",
@@ -120,24 +120,54 @@
    "typ": "gebruell",
    "ziel_lufs": -36,
    "pegel_art": "spitzen",
-   "spitze_db": -25.8,
+   "spitze_db": -25.7,
    "begrenzt_db": 0.0,
-   "sekunden": 6.7,
+   "sekunden": 4.4,
    "rufe": [
-    199.4
+    99.7
    ],
-   "probe_abtastwerte": 1984500
+   "probe_abtastwerte": 1764000
   }
  ],
- "start_verschoben_s": 77.82,
- "start_abtastwerte": 3431775,
- "begrenzer_max_db": 4.5,
+ "drehbuch": [
+  [
+   8.3,
+   "Von weit her weht Gesang herüber."
+  ],
+  [
+   20.8,
+   "Nieselregen setzt wieder ein."
+  ],
+  [
+   28.3,
+   "Nieselregen, zwei Käuze rufen sich zu."
+  ],
+  [
+   55.8,
+   "Eine Böe – das leere Fenster pfeift, Tauben schrecken im Gemäuer auf."
+  ],
+  [
+   73.3,
+   "Der Regen wird stärker, mehr Tropfen fallen innen auf den Stein."
+  ],
+  [
+   98.3,
+   "Der Wind legt sich, fern über dem Tal schlägt eine Glocke."
+  ],
+  [
+   115.8,
+   "Stille, nur noch Tropfen."
+  ]
+ ],
+ "start_verschoben_s": 91.65,
+ "start_abtastwerte": 4041905,
+ "begrenzer_max_db": 0.9,
  "lufs": -23.0,
  "naht": {
-  "sprung_naht": 0.0142,
-  "sprung_typisch_999": 0.086,
-  "pegelsprung_naht_db": 0.08,
-  "pegelsprung_typisch_95_db": 1.46
+  "sprung_naht": 0.0042,
+  "sprung_typisch_999": 0.0827,
+  "pegelsprung_naht_db": 0.9,
+  "pegelsprung_typisch_95_db": 1.87
  },
  "quellen": [
   "esc_1-21189-A",
