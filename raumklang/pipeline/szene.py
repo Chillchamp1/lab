@@ -301,7 +301,7 @@ def rendere_quelle(kx, spur, bus, sig, t0, ort_fn, aussen=True, pegel=1.0, hall=
         ist_direkt = weg is wege[0]
         st, v = rendere_pfad(kx.hrtf, sig, weg['entf'], weg['richt'], weg['gang'], pg, weg['ohr'],
                              bus if weg['hall'] else None, hall, weg.get('streu'), start,
-                             bus2 if ist_direkt else None, gew2)
+                             bus2 if ist_direkt else None, gew2, weg.get('luft', True))
         spur.addiere(st, start + v)
 
 
@@ -1030,7 +1030,7 @@ def gen_gebruell(kx, g, spur, bus):
     t = rng.uniform(*g.get('erster_s', [20, 40]))
     erster = t
     liste = []
-    while t < kx.dauer + erster - g.get('abstand_s', [35, 70])[0]:
+    while not liste or t < kx.dauer + erster - g.get('abstand_s', [35, 70])[0]:   # mindestens einer
         e = _wahl(rng, ev)
         d = rng.uniform(*g.get('entfernung', [350, 700]))
         if g.get('naehe_folgt'):            # Drehbuch: die Rufer kommen näher und ziehen wieder weg
@@ -1159,7 +1159,7 @@ def main():
     sz = json.loads(Path(a.szene).read_text())
     dauer = a.dauer or sz.get('dauer', 180)
     if a.blick is not None:
-        sz[next(k for k in ('wald', 'kuppel', 'boot') if k in sz)]['blick'] = a.blick
+        sz[next(k for k in ('wald', 'ruine', 'ozean', 'kuppel', 'boot') if k in sz)]['blick'] = a.blick
     t_start = time.time()
     hrtf = HRTF(a.hrtf, FS)
     hrtf.stereo = a.stereo
@@ -1167,6 +1167,14 @@ def main():
         from wald import Wald
         umg_cfg = sz['wald']
         boot = Wald(umg_cfg, dauer, sz.get('saat', 1))
+    elif 'ruine' in sz:
+        from ruine import Ruine
+        umg_cfg = sz['ruine']
+        boot = Ruine(umg_cfg, dauer, sz.get('saat', 1))
+    elif 'ozean' in sz:
+        from ozean import Ozean
+        umg_cfg = sz['ozean']
+        boot = Ozean(umg_cfg, dauer, sz.get('saat', 1))
     elif 'kuppel' in sz:
         from kuppel import Kuppel
         umg_cfg = sz['kuppel']
