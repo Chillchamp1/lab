@@ -1,7 +1,7 @@
 {
  "name": "boot",
  "titel": "Im Ruderboot auf dem Meer",
- "dauer": 200,
+ "dauer": 600,
  "saat": 11,
  "ziel_lufs": -21,
  "boot": {
@@ -217,8 +217,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -242,8 +242,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -267,8 +267,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -292,8 +292,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -317,8 +317,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -342,8 +342,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -367,8 +367,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -392,8 +392,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -417,8 +417,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -442,8 +442,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -467,8 +467,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -492,8 +492,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -517,8 +517,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -542,8 +542,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -567,8 +567,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -592,8 +592,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -617,8 +617,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -642,8 +642,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -667,8 +667,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -692,8 +692,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -717,8 +717,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -742,8 +742,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -767,8 +767,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -792,8 +792,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -817,8 +817,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -842,8 +842,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -867,8 +867,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -892,8 +892,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -917,8 +917,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -942,8 +942,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -967,8 +967,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -992,8 +992,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "obertoene": 0.3
      }
@@ -1732,26 +1732,24 @@
    "fang_schwelle": 0.7,
    "knatter_ab": 1.0,
    "ruhe": -0.3,
-   "probe_ab": 0,
+   "probe_ab": 0.0,
    "probe_dauer": 60,
    "stoff": [
     {
      "quelle": "segel_baumwolle",
-     "hochpass": 120
-    },
-    {
-     "quelle": "segel_flagge_blume",
-     "hochpass": 120
+     "hochpass": 280
     },
     {
      "quelle": "segel_stoff",
-     "hochpass": 120
+     "hochpass": 280
     },
     {
-     "quelle": "segel_flagge_hopkins",
-     "hochpass": 120
+     "quelle": "segel_flagge_blume",
+     "hochpass": 280
     }
-   ]
+   ],
+   "stoff_hochpass": 280,
+   "fang_pegel": 0.0
   },
   {
    "name": "moewen_fern",
@@ -2060,7 +2058,7 @@
    ],
    "min_dauer": 0.6,
    "hall": 0.6,
-   "probe_ab": 5,
+   "probe_ab": 15.0,
    "probe_dauer": 40,
    "sammlung": [
     {
@@ -2505,8 +2503,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "moden": [
        [
@@ -2542,8 +2540,8 @@
         35,
         130
        ],
-       "anteil": 1.2,
-       "glatt_ms": 120
+       "anteil": 0.96,
+       "glatt_ms": 450
       },
       "moden": [
        [
@@ -2628,96 +2626,96 @@
   ]
  },
  "drehbuch": {
-  "glatt_s": 12,
+  "glatt_s": 24,
   "kurven": {
    "wind": [
     [
-     0,
+     0.0,
      0.25
     ],
     [
-     40,
+     120.0,
      0.35
     ],
     [
-     70,
+     210.0,
      0.75
     ],
     [
-     100,
+     300.0,
      0.95
     ],
     [
-     125,
+     375.0,
      0.8
     ],
     [
-     150,
+     450.0,
      0.4
     ],
     [
-     180,
+     540.0,
      0.25
     ],
     [
-     200,
+     600.0,
      0.25
     ]
    ],
    "see": [
     [
-     0,
+     0.0,
      0.3
     ],
     [
-     60,
+     180.0,
      0.35
     ],
     [
-     95,
+     285.0,
      0.75
     ],
     [
-     125,
+     375.0,
      1.0
     ],
     [
-     150,
+     450.0,
      0.8
     ],
     [
-     175,
+     525.0,
      0.4
     ],
     [
-     200,
+     600.0,
      0.3
     ]
    ]
   },
   "text": [
    [
-    0,
+    0.0,
     "Ruhige See, die Möwen kreisen entspannt."
    ],
    [
-    45,
+    135.0,
     "Der Wind frischt auf, das Segel fängt sich öfter."
    ],
    [
-    80,
+    240.0,
     "Die Wellen werden höher, der Rumpf schlägt härter; die Möwen rufen aufgeregter, ihre Schreie klingen verweht."
    ],
    [
-    112,
+    336.0,
     "Schwere See: Brecher schlagen dicht hintereinander an den Felsen."
    ],
    [
-    150,
+    450.0,
     "Der Wind flaut ab, die See beruhigt sich."
    ],
    [
-    178,
+    534.0,
     "Ruhe – die Möwen kreisen wieder gelassen."
    ]
   ]

@@ -2,7 +2,7 @@
  "name": "wald",
  "titel": "Im Dinosaurierwald im Herbstregen",
  "text": "Du sitzt angelehnt an einen Baumstamm unter dem Blätterdach. Es regnet, auf großen Blättern über dir trommelt es wie auf einem Zeltdach, ein Bach fließt rechts neben dir, Vögel singen in den Bäumen. Weit weg rufen Pflanzenfresser, manchmal gröhlt etwas Riesiges über das Tal; ab und zu stapft einer vorbei und bricht Äste, einer kommt zum Äsen nah heran und schnuppert an dir.",
- "dauer": 240,
+ "dauer": 600,
  "saat": 21,
  "ziel_lufs": -23,
  "wald": {
@@ -1111,7 +1111,7 @@
    "echo_reflexion": 0.7,
    "bezug_m": 400,
    "hall": 1.2,
-   "probe_ab": 10,
+   "probe_ab": 25.0,
    "probe_dauer": 60,
    "sammlung": [
     {
@@ -1718,7 +1718,7 @@
    "echo_reflexion": 0.65,
    "bezug_m": 250,
    "hall": 1.2,
-   "probe_ab": 0,
+   "probe_ab": 0.0,
    "probe_dauer": 60,
    "sammlung": [
     {
@@ -1941,7 +1941,7 @@
    "echo_reflexion": 0.5,
    "bezug_m": 60,
    "hall": 1.0,
-   "probe_ab": 0,
+   "probe_ab": 0.0,
    "probe_dauer": 60,
    "sammlung": [
     {
@@ -3116,7 +3116,8 @@
    "ziel_lufs": -26,
    "pegel_art": "spitzen",
    "starts_s": [
-    70
+    150,
+    420
    ],
    "richtung_grad": [
     -50,
@@ -3144,7 +3145,7 @@
    "matsch_wahrsch": 0.5,
    "knack_wahrsch": 0.1,
    "rascheln_wahrsch": 0.6,
-   "probe_ab": 60,
+   "probe_ab": 150.0,
    "probe_dauer": 105,
    "zupfen": [
     {
@@ -4183,7 +4184,7 @@
    "hall": 1.0,
    "vorruf_wahrsch": 0.4,
    "nachruf_wahrsch": 0.3,
-   "probe_ab": 25,
+   "probe_ab": 62.5,
    "probe_dauer": 40,
    "sammlung": [
     {
@@ -4571,120 +4572,120 @@
   }
  ],
  "drehbuch": {
-  "glatt_s": 14,
+  "glatt_s": 28,
   "kurven": {
    "wind": [
     [
-     0,
+     0.0,
      0.2
     ],
     [
-     30,
+     75.0,
      0.25
     ],
     [
-     45,
+     112.5,
      0.7
     ],
     [
-     70,
+     175.0,
      0.6
     ],
     [
-     100,
+     250.0,
      0.9
     ],
     [
-     120,
+     300.0,
      0.7
     ],
     [
-     150,
+     375.0,
      0.35
     ],
     [
-     170,
+     425.0,
      0.15
     ],
     [
-     220,
+     550.0,
      0.15
     ],
     [
-     240,
+     600.0,
      0.2
     ]
    ],
    "regen": [
     [
-     0,
+     0.0,
      0.3
     ],
     [
-     50,
+     125.0,
      0.35
     ],
     [
-     65,
+     162.5,
      0.8
     ],
     [
-     100,
+     250.0,
      1.0
     ],
     [
-     130,
+     325.0,
      0.85
     ],
     [
-     155,
+     387.5,
      0.4
     ],
     [
-     175,
+     437.5,
      0.05
     ],
     [
-     205,
+     512.5,
      0.05
     ],
     [
-     222,
+     555.0,
      0.3
     ],
     [
-     240,
+     600.0,
      0.3
     ]
    ]
   },
   "text": [
    [
-    0,
+    0.0,
     "Leichter Regen. Die Vögel sitzen still in der Deckung, nur ab und zu ein kurzer Ruf."
    ],
    [
-    40,
+    100.0,
     "Der Wind frischt auf und kündigt mehr Regen an; die Kronen rauschen, ein paar Vögel fliegen schimpfend auf."
    ],
    [
-    65,
+    162.5,
     "Der Regen wird kräftig, auf den großen Blättern trommelt es, der Bach schwillt an."
    ],
    [
-    100,
+    250.0,
     "Höhepunkt: Sturm in den Kronen."
    ],
    [
-    140,
+    350.0,
     "Der Regen lässt nach, es tropft weiter von den Blättern."
    ],
    [
-    175,
+    437.5,
     "Regenpause – die ersten Vögel trauen sich wieder und singen."
    ],
    [
-    220,
+    550.0,
     "Leichter Regen setzt wieder ein."
    ]
   ]
