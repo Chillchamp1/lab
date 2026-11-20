@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ohrmessung</title>
+<style>
+  :root { --grund: #0d1418; --flaeche: #152027; --rand: #24343d; --text: #dfe8ea; --leise: #8fa3ab; --akzent: #7fc4c9; --warn: #e2b866; --gut: #9ccf7f; --schlecht: #e07f7f; --links: #7fc4c9; --rechts: #e2b866; }
+  @media (prefers-color-scheme: light) {
+    :root { --grund: #f3f6f6; --flaeche: #ffffff; --rand: #d5dfe1; --text: #17252b; --leise: #5b6f77; --akzent: #1f7f86; --warn: #8a6100; --gut: #3d7a22; --schlecht: #a33a3a; --links: #1f7f86; --rechts: #8a6100; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--grund); color: var(--text); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 22px 16px 60px; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; } h2 { font-size: 1.1rem; margin: 0 0 8px; }
+  p { margin: 0 0 10px; } .leise { color: var(--leise); font-size: .92rem; }
+  .karte { background: var(--flaeche); border: 1px solid var(--rand); border-radius: 14px; padding: 16px; margin: 0 0 16px; }
+  label { display: block; font-size: .9rem; color: var(--leise); margin: 0 0 10px; }
+  select, input[type=number] { width: 100%; font: inherit; padding: 7px 9px; border-radius: 8px; border: 1px solid var(--rand); background: var(--grund); color: var(--text); margin-top: 4px; }
+  button { font: inherit; cursor: pointer; border-radius: 10px; padding: 9px 14px; border: 1px solid var(--rand); background: transparent; color: var(--text); }
+  button.haupt { background: var(--akzent); border-color: var(--akzent); color: var(--grund); font-weight: 600; }
+  button:disabled { opacity: .4; cursor: default; }
+  .reihe { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .pegel { height: 10px; background: var(--rand); border-radius: 5px; overflow: hidden; flex: 1; min-width: 120px; position: relative; }
+  .pegel span { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--gut); }
+  .pegel.zuviel span { background: var(--schlecht); }
+  canvas { width: 100%; height: 220px; display: block; background: var(--grund); border: 1px solid var(--rand); border-radius: 10px; }
+  .liste { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 6px; }
+  .liste button { padding: 6px 4px; font-size: .85rem; }
+  .liste button.fertig { border-color: var(--gut); color: var(--gut); }
+  .liste button.jetzt { border-color: var(--akzent); color: var(--akzent); font-weight: 600; }
+  .befund { font-size: .92rem; padding: 8px 10px; border-radius: 8px; background: var(--grund); }
+  .befund b.gut { color: var(--gut); } .befund b.schlecht { color: var(--schlecht); } .befund b.warn { color: var(--warn); }
+  .anweisung { font-size: 1.15rem; margin: 6px 0 12px; }
+  ol { padding-left: 20px; margin: 0 0 10px; } li { margin-bottom: 4px; }
+  a { color: var(--akzent); }
+  .versteckt { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <p class="leise"><a href="../">← Klangszenen</a></p>
+  <h1>Ohrmessung</h1>
+  <p class="leise">Misst mit In-Ear-Mikrofonen, wie dein Kopfhörer an deinem Ohr klingt und wie Schall aus verschiedenen Richtungen an deinen Ohren ankommt. Alles wird im Browser gerechnet; am Ende speicherst du eine Datei und legst sie in den Drive-Ordner „Raumklang“.</p>
+
+  <section class="karte" id="k-geraete">
+    <h2>1 · Geräte</h2>
+    <ol class="leise">
+      <li>Zoom H5 per USB an den PC, am H5 <b>USB → Audio Interface → Stereo Mix</b> wählen.</li>
+      <li>OKM in den 3,5-mm-Eingang der XY-Kapsel, im H5-Menü <b>Plug-in Power</b> an. Links ins linke Ohr.</li>
+      <li>Diese Seite in Chrome oder Edge öffnen und unten „Mikrofon freigeben“ klicken.</li>
+    </ol>
+    <div class="reihe" style="margin-bottom:10px"><button class="haupt" id="b-frei">Mikrofon freigeben</button><span class="leise" id="frei-info"></span></div>
+    <label>Eingang (H5)<select id="eingang"></select></label>
+    <label>Ausgang für die Messsignale<select id="ausgang"></select></label>
+    <p class="leise" id="ausgang-info"></p>
+    <div class="reihe"><span class="leise" style="min-width:60px">Links</span><div class="pegel" id="pl"><span></span></div></div>
+    <div class="reihe" style="margin-top:6px"><span class="leise" style="min-width:60px">Rechts</span><div class="pegel" id="pr"><span></span></div></div>
+    <p class="leise" style="margin-top:8px">Klopf leicht neben dein linkes Ohr: der obere Balken muss ausschlagen. Sonst Kanäle vertauscht.</p>
+  </section>
+
+  <section class="karte" id="k-modus">
+    <h2>2 · Was messen?</h2>
+    <div class="reihe">
+      <button id="m-kh" class="haupt">Kopfhörer am Ohr (10 Min.)</button>
+      <button id="m-ls">Richtungen mit Lautsprecher (30–45 Min.)</button>
+    </div>
+  </section>
+
+  <section class="karte versteckt" id="k-mess">
+    <h2 id="mess-titel"></h2>
+    <div class="liste" id="schritte"></div>
+    <p class="anweisung" id="anweisung"></p>
+    <div class="reihe" style="margin-bottom:10px">
+      <button class="haupt" id="b-mess">Messen</button>
+      <button id="b-weiter">Weiter</button>
+      <span class="leise" id="mess-status"></span>
+    </div>
+    <canvas id="kurve" width="1400" height="440"></canvas>
+    <p class="befund" id="befund" style="margin-top:10px">Noch keine Messung.</p>
+  </section>
+
+  <section class="karte" id="k-fertig">
+    <h2>3 · Ergebnis speichern</h2>
+    <p class="leise" id="zusammen">Noch nichts gemessen.</p>
+    <div class="reihe"><button class="haupt" id="b-datei">Messdatei speichern</button><button id="b-leeren">Alles verwerfen</button></div>
+    <p class="leise" style="margin-top:8px">Die Datei enthält nur die errechneten Impulsantworten (ein paar MB), keine Rohaufnahmen. Bis zum Speichern bleiben die Messungen in diesem Browser erhalten, auch wenn du die Seite neu lädst.</p>
+  </section>
+</main>
+<script>
+const FS = 48000, SWEEP_S = 8, F1 = 20, F2 = 20000, IR_LEN = 4096, VOR = 240;
+const $ = id => document.getElementById(id);
+let ctx = null, strom = null, quelle = null, aufnahme = null, sweep = null, invers = null;
+let modus = null, schritt = 0, daten = laden() || { kopfhoerer: [], lautsprecher: [] }, letzte = null;
+
+// ---------------- Messsignal: exponentieller Sweep und sein inverses Filter (Farina)
+function baueSweep() {
+  const n = Math.round(SWEEP_S * FS), L = SWEEP_S / Math.log(F2 / F1), s = new Float32Array(n), inv = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const t = i / FS; let w = 1;
+    if (i < 2400) w = Math.sin(Math.PI / 2 * i / 2400) ** 2; if (n - i < 2400) w = Math.sin(Math.PI / 2 * (n - i) / 2400) ** 2;
+    s[i] = 0.5 * w * Math.sin(2 * Math.PI * F1 * L * (Math.exp(t / L) - 1));
+  }
+  // invers: zeitgespiegelt, Amplitude fällt mit 6 dB/Oktave (hebt die Rosa-Färbung des Sweeps auf)
+  // (Index i des inversen Signals: tiefe Frequenzen liegen am Ende und werden am stärksten gedämpft)
+  for (let i = 0; i < n; i++) inv[i] = s[n - 1 - i] * Math.exp(-i / FS / L);
+  return [s, inv];
+}
+
+// ---------------- Geräte
+async function geraete() {
+  const alle = await navigator.mediaDevices.enumerateDevices();
+  const ein = alle.filter(d => d.kind === 'audioinput'), aus = alle.filter(d => d.kind === 'audiooutput');
+  $('eingang').innerHTML = ein.map(d => `<option value="${d.deviceId}">${d.label || 'Eingang'}</option>`).join('');
+  const h5 = ein.find(d => /zoom|h5/i.test(d.label)); if (h5) $('eingang').value = h5.deviceId;
+  $('ausgang').innerHTML = aus.length ? aus.map(d => `<option value="${d.deviceId}">${d.label || 'Ausgang'}</option>`).join('') : '<option value="">Standard-Ausgang</option>';
+  $('ausgang-info').textContent = (ctx && ctx.setSinkId) ? 'Kopfhörer-Messung: Qudelix mit Grado (EQ aus). Lautsprecher-Messung: deine Box.' : 'Dieser Browser kann den Ausgang nicht wählen – stell ihn in Windows ein.';
+}
+async function freigeben() {
+  try {
+    ctx = ctx || new AudioContext({ sampleRate: FS, latencyHint: 'playback' });
+    await ctx.resume();
+    if (strom) strom.getTracks().forEach(t => t.stop());
+    const id = $('eingang').value;
+    strom = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: id ? { exact: id } : undefined, channelCount: 2, sampleRate: FS,
+      echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+    await geraete();
+    const set = strom.getAudioTracks()[0].getSettings();
+    $('frei-info').textContent = `Eingang: ${set.channelCount || '?'} Kanäle, ${set.sampleRate || ctx.sampleRate} Hz` + ((set.channelCount || 2) < 2 ? ' – nur ein Kanal! Am H5 Stereo wählen.' : '');
+    quelle = ctx.createMediaStreamSource(strom);
+    const blob = new Blob([`class R extends AudioWorkletProcessor { constructor(){super(); this.an=false; this.port.onmessage=e=>this.an=e.data;}
+      process(i){ const k=i[0]; if(k&&k.length){ const l=k[0], r=k[1]||k[0]; let pl=0,pr=0; for(let j=0;j<l.length;j++){pl=Math.max(pl,Math.abs(l[j]));pr=Math.max(pr,Math.abs(r[j]));}
+      this.port.postMessage({pl,pr,l:this.an?l.slice():null,r:this.an?r.slice():null}); } return true; } } registerProcessor('rec', R);`], { type: 'application/javascript' });
+    await ctx.audioWorklet.addModule(URL.createObjectURL(blob));
+    aufnahme = new AudioWorkletNode(ctx, 'rec', { numberOfInputs: 1, numberOfOutputs: 0, channelCount: 2, channelCountMode: 'explicit' });
+    quelle.connect(aufnahme);
+    let spitze = [0, 0];
+    aufnahme.port.onmessage = e => {
+      const d = e.data; spitze = [Math.max(d.pl, spitze[0] * 0.97), Math.max(d.pr, spitze[1] * 0.97)];
+      for (const [id, v] of [['pl', spitze[0]], ['pr', spitze[1]]]) {
+        const db = 20 * Math.log10(v + 1e-9); $(id).querySelector('span').style.width = Math.max(0, Math.min(100, (db + 60) / 60 * 100)) + '%';
+        $(id).classList.toggle('zuviel', db > -1);
+      }
+      if (puffer && d.l) { puffer.l.push(d.l); puffer.r.push(d.r); if (d.pl > 0.98 || d.pr > 0.98) puffer.uebersteuert = true; }
+    };
+    [sweep, invers] = baueSweep();
+  } catch (e) { $('frei-info').textContent = 'Kein Zugriff: ' + e.message; }
+}
+$('b-frei').addEventListener('click', freigeben);
+$('eingang').addEventListener('change', () => ctx && freigeben());
+$('ausgang').addEventListener('change', async () => { try { if (ctx && ctx.setSinkId) await ctx.setSinkId($('ausgang').value); } catch (e) { $('ausgang-info').textContent = 'Ausgang nicht umschaltbar: ' + e.message; } });
+
+// ---------------- Messung: abspielen (Kanal links/rechts/beide) und gleichzeitig aufnehmen
+let puffer = null;
+async function messe(kanal) {
+  puffer = { l: [], r: [], uebersteuert: false };
+  aufnahme.port.postMessage(true);
+  await warte(400);
+  const b = ctx.createBuffer(2, sweep.length, FS);
+  if (kanal !== 'R') b.copyToChannel(sweep, 0);
+  if (kanal !== 'L') b.copyToChannel(sweep, 1);
+  const s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.start();
+  await warte(SWEEP_S * 1000 + 1600);
+  aufnahme.port.postMessage(false);
+  await warte(100);
+  const cat = a => { const n = a.reduce((x, y) => x + y.length, 0), o = new Float32Array(n); let p = 0; for (const x of a) { o.set(x, p); p += x.length; } return o; };
+  const roh = { l: cat(puffer.l), r: cat(puffer.r), uebersteuert: puffer.uebersteuert };
+  puffer = null;
+  return roh;
+}
+const warte = ms => new Promise(r => setTimeout(r, ms));
+
+// Entfaltung über einen Faltungsknoten (schnell, im Browser eingebaut)
+async function entfalte(x) {
+  const n = x.length + invers.length;
+  const oc = new OfflineAudioContext(1, n, FS);
+  const b = oc.createBuffer(1, x.length, FS); b.copyToChannel(x, 0);
+  const src = oc.createBufferSource(); src.buffer = b;
+  const k = oc.createConvolver(); k.normalize = false; const ib = oc.createBuffer(1, invers.length, FS); ib.copyToChannel(invers, 0); k.buffer = ib;
+  src.connect(k).connect(oc.destination); src.start();
+  return (await oc.startRendering()).getChannelData(0);
+}
+// Impulsantwort ausschneiden: ab kurz vor der gemeinsamen Spitze beider Ohren, IR_LEN lang
+function schneide(hl, hr) {
+  let m = 0, ip = 0;
+  for (let i = invers.length - FS; i < hl.length; i++) { const v = Math.max(Math.abs(hl[i]), Math.abs(hr[i])); if (v > m) { m = v; ip = i; } }
+  const a = Math.max(0, ip - VOR);
+  return { l: hl.slice(a, a + IR_LEN), r: hr.slice(a, a + IR_LEN), spitze: m };
+}
+
+// ---------------- Auswertung für die Anzeige
+function spektrum(h) {          // Betrag in dB auf logarithmischer Achse, 1/6-Oktave geglättet
+  const N = 8192, re = new Float32Array(N), im = new Float32Array(N); re.set(h.slice(0, N));
+  fft(re, im);
+  const f = [], v = [];
+  for (let k = 0; k < 120; k++) {
+    const fc = 20 * Math.pow(1000, k / 119), lo = fc / Math.pow(2, 1 / 12), hi = fc * Math.pow(2, 1 / 12);
+    let s = 0, c = 0; for (let b = Math.max(1, Math.floor(lo / FS * N)); b <= Math.ceil(hi / FS * N) && b < N / 2; b++) { s += re[b] * re[b] + im[b] * im[b]; c++; }
+    f.push(fc); v.push(10 * Math.log10(s / Math.max(c, 1) + 1e-20));
+  }
+  return { f, v };
+}
+function fft(re, im) {
+  const n = re.length;
+  for (let i = 1, j = 0; i < n; i++) { let bit = n >> 1; for (; j & bit; bit >>= 1) j ^= bit; j ^= bit; if (i < j) { [re[i], re[j]] = [re[j], re[i]]; [im[i], im[j]] = [im[j], im[i]]; } }
+  for (let len = 2; len <= n; len <<= 1) {
+    const w = -2 * Math.PI / len;
+    for (let i = 0; i < n; i += len) for (let k = 0; k < len / 2; k++) {
+      const c = Math.cos(w * k), s = Math.sin(w * k), a = i + k, b = a + len / 2;
+      const tr = re[b] * c - im[b] * s, ti = re[b] * s + im[b] * c;
+      re[b] = re[a] - tr; im[b] = im[a] - ti; re[a] += tr; im[a] += ti;
+    }
+  }
+}
+function itd(l, r) {           // Laufzeitunterschied über Kreuzkorrelation der ersten 3 ms, ±1 ms
+  const m = Math.round(0.001 * FS), w = Math.round(0.004 * FS); let best = -1e9, lag = 0;
+  for (let d = -m; d <= m; d++) { let s = 0; for (let i = VOR - 48; i < VOR + w; i++) { const j = i + d; if (j >= 0 && j < r.length) s += l[i] * r[j]; } if (s > best) { best = s; lag = d; } }
+  return lag / FS * 1000;      // > 0: rechts kommt später an, Schall also von links
+}
+function energie(h, a, b) { let s = 0; for (let i = a; i < b; i++) s += h[i] * h[i]; return 10 * Math.log10(s + 1e-20); }
+function zeichne(kurven) {
+  const c = $('kurve'), g = c.getContext('2d'), W = c.width, H = c.height, st = getComputedStyle(document.documentElement);
+  g.clearRect(0, 0, W, H);
+  g.strokeStyle = st.getPropertyValue('--rand'); g.fillStyle = st.getPropertyValue('--leise'); g.font = '22px system-ui'; g.lineWidth = 1;
+  const x = f => 60 + (W - 80) * Math.log(f / 20) / Math.log(1000);
+  for (const f of [50, 100, 200, 500, 1000, 2000, 5000, 10000]) { g.beginPath(); g.moveTo(x(f), 10); g.lineTo(x(f), H - 30); g.stroke(); g.fillText(f >= 1000 ? f / 1000 + 'k' : f, x(f) - 14, H - 6); }
+  const alle = kurven.flatMap(k => k.v.filter((_, i) => k.f[i] > 40)), top = Math.max(...alle) + 3, unten = top - 50;
+  const y = v => 10 + (H - 40) * (top - v) / (top - unten);
+  for (let d = 0; d <= 50; d += 10) { g.fillText(`−${d}`, 6, y(top - d) + 7); }
+  for (const k of kurven) { g.strokeStyle = k.farbe; g.lineWidth = 3; g.beginPath(); k.f.forEach((f, i) => i ? g.lineTo(x(f), y(Math.max(k.v[i], unten))) : g.moveTo(x(f), y(k.v[i]))); g.stroke(); }
+}
+
+// ---------------- Ablauf
+const KH = [1, 2, 3, 4, 5].map(i => ({ id: 'kh' + i, name: `Sitz ${i}`, text: i === 1 ? 'Grado über die Mikrofone aufsetzen, Qudelix-EQ aus. Dann „Messen“.' : 'Kopfhörer abnehmen und neu aufsetzen (Mikrofone bleiben drin). Dann „Messen“.' }));
+const LS = [...[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map(w => ({ id: 'w' + w, winkel: w, hoehe: 0, name: `${w}°` })),
+  ...[0, 90, 180, 270].map(w => ({ id: 'h' + w, winkel: w, hoehe: 30, name: `${w}° hoch` })), ...[0, 90, 180, 270].map(w => ({ id: 't' + w, winkel: w, hoehe: -30, name: `${w}° tief` })),
+  { id: 'ref', name: 'Referenz', referenz: true }];
+function seite(w) { return w === 0 ? 'direkt vor dir' : w === 180 ? 'direkt hinter dir' : w < 180 ? `${w}° links von vorn` : `${360 - w}° rechts von vorn`; }
+function anweisungLS(s) {
+  if (s.referenz) return 'Referenz: ein Mikrofon aus dem Ohr nehmen und genau dort hinhalten, wo eben deine Kopfmitte war (Kapsel zum Lautsprecher). Dann „Messen“.';
+  const h = s.hoehe > 0 ? ' Lautsprecher erhöht (etwa 30° über Ohrhöhe, z. B. Regal).' : s.hoehe < 0 ? ' Lautsprecher tief (etwa 30° unter Ohrhöhe, z. B. Boden).' : '';
+  return `Dreh den Stuhl so, dass der Lautsprecher ${seite(s.winkel)} steht.${h} Geradeaus schauen, still sitzen, dann „Messen“.`;
+}
+function zeigeSchritte() {
+  const L = modus === 'kh' ? KH : LS, fertig = new Set((modus === 'kh' ? daten.kopfhoerer : daten.lautsprecher).map(m => m.id));
+  $('schritte').innerHTML = L.map((s, i) => `<button data-i="${i}" class="${fertig.has(s.id) ? 'fertig' : ''} ${i === schritt ? 'jetzt' : ''}">${s.name}${fertig.has(s.id) ? ' ✓' : ''}</button>`).join('');
+  $('schritte').querySelectorAll('button').forEach(b => b.onclick = () => { schritt = +b.dataset.i; zeigeSchritte(); });
+  const s = L[schritt];
+  $('anweisung').textContent = modus === 'kh' ? s.text : anweisungLS(s);
+}
+function starte(m) {
+  modus = m; schritt = 0; $('k-mess').classList.remove('versteckt');
+  $('m-kh').classList.toggle('haupt', m === 'kh'); $('m-ls').classList.toggle('haupt', m === 'ls');
+  $('mess-titel').textContent = m === 'kh' ? 'Kopfhörer am Ohr: fünfmal aufsetzen' : 'Richtungen: Lautsprecher auf Ohrhöhe, 1,5–2 m entfernt, Stuhl drehen';
+  zeigeSchritte(); $('k-mess').scrollIntoView({ behavior: 'smooth' });
+}
+$('m-kh').onclick = () => starte('kh');
+$('m-ls').onclick = () => starte('ls');
+$('b-weiter').onclick = () => { const L = modus === 'kh' ? KH : LS; schritt = Math.min(schritt + 1, L.length - 1); zeigeSchritte(); };
+$('b-mess').onclick = async () => {
+  if (!aufnahme) { $('mess-status').textContent = 'Erst oben das Mikrofon freigeben.'; return; }
+  const L = modus === 'kh' ? KH : LS, s = L[schritt];
+  $('b-mess').disabled = true;
+  try {
+    let ergebnis;
+    if (modus === 'kh') {
+      $('mess-status').textContent = 'Linke Seite …'; const a = await messe('L');
+      $('mess-status').textContent = 'Rechte Seite …'; const b = await messe('R');
+      $('mess-status').textContent = 'Rechne …';
+      const ll = schneide(await entfalte(a.l), await entfalte(a.r)), rr = schneide(await entfalte(b.l), await entfalte(b.r));
+      ergebnis = { id: s.id, links: ll.l, rechts: rr.r, uebersprechen_db: energie(ll.r, 0, IR_LEN) - energie(ll.l, 0, IR_LEN), uebersteuert: a.uebersteuert || b.uebersteuert, spitze: Math.min(ll.spitze, rr.spitze) };
+      const sl = spektrum(ergebnis.links), sr = spektrum(ergebnis.rechts);
+      zeichne([{ ...sl, farbe: getComputedStyle(document.documentElement).getPropertyValue('--links') }, { ...sr, farbe: getComputedStyle(document.documentElement).getPropertyValue('--rechts') }]);
+      const ok = !ergebnis.uebersteuert && ergebnis.uebersprechen_db < -15;
+      $('befund').innerHTML = `${ok ? '<b class="gut">Sieht gut aus.</b>' : '<b class="schlecht">Bitte wiederholen.</b>'} ` +
+        `Kurve links (blau) und rechts (gelb): Frequenzgang deines Kopfhörers an deinem Ohr. ` +
+        (ergebnis.uebersteuert ? '<b class="schlecht">Übersteuert</b> – Gain am H5 oder Lautstärke runter. ' : '') +
+        `Übersprechen ${ergebnis.uebersprechen_db.toFixed(0)} dB ${ergebnis.uebersprechen_db < -15 ? '(gut)' : '<b class="warn">(zu hoch: Kanäle vertauscht oder Mikrofon falsch eingesteckt?)</b>'}.`;
+      daten.kopfhoerer = daten.kopfhoerer.filter(m => m.id !== s.id).concat([ergebnis]);
+    } else {
+      $('mess-status').textContent = 'Messe …'; const a = await messe('beide');
+      $('mess-status').textContent = 'Rechne …';
+      const ir = schneide(await entfalte(a.l), await entfalte(a.r));
+      const dt = itd(ir.l, ir.r), ild = energie(ir.l, VOR - 48, VOR + 480) - energie(ir.r, VOR - 48, VOR + 480);
+      ergebnis = { id: s.id, winkel: s.winkel ?? null, hoehe: s.hoehe ?? null, referenz: !!s.referenz, links: ir.l, rechts: ir.r, itd_ms: dt, ild_db: ild, uebersteuert: a.uebersteuert, spitze: ir.spitze };
+      const st = getComputedStyle(document.documentElement);
+      zeichne([{ ...spektrum(ir.l), farbe: st.getPropertyValue('--links') }, { ...spektrum(ir.r), farbe: st.getPropertyValue('--rechts') }]);
+      // Plausibilität: links (0 < w < 180) → linkes Ohr früher und lauter
+      let urteil = '';
+      if (!s.referenz && s.winkel % 180 !== 0) {
+        const vonLinks = s.winkel < 180, passt = (dt > 0) === vonLinks && (ild > 0) === vonLinks;
+        urteil = passt ? '<b class="gut">Richtung passt.</b> ' : '<b class="schlecht">Richtung passt nicht</b> – Mikrofone vertauscht oder Stuhl falsch gedreht? ';
+      } else if (!s.referenz) urteil = Math.abs(dt) < 0.12 ? '<b class="gut">Mittig, passt.</b> ' : '<b class="warn">Nicht ganz mittig</b> – Kopf etwas gedreht? ';
+      $('befund').innerHTML = urteil + (s.referenz ? 'Referenz aufgenommen. ' : `Laufzeitunterschied ${dt.toFixed(2)} ms (${dt > 0 ? 'links früher' : dt < 0 ? 'rechts früher' : 'gleich'}), Pegelunterschied ${ild.toFixed(1)} dB. `) +
+        (a.uebersteuert ? '<b class="schlecht">Übersteuert</b> – Gain oder Lautstärke runter.' : '');
+      daten.lautsprecher = daten.lautsprecher.filter(m => m.id !== s.id).concat([ergebnis]);
+    }
+    letzte = ergebnis; speichern(); zeigeSchritte(); zusammenfassung();
+    $('mess-status').textContent = 'Fertig. „Weiter“ für den nächsten Schritt.';
+  } catch (e) { $('mess-status').textContent = 'Fehler: ' + e.message; }
+  $('b-mess').disabled = false;
+};
+
+// ---------------- Sichern, Export
+function packe(a) { const u = new Uint8Array(new Float32Array(a).buffer); let s = ''; for (let i = 0; i < u.length; i += 8192) s += String.fromCharCode.apply(null, u.subarray(i, i + 8192)); return btoa(s); }
+function entpacke(s) { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return new Float32Array(u.buffer); }
+function speichern() {
+  try { localStorage.setItem('ohrmessung-v1', JSON.stringify({ kopfhoerer: daten.kopfhoerer.map(m => ({ ...m, links: packe(m.links), rechts: packe(m.rechts) })), lautsprecher: daten.lautsprecher.map(m => ({ ...m, links: packe(m.links), rechts: packe(m.rechts) })) })); } catch {}
+}
+function laden() {
+  try { const d = JSON.parse(localStorage.getItem('ohrmessung-v1')); if (!d) return null;
+    for (const k of ['kopfhoerer', 'lautsprecher']) d[k] = d[k].map(m => ({ ...m, links: entpacke(m.links), rechts: entpacke(m.rechts) })); return d; } catch { return null; }
+}
+function zusammenfassung() {
+  $('zusammen').textContent = `${daten.kopfhoerer.length} von 5 Kopfhörer-Messungen, ${daten.lautsprecher.filter(m => !m.referenz).length} von 20 Richtungen` +
+    (daten.lautsprecher.some(m => m.referenz) ? ', Referenz vorhanden.' : ', Referenz fehlt noch.');
+}
+$('b-datei').onclick = () => {
+  const k = m => ({ ...m, links: packe(m.links), rechts: packe(m.rechts) });
+  const datei = { format: 'raumklang-ohrmessung-1', fs: FS, ir_laenge: IR_LEN, vorlauf: VOR, sweep_s: SWEEP_S, f: [F1, F2], erstellt: new Date().toISOString(),
+    hinweis: 'links/rechts: Float32 little endian, base64; Impulsantwort ab VOR Abtastwerte vor der gemeinsamen Spitze',
+    eingang: $('eingang').selectedOptions[0]?.textContent, ausgang: $('ausgang').selectedOptions[0]?.textContent,
+    kopfhoerer: daten.kopfhoerer.map(k), lautsprecher: daten.lautsprecher.map(k) };
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(datei)], { type: 'application/json' }));
+  a.download = `ohrmessung_${new Date().toISOString().slice(0, 16).replace(/[T:]/g, '-')}.json`; a.click();
+};
+$('b-leeren').onclick = () => { if ($('b-leeren').dataset.sicher) { daten = { kopfhoerer: [], lautsprecher: [] }; speichern(); zusammenfassung(); modus && zeigeSchritte(); $('b-leeren').textContent = 'Alles verwerfen'; delete $('b-leeren').dataset.sicher; } else { $('b-leeren').dataset.sicher = 1; $('b-leeren').textContent = 'Wirklich verwerfen?'; } };
+zusammenfassung();
+navigator.mediaDevices?.enumerateDevices && geraete().catch(() => {});
+</script>
+</body>
+</html>
