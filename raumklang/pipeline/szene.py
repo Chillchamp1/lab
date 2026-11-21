@@ -1179,11 +1179,15 @@ def main():
     ap.add_argument('--blick', type=float, help='Blickwinkel über der Waagerechten (überschreibt die Szene)')
     ap.add_argument('--stereo', action='store_true', help='Vergleichsfassung in konventionellem Stereo (ohne HRTF und Spiegelungen)')
     ap.add_argument('--name', help='Name der Ausgabe (Vorgabe: Name der Szene)')
+    ap.add_argument('--export', action='store_true', help='zusätzlich <name>_export.wav (16 Bit, mit Ein- und Ausblendung) zum Veröffentlichen, z. B. auf Spotify')
+    ap.add_argument('--lufs', type=float, help='Ziel-Lautheit der Mischung (überschreibt die Szene)')
     ap.add_argument('--karte', action='store_true', help='nur das Ereignisprotokoll (Szenenkarte) schreiben, ohne Audio – gleiche Ereignisse wie beim Rendern')
     ap.add_argument('--drehung', type=float, help='Startpunkt der Schleife in Abtastwerten vorgeben (start_abtastwerte aus dem Bericht der Bezugsfassung; gerundete Sekunden verschieben um Millisekunden)')
     a = ap.parse_args()
 
     sz = json.loads(Path(a.szene).read_text())
+    if a.lufs is not None:
+        sz['ziel_lufs'] = a.lufs
     dauer = a.dauer or sz.get('dauer', 180)
     if a.blick is not None:
         sz[next(k for k in ('wald', 'ruine', 'ozean', 'kuppel', 'boot') if k in sz)]['blick'] = a.blick
@@ -1305,6 +1309,8 @@ def main():
         bericht['naht'] = nahtpruefung(summe)
         schreibe_karte(ruhig / FS)
         schreibe(Path(a.aus) / f'{name}.mp3', summe, '224k')
+        if a.export:
+            schreibe(Path(a.aus) / f'{name}_export.wav', blende(summe, 4.0, 8.0))
         bericht['quellen'] = sorted(bib.benutzt)
         (Path(a.aus) / f'{name}.json').write_text(json.dumps(bericht, ensure_ascii=False, indent=1))
     print('fertig in', round(time.time() - t_start), 's', flush=True)
