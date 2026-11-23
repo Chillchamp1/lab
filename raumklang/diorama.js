@@ -129,7 +129,8 @@ function fels() {
 }
 
 function wolke(rng) {
-  const g = new THREE.Group(), mat = toon(F.wolke);
+  // durchscheinend: man sieht die Szene darunter weiter (Wolken liegen zwischen Kamera und Wasser)
+  const g = new THREE.Group(), mat = toon(F.wolke, { transparent: true, opacity: 0.22, depthWrite: false });
   for (let i = 0; i < 5; i++) {
     const b = new THREE.Mesh(new THREE.IcosahedronGeometry(0.9 + rng() * 0.7, 1), mat);
     b.position.set(i * 0.9 - 1.8, rng() * 0.5, (rng() - 0.5) * 1.2); g.add(b);
@@ -171,6 +172,12 @@ export function starteDiorama(canvas, K, holeZeit) {
   const felsGr = fels(); felsGr.scale.setScalar(2.0); szene.add(felsGr);
   const insel = fels(); insel.scale.setScalar(2.6); szene.add(insel);      // Felsen der Möwenkolonie, weit draußen
   const rnd = (() => { let s = 7; return () => (s = (s * 16807) % 2147483647) / 2147483647; })();
+  // Wolken ziehen hoch über der Szene mit dem Wind (Bootsbezug: grob quer zum Hörer), durchscheinend
+  const wolken = [0, 1, 2, 3, 4].map(i => {
+    const w = wolke(rnd); w.scale.setScalar(2.4 + rnd() * 1.2);
+    w.position.set(-55 + i * 26 + rnd() * 8, 20 + rnd() * 6, -35 + rnd() * 70);
+    w.renderOrder = 4; w.traverse(o => { o.renderOrder = 4; }); szene.add(w); return w;
+  });
 
   // ---------- Daten aufbereiten
   const nachGruppe = n => K.quellen.filter(q => q.g === n);
@@ -276,6 +283,7 @@ export function starteDiorama(canvas, K, holeZeit) {
     }
     sp.needsUpdate = true;
 
+    for (const w of wolken) { w.position.x += dt * 0.7; if (w.position.x > 65) w.position.x = -65; }
     // Fels und Kolonie wandern mit der langsamen Drehung des Boots
     const fp = spurBei(felsSpur, ts);
     if (fp) { stauche([fp[0], fp[1], 0], felsGr.position); felsGr.position.y = -0.2; felsGr.visible = true; } else felsGr.visible = false;
