@@ -112,7 +112,16 @@
 const KRAFT = { id: 'kraft', text: 'Wo hat es mehr <b>Wucht</b> – spürst du die kräftigen Momente (Brecher, Schläge, Tritte) mehr im Körper?' };
 const NATUR = { id: 'natur', text: 'Welche klingt <b>natürlicher</b> – mehr wie wirklich draußen?' };
 const RUHE = { id: 'ruhe', text: 'Bei welcher würdest du dich lieber <b>hinlegen und entspannen</b>?' };
-const VERGLEICHE = [];   // gerade kein Vergleich: Wald und Meer sind jetzt 10 Minuten lang, die alten Fassungen passen nicht mehr daneben
+const RAUM = { id: 'raum', text: 'Welche wirkt <b>räumlicher</b> – breiter, tiefer, mehr um dich herum statt aus einzelnen Punkten?' };
+// „ohne“ = dieselbe Szene mit denselben Ereignissen, aber ohne Quellenbreite, Richtwirkung, Nahfeld und Stamm-Streuung
+const VERGLEICHE = [{
+  id: 'wald_raum',
+  titel: 'Wald: mit und ohne die neuen räumlichen Wirkungen',
+  text: 'Gleiche Ereignisse, gleich laut, deckungsgleich. Eine Fassung hat breite Regen-, Wind- und Bachflächen, Tierrufe mit Richtwirkung und frühe Echos von den Baumstämmen; die andere nicht.',
+  a: { name: 'ohne', datei: '../audio/vergleich/wald_ohne.mp3' },
+  b: { name: 'mit', datei: '../audio/wald.mp3' },
+  abtastwerte: 26460000, fs: 44100, durchgaenge: 10, ausschnitt_s: 20, fragen: [RAUM, NATUR, RUHE],
+}];
 
 if (!VERGLEICHE.length) {
   document.querySelector('main').insertAdjacentHTML('beforeend', '<section class="karte"><h2>Gerade kein Vergleich</h2><p class="leise">Der nächste Blindvergleich kommt, sobald es zwei Fassungen zum Gegenüberstellen gibt.</p></section>');
