@@ -159,6 +159,22 @@ Ereignisfolge bleibt dabei gleich, weil jede Wirkung ihre eigene Zufallsquelle h
   fast nur aus Hall (ferne Möwenkolonie: Hall 14 dB über dem Direktschall – klang
   wie vor einer Klippe; jetzt 4,5 dB darunter, kürzer).
 
+## Ordnung in den Richtungen
+
+Tiere werden nicht gleichmäßig um den Hörer gewürfelt; jede Gruppe hat ihren Ort
+und ihre Vorzugsrichtung, je nach Wind und Entfernung:
+
+- `schwarm` mit `mitte`, `mitte_streuung` und `drehsinn`: die Gruppe hält sich an
+  einer Stelle auf (Möwen in Luv) und kreist dort in eine Richtung.
+- `ueberflug` mit `kurs_grad` (`[Mittel, Streuung]`) und `gegen_wahrsch`: nahe
+  Überflüge folgen der Windachse, gelegentlich kommt einer aus der Gegenrichtung.
+- `zug`: ein Schwarm zieht auf geradem Kurs in einiger Entfernung vorbei
+  (`zuege: [{t, kurs_grad, seite}]`, dazu `anzahl`, `abstand_m`, `hoehe`, `tempo`).
+  Ein einmaliges Ereignis mit klarer Richtung – nicht öfter als ein-, zweimal je
+  Szene.
+
+Richtwert für die Dichte: höchstens ein Ruf alle vier bis fünf Sekunden je Gruppe.
+
 ## Ereigniskette
 
 Generatoren melden Ereignisse (`kx.melde`: große Welle, Brecher am Felsen, harter
