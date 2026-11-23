@@ -481,6 +481,8 @@ class Vogel:
         self.m0 = g.get('mitte', [0.0, 0.0])          # Mittelpunkt der Bahnen (z. B. das Wasserloch statt des Hörers)
         self.h = rng.uniform(*g.get('hoehe', [6, 25]))
         self.v = rng.uniform(*g.get('tempo', [7, 12])) * rng.choice([-1, 1])
+        if g.get('drehsinn'):                          # alle kreisen gleich herum (Vorzugsrichtung im Wind)
+            self.v = abs(self.v) * g['drehsinn']
         self.ph = rng.uniform(0, 2 * np.pi)
         # alle Verläufe periodisch über die Szenendauer, damit die Schleife keine Naht hat
         self.P = float(dauer)
@@ -624,6 +626,8 @@ def gen_ueberflug(kx, g, spur, bus):
     erster = t
     while not liste or t < kx.dauer + erster - g.get('abstand_s', [18, 32])[0]:   # Abstand gilt auch über die Naht; mindestens einer
         kurs = rng.uniform(0, 2 * np.pi)
+        if g.get('kurs_grad'):         # Vorzugsrichtung [Mittel, Streuung] – z. B. mit dem Wind –, manchmal dagegen
+            kurs = np.radians(g['kurs_grad'][0] + rng.normal(0, g['kurs_grad'][1])) + (np.pi if rng.random() < g.get('gegen_wahrsch', 0.0) else 0.0)
         v = rng.uniform(*g.get('tempo', [10, 15]))
         h = rng.uniform(*g.get('hoehe', [2.0, 4.5]))
         seit = rng.uniform(-1.5, 1.5)
@@ -1239,9 +1243,41 @@ def gen_gebruell(kx, g, spur, bus):
     return dict(rufe=liste)
 
 
+def gen_zug(kx, g, spur, bus):
+    """Ein Schwarm zieht vorbei: mehrere Vögel auf gleichem Kurs, locker gestaffelt, jeder ruft ein
+    paar Mal. Anders als die kreisenden Vögel hat der Zug eine klare Richtung (mit dem Wind)."""
+    rng = kx.rng
+    ev = kx.bib.ereignisse(g['sammlung'])
+    k = kx.boot.kopf
+    liste = []
+    for z in g.get('zuege', [{'t': 120, 'kurs_grad': 200}]):
+        kurs = np.radians(z.get('kurs_grad', 200) + rng.normal(0, g.get('kurs_streuung_grad', 8)))
+        ri = np.array([np.cos(kurs), np.sin(kurs), 0.0])
+        quer = np.array([-ri[1], ri[0], 0.0])
+        v = rng.uniform(*g.get('tempo', [11, 14]))
+        d = rng.uniform(*g.get('abstand_m', [40, 80])) * z.get('seite', 1)
+        h = rng.uniform(*g.get('hoehe', [20, 40]))
+        L = g.get('weglaenge_m', 400.0)
+        for _ in range(int(rng.integers(*g.get('anzahl', [5, 9])))):
+            vs = np.array([rng.uniform(-30, 30), rng.uniform(-12, 12), rng.uniform(-4, 4)])     # längs, quer, Höhe
+
+            def ort(tt, vs=vs, ri=ri, quer=quer, d=d, v=v, h=h, tm=z['t']):
+                s_ = (tt - tm) * v + vs[0]
+                p = np.array([k[0], k[1], 0.0])[None, :] + (d + vs[1]) * quer[None, :] + s_[:, None] * ri[None, :]
+                p[:, 2] = h + vs[2]
+                return p
+
+            for _ in range(int(rng.integers(*g.get('rufe', [2, 5])))):
+                e = _wahl(rng, ev)
+                rendere_quelle(kx, spur, bus, _variante(rng, e['sig'], 0.5), z['t'] + rng.uniform(-0.5, 0.5) * L / v, ort, True,
+                               g.get('bezug_m', 30.0) * 10 ** (rng.normal(0, 2) / 20), g.get('hall', 0.0))
+        liste.append(z['t'])
+    return dict(zuege=liste)
+
+
 GENERATOREN = dict(bett=gen_bett, ereignisse=gen_ereignisse, schwarm=gen_schwarm, ueberflug=gen_ueberflug,
                    rumpf=gen_rumpf, knarzen=gen_knarzen, segel=gen_segel,
-                   vorbeigang=gen_vorbeigang, besuch=gen_besuch, musik=gen_musik, gebruell=gen_gebruell)
+                   vorbeigang=gen_vorbeigang, besuch=gen_besuch, musik=gen_musik, gebruell=gen_gebruell, zug=gen_zug)
 
 
 # ---------------------------------------------------------------- Pegel und Ausgabe

@@ -1531,9 +1531,9 @@
    "name": "knarzen",
    "typ": "knarzen",
    "titel": "Knarzendes Holz",
-   "ziel_lufs": -32,
+   "ziel_lufs": -34,
    "pegel_art": "spitzen",
-   "wahrsch": 0.55,
+   "wahrsch": 0.45,
    "hall": 1.0,
    "sammlung": [
     {
@@ -1541,201 +1541,223 @@
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.1,
-      "max_dauer": 2.2,
+      "min_dauer": 0.3,
+      "max_dauer": 3.5,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 4,
+      "ein_ms": 45,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "tempo_faktor": 0.62,
+     "tiefpass": 2800
     },
     {
      "quelle": "esc_3-101381-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.1,
-      "max_dauer": 2.2,
+      "min_dauer": 0.3,
+      "max_dauer": 3.5,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 4,
+      "ein_ms": 45,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "tempo_faktor": 0.62,
+     "tiefpass": 2800
     },
     {
      "quelle": "esc_3-101381-B",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.1,
-      "max_dauer": 2.2,
+      "min_dauer": 0.3,
+      "max_dauer": 3.5,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 4,
+      "ein_ms": 45,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "tempo_faktor": 0.62,
+     "tiefpass": 2800
     },
     {
      "quelle": "esc_3-103401-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.1,
-      "max_dauer": 2.2,
+      "min_dauer": 0.3,
+      "max_dauer": 3.5,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 4,
+      "ein_ms": 45,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "tempo_faktor": 0.62,
+     "tiefpass": 2800
     },
     {
      "quelle": "esc_3-118194-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.1,
-      "max_dauer": 2.2,
+      "min_dauer": 0.3,
+      "max_dauer": 3.5,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 4,
+      "ein_ms": 45,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "tempo_faktor": 0.62,
+     "tiefpass": 2800
     },
     {
      "quelle": "esc_4-128659-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.1,
-      "max_dauer": 2.2,
+      "min_dauer": 0.3,
+      "max_dauer": 3.5,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 4,
+      "ein_ms": 45,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "tempo_faktor": 0.62,
+     "tiefpass": 2800
     },
     {
      "quelle": "esc_5-177779-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.1,
-      "max_dauer": 2.2,
+      "min_dauer": 0.3,
+      "max_dauer": 3.5,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 4,
+      "ein_ms": 45,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "tempo_faktor": 0.62,
+     "tiefpass": 2800
     },
     {
      "quelle": "esc_5-191497-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.1,
-      "max_dauer": 2.2,
+      "min_dauer": 0.3,
+      "max_dauer": 3.5,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 4,
+      "ein_ms": 45,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "tempo_faktor": 0.62,
+     "tiefpass": 2800
     },
     {
      "quelle": "esc_5-188606-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.1,
-      "max_dauer": 2.2,
+      "min_dauer": 0.3,
+      "max_dauer": 3.5,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 4,
+      "ein_ms": 45,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "tempo_faktor": 0.62,
+     "tiefpass": 2800
     },
     {
      "quelle": "esc_2-70344-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.1,
-      "max_dauer": 2.2,
+      "min_dauer": 0.3,
+      "max_dauer": 3.5,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 4,
+      "ein_ms": 45,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "tempo_faktor": 0.62,
+     "tiefpass": 2800
     },
     {
      "quelle": "esc_2-91912-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.1,
-      "max_dauer": 2.2,
+      "min_dauer": 0.3,
+      "max_dauer": 3.5,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 4,
+      "ein_ms": 45,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
-     }
+     },
+     "tempo_faktor": 0.62,
+     "tiefpass": 2800
     }
    ],
-   "text": "Dollen, Duchten und Spanten arbeiten, wenn das Boot sich neigt. Diese Klänge bleiben fest am Boot.",
+   "text": "Dollen, Duchten und Spanten arbeiten, wenn das Boot sich neigt oder eine Welle den Rumpf trifft: langsames, tiefes Knarren, das fest am Boot bleibt.",
    "folgt": {
     "kurve": "see",
     "rate": [
@@ -1793,7 +1815,7 @@
    "typ": "bett",
    "titel": "Möwen in der Ferne",
    "ziel_lufs": -39,
-   "anzahl": 3,
+   "anzahl": 2,
    "entfernung": [
     90,
     160
@@ -1821,7 +1843,20 @@
      "entrauschen": 8
     }
    ],
-   "text": "Eine Möwenschar weit weg, kaum mehr als eine Färbung des Horizonts."
+   "text": "Das ferne Stimmengewirr der Kolonie, aus derselben Richtung.",
+   "punkte": [
+    [
+     170.0,
+     -150.0,
+     15.0
+    ],
+    [
+     125.0,
+     -200.0,
+     10.0
+    ]
+   ],
+   "bezug_m": 200
   },
   {
    "name": "moewen",
@@ -1829,20 +1864,20 @@
    "titel": "Möwen kreisen",
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
-   "anzahl": 7,
+   "anzahl": 5,
    "radius": [
-    9,
-    38
+    8,
+    24
    ],
    "hoehe": [
     6,
-    26
+    22
    ],
    "tempo": [
     7,
     12
    ],
-   "abstand_s": 3.6,
+   "abstand_s": 11,
    "antwort_wahrsch": 0.45,
    "hall": 0.6,
    "sammlung": [
@@ -2085,7 +2120,7 @@
      ]
     }
    ],
-   "text": "Sieben Möwen kreisen in 6 bis 26 m Höhe ums Boot, rufen und antworten einander.",
+   "text": "Fünf Möwen halten sich in Luv des Boots, vorn links, kreisen dort im Wind und rufen; ab und zu antwortet eine andere. Frischt der Wind auf oder bricht eine Welle am Felsen, schrecken sie auf.",
    "decke_db": -7.0,
    "folgt": {
     "kurve": "wind",
@@ -2096,18 +2131,19 @@
    },
    "aufschrecken": {
     "schwelle": 1.3,
-    "wahrsch": 0.8,
+    "wahrsch": 0.6,
     "abstand_s": 30,
     "rufe": [
-     3,
-     6
+     2,
+     4
     ],
-    "pegel": 1.4,
+    "pegel": 1.2,
     "flatter_wahrsch": 0.5,
     "flatter_pegel": 0.4,
     "auf": [
      "brecher"
-    ]
+    ],
+    "auf_wahrsch": 0.6
    },
    "flattern": [
     {
@@ -2185,7 +2221,13 @@
    "richtwirkung": {
     "db": 8,
     "streuung_grad": 50
-   }
+   },
+   "mitte": [
+    14.0,
+    16.0
+   ],
+   "mitte_streuung": 6,
+   "drehsinn": 1
   },
   {
    "name": "ueberflug",
@@ -2194,8 +2236,8 @@
    "ziel_lufs": -22,
    "pegel_art": "spitzen",
    "abstand_s": [
-    18,
-    32
+    40,
+    75
    ],
    "hoehe": [
     2.0,
@@ -2449,7 +2491,7 @@
      ]
     }
    ],
-   "text": "Alle 20 bis 30 Sekunden schießt eine Möwe in 2 bis 4,5 m Höhe über das Boot. Ein Ruf liegt genau über dem Boot, seine Tonhöhe kippt beim Vorbeiflug (Doppler). Im Anflug echte Flügelschläge, darunter Fahrtwind.",
+   "text": "Alle ein bis zwei Minuten schießt eine Möwe in 2 bis 4,5 m Höhe über das Boot – meist mit dem Wind, von vorn links nach hinten rechts, manchmal dagegen. Ein Ruf liegt genau über dem Boot, seine Tonhöhe kippt beim Vorbeiflug (Doppler); im Anflug Flügelschläge.",
    "decke_db": -4.0,
    "fluegel": [
     {
@@ -2549,30 +2591,35 @@
    "richtwirkung": {
     "db": 8,
     "streuung_grad": 15
-   }
+   },
+   "kurs_grad": [
+    200,
+    30
+   ],
+   "gegen_wahrsch": 0.3
   },
   {
    "name": "moewen_weit",
    "typ": "schwarm",
    "titel": "Möwenkolonie weit weg",
-   "text": "Eine Möwenkolonie in 150 bis 450 Metern, manche hoch oben am Himmel.",
+   "text": "Eine Möwenkolonie auf einem fernen Felsen vorn rechts, 150 bis 370 Meter entfernt – ihre Rufe kommen immer aus dieser Richtung.",
    "ziel_lufs": -38,
    "pegel_art": "spitzen",
-   "anzahl": 8,
+   "anzahl": 6,
    "radius": [
-    150,
-    450
+    20,
+    110
    ],
    "hoehe": [
-    15,
-    70
+    5,
+    40
    ],
    "tempo": [
     7,
     12
    ],
-   "mitte_streuung": 60,
-   "abstand_s": 5,
+   "mitte_streuung": 20,
+   "abstand_s": 13,
    "antwort_wahrsch": 0.5,
    "bezug_m": 15,
    "hall": 0.4,
@@ -2823,7 +2870,11 @@
    "richtwirkung": {
     "db": 8,
     "streuung_grad": 50
-   }
+   },
+   "mitte": [
+    190.0,
+    -170.0
+   ]
   },
   {
    "name": "felsen",
@@ -2944,6 +2995,298 @@
    ],
    "meldet": "brecher",
    "melde_ab": 1.25
+  },
+  {
+   "name": "zug",
+   "typ": "zug",
+   "titel": "Ein Schwarm zieht vorbei",
+   "text": "Zweimal in zehn Minuten zieht ein Schwarm von fünf bis acht Möwen geschlossen vorbei: erst mit dem aufkommenden Wind davon, später, wenn die See sich beruhigt, zurück.",
+   "ziel_lufs": -30,
+   "pegel_art": "spitzen",
+   "zuege": [
+    {
+     "t": 105,
+     "kurs_grad": 200,
+     "seite": 1
+    },
+    {
+     "t": 515,
+     "kurs_grad": 20,
+     "seite": 1
+    }
+   ],
+   "tempo": [
+    11,
+    14
+   ],
+   "abstand_m": [
+    35,
+    60
+   ],
+   "hoehe": [
+    18,
+    35
+   ],
+   "anzahl": [
+    5,
+    9
+   ],
+   "rufe": [
+    2,
+    5
+   ],
+   "weglaenge_m": 380,
+   "bezug_m": 30,
+   "hall": 0.4,
+   "richtwirkung": {
+    "db": 8,
+    "streuung_grad": 15
+   },
+   "pruefung": {
+    "tempo_max": 20.0
+   },
+   "probe_ab": 85,
+   "probe_dauer": 40,
+   "sammlung": [
+    {
+     "quelle": "moewe_gull1",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_gull2",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_silber_xc707075",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_lyme",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_atricilla",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewen_nah",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_hering",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_vurca",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_strand_squashy",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewen_wildtrack",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewen_kurz_lyd",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewen_schwarm_jus",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_nigel",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewen_kolonie_fr",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    }
+   ]
   }
  ],
  "boeen": {
@@ -2985,7 +3328,8 @@
    "moewen",
    "moewen_weit",
    "moewen_fern",
-   "ueberflug"
+   "ueberflug",
+   "zug"
   ]
  },
  "windtragen": {
@@ -2997,7 +3341,8 @@
    "moewen",
    "moewen_weit",
    "moewen_fern",
-   "ueberflug"
+   "ueberflug",
+   "zug"
   ]
  },
  "drehbuch": {
@@ -3074,6 +3419,10 @@
     "Ruhige See, die Möwen kreisen entspannt."
    ],
    [
+    105,
+    "Ein Schwarm Möwen zieht mit dem aufkommenden Wind vorbei."
+   ],
+   [
     135.0,
     "Der Wind frischt auf, das Segel fängt sich öfter."
    ],
@@ -3088,6 +3437,10 @@
    [
     450.0,
     "Der Wind flaut ab, die See beruhigt sich."
+   ],
+   [
+    515,
+    "Der Schwarm kehrt zurück."
    ],
    [
     534.0,
