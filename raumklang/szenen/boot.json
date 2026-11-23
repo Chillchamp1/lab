@@ -11,8 +11,8 @@
   "bordkante": 0.8,
   "boden": 0.15,
   "kopf": [
-   -1.0,
-   0.62,
+   -2.3,
+   0.0,
    0.58
   ],
   "bewegung": {
@@ -24,7 +24,7 @@
    "hub_periode": 6.0,
    "gier_grad": 20
   },
-  "liegt_grad": -90
+  "liegt_grad": 0
  },
  "nachhall": {
   "t60_tief": 0.35,
@@ -174,7 +174,7 @@
      "hochpass": 120
     }
    ],
-   "text": "A light wind that slowly rises and falls; in the gusts it freshens – the same gusts that fill the sail.",
+   "text": "A light wind from ahead – the boat lies at anchor with its bow into the wind. It slowly rises and falls; in the gusts it freshens – the same gusts that fill the sail.",
    "boe_db": 4.0,
    "folgt": {
     "kurve": "wind",
@@ -197,7 +197,7 @@
     32
    ],
    "treibt_m_s": 1.5,
-   "wind_richtung_grad": 200,
+   "wind_richtung_grad": 180,
    "streuung_db": 3.0,
    "hall": 0.4,
    "sammlung": [
@@ -1027,7 +1027,7 @@
      }
     }
    ],
-   "text": "Wave crests 7 to 32 m away, running with the wind in long parallel lines – each crest is several metres wide, and its sound comes from along the whole front. When one breaks with real force, there is a deep rumble.",
+   "text": "Wave crests 7 to 32 m away, rolling in from ahead with the wind in long lines that stretch from left to right – each crest is several metres wide, and its sound comes from along the whole front. When one breaks with real force, there is a deep rumble.",
    "wucht_pegel": 0.15,
    "wucht_exponent": 2.0,
    "ausreisser_wahrsch": 0.08,
@@ -1053,7 +1053,7 @@
    ],
    "meldet": "welle",
    "melde_ab": 1.6,
-   "breite_achse_grad": 290
+   "breite_achse_grad": 90
   },
   {
    "name": "rumpf",
@@ -1972,18 +1972,13 @@
      0.48
     ],
     [
-     -1.35,
-     0.88,
+     -1.9,
+     0.78,
      0.4
     ],
     [
-     -0.6,
-     0.9,
-     0.4
-    ],
-    [
-     -0.9,
-     -0.88,
+     -1.9,
+     -0.78,
      0.4
     ],
     [
@@ -2025,7 +2020,7 @@
    "ziel_lufs": -33,
    "pegel_art": "spitzen",
    "hall": 0.8,
-   "text": "The sail hangs slack on the mast, ahead and to your left. In a gust it catches the wind: real cloth flutter swells, the canvas fills with a soft thump and collapses again.",
+   "text": "The sail hangs slack on the mast in front of you, beyond your feet. In a gust it catches the wind: real cloth flutter swells, the canvas fills with a soft thump and collapses again.",
    "sammlung": [
     {
      "quelle": "esc_3-117504-A"
@@ -2388,7 +2383,7 @@
      ]
     }
    ],
-   "text": "Five gulls keep to windward of the boat, ahead and to the left, circling in the wind and calling; now and then another answers. When the wind freshens or a wave breaks on the rock, they take fright.",
+   "text": "Five gulls keep to windward, ahead of you, circling there in the wind and calling; now and then another answers. When the wind freshens or a wave breaks on the rock, they take fright.",
    "decke_db": -7.0,
    "folgt": {
     "kurve": "wind",
@@ -2491,8 +2486,8 @@
     "streuung_grad": 50
    },
    "mitte": [
-    14.0,
-    16.0
+    18,
+    -5
    ],
    "mitte_streuung": 6,
    "drehsinn": 1
@@ -2758,7 +2753,7 @@
      ]
     }
    ],
-   "text": "About every half minute a gull shoots over the boat 3 to 5 m up – mostly with the wind, from front left to back right, sometimes against it. One call lands right overhead, its pitch dropping as it passes (Doppler); wingbeats as it approaches.",
+   "text": "About every half minute a gull shoots over the boat 3 to 5 m up – mostly across your view along the coast, from right to left, sometimes the other way, and once in a while one comes in diagonally, from ahead or from behind. One call lands right overhead, its pitch dropping as it passes (Doppler); wingbeats as it approaches.",
    "decke_db": -4.0,
    "fluegel": [
     {
@@ -2860,10 +2855,20 @@
     "streuung_grad": 15
    },
    "kurs_grad": [
-    200,
-    30
+    90,
+    15
    ],
-   "gegen_wahrsch": 0.3
+   "gegen_wahrsch": 0.35,
+   "kurs_ausnahme": {
+    "grad": [
+     45,
+     135,
+     225,
+     315
+    ],
+    "wahrsch": 0.15,
+    "streuung": 10
+   }
   },
   {
    "name": "moewen_weit",
@@ -3413,18 +3418,18 @@
    "name": "zug",
    "typ": "zug",
    "titel": "A flock passes",
-   "text": "Twice in ten minutes a flock of eight to twelve gulls passes 60 to 90 m away – for half a minute you hear it approach, go by calling and fade away: first with the rising wind, later back again.",
+   "text": "Twice in ten minutes a flock of eight to twelve gulls flies along the coast in front of you, 45 to 75 m away – from right to left, later back from left to right. For half a minute you hear it come, pass calling and fade; its chatter comes from several places across the flock.",
    "ziel_lufs": -30,
    "pegel_art": "spitzen",
    "zuege": [
     {
      "t": 105,
-     "kurs_grad": 200,
-     "seite": 1
+     "kurs_grad": 90,
+     "seite": -1
     },
     {
      "t": 515,
-     "kurs_grad": 20,
+     "kurs_grad": 270,
      "seite": 1
     }
    ],
@@ -3433,12 +3438,12 @@
     12
    ],
    "abstand_m": [
-    55,
-    90
+    45,
+    75
    ],
    "hoehe": [
-    20,
-    35
+    15,
+    30
    ],
    "anzahl": [
     8,
@@ -3714,25 +3719,26 @@
     }
    ],
    "teppich_bezug_m": 45,
-   "teppich_breite_m": 30
+   "teppich_breite_m": 30,
+   "teppich_teile": 3
   },
   {
    "name": "gaense",
    "typ": "zug",
    "titel": "Geese passing",
-   "text": "Twice, high and far out, a skein of geese crosses the water – their calls carry for a long time, slowly pass and fade; later the skein comes back.",
+   "text": "Twice a skein of geese flies along the coast in front of you, high and 60 to 100 m away – first from right to left, later back. Their calls carry for a long time and come from all along the skein.",
    "ziel_lufs": -31,
    "pegel_art": "spitzen",
    "zuege": [
     {
      "t": 40,
-     "kurs_grad": 290,
-     "seite": 1
+     "kurs_grad": 90,
+     "seite": -1
     },
     {
      "t": 440,
-     "kurs_grad": 110,
-     "seite": -1
+     "kurs_grad": 270,
+     "seite": 1
     }
    ],
    "tempo": [
@@ -3740,12 +3746,12 @@
     16
    ],
    "abstand_m": [
-    80,
-    130
+    60,
+    100
    ],
    "hoehe": [
-    40,
-    70
+    25,
+    45
    ],
    "anzahl": [
     10,
@@ -3838,7 +3844,8 @@
     }
    ],
    "teppich_bezug_m": 70,
-   "teppich_breite_m": 40
+   "teppich_breite_m": 40,
+   "teppich_teile": 3
   }
  ],
  "boeen": {
@@ -3849,7 +3856,7 @@
    8
   ]
  },
- "text": "You lie across an open wooden sailing boat, a good six metres long – on cushions, your head propped up against the side, feet towards the other side, the bow to your left, safely below the gunwale. Gulls circle and dart over you, waves roll by in long lines, water knocks hollow against the planks right behind your head, the boat creaks, and now and then the wind catches the slack sail.",
+ "text": "You lie in an open wooden sailing boat at anchor, a good six metres long – at the stern on cushions, your head propped up against the aft thwart, feet towards the bow, which points into the wind. Gulls circle ahead and fly along the coast in front of you, waves roll in from ahead in long lines, water knocks hollow against the planks, the boat creaks and swings slowly on its anchor, and now and then the wind catches the slack sail.",
  "weite": {
   "ab_m": 25,
   "voll_m": 150,
@@ -3889,7 +3896,7 @@
   "ab_m": 12,
   "voll_m": 60,
   "db": 2.5,
-  "wind_von_grad": 20,
+  "wind_von_grad": 0,
   "gruppen": [
    "moewen",
    "moewen_weit",
@@ -3974,11 +3981,11 @@
    ],
    [
     40,
-    "Far out, a skein of geese passes; you can hear their calls for a long time."
+    "A skein of geese crosses in front of you; you can hear their calls for a long time."
    ],
    [
     105,
-    "A flock of gulls passes with the rising wind."
+    "A flock of gulls flies past along the coast as the wind rises."
    ],
    [
     135.0,

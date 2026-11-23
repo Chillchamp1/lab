@@ -519,6 +519,18 @@ def gen_ereignisse(kx, g, spur, bus):
         t += rng.exponential(g.get('abstand_s', 2.5)) / max(kx.folge(g, t)[0], 0.02)
 
 
+def karte_bahn(kx, ort_fn, t0, t1, schritt=1.0, aussen=True):
+    """Flugbahn ohne Ton für die Szenenkarte: ein Tier ist zu sehen, auch wenn es gerade nicht ruft
+    (sonst taucht eine Möwe nur auf, solange sie ruft, und verschwindet mitten im Flug)."""
+    if getattr(kx, 'karte', None) is None:
+        return
+    ts = np.arange(t0, t1 + 1e-6, schritt)
+    pk = ort_fn(ts)
+    if aussen:
+        pk = kx.boot.welt_zu_boot(pk, ts)
+    kx.karte.append(dict(g=getattr(kx, 'gruppe', ''), art='bahn', t0=round(float(t0), 2), dt=schritt, p=np.round(pk, 1).tolist()))
+
+
 class Vogel:
     """Flugbahn: Kreisen um einen wandernden Mittelpunkt, Höhe und Radius schwanken."""
 
@@ -575,6 +587,8 @@ def gen_schwarm(kx, g, spur, bus):
     ev = kx.bib.ereignisse(g['sammlung'])
     quellen = sorted({e['quelle'] for e in ev})
     voegel = [Vogel(rng, kx.dauer, g) for _ in range(g.get('anzahl', 7))]
+    for v_ in voegel:                     # jede Möwe ist immer zu sehen, nicht nur, wenn sie ruft
+        karte_bahn(kx, v_.ort, 0.0, kx.dauer, 1.0)
     # Jedes Tier hat eine Stimme. Aufnahmen mit wenigen Ausschnitten werden zu einer Stimme
     # zusammengelegt – sonst wiederholt ein Tier in zehn Minuten dreißigmal dieselben zwei Rufe.
     je_quelle = {q: [e for e in ev if e['quelle'] == q] for q in quellen}
@@ -674,6 +688,9 @@ def gen_ueberflug(kx, g, spur, bus):
         kurs = rng.uniform(0, 2 * np.pi)
         if g.get('kurs_grad'):         # Vorzugsrichtung [Mittel, Streuung] – z. B. mit dem Wind –, manchmal dagegen
             kurs = np.radians(g['kurs_grad'][0] + rng.normal(0, g['kurs_grad'][1])) + (np.pi if rng.random() < g.get('gegen_wahrsch', 0.0) else 0.0)
+        ausn = g.get('kurs_ausnahme')          # ab und zu einer aus einer ganz anderen Richtung (z. B. schräg von hinten)
+        if ausn and rng.random() < ausn.get('wahrsch', 0.15):
+            kurs = np.radians(float(rng.choice(ausn['grad'])) + rng.normal(0, ausn.get('streuung', 8)))
         v = rng.uniform(*g.get('tempo', [10, 15]))
         h = rng.uniform(*g.get('hoehe', [2.0, 4.5]))
         seit = rng.uniform(-1.5, 1.5)
@@ -687,6 +704,7 @@ def gen_ueberflug(kx, g, spur, bus):
             p = boot_k[None, :] + s[:, None] * ri[None, :] + seit * quer[None, :]
             p[:, 2] = np.maximum(h + s * ri[2], 1.5)
             return p
+        karte_bahn(kx, ort, t - 12.0, t + 12.0, 1.0)
 
         # Hauptruf liegt über dem nächsten Punkt: er beginnt im Anflug (etwas höher) und endet im
         # Wegflug (etwas tiefer) – so kippt die Tonhöhe hörbar innerhalb eines Rufs.
@@ -1341,28 +1359,7 @@ def gen_zug(kx, g, spur, bus):
     k = kx.boot.kopf
     liste = []
     for z in g.get('zuege', [{'t': 120, 'kurs_grad': 200}]):
-        if g.get('teppich'):
-            kurs_t = np.radians(z.get('kurs_grad', 200))
-            ri_t = np.array([np.cos(kurs_t), np.sin(kurs_t), 0.0])
-            quer_t = np.array([-ri_t[1], ri_t[0], 0.0])
-            v_t = float(np.mean(g.get('tempo', [11, 14])))
-            d_t = float(np.mean(g.get('abstand_m', [40, 80]))) * z.get('seite', 1)
-            h_t = float(np.mean(g.get('hoehe', [20, 40])))
-            L_t = g.get('weglaenge_m', 400.0)
-            dauer_t = L_t / v_t
-            n_t = int(dauer_t * FS)
-            sig = kx.bib.flickwerk(g['teppich'], n_t, rng).astype(np.float32)
-            rand = int(0.2 * n_t)                     # Anfang und Ende des Wegs weich: dort ist der Schwarm schon weit weg
-            sig[:rand] *= np.sin(np.linspace(0, np.pi / 2, rand)) ** 2
-            sig[-rand:] *= np.cos(np.linspace(0, np.pi / 2, rand)) ** 2
-
-            def ort_t(tt, ri=ri_t, quer=quer_t, d=d_t, v=v_t, h=h_t, tm=z['t']):
-                p = np.array([k[0], k[1], 0.0])[None, :] + d * quer[None, :] + ((tt - tm) * v)[:, None] * ri[None, :]
-                p[:, 2] = h
-                return p
-
-            rendere_quelle(kx, spur, bus, sig, z['t'] - dauer_t / 2, ort_t, True,
-                           g.get('teppich_bezug_m', 60.0), g.get('hall', 0.0), breite=g.get('teppich_breite_m', 25.0))
+        # ein gemeinsamer Kurs für Stimmengewirr und einzelne Vögel – sie sind derselbe Schwarm
         kurs = np.radians(z.get('kurs_grad', 200) + rng.normal(0, g.get('kurs_streuung_grad', 8)))
         ri = np.array([np.cos(kurs), np.sin(kurs), 0.0])
         quer = np.array([-ri[1], ri[0], 0.0])
@@ -1370,18 +1367,39 @@ def gen_zug(kx, g, spur, bus):
         d = rng.uniform(*g.get('abstand_m', [40, 80])) * z.get('seite', 1)
         h = rng.uniform(*g.get('hoehe', [20, 40]))
         L = g.get('weglaenge_m', 400.0)
-        for _ in range(int(rng.integers(*g.get('anzahl', [5, 9])))):
-            vs = np.array([rng.uniform(-30, 30), rng.uniform(-12, 12), rng.uniform(-4, 4)])     # längs, quer, Höhe
+        tm = z['t']
 
-            def ort(tt, vs=vs, ri=ri, quer=quer, d=d, v=v, h=h, tm=z['t']):
+        def bahn(vs, ri=ri, quer=quer, d=d, v=v, h=h, tm=tm):
+            def ort(tt):
                 s_ = (tt - tm) * v + vs[0]
                 p = np.array([k[0], k[1], 0.0])[None, :] + (d + vs[1]) * quer[None, :] + s_[:, None] * ri[None, :]
                 p[:, 2] = h + vs[2]
                 return p
+            return ort
 
+        if g.get('teppich'):
+            # Stimmengewirr als mehrere Quellen über den Schwarm verteilt (vorn, linker und rechter Flügel),
+            # jede mit eigenem Ausschnitt – so klingt der Schwarm breit und bewegt, nicht wie ein Punkt
+            n_tp = g.get('teppich_teile', 3)
+            br_tp = g.get('teppich_breite_m', 25.0)
+            dauer_t = L / v
+            n_t = int(dauer_t * FS)
+            for j in range(n_tp):
+                quer_j = (j / max(n_tp - 1, 1) - 0.5) * br_tp if n_tp > 1 else 0.0
+                laengs_j = -abs(quer_j) * 0.6               # Keil: die Flügel fliegen etwas hinter der Spitze
+                sig = kx.bib.flickwerk(g['teppich'], n_t, rng).astype(np.float32)
+                rand = int(0.2 * n_t)                     # Anfang und Ende des Wegs weich: dort ist der Schwarm schon weit weg
+                sig[:rand] *= np.sin(np.linspace(0, np.pi / 2, rand)) ** 2
+                sig[-rand:] *= np.cos(np.linspace(0, np.pi / 2, rand)) ** 2
+                rendere_quelle(kx, spur, bus, sig, tm - dauer_t / 2, bahn(np.array([laengs_j, quer_j, 0.0])), True,
+                               g.get('teppich_bezug_m', 60.0) / np.sqrt(n_tp), g.get('hall', 0.0), breite=br_tp / n_tp)
+        for _ in range(int(rng.integers(*g.get('anzahl', [5, 9])))):
+            vs = np.array([rng.uniform(-30, 30), rng.uniform(-12, 12), rng.uniform(-4, 4)])     # längs, quer, Höhe
+            ort = bahn(vs)
+            karte_bahn(kx, ort, tm - L / (2 * v), tm + L / (2 * v), 1.0)          # jeder Vogel des Schwarms ist zu sehen
             for _ in range(int(rng.integers(*g.get('rufe', [2, 5])))):
                 e = _wahl(rng, ev)
-                rendere_quelle(kx, spur, bus, _variante(rng, e['sig'], 0.5), z['t'] + rng.uniform(-0.5, 0.5) * L / v, ort, True,
+                rendere_quelle(kx, spur, bus, _variante(rng, e['sig'], 0.5), tm + rng.uniform(-0.5, 0.5) * L / v, ort, True,
                                g.get('bezug_m', 30.0) * 10 ** (rng.normal(0, 2) / 20), g.get('hall', 0.0))
         liste.append(z['t'])
     return dict(zuege=liste)
@@ -1623,6 +1641,18 @@ def main():
         if type(boot).__name__ == 'Boot':            # Umriss des Boots für die Kartenansicht
             k['boot'] = dict(a=round(float(boot.a), 2), b=round(float(boot.b), 2))
         k['liegt_grad'] = float(umg_cfg.get('liegt_grad', 0.0))      # Richtung der Füße/des Blicks im Bezug der Karte
+        # Wind für die Ansicht: Richtung, in die er weht (Welt), Stärke 0..1 je Sekunde (Drehbuch-Kurve plus
+        # Böen) und die Drehung des Boots (Gieren), damit die Ansicht die Richtung in den Hörerbezug drehen kann
+        wt = sz.get('windtragen') or {}
+        nach = (wt.get('wind_von_grad') + 180.0) if 'wind_von_grad' in wt else next(
+            (g_.get('wind_richtung_grad') for g_ in sz['gruppen'] if 'wind_richtung_grad' in g_), None)
+        if nach is not None:
+            ts_w = np.arange(int(dauer))
+            kw = np.interp(ts_w, *kurven['wind'], period=dauer) if 'wind' in kurven else np.full(len(ts_w), 0.5)
+            bo = np.interp(ts_w, *boe, period=dauer)
+            staerke = np.clip(0.75 * kw + 0.12 * bo, 0, 1)
+            gier = np.degrees(boot.winkel(ts_w.astype(float))[2]) if hasattr(boot, 'winkel') else np.zeros(len(ts_w))
+            k['wind'] = dict(nach_grad=round(float(nach % 360), 1), staerke=np.round(staerke, 2).tolist(), gier_grad=np.round(gier, 1).tolist())
         (Path(a.aus) / f'{name}_karte.json').write_text(json.dumps(k, ensure_ascii=False, separators=(',', ':')))
         print('Karte:', len(karte), 'Quellen', flush=True)
 

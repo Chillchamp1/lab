@@ -138,33 +138,96 @@ function zeichneLog(canvas, K, t) {
   g.strokeStyle = g.fillStyle; g.lineWidth = 4; g.beginPath(); g.moveTo(M, M - 8); g.lineTo(M, M - W / 22); g.stroke();
   g.beginPath(); g.moveTo(M - 11, M - W / 30); g.lineTo(M, M - W / 20); g.lineTo(M + 11, M - W / 30); g.stroke();
   const gruppen = new Set();
+  const flaeche = q => q.dt > 1 && q.n * q.dt > K.dauer * 0.9;          // durchlaufende Fläche (Meer, Wind)
+  const quer = p => { const [vx, vy] = [p[0] - K.kopf[0], p[1] - K.kopf[1]], l = Math.hypot(vx, vy) || 1; return [-vy / l, vx / l]; };
   for (const q of K.quellen) {
     const p = ort(K, q, ts);
     if (!p) continue;
-    const f = K.farbe[q.g] || '#888';
-    gruppen.add(q.g);
-    g.strokeStyle = f; g.globalAlpha = 0.35; g.lineWidth = 3; g.beginPath();
-    for (let k = 0; k <= 6; k++) { const pp = ort(K, q, ts - k); if (!pp) break; const [x, y] = proj(pp); k ? g.lineTo(x, y) : g.moveTo(x, y); }
-    g.stroke(); g.globalAlpha = q.art === 'echo' ? 0.35 : 1;
+    const f = K.farbe[q.g] || '#888', bahn = q.art === 'bahn';
+    if (!bahn) gruppen.add(q.g);
+    const breit = q.b > 2 && !flaeche(q);
+    if (!breit) {                // Spur der letzten Sekunden
+      g.strokeStyle = f; g.globalAlpha = bahn ? 0.25 : 0.35; g.lineWidth = 3; g.beginPath();
+      for (let k = 0; k <= (bahn ? 3 : 6); k++) { const pp = ort(K, q, ts - k); if (!pp) break; const [x, y] = proj(pp); k ? g.lineTo(x, y) : g.moveTo(x, y); }
+      g.stroke();
+    }
     const [x, y] = proj(p);
-    g.fillStyle = f; g.beginPath(); g.arc(x, y, q.dt > 1 ? W / 180 : W / 105, 0, 7); g.fill(); g.globalAlpha = 1;
-    if (q.dt < 1 || q.n * q.dt > 20) {          // klingt gerade: Schallringe laufen nach außen (nicht bei Flächen)
-      if (q.dt > 1 && q.n * q.dt > K.dauer * 0.9) continue;
+    // Wo der Schall herkommt: bei breiten Quellen (Wellenkamm, Fels) eine Linie entlang der Front
+    let stellen = [p];
+    if (breit) {
+      const ax = q.a || quer(p), u = Math.min(1, Math.max(0, (ts - q.t0) / Math.max(q.ende - q.t0, 0.5)));
+      g.strokeStyle = f; g.lineCap = 'round'; g.lineWidth = W / 95; g.globalAlpha = 0.35 + 0.65 * Math.sin(Math.PI * u);
+      g.beginPath();
+      for (let i = 0; i <= 8; i++) {
+        const s_ = (i / 8 - 0.5) * q.b, [xx, yy] = proj([p[0] + ax[0] * s_, p[1] + ax[1] * s_]);
+        i ? g.lineTo(xx, yy) : g.moveTo(xx, yy);
+      }
+      g.stroke(); g.lineCap = 'butt'; g.globalAlpha = 1;
+      const nt = Math.min(5, Math.max(2, Math.round(q.b / 3)));
+      stellen = Array.from({ length: nt }, (_, j) => { const s_ = (j / (nt - 1) - 0.5) * q.b; return [p[0] + ax[0] * s_, p[1] + ax[1] * s_]; });
+    } else {
+      g.globalAlpha = q.art === 'echo' ? 0.35 : 1;
+      g.fillStyle = f; g.beginPath(); g.arc(x, y, flaeche(q) ? W / 180 : bahn ? W / 140 : W / 105, 0, 7); g.fill(); g.globalAlpha = 1;
+    }
+    // klingt gerade: Schallringe laufen nach außen (nicht bei Flächen und stummen Flugbahnen)
+    if (!bahn && !flaeche(q)) {
       const alter = ts - q.t0;
       g.strokeStyle = f; g.lineWidth = 3;
-      for (let k = 0; k < 2; k++) {
-        const u = ((alter * 1.3 + k * 0.5) % 1 + 1) % 1;
-        g.globalAlpha = 0.7 * (1 - u); g.beginPath(); g.arc(x, y, W / 105 + u * W / 22, 0, 7); g.stroke();
-      }
+      stellen.forEach((st, j) => {
+        const [sx, sy] = proj(st);
+        for (let k = 0; k < 2; k++) {
+          const u = ((alter * 1.2 + k * 0.5 + j * 0.17) % 1 + 1) % 1;
+          g.globalAlpha = 0.7 * (1 - u); g.beginPath(); g.arc(sx, sy, W / 105 + u * W / 24, 0, 7); g.stroke();
+        }
+      });
       g.globalAlpha = 1;
     }
   }
+  if (K.wind) zeichneWind(g, K, ts, W, dunkel);
   return gruppen;
 }
 
 /** Namen der Gruppen, die zur Dateizeit t zu hören sind (für die Legende). */
 export function aktiveGruppen(K, t) {
   const ts = (t + K.start_s) % K.dauer, aus = new Set();
-  for (const q of K.quellen) if (!aus.has(q.g) && ort(K, q, ts)) aus.add(q.g);
+  for (const q of K.quellen) if (q.art !== 'bahn' && !aus.has(q.g) && ort(K, q, ts)) aus.add(q.g);
   return aus;
+}
+
+/**
+ * Windsack oben rechts: zeigt, wohin der Wind weht (im Hörerbezug: oben = Blickrichtung), und wie stark –
+ * schlaff und kurz bei Flaute, prall und lang in der Böe. Dazu die Stärke in Beaufort.
+ */
+function zeichneWind(g, K, ts, W, dunkel) {
+  const i = Math.floor(ts) % K.wind.staerke.length, st = K.wind.staerke[i] || 0;
+  const gier = (K.wind.gier_grad || [])[i] || 0;
+  // Welt → Boot (Gieren) → Hörer (Liegerichtung); 0 = nach vorn, +90 = nach links
+  const th = (K.wind.nach_grad - gier - (K.liegt_grad || 0)) * Math.PI / 180;
+  const ux = -Math.sin(th), uy = -Math.cos(th);           // Richtung auf dem Bild
+  const R = W * 0.1, cx = W - R * 1.5, cy = R * 1.5;
+  g.save();
+  g.fillStyle = dunkel ? 'rgba(13,20,24,1)' : 'rgba(243,246,246,1)'; g.strokeStyle = dunkel ? '#24343d' : '#d5dfe1'; g.lineWidth = 2;
+  g.beginPath(); g.arc(cx, cy, R * 1.3, 0, 7); g.fill(); g.stroke();
+  // Windrose: vier kurze Striche, oben = Blickrichtung
+  g.strokeStyle = dunkel ? '#3d5560' : '#c9d6d9'; g.lineWidth = 2;
+  for (let k = 0; k < 4; k++) { const w = k * Math.PI / 2; g.beginPath(); g.moveTo(cx + Math.sin(w) * R * 1.02, cy - Math.cos(w) * R * 1.02); g.lineTo(cx + Math.sin(w) * R * 1.18, cy - Math.cos(w) * R * 1.18); g.stroke(); }
+  // Mast in der Mitte, Sack in Windrichtung; Länge und Fülle mit der Stärke, Ende flattert
+  const L = R * (0.55 + 0.6 * st), b0 = R * 0.26, b1 = R * (0.06 + 0.12 * st);
+  const flat = Math.sin(performance.now() / 130) * (0.03 + 0.05 * st) * R;
+  const nx = -uy, ny = ux;
+  const ringe = 4;
+  for (let k = 0; k < ringe; k++) {           // rot-weiße Ringe
+    const a0 = k / ringe, a1 = (k + 1) / ringe;
+    const w0 = b0 + (b1 - b0) * a0, w1 = b0 + (b1 - b0) * a1;
+    const f0 = flat * a0 * a0, f1 = flat * a1 * a1;
+    const p0 = [cx + ux * L * a0 + nx * f0, cy + uy * L * a0 + ny * f0], p1 = [cx + ux * L * a1 + nx * f1, cy + uy * L * a1 + ny * f1];
+    g.fillStyle = k % 2 ? '#fff6ea' : '#e8735a';
+    g.beginPath(); g.moveTo(p0[0] + nx * w0 / 2, p0[1] + ny * w0 / 2); g.lineTo(p1[0] + nx * w1 / 2, p1[1] + ny * w1 / 2);
+    g.lineTo(p1[0] - nx * w1 / 2, p1[1] - ny * w1 / 2); g.lineTo(p0[0] - nx * w0 / 2, p0[1] - ny * w0 / 2); g.closePath(); g.fill();
+  }
+  g.fillStyle = dunkel ? '#dfe8ea' : '#17252b'; g.beginPath(); g.arc(cx, cy, R * 0.08, 0, 7); g.fill();
+  g.font = `${Math.round(W / 50)}px system-ui, sans-serif`; g.textAlign = 'center';
+  g.fillStyle = dunkel ? '#8fa3ab' : '#5b6f77';
+  g.fillText(`wind ${Math.round(1 + 5 * st)} Bft`, cx, cy + R * 0.95);
+  g.restore();
 }

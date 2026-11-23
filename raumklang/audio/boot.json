@@ -1,13 +1,13 @@
 {
  "szene": "boot",
- "stand": "23.11.2026 18:41",
+ "stand": "23.11.2026 19:43",
  "dauer": 600,
  "schleife": true,
  "abtastwerte": 26460000,
  "hrtf": "subject_040.sofa",
  "blick": 55,
  "titel": "In a Wooden Boat at Sea",
- "text": "You lie across an open wooden sailing boat, a good six metres long – on cushions, your head propped up against the side, feet towards the other side, the bow to your left, safely below the gunwale. Gulls circle and dart over you, waves roll by in long lines, water knocks hollow against the planks right behind your head, the boat creaks, and now and then the wind catches the slack sail.",
+ "text": "You lie in an open wooden sailing boat at anchor, a good six metres long – at the stern on cushions, your head propped up against the aft thwart, feet towards the bow, which points into the wind. Gulls circle ahead and fly along the coast in front of you, waves roll in from ahead in long lines, water knocks hollow against the planks, the boat creaks and swings slowly on its anchor, and now and then the wind catches the slack sail.",
  "gruppen": [
   {
    "name": "see_fern",
@@ -18,37 +18,37 @@
    "pegel_art": "integriert",
    "spitze_db": -13.3,
    "begrenzt_db": 0.0,
-   "sekunden": 585.6,
-   "probe_ab_s": 337.7,
+   "sekunden": 537.7,
+   "probe_ab_s": 374.8,
    "probe_aktiv": 1.0,
    "probe_abtastwerte": 1323000
   },
   {
    "name": "wind",
    "titel": "Gentle wind",
-   "text": "A light wind that slowly rises and falls; in the gusts it freshens – the same gusts that fill the sail.",
+   "text": "A light wind from ahead – the boat lies at anchor with its bow into the wind. It slowly rises and falls; in the gusts it freshens – the same gusts that fill the sail.",
    "typ": "bett",
    "ziel_lufs": -37,
    "pegel_art": "integriert",
-   "spitze_db": -9.4,
+   "spitze_db": -12.5,
    "begrenzt_db": 0.0,
-   "sekunden": 519.7,
-   "probe_ab_s": 291.2,
+   "sekunden": 467.9,
+   "probe_ab_s": 320.8,
    "probe_aktiv": 1.0,
    "probe_abtastwerte": 1323000
   },
   {
    "name": "wellen",
    "titel": "Wave crests all around",
-   "text": "Wave crests 7 to 32 m away, running with the wind in long parallel lines – each crest is several metres wide, and its sound comes from along the whole front. When one breaks with real force, there is a deep rumble.",
+   "text": "Wave crests 7 to 32 m away, rolling in from ahead with the wind in long lines that stretch from left to right – each crest is several metres wide, and its sound comes from along the whole front. When one breaks with real force, there is a deep rumble.",
    "typ": "ereignisse",
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
-   "begrenzt_db": 1.6,
-   "sekunden": 87.8,
-   "probe_ab_s": 329.2,
-   "probe_aktiv": 0.9,
+   "begrenzt_db": 1.7,
+   "sekunden": 78.1,
+   "probe_ab_s": 359.8,
+   "probe_aktiv": 0.92,
    "probe_abtastwerte": 1323000
   },
   {
@@ -59,13 +59,13 @@
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
-   "begrenzt_db": 5.5,
-   "sekunden": 105.9,
+   "begrenzt_db": 3.4,
+   "sekunden": 106.8,
    "ereignisse": 491,
    "nach_welle": 24,
    "spritzer": 11,
-   "probe_ab_s": 311.2,
-   "probe_aktiv": 0.45,
+   "probe_ab_s": 345.3,
+   "probe_aktiv": 0.38,
    "probe_abtastwerte": 1323000
   },
   {
@@ -76,26 +76,26 @@
    "ziel_lufs": -30,
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
-   "begrenzt_db": 4.1,
-   "sekunden": 16.7,
+   "begrenzt_db": 4.5,
+   "sekunden": 17.4,
    "ereignisse": 145,
    "nach_schlag": 3,
-   "probe_ab_s": 456.2,
-   "probe_aktiv": 0.38,
+   "probe_ab_s": 486.3,
+   "probe_aktiv": 0.37,
    "probe_abtastwerte": 1323000
   },
   {
    "name": "segel",
    "titel": "Slack sail",
-   "text": "The sail hangs slack on the mast, ahead and to your left. In a gust it catches the wind: real cloth flutter swells, the canvas fills with a soft thump and collapses again.",
+   "text": "The sail hangs slack on the mast in front of you, beyond your feet. In a gust it catches the wind: real cloth flutter swells, the canvas fills with a soft thump and collapses again.",
    "typ": "segel",
    "ziel_lufs": -33,
    "pegel_art": "spitzen",
-   "spitze_db": -9.0,
-   "begrenzt_db": 0.8,
-   "sekunden": 176.0,
+   "spitze_db": -9.6,
+   "begrenzt_db": 0.0,
+   "sekunden": 158.5,
    "faenge": 27,
-   "probe_ab_s": 290.2,
+   "probe_ab_s": 320.3,
    "probe_aktiv": 0.88,
    "probe_abtastwerte": 2646000
   },
@@ -106,64 +106,63 @@
    "typ": "bett",
    "ziel_lufs": -39,
    "pegel_art": "integriert",
-   "spitze_db": -12.4,
+   "spitze_db": -11.4,
    "begrenzt_db": 0.0,
-   "sekunden": 106.9,
-   "weitenhall_db": -3.1,
-   "probe_ab_s": 337.7,
+   "sekunden": 110.0,
+   "weitenhall_db": -2.2,
+   "probe_ab_s": 367.8,
    "probe_aktiv": 1.0,
    "probe_abtastwerte": 1323000
   },
   {
    "name": "moewen",
    "titel": "Circling gulls",
-   "text": "Five gulls keep to windward of the boat, ahead and to the left, circling in the wind and calling; now and then another answers. When the wind freshens or a wave breaks on the rock, they take fright.",
+   "text": "Five gulls keep to windward, ahead of you, circling there in the wind and calling; now and then another answers. When the wind freshens or a wave breaks on the rock, they take fright.",
    "typ": "schwarm",
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
-   "spitze_db": -8.5,
-   "begrenzt_db": 0.0,
-   "sekunden": 22.9,
+   "spitze_db": -7.0,
+   "begrenzt_db": 0.8,
+   "sekunden": 25.5,
    "rufe": 94,
    "aufgeschreckt": 20,
-   "weitenhall_db": -30.5,
-   "probe_ab_s": 85.7,
-   "probe_aktiv": 0.42,
+   "weitenhall_db": -34.9,
+   "probe_ab_s": 390.8,
+   "probe_aktiv": 0.43,
    "probe_abtastwerte": 1323000
   },
   {
    "name": "ueberflug",
    "titel": "Gull skimming the boat",
-   "text": "About every half minute a gull shoots over the boat 3 to 5 m up – mostly with the wind, from front left to back right, sometimes against it. One call lands right overhead, its pitch dropping as it passes (Doppler); wingbeats as it approaches.",
+   "text": "About every half minute a gull shoots over the boat 3 to 5 m up – mostly across your view along the coast, from right to left, sometimes the other way, and once in a while one comes in diagonally, from ahead or from behind. One call lands right overhead, its pitch dropping as it passes (Doppler); wingbeats as it approaches.",
    "typ": "ueberflug",
    "ziel_lufs": -22,
    "pegel_art": "spitzen",
-   "spitze_db": -5.6,
+   "spitze_db": -7.2,
    "begrenzt_db": 0.0,
-   "sekunden": 22.5,
+   "sekunden": 23.5,
    "zeiten": [
     13.7,
-    42.2,
-    66.7,
-    99.7,
-    124.6,
-    159.5,
-    196.8,
-    228.6,
-    261.4,
-    293.2,
-    318.5,
-    346.5,
-    373.1,
-    412.7,
-    448.9,
-    480.0,
-    508.5,
-    533.8,
-    571.3
+    39.7,
+    73.9,
+    101.1,
+    128.3,
+    157.1,
+    190.2,
+    229.3,
+    270.1,
+    301.2,
+    342.4,
+    380.8,
+    417.3,
+    453.6,
+    483.9,
+    515.9,
+    542.5,
+    580.0
    ],
-   "weitenhall_db": -44.3,
-   "probe_ab_s": 379.7,
+   "weitenhall_db": -44.1,
+   "probe_ab_s": 479.8,
    "probe_aktiv": 0.16,
    "probe_abtastwerte": 1764000
   },
@@ -174,13 +173,13 @@
    "typ": "schwarm",
    "ziel_lufs": -38,
    "pegel_art": "spitzen",
-   "spitze_db": -20.6,
+   "spitze_db": -20.7,
    "begrenzt_db": 0.0,
-   "sekunden": 18.5,
+   "sekunden": 20.5,
    "rufe": 106,
    "aufgeschreckt": 0,
-   "weitenhall_db": -3.4,
-   "probe_ab_s": 377.2,
+   "weitenhall_db": -2.9,
+   "probe_ab_s": 407.3,
    "probe_aktiv": 0.37,
    "probe_abtastwerte": 1323000
   },
@@ -192,100 +191,100 @@
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
    "spitze_db": -2.5,
-   "begrenzt_db": 0.7,
-   "sekunden": 19.5,
-   "probe_ab_s": 47.2,
+   "begrenzt_db": 0.0,
+   "sekunden": 19.1,
+   "probe_ab_s": 77.3,
    "probe_aktiv": 0.35,
    "probe_abtastwerte": 1323000
   },
   {
    "name": "zug",
    "titel": "A flock passes",
-   "text": "Twice in ten minutes a flock of eight to twelve gulls passes 60 to 90 m away – for half a minute you hear it approach, go by calling and fade away: first with the rising wind, later back again.",
+   "text": "Twice in ten minutes a flock of eight to twelve gulls flies along the coast in front of you, 45 to 75 m away – from right to left, later back from left to right. For half a minute you hear it come, pass calling and fade; its chatter comes from several places across the flock.",
    "typ": "zug",
    "ziel_lufs": -30,
    "pegel_art": "spitzen",
-   "spitze_db": -15.7,
+   "spitze_db": -15.5,
    "begrenzt_db": 0.0,
-   "sekunden": 29.0,
+   "sekunden": 66.5,
    "zuege": [
     105,
     515
    ],
-   "probe_ab_s": 54.7,
-   "probe_aktiv": 0.95,
+   "probe_ab_s": 84.3,
+   "probe_aktiv": 0.9,
    "probe_abtastwerte": 1764000
   },
   {
    "name": "gaense",
    "titel": "Geese passing",
-   "text": "Twice, high and far out, a skein of geese crosses the water – their calls carry for a long time, slowly pass and fade; later the skein comes back.",
+   "text": "Twice a skein of geese flies along the coast in front of you, high and 60 to 100 m away – first from right to left, later back. Their calls carry for a long time and come from all along the skein.",
    "typ": "zug",
    "ziel_lufs": -31,
    "pegel_art": "spitzen",
-   "spitze_db": -14.5,
+   "spitze_db": -16.3,
    "begrenzt_db": 0.0,
-   "sekunden": 31.4,
+   "sekunden": 75.0,
    "zuege": [
     40,
     440
    ],
-   "probe_ab_s": 389.2,
-   "probe_aktiv": 1.0,
+   "probe_ab_s": 19.8,
+   "probe_aktiv": 0.96,
    "probe_abtastwerte": 1764000
   }
  ],
  "drehbuch": [
   [
-   9.7,
-   "Far out, a skein of geese passes; you can hear their calls for a long time."
+   39.8,
+   "A skein of geese crosses in front of you; you can hear their calls for a long time."
   ],
   [
-   74.7,
-   "A flock of gulls passes with the rising wind."
+   104.8,
+   "A flock of gulls flies past along the coast as the wind rises."
   ],
   [
-   104.7,
+   134.8,
    "The wind freshens; the sail fills more often."
   ],
   [
-   209.7,
+   239.8,
    "The waves grow, the hull is hit harder; the gulls call more excitedly, their cries blown about by the wind."
   ],
   [
-   305.7,
+   335.8,
    "Heavy sea: breakers crash against the rock one after another."
   ],
   [
-   409.7,
+   439.8,
    "The geese fly back."
   ],
   [
-   419.7,
+   449.8,
    "The wind drops and the sea settles."
   ],
   [
-   484.7,
+   514.8,
    "The flock returns."
   ],
   [
-   503.7,
+   533.8,
    "Calm again – the gulls circle lazily once more."
   ],
   [
-   569.7,
+   599.8,
    "Calm sea; the gulls circle at ease."
   ]
  ],
- "start_verschoben_s": 30.29,
- "start_abtastwerte": 1335841,
- "begrenzer_max_db": 3.8,
+ "start_verschoben_s": 0.2,
+ "start_abtastwerte": 8998,
+ "begrenzer_max_db": 4.2,
  "lufs": -21.0,
  "naht": {
   "sprung_naht": 0.0091,
-  "sprung_typisch_999": 0.0771,
-  "pegelsprung_naht_db": 0.36,
-  "pegelsprung_typisch_95_db": 2.17
+  "sprung_typisch_999": 0.0772,
+  "pegelsprung_naht_db": 0.45,
+  "pegelsprung_typisch_95_db": 2.18
  },
  "wiederholung": {
   "wellen": {
@@ -309,7 +308,7 @@
    "haeufigster": 6
   },
   "ueberflug": {
-   "ereignisse": 76,
+   "ereignisse": 71,
    "verschiedene": 43,
    "haeufigster": 5
   },
@@ -324,12 +323,12 @@
    "haeufigster": 2
   },
   "zug": {
-   "ereignisse": 108,
-   "verschiedene": 106,
+   "ereignisse": 102,
+   "verschiedene": 100,
    "haeufigster": 2
   },
   "gaense": {
-   "ereignisse": 106,
+   "ereignisse": 103,
    "verschiedene": 87,
    "haeufigster": 2
   }
