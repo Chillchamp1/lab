@@ -999,6 +999,31 @@
       },
       "obertoene": 0.3
      }
+    },
+    {
+     "quelle": "brecher_ufer",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
     }
    ],
    "text": "Einzelne Wellenkämme in 7 bis 32 m Entfernung, jeder an einer anderen Stelle; sie treiben mit dem Wind. Brechen sie mit viel Kraft, grollt es tief.",
@@ -1911,8 +1936,8 @@
      "hochpass": 700,
      "entrauschen": 12,
      "zerlegen": {
-      "schwelle_db": 10,
-      "luecke": 0.3,
+      "schwelle_db": 7,
+      "luecke": 0.2,
       "min_dauer": 0.25,
       "max_dauer": 5.0,
       "nachlauf": 0.15
@@ -1928,8 +1953,8 @@
      "hochpass": 700,
      "entrauschen": 12,
      "zerlegen": {
-      "schwelle_db": 10,
-      "luecke": 0.3,
+      "schwelle_db": 7,
+      "luecke": 0.2,
       "min_dauer": 0.25,
       "max_dauer": 5.0,
       "nachlauf": 0.15
@@ -2173,8 +2198,8 @@
      "hochpass": 700,
      "entrauschen": 12,
      "zerlegen": {
-      "schwelle_db": 10,
-      "luecke": 0.3,
+      "schwelle_db": 7,
+      "luecke": 0.2,
       "min_dauer": 0.25,
       "max_dauer": 5.0,
       "nachlauf": 0.15
@@ -2190,8 +2215,8 @@
      "hochpass": 700,
      "entrauschen": 12,
      "zerlegen": {
-      "schwelle_db": 10,
-      "luecke": 0.3,
+      "schwelle_db": 7,
+      "luecke": 0.2,
       "min_dauer": 0.25,
       "max_dauer": 5.0,
       "nachlauf": 0.15
@@ -2438,8 +2463,8 @@
      "hochpass": 700,
      "entrauschen": 12,
      "zerlegen": {
-      "schwelle_db": 10,
-      "luecke": 0.3,
+      "schwelle_db": 7,
+      "luecke": 0.2,
       "min_dauer": 0.25,
       "max_dauer": 5.0,
       "nachlauf": 0.15
@@ -2455,8 +2480,8 @@
      "hochpass": 700,
      "entrauschen": 12,
      "zerlegen": {
-      "schwelle_db": 10,
-      "luecke": 0.3,
+      "schwelle_db": 7,
+      "luecke": 0.2,
       "min_dauer": 0.25,
       "max_dauer": 5.0,
       "nachlauf": 0.15
@@ -2487,7 +2512,7 @@
    ],
    "radius_streuung": 0.05,
    "pruefung": {
-    "tempo_max": 20.0
+    "tempo_max": 22.0
    },
    "richtwirkung": {
     "db": 8,
@@ -2629,11 +2654,11 @@
   "voll_m": 150,
   "exponent": 0.7,
   "bezug_m": 30,
-  "pegel_db": -12,
+  "pegel_db": -18,
   "nachhall": {
-   "t60_tief": 3.0,
-   "t60_hoch": 0.8,
-   "dauer": 4.5,
+   "t60_tief": 1.8,
+   "t60_hoch": 0.6,
+   "dauer": 2.6,
    "verzug": 0.08
   },
   "gruppen": [
@@ -2641,7 +2666,8 @@
    "moewen_weit",
    "moewen_fern",
    "ueberflug"
-  ]
+  ],
+  "max_faktor": 2.5
  },
  "flimmern": {
   "ab_m": 30,

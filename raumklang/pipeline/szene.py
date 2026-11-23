@@ -296,7 +296,10 @@ def rendere_quelle(kx, spur, bus, sig, t0, ort_fn, aussen=True, pegel=1.0, hall=
             wege[0] = dict(w0, gang=zus.astype(np.float32) if w0['gang'] is None else (w0['gang'] * zus).astype(np.float32))
     if gilt(kx.weite) and kx.bus_weite is not None:
         w = kx.weite
-        gew2 = np.clip((r - w['ab_m']) / (w['voll_m'] - w['ab_m']), 0, 1) ** w.get('exponent', 0.7) * (r / w.get('bezug_m', 30.0))
+        # der Hallanteil bleibt mit der Entfernung gleich, der Direktschall fällt – aber nur bis zu einer
+        # Obergrenze, sonst bestehen sehr ferne Quellen fast nur noch aus Hall (klang wie vor einer Klippe)
+        gew2 = (np.clip((r - w['ab_m']) / (w['voll_m'] - w['ab_m']), 0, 1) ** w.get('exponent', 0.7)
+                * np.minimum(r / w.get('bezug_m', 30.0), w.get('max_faktor', 1e9)))
         if gew2.max() > 0:
             bus2 = kx.bus_weite
     if gilt(kx.flimmern):
@@ -524,8 +527,23 @@ def gen_schwarm(kx, g, spur, bus):
     ev = kx.bib.ereignisse(g['sammlung'])
     quellen = sorted({e['quelle'] for e in ev})
     voegel = [Vogel(rng, kx.dauer, g) for _ in range(g.get('anzahl', 7))]
-    stimmen = [quellen[i % len(quellen)] for i in rng.permutation(len(voegel))]
-    nach_stimme = {q: [e for e in ev if e['quelle'] == q] for q in quellen}
+    # Jedes Tier hat eine Stimme. Aufnahmen mit wenigen Ausschnitten werden zu einer Stimme
+    # zusammengelegt – sonst wiederholt ein Tier in zehn Minuten dreißigmal dieselben zwei Rufe.
+    je_quelle = {q: [e for e in ev if e['quelle'] == q] for q in quellen}
+    mindest = g.get('stimme_min_ausschnitte', 8)
+    becken, offen = [], []
+    for q in sorted(quellen, key=lambda q: -len(je_quelle[q])):
+        offen += je_quelle[q]
+        if len(offen) >= mindest:
+            becken.append(offen)
+            offen = []
+    if offen:
+        if becken:
+            becken[-1] = becken[-1] + offen
+        else:
+            becken.append(offen)
+    stimmen = [int(i % len(becken)) for i in rng.permutation(len(voegel))]
+    nach_stimme = dict(enumerate(becken))
     t = rng.uniform(0.5, 3)
     n_rufe = 0
     sn = g.get('stille_nach')         # Ereigniskette: nach einem Gebrüll o. Ä. verstummen die Tiere kurz
@@ -1389,8 +1407,13 @@ def main():
             for e in range(2):
                 x[e] += kreisfaltung(bus.x[0], hall_ir[e]).astype(np.float32) * 10 ** (sz.get('nachhall_pegel_db', -16) / 20)
         if kx.bus_weite is not None and np.abs(kx.bus_weite.x).max() > 0:
+            e_direkt = float((x.astype(np.float64) ** 2).sum())
+            e_weite = 0.0
             for e in range(2):
-                x[e] += kreisfaltung(kx.bus_weite.x[0], weite_ir[e]).astype(np.float32) * 10 ** (kx.weite.get('pegel_db', -14) / 20)
+                wz = kreisfaltung(kx.bus_weite.x[0], weite_ir[e]).astype(np.float32) * 10 ** (kx.weite.get('pegel_db', -14) / 20)
+                e_weite += float((wz.astype(np.float64) ** 2).sum())
+                x[e] += wz
+            info['weitenhall_db'] = round(float(10 * np.log10(e_weite / max(e_direkt, 1e-20) + 1e-20)), 1)     # Hallenergie relativ zum Rest der Gruppe
         art = g.get('pegel_art', 'integriert')
         ist = lautheit(x, art)
         x *= 10 ** ((g['ziel_lufs'] - ist) / 20)

@@ -69,13 +69,70 @@ def main():
     for (t1, g1, *_), (t2, g2, *_) in zip(nah, nah[1:]):
         if t2 - t1 < 8 and g1 != g2:
             warnungen.append(f"zwei Höhepunkte dicht beieinander: {g1} {t1:.0f} s und {g2} {t2:.0f} s")
+    # ---- Komposition: wohin zieht die Szene die Aufmerksamkeit? Nur Einzelereignisse (keine Flächen,
+    # keine Echos). Pegel je Ereignis geschätzt aus Bezugspegel und Entfernung, je Gruppe so verschoben,
+    # dass ihre lauten Ereignisse beim Zielpegel der Gruppe liegen.
+    F = 10.0
+    nf = int(np.ceil(D / F))
+    links, rechts, zonen = np.zeros(nf), np.zeros(nf), np.zeros((nf, 3))
+    for gr in k['gruppen']:
+        qs = [q for q in k['quellen'] if q['g'] == gr['name'] and q.get('art') != 'echo' and q['dt'] < 1]
+        if not qs or gr['typ'] == 'bett' or gr.get('ziel_lufs') is None:
+            continue
+        roh = []
+        for q in qs:
+            p = np.array(q['p'], float)
+            d = np.maximum(np.linalg.norm(p - kopf, axis=1), 0.3)
+            i = int(np.argmin(d))
+            roh.append((q, p[i], d[i], q.get('pegel', 0.0) - 20 * np.log10(d[i])))
+        bezug = np.percentile([r[3] for r in roh], 95)
+        for q, p, d, x in roh:
+            e = 10 ** ((gr['ziel_lufs'] + x - bezug) / 10) * max(len(q['p']) * q['dt'], 0.3)
+            f = int(((q['t0'] - k['start_s']) % D) // F) % nf
+            seite = (p[1] - kopf[1]) / d                      # +1 ganz links, −1 ganz rechts
+            links[f] += e * (0.5 + 0.5 * seite)
+            rechts[f] += e * (0.5 - 0.5 * seite)
+            zonen[f, 0 if d < 4 else 1 if d < 30 else 2] += e
+    ges = links + rechts
+    komposition = None
+    if ges.sum() > 0:
+        anteil_l = float(links.sum() / ges.sum())
+        dom = np.where(ges > 0, (links - rechts) / np.maximum(ges, 1e-30), 0)
+        lauf, laengste = 0, 0
+        for v in np.r_[dom, dom]:                              # über die Schleifennaht hinweg
+            lauf = lauf + 1 if abs(v) > 0.6 and np.sign(v) == np.sign(dom[np.argmax(np.abs(dom))]) else 0
+            laengste = max(laengste, lauf)
+        zone = np.argmax(zonen, 1)
+        zanteil = [float((zone[ges > 0] == j).mean()) for j in range(3)]
+        seite_f = np.sign(np.where(np.abs(dom) > 0.2, dom, 0))
+        wechsel = int((np.diff(zone) != 0).sum() + (np.diff(seite_f) != 0).sum())
+        komposition = dict(links_prozent=round(100 * anteil_l), laengste_einseitig_s=int(min(laengste, nf) * F),
+                           fenster_nah_mittel_fern=[round(100 * z) for z in zanteil], fokuswechsel_je_minute=round(wechsel / (D / 60), 1))
+        if not 0.35 <= anteil_l <= 0.65:
+            warnungen.append(f"Schieflage: {100 * anteil_l:.0f} % der Ereignisenergie kommt von links")
+        if komposition['laengste_einseitig_s'] > 90:
+            warnungen.append(f"{komposition['laengste_einseitig_s']} s am Stück fast nur eine Seite")
+        if max(zanteil) > 0.85:
+            warnungen.append(f"eine Entfernungszone beherrscht {100 * max(zanteil):.0f} % der Zeit – wenig Wechsel zwischen nah und fern")
+    # ---- Wiederholung: zu wenig Material für die Zahl der Ereignisse?
+    for n, w in (k.get('wiederholung') or {}).items():
+        if w['haeufigster'] > max(8, D / 45) and not next((g_ for g_ in sz.get('gruppen', []) if g_['name'] == n), {}).get('wiederholung_egal'):
+            warnungen.append(f"{n}: {w['ereignisse']} Ereignisse aus nur {w['verschiedene']} Ausschnitten, einer davon {w['haeufigster']}-mal")
     if '--json' in sys.argv:
-        print(json.dumps(dict(gruppen=aus, selten=selten, warnungen=warnungen), ensure_ascii=False, indent=1))
+        print(json.dumps(dict(gruppen=aus, selten=selten, komposition=komposition, warnungen=warnungen), ensure_ascii=False, indent=1))
         return
     print(f"{k['titel']} – {D:.0f} s, {len(k['quellen'])} Quellen")
     for z in aus:
         print(f"  {z['gruppe']:16s} {z['quellen']:4d} Quellen  Entfernung {z['entf_min']:7.1f} / {z['entf_median']:7.1f} / {z['entf_max']:8.1f} m"
               f"  Tempo bis {z['tempo_max']:5.1f} m/s  Höhe {z['hoehe'][0]}–{z['hoehe'][1]} m")
+    if komposition:
+        z = komposition['fenster_nah_mittel_fern']
+        print(f"Komposition (Einzelereignisse, 10-s-Fenster): links {komposition['links_prozent']} % / rechts {100 - komposition['links_prozent']} %; "
+              f"längste einseitige Strecke {komposition['laengste_einseitig_s']} s; vorn liegt nah {z[0]} % / mittel {z[1]} % / fern {z[2]} % der Zeit; "
+              f"{komposition['fokuswechsel_je_minute']} Fokuswechsel je Minute")
+    w = k.get('wiederholung') or {}
+    if w:
+        print('Wiederholung (Ereignisse / verschiedene Ausschnitte / häufigster):', '; '.join(f"{n} {v['ereignisse']}/{v['verschiedene']}/{v['haeufigster']}" for n, v in w.items()))
     print('Seltene Ereignisse (Dateizeit, nächster Punkt):')
     for t, g, d, r in selten:
         print(f"  {int(t // 60)}:{int(t % 60):02d}  {g:14s} {d:7.1f} m  {r}")

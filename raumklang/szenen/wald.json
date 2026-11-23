@@ -29,7 +29,7 @@
    ],
    "hoehe_m": 14.0,
    "reflexion": 0.6,
-   "pegel_db": 0.0
+   "pegel_db": 5.0
   }
  },
  "nachhall": {
@@ -382,7 +382,8 @@
      1.5
     ]
    },
-   "streuung": false
+   "streuung": false,
+   "wiederholung_egal": true
   },
   {
    "name": "tropfen_pfuetze",
@@ -558,7 +559,8 @@
      1.6
     ]
    },
-   "streuung": false
+   "streuung": false,
+   "wiederholung_egal": true
   },
   {
    "name": "rinnsal",
