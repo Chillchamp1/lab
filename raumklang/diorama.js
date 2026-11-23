@@ -79,12 +79,12 @@ function vogel(farbe, fluegelFarbe, schnabel, gross = 1) {
   return g;
 }
 
-function figur() {      // die liegende Figur im Boot, mit Kopfhörern
+function figur() {      // die liegende Figur, mit Kopfhörern: Kopf im Ursprung, Füße nach +x
   const g = new THREE.Group();
-  const kissen = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.22, 0.75), toon(F.kissen)); kissen.position.set(-2.42, 0.42, 0); g.add(kissen);
-  const leib = new THREE.Mesh(new THREE.CapsuleGeometry(0.2, 0.95, 3, 7), toon(F.hemd)); leib.rotation.z = Math.PI / 2 - 0.18; leib.position.set(-1.55, 0.47, 0); g.add(leib);
-  const beine = new THREE.Mesh(new THREE.CapsuleGeometry(0.15, 0.7, 3, 6), toon(0x5d6f9e)); beine.rotation.z = Math.PI / 2; beine.position.set(-0.6, 0.33, 0); g.add(beine);
-  const kopf = new THREE.Mesh(new THREE.SphereGeometry(0.21, 10, 8), toon(F.haut)); kopf.position.set(-2.22, 0.72, 0); g.add(kopf);
+  const kissen = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.3, 0.75), toon(F.kissen)); kissen.position.set(-0.22, -0.12, 0); kissen.rotation.z = -0.35; g.add(kissen);
+  const leib = new THREE.Mesh(new THREE.CapsuleGeometry(0.2, 0.75, 3, 7), toon(F.hemd)); leib.rotation.z = Math.PI / 2 - 0.25; leib.position.set(0.6, -0.22, 0); g.add(leib);
+  const beine = new THREE.Mesh(new THREE.CapsuleGeometry(0.15, 0.55, 3, 6), toon(0x5d6f9e)); beine.rotation.z = Math.PI / 2 + 0.25; beine.position.set(1.3, -0.25, 0); g.add(beine);
+  const kopf = new THREE.Mesh(new THREE.SphereGeometry(0.21, 10, 8), toon(F.haut)); kopf.position.set(0, 0, 0); g.add(kopf);
   const haare = new THREE.Mesh(new THREE.SphereGeometry(0.215, 10, 8, 0, Math.PI * 2, 0, Math.PI / 2), toon(F.haare)); haare.rotation.z = Math.PI / 2 + 0.5; haare.position.copy(kopf.position).add(new THREE.Vector3(-0.02, 0.02, 0)); g.add(haare);
   const buegel = new THREE.Mesh(new THREE.TorusGeometry(0.23, 0.03, 5, 12, Math.PI), toon(F.kopfhoerer)); buegel.position.copy(kopf.position); buegel.rotation.y = Math.PI / 2; buegel.rotation.x = -0.5; g.add(buegel);
   for (const s of [-1, 1]) {
@@ -112,7 +112,6 @@ function boot() {
   for (let i = 0; i < sp.count; i++) { const x = sp.getX(i), y = sp.getY(i); sp.setX(i, x * (1 - 0.82 * y / 3.3)); }  // dreieckig
   const segel = new THREE.Mesh(sg, toon(F.segel, { side: THREE.DoubleSide })); segel.position.set(0.95, 0.75, 0); g.add(segel);
   g.userData.segel = segel; g.userData.segelRuhe = Float32Array.from(sp.array);
-  g.add(figur());
   return g;
 }
 
@@ -149,8 +148,16 @@ export function starteDiorama(canvas, K, holeZeit) {
 
   // Kamera: isometrisch von schräg hinten rechts oben, Bug zeigt nach rechts oben
   const kamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 220);
-  kamera.position.set(-44, 52, 56); kamera.lookAt(0, 0, 0);
-  const SICHT = 21;           // halbe sichtbare Höhe in Einheiten (Hochformat: halbe Breite)
+  // Blickrichtung des Hörers (waagerecht): Bootsbezug (cos a, sin a) → three (cos a, 0, −sin a).
+  // Die Kamera schaut von schräg oben in diese Richtung – oben im Bild ist, wohin der Hörer schaut.
+  const liegt = THREE.MathUtils.degToRad(K.liegt_grad || 0), KP = K.kopf || [0, 0, 0.5];
+  const blick3 = new THREE.Vector3(Math.cos(liegt), 0, -Math.sin(liegt));
+  const kopf3 = new THREE.Vector3(KP[0], 0, -KP[1]);
+  const mitte = kopf3.clone().addScaledVector(blick3, 3);
+  const NEIGUNG = THREE.MathUtils.degToRad(52), ABST = 90;
+  kamera.position.copy(mitte).addScaledVector(blick3, -ABST * Math.cos(NEIGUNG)).add(new THREE.Vector3(0, ABST * Math.sin(NEIGUNG), 0));
+  kamera.lookAt(mitte);
+  const SICHT = 23;           // halbe sichtbare Höhe in Metern (Hochformat: halbe Breite)
 
   // Wasser
   const wg = new THREE.PlaneGeometry(150, 150, 56, 56); wg.rotateX(-Math.PI / 2);
@@ -160,10 +167,10 @@ export function starteDiorama(canvas, K, holeZeit) {
   const welle = (x, z, t) => 0.3 * Math.sin(0.22 * x + 1.0 * t) + 0.22 * Math.sin(0.3 * z - 0.75 * t) + 0.1 * Math.sin(0.55 * (x + z) + 1.6 * t);
 
   const b = boot(); szene.add(b);
+  const fig = figur(); fig.position.set(KP[0], KP[2], -KP[1]); fig.rotation.y = liegt; b.add(fig);
   const felsGr = fels(); felsGr.scale.setScalar(2.0); szene.add(felsGr);
   const insel = fels(); insel.scale.setScalar(2.6); szene.add(insel);      // Felsen der Möwenkolonie, weit draußen
   const rnd = (() => { let s = 7; return () => (s = (s * 16807) % 2147483647) / 2147483647; })();
-  const wolken = [0, 1, 2, 3].map(i => { const w = wolke(rnd); w.scale.setScalar(2.2); w.position.set(-50 + i * 30, 18 + rnd() * 4, -40 + rnd() * 70); szene.add(w); return w; });
 
   // ---------- Daten aufbereiten
   const nachGruppe = n => K.quellen.filter(q => q.g === n);
@@ -202,9 +209,12 @@ export function starteDiorama(canvas, K, holeZeit) {
   const ruecken = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.5, 0.5, 1, 7).rotateZ(Math.PI / 2),
     new THREE.MeshLambertMaterial({ color: F.wasserHell, flatShading: true }), MAX_RUECKEN);
   ruecken.instanceMatrix.setUsage(THREE.DynamicDrawUsage); szene.add(ruecken);
-  const KOPF = [-2.3, 0];
+  const KOPF = K.kopf ? [K.kopf[0], K.kopf[1]] : [0, 0];
   // Querrichtung zur Hörrichtung: entlang dieser Linie verteilt der Renderer eine breite Quelle
   function quer(p) { const vx = p[0] - KOPF[0], vy = p[1] - KOPF[1], l = Math.hypot(vx, vy) || 1; return [-vy / l, vx / l]; }
+  // Längsachse einer breiten Quelle: Wellenkämme liegen quer zur Windrichtung (Feld a der Karte);
+  // ohne Angabe quer zur Hörrichtung, so wie der Renderer sie dann verteilt
+  const achse = (q, p) => q.a || quer(p);
   const breite = q => q.b || (q.g === 'wellen' ? 5 + 9 * zufall(q.t0) : q.g === 'felsen' ? 4 + 3 * zufall(q.t0) : 0);
 
   // Schallringe: um jede Quelle, die gerade klingt, laufen helle Kreise nach außen (zur Kamera gedreht)
@@ -220,37 +230,10 @@ export function starteDiorama(canvas, K, holeZeit) {
   const ringQ = K.quellen.filter(q => !STILL.has(q.g));
   const ringFarbe = new THREE.Color();
 
-  // ---------- Tilt-Shift: Szene in ein Bild rendern, dann oben und unten weichzeichnen
-  const ziel = new THREE.WebGLRenderTarget(4, 4, { depthBuffer: true });
-  const nachMat = new THREE.ShaderMaterial({
-    uniforms: { bild: { value: ziel.texture }, px: { value: new THREE.Vector2() }, fokus: { value: 0.5 } },
-    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
-    fragmentShader: `
-      uniform sampler2D bild; uniform vec2 px; uniform float fokus; varying vec2 vUv;
-      vec3 t(vec2 o){ return texture2D(bild, vUv + o).rgb; }
-      void main(){
-        float r = smoothstep(0.13, 0.48, abs(vUv.y - fokus)) * 6.5;
-        vec2 o = px * r;
-        vec3 c = t(vec2(0.0)) * 2.0;
-        c += t(vec2( 1.0, 0.0)*o) + t(vec2(-1.0, 0.0)*o) + t(vec2(0.0, 1.0)*o) + t(vec2(0.0,-1.0)*o);
-        c += t(vec2( 0.7, 0.7)*o) + t(vec2(-0.7, 0.7)*o) + t(vec2(0.7,-0.7)*o) + t(vec2(-0.7,-0.7)*o);
-        c += t(vec2( 1.9, 0.6)*o) + t(vec2(-1.9,-0.6)*o) + t(vec2(0.6,-1.9)*o) + t(vec2(-0.6, 1.9)*o);
-        c /= 14.0;
-        c = mix(c, c * vec3(1.05, 1.0, 0.93), 0.4);                       // warm, gemütlich
-        float v = smoothstep(0.95, 0.35, length(vUv - 0.5)); c *= mix(0.9, 1.0, v);   // sanfte Vignette
-        gl_FragColor = vec4(c, 1.0);
-      }`,
-    depthTest: false, depthWrite: false,
-  });
-  const nachSzene = new THREE.Scene(); nachSzene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), nachMat));
-  const nachKamera = new THREE.Camera();
-
   function groesse() {
     const w = canvas.clientWidth || 300, h = canvas.clientHeight || 300;
     const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     renderer.setPixelRatio(dpr); renderer.setSize(w, h, false);
-    ziel.setSize(Math.round(w * dpr), Math.round(h * dpr));
-    nachMat.uniforms.px.value.set(1 / (w * dpr), 1 / (h * dpr));
     const asp = w / h, hh = asp < 1 ? SICHT / asp : SICHT;
     kamera.left = -hh * asp; kamera.right = hh * asp; kamera.top = hh; kamera.bottom = -hh; kamera.updateProjectionMatrix();
   }
@@ -292,7 +275,6 @@ export function starteDiorama(canvas, K, holeZeit) {
       sp.setZ(i, 0.18 * Math.sin(Math.PI * Math.min(x / 1.7, 1)) * (0.6 + 0.4 * Math.sin(uhr * 1.3 + y * 0.8)));
     }
     sp.needsUpdate = true;
-    for (const w of wolken) { w.position.x += dt * 0.6; if (w.position.x > 70) w.position.x = -70; }
 
     // Fels und Kolonie wandern mit der langsamen Drehung des Boots
     const fp = spurBei(felsSpur, ts);
@@ -325,7 +307,7 @@ export function starteDiorama(canvas, K, holeZeit) {
       const x = imKreis(K, ts, q.t0 - 0.8, q.ende + 0.8); if (x === null || nr_k >= MAX_RUECKEN) continue;
       const p = ort(K, q, Math.min(Math.max(x, q.t0), q.ende)); if (!p) continue;
       const u = (x - q.t0 + 0.8) / (q.ende - q.t0 + 1.6), h = Math.sin(Math.PI * u);
-      const w = breite(q), [tx, ty] = quer(p);
+      const w = breite(q), [tx, ty] = achse(q, p);
       stauche([p[0], p[1], 0], v4);
       const ry = Math.atan2(ty, tx);            // three: Drehung um die Hochachse, damit der Rücken entlang (tx, -ty) liegt
       m4.compose(v4.clone().setY(welle(v4.x, v4.z, uhr) - 0.4 + 0.3 * h), qn.setFromEuler(eul.set(0, ry, 0)), sc.set(w, 0.7 * h + 0.05, 2.4));
@@ -398,7 +380,7 @@ export function starteDiorama(canvas, K, holeZeit) {
       const gr = RING[q.g] || 1.2, alter = x - q.t0, flach = FLACH.has(q.g);
       const huelle = Math.min(1, alter / 0.15, (q.ende + 0.3 - x) / 0.5);
       // breite Quelle: Ringe an mehreren Stellen entlang der Front (wie die Teilquellen im Renderer)
-      const w = breite(q), nt = w > 2 ? Math.min(5, Math.max(2, Math.round(w / 3))) : 1, [tx, ty] = quer(p);
+      const w = breite(q), nt = w > 2 ? Math.min(5, Math.max(2, Math.round(w / 3))) : 1, [tx, ty] = achse(q, p);
       for (let j = 0; j < nt && nr < MAX_RINGE - 2; j++) {
         const s_ = nt > 1 ? (j / (nt - 1) - 0.5) * w : 0;
         v4.set(v3.x + tx * s_, flach ? Math.max(v3.y, 0.35) : v3.y, v3.z - ty * s_);
@@ -413,8 +395,7 @@ export function starteDiorama(canvas, K, holeZeit) {
     }
     ringe.count = nr; ringe.instanceMatrix.needsUpdate = true; if (ringe.instanceColor) ringe.instanceColor.needsUpdate = true;
 
-    renderer.setRenderTarget(ziel); renderer.render(szene, kamera);
-    renderer.setRenderTarget(null); renderer.render(nachSzene, nachKamera);
+    renderer.render(szene, kamera);
   }
   requestAnimationFrame(bild);
   return {

@@ -11,8 +11,8 @@
   "bordkante": 0.8,
   "boden": 0.15,
   "kopf": [
-   -2.3,
-   0.0,
+   -1.0,
+   0.62,
    0.58
   ],
   "bewegung": {
@@ -23,7 +23,8 @@
    "hub_m": 0.18,
    "hub_periode": 6.0,
    "gier_grad": 20
-  }
+  },
+  "liegt_grad": -90
  },
  "nachhall": {
   "t60_tief": 0.35,
@@ -1026,7 +1027,7 @@
      }
     }
    ],
-   "text": "Single wave crests 7 to 32 m away, each in a different place, drifting with the wind. When one breaks with real force, there is a deep rumble.",
+   "text": "Wave crests 7 to 32 m away, running with the wind in long parallel lines – each crest is several metres wide, and its sound comes from along the whole front. When one breaks with real force, there is a deep rumble.",
    "wucht_pegel": 0.15,
    "wucht_exponent": 2.0,
    "ausreisser_wahrsch": 0.08,
@@ -1051,7 +1052,8 @@
     14
    ],
    "meldet": "welle",
-   "melde_ab": 1.6
+   "melde_ab": 1.6,
+   "breite_achse_grad": 290
   },
   {
    "name": "rumpf",
@@ -1970,13 +1972,18 @@
      0.48
     ],
     [
-     -1.9,
-     0.78,
+     -1.35,
+     0.88,
      0.4
     ],
     [
-     -1.9,
-     -0.78,
+     -0.6,
+     0.9,
+     0.4
+    ],
+    [
+     -0.9,
+     -0.88,
      0.4
     ],
     [
@@ -2018,7 +2025,7 @@
    "ziel_lufs": -33,
    "pegel_art": "spitzen",
    "hall": 0.8,
-   "text": "The sail hangs slack on the mast in front of you, beyond your feet. In a gust it catches the wind: real cloth flutter swells, the canvas fills with a soft thump and collapses again.",
+   "text": "The sail hangs slack on the mast, ahead and to your left. In a gust it catches the wind: real cloth flutter swells, the canvas fills with a soft thump and collapses again.",
    "sammlung": [
     {
      "quelle": "esc_3-117504-A"
@@ -3842,7 +3849,7 @@
    8
   ]
  },
- "text": "You lie in an open wooden sailing boat, a good six metres long – at the stern on cushions, your head propped up against the aft thwart, feet towards the bow, safely below the gunwale. Gulls circle and dart over you, waves all around, water knocks hollow against the planks, the boat creaks, and now and then the wind catches the slack sail.",
+ "text": "You lie across an open wooden sailing boat, a good six metres long – on cushions, your head propped up against the side, feet towards the other side, the bow to your left, safely below the gunwale. Gulls circle and dart over you, waves roll by in long lines, water knocks hollow against the planks right behind your head, the boat creaks, and now and then the wind catches the slack sail.",
  "weite": {
   "ab_m": 25,
   "voll_m": 150,

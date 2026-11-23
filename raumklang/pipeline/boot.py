@@ -41,7 +41,7 @@ class Boot:
         self.rand = cfg.get('bordkante', 0.42)
         self.boden = cfg.get('boden', -0.05)
         self.kopf = np.array(cfg.get('kopf', [-0.9, 0.08, 0.17]), float)
-        self.basis = hoerer_basis(cfg.get('blick', 55.0))
+        self.basis = hoerer_basis(cfg.get('blick', 55.0), cfg.get('liegt_grad', 0.0))   # liegt_grad: quer im Boot = −90
         self.ohr = cfg.get('ohrabstand', 0.085)
         self.wand_r = cfg.get('wand_reflexion', 0.45)
         self.streu = {n: streukern(saat * 10 + i) for i, n in enumerate(['wand1.0', 'wand-1.0', 'boden', 'wasser'])}
@@ -137,7 +137,7 @@ class Boot:
         richt = np.where(verdeckt[:, None], r - k, v)
         ohr = None
         if entf.min() < 2.0:
-            links = np.array([0, self.ohr, 0])
+            links = self.basis[1] * self.ohr          # Ohrachse im Bootsbezug (auch wenn der Hörer quer liegt)
             dl = np.linalg.norm(p - (k + links), axis=1)
             dr = np.linalg.norm(p - (k - links), axis=1)
             ohr = np.clip(np.stack([entf / dl, entf / dr], 1), 0.6, 1.8)

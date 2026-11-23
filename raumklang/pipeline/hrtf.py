@@ -167,11 +167,12 @@ class HRTF:
         return H
 
 
-def hoerer_basis(blick_grad):
+def hoerer_basis(blick_grad, liegt_grad=0.0):
     """Kopfachsen (Blick, links, Scheitel) im Bezug der Unterlage (x = Füße, y = links, z = oben)
-    für einen Liegenden, dessen Blick blick_grad über der Waagerechten steht (90 = flach, 0 = aufrecht)."""
-    b = np.radians(blick_grad)
-    f = np.array([np.cos(b), 0.0, np.sin(b)])
-    l = np.array([0.0, 1.0, 0.0])
+    für einen Liegenden, dessen Blick blick_grad über der Waagerechten steht (90 = flach, 0 = aufrecht).
+    liegt_grad dreht den Liegenden um die Hochachse: 0 = Füße nach +x, −90 = Füße nach −y (rechts)."""
+    b, a = np.radians(blick_grad), np.radians(liegt_grad)
+    f = np.array([np.cos(b) * np.cos(a), np.cos(b) * np.sin(a), np.sin(b)])
+    l = np.array([-np.sin(a), np.cos(a), 0.0])
     u = np.cross(f, l)
     return np.stack([f, l, u])  # Zeilen: Projektion auf Blick, links, Scheitel
