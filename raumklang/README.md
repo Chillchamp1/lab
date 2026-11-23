@@ -34,6 +34,15 @@ python3 pipeline/szene.py szenen/boot.json --proben
 python3 pipeline/seiten.py          # Titel und Text der Szenenseiten (für Link-Vorschauen) nachziehen
 ```
 
+Zwischenspeicher: Jede Klanggruppe wird nach dem Rendern fertig gepegelt unter
+`material/zwischenspeicher/<szene>/` abgelegt (32-Bit, gut 200 MB je 10-Minuten-Spur). Beim
+nächsten Lauf wird nur neu gerechnet, was sich geändert hat – die Beschreibung der Gruppe, die
+gemeinsamen Szenendaten (Boot, Hall, Drehbuch-Kurven, Wetter), die Ereignis-Meldungen, ihr eigener
+Generator, gemeinsamer Code (nicht die anderen Generatoren, nicht das Hauptprogramm) oder die
+Quellenliste; Texte zählen nicht. Der Rest wird nur überlagert, die Mischung ist bitgenau gleich.
+Ändert sich nur eine Gruppe, dauert ein Lauf ein, zwei Minuten statt einer halben Stunde.
+`--neu alle` oder `--neu gruppe1,gruppe2` rechnet trotzdem neu.
+
 ## Seite und Spieler
 
 Die Webseite ist englisch (seit 23.11.2026), die Pipeline und diese Beschreibung bleiben deutsch.

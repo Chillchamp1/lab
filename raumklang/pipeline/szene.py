@@ -1478,6 +1478,40 @@ GENERATOREN = dict(bett=gen_bett, ereignisse=gen_ereignisse, schwarm=gen_schwarm
                    schwebung=gen_schwebung)
 
 
+# ---------------------------------------------------------------- Zwischenspeicher je Spur
+# Jede Klanggruppe wird nach dem Rendern (fertig gepegelt) abgelegt. Beim nächsten Lauf wird nur neu
+# gerechnet, was sich geändert hat: die eigene Beschreibung der Gruppe, die gemeinsamen Szenendaten
+# (Boot, Hall, Drehbuch, Wetter …), die Ereignis-Meldungen, auf die sie reagieren kann, ihr eigener
+# Generator, gemeinsamer Code (alles außer den anderen Generatoren) und die Quellenliste.
+ZWISCHEN_VERSION = 1
+_PIPELINE = Path(__file__).resolve().parent
+
+
+def _code_ohne_fremde_generatoren(eigener):
+    import inspect
+    text = (_PIPELINE / 'szene.py').read_text()
+    for fn in set(GENERATOREN.values()) | {main}:          # Hauptprogramm (Mischen, Proben, Bericht) ändert keine Spur
+        if fn is not eigener:
+            text = text.replace(inspect.getsource(fn), '')
+    for datei in sorted(_PIPELINE.glob('*.py')):
+        if datei.name not in ('szene.py', 'selbsttest.py', 'pruefe_karte.py', 'pruefe_material.py', 'seiten.py', 'melodie.py',
+                              'material_holen.py', 'freesound_suche.py'):
+            text += datei.read_text()
+    return text
+
+
+def gruppen_schluessel(sz, g, i, vorab, weitere):
+    import hashlib
+    ohne_text = lambda d: {k: v for k, v in d.items() if k not in ('titel', 'text', 'gruppen', 'details_titel', 'probe_dauer', 'probe_ab')}
+    szene = ohne_text(sz)
+    if isinstance(szene.get('drehbuch'), dict):           # Drehbuch-Texte ändern keinen Klang, die Kurven schon
+        szene['drehbuch'] = {k: v for k, v in szene['drehbuch'].items() if k != 'text'}
+    teile = dict(v=ZWISCHEN_VERSION, g=ohne_text(g), i=i, szene=szene, vorab=vorab, weitere=weitere,
+                 code=hashlib.sha256(_code_ohne_fremde_generatoren(GENERATOREN[g['typ']]).encode()).hexdigest(),
+                 quellen=hashlib.sha256((WURZEL / 'quellen.json').read_bytes()).hexdigest())
+    return hashlib.sha256(json.dumps(teile, sort_keys=True, ensure_ascii=False, default=str).encode()).hexdigest()
+
+
 # ---------------------------------------------------------------- Pegel und Ausgabe
 def lautheit(x, art='integriert'):
     """LUFS nach ITU-R BS.1770. art='spitzen': 95. Perzentil der 3-s-Kurzzeitlautheit
@@ -1580,6 +1614,8 @@ def main():
     ap.add_argument('--lufs', type=float, help='Ziel-Lautheit der Mischung (überschreibt die Szene)')
     ap.add_argument('--ohne', default='', help='Wirkungen abschalten (für Vergleiche, gleiche Ereignisfolge): breite,richtwirkung,nahfeld,streuung,kette')
     ap.add_argument('--karte', action='store_true', help='nur das Ereignisprotokoll (Szenenkarte) schreiben, ohne Audio – gleiche Ereignisse wie beim Rendern')
+    ap.add_argument('--neu', default='', help='Zwischenspeicher übergehen: alle ("alle") oder diese Gruppen neu rechnen')
+    ap.add_argument('--zwischenspeicher', help='Ordner für die fertigen Spuren (Vorgabe: material/zwischenspeicher/<szene>)')
     ap.add_argument('--drehung', type=float, help='Startpunkt der Schleife in Abtastwerten vorgeben (start_abtastwerte aus dem Bericht der Bezugsfassung; gerundete Sekunden verschieben um Millisekunden)')
     a = ap.parse_args()
 
@@ -1645,10 +1681,49 @@ def main():
             GENERATOREN[g['typ']](kx, g, None, None)
         ZAEHLER.clear()
         print('Vorlauf:', len(vorab), 'Meldungen', dict(collections.Counter(m['art'] for m in vorab)), flush=True)
+    def mache_probe(g, x, eintrag):
+        ab, anteil = probe_fenster(x, g.get('probe_dauer', 30)) if 'probe_ab' not in g else (g['probe_ab'], None)
+        probe = schleifenstueck(x, ab, g.get('probe_dauer', 30))
+        eintrag['probe_ab_s'] = ab                # Szenenzeit; nach dem Verschieben der Schleife in Dateizeit umgerechnet
+        if anteil is not None:
+            eintrag['probe_aktiv'] = round(anteil, 2)
+        probe, _ = begrenzer_kreis(probe * 10 ** (g.get('probe_plus_db', 6) / 20))
+        schreibe(Path(a.aus) / f"{name}_{g['name']}.mp3", probe, '160k')
+        eintrag['probe_abtastwerte'] = int(probe.shape[1])
+
+    zw_ordner = None
+    if not a.karte and not nur:
+        zw_ordner = Path(a.zwischenspeicher) if a.zwischenspeicher else WURZEL / 'material' / 'zwischenspeicher' / name
+        zw_ordner.mkdir(parents=True, exist_ok=True)
+
     for i, g in enumerate(sz['gruppen']):
         if nur and g['name'] not in nur:
             continue
         t0 = time.time()
+        # schon einmal genau so gerechnet? Dann die fertige Spur nehmen (nur überlagern, nicht neu rendern)
+        zw = None
+        if not a.karte and zw_ordner is not None:
+            schl = gruppen_schluessel(sz, g, i, vorab, dict(dauer=dauer, hrtf=Path(a.hrtf).name, ohne=sorted(ohne), stereo=a.stereo))
+            zw = (zw_ordner / f"{g['name']}.npy", zw_ordner / f"{g['name']}.json", schl)
+            neu_alle = a.neu == 'alle' or g['name'] in set(filter(None, a.neu.split(',')))
+            if not neu_alle and zw[0].exists() and zw[1].exists():
+                meta = json.loads(zw[1].read_text())
+                if meta.get('schluessel') == schl:
+                    x = np.load(zw[0]).astype(np.float32)
+                    karte.extend(meta['karte'])
+                    ZAEHLER[g['name']] = collections.Counter(meta['zaehler'])
+                    bib.benutzt.update(meta['benutzt'])
+                    info, weg_g, art = meta['info'], meta['weg_g'], g.get('pegel_art', 'integriert')
+                    summe += x
+                    eintrag = dict(name=g['name'], titel=g.get('titel', g['name']), text=g.get('text', ''), typ=g['typ'], ziel_lufs=g['ziel_lufs'], pegel_art=art,
+                                   spitze_db=round(float(20 * np.log10(np.abs(x).max() + 1e-9)), 1), begrenzt_db=round(weg_g, 1),
+                                   sekunden=round(time.time() - t0, 1), aus_zwischenspeicher=True, **info)
+                    bericht['gruppen'].append(eintrag)
+                    print(eintrag, flush=True)
+                    if a.proben:
+                        mache_probe(g, x, eintrag)
+                    continue
+        n_karte0, benutzt0 = len(karte), set(bib.benutzt)
         kx = kontext(i, g)
         kx.gemeldet = vorab
         spur, bus = Spur(dauer), Spur(dauer, 1)
@@ -1683,15 +1758,13 @@ def main():
                        spitze_db=round(float(20 * np.log10(np.abs(x).max() + 1e-9)), 1), begrenzt_db=round(weg_g, 1), sekunden=round(time.time() - t0, 1), **info)
         bericht['gruppen'].append(eintrag)
         print(eintrag, flush=True)
+        if zw is not None:              # für den nächsten Lauf ablegen
+            np.save(zw[0], x.astype(np.float32))
+            zw[1].write_text(json.dumps(dict(schluessel=zw[2], info=info, weg_g=float(weg_g), karte=karte[n_karte0:],
+                                             zaehler=dict(ZAEHLER.get(g['name'], {})), benutzt=sorted(bib.benutzt - benutzt0)),
+                                        ensure_ascii=False, default=float))
         if a.proben:
-            ab, anteil = probe_fenster(x, g.get('probe_dauer', 30)) if 'probe_ab' not in g else (g['probe_ab'], None)
-            probe = schleifenstueck(x, ab, g.get('probe_dauer', 30))
-            eintrag['probe_ab_s'] = ab                # Szenenzeit; nach dem Verschieben der Schleife in Dateizeit umgerechnet
-            if anteil is not None:
-                eintrag['probe_aktiv'] = round(anteil, 2)
-            probe, _ = begrenzer_kreis(probe * 10 ** (g.get('probe_plus_db', 6) / 20))
-            schreibe(Path(a.aus) / f"{name}_{g['name']}.mp3", probe, '160k')
-            eintrag['probe_abtastwerte'] = int(probe.shape[1])
+            mache_probe(g, x, eintrag)
     def wiederholung():
         """Je Gruppe: wie viele Ereignisse, wie viele verschiedene Ausschnitte, wie oft der häufigste."""
         return {n: dict(ereignisse=int(sum(z.values())), verschiedene=len(z), haeufigster=int(max(z.values())))
