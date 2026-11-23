@@ -3841,10 +3841,10 @@
    "name": "schwebung",
    "typ": "schwebung",
    "titel": "Binaural beat melody",
-   "text": "The gentle E–G harmony that used to hide in one of the sea recordings, transcribed and played as a soft, dark, slowly changing pad with a binaural beat: every tone in your right ear sits exactly 6 Hz above the one in your left ear. The slow 6 Hz pulse you perceive is created by your brain from that difference (theta range, associated with deep relaxation). Works only with headphones.",
+   "text": "The gentle E–G harmony that used to hide in one of the sea recordings, transcribed and played as a soft, dark, slowly changing pad with a binaural beat: every tone in your right ear sits exactly 8 Hz above the one in your left ear. The gentle 8 Hz pulse you perceive is created by your brain from that difference – at the border between theta and alpha, relaxed but not sleepy. Works only with headphones.",
    "ziel_lufs": -35,
    "pegel_art": "integriert",
-   "schwebung_hz": 6.0,
+   "schwebung_hz": 8.0,
    "traeger_hz": [
     180,
     360

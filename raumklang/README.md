@@ -254,7 +254,8 @@ fernen See entfernt, ihre Notenfolge ist mit `pipeline/melodie.py` ausgelesen (t
   Übersprechen würden die Schwebung zerstören; nur mit Kopfhörern wirksam
 - Träger 200–500 Hz (die Noten werden dorthin oktaviert): dort ist die Schwebung am
   deutlichsten, über ~1 kHz verschwindet sie
-- Schwebung 6 Hz (Theta, tiefe Entspannung; 10 Hz klang Benjamin zu hart); weiche Fläche statt
+- Schwebung 8 Hz (Grenze Theta/Alpha: entspannt, aber nicht einschläfernd; 10 Hz klang Benjamin
+  zu hart, 6 Hz zu einschläfernd); weiche Fläche statt
   Melodielinie (gleitende Töne klangen wie eine Sirene): Klangblöcke ≥ 6 s aus tiefer Oktave und
   Grundton (Träger 180–360 Hz), 4 s Überblendung, Tiefpass 800 Hz, langer Hall je Ohr; leise
   (−35 LUFS), sanftes Atmen ±2,5 dB
