@@ -7,7 +7,7 @@ Die Beschreibung nennt Klanggruppen. Jede Gruppe hat einen Typ (siehe GENERATORE
 eine Sammlung von Aufnahmen und einen Zielpegel. Jede Gruppe wird einzeln gerendert,
 auf ihren Zielpegel gebracht und erst dann gemischt.
 """
-import argparse, json, os, subprocess, sys, time
+import argparse, collections, json, os, subprocess, sys, time
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from pathlib import Path
@@ -21,6 +21,7 @@ from kern import FREQ as FREQ_K
 from kern import FS, Spur, rendere_pfad, n_bloecke, blockzeiten, diffuser_nachhall, begrenzer, begrenzer_kreis, kreisfaltung
 from boot import Boot
 import material as mat
+import raumwirkung as rwk
 
 WURZEL = Path(__file__).resolve().parent.parent
 
@@ -141,7 +142,7 @@ class Bibliothek:
                 # Pegel am lautesten 50-ms-Fenster ausrichten
                 h = mat.huelle_db(y, 50).max()
                 fak = 10 ** ((-20 - h) / 20)
-                e = dict(sig=(y * fak).astype(np.float32), quelle=spez['quelle'], **k)
+                e = dict(sig=(y * fak).astype(np.float32), quelle=spez['quelle'], schnitt=f"{spez['quelle']}@{int(a)}", **k)
                 if tief is not None:
                     e['tief'] = (tief * fak).astype(np.float32)
                 aus.append(e)
@@ -157,6 +158,17 @@ class Kontext:
         self.bus_weite = None
         self.flimmern = None     # dict(ab_m, voll_m, db, hz): Luftflimmern ferner Quellen
         self.kurven = {}         # Drehbuch: name -> (tk, werte 0..1), periodisch über die Szenendauer
+        self.g, self.gruppe, self.ohne = {}, '', set()
+        self.melden = None       # Liste, in die Generatoren Ereignisse melden (Vorlauf)
+        self.gemeldet = []       # Meldungen aller Gruppen aus dem Vorlauf: darauf darf reagiert werden
+
+    def melde(self, art, t, ort, staerke=1.0):
+        """Ereigniskette: ein Generator meldet ein Ereignis (Art, Zeit, Ort im Weltbezug, Stärke)."""
+        if self.melden is not None and art:
+            self.melden.append(dict(art=art, t=float(t) % self.dauer, ort=[float(x) for x in ort], staerke=float(staerke), g=self.gruppe))
+
+    def meldungen(self, *arten):
+        return [m for m in self.gemeldet if m['art'] in arten]
 
     def kurve(self, name, t):
         """Wert einer Drehbuch-Kurve (0..1) zur Zeit t; ohne Drehbuch 0,5."""
@@ -226,7 +238,7 @@ def boeenkurve(rng, dauer, cfg, wind=None):
     return t, b
 
 
-def rendere_quelle(kx, spur, bus, sig, t0, ort_fn, aussen=True, pegel=1.0, hall=1.0, spiegelungen=True, pegel_fn=None):
+def rendere_quelle(kx, spur, bus, sig, t0, ort_fn, aussen=True, pegel=1.0, hall=1.0, spiegelungen=True, pegel_fn=None, breite=None):
     """Eine Quelle (Signal ab Zeit t0, Ort als Funktion der Zeit) über alle Schallwege rendern.
     ort_fn(t) liefert Weltkoordinaten (aussen=True) bzw. Bootskoordinaten."""
     nb = n_bloecke(len(sig))
@@ -284,7 +296,10 @@ def rendere_quelle(kx, spur, bus, sig, t0, ort_fn, aussen=True, pegel=1.0, hall=
             wege[0] = dict(w0, gang=zus.astype(np.float32) if w0['gang'] is None else (w0['gang'] * zus).astype(np.float32))
     if gilt(kx.weite) and kx.bus_weite is not None:
         w = kx.weite
-        gew2 = np.clip((r - w['ab_m']) / (w['voll_m'] - w['ab_m']), 0, 1) ** w.get('exponent', 0.7) * (r / w.get('bezug_m', 30.0))
+        # der Hallanteil bleibt mit der Entfernung gleich, der Direktschall fällt – aber nur bis zu einer
+        # Obergrenze, sonst bestehen sehr ferne Quellen fast nur noch aus Hall (klang wie vor einer Klippe)
+        gew2 = (np.clip((r - w['ab_m']) / (w['voll_m'] - w['ab_m']), 0, 1) ** w.get('exponent', 0.7)
+                * np.minimum(r / w.get('bezug_m', 30.0), w.get('max_faktor', 1e9)))
         if gew2.max() > 0:
             bus2 = kx.bus_weite
     if gilt(kx.flimmern):
@@ -309,13 +324,60 @@ def rendere_quelle(kx, spur, bus, sig, t0, ort_fn, aussen=True, pegel=1.0, hall=
             faktor = 10 ** (f['db'] * anteil[:, None] * fl / 20)
             w0 = wege[0]
             wege[0] = dict(w0, ohr=faktor if w0['ohr'] is None else w0['ohr'] * faktor)
+    g = getattr(kx, 'g', None) or {}
+    ohne = getattr(kx, 'ohne', ())
+    if not kx.hrtf.stereo:
+        w0 = wege[0]
+        kopf = np.broadcast_to(kx.boot.kopf, pb.shape)
+        # Nahfeld: unter einem Meter frequenzabhängiger Unterschied zwischen den Ohren (Kugelkopf)
+        if 'nahfeld' not in ohne and w0.get('luft', True) and r.min() < 1.0:
+            wege[0] = w0 = dict(w0, ohr=rwk.nahfeld_ohren(r, w0['richt']))
+        # Richtwirkung: Rufe sind in Rufrichtung heller. Rufrichtung = Bewegungsrichtung (oder
+        # zufällig bei ruhenden Tieren) mit zufälliger Kopfwendung
+        rw = g.get('richtwirkung')
+        if rw and aussen and 'richtwirkung' not in ohne:
+            zrng = _ereignis_rng(t0, len(sig), 2)
+            weg_h = pb[-1, :2] - pb[0, :2]
+            if np.linalg.norm(weg_h) / max(len(sig) / FS, 0.1) > 0.5:
+                kurs = np.arctan2(weg_h[1], weg_h[0])
+            else:
+                kurs = zrng.uniform(0, 2 * np.pi)
+            kurs += zrng.normal(0, np.radians(rw.get('streuung_grad', 50.0)))
+            zu = kopf - pb
+            cos = (zu[:, 0] * np.cos(kurs) + zu[:, 1] * np.sin(kurs)) / np.maximum(np.linalg.norm(zu, axis=1), 1e-6)
+            zus = rwk.richtwirkung(cos, rw.get('db', 8.0))
+            wege[0] = w0 = dict(w0, gang=zus if w0['gang'] is None else (w0['gang'] * zus).astype(np.float32))
+        # Breite: ausgedehnte Quelle – die Bänder des Spektrums kommen von verschiedenen Stellen
+        br = breite if breite is not None else g.get('breite_m')
+        if br and 'breite' not in ohne:
+            brng = _ereignis_rng(t0, len(sig), 3)
+            if isinstance(br, (list, tuple)):
+                br = brng.uniform(*br)
+            v_q = pb - kopf
+            winkel = 2 * np.arctan(br / (2 * np.maximum(r, 0.3)))
+            n_teile = int(np.clip(round(np.degrees(winkel.max()) / g.get('breite_raster_grad', 12.0)) + 1, 1, 5))
+            if n_teile >= 2:
+                dh = np.linalg.norm(v_q[:, :2], axis=1, keepdims=True)
+                tang = np.where(dh > 0.2, np.concatenate([-v_q[:, 1:2], v_q[:, 0:1], np.zeros_like(dh)], 1) / np.maximum(dh, 1e-6),
+                                np.array([[1.0, 0.0, 0.0]]))
+                richt_mehr = [kx.boot.pfade(pb + o * tang, aussen, None, False)[0]['richt'] for o in np.linspace(-0.5, 0.5, n_teile) * br]
+                wege[0] = dict(wege[0], richt_mehr=richt_mehr, masken=rwk.breitenmasken(n_teile, brng))
+    start = int(round(t0 * FS))
     for weg in wege:
-        start = int(round(t0 * FS))
         ist_direkt = weg is wege[0]
         st, v = rendere_pfad(kx.hrtf, sig, weg['entf'], weg['richt'], weg['gang'], pg, weg['ohr'],
                              bus if weg['hall'] else None, hall, weg.get('streu'), start,
-                             bus2 if ist_direkt else None, gew2, weg.get('luft', True))
+                             bus2 if ist_direkt else None, gew2, weg.get('luft', True), weg.get('richt_mehr'), weg.get('masken'))
         spur.addiere(st, start + v)
+    # Streuung an der Umgebung (Baumstämme): viele kleine, frühe Echos aus allen Richtungen. Für
+    # kurze Ereignisse; die Quelle gilt für die Dauer des Ereignisses als ruhend.
+    if (aussen and not kx.hrtf.stereo and 'streuung' not in ohne and hasattr(kx.boot, 'streu_ir') and g.get('streuung', True)
+            and len(sig) < 20 * FS and np.linalg.norm(pb[-1] - pb[0]) / max(len(sig) / FS, 0.1) < 3.0):
+        m = nb // 2
+        ir, vz = kx.boot.streu_ir(kx.hrtf, pb[m])
+        if ir is not None:
+            y = np.stack([fftconvolve(sig, ir[e]) for e in range(2)]).astype(np.float32) * float(pg[m])
+            spur.addiere(y, start + vz)
 
 
 def rendere_kreis(kx, spur, bus, sig, ort_fn, aussen=True, pegel=1.0, hall=1.0, pegel_fn=None, vorlauf_s=0.5):
@@ -389,11 +451,7 @@ def gen_ereignisse(kx, g, spur, bus):
     rmin, rmax = g.get('entfernung', [7, 35])
     letzte = -1
     while t < kx.dauer:
-        k = int(rng.integers(len(ev)))
-        if k == letzte:
-            k = (k + 1) % len(ev)
-        letzte = k
-        e = ev[k]
+        e = _wahl(rng, ev)
         r = np.sqrt(rng.uniform(rmin ** 2, rmax ** 2))
         az = rng.uniform(0, 2 * np.pi)
         hz = g.get('hoehe', 0.15)
@@ -404,6 +462,8 @@ def gen_ereignisse(kx, g, spur, bus):
         staerke = 10 ** (rng.normal(0, g.get('streuung_db', 3.0)) / 20) * kx.folge(g, t)[1]
         if rng.random() < g.get('ausreisser_wahrsch', 0.0):     # ab und zu eine deutlich stärkere
             staerke *= 10 ** (rng.uniform(*g.get('ausreisser_db', [4, 8])) / 20)
+        if g.get('meldet') and staerke >= g.get('melde_ab', 1.5):
+            kx.melde(g['meldet'], t, p0, staerke)
 
         def ort(tt, p0=p0, t0=t, ziel=ziel):
             return p0[None, :] + (tt - t0)[:, None] * ziel[None, :]
@@ -467,11 +527,32 @@ def gen_schwarm(kx, g, spur, bus):
     ev = kx.bib.ereignisse(g['sammlung'])
     quellen = sorted({e['quelle'] for e in ev})
     voegel = [Vogel(rng, kx.dauer, g) for _ in range(g.get('anzahl', 7))]
-    stimmen = [quellen[i % len(quellen)] for i in rng.permutation(len(voegel))]
-    nach_stimme = {q: [e for e in ev if e['quelle'] == q] for q in quellen}
+    # Jedes Tier hat eine Stimme. Aufnahmen mit wenigen Ausschnitten werden zu einer Stimme
+    # zusammengelegt – sonst wiederholt ein Tier in zehn Minuten dreißigmal dieselben zwei Rufe.
+    je_quelle = {q: [e for e in ev if e['quelle'] == q] for q in quellen}
+    mindest = g.get('stimme_min_ausschnitte', 8)
+    becken, offen = [], []
+    for q in sorted(quellen, key=lambda q: -len(je_quelle[q])):
+        offen += je_quelle[q]
+        if len(offen) >= mindest:
+            becken.append(offen)
+            offen = []
+    if offen:
+        if becken:
+            becken[-1] = becken[-1] + offen
+        else:
+            becken.append(offen)
+    stimmen = [int(i % len(becken)) for i in rng.permutation(len(voegel))]
+    nach_stimme = dict(enumerate(becken))
     t = rng.uniform(0.5, 3)
     n_rufe = 0
+    sn = g.get('stille_nach')         # Ereigniskette: nach einem Gebrüll o. Ä. verstummen die Tiere kurz
+    still = [(m['t'], m['t'] + sn.get('dauer_s', 6.0)) for m in kx.meldungen(*sn['auf'])] if sn else []
     while t < kx.dauer:
+        ende = next((b_ for a_, b_ in still if a_ <= t < b_), None)
+        if ende is not None:
+            t = ende + rng.uniform(0.5, 3.0)
+            continue
         i = int(rng.integers(len(voegel)))
         kette = [i]
         if rng.random() < g.get('antwort_wahrsch', 0.45):
@@ -481,7 +562,7 @@ def gen_schwarm(kx, g, spur, bus):
         tt = t
         for j in kette:
             wahl = nach_stimme[stimmen[j]]
-            e = wahl[int(rng.integers(len(wahl)))]
+            e = _wahl(rng, wahl)
             staerke = 10 ** (rng.normal(0, 2.5) / 20) * kx.folge(g, tt)[1]
             # leichte Tonhöhenvariation je Ruf, damit sich nichts hörbar wiederholt
             fak = 2 ** (rng.normal(0, g.get('tonhoehe_streuung_ht', 0.35)) / 12)
@@ -500,25 +581,34 @@ def gen_schwarm(kx, g, spur, bus):
         b = kx.boe(tk)
         ueber = b > a.get('schwelle', 1.2)
         letzt = -1e9
+
+        def schreck(tc, r_):
+            tt = tc + r_.uniform(0.2, 1.0)
+            for _ in range(int(r_.integers(*a.get('rufe', [3, 7])))):
+                j = int(r_.integers(len(voegel)))
+                e = _wahl(r_, nach_stimme[stimmen[j]])
+                fak = 2 ** (r_.normal(0.5, 0.4) / 12)          # aufgeregt: etwas höher
+                sig = np.interp(np.arange(0, len(e['sig']) - 1, fak), np.arange(len(e['sig'])), e['sig']).astype(np.float32)
+                rendere_quelle(kx, spur, bus, sig, tt, voegel[j].ort, True, g.get('bezug_m', 15.0) * a.get('pegel', 1.4), g.get('hall', 0.0))
+                if flattern and r_.random() < a.get('flatter_wahrsch', 0.6):
+                    f = _wahl(r_, flattern)
+                    rendere_quelle(kx, spur, bus, _variante(r_, f['sig'], 1.0), tt - r_.uniform(0, 0.4), voegel[j].ort, True,
+                                   g.get('bezug_m', 15.0) * a.get('flatter_pegel', 0.5), g.get('hall', 0.0))
+                tt += r_.uniform(0.15, 0.7)
+
         for i in np.flatnonzero(ueber & ~np.roll(ueber, 1)):
             tc = tk[i]
             if tc - letzt < a.get('abstand_s', 25) or rng.random() > a.get('wahrsch', 0.8):
                 continue
             letzt = tc
             n_auf += 1
-            tt = tc + rng.uniform(0.2, 1.0)
-            for _ in range(int(rng.integers(*a.get('rufe', [3, 7])))):
-                j = int(rng.integers(len(voegel)))
-                wahl = nach_stimme[stimmen[j]]
-                e = wahl[int(rng.integers(len(wahl)))]
-                fak = 2 ** (rng.normal(0.5, 0.4) / 12)          # aufgeregt: etwas höher
-                sig = np.interp(np.arange(0, len(e['sig']) - 1, fak), np.arange(len(e['sig'])), e['sig']).astype(np.float32)
-                rendere_quelle(kx, spur, bus, sig, tt, voegel[j].ort, True, g.get('bezug_m', 15.0) * a.get('pegel', 1.4), g.get('hall', 0.0))
-                if flattern and rng.random() < a.get('flatter_wahrsch', 0.6):
-                    f = flattern[int(rng.integers(len(flattern)))]
-                    rendere_quelle(kx, spur, bus, _variante(rng, f['sig'], 1.0), tt - rng.uniform(0, 0.4), voegel[j].ort, True,
-                                   g.get('bezug_m', 15.0) * a.get('flatter_pegel', 0.5), g.get('hall', 0.0))
-                tt += rng.uniform(0.15, 0.7)
+            schreck(tc, rng)
+        # Ereigniskette: auch gemeldete Ereignisse (Astbruch, Brecher am Felsen) schrecken auf
+        arng = np.random.default_rng(int(kx.dauer) * 19 + len(voegel))
+        for m in kx.meldungen(*a.get('auf', [])):
+            if arng.random() < a.get('auf_wahrsch', 0.9):
+                schreck(m['t'] + arng.uniform(0.2, 0.7), arng)
+                n_auf += 1
     return dict(rufe=n_rufe, aufgeschreckt=n_auf)
 
 
@@ -551,21 +641,21 @@ def gen_ueberflug(kx, g, spur, bus):
         # Hauptruf liegt über dem nächsten Punkt: er beginnt im Anflug (etwas höher) und endet im
         # Wegflug (etwas tiefer) – so kippt die Tonhöhe hörbar innerhalb eines Rufs.
         lang = [e for e in ev if e['dauer'] >= g.get('haupt_min_s', 0.8)]
-        haupt = lang[int(rng.integers(len(lang)))]
+        haupt = _wahl(rng, lang)
         gleiche = [e for e in ev if e['quelle'] == haupt['quelle'] and e is not haupt] or [haupt]
         t_haupt = t - rng.uniform(0.4, 0.55) * haupt['dauer']
         rufe = [(t_haupt, haupt)]
         if rng.random() < g.get('vorruf_wahrsch', 0.7):            # Ruf im Anflug, endet vor dem Hauptruf
-            e = gleiche[int(rng.integers(len(gleiche)))]
+            e = _wahl(rng, gleiche)
             rufe.append((t_haupt - e['dauer'] - rng.uniform(0.15, 0.6), e))
         if rng.random() < g.get('nachruf_wahrsch', 0.4):           # Ruf im Wegflug
-            e = gleiche[int(rng.integers(len(gleiche)))]
+            e = _wahl(rng, gleiche)
             rufe.append((t_haupt + haupt['dauer'] + rng.uniform(0.2, 0.7), e))
         for ts, e in rufe:
             rendere_quelle(kx, spur, bus, kraft(e, 1.0, g), ts, ort, True, g.get('bezug_m', 5.0), g.get('hall', 0.0))
         if echt:
             # echte Flügelschläge: eine Schlagfolge im Anflug, endet kurz vor dem nächsten Punkt (dort gleitet sie)
-            e = echt[int(rng.integers(len(echt)))]
+            e = _wahl(rng, echt)
             sig = _variante(rng, e['sig'], 1.0) * 10 ** (g.get('fluegel_db', -12) / 20)
             rendere_quelle(kx, spur, bus, sig, t - e['dauer'] - rng.uniform(0.1, 0.5), ort, True, g.get('bezug_m', 5.0), g.get('hall', 0.0))
             if fluegel:          # Fahrtwind ohne eigene Schläge darunter
@@ -581,7 +671,7 @@ def gen_fluegel(kx, g, spur, bus, stuecke, ort, t_nah, v, rng):
     """Fahrtwind und Flügelschläge einer vorbeifliegenden Möwe. Rohstoff ist echtes Windrauschen;
     nur die Hüllkurve (einige Schläge im Möwentakt, dann Gleiten) ist vorgegeben. Die Quelle fliegt
     auf der Bahn der Möwe mit – Anschwellen, Doppler und Richtung kommen aus dem Renderer."""
-    e = stuecke[int(rng.integers(len(stuecke)))]
+    e = _wahl(rng, stuecke)
     dauer = g.get('fluegel_dauer_s', 3.2)
     n = int(dauer * FS)
     x = e['sig'].astype(np.float64)
@@ -628,8 +718,21 @@ def gen_rumpf(kx, g, spur, bus):
     while t < kx.dauer:
         zeiten.append((t, rng.choice([-1, 1]), rng.uniform(0.2, 0.45), klein))
         t += rng.exponential(g.get('schwapp_abstand_s', 1.8))
+    for t, seite, staerke, _ in zeiten:
+        if staerke >= g.get('melde_ab', 0.9):
+            kx.melde('rumpfschlag', t, [0.0, seite * kx.boot.b, 0.0], staerke)
+    # Ereigniskette: eine große Welle in der Nähe erreicht kurz darauf den Rumpf – auf ihrer Seite
+    krng = np.random.default_rng(int(kx.dauer) * 13 + 5)
+    n_kette = 0
+    for m in kx.meldungen('welle'):
+        pw = kx.boot.welt_zu_boot(np.array([m['ort']]), np.array([m['t']]))[0]
+        d = float(np.linalg.norm(pw[:2]))
+        if d < g.get('welle_bis_m', 18.0):
+            zeiten.append((m['t'] + d / g.get('wellentempo_m_s', 3.5) + krng.normal(0, 0.15), 1 if pw[1] > 0 else -1,
+                           min(1.0, 0.7 + 0.15 * m['staerke']), gross))
+            n_kette += 1
     for t, seite, staerke, wahl in zeiten:
-        e = wahl[int(rng.integers(len(wahl)))]
+        e = _wahl(rng, wahl)
         staerke = staerke * kx.folge(g, t)[1]
         sig = kraft(e, staerke / g.get('wucht_bezug', 0.75), g)
         pa = _rumpfpunkt(kx.boot, rng, seite, True)
@@ -642,7 +745,7 @@ def gen_rumpf(kx, g, spur, bus):
         dumpf = mat.filt(sig.astype(np.float64), g.get('planke_tiefpass', 450), 'lowpass', 2).astype(np.float32)
         rendere_quelle(kx, spur, bus, dumpf, t, lambda tt, pi=pi: np.tile(pi, (len(tt), 1)), False,
                        staerke * g.get('planke_pegel', 0.8), g.get('hall', 0.0))
-    return dict(ereignisse=len(zeiten))
+    return dict(ereignisse=len(zeiten), nach_welle=n_kette)
 
 
 def gen_knarzen(kx, g, spur, bus):
@@ -667,14 +770,26 @@ def gen_knarzen(kx, g, spur, bus):
             if k == letzte:
                 k = (k + 3) % len(stellen)
             letzte = k
-            e = ev[int(rng.integers(len(ev)))]
+            e = _wahl(rng, ev)
             fak = 2 ** (rng.normal(0, 1.0) / 12)
             sig = np.interp(np.arange(0, len(e['sig']) - 1, fak), np.arange(len(e['sig'])), e['sig']).astype(np.float32)
             p = stellen[k] + rng.normal(0, 0.03, 3)
             rendere_quelle(kx, spur, bus, sig, t + rng.uniform(-0.5, 0.4), lambda tt, p=p: np.tile(p, (len(tt), 1)),
                            False, (0.4 + 0.6 * staerke) * 10 ** (rng.normal(0, 2) / 20), g.get('hall', 0.0))
             n += 1
-    return dict(ereignisse=n)
+    # Ereigniskette: nach einem harten Schlag gegen den Rumpf arbeitet das Holz auf dieser Seite nach
+    krng = np.random.default_rng(int(kx.dauer) * 17 + 3)
+    n_kette = 0
+    for m in kx.meldungen('rumpfschlag'):
+        if krng.random() < g.get('nach_schlag_wahrsch', 0.7):
+            seite = 1 if m['ort'][1] > 0 else -1
+            kand = [s_ for s_ in stellen if s_[1] * seite > 0] or stellen
+            p = kand[int(krng.integers(len(kand)))] + krng.normal(0, 0.03, 3)
+            e = ev[int(krng.integers(len(ev)))]
+            rendere_quelle(kx, spur, bus, e['sig'], m['t'] + krng.uniform(0.15, 0.6), lambda tt, p=p: np.tile(p, (len(tt), 1)),
+                           False, m['staerke'] * 10 ** (krng.normal(0, 2) / 20), g.get('hall', 0.0))
+            n_kette += 1
+    return dict(ereignisse=n, nach_schlag=n_kette)
 
 
 def gen_segel(kx, g, spur, bus):
@@ -780,8 +895,24 @@ def _sammlung(kx, g, schluessel):
     return kx.bib.ereignisse(g[schluessel]) if g.get(schluessel) else []
 
 
+ZAEHLER = {}            # Gruppe -> Counter(Ausschnitt): wie oft welcher Ausschnitt benutzt wurde
+_AKT_GRUPPE = ['']
+
+
 def _wahl(rng, liste):
-    return liste[int(rng.integers(len(liste)))]
+    """Ein Ereignis wählen: von drei zufälligen Kandidaten das bisher am seltensten benutzte.
+    So verteilt sich die Auswahl gleichmäßig, und nichts wiederholt sich unnötig oft."""
+    z = ZAEHLER.setdefault(_AKT_GRUPPE[0], collections.Counter())
+    kand = [liste[int(k)] for k in rng.integers(len(liste), size=3)]
+    e = min(kand, key=lambda e: z[e.get('schnitt', id(e))])
+    z[e.get('schnitt', id(e))] += 1
+    return e
+
+
+def _ereignis_rng(t0, n, salz):
+    """Eigene, feste Zufallsquelle je Ereignis – verbraucht nichts aus der Zufallsfolge der Gruppe,
+    die Ereignisfolge bleibt also gleich, wenn eine Wirkung ab- oder zugeschaltet wird."""
+    return np.random.default_rng((int(round(t0 * 1000)) * 7919 + n * 31 + salz * 104729) % (2 ** 32))
 
 
 def _variante(rng, sig, ht=0.6):
@@ -853,6 +984,7 @@ def _ast_bruch(kx, g, spur, bus, rng, t, ort_koerper, sets, b):
         e = _wahl(rng, sets['knarren'])
         rendere_quelle(kx, spur, bus, _variante(rng, e['sig'], 1.0), tt, _fest(hoch), True, b * g.get('knarr_pegel', 0.5), g.get('hall', 0.0))
         tt += min(e['dauer'], 0.8) * rng.uniform(0.6, 0.9)
+    kx.melde('astbruch', tt, hoch, 1.0)
     for _ in range(int(rng.integers(1, 3))):                      # Bruch, manchmal zweistufig
         e = _wahl(rng, sets['ast'])
         rendere_quelle(kx, spur, bus, _variante(rng, e['sig'], 1.2), tt, _fest(hoch), True, b * g.get('ast_pegel', 1.2), g.get('hall', 0.0))
@@ -1051,6 +1183,7 @@ def gen_gebruell(kx, g, spur, bus):
     t = rng.uniform(*g.get('erster_s', [20, 40]))
     erster = t
     liste = []
+    war_antwort = False
     while not liste or t < kx.dauer + erster - g.get('abstand_s', [35, 70])[0]:   # mindestens einer
         e = _wahl(rng, ev)
         d = rng.uniform(*g.get('entfernung', [350, 700]))
@@ -1063,6 +1196,7 @@ def gen_gebruell(kx, g, spur, bus):
             e0, e1 = g.get('entfernung', [350, 700])
             d = e1 + (e0 - e1) * v * rng.uniform(0.8, 1.0)
         p = np.array([k[0] + d * np.cos(az), k[1] + d * np.sin(az), g.get('hoehe', 8.0)])
+        kx.melde(g.get('meldet'), t, p, 1.0)
         sig = _variante(rng, kraft(e, 1.0, g), 1.0)
         for schicht in g.get('schichten', []):            # weitere Stimmen übereinander: tiefer, rauer
             es = _wahl(rng, schichten[schicht['schluessel']])['sig']
@@ -1095,6 +1229,12 @@ def gen_gebruell(kx, g, spur, bus):
                            g.get('bezug_m', 400.0) * g.get('echo_reflexion', 0.55) * rng.uniform(0.6, 1.0), g.get('hall', 1.0))
         kx.etikett = None
         liste.append(round(float(t) % kx.dauer, 1))
+        aw = g.get('antwort')            # manchmal antwortet kurz darauf ein anderes Tier von woanders
+        if aw and not war_antwort and rng.random() < aw.get('wahrsch', 0.35):
+            t += len(sig) / FS + rng.uniform(*aw.get('nach_s', [2.0, 6.0]))
+            war_antwort = True
+            continue
+        war_antwort = False
         t += rng.uniform(*g.get('abstand_s', [35, 70])) / max(kx.folge(g, t % kx.dauer)[0], 0.05)
     return dict(rufe=liste)
 
@@ -1179,11 +1319,16 @@ def main():
     ap.add_argument('--blick', type=float, help='Blickwinkel über der Waagerechten (überschreibt die Szene)')
     ap.add_argument('--stereo', action='store_true', help='Vergleichsfassung in konventionellem Stereo (ohne HRTF und Spiegelungen)')
     ap.add_argument('--name', help='Name der Ausgabe (Vorgabe: Name der Szene)')
+    ap.add_argument('--export', action='store_true', help='zusätzlich <name>_export.wav (16 Bit, mit Ein- und Ausblendung) zum Veröffentlichen, z. B. auf Spotify')
+    ap.add_argument('--lufs', type=float, help='Ziel-Lautheit der Mischung (überschreibt die Szene)')
+    ap.add_argument('--ohne', default='', help='Wirkungen abschalten (für Vergleiche, gleiche Ereignisfolge): breite,richtwirkung,nahfeld,streuung,kette')
     ap.add_argument('--karte', action='store_true', help='nur das Ereignisprotokoll (Szenenkarte) schreiben, ohne Audio – gleiche Ereignisse wie beim Rendern')
     ap.add_argument('--drehung', type=float, help='Startpunkt der Schleife in Abtastwerten vorgeben (start_abtastwerte aus dem Bericht der Bezugsfassung; gerundete Sekunden verschieben um Millisekunden)')
     a = ap.parse_args()
 
     sz = json.loads(Path(a.szene).read_text())
+    if a.lufs is not None:
+        sz['ziel_lufs'] = a.lufs
     dauer = a.dauer or sz.get('dauer', 180)
     if a.blick is not None:
         sz[next(k for k in ('wald', 'ruine', 'ozean', 'kuppel', 'boot') if k in sz)]['blick'] = a.blick
@@ -1221,14 +1366,35 @@ def main():
                    drehbuch=sz.get('drehbuch', {}).get('text', []))
     summe = np.zeros((2, int(round(dauer * FS))), np.float32)
     karte = []
+    ohne = set(filter(None, a.ohne.split(',')))
+
+    def kontext(i, g):
+        kx = Kontext(hrtf, boot, bib, dauer, np.random.default_rng(sz.get('saat', 1) * 1000 + i), boe)
+        kx.kurven, kx.g, kx.gruppe, kx.ohne = kurven, g, g['name'], ohne
+        kx.weite, kx.flimmern, kx.windtragen = sz.get('weite'), sz.get('flimmern'), sz.get('windtragen')
+        _AKT_GRUPPE[0] = g['name']
+        return kx
+
+    # Vorlauf ohne Ton: alle Generatoren laufen einmal durch und melden ihre Ereignisse (große Welle,
+    # Schlag gegen den Rumpf, Astbruch, Gebrüll). Im eigentlichen Lauf können andere Gruppen darauf
+    # reagieren – unabhängig von der Reihenfolge der Gruppen.
+    vorab = []
+    if 'kette' not in ohne:
+        for i, g in enumerate(sz['gruppen']):
+            if g['typ'] == 'musik':
+                continue
+            kx = kontext(i, g)
+            kx.karte, kx.nur_karte, kx.melden = [], True, vorab
+            GENERATOREN[g['typ']](kx, g, None, None)
+        ZAEHLER.clear()
+        print('Vorlauf:', len(vorab), 'Meldungen', dict(collections.Counter(m['art'] for m in vorab)), flush=True)
     for i, g in enumerate(sz['gruppen']):
         if nur and g['name'] not in nur:
             continue
         t0 = time.time()
-        kx = Kontext(hrtf, boot, bib, dauer, np.random.default_rng(sz.get('saat', 1) * 1000 + i), boe)
-        kx.kurven = kurven
+        kx = kontext(i, g)
+        kx.gemeldet = vorab
         spur, bus = Spur(dauer), Spur(dauer, 1)
-        kx.weite, kx.flimmern, kx.windtragen, kx.gruppe = sz.get('weite'), sz.get('flimmern'), sz.get('windtragen'), g['name']
         kx.bus_weite = Spur(dauer, 1) if kx.weite else None
         kx.karte = karte
         kx.nur_karte = a.karte
@@ -1241,8 +1407,13 @@ def main():
             for e in range(2):
                 x[e] += kreisfaltung(bus.x[0], hall_ir[e]).astype(np.float32) * 10 ** (sz.get('nachhall_pegel_db', -16) / 20)
         if kx.bus_weite is not None and np.abs(kx.bus_weite.x).max() > 0:
+            e_direkt = float((x.astype(np.float64) ** 2).sum())
+            e_weite = 0.0
             for e in range(2):
-                x[e] += kreisfaltung(kx.bus_weite.x[0], weite_ir[e]).astype(np.float32) * 10 ** (kx.weite.get('pegel_db', -14) / 20)
+                wz = kreisfaltung(kx.bus_weite.x[0], weite_ir[e]).astype(np.float32) * 10 ** (kx.weite.get('pegel_db', -14) / 20)
+                e_weite += float((wz.astype(np.float64) ** 2).sum())
+                x[e] += wz
+            info['weitenhall_db'] = round(float(10 * np.log10(e_weite / max(e_direkt, 1e-20) + 1e-20)), 1)     # Hallenergie relativ zum Rest der Gruppe
         art = g.get('pegel_art', 'integriert')
         ist = lautheit(x, art)
         x *= 10 ** ((g['ziel_lufs'] - ist) / 20)
@@ -1260,13 +1431,20 @@ def main():
             probe, _ = begrenzer_kreis(probe * 10 ** (g.get('probe_plus_db', 6) / 20))
             schreibe(Path(a.aus) / f"{name}_{g['name']}.mp3", probe, '160k')
             eintrag['probe_abtastwerte'] = int(probe.shape[1])
+    def wiederholung():
+        """Je Gruppe: wie viele Ereignisse, wie viele verschiedene Ausschnitte, wie oft der häufigste."""
+        return {n: dict(ereignisse=int(sum(z.values())), verschiedene=len(z), haeufigster=int(max(z.values())))
+                for n, z in ZAEHLER.items() if z}
+
     def schreibe_karte(start_s):
         """Szenenkarte: alle Quellen mit Ort über die Zeit im Hörerbezug (maschinenlesbar, für die
         Plausibilitätsprüfung `pruefe_karte.py` und die Ansicht `karte/`)."""
         k = dict(szene=name, titel=sz.get('titel', name), dauer=dauer, start_s=round(start_s, 3), kopf=np.round(boot.kopf, 2).tolist(),
                  blick=umg_cfg.get('blick', 55), umgebung=next((x for x in ('wald', 'ruine', 'ozean', 'kuppel', 'boot') if x in sz), 'boot'),
                  orte=sz.get('orte', {}), drehbuch=sz.get('drehbuch', {}).get('text', []),
-                 gruppen=[dict(name=g['name'], titel=g.get('titel', g['name']), typ=g['typ']) for g in sz['gruppen']], quellen=karte)
+                 gruppen=[dict(name=g['name'], titel=g.get('titel', g['name']), typ=g['typ'], ziel_lufs=g.get('ziel_lufs'),
+                               pegel_art=g.get('pegel_art', 'integriert')) for g in sz['gruppen']],
+                 wiederholung=wiederholung(), meldungen=vorab, quellen=karte)
         (Path(a.aus) / f'{name}_karte.json').write_text(json.dumps(k, ensure_ascii=False, separators=(',', ':')))
         print('Karte:', len(karte), 'Quellen', flush=True)
 
@@ -1303,8 +1481,12 @@ def main():
         bericht['begrenzer_max_db'] = round(weg, 1)
         bericht['lufs'] = round(lautheit(summe), 1)
         bericht['naht'] = nahtpruefung(summe)
+        bericht['wiederholung'] = wiederholung()
+        bericht['ohne'] = sorted(ohne)
         schreibe_karte(ruhig / FS)
         schreibe(Path(a.aus) / f'{name}.mp3', summe, '224k')
+        if a.export:
+            schreibe(Path(a.aus) / f'{name}_export.wav', blende(summe, 4.0, 8.0))
         bericht['quellen'] = sorted(bib.benutzt)
         (Path(a.aus) / f'{name}.json').write_text(json.dumps(bericht, ensure_ascii=False, indent=1))
     print('fertig in', round(time.time() - t_start), 's', flush=True)

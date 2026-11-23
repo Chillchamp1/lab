@@ -62,7 +62,7 @@ def _ola(rahmen):
 
 
 def rendere_pfad(hrtf, sig, entf, richt, gang=None, pegel=None, ohr=None, bus=None, hall_pegel=0.0, streu=None, start=0,
-                 bus2=None, bus2_gewicht=None, luft=True):
+                 bus2=None, bus2_gewicht=None, luft=True, richt_mehr=None, masken=None):
     """Rendert einen Pfad.
 
     sig    Mono-Signal der Quelle
@@ -74,6 +74,9 @@ def rendere_pfad(hrtf, sig, entf, richt, gang=None, pegel=None, ohr=None, bus=No
     start  Startzeit des Signals in Abtastwerten (für den Hallanteil auf dem Bus)
     bus2   zweiter Hallbus mit Gewicht je Block (bus2_gewicht, (n_b,))
     streu  (nf,) Spektrum eines kurzen Streukerns (raue Fläche statt Spiegel) oder None
+    richt_mehr, masken  ausgedehnte Quelle: Liste von Richtungen (je (n_b, 3)) und Bandmasken
+           (N, nf), die sich zu 1 ergänzen – jedes Band kommt aus einer anderen Stelle der Quelle
+    ohr    darf auch (n_b, 2, nf) sein (frequenzabhängig, Nahfeld)
     Rückgabe: (2, n) Stereo und Versatz in Abtastwerten (kann negativ sein: -VORHALT)
     """
     n_b = len(entf)
@@ -99,9 +102,12 @@ def rendere_pfad(hrtf, sig, entf, richt, gang=None, pegel=None, ohr=None, bus=No
         X = X * G * _PHASE_VORHALT
         if streu is not None:
             X = X * streu
-        H = hrtf.filter(richt[a:b])
+        if richt_mehr is not None:
+            H = sum(masken[k][None, None, :] * hrtf.filter(rm[a:b]) for k, rm in enumerate(richt_mehr))
+        else:
+            H = hrtf.filter(richt[a:b])
         if ohr is not None:
-            H = H * ohr[a:b, :, None].astype(np.float32)
+            H = H * (ohr[a:b] if ohr.ndim == 3 else ohr[a:b, :, None]).astype(np.float32)
         Y = np.fft.irfft(H * X[:, None, :], NFFT, axis=-1).astype(np.float32)
         aus_teile.append(Y)
     stereo = _ola(np.concatenate(aus_teile))

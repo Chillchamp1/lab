@@ -1,6 +1,6 @@
 {
  "szene": "boot",
- "stand": "20.11.2026 11:58",
+ "stand": "23.11.2026 14:11",
  "dauer": 600,
  "schleife": true,
  "abtastwerte": 26460000,
@@ -16,9 +16,9 @@
    "typ": "bett",
    "ziel_lufs": -29,
    "pegel_art": "integriert",
-   "spitze_db": -12.4,
+   "spitze_db": -12.5,
    "begrenzt_db": 0.0,
-   "sekunden": 437.5,
+   "sekunden": 663.8,
    "probe_abtastwerte": 1323000
   },
   {
@@ -28,9 +28,9 @@
    "typ": "bett",
    "ziel_lufs": -37,
    "pegel_art": "integriert",
-   "spitze_db": -11.2,
+   "spitze_db": -10.9,
    "begrenzt_db": 0.0,
-   "sekunden": 398.8,
+   "sekunden": 564.6,
    "probe_abtastwerte": 1323000
   },
   {
@@ -41,8 +41,8 @@
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
-   "begrenzt_db": 0.8,
-   "sekunden": 48.9,
+   "begrenzt_db": 0.1,
+   "sekunden": 99.5,
    "probe_abtastwerte": 1323000
   },
   {
@@ -52,10 +52,11 @@
    "typ": "rumpf",
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
-   "spitze_db": -11.6,
-   "begrenzt_db": 0.0,
-   "sekunden": 80.4,
-   "ereignisse": 493,
+   "spitze_db": -9.0,
+   "begrenzt_db": 0.4,
+   "sekunden": 141.2,
+   "ereignisse": 517,
+   "nach_welle": 24,
    "probe_abtastwerte": 1323000
   },
   {
@@ -66,9 +67,10 @@
    "ziel_lufs": -32,
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
-   "begrenzt_db": 2.4,
-   "sekunden": 18.0,
-   "ereignisse": 152,
+   "begrenzt_db": 2.6,
+   "sekunden": 17.3,
+   "ereignisse": 148,
+   "nach_schlag": 4,
    "probe_abtastwerte": 1323000
   },
   {
@@ -80,7 +82,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -9.2,
    "begrenzt_db": 0.0,
-   "sekunden": 208.9,
+   "sekunden": 198.4,
    "faenge": 27,
    "probe_abtastwerte": 2646000
   },
@@ -91,9 +93,10 @@
    "typ": "bett",
    "ziel_lufs": -39,
    "pegel_art": "integriert",
-   "spitze_db": -19.0,
+   "spitze_db": -18.5,
    "begrenzt_db": 0.0,
-   "sekunden": 249.6,
+   "sekunden": 214.0,
+   "weitenhall_db": -1.4,
    "probe_abtastwerte": 1323000
   },
   {
@@ -103,11 +106,12 @@
    "typ": "schwarm",
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
-   "spitze_db": -7.0,
-   "begrenzt_db": 4.9,
-   "sekunden": 51.9,
-   "rufe": 272,
-   "aufgeschreckt": 9,
+   "spitze_db": -9.7,
+   "begrenzt_db": 0.0,
+   "sekunden": 44.8,
+   "rufe": 287,
+   "aufgeschreckt": 22,
+   "weitenhall_db": -29.9,
    "probe_abtastwerte": 1323000
   },
   {
@@ -118,35 +122,36 @@
    "ziel_lufs": -22,
    "pegel_art": "spitzen",
    "spitze_db": -4.0,
-   "begrenzt_db": 1.8,
-   "sekunden": 33.1,
+   "begrenzt_db": 0.0,
+   "sekunden": 34.8,
    "zeiten": [
     13.7,
-    45.1,
-    67.9,
-    93.9,
-    112.4,
-    138.3,
-    168.8,
-    188.7,
-    217.7,
-    238.2,
-    257.4,
-    277.4,
-    297.0,
-    316.1,
-    343.8,
-    362.1,
-    388.1,
-    413.0,
-    439.9,
-    462.7,
-    480.9,
-    507.0,
-    537.4,
-    556.4,
-    587.4
+    39.5,
+    62.9,
+    89.0,
+    110.4,
+    137.3,
+    160.7,
+    185.1,
+    211.4,
+    232.6,
+    251.8,
+    269.8,
+    291.0,
+    318.7,
+    348.5,
+    373.1,
+    401.8,
+    422.2,
+    444.4,
+    466.0,
+    494.5,
+    524.7,
+    546.7,
+    571.2,
+    594.8
    ],
+   "weitenhall_db": -45.0,
    "probe_abtastwerte": 1764000
   },
   {
@@ -156,11 +161,12 @@
    "typ": "schwarm",
    "ziel_lufs": -38,
    "pegel_art": "spitzen",
-   "spitze_db": -19.8,
+   "spitze_db": -21.6,
    "begrenzt_db": 0.0,
-   "sekunden": 29.3,
-   "rufe": 187,
+   "sekunden": 33.6,
+   "rufe": 234,
    "aufgeschreckt": 0,
+   "weitenhall_db": -1.7,
    "probe_abtastwerte": 1323000
   },
   {
@@ -170,48 +176,86 @@
    "typ": "ereignisse",
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
-   "spitze_db": -7.8,
-   "begrenzt_db": 0.0,
-   "sekunden": 17.6,
+   "spitze_db": -4.0,
+   "begrenzt_db": 4.4,
+   "sekunden": 25.1,
    "probe_abtastwerte": 1323000
   }
  ],
  "drehbuch": [
   [
-   112.8,
+   39.7,
    "Der Wind frischt auf, das Segel fängt sich öfter."
   ],
   [
-   217.8,
+   144.7,
    "Die Wellen werden höher, der Rumpf schlägt härter; die Möwen rufen aufgeregter, ihre Schreie klingen verweht."
   ],
   [
-   313.8,
+   240.7,
    "Schwere See: Brecher schlagen dicht hintereinander an den Felsen."
   ],
   [
-   427.8,
+   354.7,
    "Der Wind flaut ab, die See beruhigt sich."
   ],
   [
-   511.8,
+   438.7,
    "Ruhe – die Möwen kreisen wieder gelassen."
   ],
   [
-   577.8,
+   504.7,
    "Ruhige See, die Möwen kreisen entspannt."
   ]
  ],
- "start_verschoben_s": 22.18,
- "start_abtastwerte": 978035,
- "begrenzer_max_db": 1.6,
- "lufs": -21.0,
+ "start_verschoben_s": 95.31,
+ "start_abtastwerte": 4203297,
+ "begrenzer_max_db": 2.6,
+ "lufs": -21.1,
  "naht": {
-  "sprung_naht": 0.0033,
-  "sprung_typisch_999": 0.0824,
-  "pegelsprung_naht_db": 1.0,
-  "pegelsprung_typisch_95_db": 2.42
+  "sprung_naht": 0.0025,
+  "sprung_typisch_999": 0.0737,
+  "pegelsprung_naht_db": 0.7,
+  "pegelsprung_typisch_95_db": 2.02
  },
+ "wiederholung": {
+  "wellen": {
+   "ereignisse": 349,
+   "verschiedene": 55,
+   "haeufigster": 7
+  },
+  "rumpf": {
+   "ereignisse": 517,
+   "verschiedene": 213,
+   "haeufigster": 4
+  },
+  "knarzen": {
+   "ereignisse": 148,
+   "verschiedene": 44,
+   "haeufigster": 5
+  },
+  "moewen": {
+   "ereignisse": 412,
+   "verschiedene": 172,
+   "haeufigster": 9
+  },
+  "ueberflug": {
+   "ereignisse": 105,
+   "verschiedene": 60,
+   "haeufigster": 7
+  },
+  "moewen_weit": {
+   "ereignisse": 234,
+   "verschiedene": 147,
+   "haeufigster": 5
+  },
+  "felsen": {
+   "ereignisse": 45,
+   "verschiedene": 13,
+   "haeufigster": 4
+  }
+ },
+ "ohne": [],
  "quellen": [
   "boot_holz_steg",
   "boot_holz_wasser",
@@ -220,6 +264,7 @@
   "boot_steg3",
   "brecher_buhne",
   "brecher_felsen",
+  "brecher_ufer",
   "esc_1-28135-A",
   "esc_1-28135-B",
   "esc_1-39901-A",
@@ -281,9 +326,15 @@
   "moewe_gull2",
   "moewe_hering",
   "moewe_lyme",
+  "moewe_nigel",
   "moewe_silber_xc707075",
+  "moewe_strand_squashy",
   "moewe_vurca",
+  "moewen_kolonie_fr",
+  "moewen_kurz_lyd",
   "moewen_nah",
+  "moewen_schwarm_jus",
+  "moewen_wildtrack",
   "segel_baumwolle",
   "segel_flagge_blume",
   "segel_stoff",

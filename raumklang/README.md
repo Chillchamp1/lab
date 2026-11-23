@@ -136,6 +136,44 @@ geht in der Schleife auf), etwa `wind`, `regen`, `see`, `herde`, `wale`.
 Fertige Wetter-Szenen sind 10 Minuten lang (ein ganzer Bogen ruhig → Sturm →
 ruhig); neue Szenen werden zum Ausprobieren erst mit 2 Minuten gerendert.
 
+## Körperliche Quellen (23.11.)
+
+`pipeline/raumwirkung.py`, je Gruppe in der Szene einstellbar, mit `--ohne
+breite,richtwirkung,nahfeld,streuung,kette` für Vergleiche abschaltbar (die
+Ereignisfolge bleibt dabei gleich, weil jede Wirkung ihre eigene Zufallsquelle hat):
+
+- **Breite** (`breite_m`): Wellen, Brandung, Regenflächen, Kronen, Bach sind keine
+  Punkte. Das Spektrum wird in Bänder geteilt (unten 300 Hz breit, darüber
+  Terzen), die abwechselnd aus bis zu fünf Richtungen über die Breite der Quelle
+  kommen; die Masken ergänzen sich zu 1. Kostet nur zusätzliche HRTF-Abfragen.
+  Einzelne 10 m breite Quelle in 10 m: Übereinstimmung der Ohrsignale 0,99 → 0,55.
+- **Richtwirkung** (`richtwirkung`): Rufe sind in Rufrichtung heller (abgewandt
+  bis −8 dB bei 8 kHz). Rufrichtung = Flugrichtung bzw. zufällig, mit Kopfwendung.
+- **Nahfeld**: unter 1 m frequenzabhängiger Ohrunterschied nach dem Kugelkopf
+  (Duda & Martens 1998), relativ zur Messentfernung der HRTF. Wirkt spürbar erst
+  unter etwa 30 cm; bei 50 cm kaum mehr als die alte Pegelkorrektur.
+- **Stamm-Streuung** (Wald, `staemme`): 36 Stämme werfen kurze Ereignisse als
+  frühe, gerichtete Echos zurück (15–190 ms, ohne Tiefen), als eine Faltung je
+  Ereignis. Etwa 12 dB unter dem Direktschall.
+- **Weitenhall mit Obergrenze** (`max_faktor`): sehr ferne Quellen bestanden sonst
+  fast nur aus Hall (ferne Möwenkolonie: Hall 14 dB über dem Direktschall – klang
+  wie vor einer Klippe; jetzt 4,5 dB darunter, kürzer).
+
+## Ereigniskette
+
+Generatoren melden Ereignisse (`kx.melde`: große Welle, Brecher am Felsen, harter
+Schlag gegen den Rumpf, Astbruch, Gebrüll), andere reagieren darauf: die Welle
+erreicht kurz darauf den Rumpf auf ihrer Seite, nach einem harten Schlag knarzt
+das Holz dort nach, Möwen schrecken bei Brechern auf, Vögel fliegen nach einem
+Astbruch auf und verstummen nach einem Gebrüll, auf ein Gebrüll antwortet
+manchmal ein zweites Tier. Ein Vorlauf ohne Ton sammelt alle Meldungen, damit die
+Reihenfolge der Gruppen keine Rolle spielt; Reaktionen ziehen nicht aus der
+Zufallsfolge ihrer Gruppe.
+
+Auswahl der Ausschnitte: von drei zufälligen Kandidaten der am seltensten
+benutzte; jedes Tier bekommt eine Stimme aus mindestens acht Ausschnitten
+(kleine Aufnahmen werden zusammengelegt).
+
 ## Szenenkarte und Plausibilitätsprüfung
 
 Beim Rendern schreibt der Renderer `audio/<szene>_karte.json`: jede Quelle mit
@@ -151,6 +189,12 @@ weniger als 8 s auseinanderliegen. Gefunden hat sie bisher: einen stummen
 Vorbeigang, eine Elefantenherde, die mit bis zu 5 m/s um das Zelt kreiste,
 eine Trompete von hinten, eine Saurierherde mit 11 m/s, eine Möwenkolonie mit
 39 m/s.
+
+Dazu Komposition (Anteil links/rechts, längste einseitige Strecke, welche
+Entfernungszone wie lange vorn liegt, Fokuswechsel je Minute) und Wiederholung
+(Ereignisse je Gruppe, verschiedene Ausschnitte, häufigster).
+`python3 pipeline/pruefe_material.py szenen/<szene>.json` prüft die Aufnahmen
+selbst: Bandbreite, Dynamik, mitgebrachter Nachklang, Ausbeute an Ereignissen.
 
 `karte/?s=<szene>` zeigt die Karte als Draufsicht im Browser, im
 Schnelldurchlauf oder synchron mit dem Ton.

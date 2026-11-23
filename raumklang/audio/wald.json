@@ -1,6 +1,6 @@
 {
  "szene": "wald",
- "stand": "20.11.2026 12:25",
+ "stand": "23.11.2026 14:11",
  "dauer": 600,
  "schleife": true,
  "abtastwerte": 26460000,
@@ -17,8 +17,8 @@
    "ziel_lufs": -31,
    "pegel_art": "integriert",
    "spitze_db": -6.0,
-   "begrenzt_db": 2.9,
-   "sekunden": 435.9,
+   "begrenzt_db": 3.3,
+   "sekunden": 626.0,
    "probe_abtastwerte": 1323000
   },
   {
@@ -28,9 +28,9 @@
    "typ": "bett",
    "ziel_lufs": -37,
    "pegel_art": "integriert",
-   "spitze_db": -6.0,
+   "spitze_db": -6.3,
    "begrenzt_db": 0.0,
-   "sekunden": 271.9,
+   "sekunden": 384.8,
    "probe_abtastwerte": 1323000
   },
   {
@@ -40,9 +40,9 @@
    "typ": "bett",
    "ziel_lufs": -34,
    "pegel_art": "integriert",
-   "spitze_db": -8.8,
+   "spitze_db": -9.7,
    "begrenzt_db": 0.0,
-   "sekunden": 242.2,
+   "sekunden": 293.8,
    "probe_abtastwerte": 1323000
   },
   {
@@ -53,8 +53,8 @@
    "ziel_lufs": -35,
    "pegel_art": "spitzen",
    "spitze_db": -6.0,
-   "begrenzt_db": 2.0,
-   "sekunden": 18.6,
+   "begrenzt_db": 4.3,
+   "sekunden": 18.8,
    "probe_abtastwerte": 1323000
   },
   {
@@ -65,8 +65,8 @@
    "ziel_lufs": -37,
    "pegel_art": "spitzen",
    "spitze_db": -6.0,
-   "begrenzt_db": 2.1,
-   "sekunden": 14.6,
+   "begrenzt_db": 0.4,
+   "sekunden": 13.4,
    "probe_abtastwerte": 1323000
   },
   {
@@ -76,22 +76,22 @@
    "typ": "bett",
    "ziel_lufs": -36,
    "pegel_art": "integriert",
-   "spitze_db": -6.0,
-   "begrenzt_db": 1.4,
-   "sekunden": 275.3,
+   "spitze_db": -10.7,
+   "begrenzt_db": 0.0,
+   "sekunden": 380.9,
    "probe_abtastwerte": 1323000
   },
   {
    "name": "herde",
    "titel": "Pflanzenfresser in der Ferne",
-   "text": "Eine Herde großer Pflanzenfresser weit entfernt im Wald; manchmal ruft einer, ein anderer antwortet.",
+   "text": "Weit weg ruft eine Herde: Rinder, Hirsche in der Brunft, Bisons und Kraniche, langsamer und tiefer abgespielt.",
    "typ": "schwarm",
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
-   "spitze_db": -13.9,
+   "spitze_db": -11.2,
    "begrenzt_db": 0.0,
-   "sekunden": 21.6,
-   "rufe": 78,
+   "sekunden": 17.8,
+   "rufe": 92,
    "aufgeschreckt": 0,
    "probe_abtastwerte": 1323000
   },
@@ -102,10 +102,10 @@
    "typ": "schwarm",
    "ziel_lufs": -32,
    "pegel_art": "spitzen",
-   "spitze_db": -14.4,
+   "spitze_db": -18.6,
    "begrenzt_db": 0.0,
-   "sekunden": 12.8,
-   "rufe": 58,
+   "sekunden": 7.8,
+   "rufe": 33,
    "aufgeschreckt": 0,
    "probe_abtastwerte": 1323000
   },
@@ -116,48 +116,49 @@
    "typ": "gebruell",
    "ziel_lufs": -22,
    "pegel_art": "spitzen",
-   "spitze_db": -5.6,
-   "begrenzt_db": 0.0,
-   "sekunden": 38.7,
+   "spitze_db": -2.0,
+   "begrenzt_db": 0.3,
+   "sekunden": 36.4,
    "rufe": [
     34.6,
-    85.6,
-    136.9,
-    191.8,
-    264.6,
-    309.4,
-    381.8,
-    441.1,
-    500.5,
-    560.3
+    96.8,
+    102.2,
+    156.1,
+    228.9,
+    303.7,
+    376.6,
+    419.6,
+    487.1,
+    493.6,
+    565.1
    ],
    "probe_abtastwerte": 2646000
   },
   {
    "name": "kammrufe",
    "titel": "Kammrufe",
-   "text": "Hohle, posaunenartige Rufe von Entenschnabelsauriern weit weg im Tal – ihr Schädelkamm ist eine lange Röhre, die den Ruf färbt.",
+   "text": "Rufe von Kranich, Kühen und Wapiti-Hirschen, tief gelegt und durch eine Röhrenresonanz geschickt – so färbt der hohle Schädelkamm eines Entenschnabelsauriers den Ruf.",
    "typ": "gebruell",
    "ziel_lufs": -26,
    "pegel_art": "spitzen",
-   "spitze_db": -12.0,
+   "spitze_db": -12.5,
    "begrenzt_db": 0.0,
-   "sekunden": 25.5,
+   "sekunden": 37.7,
    "rufe": [
     18.3,
-    68.3,
-    116.9,
-    165.8,
-    212.2,
-    242.5,
-    293.0,
-    326.0,
-    374.7,
-    407.6,
-    453.4,
-    490.3,
-    520.6,
-    564.9
+    55.3,
+    103.2,
+    150.6,
+    178.8,
+    223.7,
+    277.6,
+    310.6,
+    344.2,
+    387.4,
+    429.0,
+    471.1,
+    523.4,
+    567.6
    ],
    "probe_abtastwerte": 2646000
   },
@@ -168,22 +169,23 @@
    "typ": "gebruell",
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
-   "spitze_db": -7.8,
+   "spitze_db": -9.4,
    "begrenzt_db": 0.0,
-   "sekunden": 23.2,
+   "sekunden": 25.3,
    "rufe": [
     29.2,
-    75.7,
-    121.9,
-    178.1,
-    233.5,
-    288.1,
-    328.4,
-    369.7,
-    418.4,
-    469.2,
-    526.1,
-    579.4
+    81.4,
+    116.6,
+    174.3,
+    211.8,
+    252.1,
+    301.6,
+    347.7,
+    391.2,
+    444.1,
+    501.4,
+    533.5,
+    564.1
    ],
    "probe_abtastwerte": 2646000
   },
@@ -195,17 +197,17 @@
    "ziel_lufs": -23,
    "pegel_art": "spitzen",
    "spitze_db": -2.0,
-   "begrenzt_db": 3.2,
-   "sekunden": 47.6,
+   "begrenzt_db": 3.0,
+   "sekunden": 60.1,
    "vorbeigaenge": [
     45.4,
-    126.1,
-    195.8,
-    259.9,
-    318.3,
-    390.0,
-    466.0,
-    533.3
+    129.9,
+    207.3,
+    284.5,
+    354.2,
+    414.1,
+    493.7,
+    578.2
    ],
    "probe_abtastwerte": 1323000
   },
@@ -216,20 +218,20 @@
    "typ": "besuch",
    "ziel_lufs": -26,
    "pegel_art": "spitzen",
-   "spitze_db": -2.0,
-   "begrenzt_db": 1.5,
-   "sekunden": 21.5,
+   "spitze_db": -3.6,
+   "begrenzt_db": 0.0,
+   "sekunden": 24.8,
    "besuche": [
     {
      "start": 150,
      "ende": 245,
      "naehe_m": 0.87,
-     "schritte": 32
+     "schritte": 34
     },
     {
      "start": 420,
      "ende": 515,
-     "naehe_m": 0.8,
+     "naehe_m": 0.85,
      "schritte": 33
     }
    ],
@@ -242,16 +244,17 @@
    "typ": "ueberflug",
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
-   "spitze_db": -13.3,
+   "spitze_db": -12.5,
    "begrenzt_db": 0.0,
-   "sekunden": 10.7,
+   "sekunden": 9.5,
    "zeiten": [
     42.1,
-    113.1,
-    208.6,
-    283.6,
-    377.7,
-    476.0
+    115.0,
+    213.2,
+    293.9,
+    365.1,
+    452.2,
+    541.9
    ],
    "probe_abtastwerte": 1764000
   },
@@ -264,65 +267,123 @@
    "pegel_art": "integriert",
    "spitze_db": -32.5,
    "begrenzt_db": 0.0,
-   "sekunden": 35.8,
+   "sekunden": 36.3,
    "akkorde": 8,
    "probe_abtastwerte": 1323000
   },
   {
    "name": "voegel_rufe",
    "titel": "Rufe aus der Deckung",
-   "text": "Bei Regen singen Vögel kaum: nur kurze Kontakt- und Warnrufe, gedämpft aus dem Unterholz. Reißt eine Böe an den Kronen, fliegen einige schimpfend auf.",
+   "text": "Bei Regen singen Vögel kaum: Krähen, Häher und ein Specht rufen kurz aus der Deckung. Reißt eine Böe an den Kronen oder bricht ein Ast, fliegen einige schimpfend auf; nach einem Gebrüll verstummen sie.",
    "typ": "schwarm",
    "ziel_lufs": -35,
    "pegel_art": "spitzen",
-   "spitze_db": -14.7,
+   "spitze_db": -10.0,
    "begrenzt_db": 0.0,
-   "sekunden": 16.9,
-   "rufe": 133,
-   "aufgeschreckt": 7,
+   "sekunden": 26.3,
+   "rufe": 128,
+   "aufgeschreckt": 32,
    "probe_abtastwerte": 1323000
   }
  ],
  "drehbuch": [
   [
-   52.2,
-   "Leichter Regen setzt wieder ein."
-  ],
-  [
-   102.2,
-   "Leichter Regen. Die Vögel sitzen still in der Deckung, nur ab und zu ein kurzer Ruf."
-  ],
-  [
-   202.2,
+   19.6,
    "Der Wind frischt auf und kündigt mehr Regen an; die Kronen rauschen, ein paar Vögel fliegen schimpfend auf."
   ],
   [
-   264.7,
+   82.1,
    "Der Regen wird kräftig, auf den großen Blättern trommelt es, der Bach schwillt an."
   ],
   [
-   352.2,
+   169.6,
    "Höhepunkt: Sturm in den Kronen."
   ],
   [
-   452.2,
+   269.6,
    "Der Regen lässt nach, es tropft weiter von den Blättern."
   ],
   [
-   539.7,
+   357.1,
    "Regenpause – die ersten Vögel trauen sich wieder und singen."
+  ],
+  [
+   469.6,
+   "Leichter Regen setzt wieder ein."
+  ],
+  [
+   519.6,
+   "Leichter Regen. Die Vögel sitzen still in der Deckung, nur ab und zu ein kurzer Ruf."
   ]
  ],
- "start_verschoben_s": 497.79,
- "start_abtastwerte": 21952456,
- "begrenzer_max_db": 2.4,
+ "start_verschoben_s": 80.39,
+ "start_abtastwerte": 3545345,
+ "begrenzer_max_db": 2.1,
  "lufs": -23.0,
  "naht": {
-  "sprung_naht": 0.0068,
-  "sprung_typisch_999": 0.1109,
-  "pegelsprung_naht_db": 0.14,
-  "pegelsprung_typisch_95_db": 4.27
+  "sprung_naht": 0.0032,
+  "sprung_typisch_999": 0.0957,
+  "pegelsprung_naht_db": 0.29,
+  "pegelsprung_typisch_95_db": 4.92
  },
+ "wiederholung": {
+  "tropfen_blatt": {
+   "ereignisse": 670,
+   "verschiedene": 60,
+   "haeufigster": 12
+  },
+  "tropfen_pfuetze": {
+   "ereignisse": 281,
+   "verschiedene": 50,
+   "haeufigster": 7
+  },
+  "herde": {
+   "ereignisse": 92,
+   "verschiedene": 82,
+   "haeufigster": 2
+  },
+  "voegel": {
+   "ereignisse": 33,
+   "verschiedene": 28,
+   "haeufigster": 2
+  },
+  "gebruell": {
+   "ereignisse": 33,
+   "verschiedene": 29,
+   "haeufigster": 3
+  },
+  "kammrufe": {
+   "ereignisse": 14,
+   "verschiedene": 14,
+   "haeufigster": 1
+  },
+  "wummern": {
+   "ereignisse": 73,
+   "verschiedene": 32,
+   "haeufigster": 4
+  },
+  "vorbeigang": {
+   "ereignisse": 1120,
+   "verschiedene": 405,
+   "haeufigster": 11
+  },
+  "besuch": {
+   "ereignisse": 289,
+   "verschiedene": 203,
+   "haeufigster": 4
+  },
+  "flugsaurier": {
+   "ereignisse": 20,
+   "verschiedene": 13,
+   "haeufigster": 2
+  },
+  "voegel_rufe": {
+   "ereignisse": 398,
+   "verschiedene": 184,
+   "haeufigster": 20
+  }
+ },
+ "ohne": [],
  "quellen": [
   "aeste_knacken",
   "ast_brechen",
@@ -338,6 +399,7 @@
   "bach_wald_nah",
   "baer_fressen1",
   "baer_laute",
+  "bison_herde",
   "esc_1-202111-A",
   "esc_1-21189-A",
   "esc_1-23094-A",
@@ -431,9 +493,24 @@
   "fluegel_elster",
   "fluegel_leicht",
   "fluegel_schlagen",
+  "hirsch_brunft1",
+  "hirsch_brunft2",
+  "kamele",
+  "kuh_ruf5",
+  "kuh_ruf8",
   "matsch_dick",
   "matsch_wandern",
   "regen_blaetter_gravity",
-  "voegel_kranich_ys"
+  "rothirsch_roehren",
+  "rothirsch_schottland",
+  "ruf_gruenspecht",
+  "ruf_haeher",
+  "ruf_haeher_schrei",
+  "ruf_haeher_wald",
+  "ruf_kraehen",
+  "ruf_kraehen_alarm",
+  "ruf_rabe_flug",
+  "voegel_kranich_ys",
+  "wapiti_rufe"
  ]
 }

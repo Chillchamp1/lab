@@ -63,6 +63,39 @@ def main():
     if np.abs(vg.ort(np.array([0.0])) - vg.ort(np.array([D]))).max() > 1e-6:
         fehler.append('Möwenbahn ist nicht periodisch')
 
+    # 5) Raumwirkung (23.11.): Breite, Nahfeld, Stamm-Streuung
+    import raumwirkung as rwk
+    from wald import Wald
+    m = rwk.breitenmasken(4, np.random.default_rng(1))
+    if abs(m.sum(0) - 1).max() > 1e-4:
+        fehler.append('Breitenmasken ergänzen sich nicht zu 1')
+    nf = rwk.nahfeld_ohren(np.array([0.2, 1.0]), np.array([[0.0, 1.0, 0.0], [0.0, 1.0, 0.0]]))
+    if not (nf[0, 0, 10] > 1.4 and nf[0, 1, 10] < 0.8 and abs(nf[1] - 1).max() < 1e-3):
+        fehler.append('Nahfeld: bei 20 cm muss das zugewandte Ohr lauter, das abgewandte leiser sein; bei 1 m neutral')
+    wald = Wald({'staemme': {'anzahl': 36}}, 20.0, 21)
+    rng = np.random.default_rng(0)
+    rausch = (rng.normal(size=2 * FS) * 0.05).astype(np.float32)
+
+    def lauf(g, ohne, ort):
+        k2 = szene.Kontext(hrtf, wald, None, 20.0, rng)
+        k2.g, k2.ohne = g, set(ohne)
+        sp = Spur(20.0)
+        szene.rendere_quelle(k2, sp, Spur(20.0, 1), rausch, 2.0, lambda t: np.tile(ort, (len(t), 1)), True, 10.0, 0.0)
+        return sp.x.astype(np.float64)
+
+    def kohaerenz(x):
+        return max(abs(np.dot(x[0, 60:-60], np.roll(x[1], d)[60:-60])) for d in range(-44, 45)) / np.sqrt((x[0] ** 2).sum() * (x[1] ** 2).sum())
+    vorn = np.array([10.0, 0.0, 1.0])
+    punkt, breit = lauf({}, ['streuung'], vorn), lauf({'breite_m': 10.0}, ['streuung'], vorn)
+    if not (kohaerenz(punkt) > 0.7 and kohaerenz(breit) < kohaerenz(punkt) - 0.3):
+        fehler.append(f'Breite: Ohrsignale einer breiten Quelle müssen sich deutlich unterscheiden ({kohaerenz(punkt):.2f} -> {kohaerenz(breit):.2f})')
+    if abs(10 * np.log10((breit ** 2).sum() / (punkt ** 2).sum())) > 2.0:
+        fehler.append('Breite ändert den Pegel um mehr als 2 dB')
+    streu = lauf({}, [], vorn) - punkt
+    rel = 10 * np.log10((streu ** 2).sum() / (punkt ** 2).sum())
+    if not (-30 < rel < -6):
+        fehler.append(f'Stamm-Streuung außerhalb des plausiblen Bereichs ({rel:.1f} dB relativ zum Direktschall)')
+
     print('Selbsttest:', 'bestanden' if not fehler else 'FEHLER')
     for f in fehler:
         print('  -', f)
