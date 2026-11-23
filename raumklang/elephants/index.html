@@ -21,16 +21,17 @@
   <h1>Elephants at the Waterhole</h1>
   <div class="spieler gross" id="spieler"></div>
   <div class="kartenbox">
+    <canvas id="drei" hidden aria-label="Live 3D view of the scene: every sound appears where and when you hear it"></canvas>
     <canvas id="karte" width="1000" height="1000" aria-label="Live map: you in the middle, every sound as a moving dot"></canvas>
     <p id="jetzt" class="jetzt" aria-live="off"></p>
     <div id="legende" class="legende"></div>
   </div>
-  <div class="knoepfe"><button id="teilen" type="button">Share</button><span id="teilen-info" aria-live="polite"></span></div>
+  <div class="knoepfe"><button id="ansicht" type="button" hidden>Map view</button><button id="teilen" type="button">Share</button><span id="teilen-info" aria-live="polite"></span></div>
   <details class="ueber">
     <summary>About this scene</summary>
     <p>Night on the savanna. You lie in a tent, a waterhole a few metres in front of you. Crickets chirp, frogs croak at the water&#x27;s edge, hippos grunt far off. A herd of elephants comes to drink: the deep rumbles they talk with, trunks slurping and splashing water. One stomps past the tent – and once, one comes right up and sniffs at the tent.</p>
     <p class="leise">Best with headphones (left and right the right way round), lying down. The scene loops endlessly without an audible seam.
-    The map shows you from above, looking up the screen; every dot is a sound, exactly where the renderer placed it.</p>
+    The view shows every sound exactly where and when the renderer placed it; distances further away are squeezed so that everything fits.</p>
     <div class="werte" id="werte"></div>
     <div id="mehr"></div>
   </details>

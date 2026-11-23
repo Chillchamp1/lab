@@ -20,7 +20,7 @@ export async function ladeKarte(url) {
   return K;
 }
 
-function ort(K, q, ts) {        // Ort einer Quelle zur Szenenzeit ts (oder null)
+export function ort(K, q, ts) {        // Ort einer Quelle zur Szenenzeit ts (oder null)
   for (const k of [0, -K.dauer, K.dauer]) {
     const x = ts + k;
     if (x >= q.t0 - 0.25 && x <= q.ende + 0.25) {
@@ -143,4 +143,11 @@ function zeichneLog(canvas, K, t) {
     g.fillStyle = f; g.beginPath(); g.arc(x, y, q.dt > 1 ? W / 180 : W / 105, 0, 7); g.fill(); g.globalAlpha = 1;
   }
   return gruppen;
+}
+
+/** Namen der Gruppen, die zur Dateizeit t zu hören sind (für die Legende). */
+export function aktiveGruppen(K, t) {
+  const ts = (t + K.start_s) % K.dauer, aus = new Set();
+  for (const q of K.quellen) if (!aus.has(q.g) && ort(K, q, ts)) aus.add(q.g);
+  return aus;
 }

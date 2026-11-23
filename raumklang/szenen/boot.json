@@ -3160,12 +3160,12 @@
    "bezug_m": 20,
    "hall": 0.4,
    "decke_db": -2.5,
-   "wucht_pegel": 0.35,
+   "wucht_pegel": 0.12,
    "wucht_exponent": 2.5,
    "sammlung": [
     {
      "quelle": "felsen_gischt_trp",
-     "hochpass": 30,
+     "hochpass": 70,
      "zerlegen": {
       "methode": "taeler",
       "glatt_ms": 120,
@@ -3186,35 +3186,30 @@
      "wucht": {
       "grollen": {
        "band": [
-        35,
-        120
+        40,
+        110
        ],
-       "anteil": 0.3,
-       "glatt_ms": 120
+       "anteil": 0.1,
+       "glatt_ms": 80
       },
       "moden": [
        [
-        52,
-        0.3,
-        0.55
+        62,
+        0.18,
+        0.5
        ],
        [
-        78,
-        0.22,
-        0.4
-       ],
-       [
-        110,
-        0.15,
-        0.25
+        95,
+        0.12,
+        0.35
        ]
       ],
-      "obertoene": 0.35
+      "obertoene": 0.3
      }
     },
     {
      "quelle": "felsen_it",
-     "hochpass": 30,
+     "hochpass": 70,
      "zerlegen": {
       "methode": "taeler",
       "glatt_ms": 120,
@@ -3235,35 +3230,30 @@
      "wucht": {
       "grollen": {
        "band": [
-        35,
-        120
+        40,
+        110
        ],
-       "anteil": 0.3,
-       "glatt_ms": 120
+       "anteil": 0.1,
+       "glatt_ms": 80
       },
       "moden": [
        [
-        52,
-        0.3,
-        0.55
+        62,
+        0.18,
+        0.5
        ],
        [
-        78,
-        0.22,
-        0.4
-       ],
-       [
-        110,
-        0.15,
-        0.25
+        95,
+        0.12,
+        0.35
        ]
       ],
-      "obertoene": 0.35
+      "obertoene": 0.3
      }
     },
     {
      "quelle": "felsen_amholma4",
-     "hochpass": 30,
+     "hochpass": 70,
      "zerlegen": {
       "methode": "taeler",
       "glatt_ms": 120,
@@ -3284,35 +3274,30 @@
      "wucht": {
       "grollen": {
        "band": [
-        35,
-        120
+        40,
+        110
        ],
-       "anteil": 0.3,
-       "glatt_ms": 120
+       "anteil": 0.1,
+       "glatt_ms": 80
       },
       "moden": [
        [
-        52,
-        0.3,
-        0.55
+        62,
+        0.18,
+        0.5
        ],
        [
-        78,
-        0.22,
-        0.4
-       ],
-       [
-        110,
-        0.15,
-        0.25
+        95,
+        0.12,
+        0.35
        ]
       ],
-      "obertoene": 0.35
+      "obertoene": 0.3
      }
     },
     {
      "quelle": "felsen_amholma1",
-     "hochpass": 30,
+     "hochpass": 70,
      "zerlegen": {
       "methode": "taeler",
       "glatt_ms": 120,
@@ -3333,35 +3318,30 @@
      "wucht": {
       "grollen": {
        "band": [
-        35,
-        120
+        40,
+        110
        ],
-       "anteil": 0.3,
-       "glatt_ms": 120
+       "anteil": 0.1,
+       "glatt_ms": 80
       },
       "moden": [
        [
-        52,
-        0.3,
-        0.55
+        62,
+        0.18,
+        0.5
        ],
        [
-        78,
-        0.22,
-        0.4
-       ],
-       [
-        110,
-        0.15,
-        0.25
+        95,
+        0.12,
+        0.35
        ]
       ],
-      "obertoene": 0.35
+      "obertoene": 0.3
      }
     },
     {
      "quelle": "brecher_buhne",
-     "hochpass": 30,
+     "hochpass": 70,
      "zerlegen": {
       "methode": "taeler",
       "glatt_ms": 120,
@@ -3382,30 +3362,25 @@
      "wucht": {
       "grollen": {
        "band": [
-        35,
-        120
+        40,
+        110
        ],
-       "anteil": 0.3,
-       "glatt_ms": 120
+       "anteil": 0.1,
+       "glatt_ms": 80
       },
       "moden": [
        [
-        52,
-        0.3,
-        0.55
+        62,
+        0.18,
+        0.5
        ],
        [
-        78,
-        0.22,
-        0.4
-       ],
-       [
-        110,
-        0.15,
-        0.25
+        95,
+        0.12,
+        0.35
        ]
       ],
-      "obertoene": 0.35
+      "obertoene": 0.3
      }
     }
    ],

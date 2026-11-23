@@ -21,6 +21,8 @@ pipeline/seiten.py          schreibt je Szene eine Seite zum Teilen (sea/, fores
 audio/                      Ergebnis: Mischung, eine Hörprobe je Klanggruppe, Bericht (boot.json)
 index.html, stil.css        Übersicht: je Szene eine Karte, ein Klick öffnet die Szenenseite
 spieler.js, szene.js        Spieler (streamt, dann lückenlose Schleife) und Szenenseite
+karte.js                    Szenenkarte zeichnen (linear oder logarithmisch), auch als Live-Karte
+diorama.js, vendor/         3D-Ansicht der Meer-Szene (three.js r160, MIT, mitgeliefert)
 ```
 
 Rendern (Python 3 mit `numpy scipy h5py pyloudnorm`, dazu `ffmpeg`):
@@ -193,6 +195,23 @@ Ereignisfolge bleibt dabei gleich, weil jede Wirkung ihre eigene Zufallsquelle h
 - **Weitenhall mit Obergrenze** (`max_faktor`): sehr ferne Quellen bestanden sonst
   fast nur aus Hall (ferne Möwenkolonie: Hall 14 dB über dem Direktschall – klang
   wie vor einer Klippe; jetzt 4,5 dB darunter, kürzer).
+
+## Live-Ansicht auf der Szenenseite
+
+Unter dem Spieler läuft eine Ansicht mit, die der Abspielzeit folgt – gezeichnet aus den
+Ortsdaten der Szenenkarte (`audio/<name>_karte.json`, gezippt 5–70 kB), kein Video:
+
+- **Karte von oben** (`karte.js`, alle Szenen): Hörer in der Mitte, Pfeil = Blickrichtung,
+  jede Quelle ein Punkt mit kurzer Spur. Abstand logarithmisch, damit ein Tropfen in 1 m und
+  eine Herde in 500 m zugleich zu sehen sind; das Bild zoomt nie.
+- **3D-Diorama** (`diorama.js`, bisher nur das Meer): isometrisch, feste Perspektive,
+  Comic-Schattierung in drei Stufen, Tilt-Shift-Unschärfe oben und unten, warme Tönung.
+  Boot mit liegender Figur, Fels, Kolonie-Insel, Möwen und Gänse als kleine flatternde
+  Figuren, Wellenkämme, Brecher und Spritzer als Schaumkugeln (eine instanzierte Form).
+  Nah bis 5 m maßstäblich, dahinter logarithmisch gestaucht. Fürs Handy: höchstens 30
+  Bilder/s, Auflösung ≤ 1,5-fach, keine Schatten, keine Texturen, pausiert im Hintergrund.
+  Möwen erscheinen um ihren Ruf herum (±3 s) auf ihrer Bahn weitergeführt – die Karte kennt
+  sie nur, während sie rufen.
 
 ## Ausschnitte nach Klang auswählen
 

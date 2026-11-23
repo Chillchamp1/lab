@@ -21,16 +21,17 @@
   <h1>In a Dinosaur Forest in Autumn Rain</h1>
   <div class="spieler gross" id="spieler"></div>
   <div class="kartenbox">
+    <canvas id="drei" hidden aria-label="Live 3D view of the scene: every sound appears where and when you hear it"></canvas>
     <canvas id="karte" width="1000" height="1000" aria-label="Live map: you in the middle, every sound as a moving dot"></canvas>
     <p id="jetzt" class="jetzt" aria-live="off"></p>
     <div id="legende" class="legende"></div>
   </div>
-  <div class="knoepfe"><button id="teilen" type="button">Share</button><span id="teilen-info" aria-live="polite"></span></div>
+  <div class="knoepfe"><button id="ansicht" type="button" hidden>Map view</button><button id="teilen" type="button">Share</button><span id="teilen-info" aria-live="polite"></span></div>
   <details class="ueber">
     <summary>About this scene</summary>
     <p>You sit leaning against a tree trunk under the canopy. It is raining; on big leaves above you it drums like rain on a tent, a stream flows past on your right, birds sing in the trees. Far away, plant-eaters call, and sometimes something enormous bellows across the valley; now and then one stomps past breaking branches, and one comes close to browse and sniffs at you.</p>
     <p class="leise">Best with headphones (left and right the right way round), lying down. The scene loops endlessly without an audible seam.
-    The map shows you from above, looking up the screen; every dot is a sound, exactly where the renderer placed it.</p>
+    The view shows every sound exactly where and when the renderer placed it; distances further away are squeezed so that everything fits.</p>
     <div class="werte" id="werte"></div>
     <div id="mehr"></div>
   </details>

@@ -1,232 +1,291 @@
 {
  "szene": "boot",
- "stand": "23.11.2026 15:47",
+ "stand": "23.11.2026 17:21",
  "dauer": 600,
  "schleife": true,
  "abtastwerte": 26460000,
  "hrtf": "subject_040.sofa",
  "blick": 55,
- "titel": "Im Ruderboot auf dem Meer",
- "text": "Du liegst im Ruderboot, Füße zum Bug. Möwen kreisen und schießen dicht über dich hinweg, ringsum Wellen, Wasser schwappt gegen das Holz, das Boot knarzt, im schlaffen Segel fängt sich ab und zu der Wind.",
+ "titel": "In a Wooden Boat at Sea",
+ "text": "You lie in an open wooden sailing boat, a good six metres long – at the stern on cushions, your head propped up against the aft thwart, feet towards the bow, safely below the gunwale. Gulls circle and dart over you, waves all around, water knocks hollow against the planks, the boat creaks, and now and then the wind catches the slack sail.",
  "gruppen": [
   {
    "name": "see_fern",
-   "titel": "Ferne See",
-   "text": "Brandung und Dünung weit draußen, rund um den Horizont. Sie kommt über die Bordkante herein und ist deshalb gedämpft.",
+   "titel": "Distant sea",
+   "text": "Surf and swell far out, all around the horizon. It reaches you over the gunwale and is softened by it.",
    "typ": "bett",
    "ziel_lufs": -29,
    "pegel_art": "integriert",
-   "spitze_db": -12.5,
+   "spitze_db": -13.3,
    "begrenzt_db": 0.0,
-   "sekunden": 634.2,
+   "sekunden": 571.2,
+   "probe_ab_s": 377.4,
+   "probe_aktiv": 1.0,
    "probe_abtastwerte": 1323000
   },
   {
    "name": "wind",
-   "titel": "Leiser Wind",
-   "text": "Ein schwacher Wind, der langsam an- und abschwillt; in den Böen frischt er auf – dieselben Böen, die das Segel füllen.",
+   "titel": "Gentle wind",
+   "text": "A light wind that slowly rises and falls; in the gusts it freshens – the same gusts that fill the sail.",
    "typ": "bett",
    "ziel_lufs": -37,
    "pegel_art": "integriert",
-   "spitze_db": -10.9,
+   "spitze_db": -12.5,
    "begrenzt_db": 0.0,
-   "sekunden": 555.4,
+   "sekunden": 502.2,
+   "probe_ab_s": 323.4,
+   "probe_aktiv": 1.0,
    "probe_abtastwerte": 1323000
   },
   {
    "name": "wellen",
-   "titel": "Wellenkämme ringsum",
-   "text": "Einzelne Wellenkämme in 7 bis 32 m Entfernung, jeder an einer anderen Stelle; sie treiben mit dem Wind. Brechen sie mit viel Kraft, grollt es tief.",
+   "titel": "Wave crests all around",
+   "text": "Single wave crests 7 to 32 m away, each in a different place, drifting with the wind. When one breaks with real force, there is a deep rumble.",
    "typ": "ereignisse",
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
-   "begrenzt_db": 0.1,
-   "sekunden": 99.0,
+   "begrenzt_db": 1.9,
+   "sekunden": 89.0,
+   "probe_ab_s": 362.4,
+   "probe_aktiv": 0.88,
    "probe_abtastwerte": 1323000
   },
   {
    "name": "rumpf",
-   "titel": "Wasser am Holz",
-   "text": "Schwapps und Klatscher gegen die Planken – auf der Seite, die beim Rollen gerade eintaucht. Harte Schläge bringen den Rumpf zum Schwingen: tiefe Eigenschwingungen des Holzes, die man im liegenden Körper spüren würde.",
+   "titel": "Water against the hull",
+   "text": "Slaps and splashes against the planks – on whichever side is dipping as the boat rolls. The wood resonates hollowly and carries every knock right to your ear; hard hits make the whole hull boom, and now and then a little spray flies over the gunwale and patters onto the wood beside you.",
    "typ": "rumpf",
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
-   "begrenzt_db": 0.4,
-   "sekunden": 130.1,
-   "ereignisse": 517,
+   "begrenzt_db": 3.4,
+   "sekunden": 109.0,
+   "ereignisse": 491,
    "nach_welle": 24,
+   "spritzer": 11,
+   "probe_ab_s": 347.9,
+   "probe_aktiv": 0.38,
    "probe_abtastwerte": 1323000
   },
   {
    "name": "knarzen",
-   "titel": "Knarzendes Holz",
-   "text": "Dollen, Duchten und Spanten arbeiten, wenn das Boot sich neigt oder eine Welle den Rumpf trifft: langsames, tiefes Knarren, das fest am Boot bleibt.",
+   "titel": "Creaking wood",
+   "text": "Rowlocks, thwarts and frames work as the boat heels or a wave hits the hull: a calm, warm creaking that stays fixed to the boat – only the deep, woody creaks, no bright squeaks.",
    "typ": "knarzen",
-   "ziel_lufs": -34,
+   "ziel_lufs": -30,
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
-   "begrenzt_db": 0.2,
-   "sekunden": 19.9,
-   "ereignisse": 120,
-   "nach_schlag": 4,
+   "begrenzt_db": 4.5,
+   "sekunden": 17.9,
+   "ereignisse": 145,
+   "nach_schlag": 3,
+   "probe_ab_s": 488.9,
+   "probe_aktiv": 0.37,
    "probe_abtastwerte": 1323000
   },
   {
    "name": "segel",
-   "titel": "Schlaffes Segel",
-   "text": "Das Segel hängt schlaff am Mast vor den Knien. In einer Böe fängt sich der Wind: echtes Stoffflattern schwillt an, das Tuch füllt sich mit einem weichen Schlag und fällt wieder ein.",
+   "titel": "Slack sail",
+   "text": "The sail hangs slack on the mast in front of you, beyond your feet. In a gust it catches the wind: real cloth flutter swells, the canvas fills with a soft thump and collapses again.",
    "typ": "segel",
    "ziel_lufs": -33,
    "pegel_art": "spitzen",
-   "spitze_db": -9.2,
+   "spitze_db": -9.6,
    "begrenzt_db": 0.0,
-   "sekunden": 189.9,
+   "sekunden": 172.8,
    "faenge": 27,
+   "probe_ab_s": 322.9,
+   "probe_aktiv": 0.88,
    "probe_abtastwerte": 2646000
   },
   {
    "name": "moewen_fern",
-   "titel": "Möwen in der Ferne",
-   "text": "Das ferne Stimmengewirr der Kolonie, aus derselben Richtung.",
+   "titel": "Gulls in the distance",
+   "text": "The distant chatter of the colony, from the same direction.",
    "typ": "bett",
    "ziel_lufs": -39,
    "pegel_art": "integriert",
-   "spitze_db": -13.4,
+   "spitze_db": -11.7,
    "begrenzt_db": 0.0,
-   "sekunden": 120.3,
-   "weitenhall_db": -2.7,
+   "sekunden": 113.5,
+   "weitenhall_db": -2.0,
+   "probe_ab_s": 370.4,
+   "probe_aktiv": 1.0,
    "probe_abtastwerte": 1323000
   },
   {
    "name": "moewen",
-   "titel": "Möwen kreisen",
-   "text": "Fünf Möwen halten sich in Luv des Boots, vorn links, kreisen dort im Wind und rufen; ab und zu antwortet eine andere. Frischt der Wind auf oder bricht eine Welle am Felsen, schrecken sie auf.",
+   "titel": "Circling gulls",
+   "text": "Five gulls keep to windward of the boat, ahead and to the left, circling in the wind and calling; now and then another answers. When the wind freshens or a wave breaks on the rock, they take fright.",
    "typ": "schwarm",
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
-   "spitze_db": -7.6,
-   "begrenzt_db": 0.0,
-   "sekunden": 26.1,
+   "spitze_db": -7.0,
+   "begrenzt_db": 0.2,
+   "sekunden": 25.0,
    "rufe": 94,
    "aufgeschreckt": 20,
-   "weitenhall_db": -31.3,
+   "weitenhall_db": -31.7,
+   "probe_ab_s": 119.4,
+   "probe_aktiv": 0.43,
    "probe_abtastwerte": 1323000
   },
   {
    "name": "ueberflug",
-   "titel": "Möwe dicht über dem Boot",
-   "text": "Alle ein bis zwei Minuten schießt eine Möwe in 2 bis 4,5 m Höhe über das Boot – meist mit dem Wind, von vorn links nach hinten rechts, manchmal dagegen. Ein Ruf liegt genau über dem Boot, seine Tonhöhe kippt beim Vorbeiflug (Doppler); im Anflug Flügelschläge.",
+   "titel": "Gull skimming the boat",
+   "text": "About every half minute a gull shoots over the boat 3 to 5 m up – mostly with the wind, from front left to back right, sometimes against it. One call lands right overhead, its pitch dropping as it passes (Doppler); wingbeats as it approaches.",
    "typ": "ueberflug",
    "ziel_lufs": -22,
    "pegel_art": "spitzen",
    "spitze_db": -4.0,
-   "begrenzt_db": 1.3,
-   "sekunden": 18.9,
+   "begrenzt_db": 2.4,
+   "sekunden": 23.1,
    "zeiten": [
     13.7,
-    62.5,
-    103.3,
-    160.9,
-    202.7,
-    263.8,
-    329.7,
-    384.9,
-    441.9,
-    497.1,
-    539.6
+    42.2,
+    66.7,
+    99.7,
+    124.6,
+    159.5,
+    196.8,
+    228.6,
+    261.4,
+    293.2,
+    318.5,
+    346.5,
+    373.1,
+    412.7,
+    448.9,
+    480.0,
+    508.5,
+    533.8,
+    571.3
    ],
-   "weitenhall_db": -44.2,
+   "weitenhall_db": -44.1,
+   "probe_ab_s": 160.4,
+   "probe_aktiv": 0.15,
    "probe_abtastwerte": 1764000
   },
   {
    "name": "moewen_weit",
-   "titel": "Möwenkolonie weit weg",
-   "text": "Eine Möwenkolonie auf einem fernen Felsen vorn rechts, 150 bis 370 Meter entfernt – ihre Rufe kommen immer aus dieser Richtung.",
+   "titel": "Gull colony far away",
+   "text": "A gull colony on a distant rock ahead and to the right, 150 to 370 metres away – its calls always come from that direction.",
    "typ": "schwarm",
    "ziel_lufs": -38,
    "pegel_art": "spitzen",
-   "spitze_db": -20.8,
+   "spitze_db": -21.1,
    "begrenzt_db": 0.0,
-   "sekunden": 20.4,
+   "sekunden": 19.1,
    "rufe": 106,
    "aufgeschreckt": 0,
-   "weitenhall_db": -2.9,
+   "weitenhall_db": -2.8,
+   "probe_ab_s": 409.9,
+   "probe_aktiv": 0.37,
    "probe_abtastwerte": 1323000
   },
   {
    "name": "felsen",
-   "titel": "Brecher am Felsen",
-   "text": "Ein Felsen ragt rund 35 m entfernt aus dem Wasser. Ab und zu bricht dort eine Welle mit Wucht – das Boot dreht sich langsam, so wandert der Felsen um dich herum.",
+   "titel": "Breakers on the rock",
+   "text": "A rock juts out of the water about 20 m away. Now and then a wave slams into it – a hard impact, then the spray falls back. The boat slowly swings, so the rock wanders around you.",
    "typ": "ereignisse",
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
-   "spitze_db": -4.0,
-   "begrenzt_db": 4.4,
-   "sekunden": 21.3,
+   "spitze_db": -2.5,
+   "begrenzt_db": 1.7,
+   "sekunden": 20.1,
+   "probe_ab_s": 411.9,
+   "probe_aktiv": 0.28,
    "probe_abtastwerte": 1323000
   },
   {
    "name": "zug",
-   "titel": "Ein Schwarm zieht vorbei",
-   "text": "Zweimal in zehn Minuten zieht ein Schwarm von fünf bis acht Möwen geschlossen vorbei: erst mit dem aufkommenden Wind davon, später, wenn die See sich beruhigt, zurück.",
+   "titel": "A flock passes",
+   "text": "Twice in ten minutes a flock of eight to twelve gulls passes 60 to 90 m away – for half a minute you hear it approach, go by calling and fade away: first with the rising wind, later back again.",
    "typ": "zug",
    "ziel_lufs": -30,
    "pegel_art": "spitzen",
    "spitze_db": -15.8,
    "begrenzt_db": 0.0,
-   "sekunden": 10.1,
+   "sekunden": 30.7,
    "zuege": [
     105,
     515
    ],
+   "probe_ab_s": 86.4,
+   "probe_aktiv": 1.0,
+   "probe_abtastwerte": 1764000
+  },
+  {
+   "name": "gaense",
+   "titel": "Geese passing",
+   "text": "Twice, high and far out, a skein of geese crosses the water – their calls carry for a long time, slowly pass and fade; later the skein comes back.",
+   "typ": "zug",
+   "ziel_lufs": -31,
+   "pegel_art": "spitzen",
+   "spitze_db": -14.8,
+   "begrenzt_db": 0.0,
+   "sekunden": 34.3,
+   "zuege": [
+    40,
+    440
+   ],
+   "probe_ab_s": 423.4,
+   "probe_aktiv": 1.0,
    "probe_abtastwerte": 1764000
   }
  ],
  "drehbuch": [
   [
-   9.7,
-   "Ein Schwarm Möwen zieht mit dem aufkommenden Wind vorbei."
+   2.4,
+   "Calm sea; the gulls circle at ease."
   ],
   [
-   39.7,
-   "Der Wind frischt auf, das Segel fängt sich öfter."
+   42.4,
+   "Far out, a skein of geese passes; you can hear their calls for a long time."
   ],
   [
-   144.7,
-   "Die Wellen werden höher, der Rumpf schlägt härter; die Möwen rufen aufgeregter, ihre Schreie klingen verweht."
+   107.4,
+   "A flock of gulls passes with the rising wind."
   ],
   [
-   240.7,
-   "Schwere See: Brecher schlagen dicht hintereinander an den Felsen."
+   137.4,
+   "The wind freshens; the sail fills more often."
   ],
   [
-   354.7,
-   "Der Wind flaut ab, die See beruhigt sich."
+   242.4,
+   "The waves grow, the hull is hit harder; the gulls call more excitedly, their cries blown about by the wind."
   ],
   [
-   419.7,
-   "Der Schwarm kehrt zurück."
+   338.4,
+   "Heavy sea: breakers crash against the rock one after another."
   ],
   [
-   438.7,
-   "Ruhe – die Möwen kreisen wieder gelassen."
+   442.4,
+   "The geese fly back."
   ],
   [
-   504.7,
-   "Ruhige See, die Möwen kreisen entspannt."
+   452.4,
+   "The wind drops and the sea settles."
+  ],
+  [
+   517.4,
+   "The flock returns."
+  ],
+  [
+   536.4,
+   "Calm again – the gulls circle lazily once more."
   ]
  ],
- "start_verschoben_s": 95.31,
- "start_abtastwerte": 4203355,
- "begrenzer_max_db": 2.9,
+ "start_verschoben_s": 597.61,
+ "start_abtastwerte": 26354507,
+ "begrenzer_max_db": 4.0,
  "lufs": -21.1,
  "naht": {
-  "sprung_naht": 0.0108,
-  "sprung_typisch_999": 0.0619,
-  "pegelsprung_naht_db": 0.84,
-  "pegelsprung_typisch_95_db": 1.97
+  "sprung_naht": 0.0037,
+  "sprung_typisch_999": 0.0714,
+  "pegelsprung_naht_db": 0.48,
+  "pegelsprung_typisch_95_db": 1.94
  },
  "wiederholung": {
   "wellen": {
@@ -235,14 +294,14 @@
    "haeufigster": 7
   },
   "rumpf": {
-   "ereignisse": 517,
-   "verschiedene": 213,
+   "ereignisse": 491,
+   "verschiedene": 200,
    "haeufigster": 4
   },
   "knarzen": {
-   "ereignisse": 120,
-   "verschiedene": 32,
-   "haeufigster": 5
+   "ereignisse": 145,
+   "verschiedene": 23,
+   "haeufigster": 7
   },
   "moewen": {
    "ereignisse": 175,
@@ -250,9 +309,9 @@
    "haeufigster": 6
   },
   "ueberflug": {
-   "ereignisse": 44,
-   "verschiedene": 30,
-   "haeufigster": 3
+   "ereignisse": 76,
+   "verschiedene": 43,
+   "haeufigster": 5
   },
   "moewen_weit": {
    "ereignisse": 106,
@@ -261,13 +320,18 @@
   },
   "felsen": {
    "ereignisse": 45,
-   "verschiedene": 13,
-   "haeufigster": 4
+   "verschiedene": 24,
+   "haeufigster": 3
   },
   "zug": {
-   "ereignisse": 39,
-   "verschiedene": 39,
-   "haeufigster": 1
+   "ereignisse": 108,
+   "verschiedene": 106,
+   "haeufigster": 2
+  },
+  "gaense": {
+   "ereignisse": 106,
+   "verschiedene": 87,
+   "haeufigster": 2
   }
  },
  "ohne": [],
@@ -278,7 +342,6 @@
   "boot_steg2",
   "boot_steg3",
   "brecher_buhne",
-  "brecher_felsen",
   "brecher_ufer",
   "esc_1-28135-A",
   "esc_1-28135-B",
@@ -288,6 +351,7 @@
   "esc_1-51035-A",
   "esc_1-51036-A",
   "esc_1-61252-A",
+  "esc_1-90797-A",
   "esc_1-91359-A",
   "esc_2-104952-A",
   "esc_2-104952-B",
@@ -312,14 +376,20 @@
   "esc_3-144827-B",
   "esc_3-155642-A",
   "esc_3-155642-B",
+  "esc_3-156907-A",
   "esc_4-128659-A",
   "esc_4-167063-A",
   "esc_4-167063-B",
   "esc_4-167063-C",
   "esc_4-182613-A",
   "esc_4-182613-B",
+  "esc_4-188293-A",
+  "esc_4-188293-B",
   "esc_4-195497-A",
   "esc_4-195497-B",
+  "esc_4-212604-A",
+  "esc_4-212604-B",
+  "esc_4-212604-C",
   "esc_5-117773-A",
   "esc_5-177779-A",
   "esc_5-188606-A",
@@ -331,10 +401,18 @@
   "esc_5-219379-A",
   "esc_5-219379-B",
   "esc_5-219379-C",
+  "esc_5-257349-A",
+  "felsen_amholma1",
+  "felsen_amholma4",
+  "felsen_gischt_trp",
+  "felsen_it",
   "fluegel_elster",
   "fluegel_gross",
   "fluegel_leicht",
   "fluegel_schlagen",
+  "gaense_ueberflug_ds",
+  "gaense_ys",
+  "gaense_zug_trp",
   "moewe_atricilla",
   "moewe_daemmerung",
   "moewe_gull1",
@@ -348,6 +426,7 @@
   "moewen_kolonie_fr",
   "moewen_kurz_lyd",
   "moewen_nah",
+  "moewen_schwarm_cell",
   "moewen_schwarm_jus",
   "moewen_wildtrack",
   "segel_baumwolle",

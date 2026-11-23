@@ -3,7 +3,7 @@
 // Die Karte folgt der Abspielzeit: jede Klangquelle als Punkt, so wie der Renderer sie gesetzt hat.
 // Drehbuch, Bausteine und Aufnahmen stehen eingeklappt unter „About this scene“.
 import { spieler, zeit, esc, standSuffix, standText } from './spieler.js';
-import { ladeKarte, zeichneKarte, drehbuchJetzt } from './karte.js';
+import { ladeKarte, zeichneKarte, drehbuchJetzt, aktiveGruppen } from './karte.js';
 
 const name = document.body.dataset.szene;          // Name der Renderdatei, z. B. boot
 const $ = id => document.getElementById(id);
@@ -21,18 +21,34 @@ $('start-knopf').addEventListener('click', async () => {
 });
 haupt.spielen();          // sofort versuchen – klappt, wenn der Browser Ton ohne Tippen erlaubt
 
-// ---------- Live-Karte
-const canvas = $('karte');
-let K = null, letzteLegende = '';
-ladeKarte(`../audio/${name}_karte.json`).then(k => { K = k; malen(); }).catch(() => { canvas.closest('.kartenbox').hidden = true; });
+// ---------- Live-Ansicht: 3D-Diorama (wo es eines gibt) oder Karte von oben
+const DIORAMA = { boot: true };           // Szenen mit 3D-Ansicht
+const canvas = $('karte'), drei = $('drei');
+let K = null, letzteLegende = '', modus3d = false, dio = null;
+ladeKarte(`../audio/${name}_karte.json`).then(async k => {
+  K = k; malen();
+  if (DIORAMA[name] && window.WebGLRenderingContext) {
+    try {
+      const { starteDiorama } = await import('./diorama.js');
+      dio = starteDiorama(drei, K, () => haupt.position());
+      umschalten(true);
+      $('ansicht').hidden = false;
+    } catch (e) { console.warn('3D-Ansicht nicht verfügbar', e); }
+  }
+}).catch(() => { canvas.closest('.kartenbox').hidden = true; });
+function umschalten(an) {
+  modus3d = an; drei.hidden = !an; canvas.hidden = an; $('legende').classList.toggle('ohne-punkte', an);
+  $('ansicht').textContent = an ? 'Map view' : '3D view';
+}
+$('ansicht').addEventListener('click', () => umschalten(!modus3d));
 function malen() {
   const t = haupt.position();
-  const aktiv = zeichneKarte(canvas, K, t, { log: true });
+  const aktiv = modus3d ? aktiveGruppen(K, t) : zeichneKarte(canvas, K, t, { log: true });
   $('jetzt').textContent = drehbuchJetzt(K, t);
   // Legende: nur die Gruppen, die gerade zu hören sind, in fester Reihenfolge
   const html = K.gruppen.filter(g => aktiv.has(g.name)).map(g => `<span><i style="background:${K.farbe[g.name]}"></i>${esc(g.titel)}</span>`).join('');
   if (html !== letzteLegende) { $('legende').innerHTML = html; letzteLegende = html; }
-  requestAnimationFrame(malen);
+  setTimeout(() => requestAnimationFrame(malen), modus3d ? 250 : 0);
 }
 
 // ---------- Teilen: Teilen-Menü des Geräts, sonst Link kopieren
