@@ -141,6 +141,16 @@ function zeichneLog(canvas, K, t) {
     g.stroke(); g.globalAlpha = q.art === 'echo' ? 0.35 : 1;
     const [x, y] = proj(p);
     g.fillStyle = f; g.beginPath(); g.arc(x, y, q.dt > 1 ? W / 180 : W / 105, 0, 7); g.fill(); g.globalAlpha = 1;
+    if (q.dt < 1 || q.n * q.dt > 20) {          // klingt gerade: Schallringe laufen nach außen (nicht bei Flächen)
+      if (q.dt > 1 && q.n * q.dt > K.dauer * 0.9) continue;
+      const alter = ts - q.t0;
+      g.strokeStyle = f; g.lineWidth = 3;
+      for (let k = 0; k < 2; k++) {
+        const u = ((alter * 1.3 + k * 0.5) % 1 + 1) % 1;
+        g.globalAlpha = 0.7 * (1 - u); g.beginPath(); g.arc(x, y, W / 105 + u * W / 22, 0, 7); g.stroke();
+      }
+      g.globalAlpha = 1;
+    }
   }
   return gruppen;
 }
