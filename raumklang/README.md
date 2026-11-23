@@ -68,7 +68,6 @@ andere Haltung: `--blick 90` (flach auf dem Rücken) bis `--blick 0` (aufrecht).
 ## Wie ein Klang zum Ohr kommt
 
 Das Boot ist ein offenes hölzernes Segelboot, 6,4 m lang und 2 m breit, Bordkante 80 cm
-<<<<<<< HEAD
 über dem Wasser. Du liegst hinten auf Polstern, den Kopf hoch auf einem Kissen an der
 Heckducht, die Füße zum Bug: die Ohren 58 cm über dem Wasser und 22 cm unter der Bordkante.
 Das Boot liegt vor Anker, den Bug im Wind (`windtragen.wind_von_grad: 0`), und schwojt
@@ -77,12 +76,6 @@ fliegen entlang der Küste quer vor dir vorbei (rechts → links und zurück) �
 denn der kommt von vorn, und Bewegung von vorn nach hinten wäre ohne Head-Tracking schlecht zu
 orten. (Wind von der Seite wäre physikalisch falsch: ein ankerndes Boot dreht den Bug in den
 Wind. Quer liegen ginge auch, `liegt_grad: -90`.) Bis 23.11.2026 war es ein 4,2 m langes Ruderboot, in dem
-=======
-über dem Wasser. Du liegst quer im Boot auf Polstern (`liegt_grad: -90`), den Kopf hoch auf
-einem Kissen an der Backbordwand, die Füße nach Steuerbord, der Bug links von dir: die Ohren
-58 cm über dem Wasser und 22 cm unter der Bordkante, die Planken 30 cm hinter dem Kopf. Quer
-liegend sieht die Ansicht das Boot von der Seite, und Bug und Heck klingen von links und rechts. Bis 23.11.2026 war es ein 4,2 m langes Ruderboot, in dem
->>>>>>> origin/main
 der Kopf auf den Bodenbrettern lag – bei kräftiger See zu klein und zu nah am Wasser, um
 sich geborgen anzufühlen. Ein größeres Boot rollt auch langsamer und weniger (3,5° statt 5°).
 
@@ -215,7 +208,6 @@ Ortsdaten der Szenenkarte (`audio/<name>_karte.json`, gezippt 5–70 kB), kein V
 - **Karte von oben** (`karte.js`, alle Szenen), im Bezug des Hörers (oben = Blickrichtung): Hörer in der Mitte, Pfeil = Blickrichtung,
   jede Quelle ein Punkt mit kurzer Spur. Abstand logarithmisch, damit ein Tropfen in 1 m und
   eine Herde in 500 m zugleich zu sehen sind; das Bild zoomt nie.
-<<<<<<< HEAD
 - **Schallringe:** um jede Quelle, die gerade klingt, laufen zwei Kreise nach außen – so sieht
   man, woher gerade etwas kommt. Flächen (ferne See, Wind, Segel, Kolonie-Gewirr) klingen immer
   und bekommen keine Ringe.
@@ -230,24 +222,6 @@ Ortsdaten der Szenenkarte (`audio/<name>_karte.json`, gezippt 5–70 kB), kein V
   Drehbuch-Kurve und Böen, Gieren des Boots).
 - Eine 3D-Ansicht (three.js, isometrisches Diorama) gab es kurz; Benjamin fand die Karte besser,
   sie ist entfernt (23.11.2026).
-=======
-- **3D-Diorama** (`diorama.js`, bisher nur das Meer): feste Perspektive von schräg oben in
-  Blickrichtung des Hörers (oben im Bild ist, wohin er schaut), Comic-Schattierung in drei Stufen,
-  keine Unschärfe.
-  Boot mit liegender Figur, Fels, Kolonie-Insel, Möwen und Gänse als kleine flatternde
-  Figuren, Wellenkämme, Brecher und Spritzer als Schaumkugeln (eine instanzierte Form).
-  Maßstäblich (1 Einheit = 1 m, etwa ±20 m im Bild); was weiter als 30 m entfernt ist
-  (Kolonie, Gänse), steht am Bildrand in seiner wahren Richtung. Wellenkämme als Wasserrücken
-  mit Schaumkrone, so breit wie die Quelle im Renderer (Feld `b` der Karte) und quer zur
-  Hörrichtung – entlang dieser Linie verteilt der Renderer die Teilquellen; die Schallringe
-  laufen an mehreren Stellen der Front. Fürs Handy: höchstens 30
-  Bilder/s, Auflösung ≤ 1,5-fach, keine Schatten, keine Texturen, pausiert im Hintergrund.
-  Möwen erscheinen um ihren Ruf herum (±3 s) auf ihrer Bahn weitergeführt – die Karte kennt
-  sie nur, während sie rufen.
-- **Schallringe** (beide Ansichten): um jede Quelle, die gerade klingt, laufen zwei Kreise
-  nach außen – so sieht man, woher gerade etwas kommt. Flächen (ferne See, Wind, Segel,
-  Kolonie-Gewirr) klingen immer und bekommen keine Ringe.
->>>>>>> origin/main
 
 ## Ausschnitte nach Klang auswählen
 

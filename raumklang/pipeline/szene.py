@@ -1641,7 +1641,6 @@ def main():
         if type(boot).__name__ == 'Boot':            # Umriss des Boots für die Kartenansicht
             k['boot'] = dict(a=round(float(boot.a), 2), b=round(float(boot.b), 2))
         k['liegt_grad'] = float(umg_cfg.get('liegt_grad', 0.0))      # Richtung der Füße/des Blicks im Bezug der Karte
-<<<<<<< HEAD
         # Wind für die Ansicht: Richtung, in die er weht (Welt), Stärke 0..1 je Sekunde (Drehbuch-Kurve plus
         # Böen) und die Drehung des Boots (Gieren), damit die Ansicht die Richtung in den Hörerbezug drehen kann
         wt = sz.get('windtragen') or {}
@@ -1654,8 +1653,6 @@ def main():
             staerke = np.clip(0.75 * kw + 0.12 * bo, 0, 1)
             gier = np.degrees(boot.winkel(ts_w.astype(float))[2]) if hasattr(boot, 'winkel') else np.zeros(len(ts_w))
             k['wind'] = dict(nach_grad=round(float(nach % 360), 1), staerke=np.round(staerke, 2).tolist(), gier_grad=np.round(gier, 1).tolist())
-=======
->>>>>>> origin/main
         (Path(a.aus) / f'{name}_karte.json').write_text(json.dumps(k, ensure_ascii=False, separators=(',', ':')))
         print('Karte:', len(karte), 'Quellen', flush=True)
 
