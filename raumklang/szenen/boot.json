@@ -11,8 +11,8 @@
   "bordkante": 0.8,
   "boden": 0.15,
   "kopf": [
-   -1.0,
-   0.62,
+   -2.3,
+   0.0,
    0.58
   ],
   "bewegung": {
@@ -24,7 +24,7 @@
    "hub_periode": 6.0,
    "gier_grad": 20
   },
-  "liegt_grad": -90
+  "liegt_grad": 0
  },
  "nachhall": {
   "t60_tief": 0.35,
@@ -174,7 +174,7 @@
      "hochpass": 120
     }
    ],
-   "text": "A light wind that slowly rises and falls; in the gusts it freshens – the same gusts that fill the sail.",
+   "text": "A light wind from your right that slowly rises and falls; in the gusts it freshens – the same gusts that fill the sail.",
    "boe_db": 4.0,
    "folgt": {
     "kurve": "wind",
@@ -197,7 +197,7 @@
     32
    ],
    "treibt_m_s": 1.5,
-   "wind_richtung_grad": 200,
+   "wind_richtung_grad": 90,
    "streuung_db": 3.0,
    "hall": 0.4,
    "sammlung": [
@@ -1053,7 +1053,7 @@
    ],
    "meldet": "welle",
    "melde_ab": 1.6,
-   "breite_achse_grad": 290
+   "breite_achse_grad": 180
   },
   {
    "name": "rumpf",
@@ -1972,18 +1972,13 @@
      0.48
     ],
     [
-     -1.35,
-     0.88,
+     -1.9,
+     0.78,
      0.4
     ],
     [
-     -0.6,
-     0.9,
-     0.4
-    ],
-    [
-     -0.9,
-     -0.88,
+     -1.9,
+     -0.78,
      0.4
     ],
     [
@@ -2025,7 +2020,7 @@
    "ziel_lufs": -33,
    "pegel_art": "spitzen",
    "hall": 0.8,
-   "text": "The sail hangs slack on the mast, ahead and to your left. In a gust it catches the wind: real cloth flutter swells, the canvas fills with a soft thump and collapses again.",
+   "text": "The sail hangs slack on the mast in front of you, beyond your feet. In a gust it catches the wind: real cloth flutter swells, the canvas fills with a soft thump and collapses again.",
    "sammlung": [
     {
      "quelle": "esc_3-117504-A"
@@ -2388,7 +2383,7 @@
      ]
     }
    ],
-   "text": "Five gulls keep to windward, ahead of you and to the left, circling there in the wind and calling; now and then another answers. When the wind freshens or a wave breaks on the rock, they take fright.",
+   "text": "Five gulls keep to windward, ahead of you and to the right, circling there in the wind and calling; now and then another answers. When the wind freshens or a wave breaks on the rock, they take fright.",
    "decke_db": -7.0,
    "folgt": {
     "kurve": "wind",
@@ -2758,7 +2753,7 @@
      ]
     }
    ],
-   "text": "About every half minute a gull shoots over the boat 3 to 5 m up – mostly across your view with the wind, from left to right, sometimes back against it, and once in a while one comes in diagonally from behind. One call lands right overhead, its pitch dropping as it passes (Doppler); wingbeats as it approaches.",
+   "text": "About every half minute a gull shoots over the boat 3 to 5 m up – mostly across your view with the wind, from right to left, sometimes back against it, and once in a while one comes in diagonally, from ahead or from behind. One call lands right overhead, its pitch dropping as it passes (Doppler); wingbeats as it approaches.",
    "decke_db": -4.0,
    "fluegel": [
     {
@@ -2860,12 +2855,14 @@
     "streuung_grad": 15
    },
    "kurs_grad": [
-    200,
+    90,
     15
    ],
    "gegen_wahrsch": 0.35,
    "kurs_ausnahme": {
     "grad": [
+     45,
+     135,
      225,
      315
     ],
@@ -3421,19 +3418,19 @@
    "name": "zug",
    "typ": "zug",
    "titel": "A flock passes",
-   "text": "Twice in ten minutes a flock of eight to twelve gulls crosses in front of you, 45 to 75 m away – from left to right with the rising wind, later back from right to left. For half a minute you hear it come, pass calling and fade; its chatter comes from several places across the flock.",
+   "text": "Twice in ten minutes a flock of eight to twelve gulls crosses in front of you, 45 to 75 m away – from right to left with the rising wind, later back from left to right. For half a minute you hear it come, pass calling and fade; its chatter comes from several places across the flock.",
    "ziel_lufs": -30,
    "pegel_art": "spitzen",
    "zuege": [
     {
      "t": 105,
-     "kurs_grad": 200,
-     "seite": 1
+     "kurs_grad": 90,
+     "seite": -1
     },
     {
      "t": 515,
-     "kurs_grad": 20,
-     "seite": -1
+     "kurs_grad": 270,
+     "seite": 1
     }
    ],
    "tempo": [
@@ -3729,19 +3726,19 @@
    "name": "gaense",
    "typ": "zug",
    "titel": "Geese passing",
-   "text": "Twice a skein of geese crosses in front of you, high and 60 to 100 m away – first from left to right, later back. Their calls carry for a long time and come from all along the skein.",
+   "text": "Twice a skein of geese crosses in front of you, high and 60 to 100 m away – first from right to left, later back. Their calls carry for a long time and come from all along the skein.",
    "ziel_lufs": -31,
    "pegel_art": "spitzen",
    "zuege": [
     {
      "t": 40,
-     "kurs_grad": 180,
-     "seite": 1
+     "kurs_grad": 90,
+     "seite": -1
     },
     {
      "t": 440,
-     "kurs_grad": 0,
-     "seite": -1
+     "kurs_grad": 270,
+     "seite": 1
     }
    ],
    "tempo": [
@@ -3859,7 +3856,7 @@
    8
   ]
  },
- "text": "You lie across an open wooden sailing boat, a good six metres long – on cushions, your head propped up against the side, feet towards the other side, the bow to your left, safely below the gunwale. Gulls circle and dart over you, waves roll by in long lines, water knocks hollow against the planks right behind your head, the boat creaks, and now and then the wind catches the slack sail.",
+ "text": "You lie in an open wooden sailing boat, a good six metres long – at the stern on cushions, your head propped up against the aft thwart, feet towards the bow, safely below the gunwale. The wind comes from your right. Gulls circle and dart across in front of you, waves roll by in long lines, water knocks hollow against the planks, the boat creaks, and now and then the wind catches the slack sail.",
  "weite": {
   "ab_m": 25,
   "voll_m": 150,
@@ -3899,7 +3896,7 @@
   "ab_m": 12,
   "voll_m": 60,
   "db": 2.5,
-  "wind_von_grad": 20,
+  "wind_von_grad": 270,
   "gruppen": [
    "moewen",
    "moewen_weit",

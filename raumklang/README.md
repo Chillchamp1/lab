@@ -68,10 +68,11 @@ andere Haltung: `--blick 90` (flach auf dem Rücken) bis `--blick 0` (aufrecht).
 ## Wie ein Klang zum Ohr kommt
 
 Das Boot ist ein offenes hölzernes Segelboot, 6,4 m lang und 2 m breit, Bordkante 80 cm
-über dem Wasser. Du liegst quer im Boot auf Polstern (`liegt_grad: -90`), den Kopf hoch auf
-einem Kissen an der Backbordwand, die Füße nach Steuerbord, der Bug links von dir: die Ohren
-58 cm über dem Wasser und 22 cm unter der Bordkante, die Planken 30 cm hinter dem Kopf. Quer
-liegend sieht die Ansicht das Boot von der Seite, und Bug und Heck klingen von links und rechts. Bis 23.11.2026 war es ein 4,2 m langes Ruderboot, in dem
+über dem Wasser. Du liegst hinten auf Polstern, den Kopf hoch auf einem Kissen an der
+Heckducht, die Füße zum Bug: die Ohren 58 cm über dem Wasser und 22 cm unter der Bordkante.
+Der Wind kommt von rechts (`windtragen.wind_von_grad: 270`), so ziehen Schwärme und Überflüge
+mit dem Wind quer vor dir vorbei. Quer liegen ginge auch (`liegt_grad: -90`, dann kommen Bug und
+Heck von der Seite); das war am 23.11. kurz so, für eine 3D-Ansicht, die es nicht mehr gibt. Bis 23.11.2026 war es ein 4,2 m langes Ruderboot, in dem
 der Kopf auf den Bodenbrettern lag – bei kräftiger See zu klein und zu nah am Wasser, um
 sich geborgen anzufühlen. Ein größeres Boot rollt auch langsamer und weniger (3,5° statt 5°).
 
