@@ -154,7 +154,7 @@ export function spieler(el, src, soll, dateiname, opt = {}) {
     if (modus) spielen(ziel); else { ab = ziel; anzeigen(); }
   });
   if (soll) anz.textContent = `0:00 / ${zeit(soll / FS)}`;
-  const api = { spielen, stopp, laeuft: () => !!modus, modus: () => modus };
+  const api = { spielen, stopp, laeuft: () => !!modus, modus: () => modus, position, dauer };
   return api;
 }
 

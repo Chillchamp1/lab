@@ -1598,6 +1598,8 @@ def main():
                  gruppen=[dict(name=g['name'], titel=g.get('titel', g['name']), typ=g['typ'], ziel_lufs=g.get('ziel_lufs'),
                                pegel_art=g.get('pegel_art', 'integriert')) for g in sz['gruppen']],
                  wiederholung=wiederholung(), meldungen=vorab, quellen=karte)
+        if type(boot).__name__ == 'Boot':            # Umriss des Boots für die Kartenansicht
+            k['boot'] = dict(a=round(float(boot.a), 2), b=round(float(boot.b), 2))
         (Path(a.aus) / f'{name}_karte.json').write_text(json.dumps(k, ensure_ascii=False, separators=(',', ':')))
         print('Karte:', len(karte), 'Quellen', flush=True)
 

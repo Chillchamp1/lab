@@ -33,16 +33,24 @@ VORLAGE = """<!doctype html>
 <link rel="preload" href="../audio/{name}.json" as="fetch" crossorigin>
 </head>
 <body data-szene="{name}">
-<main>
+<main class="schlicht">
   <p class="zurueck"><a href="../">← All soundscapes</a></p>
   <h1>{titel}</h1>
-  <p class="unter">{text}</p>
   <div class="spieler gross" id="spieler"></div>
+  <div class="kartenbox">
+    <canvas id="karte" width="1000" height="1000" aria-label="Live map: you in the middle, every sound as a moving dot"></canvas>
+    <p id="jetzt" class="jetzt" aria-live="off"></p>
+    <div id="legende" class="legende"></div>
+  </div>
   <div class="knoepfe"><button id="teilen" type="button">Share</button><span id="teilen-info" aria-live="polite"></span></div>
-  <div class="werte" id="werte"></div>
-  <p class="hinweis" style="margin-top:18px"><b>How to listen:</b> headphones on (left and right the right way round), lie down, close your eyes.
-  The scene loops endlessly without an audible seam.</p>
-  <div id="mehr"></div>
+  <details class="ueber">
+    <summary>About this scene</summary>
+    <p>{text}</p>
+    <p class="leise">Best with headphones (left and right the right way round), lying down. The scene loops endlessly without an audible seam.
+    The map shows you from above, looking up the screen; every dot is a sound, exactly where the renderer placed it.</p>
+    <div class="werte" id="werte"></div>
+    <div id="mehr"></div>
+  </details>
 </main>
 <div id="start" hidden>
   <div class="karte">

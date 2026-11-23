@@ -16,16 +16,24 @@
 <link rel="preload" href="../audio/elefanten.json" as="fetch" crossorigin>
 </head>
 <body data-szene="elefanten">
-<main>
+<main class="schlicht">
   <p class="zurueck"><a href="../">← All soundscapes</a></p>
   <h1>Elephants at the Waterhole</h1>
-  <p class="unter">Night on the savanna. You lie in a tent, a waterhole a few metres in front of you. Crickets chirp, frogs croak at the water&#x27;s edge, hippos grunt far off. A herd of elephants comes to drink: the deep rumbles they talk with, trunks slurping and splashing water. One stomps past the tent – and once, one comes right up and sniffs at the tent.</p>
   <div class="spieler gross" id="spieler"></div>
+  <div class="kartenbox">
+    <canvas id="karte" width="1000" height="1000" aria-label="Live map: you in the middle, every sound as a moving dot"></canvas>
+    <p id="jetzt" class="jetzt" aria-live="off"></p>
+    <div id="legende" class="legende"></div>
+  </div>
   <div class="knoepfe"><button id="teilen" type="button">Share</button><span id="teilen-info" aria-live="polite"></span></div>
-  <div class="werte" id="werte"></div>
-  <p class="hinweis" style="margin-top:18px"><b>How to listen:</b> headphones on (left and right the right way round), lie down, close your eyes.
-  The scene loops endlessly without an audible seam.</p>
-  <div id="mehr"></div>
+  <details class="ueber">
+    <summary>About this scene</summary>
+    <p>Night on the savanna. You lie in a tent, a waterhole a few metres in front of you. Crickets chirp, frogs croak at the water&#x27;s edge, hippos grunt far off. A herd of elephants comes to drink: the deep rumbles they talk with, trunks slurping and splashing water. One stomps past the tent – and once, one comes right up and sniffs at the tent.</p>
+    <p class="leise">Best with headphones (left and right the right way round), lying down. The scene loops endlessly without an audible seam.
+    The map shows you from above, looking up the screen; every dot is a sound, exactly where the renderer placed it.</p>
+    <div class="werte" id="werte"></div>
+    <div id="mehr"></div>
+  </details>
 </main>
 <div id="start" hidden>
   <div class="karte">
