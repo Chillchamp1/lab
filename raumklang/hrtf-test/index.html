@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>HRTF-Auswahltest</title>
+<title>HRTF selection test</title>
 <style>
 /* Hörtest: ruhig, sachlich. Ein Kopf von oben, rundherum die Richtungen. */
 :root{color-scheme:light dark;--bg:light-dark(#f7f6f2,#0f1615);--ink:light-dark(#141a19,#e8eeec);--mut:light-dark(#5b6664,#9fb0ac);
@@ -45,71 +45,72 @@ tr.win td{font-weight:700;color:var(--pe)}
 </head>
 <body>
 <main>
-<a class="zurueck" href="../">← Klangszenen für Kopfhörer</a>
+<a class="zurueck" href="../">← Sound scenes for headphones</a>
 
 <section id="s-intro">
-  <h1>Welche Ohren passen zu dir?</h1>
-  <p>Wie wir Richtungen hören, hängt an der Form der Ohrmuschel. Die Klangszenen werden mit einem Satz gemessener Ohren gerechnet (einer HRTF). Je besser dieser zu deinen Ohren passt, desto klarer sind vorne, hinten, oben und unten.</p>
-  <p>Du hörst kurze Rauschstöße aus verschiedenen Richtungen, berechnet mit sechs verschiedenen Kunstohren, mit etwas Raumklang wie in einem kleinen Zimmer. Du tippst an, woher der Klang kommt. Welche HRTF dahintersteckt, siehst du erst am Ende.</p>
-  <p class="mut">Dauer etwa 6–8 Minuten. Normale Kopfhörer, angenehme Lautstärke, eingebaute Raumklang-Funktion aus. Am besten in der Haltung, in der du später hörst.</p>
+  <h1>Which ears suit you best?</h1>
+  <p>How we hear direction depends on the shape of the outer ear. The sound scenes are rendered with a set of measured ears (an HRTF). The better that set matches your ears, the clearer front, back, above and below become.</p>
+  <p>You’ll hear short noise bursts from different directions, rendered with six different artificial ears and a touch of reverb, as in a small room. Tap where the sound is coming from. You’ll only see which HRTF was behind each one at the end.</p>
+  <p class="mut">Takes about 6–8 minutes. Ordinary headphones, a comfortable volume, and any built-in spatial audio feature switched off. Ideally in the position you’ll listen in later.</p>
   <div class="card">
-    <h2>Haltung</h2>
-    <div class="row" id="haltung"><button data-v="liegend">Liegend, Kopf auf Kissen</button><button data-v="sitzend">Sitzend</button></div>
-    <h2>Kopfhörer</h2>
-    <input id="kh" placeholder="Modell, z. B. offener Over-Ear" autocomplete="off">
+    <h2>Position</h2>
+    <div class="row" id="haltung"><button data-v="liegend">Lying down, head on a pillow</button><button data-v="sitzend">Sitting</button></div>
+    <h2>Headphones</h2>
+    <input id="kh" placeholder="Model, e.g. open-back over-ear" autocomplete="off">
   </div>
-  <div class="row"><button class="pri" id="b-start">Weiter zum Kopfhörer-Check</button></div>
-  <div id="resume" class="hide card"><p>Es gibt einen angefangenen Test auf diesem Gerät.</p><div class="row"><button class="pri" id="b-resume">Fortsetzen</button><button id="b-fresh">Neu beginnen</button></div></div>
+  <div class="row"><button class="pri" id="b-start">Continue to the headphone check</button></div>
+  <div id="resume" class="hide card"><p>There’s an unfinished test on this device.</p><div class="row"><button class="pri" id="b-resume">Resume</button><button id="b-fresh">Start over</button></div></div>
 </section>
 
 <section id="s-check" class="hide">
-  <h1>Kurzer Check</h1>
-  <p>Der Klang sollte deutlich von <b>links</b> kommen.</p>
-  <div class="row"><button class="pri" id="b-lr">Abspielen</button></div>
-  <div class="row"><button id="b-lr-ok">Ja, links</button><button id="b-lr-no">Nein, rechts</button></div>
+  <h1>Quick check</h1>
+  <p>The sound should clearly come from the <b>left</b>.</p>
+  <div class="row"><button class="pri" id="b-lr">Play</button></div>
+  <div class="row"><button id="b-lr-ok">Yes, left</button><button id="b-lr-no">No, right</button></div>
   <p class="mut" id="lr-hint"></p>
 </section>
 
 <section id="s-test" class="hide">
-  <div class="mut" id="t-prog">Teil 1 von 2 · Richtung</div>
+  <div class="mut" id="t-prog">Part 1 of 2 · Direction</div>
   <div class="bar"><i id="t-bar" style="width:0"></i></div>
-  <h2>Woher kam der Klang?</h2>
+  <h2>Where did the sound come from?</h2>
   <div class="dial" id="dial"></div>
-  <div class="ctr"><button class="again" id="b-again">Nochmal hören</button><button id="b-dunno">Weiß nicht / im Kopf</button></div>
+  <div class="ctr"><button class="again" id="b-again">Play again</button><button id="b-dunno">Don’t know / inside my head</button></div>
 </section>
 
 <section id="s-rate" class="hide">
-  <div class="mut" id="r-prog">Teil 2 von 2 · Raumgefühl</div>
+  <div class="mut" id="r-prog">Part 2 of 2 · Sense of space</div>
   <div class="bar"><i id="r-bar" style="width:0"></i></div>
-  <h2>Der Klang kreist zweimal um deinen Kopf</h2>
-  <p class="mut">Startet vorne, dann links herum.</p>
-  <div class="row"><button class="again" id="b-circ">Nochmal hören</button></div>
+  <h2>The sound circles your head twice</h2>
+  <p class="mut">It starts in front, then goes round to the left.</p>
+  <div class="row"><button class="again" id="b-circ">Play again</button></div>
   <div class="card">
-    <p><b>Wo war der Klang?</b></p>
-    <div class="seg" id="q-ext"><button data-v="1">im Kopf</button><button data-v="2">2</button><button data-v="3">3</button><button data-v="4">4</button><button data-v="5">klar außen</button></div>
-    <p style="margin-top:16px"><b>War der Kreis rundum zu hören, auch hinten?</b></p>
-    <div class="seg seg3" id="q-circ"><button data-v="0">nein</button><button data-v="1">teilweise</button><button data-v="2">ja</button></div>
+    <p><b>Where was the sound?</b></p>
+    <div class="seg" id="q-ext"><button data-v="1">inside my head</button><button data-v="2">2</button><button data-v="3">3</button><button data-v="4">4</button><button data-v="5">clearly outside</button></div>
+    <p style="margin-top:16px"><b>Could you hear the whole circle, including behind you?</b></p>
+    <div class="seg seg3" id="q-circ"><button data-v="0">no</button><button data-v="1">partly</button><button data-v="2">yes</button></div>
   </div>
-  <div class="row"><button class="pri" id="b-rnext" disabled>Weiter</button></div>
+  <div class="row"><button class="pri" id="b-rnext" disabled>Next</button></div>
 </section>
 
 <section id="s-res" class="hide">
-  <h1 id="res-title">Ergebnis</h1>
+  <h1 id="res-title">Result</h1>
   <p id="res-sub" class="mut"></p>
   <div style="overflow-x:auto"><table id="res-tab"></table></div>
-  <p class="mut">Treffer = genau richtig (von 8). Nah = höchstens eine Nachbarposition daneben. V/H-Fehler = vorne und hinten vertauscht. Außen = Raumgefühl 1–5. Kreis = 0–2.</p>
-  <p class="mut">Das Ergebnis bleibt auf diesem Gerät, es wird nirgendwohin geschickt. Zum Auswerten kopieren und Claude in den Chat geben, oder als Datei speichern.</p>
-  <div class="row"><button class="pri" id="b-copy">Ergebnis kopieren</button><button id="b-file">Als Datei speichern</button><button id="b-new">Test wiederholen</button></div>
+  <p class="mut">Hits = exactly right (out of 8). Near = off by at most one neighbouring position. F/B errors = front and back confused. Outside = sense of space, 1–5. Circle = 0–2.</p>
+  <p class="mut">The result stays on this device and isn’t sent anywhere. To have it analysed, copy it and paste it into the chat with Claude, or save it as a file.</p>
+  <div class="row"><button class="pri" id="b-copy">Copy result</button><button id="b-file">Save as file</button><button id="b-new">Repeat test</button></div>
   <p id="saved" class="mut"></p>
-  <p class="mut">Mit 8 Durchgängen je HRTF ist das ein erster Fingerzeig. Eine zweite Runde mit den beiden Besten und ihren Nachbarn macht es belastbar.</p>
+  <p class="mut">With 8 trials per HRTF this is a first pointer. A second round with the two best and their neighbours makes it reliable.</p>
 </section>
 
 </main>
 <script>
 {
 const $=id=>document.getElementById(id);
-const NAMEN={0:"vorne",45:"vorne links",90:"links",135:"hinten links",180:"hinten",225:"hinten rechts",270:"rechts",315:"vorne rechts"};
-const KURZ={0:"vorne",45:"v. l.",90:"links",135:"h. l.",180:"hinten",225:"h. r.",270:"rechts",315:"v. r."};
+const NAMEN={0:"front",45:"front left",90:"left",135:"back left",180:"back",225:"back right",270:"right",315:"front right"};
+const KURZ={0:"front",45:"FL",90:"left",135:"BL",180:"back",225:"BR",270:"right",315:"FR"};
+const HALTUNG={liegend:"lying down",sitzend:"sitting"};
 let D=null,ctx=null,S=null;const KEY="hrtf-test-v2";
 const show=id=>{for(const s of document.querySelectorAll("main>section"))s.classList.toggle("hide",s.id!==id);window.scrollTo(0,0)};
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
@@ -146,10 +147,10 @@ function playTrial(){const t=S.trials[S.i];bursts([t,t,t],.18,.12);t.rep=(t.rep|
 function playCircle(){const s=S.order2[S.j];const seq=[];for(let k=0;k<16;k++)seq.push({s,d:D.sets[s].dirs[k%8]});bursts(seq,.22,.06)}
 
 /* Zifferblatt */
-function dial(){const W=380,c=W/2,R=148;let h=`<svg viewBox="0 0 ${W} ${W}" role="group" aria-label="Richtungen">`;
+function dial(){const W=380,c=W/2,R=148;let h=`<svg viewBox="0 0 ${W} ${W}" role="group" aria-label="Directions">`;
  h+=`<circle cx="${c}" cy="${c}" r="${R}" fill="none" stroke="var(--li)" stroke-dasharray="3 6"/>`;
  h+=`<path class="head" d="M${c-14} ${c-50} L${c} ${c-70} L${c+14} ${c-50}Z"/><ellipse class="head" cx="${c-52}" cy="${c}" rx="9" ry="18"/><ellipse class="head" cx="${c+52}" cy="${c}" rx="9" ry="18"/><circle class="head" cx="${c}" cy="${c}" r="52"/>`;
- h+=`<text class="lab" x="${c}" y="${c+4}">du (von oben)</text>`;
+ h+=`<text class="lab" x="${c}" y="${c+4}">you (from above)</text>`;
  for(const d of [0,45,90,135,180,225,270,315]){const a=d*Math.PI/180,x=c-R*Math.sin(a),y=c-R*Math.cos(a);
   h+=`<g class="t" tabindex="0" role="button" aria-label="${NAMEN[d]}" data-d="${d}"><circle cx="${x}" cy="${y}" r="30"/><text x="${x}" y="${y}">${KURZ[d]}</text></g>`}
  $("dial").innerHTML=h+"</svg>";
@@ -158,12 +159,12 @@ function dial(){const W=380,c=W/2,R=148;let h=`<svg viewBox="0 0 ${W} ${W}" role
 let busy=false;
 function answer(d,g){if(busy)return;busy=true;if(g)g.classList.add("on");const t=S.trials[S.i];t.a=d;t.ms=Date.now()-(t.t0||Date.now());S.i++;save();
  setTimeout(()=>{if(g)g.classList.remove("on");busy=false;nextTrial()},350)}
-function nextTrial(){const n=S.trials.length;$("t-bar").style.width=(100*S.i/n)+"%";$("t-prog").textContent=`Teil 1 von 2 · Richtung · ${Math.min(S.i+1,n)} / ${n}`;
+function nextTrial(){const n=S.trials.length;$("t-bar").style.width=(100*S.i/n)+"%";$("t-prog").textContent=`Part 1 of 2 · Direction · ${Math.min(S.i+1,n)} / ${n}`;
  if(S.i>=n){S.phase="rate";S.j=0;save();startRate();return}S.trials[S.i].t0=Date.now();setTimeout(playTrial,250)}
 
 let ext=null,circ=null;
 function startRate(){show("s-rate");ext=null;circ=null;for(const b of document.querySelectorAll("#q-ext button,#q-circ button"))b.classList.remove("sel");$("b-rnext").disabled=true;
- const n=S.order2.length;$("r-bar").style.width=(100*S.j/n)+"%";$("r-prog").textContent=`Teil 2 von 2 · Raumgefühl · ${S.j+1} / ${n}`;setTimeout(playCircle,300)}
+ const n=S.order2.length;$("r-bar").style.width=(100*S.j/n)+"%";$("r-prog").textContent=`Part 2 of 2 · Sense of space · ${S.j+1} / ${n}`;setTimeout(playCircle,300)}
 function pick(id,cb){for(const b of $(id).querySelectorAll("button"))b.addEventListener("click",()=>{for(const x of $(id).querySelectorAll("button"))x.classList.toggle("sel",x===b);cb(+b.dataset.v);$("b-rnext").disabled=!(ext&&circ!==null)})}
 pick("q-ext",v=>ext=v);pick("q-circ",v=>circ=v);
 $("b-rnext").addEventListener("click",()=>{S.rate[S.order2[S.j]]={ext,circ};S.j++;save();if(S.j>=S.order2.length){S.phase="done";save();results()}else startRate()});
@@ -175,18 +176,18 @@ function results(){show("s-res");const sets=D.sets.map((s,k)=>({k,name:s.name,hi
   if((left(t.d)&&right(t.a))||(right(t.d)&&left(t.a)))r.side++}
  for(const r of sets)r.score=r.hit+.5*r.near-1.5*r.fb-r.side+.6*(r.ext-3)+.5*r.circ;
  const rk=[...sets].sort((a,b)=>b.score-a.score);
- $("res-tab").innerHTML=`<tr><th>Platz</th><th>Treffer</th><th>Nah</th><th>V/H-Fehler</th><th>Außen</th><th>Kreis</th><th>HRTF</th></tr>`+
+ $("res-tab").innerHTML=`<tr><th>Rank</th><th>Hits</th><th>Near</th><th>F/B errors</th><th>Outside</th><th>Circle</th><th>HRTF</th></tr>`+
   rk.map((r,i)=>`<tr class="${i===0?"win":""}"><td>${i+1}</td><td>${r.hit}</td><td>${r.near}</td><td>${r.fb}/${r.fbN}</td><td>${r.ext}</td><td>${r.circ}</td><td>${r.name}</td></tr>`).join("");
- $("res-title").textContent=`Am besten passt: ${rk[0].name}`;$("res-sub").textContent=`Haltung: ${S.haltung||"–"} · Kopfhörer: ${S.kh||"–"}`;
+ $("res-title").textContent=`Best match: ${rk[0].name}`;$("res-sub").textContent=`Position: ${HALTUNG[S.haltung]||S.haltung||"–"} · Headphones: ${S.kh||"–"}`;
  S.summary=rk.map(r=>({name:r.name,hit:r.hit,near:r.near,fb:r.fb,fbN:r.fbN,side:r.side,ext:r.ext,circ:r.circ,score:+r.score.toFixed(2)}));save()}
 
 function payload(){return{zeit:new Date().toISOString(),raum:S.raum,haltung:S.haltung,kopfhoerer:S.kh,sets:D.sets.map(s=>s.name),gruppen:D.gruppen,
  ergebnis:S.summary,durchgaenge:S.trials.map(t=>({hrtf:D.sets[t.s].name,richtung:t.d,antwort:t.a,wdh:t.rep||0,ms:t.ms||0})),raumgefuehl:S.rate}}
 
-$("b-copy").addEventListener("click",async()=>{const txt="HRTF-Test "+JSON.stringify(payload());try{await navigator.clipboard.writeText(txt);$("b-copy").textContent="Kopiert";$("saved").textContent="Jetzt in den Chat mit Claude einfügen."}catch(e){$("saved").textContent="Kopieren ging nicht. Text unten markieren und kopieren.";const p=document.createElement("pre");p.textContent=txt;p.style.whiteSpace="pre-wrap";p.style.fontSize="12px";$("s-res").appendChild(p)}});
+$("b-copy").addEventListener("click",async()=>{const txt="HRTF-Test "+JSON.stringify(payload());try{await navigator.clipboard.writeText(txt);$("b-copy").textContent="Copied";$("saved").textContent="Now paste it into the chat with Claude."}catch(e){$("saved").textContent="Copying didn’t work. Select the text below and copy it.";const p=document.createElement("pre");p.textContent=txt;p.style.whiteSpace="pre-wrap";p.style.fontSize="12px";$("s-res").appendChild(p)}});
 $("b-file").addEventListener("click",()=>{const blob=new Blob([JSON.stringify(payload(),null,1)],{type:"application/json"});const a=document.createElement("a");
  a.href=URL.createObjectURL(blob);a.download="hrtf-test-"+new Date().toISOString().slice(0,16).replace(/[:T]/g,"-")+".json";document.body.appendChild(a);a.click();a.remove();
- $("saved").textContent="Datei gespeichert – z. B. in den Drive-Ordner „Raumklang“ legen."});
+ $("saved").textContent="File saved – you could put it in the “Raumklang” Drive folder, for example."});
 
 /* Start */
 let haltung=null;for(const b of $("haltung").querySelectorAll("button"))b.addEventListener("click",()=>{haltung=b.dataset.v;for(const x of $("haltung").querySelectorAll("button"))x.classList.toggle("sel",x===b)});
@@ -197,7 +198,7 @@ $("b-fresh").addEventListener("click",()=>{if(!D)return;audio();fresh();show("s-
 $("b-resume").addEventListener("click",()=>{if(!D)return;audio();S=JSON.parse(localStorage.getItem(KEY));if(S.raum===undefined)S.raum=true;if(S.phase==="rate")startRate();else if(S.phase==="test"){show("s-test");dial();nextTrial()}else show("s-check")});
 $("b-lr").addEventListener("click",()=>{audio();const t={s:D.sets.length-1,d:90};bursts([t,t,t],.18,.12)});
 $("b-lr-ok").addEventListener("click",()=>{S.phase="test";save();show("s-test");dial();nextTrial()});
-$("b-lr-no").addEventListener("click",()=>{$("lr-hint").textContent="Dann sind die Kopfhörer vertauscht aufgesetzt. Bitte umdrehen und nochmal abspielen."});
+$("b-lr-no").addEventListener("click",()=>{$("lr-hint").textContent="Then your headphones are on the wrong way round. Please swap them over and play it again."});
 $("b-again").addEventListener("click",()=>{audio();playTrial()});
 $("b-dunno").addEventListener("click",()=>answer(-1,null));
 $("b-circ").addEventListener("click",()=>{audio();playCircle()});

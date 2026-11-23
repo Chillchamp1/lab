@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ohrmessung</title>
+<title>Ear measurement</title>
 <style>
   :root { --grund: #0d1418; --flaeche: #152027; --rand: #24343d; --text: #dfe8ea; --leise: #8fa3ab; --akzent: #7fc4c9; --warn: #e2b866; --gut: #9ccf7f; --schlecht: #e07f7f; --links: #7fc4c9; --rechts: #e2b866; }
   @media (prefers-color-scheme: light) {
@@ -39,31 +39,31 @@
 </head>
 <body>
 <main>
-  <p class="leise"><a href="../">← Klangszenen</a></p>
-  <h1>Ohrmessung</h1>
-  <p class="leise">Misst mit In-Ear-Mikrofonen, wie dein Kopfhörer an deinem Ohr klingt und wie Schall aus verschiedenen Richtungen an deinen Ohren ankommt. Alles wird im Browser gerechnet; am Ende speicherst du eine Datei und legst sie in den Drive-Ordner „Raumklang“.</p>
+  <p class="leise"><a href="../">← Sound scenes</a></p>
+  <h1>Ear measurement</h1>
+  <p class="leise">Uses in-ear microphones to measure how your headphones sound at your ears and how sound from different directions arrives at your ears. Everything is calculated in the browser; at the end you save a file and put it in the “Raumklang” Drive folder.</p>
 
   <section class="karte" id="k-geraete">
-    <h2>1 · Geräte</h2>
+    <h2>1 · Devices</h2>
     <ol class="leise">
-      <li>Zoom H5 per USB an den PC, am H5 <b>USB → Audio Interface → Stereo Mix</b> wählen.</li>
-      <li>OKM in den 3,5-mm-Eingang der XY-Kapsel, im H5-Menü <b>Plug-in Power</b> an. Links ins linke Ohr.</li>
-      <li>Diese Seite in Chrome oder Edge öffnen und unten „Mikrofon freigeben“ klicken.</li>
+      <li>Connect the Zoom H5 to the PC via USB and select <b>USB → Audio Interface → Stereo Mix</b> on the H5.</li>
+      <li>Plug the OKM into the 3.5 mm input of the XY capsule and turn on <b>Plug-in Power</b> in the H5 menu. Left mic in the left ear.</li>
+      <li>Open this page in Chrome or Edge and click “Allow microphone” below.</li>
     </ol>
-    <div class="reihe" style="margin-bottom:10px"><button class="haupt" id="b-frei">Mikrofon freigeben</button><span class="leise" id="frei-info"></span></div>
-    <label>Eingang (H5)<select id="eingang"></select></label>
-    <label>Ausgang für die Messsignale<select id="ausgang"></select></label>
+    <div class="reihe" style="margin-bottom:10px"><button class="haupt" id="b-frei">Allow microphone</button><span class="leise" id="frei-info"></span></div>
+    <label>Input (H5)<select id="eingang"></select></label>
+    <label>Output for the test signals<select id="ausgang"></select></label>
     <p class="leise" id="ausgang-info"></p>
-    <div class="reihe"><span class="leise" style="min-width:60px">Links</span><div class="pegel" id="pl"><span></span></div></div>
-    <div class="reihe" style="margin-top:6px"><span class="leise" style="min-width:60px">Rechts</span><div class="pegel" id="pr"><span></span></div></div>
-    <p class="leise" style="margin-top:8px">Klopf leicht neben dein linkes Ohr: der obere Balken muss ausschlagen. Sonst Kanäle vertauscht.</p>
+    <div class="reihe"><span class="leise" style="min-width:60px">Left</span><div class="pegel" id="pl"><span></span></div></div>
+    <div class="reihe" style="margin-top:6px"><span class="leise" style="min-width:60px">Right</span><div class="pegel" id="pr"><span></span></div></div>
+    <p class="leise" style="margin-top:8px">Tap lightly next to your left ear: the top bar should jump. If the bottom one moves instead, the channels are swapped.</p>
   </section>
 
   <section class="karte" id="k-modus">
-    <h2>2 · Was messen?</h2>
+    <h2>2 · What to measure?</h2>
     <div class="reihe">
-      <button id="m-kh" class="haupt">Kopfhörer am Ohr (10 Min.)</button>
-      <button id="m-ls">Richtungen mit Lautsprecher (30–45 Min.)</button>
+      <button id="m-kh" class="haupt">Headphones on your ears (10 min)</button>
+      <button id="m-ls">Directions with a loudspeaker (30–45 min)</button>
     </div>
   </section>
 
@@ -72,19 +72,19 @@
     <div class="liste" id="schritte"></div>
     <p class="anweisung" id="anweisung"></p>
     <div class="reihe" style="margin-bottom:10px">
-      <button class="haupt" id="b-mess">Messen</button>
-      <button id="b-weiter">Weiter</button>
+      <button class="haupt" id="b-mess">Measure</button>
+      <button id="b-weiter">Next</button>
       <span class="leise" id="mess-status"></span>
     </div>
     <canvas id="kurve" width="1400" height="440"></canvas>
-    <p class="befund" id="befund" style="margin-top:10px">Noch keine Messung.</p>
+    <p class="befund" id="befund" style="margin-top:10px">No measurement yet.</p>
   </section>
 
   <section class="karte" id="k-fertig">
-    <h2>3 · Ergebnis speichern</h2>
-    <p class="leise" id="zusammen">Noch nichts gemessen.</p>
-    <div class="reihe"><button class="haupt" id="b-datei">Messdatei speichern</button><button id="b-leeren">Alles verwerfen</button></div>
-    <p class="leise" style="margin-top:8px">Die Datei enthält nur die errechneten Impulsantworten (ein paar MB), keine Rohaufnahmen. Bis zum Speichern bleiben die Messungen in diesem Browser erhalten, auch wenn du die Seite neu lädst.</p>
+    <h2>3 · Save the result</h2>
+    <p class="leise" id="zusammen">Nothing measured yet.</p>
+    <div class="reihe"><button class="haupt" id="b-datei">Save measurement file</button><button id="b-leeren">Discard everything</button></div>
+    <p class="leise" style="margin-top:8px">The file contains only the calculated impulse responses (a few MB), no raw recordings. Until you save, the measurements are kept in this browser, even if you reload the page.</p>
   </section>
 </main>
 <script>
@@ -111,10 +111,10 @@ function baueSweep() {
 async function geraete() {
   const alle = await navigator.mediaDevices.enumerateDevices();
   const ein = alle.filter(d => d.kind === 'audioinput'), aus = alle.filter(d => d.kind === 'audiooutput');
-  $('eingang').innerHTML = ein.map(d => `<option value="${d.deviceId}">${d.label || 'Eingang'}</option>`).join('');
+  $('eingang').innerHTML = ein.map(d => `<option value="${d.deviceId}">${d.label || 'Input'}</option>`).join('');
   const h5 = ein.find(d => /zoom|h5/i.test(d.label)); if (h5) $('eingang').value = h5.deviceId;
-  $('ausgang').innerHTML = aus.length ? aus.map(d => `<option value="${d.deviceId}">${d.label || 'Ausgang'}</option>`).join('') : '<option value="">Standard-Ausgang</option>';
-  $('ausgang-info').textContent = (ctx && ctx.setSinkId) ? 'Kopfhörer-Messung: Qudelix mit Grado (EQ aus). Lautsprecher-Messung: deine Box.' : 'Dieser Browser kann den Ausgang nicht wählen – stell ihn in Windows ein.';
+  $('ausgang').innerHTML = aus.length ? aus.map(d => `<option value="${d.deviceId}">${d.label || 'Output'}</option>`).join('') : '<option value="">Default output</option>';
+  $('ausgang-info').textContent = (ctx && ctx.setSinkId) ? 'Headphone measurement: Qudelix with the Grado (EQ off). Loudspeaker measurement: your speaker.' : 'This browser can’t choose the output – set it in Windows instead.';
 }
 async function freigeben() {
   try {
@@ -126,7 +126,7 @@ async function freigeben() {
       echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
     await geraete();
     const set = strom.getAudioTracks()[0].getSettings();
-    $('frei-info').textContent = `Eingang: ${set.channelCount || '?'} Kanäle, ${set.sampleRate || ctx.sampleRate} Hz` + ((set.channelCount || 2) < 2 ? ' – nur ein Kanal! Am H5 Stereo wählen.' : '');
+    $('frei-info').textContent = `Input: ${set.channelCount || '?'} channels, ${set.sampleRate || ctx.sampleRate} Hz` + ((set.channelCount || 2) < 2 ? ' – only one channel! Select stereo on the H5.' : '');
     quelle = ctx.createMediaStreamSource(strom);
     const blob = new Blob([`class R extends AudioWorkletProcessor { constructor(){super(); this.an=false; this.port.onmessage=e=>this.an=e.data;}
       process(i){ const k=i[0]; if(k&&k.length){ const l=k[0], r=k[1]||k[0]; let pl=0,pr=0; for(let j=0;j<l.length;j++){pl=Math.max(pl,Math.abs(l[j]));pr=Math.max(pr,Math.abs(r[j]));}
@@ -144,11 +144,11 @@ async function freigeben() {
       if (puffer && d.l) { puffer.l.push(d.l); puffer.r.push(d.r); if (d.pl > 0.98 || d.pr > 0.98) puffer.uebersteuert = true; }
     };
     [sweep, invers] = baueSweep();
-  } catch (e) { $('frei-info').textContent = 'Kein Zugriff: ' + e.message; }
+  } catch (e) { $('frei-info').textContent = 'No access: ' + e.message; }
 }
 $('b-frei').addEventListener('click', freigeben);
 $('eingang').addEventListener('change', () => ctx && freigeben());
-$('ausgang').addEventListener('change', async () => { try { if (ctx && ctx.setSinkId) await ctx.setSinkId($('ausgang').value); } catch (e) { $('ausgang-info').textContent = 'Ausgang nicht umschaltbar: ' + e.message; } });
+$('ausgang').addEventListener('change', async () => { try { if (ctx && ctx.setSinkId) await ctx.setSinkId($('ausgang').value); } catch (e) { $('ausgang-info').textContent = 'Can’t switch the output: ' + e.message; } });
 
 // ---------------- Messung: abspielen (Kanal links/rechts/beide) und gleichzeitig aufnehmen
 let puffer = null;
@@ -231,15 +231,15 @@ function zeichne(kurven) {
 }
 
 // ---------------- Ablauf
-const KH = [1, 2, 3, 4, 5].map(i => ({ id: 'kh' + i, name: `Sitz ${i}`, text: i === 1 ? 'Grado über die Mikrofone aufsetzen, Qudelix-EQ aus. Dann „Messen“.' : 'Kopfhörer abnehmen und neu aufsetzen (Mikrofone bleiben drin). Dann „Messen“.' }));
+const KH = [1, 2, 3, 4, 5].map(i => ({ id: 'kh' + i, name: `Fit ${i}`, text: i === 1 ? 'Put the Grado on over the microphones, Qudelix EQ off. Then press “Measure”.' : 'Take the headphones off and put them back on (the microphones stay in). Then press “Measure”.' }));
 const LS = [...[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map(w => ({ id: 'w' + w, winkel: w, hoehe: 0, name: `${w}°` })),
-  ...[0, 90, 180, 270].map(w => ({ id: 'h' + w, winkel: w, hoehe: 30, name: `${w}° hoch` })), ...[0, 90, 180, 270].map(w => ({ id: 't' + w, winkel: w, hoehe: -30, name: `${w}° tief` })),
-  { id: 'ref', name: 'Referenz', referenz: true }];
-function seite(w) { return w === 0 ? 'direkt vor dir' : w === 180 ? 'direkt hinter dir' : w < 180 ? `${w}° links von vorn` : `${360 - w}° rechts von vorn`; }
+  ...[0, 90, 180, 270].map(w => ({ id: 'h' + w, winkel: w, hoehe: 30, name: `${w}° up` })), ...[0, 90, 180, 270].map(w => ({ id: 't' + w, winkel: w, hoehe: -30, name: `${w}° down` })),
+  { id: 'ref', name: 'Reference', referenz: true }];
+function seite(w) { return w === 0 ? 'directly in front of you' : w === 180 ? 'directly behind you' : w < 180 ? `${w}° to your left` : `${360 - w}° to your right`; }
 function anweisungLS(s) {
-  if (s.referenz) return 'Referenz: ein Mikrofon aus dem Ohr nehmen und genau dort hinhalten, wo eben deine Kopfmitte war (Kapsel zum Lautsprecher). Dann „Messen“.';
-  const h = s.hoehe > 0 ? ' Lautsprecher erhöht (etwa 30° über Ohrhöhe, z. B. Regal).' : s.hoehe < 0 ? ' Lautsprecher tief (etwa 30° unter Ohrhöhe, z. B. Boden).' : '';
-  return `Dreh den Stuhl so, dass der Lautsprecher ${seite(s.winkel)} steht.${h} Geradeaus schauen, still sitzen, dann „Messen“.`;
+  if (s.referenz) return 'Reference: take one microphone out of your ear and hold it exactly where the centre of your head just was (capsule facing the loudspeaker). Then press “Measure”.';
+  const h = s.hoehe > 0 ? ' Loudspeaker raised (about 30° above ear height, e.g. on a shelf).' : s.hoehe < 0 ? ' Loudspeaker low (about 30° below ear height, e.g. on the floor).' : '';
+  return `Turn the chair so the loudspeaker is ${seite(s.winkel)}.${h} Look straight ahead, sit still, then press “Measure”.`;
 }
 function zeigeSchritte() {
   const L = modus === 'kh' ? KH : LS, fertig = new Set((modus === 'kh' ? daten.kopfhoerer : daten.lautsprecher).map(m => m.id));
@@ -251,35 +251,35 @@ function zeigeSchritte() {
 function starte(m) {
   modus = m; schritt = 0; $('k-mess').classList.remove('versteckt');
   $('m-kh').classList.toggle('haupt', m === 'kh'); $('m-ls').classList.toggle('haupt', m === 'ls');
-  $('mess-titel').textContent = m === 'kh' ? 'Kopfhörer am Ohr: fünfmal aufsetzen' : 'Richtungen: Lautsprecher auf Ohrhöhe, 1,5–2 m entfernt, Stuhl drehen';
+  $('mess-titel').textContent = m === 'kh' ? 'Headphones on your ears: put them on five times' : 'Directions: loudspeaker at ear height, 1.5–2 m away, turn the chair';
   zeigeSchritte(); $('k-mess').scrollIntoView({ behavior: 'smooth' });
 }
 $('m-kh').onclick = () => starte('kh');
 $('m-ls').onclick = () => starte('ls');
 $('b-weiter').onclick = () => { const L = modus === 'kh' ? KH : LS; schritt = Math.min(schritt + 1, L.length - 1); zeigeSchritte(); };
 $('b-mess').onclick = async () => {
-  if (!aufnahme) { $('mess-status').textContent = 'Erst oben das Mikrofon freigeben.'; return; }
+  if (!aufnahme) { $('mess-status').textContent = 'Allow the microphone at the top first.'; return; }
   const L = modus === 'kh' ? KH : LS, s = L[schritt];
   $('b-mess').disabled = true;
   try {
     let ergebnis;
     if (modus === 'kh') {
-      $('mess-status').textContent = 'Linke Seite …'; const a = await messe('L');
-      $('mess-status').textContent = 'Rechte Seite …'; const b = await messe('R');
-      $('mess-status').textContent = 'Rechne …';
+      $('mess-status').textContent = 'Left side …'; const a = await messe('L');
+      $('mess-status').textContent = 'Right side …'; const b = await messe('R');
+      $('mess-status').textContent = 'Calculating …';
       const ll = schneide(await entfalte(a.l), await entfalte(a.r)), rr = schneide(await entfalte(b.l), await entfalte(b.r));
       ergebnis = { id: s.id, links: ll.l, rechts: rr.r, uebersprechen_db: energie(ll.r, 0, IR_LEN) - energie(ll.l, 0, IR_LEN), uebersteuert: a.uebersteuert || b.uebersteuert, spitze: Math.min(ll.spitze, rr.spitze) };
       const sl = spektrum(ergebnis.links), sr = spektrum(ergebnis.rechts);
       zeichne([{ ...sl, farbe: getComputedStyle(document.documentElement).getPropertyValue('--links') }, { ...sr, farbe: getComputedStyle(document.documentElement).getPropertyValue('--rechts') }]);
       const ok = !ergebnis.uebersteuert && ergebnis.uebersprechen_db < -15;
-      $('befund').innerHTML = `${ok ? '<b class="gut">Sieht gut aus.</b>' : '<b class="schlecht">Bitte wiederholen.</b>'} ` +
-        `Kurve links (blau) und rechts (gelb): Frequenzgang deines Kopfhörers an deinem Ohr. ` +
-        (ergebnis.uebersteuert ? '<b class="schlecht">Übersteuert</b> – Gain am H5 oder Lautstärke runter. ' : '') +
-        `Übersprechen ${ergebnis.uebersprechen_db.toFixed(0)} dB ${ergebnis.uebersprechen_db < -15 ? '(gut)' : '<b class="warn">(zu hoch: Kanäle vertauscht oder Mikrofon falsch eingesteckt?)</b>'}.`;
+      $('befund').innerHTML = `${ok ? '<b class="gut">Looks good.</b>' : '<b class="schlecht">Please measure again.</b>'} ` +
+        `Left curve (blue) and right curve (yellow): frequency response of your headphones at your ears. ` +
+        (ergebnis.uebersteuert ? '<b class="schlecht">Clipping</b> – turn down the gain on the H5 or the volume. ' : '') +
+        `Crosstalk ${ergebnis.uebersprechen_db.toFixed(0)} dB ${ergebnis.uebersprechen_db < -15 ? '(good)' : '<b class="warn">(too high: channels swapped or a microphone plugged in wrongly?)</b>'}.`;
       daten.kopfhoerer = daten.kopfhoerer.filter(m => m.id !== s.id).concat([ergebnis]);
     } else {
-      $('mess-status').textContent = 'Messe …'; const a = await messe('beide');
-      $('mess-status').textContent = 'Rechne …';
+      $('mess-status').textContent = 'Measuring …'; const a = await messe('beide');
+      $('mess-status').textContent = 'Calculating …';
       const ir = schneide(await entfalte(a.l), await entfalte(a.r));
       const dt = itd(ir.l, ir.r), ild = energie(ir.l, VOR - 48, VOR + 480) - energie(ir.r, VOR - 48, VOR + 480);
       ergebnis = { id: s.id, winkel: s.winkel ?? null, hoehe: s.hoehe ?? null, referenz: !!s.referenz, links: ir.l, rechts: ir.r, itd_ms: dt, ild_db: ild, uebersteuert: a.uebersteuert, spitze: ir.spitze };
@@ -289,15 +289,15 @@ $('b-mess').onclick = async () => {
       let urteil = '';
       if (!s.referenz && s.winkel % 180 !== 0) {
         const vonLinks = s.winkel < 180, passt = (dt > 0) === vonLinks && (ild > 0) === vonLinks;
-        urteil = passt ? '<b class="gut">Richtung passt.</b> ' : '<b class="schlecht">Richtung passt nicht</b> – Mikrofone vertauscht oder Stuhl falsch gedreht? ';
-      } else if (!s.referenz) urteil = Math.abs(dt) < 0.12 ? '<b class="gut">Mittig, passt.</b> ' : '<b class="warn">Nicht ganz mittig</b> – Kopf etwas gedreht? ';
-      $('befund').innerHTML = urteil + (s.referenz ? 'Referenz aufgenommen. ' : `Laufzeitunterschied ${dt.toFixed(2)} ms (${dt > 0 ? 'links früher' : dt < 0 ? 'rechts früher' : 'gleich'}), Pegelunterschied ${ild.toFixed(1)} dB. `) +
-        (a.uebersteuert ? '<b class="schlecht">Übersteuert</b> – Gain oder Lautstärke runter.' : '');
+        urteil = passt ? '<b class="gut">Direction matches.</b> ' : '<b class="schlecht">Direction doesn’t match</b> – microphones swapped or chair turned the wrong way? ';
+      } else if (!s.referenz) urteil = Math.abs(dt) < 0.12 ? '<b class="gut">Centred, good.</b> ' : '<b class="warn">Not quite centred</b> – head turned slightly? ';
+      $('befund').innerHTML = urteil + (s.referenz ? 'Reference recorded. ' : `Time difference ${dt.toFixed(2)} ms (${dt > 0 ? 'left ear first' : dt < 0 ? 'right ear first' : 'equal'}), level difference ${ild.toFixed(1)} dB. `) +
+        (a.uebersteuert ? '<b class="schlecht">Clipping</b> – turn down the gain or the volume.' : '');
       daten.lautsprecher = daten.lautsprecher.filter(m => m.id !== s.id).concat([ergebnis]);
     }
     letzte = ergebnis; speichern(); zeigeSchritte(); zusammenfassung();
-    $('mess-status').textContent = 'Fertig. „Weiter“ für den nächsten Schritt.';
-  } catch (e) { $('mess-status').textContent = 'Fehler: ' + e.message; }
+    $('mess-status').textContent = 'Done. Press “Next” for the next step.';
+  } catch (e) { $('mess-status').textContent = 'Error: ' + e.message; }
   $('b-mess').disabled = false;
 };
 
@@ -312,19 +312,19 @@ function laden() {
     for (const k of ['kopfhoerer', 'lautsprecher']) d[k] = d[k].map(m => ({ ...m, links: entpacke(m.links), rechts: entpacke(m.rechts) })); return d; } catch { return null; }
 }
 function zusammenfassung() {
-  $('zusammen').textContent = `${daten.kopfhoerer.length} von 5 Kopfhörer-Messungen, ${daten.lautsprecher.filter(m => !m.referenz).length} von 20 Richtungen` +
-    (daten.lautsprecher.some(m => m.referenz) ? ', Referenz vorhanden.' : ', Referenz fehlt noch.');
+  $('zusammen').textContent = `${daten.kopfhoerer.length} of 5 headphone measurements, ${daten.lautsprecher.filter(m => !m.referenz).length} of 20 directions` +
+    (daten.lautsprecher.some(m => m.referenz) ? ', reference recorded.' : ', reference still missing.');
 }
 $('b-datei').onclick = () => {
   const k = m => ({ ...m, links: packe(m.links), rechts: packe(m.rechts) });
   const datei = { format: 'raumklang-ohrmessung-1', fs: FS, ir_laenge: IR_LEN, vorlauf: VOR, sweep_s: SWEEP_S, f: [F1, F2], erstellt: new Date().toISOString(),
-    hinweis: 'links/rechts: Float32 little endian, base64; Impulsantwort ab VOR Abtastwerte vor der gemeinsamen Spitze',
+    hinweis: 'links/rechts = left/right ear: Float32 little-endian, base64; each impulse response starts "vorlauf" samples before the common peak of both ears',
     eingang: $('eingang').selectedOptions[0]?.textContent, ausgang: $('ausgang').selectedOptions[0]?.textContent,
     kopfhoerer: daten.kopfhoerer.map(k), lautsprecher: daten.lautsprecher.map(k) };
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(datei)], { type: 'application/json' }));
   a.download = `ohrmessung_${new Date().toISOString().slice(0, 16).replace(/[T:]/g, '-')}.json`; a.click();
 };
-$('b-leeren').onclick = () => { if ($('b-leeren').dataset.sicher) { daten = { kopfhoerer: [], lautsprecher: [] }; speichern(); zusammenfassung(); modus && zeigeSchritte(); $('b-leeren').textContent = 'Alles verwerfen'; delete $('b-leeren').dataset.sicher; } else { $('b-leeren').dataset.sicher = 1; $('b-leeren').textContent = 'Wirklich verwerfen?'; } };
+$('b-leeren').onclick = () => { if ($('b-leeren').dataset.sicher) { daten = { kopfhoerer: [], lautsprecher: [] }; speichern(); zusammenfassung(); modus && zeigeSchritte(); $('b-leeren').textContent = 'Discard everything'; delete $('b-leeren').dataset.sicher; } else { $('b-leeren').dataset.sicher = 1; $('b-leeren').textContent = 'Really discard everything?'; } };
 zusammenfassung();
 navigator.mediaDevices?.enumerateDevices && geraete().catch(() => {});
 </script>
