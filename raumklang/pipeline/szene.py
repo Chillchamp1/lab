@@ -109,7 +109,7 @@ class Bibliothek:
         """Liste von dicts {sig, quelle, dauer, ...}; jedes Ereignis auf gleichen Spitzen-Kurzzeitpegel gebracht."""
         aus = []
         for spez in sammlung:
-            x = self.aufnahme({k: v for k, v in spez.items() if k not in ('zerlegen', 'stuecke', 'blende', 'abklingen', 'max_flach', 'resonanz', 'wucht')})
+            x = self.aufnahme({k: v for k, v in spez.items() if k not in ('zerlegen', 'stuecke', 'blende', 'abklingen', 'max_flach', 'resonanz', 'wucht', 'max_schwerpunkt', 'min_schwerpunkt', 'max_anstieg_ms')})
             if 'stuecke' in spez:  # ganze Aufnahme in gleich lange Stücke teilen
                 L = int(spez['stuecke'] * FS)
                 stuecke = [(a, min(a + L, len(x))) for a in range(0, len(x) - L // 2, L)]
@@ -139,6 +139,17 @@ class Bibliothek:
                     y = np.r_[y, np.zeros(int(1.0 * nach * FS))]
                     tief = mat.wucht(y, wz.get('moden', []), wz.get('grollen'), wz.get('obertoene', 0.0), saat=len(aus))
                 k = mat.kennwerte(y)
+                # zu helle (quietschende) oder zu dumpfe Ausschnitte weglassen
+                if k['schwerpunkt'] > spez.get('max_schwerpunkt', 1e9) or k['schwerpunkt'] < spez.get('min_schwerpunkt', 0):
+                    continue
+                # nur Ausschnitte, die einschlagen statt anzuschwellen (Brecher: Aufprall statt Rauschen)
+                if spez.get('max_anstieg_ms'):
+                    hh = mat.huelle_db(y, 10)
+                    i_sp = int(np.argmax(hh))
+                    unter = np.flatnonzero(hh[:i_sp + 1] < hh[i_sp] - 20)
+                    k['anstieg_ms'] = (i_sp - (unter[-1] if len(unter) else 0)) / FS * 1000
+                    if k['anstieg_ms'] > spez['max_anstieg_ms']:
+                        continue
                 # Pegel am lautesten 50-ms-Fenster ausrichten
                 h = mat.huelle_db(y, 50).max()
                 fak = 10 ** ((-20 - h) / 20)
@@ -1245,12 +1256,37 @@ def gen_gebruell(kx, g, spur, bus):
 
 def gen_zug(kx, g, spur, bus):
     """Ein Schwarm zieht vorbei: mehrere Vögel auf gleichem Kurs, locker gestaffelt, jeder ruft ein
-    paar Mal. Anders als die kreisenden Vögel hat der Zug eine klare Richtung (mit dem Wind)."""
+    paar Mal. Anders als die kreisenden Vögel hat der Zug eine klare Richtung (mit dem Wind).
+    Mit `teppich` (Aufnahmen eines ganzen rufenden Schwarms) kommt dazu das Stimmengewirr als
+    breite Quelle, die mit der Mitte des Schwarms zieht – so hört man den Zug durchgehend
+    kommen und gehen, nicht nur einzelne Rufe."""
     rng = kx.rng
     ev = kx.bib.ereignisse(g['sammlung'])
     k = kx.boot.kopf
     liste = []
     for z in g.get('zuege', [{'t': 120, 'kurs_grad': 200}]):
+        if g.get('teppich'):
+            kurs_t = np.radians(z.get('kurs_grad', 200))
+            ri_t = np.array([np.cos(kurs_t), np.sin(kurs_t), 0.0])
+            quer_t = np.array([-ri_t[1], ri_t[0], 0.0])
+            v_t = float(np.mean(g.get('tempo', [11, 14])))
+            d_t = float(np.mean(g.get('abstand_m', [40, 80]))) * z.get('seite', 1)
+            h_t = float(np.mean(g.get('hoehe', [20, 40])))
+            L_t = g.get('weglaenge_m', 400.0)
+            dauer_t = L_t / v_t
+            n_t = int(dauer_t * FS)
+            sig = kx.bib.flickwerk(g['teppich'], n_t, rng).astype(np.float32)
+            rand = int(0.2 * n_t)                     # Anfang und Ende des Wegs weich: dort ist der Schwarm schon weit weg
+            sig[:rand] *= np.sin(np.linspace(0, np.pi / 2, rand)) ** 2
+            sig[-rand:] *= np.cos(np.linspace(0, np.pi / 2, rand)) ** 2
+
+            def ort_t(tt, ri=ri_t, quer=quer_t, d=d_t, v=v_t, h=h_t, tm=z['t']):
+                p = np.array([k[0], k[1], 0.0])[None, :] + d * quer[None, :] + ((tt - tm) * v)[:, None] * ri[None, :]
+                p[:, 2] = h
+                return p
+
+            rendere_quelle(kx, spur, bus, sig, z['t'] - dauer_t / 2, ort_t, True,
+                           g.get('teppich_bezug_m', 60.0), g.get('hall', 0.0), breite=g.get('teppich_breite_m', 25.0))
         kurs = np.radians(z.get('kurs_grad', 200) + rng.normal(0, g.get('kurs_streuung_grad', 8)))
         ri = np.array([np.cos(kurs), np.sin(kurs), 0.0])
         quer = np.array([-ri[1], ri[0], 0.0])

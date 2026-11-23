@@ -1531,9 +1531,9 @@
    "name": "knarzen",
    "typ": "knarzen",
    "titel": "Knarzendes Holz",
-   "ziel_lufs": -34,
+   "ziel_lufs": -30,
    "pegel_art": "spitzen",
-   "wahrsch": 0.45,
+   "wahrsch": 0.6,
    "hall": 1.0,
    "sammlung": [
     {
@@ -1541,223 +1541,234 @@
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.3,
-      "max_dauer": 3.5,
+      "min_dauer": 0.2,
+      "max_dauer": 3.0,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 45,
+      "ein_ms": 20,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
      },
-     "tempo_faktor": 0.62,
-     "tiefpass": 2800
+     "tempo_faktor": 0.85,
+     "tiefpass": 4500,
+     "max_schwerpunkt": 1500
     },
     {
      "quelle": "esc_3-101381-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.3,
-      "max_dauer": 3.5,
+      "min_dauer": 0.2,
+      "max_dauer": 3.0,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 45,
+      "ein_ms": 20,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
      },
-     "tempo_faktor": 0.62,
-     "tiefpass": 2800
+     "tempo_faktor": 0.85,
+     "tiefpass": 4500,
+     "max_schwerpunkt": 1500
     },
     {
      "quelle": "esc_3-101381-B",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.3,
-      "max_dauer": 3.5,
+      "min_dauer": 0.2,
+      "max_dauer": 3.0,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 45,
+      "ein_ms": 20,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
      },
-     "tempo_faktor": 0.62,
-     "tiefpass": 2800
+     "tempo_faktor": 0.85,
+     "tiefpass": 4500,
+     "max_schwerpunkt": 1500
     },
     {
      "quelle": "esc_3-103401-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.3,
-      "max_dauer": 3.5,
+      "min_dauer": 0.2,
+      "max_dauer": 3.0,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 45,
+      "ein_ms": 20,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
      },
-     "tempo_faktor": 0.62,
-     "tiefpass": 2800
+     "tempo_faktor": 0.85,
+     "tiefpass": 4500,
+     "max_schwerpunkt": 1500
     },
     {
      "quelle": "esc_3-118194-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.3,
-      "max_dauer": 3.5,
+      "min_dauer": 0.2,
+      "max_dauer": 3.0,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 45,
+      "ein_ms": 20,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
      },
-     "tempo_faktor": 0.62,
-     "tiefpass": 2800
+     "tempo_faktor": 0.85,
+     "tiefpass": 4500,
+     "max_schwerpunkt": 1500
     },
     {
      "quelle": "esc_4-128659-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.3,
-      "max_dauer": 3.5,
+      "min_dauer": 0.2,
+      "max_dauer": 3.0,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 45,
+      "ein_ms": 20,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
      },
-     "tempo_faktor": 0.62,
-     "tiefpass": 2800
+     "tempo_faktor": 0.85,
+     "tiefpass": 4500,
+     "max_schwerpunkt": 1500
     },
     {
      "quelle": "esc_5-177779-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.3,
-      "max_dauer": 3.5,
+      "min_dauer": 0.2,
+      "max_dauer": 3.0,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 45,
+      "ein_ms": 20,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
      },
-     "tempo_faktor": 0.62,
-     "tiefpass": 2800
+     "tempo_faktor": 0.85,
+     "tiefpass": 4500,
+     "max_schwerpunkt": 1500
     },
     {
      "quelle": "esc_5-191497-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.3,
-      "max_dauer": 3.5,
+      "min_dauer": 0.2,
+      "max_dauer": 3.0,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 45,
+      "ein_ms": 20,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
      },
-     "tempo_faktor": 0.62,
-     "tiefpass": 2800
+     "tempo_faktor": 0.85,
+     "tiefpass": 4500,
+     "max_schwerpunkt": 1500
     },
     {
      "quelle": "esc_5-188606-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.3,
-      "max_dauer": 3.5,
+      "min_dauer": 0.2,
+      "max_dauer": 3.0,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 45,
+      "ein_ms": 20,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
      },
-     "tempo_faktor": 0.62,
-     "tiefpass": 2800
+     "tempo_faktor": 0.85,
+     "tiefpass": 4500,
+     "max_schwerpunkt": 1500
     },
     {
      "quelle": "esc_2-70344-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.3,
-      "max_dauer": 3.5,
+      "min_dauer": 0.2,
+      "max_dauer": 3.0,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 45,
+      "ein_ms": 20,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
      },
-     "tempo_faktor": 0.62,
-     "tiefpass": 2800
+     "tempo_faktor": 0.85,
+     "tiefpass": 4500,
+     "max_schwerpunkt": 1500
     },
     {
      "quelle": "esc_2-91912-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.3,
-      "max_dauer": 3.5,
+      "min_dauer": 0.2,
+      "max_dauer": 3.0,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 45,
+      "ein_ms": 20,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
      },
-     "tempo_faktor": 0.62,
-     "tiefpass": 2800
+     "tempo_faktor": 0.85,
+     "tiefpass": 4500,
+     "max_schwerpunkt": 1500
     }
    ],
-   "text": "Dollen, Duchten und Spanten arbeiten, wenn das Boot sich neigt oder eine Welle den Rumpf trifft: langsames, tiefes Knarren, das fest am Boot bleibt.",
+   "text": "Dollen, Duchten und Spanten arbeiten, wenn das Boot sich neigt oder eine Welle den Rumpf trifft: ein ruhiges, warmes Knarren, das fest am Boot bleibt – nur die tiefen, hölzernen Knarzer, keine hellen Quietscher.",
    "folgt": {
     "kurve": "see",
     "rate": [
@@ -2235,8 +2246,8 @@
    "ziel_lufs": -22,
    "pegel_art": "spitzen",
    "abstand_s": [
-    40,
-    75
+    24,
+    42
    ],
    "hoehe": [
     2.0,
@@ -2489,7 +2500,7 @@
      ]
     }
    ],
-   "text": "Alle ein bis zwei Minuten schießt eine Möwe in 2 bis 4,5 m Höhe über das Boot – meist mit dem Wind, von vorn links nach hinten rechts, manchmal dagegen. Ein Ruf liegt genau über dem Boot, seine Tonhöhe kippt beim Vorbeiflug (Doppler); im Anflug Flügelschläge.",
+   "text": "Etwa alle halbe Minute schießt eine Möwe in 2 bis 4,5 m Höhe über das Boot – meist mit dem Wind, von vorn links nach hinten rechts, manchmal dagegen. Ein Ruf liegt genau über dem Boot, seine Tonhöhe kippt beim Vorbeiflug (Doppler); im Anflug Flügelschläge.",
    "decke_db": -4.0,
    "fluegel": [
     {
