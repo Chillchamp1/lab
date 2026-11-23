@@ -212,6 +212,9 @@ Ortsdaten der Szenenkarte (`audio/<name>_karte.json`, gezippt 5–70 kB), kein V
   Bilder/s, Auflösung ≤ 1,5-fach, keine Schatten, keine Texturen, pausiert im Hintergrund.
   Möwen erscheinen um ihren Ruf herum (±3 s) auf ihrer Bahn weitergeführt – die Karte kennt
   sie nur, während sie rufen.
+- **Schallringe** (beide Ansichten): um jede Quelle, die gerade klingt, laufen zwei Kreise
+  nach außen – so sieht man, woher gerade etwas kommt. Flächen (ferne See, Wind, Segel,
+  Kolonie-Gewirr) klingen immer und bekommen keine Ringe.
 
 ## Ausschnitte nach Klang auswählen
 

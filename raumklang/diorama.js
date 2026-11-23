@@ -197,6 +197,17 @@ export function starteDiorama(canvas, K, holeZeit) {
   const schaum = new THREE.InstancedMesh(kugel, new THREE.MeshLambertMaterial({ color: F.schaum, emissive: 0x6a6a64, flatShading: true }), 220);
   schaum.instanceMatrix.setUsage(THREE.DynamicDrawUsage); szene.add(schaum);
 
+  // Schallringe: um jede Quelle, die gerade klingt, laufen helle Kreise nach außen (zur Kamera gedreht)
+  const ringe = new THREE.InstancedMesh(new THREE.RingGeometry(0.82, 1, 28),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, side: THREE.DoubleSide }), 160);
+  ringe.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  ringe.setColorAt(0, new THREE.Color()); ringe.instanceColor.setUsage(THREE.DynamicDrawUsage);
+  ringe.renderOrder = 5; szene.add(ringe);
+  const STILL = new Set(['see_fern', 'wind', 'segel', 'moewen_fern']);       // Flächen: klingen immer, kein Ring
+  const RING = { felsen: 2.4, wellen: 1.3, rumpf: 0.55, knarzen: 0.45, zug: 2.6, gaense: 3.0 };
+  const ringQ = K.quellen.filter(q => !STILL.has(q.g));
+  const ringFarbe = new THREE.Color();
+
   // ---------- Tilt-Shift: Szene in ein Bild rendern, dann oben und unten weichzeichnen
   const ziel = new THREE.WebGLRenderTarget(4, 4, { depthBuffer: true });
   const nachMat = new THREE.ShaderMaterial({
@@ -355,6 +366,26 @@ export function starteDiorama(canvas, K, holeZeit) {
     }
     for (let i = ng; i < gaense.length; i++) gaense[i].visible = false;
     for (let i = nz; i < zugMoewen.length; i++) zugMoewen[i].visible = false;
+
+    // Schallringe
+    let nr = 0;
+    for (const q of ringQ) {
+      const x = imKreis(K, ts, q.t0, q.ende + 0.3); if (x === null || nr >= ringe.count - 1) continue;
+      const p = ort(K, q, Math.min(x, q.ende)); if (!p) continue;
+      stauche(p, v3);
+      if (q.g === 'rumpf' || q.g === 'knarzen') { v3.applyEuler(eul.set(b.rotation.x, 0, b.rotation.z)); v3.y += b.position.y + 0.15; }
+      else if (q.g === 'wellen' || q.g === 'felsen') v3.y = Math.max(v3.y, 0.4);
+      const gr = RING[q.g] || 1.0, alter = x - q.t0;
+      const huelle = Math.min(1, alter / 0.15, (q.ende + 0.3 - x) / 0.5);
+      for (let k = 0; k < 2; k++) {
+        const u = (alter * 1.3 + k * 0.5) % 1;
+        m4.compose(v3, kamera.quaternion, sc.setScalar(gr * (0.3 + 0.9 * u)));
+        ringe.setMatrixAt(nr, m4);
+        ringe.setColorAt(nr, ringFarbe.setScalar(0.85 * (1 - u) * huelle));
+        nr++;
+      }
+    }
+    ringe.count = nr; ringe.instanceMatrix.needsUpdate = true; if (ringe.instanceColor) ringe.instanceColor.needsUpdate = true;
 
     renderer.setRenderTarget(ziel); renderer.render(szene, kamera);
     renderer.setRenderTarget(null); renderer.render(nachSzene, nachKamera);
