@@ -1,4 +1,4 @@
-"""Schreibt je Szene eine eigene Seite raumklang/<adresse>/index.html zum Teilen.
+"""Schreibt je Szene eine eigene Seite raumklang/<adresse>/index.html (Adressen englisch, die Seite ist englisch) zum Teilen.
 
 Titel und Beschreibung stehen fest im HTML (nicht erst per Skript), damit Messenger und
 soziale Netze beim Teilen eine Vorschau zeigen. Den Rest (Spieler, Drehbuch, Bausteine) baut
@@ -13,17 +13,17 @@ WURZEL = Path(__file__).resolve().parent.parent
 BASIS = 'https://chillchamp1.github.io/lab/raumklang/'
 
 # Adresse auf der Seite → Name der Renderdatei in audio/ (Reihenfolge = Übersicht)
-SZENEN = [('wald', 'wald'), ('meer', 'boot'), ('ruine', 'ruine'), ('elefanten', 'elefanten'), ('meerestier', 'ozean')]
+SZENEN = [('forest', 'wald'), ('sea', 'boot'), ('ruins', 'ruine'), ('elephants', 'elefanten'), ('sea-creature', 'ozean')]
 
 VORLAGE = """<!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{titel} – Klangszene für Kopfhörer</title>
+<title>{titel} – soundscape for headphones</title>
 <meta name="description" content="{text}">
 <meta property="og:type" content="website">
-<meta property="og:title" content="{titel} – Klangszene für Kopfhörer">
+<meta property="og:title" content="{titel} – soundscape for headphones">
 <meta property="og:description" content="{text}">
 <meta property="og:url" content="{url}">
 <meta property="og:audio" content="{audio}">
@@ -34,21 +34,21 @@ VORLAGE = """<!doctype html>
 </head>
 <body data-szene="{name}">
 <main>
-  <p class="zurueck"><a href="../">← Alle Klangszenen</a></p>
+  <p class="zurueck"><a href="../">← All soundscapes</a></p>
   <h1>{titel}</h1>
   <p class="unter">{text}</p>
   <div class="spieler gross" id="spieler"></div>
-  <div class="knoepfe"><button id="teilen" type="button">Teilen</button><span id="teilen-info" aria-live="polite"></span></div>
+  <div class="knoepfe"><button id="teilen" type="button">Share</button><span id="teilen-info" aria-live="polite"></span></div>
   <div class="werte" id="werte"></div>
-  <p class="hinweis" style="margin-top:18px"><b>So hören:</b> Kopfhörer auf (links/rechts richtig herum), hinlegen, Augen zu.
-  Die Szene läuft in Endlosschleife ohne hörbare Naht.</p>
+  <p class="hinweis" style="margin-top:18px"><b>How to listen:</b> headphones on (left and right the right way round), lie down, close your eyes.
+  The scene loops endlessly without an audible seam.</p>
   <div id="mehr"></div>
 </main>
 <div id="start" hidden>
   <div class="karte">
-    <button id="start-knopf" type="button" aria-label="Abspielen">▶</button>
+    <button id="start-knopf" type="button" aria-label="Play">▶</button>
     <h2>{titel}</h2>
-    <p>Kopfhörer auf und tippen – dein Browser startet Ton erst nach einem Tipp.</p>
+    <p>Put your headphones on and tap – your browser only starts sound after a tap.</p>
   </div>
 </div>
 <script type="module" src="../szene.js"></script>

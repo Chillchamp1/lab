@@ -24,7 +24,7 @@ const vielSpeicher = () => !navigator.deviceMemory || navigator.deviceMemory >= 
  * Rückgabe: { spielen, stopp, laeuft() }
  */
 export function spieler(el, src, soll, dateiname, opt = {}) {
-  el.innerHTML = `<button aria-label="Abspielen">▶</button><div class="leiste"><i></i><span></span></div>` +
+  el.innerHTML = `<button aria-label="Play">▶</button><div class="leiste"><i></i><span></span></div>` +
     `<span class="zeit">0:00</span>` + (dateiname ? `<a href="${src}" download="${esc(dateiname)}">MP3</a>` : '');
   const knopf = el.querySelector('button'), leiste = el.querySelector('.leiste');
   const balken = leiste.querySelector('span'), geladen = leiste.querySelector('i'), anz = el.querySelector('.zeit');
@@ -108,7 +108,7 @@ export function spieler(el, src, soll, dateiname, opt = {}) {
     }
     audio.pause();
     modus = null; naht = false;
-    knopf.textContent = '▶'; knopf.setAttribute('aria-label', 'Abspielen');
+    knopf.textContent = '▶'; knopf.setAttribute('aria-label', 'Play');
     anzeigen();
   }
 
@@ -116,7 +116,7 @@ export function spieler(el, src, soll, dateiname, opt = {}) {
     if (aktiv && aktiv !== api) aktiv.stopp();
     aktiv = api;
     if (modus) stopp();
-    knopf.textContent = '❚❚'; knopf.setAttribute('aria-label', 'Anhalten');
+    knopf.textContent = '❚❚'; knopf.setAttribute('aria-label', 'Pause');
     // Web Audio vorbereiten, solange wir im Tipp des Nutzers sind (Safari erlaubt es sonst nicht)
     // (ohne Tippen bleibt resume() in Chrome einfach hängen – deshalb nicht endlos warten)
     try { await Promise.race([kontext().resume(), new Promise(r => setTimeout(r, 300))]); } catch (e) {}
@@ -128,7 +128,7 @@ export function spieler(el, src, soll, dateiname, opt = {}) {
         if (von) audio.currentTime = von;
         await audio.play();
       } catch (e) {
-        knopf.textContent = '▶'; knopf.setAttribute('aria-label', 'Abspielen');
+        knopf.textContent = '▶'; knopf.setAttribute('aria-label', 'Play');
         modus = null;
         if (opt.beiFehler) opt.beiFehler(e && e.name);
         return false;
@@ -158,7 +158,14 @@ export function spieler(el, src, soll, dateiname, opt = {}) {
   return api;
 }
 
-// Dateiname beim Herunterladen mit dem Stand der Fassung, z. B. meer_2026-11-23_17-05.mp3
+const MONATE = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+// Stand „23.11.2026 17:05“ (aus dem Bericht) für die Seite: „23 Nov 2026, 17:05“
+export function standText(stand) {
+  const m = String(stand || '').match(/(\d+)\.(\d+)\.(\d+)\s+(\d+):(\d+)/);
+  return m ? `${+m[1]} ${MONATE[m[2] - 1]} ${m[3]}, ${m[4]}:${m[5]}` : String(stand || '');
+}
+
+// Dateiname beim Herunterladen mit dem Stand der Fassung, z. B. sea_2026-11-23_17-05.mp3
 export function standSuffix(stand) {
   const m = String(stand || '').match(/(\d+)\.(\d+)\.(\d+)\s+(\d+):(\d+)/);
   return m ? `_${m[3]}-${m[2]}-${m[1]}_${m[4]}-${m[5]}` : '';

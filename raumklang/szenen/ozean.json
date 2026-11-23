@@ -1,7 +1,7 @@
 {
  "name": "ozean",
- "titel": "Hören wie ein Meerestier",
- "text": "Keine Kuppel: Du schwebst selbst im offenen Meer, achtzehn Meter tief, und hörst, wie ein Tier dort hören könnte. Schall trägt im Wasser kilometerweit – Wale singen aus vielen Kilometern Entfernung, jeder Ruf kommt über Oberfläche und Grund mehrfach an und rollt lange nach. Delfine ziehen vorbei, das Riff knistert fern, und einmal schwimmt ein Wal ganz nah an dir vorbei.",
+ "titel": "Hearing Like a Sea Creature",
+ "text": "You float in the open sea, eighteen metres down, and hear the way an animal there might. Sound carries for kilometres in water – whales sing from many kilometres away, every call arrives several times via the surface and the seabed and rolls on for a long time. Dolphins pass, the reef crackles in the distance, and once a whale swims right past you.",
  "dauer": 120,
  "saat": 51,
  "ziel_lufs": -23,
@@ -48,8 +48,8 @@
   {
    "name": "riff",
    "typ": "bett",
-   "titel": "Das Meer ringsum",
-   "text": "Fernes Knistern vom Riff und das Rauschen der Oberfläche, aus allen Richtungen.",
+   "titel": "The sea all around",
+   "text": "Distant crackling from the reef and the hiss of the surface, from every direction.",
    "ziel_lufs": -33,
    "anzahl": 8,
    "entfernung": [
@@ -82,8 +82,8 @@
   {
    "name": "delfine",
    "typ": "schwarm",
-   "titel": "Delfine in der Nähe",
-   "text": "Eine Gruppe Delfine zieht in 20 bis 150 Metern vorbei, pfeift und klickt; die Pfiffe kommen über Oberfläche und Grund mehrfach an.",
+   "titel": "Dolphins nearby",
+   "text": "A group of dolphins passes 20 to 150 metres away, whistling and clicking; the whistles arrive several times via the surface and the seabed.",
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
    "anzahl": 4,
@@ -190,8 +190,8 @@
   {
    "name": "delfin_nah",
    "typ": "ueberflug",
-   "titel": "Ein Delfin schaut vorbei",
-   "text": "Zwei-, dreimal pro Durchlauf schießt ein Delfin dicht an dir vorbei.",
+   "titel": "A dolphin drops by",
+   "text": "Two or three times per loop, a dolphin shoots past close to you.",
    "ziel_lufs": -25,
    "pegel_art": "spitzen",
    "erster_s": [
@@ -256,8 +256,8 @@
   {
    "name": "wale",
    "typ": "gebruell",
-   "titel": "Buckelwale in der Ferne",
-   "text": "Buckelwale singen aus 1,5 bis 9 Kilometern – im Wasser trägt der Schall so weit, und jeder Ruf rollt lange nach.",
+   "titel": "Humpback whales in the distance",
+   "text": "Humpback whales singing from 1.5 to 9 kilometres away – sound carries that far in water, and every call rolls on for a long time.",
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
    "erster_s": [
@@ -349,8 +349,8 @@
   {
    "name": "wal_nah",
    "typ": "ueberflug",
-   "titel": "Ein Wal schwimmt vorbei",
-   "text": "Einmal pro Durchlauf zieht ein Wal in wenigen Metern an dir vorbei und singt dabei tief und lang.",
+   "titel": "A whale swims past",
+   "text": "Once per loop a whale glides past a few metres away, singing deep and long.",
    "ziel_lufs": -24,
    "pegel_art": "spitzen",
    "erster_s": [
@@ -523,27 +523,27 @@
   "text": [
    [
     0.0,
-    "Stille Weite, ganz fern singt ein Wal – sein Lied kommt aus vielen Kilometern."
+    "Silent expanse; very far away a whale sings – its song comes from many kilometres off."
    ],
    [
     15.0,
-    "Eine Delfingruppe kommt vorbei, pfeift und klickt."
+    "A group of dolphins comes by, whistling and clicking."
    ],
    [
     45.0,
-    "Die Delfine ziehen weiter; die Wale kommen näher, ihr Gesang wird voller."
+    "The dolphins move on; the whales come closer, their song grows fuller."
    ],
    [
     65.0,
-    "Ein Wal schwimmt dicht an dir vorbei."
+    "A whale swims close past you."
    ],
    [
     85.0,
-    "Die Delfine kommen zurück."
+    "The dolphins come back."
    ],
    [
     102.5,
-    "Die Wale entfernen sich wieder in die Weite."
+    "The whales drift off into the distance again."
    ]
   ]
  }

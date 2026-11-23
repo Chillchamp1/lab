@@ -17,7 +17,7 @@ pipeline/material_holen.py  lädt alles aus quellen.json nach material/roh/
 pipeline/szene.py           Szenenbeschreibung → Klanggruppen → Pegel → Mischung → MP3
 szenen/boot.json            die Szene als Daten
 quellen.json                jede Aufnahme mit Herkunft, Urheber und Lizenz
-pipeline/seiten.py          schreibt je Szene eine Seite zum Teilen (meer/, wald/, …)
+pipeline/seiten.py          schreibt je Szene eine Seite zum Teilen (sea/, forest/, …)
 audio/                      Ergebnis: Mischung, eine Hörprobe je Klanggruppe, Bericht (boot.json)
 index.html, stil.css        Übersicht: je Szene eine Karte, ein Klick öffnet die Szenenseite
 spieler.js, szene.js        Spieler (streamt, dann lückenlose Schleife) und Szenenseite
@@ -34,7 +34,9 @@ python3 pipeline/seiten.py          # Titel und Text der Szenenseiten (für Link
 
 ## Seite und Spieler
 
-Jede Szene hat eine eigene Adresse, z. B. `…/raumklang/meer/`. Beim Öffnen spielt sie
+Die Webseite ist englisch (seit 23.11.2026), die Pipeline und diese Beschreibung bleiben deutsch.
+Die sichtbaren Texte der Szenen (`titel`, `text`, Drehbuch, Gruppen) stehen deshalb englisch in
+`szenen/*.json`. Jede Szene hat eine eigene Adresse, z. B. `…/raumklang/sea/`. Beim Öffnen spielt sie
 sofort los, wenn der Browser Ton ohne Tippen erlaubt – das tut er meist nur, wenn man
 vorher auf der Seite geklickt hat (etwa von der Übersicht aus). Kommt man über einen
 geteilten Link, sperren Chrome, Safari und Firefox den Ton bis zum ersten Tipp; dann

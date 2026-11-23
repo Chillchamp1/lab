@@ -1,56 +1,58 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Klangszenen für Kopfhörer</title>
+<title>Soundscapes for Headphones</title>
+<meta name="description" content="Binaural ambient soundscapes for lying down with headphones, built from real field recordings and placed in 3D space – endless loops without a seam.">
+<meta property="og:title" content="Soundscapes for Headphones">
+<meta property="og:description" content="Binaural ambient soundscapes for lying down with headphones, built from real field recordings and placed in 3D space.">
 <link rel="stylesheet" href="stil.css">
 </head>
 <body>
 <main>
-  <h1>Klangszenen für Kopfhörer</h1>
-  <p class="unter">Binaural gerendert für eine liegende Hörhaltung: auf dem Rücken, Kopf auf einem Kissen, Blick schräg nach oben.</p>
+  <h1>Soundscapes for Headphones</h1>
+  <p class="unter">Rendered binaurally for listening lying down: on your back, head on a pillow, gaze tilted upwards.</p>
 
-  <p class="hinweis"><b>So hören:</b> Kopfhörer auf (links/rechts richtig herum), hinlegen, Augen zu.
-  Jede Szene läuft in Endlosschleife ohne hörbare Naht. Ein Klick auf eine Szene öffnet ihre eigene Seite – die Adresse kannst du teilen.</p>
+  <p class="hinweis"><b>How to listen:</b> headphones on (left and right the right way round), lie down, close your eyes.
+  Every scene loops endlessly without an audible seam. Click a scene to open its own page – you can share that link.</p>
 
   <div id="szenen"></div>
 
-  <p class="hinweis"><b>Welche Ohren passen zu dir?</b> Die Szenen sind mit einem Satz gemessener Ohren (HRTF) gerechnet.
-  Im <a href="hrtf-test/">HRTF-Auswahltest</a> findest du in 6–8 Minuten heraus, welcher am besten zu deinen Ohrmuscheln passt. Mit In-Ear-Mikrofonen geht es genauer: <a href="messung/">Ohrmessung</a>.</p>
+  <p class="hinweis"><b>Which ears suit you?</b> The scenes are rendered with one set of measured ears (HRTF).
+  The <a href="hrtf-test/">HRTF test</a> finds out in 6–8 minutes which set matches your ears best. With in-ear microphones it gets more precise: <a href="messung/">ear measurement</a>.</p>
 
-    <p class="hinweis"><b>Bringen die räumlichen Wirkungen etwas?</b> Im <a href="vergleich/">Blindvergleich</a> hörst du dieselbe Stelle
-  mit und ohne Quellenbreite, Richtwirkung und Stamm-Echos, ohne zu wissen, welche Fassung welche ist.</p>
-
+  <p class="hinweis"><b>Do the spatial effects make a difference?</b> In the <a href="vergleich/">blind comparison</a> you hear the same passage
+  with and without source width, directivity and tree-trunk echoes, without knowing which version is which.</p>
 
   <details class="allgemein">
-    <summary>Wie die Szenen gebaut sind</summary>
+    <summary>How the scenes are made</summary>
     <ul>
-      <li><b>Echte Aufnahmen</b> (gemeinfrei, CC0 oder CC BY), in einzelne Ereignisse zerlegt – Rufe, Tropfen, Schritte, Schwapps – und in der Szene
-        neu im Raum gesetzt. Tiere, die es nicht mehr gibt, sind aus echten Tierlauten gemacht, langsamer und tiefer abgespielt. Synthetisch sind nur
-        die tiefe Schicht, die kraftvollen Momenten Wucht gibt, und die Musik im Wald.</li>
-      <li><b>Kopfbezug:</b> HRTF CIPIC&nbsp;040 (SOFA), diffusfeld-entzerrt, stetig zwischen den Messrichtungen überblendet; ohne Head-Tracking.</li>
-      <li><b>Raum:</b> Jede Quelle kommt auf mehreren Wegen an – direkt, gespiegelt an Boden, Bordwand oder Baumstamm, gebeugt über eine Kante –
-        dazu ein Nachhall. Ohne Raum klingt alles im Kopf.</li>
-      <li><b>Bewegung:</b> Quellen bewegen sich auf Bahnen; die Laufzeit wird mitgerechnet, daraus entsteht der Doppler-Effekt beim Vorbeiflug.</li>
-      <li><b>Endlosschleife:</b> gerechnet auf einer kreisförmigen Zeitachse; was über das Ende hinausklingt, läuft am Anfang weiter.</li>
-      <li><b>Pegel:</b> Jede Klanggruppe einzeln auf einen Zielwert (LUFS), seltene Spitzen fängt ein Begrenzer mit Vorschau ab.</li>
+      <li><b>Real recordings</b> (public domain, CC0 or CC BY), cut into single events – calls, drops, footsteps, splashes – and placed anew in
+        3D space. Animals that no longer exist are made from real animal sounds, played slower and deeper. The only synthetic parts are the
+        low layer that gives powerful moments their weight, and the music in the forest.</li>
+      <li><b>Head:</b> HRTF CIPIC&nbsp;040 (SOFA), diffuse-field equalised, smoothly interpolated between measured directions; no head tracking.</li>
+      <li><b>Space:</b> every source arrives along several paths – direct, reflected off the ground, the hull or a tree trunk, diffracted over an
+        edge – plus reverberation. Without space, everything sounds inside your head.</li>
+      <li><b>Movement:</b> sources move along paths; the travel time is computed too, which produces the Doppler effect of a fly-by.</li>
+      <li><b>Endless loop:</b> computed on a circular timeline; whatever rings on past the end continues at the start.</li>
+      <li><b>Levels:</b> each sound group is set to its own target loudness (LUFS); rare peaks are caught by a look-ahead limiter.</li>
     </ul>
-    <p>Skripte, Szenenbeschreibungen und Quellenverzeichnis im
-      <a href="https://github.com/chillchamp1/lab/tree/main/raumklang">Projektordner</a>.</p>
+    <p>Scripts, scene descriptions and the list of recordings are in the
+      <a href="https://github.com/chillchamp1/lab/tree/main/raumklang">project folder</a> (documentation in German).</p>
   </details>
 </main>
 <script type="module">
-import { zeit, esc } from './spieler.js';
-// Adresse der Szenenseite → Name der Renderdatei (wie pipeline/seiten.py)
-const SZENEN = [['wald', 'wald'], ['meer', 'boot'], ['ruine', 'ruine'], ['elefanten', 'elefanten'], ['meerestier', 'ozean']];
+import { zeit, esc, standText } from './spieler.js';
+// page address → name of the rendered file (same as pipeline/seiten.py)
+const SZENEN = [['forest', 'wald'], ['sea', 'boot'], ['ruins', 'ruine'], ['elephants', 'elefanten'], ['sea-creature', 'ozean']];
 const box = document.getElementById('szenen');
 const berichte = await Promise.all(SZENEN.map(([, name]) => fetch(`audio/${name}.json`).then(r => r.ok ? r.json() : null).catch(() => null)));
 SZENEN.forEach(([adresse], i) => {
   const b = berichte[i];
   if (!b) return;
   box.insertAdjacentHTML('beforeend', `<a class="szene" href="${adresse}/"><h2>${esc(b.titel)}</h2><p>${esc(b.text || '')}</p>` +
-    `<div class="werte"><span class="los">▶ Anhören</span><span><b>${zeit(b.dauer)}</b> in Schleife</span><span>Stand <b>${esc(b.stand)}</b></span></div></a>`);
+    `<div class="werte"><span class="los">▶ Listen</span><span><b>${zeit(b.dauer)}</b> loop</span><span>Version <b>${esc(standText(b.stand))}</b></span></div></a>`);
 });
 </script>
 </body>

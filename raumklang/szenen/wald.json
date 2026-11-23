@@ -1,7 +1,7 @@
 {
  "name": "wald",
- "titel": "Im Dinosaurierwald im Herbstregen",
- "text": "Du sitzt angelehnt an einen Baumstamm unter dem Blätterdach. Es regnet, auf großen Blättern über dir trommelt es wie auf einem Zeltdach, ein Bach fließt rechts neben dir, Vögel singen in den Bäumen. Weit weg rufen Pflanzenfresser, manchmal gröhlt etwas Riesiges über das Tal; ab und zu stapft einer vorbei und bricht Äste, einer kommt zum Äsen nah heran und schnuppert an dir.",
+ "titel": "In a Dinosaur Forest in Autumn Rain",
+ "text": "You sit leaning against a tree trunk under the canopy. It is raining; on big leaves above you it drums like rain on a tent, a stream flows past on your right, birds sing in the trees. Far away, plant-eaters call, and sometimes something enormous bellows across the valley; now and then one stomps past breaking branches, and one comes close to browse and sniffs at you.",
  "dauer": 600,
  "saat": 21,
  "ziel_lufs": -23,
@@ -51,8 +51,8 @@
   {
    "name": "regen",
    "typ": "bett",
-   "titel": "Regen im Blätterdach",
-   "text": "Leiser Herbstregen auf dem Laub über und um dich, mal dichter, mal lichter; in den Böen etwas mehr.",
+   "titel": "Rain in the canopy",
+   "text": "Soft autumn rain on the leaves above and around you, sometimes denser, sometimes lighter; a little more in the gusts.",
    "ziel_lufs": -31,
    "anzahl": 10,
    "entfernung": [
@@ -143,8 +143,8 @@
   {
    "name": "wind",
    "typ": "bett",
-   "titel": "Wind in den Kronen",
-   "text": "Wind, der in Böen durch die Baumkronen zieht.",
+   "titel": "Wind in the treetops",
+   "text": "Wind gusting through the treetops.",
    "ziel_lufs": -37,
    "anzahl": 6,
    "entfernung": [
@@ -199,8 +199,8 @@
   {
    "name": "regen_blaetter",
    "typ": "bett",
-   "titel": "Regen auf großen Blättern",
-   "text": "Regen trommelt auf große Blätter direkt über und neben dir – wie auf einem Zeltdach.",
+   "titel": "Rain on big leaves",
+   "text": "Rain drums on big leaves right above and beside you – like on a tent roof.",
    "ziel_lufs": -34,
    "anzahl": 5,
    "punkte": [
@@ -265,8 +265,8 @@
   {
    "name": "tropfen_blatt",
    "typ": "ereignisse",
-   "titel": "Tropfen auf Blättern",
-   "text": "Einzelne dicke Tropfen, die von den Blättern über dir auf tiefere Blätter fallen.",
+   "titel": "Drops on leaves",
+   "text": "Single fat drops falling from the leaves above you onto lower leaves.",
    "ziel_lufs": -35,
    "pegel_art": "spitzen",
    "entfernung": [
@@ -388,8 +388,8 @@
   {
    "name": "tropfen_pfuetze",
    "typ": "ereignisse",
-   "titel": "Tropfen in Pfützen",
-   "text": "Tropfen, die neben dir in kleine Pfützen fallen.",
+   "titel": "Drops in puddles",
+   "text": "Drops falling into little puddles beside you.",
    "ziel_lufs": -37,
    "pegel_art": "spitzen",
    "entfernung": [
@@ -565,8 +565,8 @@
   {
    "name": "rinnsal",
    "typ": "bett",
-   "titel": "Bach",
-   "text": "Ein kleiner Bach, der rechts neben dir in drei bis sechs Metern durchs Laub fließt.",
+   "titel": "Stream",
+   "text": "A small stream flowing through the leaves three to six metres to your right.",
    "ziel_lufs": -36,
    "anzahl": 6,
    "punkte": [
@@ -632,8 +632,8 @@
   {
    "name": "herde",
    "typ": "schwarm",
-   "titel": "Pflanzenfresser in der Ferne",
-   "text": "Weit weg ruft eine Herde: Rinder, Hirsche in der Brunft, Bisons und Kraniche, langsamer und tiefer abgespielt.",
+   "titel": "Plant-eaters in the distance",
+   "text": "Far away a herd calls: cattle, rutting deer, bison and cranes, played slower and deeper.",
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
    "anzahl": 5,
@@ -979,8 +979,8 @@
   {
    "name": "voegel",
    "typ": "schwarm",
-   "titel": "Vögel in der Regenpause",
-   "text": "Gesang nur, wenn der Regen nachlässt – vorsichtig erst, dann lebhafter.",
+   "titel": "Birds in the break in the rain",
+   "text": "Song only when the rain eases – tentative at first, then livelier.",
    "ziel_lufs": -32,
    "pegel_art": "spitzen",
    "anzahl": 7,
@@ -1239,8 +1239,8 @@
   {
    "name": "gebruell",
    "typ": "gebruell",
-   "titel": "Gröhlen über dem Tal",
-   "text": "Manchmal gröhlt weit weg etwas von enormer Größe, und der Ruf schallt von den Talhängen zurück.",
+   "titel": "Bellowing across the valley",
+   "text": "Sometimes something of enormous size bellows far away, and the call echoes back from the valley slopes.",
    "ziel_lufs": -22,
    "pegel_art": "spitzen",
    "erster_s": [
@@ -2001,8 +2001,8 @@
   {
    "name": "kammrufe",
    "typ": "gebruell",
-   "titel": "Kammrufe",
-   "text": "Rufe von Kranich, Kühen und Wapiti-Hirschen, tief gelegt und durch eine Röhrenresonanz geschickt – so färbt der hohle Schädelkamm eines Entenschnabelsauriers den Ruf.",
+   "titel": "Crest calls",
+   "text": "Calls of cranes, cows and wapiti, pitched down and sent through a tube resonance – the way the hollow head crest of a duck-billed dinosaur colours its call.",
    "ziel_lufs": -26,
    "pegel_art": "spitzen",
    "erster_s": [
@@ -2281,8 +2281,8 @@
   {
    "name": "wummern",
    "typ": "gebruell",
-   "titel": "Wummern",
-   "text": "Tiefes, pulsierendes Wummern mit geschlossenem Maul, wie es Strauße, Emus und Krokodile können – so haben viele Dinosaurier vermutlich gerufen.",
+   "titel": "Booming",
+   "text": "Deep, pulsing closed-mouth booming, as ostriches, emus and crocodiles can make – probably how many dinosaurs called.",
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
    "erster_s": [
@@ -2529,8 +2529,8 @@
   {
    "name": "vorbeigang",
    "typ": "vorbeigang",
-   "titel": "Ein Saurier stapft vorbei",
-   "text": "Ab und zu stapft in 8 bis 22 Metern ein großer Saurier vorbei: schwere Tritte, die den Boden zum Schwingen bringen, Matsch, raschelndes Laub – und manchmal knarrt und bricht ein großer Ast.",
+   "titel": "A dinosaur stomps past",
+   "text": "Now and then a big dinosaur stomps past 8 to 22 metres away: heavy steps that make the ground shake, mud, rustling leaves – and sometimes a big branch creaks and snaps.",
    "ziel_lufs": -23,
    "pegel_art": "spitzen",
    "erster_s": [
@@ -3482,8 +3482,8 @@
   {
    "name": "besuch",
    "typ": "besuch",
-   "titel": "Ein Saurier kommt nah heran",
-   "text": "Einer kommt näher, zupft Blätter vom Baum vor dir, kaut und schmatzt, senkt dann den Kopf bis auf einen halben, einen Meter an dich heran, schnuppert ruhig und geht wieder.",
+   "titel": "A dinosaur comes close",
+   "text": "One comes closer, plucks leaves from the tree in front of you, chews and smacks, then lowers its head to within half a metre or a metre of you, sniffs calmly and leaves again.",
    "ziel_lufs": -26,
    "pegel_art": "spitzen",
    "starts_s": [
@@ -4531,8 +4531,8 @@
   {
    "name": "flugsaurier",
    "typ": "ueberflug",
-   "titel": "Flugsaurier über dem Blätterdach",
-   "text": "Ab und zu zieht ein Flugsaurier über die Kronen, mit langsamen, schweren Flügelschlägen und einem Ruf.",
+   "titel": "Pterosaur above the canopy",
+   "text": "Now and then a pterosaur glides over the treetops with slow, heavy wingbeats and a call.",
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
    "erster_s": [
@@ -4612,16 +4612,16 @@
   {
    "name": "musik",
    "typ": "musik",
-   "titel": "Musik",
-   "text": "Ganz leise, langsame Akkordfläche im Hintergrund.",
+   "titel": "Music",
+   "text": "A very quiet, slow chord pad in the background.",
    "ziel_lufs": -44,
    "probe_plus_db": 10
   },
   {
    "name": "voegel_rufe",
    "typ": "schwarm",
-   "titel": "Rufe aus der Deckung",
-   "text": "Bei Regen singen Vögel kaum: Krähen, Häher und ein Specht rufen kurz aus der Deckung. Reißt eine Böe an den Kronen oder bricht ein Ast, fliegen einige schimpfend auf; nach einem Gebrüll verstummen sie.",
+   "titel": "Calls from cover",
+   "text": "Birds hardly sing in the rain: crows, jays and a woodpecker call briefly from cover. When a gust tears at the treetops or a branch snaps, some fly up scolding; after a bellow they fall silent.",
    "ziel_lufs": -35,
    "pegel_art": "spitzen",
    "anzahl": 6,
@@ -4942,31 +4942,31 @@
   "text": [
    [
     0.0,
-    "Leichter Regen. Die Vögel sitzen still in der Deckung, nur ab und zu ein kurzer Ruf."
+    "Light rain. The birds sit quietly under cover, just the odd short call."
    ],
    [
     100.0,
-    "Der Wind frischt auf und kündigt mehr Regen an; die Kronen rauschen, ein paar Vögel fliegen schimpfend auf."
+    "The wind picks up, announcing more rain; the treetops rustle, a few birds fly up scolding."
    ],
    [
     162.5,
-    "Der Regen wird kräftig, auf den großen Blättern trommelt es, der Bach schwillt an."
+    "The rain gets heavy, drumming on the big leaves; the stream swells."
    ],
    [
     250.0,
-    "Höhepunkt: Sturm in den Kronen."
+    "Peak: a storm in the treetops."
    ],
    [
     350.0,
-    "Der Regen lässt nach, es tropft weiter von den Blättern."
+    "The rain eases; drops keep falling from the leaves."
    ],
    [
     437.5,
-    "Regenpause – die ersten Vögel trauen sich wieder und singen."
+    "A break in the rain – the first birds dare to sing again."
    ],
    [
     550.0,
-    "Leichter Regen setzt wieder ein."
+    "Light rain sets in again."
    ]
   ]
  }

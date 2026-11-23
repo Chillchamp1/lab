@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Szenenkarte</title>
+<title>Scene map</title>
 <style>
   :root { --grund: #0d1418; --flaeche: #152027; --rand: #24343d; --text: #dfe8ea; --leise: #8fa3ab; --akzent: #7fc4c9; }
   @media (prefers-color-scheme: light) {
@@ -29,16 +29,16 @@
 </head>
 <body>
 <main>
-  <p class="leise"><a href="../">← Klangszenen</a></p>
-  <h1 id="titel">Szenenkarte</h1>
-  <p class="leise">Draufsicht: du in der Mitte, der Strich zeigt deine Blickrichtung. Jede Klangquelle ist ein Punkt mit kurzer Spur, so wie der Renderer sie gerechnet hat.</p>
+  <p class="leise"><a href="../">← Soundscapes</a></p>
+  <h1 id="titel">Scene map</h1>
+  <p class="leise">Seen from above: you are in the middle, the arrow shows where you are looking. Every sound source is a dot with a short trail, exactly as the renderer computed it.</p>
   <div class="reihe">
     <select id="szene"></select>
-    <button id="b-spiel">▶ Abspielen</button>
-    <button data-tempo="1">×1 mit Ton</button>
+    <button id="b-spiel">▶ Play</button>
+    <button data-tempo="1">×1 with sound</button>
     <button data-tempo="10" class="an">×10</button>
     <button data-tempo="40">×40</button>
-    <select id="massstab"><option value="0">Maßstab: automatisch</option><option value="8">8 m</option><option value="25">25 m</option><option value="60">60 m</option><option value="200">200 m</option><option value="1000">1 km</option><option value="10000">10 km</option></select>
+    <select id="massstab"><option value="0">Scale: automatic</option><option value="8">8 m</option><option value="25">25 m</option><option value="60">60 m</option><option value="200">200 m</option><option value="1000">1 km</option><option value="10000">10 km</option></select>
   </div>
   <div class="reihe"><input type="range" id="regler" min="0" max="1000" value="0"><span id="zeit">0:00</span></div>
   <canvas id="bild" width="1200" height="1200"></canvas>
@@ -54,7 +54,8 @@ let K = null, t = 0, spielt = false, tempo = 10, letzt = 0, farbe = {};
 const zeit = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-for (const s of SZENEN) $('szene').insertAdjacentHTML('beforeend', `<option value="${s}">${s}</option>`);
+const NAMEN = { wald: 'forest', boot: 'sea', ruine: 'ruins', elefanten: 'elephants', ozean: 'sea creature' };
+for (const s of SZENEN) $('szene').insertAdjacentHTML('beforeend', `<option value="${s}">${NAMEN[s] || s}</option>`);
 const start = new URLSearchParams(location.search).get('s');
 if (SZENEN.includes(start)) $('szene').value = start;
 $('szene').addEventListener('change', () => { history.replaceState(null, '', '?s=' + $('szene').value); laden(); });
@@ -108,7 +109,7 @@ function zeichne() {
   g.fillStyle = dunkel ? '#dfe8ea' : '#17252b'; g.beginPath(); g.arc(M, M, 9, 0, 7); g.fill();
   g.strokeStyle = g.fillStyle; g.lineWidth = 4; g.beginPath(); g.moveTo(M, M - 8); g.lineTo(M, M - 44); g.stroke();
   g.beginPath(); g.moveTo(M - 10, M - 34); g.lineTo(M, M - 48); g.lineTo(M + 10, M - 34); g.stroke();
-  g.fillText('Blick', M + 14, M - 40);
+  g.fillText('Gaze', M + 14, M - 40);
   // Spuren und Punkte
   for (const [q, p] of aktiv) {
     const f = farbe[q.g] || '#888';
@@ -121,7 +122,7 @@ function zeichne() {
   $('regler').value = Math.round(1000 * t / K.dauer);
   const db = (K.drehbuch || []).map(([z, x]) => [((z - K.start_s) % K.dauer + K.dauer) % K.dauer, x]).sort((a, b) => a[0] - b[0]);
   const jetzt = db.filter(([z]) => z <= t).pop() || db[db.length - 1];
-  $('ereignis').textContent = jetzt ? `Drehbuch: ${jetzt[1]}` : '';
+  $('ereignis').textContent = jetzt ? `Script: ${jetzt[1]}` : '';
 }
 
 function schritt(jetzt) {
@@ -130,10 +131,10 @@ function schritt(jetzt) {
   t = tempo === 1 && !$('ton').paused ? $('ton').currentTime % K.dauer : (t + dt * tempo) % K.dauer;
   zeichne(); requestAnimationFrame(schritt);
 }
-function anhalten() { spielt = false; $('ton').pause(); $('b-spiel').textContent = '▶ Abspielen'; }
+function anhalten() { spielt = false; $('ton').pause(); $('b-spiel').textContent = '▶ Play'; }
 $('b-spiel').addEventListener('click', () => {
   if (spielt) return anhalten();
-  spielt = true; $('b-spiel').textContent = '❚❚ Anhalten'; letzt = performance.now();
+  spielt = true; $('b-spiel').textContent = '❚❚ Pause'; letzt = performance.now();
   if (tempo === 1) { $('ton').currentTime = t; $('ton').play(); }
   requestAnimationFrame(schritt);
 });

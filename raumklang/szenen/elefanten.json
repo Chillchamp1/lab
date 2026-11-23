@@ -1,7 +1,7 @@
 {
  "name": "elefanten",
- "titel": "Elefanten am Wasserloch",
- "text": "Nacht in der Savanne. Du liegst im Zelt, ein paar Meter vor dir ein Wasserloch. Grillen zirpen, Frösche quaken am Ufer, weit draußen grunzen Flusspferde. Eine Elefantenherde kommt zum Trinken: tiefes Grollen, mit dem sie sich unterhalten, Rüssel schlürfen und spritzen Wasser. Einer stapft am Zelt vorbei – und einmal kommt einer ganz nah und schnuppert am Zelt.",
+ "titel": "Elephants at the Waterhole",
+ "text": "Night on the savanna. You lie in a tent, a waterhole a few metres in front of you. Crickets chirp, frogs croak at the water's edge, hippos grunt far off. A herd of elephants comes to drink: the deep rumbles they talk with, trunks slurping and splashing water. One stomps past the tent – and once, one comes right up and sniffs at the tent.",
  "dauer": 120,
  "saat": 61,
  "ziel_lufs": -23,
@@ -57,8 +57,8 @@
   {
    "name": "grillen",
    "typ": "bett",
-   "titel": "Grillen in der Nacht",
-   "text": "Grillen zirpen ringsum im Gras – der ruhige Grund der Szene.",
+   "titel": "Crickets at night",
+   "text": "Crickets chirping in the grass all around – the calm ground of the scene.",
    "ziel_lufs": -30,
    "anzahl": 8,
    "entfernung": [
@@ -98,8 +98,8 @@
   {
    "name": "froesche",
    "typ": "bett",
-   "titel": "Frösche am Ufer",
-   "text": "Am Ufer des Wasserlochs vor dir quaken Frösche.",
+   "titel": "Frogs at the water's edge",
+   "text": "Frogs croak at the edge of the waterhole in front of you.",
    "ziel_lufs": -34,
    "anzahl": 3,
    "punkte": [
@@ -144,8 +144,8 @@
   {
    "name": "ferne",
    "typ": "bett",
-   "titel": "Die Savanne weit draußen",
-   "text": "Ferne Nachtgeräusche aus dem Busch.",
+   "titel": "The savanna far off",
+   "text": "Distant night sounds from the bush.",
    "ziel_lufs": -38,
    "anzahl": 5,
    "entfernung": [
@@ -182,8 +182,8 @@
   {
    "name": "flusspferde",
    "typ": "gebruell",
-   "titel": "Flusspferde in der Ferne",
-   "text": "Weit draußen im Fluss grunzen Flusspferde, tief und rollend.",
+   "titel": "Hippos in the distance",
+   "text": "Far off in the river, hippos grunt, deep and rolling.",
    "ziel_lufs": -30,
    "pegel_art": "spitzen",
    "erster_s": [
@@ -330,8 +330,8 @@
   {
    "name": "herde",
    "typ": "schwarm",
-   "titel": "Die Herde am Wasserloch",
-   "text": "Vier, fünf Elefanten stehen am Wasserloch rund 25 Meter vor dir, wandern langsam am Ufer entlang und unterhalten sich mit tiefem Grollen.",
+   "titel": "The herd at the waterhole",
+   "text": "Four or five elephants stand at the waterhole about 25 metres in front of you, wander slowly along the edge and talk in deep rumbles.",
    "ziel_lufs": -26,
    "pegel_art": "spitzen",
    "anzahl": 5,
@@ -579,8 +579,8 @@
   {
    "name": "trinken",
    "typ": "ereignisse",
-   "titel": "Rüssel im Wasser",
-   "text": "Am Wasserloch saugen Rüssel Wasser, spritzen und schlürfen.",
+   "titel": "Trunks in the water",
+   "text": "At the waterhole, trunks suck up water, splash and slurp.",
    "ziel_lufs": -30,
    "pegel_art": "spitzen",
    "punkt": [
@@ -661,8 +661,8 @@
   {
    "name": "trompete",
    "typ": "gebruell",
-   "titel": "Ein Elefant trompetet",
-   "text": "Einmal pro Durchlauf trompetet ein Elefant aus der Herde – laut, aber fröhlich, nicht gegen dich.",
+   "titel": "An elephant trumpets",
+   "text": "Once per loop an elephant in the herd trumpets – loud, but cheerful, not at you.",
    "ziel_lufs": -25,
    "pegel_art": "spitzen",
    "erster_s": [
@@ -758,8 +758,8 @@
   {
    "name": "vorbeigang",
    "typ": "vorbeigang",
-   "titel": "Ein Elefant stapft vorbei",
-   "text": "Einmal pro Durchlauf geht ein Elefant in 8 bis 14 Metern am Zelt vorbei: weiche, schwere Schritte, Gras raschelt, er schnaubt.",
+   "titel": "An elephant stomps past",
+   "text": "Once per loop an elephant walks past the tent 8 to 14 metres away: soft, heavy steps, rustling grass, a snort.",
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
    "erster_s": [
@@ -1335,8 +1335,8 @@
   {
    "name": "besuch",
    "typ": "besuch",
-   "titel": "Einer schnuppert am Zelt",
-   "text": "Einmal kommt ein junger Elefant ganz nah ans Zelt, rupft Gras, kaut, schnuppert mit dem Rüssel an der Zeltwand – und geht wieder zur Herde.",
+   "titel": "One sniffs at the tent",
+   "text": "Once, a young elephant comes right up to the tent, pulls grass, chews, sniffs at the tent wall with its trunk – and goes back to the herd.",
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
    "starts_s": [
@@ -2044,31 +2044,31 @@
   "text": [
    [
     0,
-    "Grillen, Frösche am Ufer – eine Elefantenherde nähert sich, ihr Grollen kommt näher."
+    "Crickets, frogs at the water's edge – a herd of elephants approaches, its rumbling coming closer."
    ],
    [
     14,
-    "Einer stapft dicht am Zelt vorbei."
+    "One stomps past close to the tent."
    ],
    [
     28,
-    "Die Herde ist am Wasserloch: Rüssel schlürfen und spritzen, tiefes Grollen."
+    "The herd is at the waterhole: trunks slurp and splash, deep rumbling."
    ],
    [
     45,
-    "Ein Elefant trompetet – die Frösche verstummen kurz."
+    "An elephant trumpets – the frogs fall silent for a moment."
    ],
    [
     58,
-    "Ein junger Elefant kommt heran, rupft Gras und kaut."
+    "A young elephant comes over, pulls up grass and chews."
    ],
    [
     88,
-    "Er schnuppert an der Zeltwand; selbst die Grillen halten inne."
+    "It sniffs at the tent wall; even the crickets pause."
    ],
    [
     102,
-    "Er trottet zurück, die Herde zieht weiter."
+    "It trots back; the herd moves on."
    ]
   ]
  }

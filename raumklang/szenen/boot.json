@@ -1,6 +1,6 @@
 {
  "name": "boot",
- "titel": "Im Holzboot auf dem Meer",
+ "titel": "In a Wooden Boat at Sea",
  "dauer": 600,
  "saat": 11,
  "ziel_lufs": -21,
@@ -35,7 +35,7 @@
   {
    "name": "see_fern",
    "typ": "bett",
-   "titel": "Ferne See",
+   "titel": "Distant sea",
    "ziel_lufs": -29,
    "anzahl": 9,
    "entfernung": [
@@ -118,7 +118,7 @@
      "tiefpass": 3000
     }
    ],
-   "text": "Brandung und Dünung weit draußen, rund um den Horizont. Sie kommt über die Bordkante herein und ist deshalb gedämpft.",
+   "text": "Surf and swell far out, all around the horizon. It reaches you over the gunwale and is softened by it.",
    "folgt": {
     "kurve": "see",
     "db": [
@@ -131,7 +131,7 @@
   {
    "name": "wind",
    "typ": "bett",
-   "titel": "Leiser Wind",
+   "titel": "Gentle wind",
    "ziel_lufs": -37,
    "anzahl": 5,
    "entfernung": [
@@ -173,7 +173,7 @@
      "hochpass": 120
     }
    ],
-   "text": "Ein schwacher Wind, der langsam an- und abschwillt; in den Böen frischt er auf – dieselben Böen, die das Segel füllen.",
+   "text": "A light wind that slowly rises and falls; in the gusts it freshens – the same gusts that fill the sail.",
    "boe_db": 4.0,
    "folgt": {
     "kurve": "wind",
@@ -187,7 +187,7 @@
   {
    "name": "wellen",
    "typ": "ereignisse",
-   "titel": "Wellenkämme ringsum",
+   "titel": "Wave crests all around",
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
    "abstand_s": 2.2,
@@ -1026,7 +1026,7 @@
      }
     }
    ],
-   "text": "Einzelne Wellenkämme in 7 bis 32 m Entfernung, jeder an einer anderen Stelle; sie treiben mit dem Wind. Brechen sie mit viel Kraft, grollt es tief.",
+   "text": "Single wave crests 7 to 32 m away, each in a different place, drifting with the wind. When one breaks with real force, there is a deep rumble.",
    "wucht_pegel": 0.15,
    "wucht_exponent": 2.0,
    "ausreisser_wahrsch": 0.08,
@@ -1056,7 +1056,7 @@
   {
    "name": "rumpf",
    "typ": "rumpf",
-   "titel": "Wasser am Holz",
+   "titel": "Water against the hull",
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
    "schlag_wahrsch": 0.75,
@@ -1511,7 +1511,7 @@
      "hochpass": 90
     }
    ],
-   "text": "Schwapps und Klatscher gegen die Planken – auf der Seite, die beim Rollen gerade eintaucht. Das Holz schwingt hohl mit und trägt jeden Schlag bis an dein Ohr; harte Schläge bringen den ganzen Rumpf zum Wummern, und ab und zu fliegen ein paar Spritzer über die Bordkante und prasseln neben dir aufs Holz.",
+   "text": "Slaps and splashes against the planks – on whichever side is dipping as the boat rolls. The wood resonates hollowly and carries every knock right to your ear; hard hits make the whole hull boom, and now and then a little spray flies over the gunwale and patters onto the wood beside you.",
    "wucht_pegel": 0.4,
    "wucht_exponent": 2.0,
    "wucht_bezug": 0.75,
@@ -1707,7 +1707,7 @@
   {
    "name": "knarzen",
    "typ": "knarzen",
-   "titel": "Knarzendes Holz",
+   "titel": "Creaking wood",
    "ziel_lufs": -30,
    "pegel_art": "spitzen",
    "wahrsch": 0.6,
@@ -1945,7 +1945,7 @@
      "max_schwerpunkt": 1500
     }
    ],
-   "text": "Dollen, Duchten und Spanten arbeiten, wenn das Boot sich neigt oder eine Welle den Rumpf trifft: ein ruhiges, warmes Knarren, das fest am Boot bleibt – nur die tiefen, hölzernen Knarzer, keine hellen Quietscher.",
+   "text": "Rowlocks, thwarts and frames work as the boat heels or a wave hits the hull: a calm, warm creaking that stays fixed to the boat – only the deep, woody creaks, no bright squeaks.",
    "folgt": {
     "kurve": "see",
     "rate": [
@@ -2014,11 +2014,11 @@
   {
    "name": "segel",
    "typ": "segel",
-   "titel": "Schlaffes Segel",
+   "titel": "Slack sail",
    "ziel_lufs": -33,
    "pegel_art": "spitzen",
    "hall": 0.8,
-   "text": "Das Segel hängt schlaff am Mast vor dir, hinter deinen Füßen. In einer Böe fängt sich der Wind: echtes Stoffflattern schwillt an, das Tuch füllt sich mit einem weichen Schlag und fällt wieder ein.",
+   "text": "The sail hangs slack on the mast in front of you, beyond your feet. In a gust it catches the wind: real cloth flutter swells, the canvas fills with a soft thump and collapses again.",
    "sammlung": [
     {
      "quelle": "esc_3-117504-A"
@@ -2074,7 +2074,7 @@
   {
    "name": "moewen_fern",
    "typ": "bett",
-   "titel": "Möwen in der Ferne",
+   "titel": "Gulls in the distance",
    "ziel_lufs": -39,
    "anzahl": 2,
    "entfernung": [
@@ -2104,7 +2104,7 @@
      "entrauschen": 8
     }
    ],
-   "text": "Das ferne Stimmengewirr der Kolonie, aus derselben Richtung.",
+   "text": "The distant chatter of the colony, from the same direction.",
    "punkte": [
     [
      170.0,
@@ -2122,7 +2122,7 @@
   {
    "name": "moewen",
    "typ": "schwarm",
-   "titel": "Möwen kreisen",
+   "titel": "Circling gulls",
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
    "anzahl": 5,
@@ -2381,7 +2381,7 @@
      ]
     }
    ],
-   "text": "Fünf Möwen halten sich in Luv des Boots, vorn links, kreisen dort im Wind und rufen; ab und zu antwortet eine andere. Frischt der Wind auf oder bricht eine Welle am Felsen, schrecken sie auf.",
+   "text": "Five gulls keep to windward of the boat, ahead and to the left, circling in the wind and calling; now and then another answers. When the wind freshens or a wave breaks on the rock, they take fright.",
    "decke_db": -7.0,
    "folgt": {
     "kurve": "wind",
@@ -2493,7 +2493,7 @@
   {
    "name": "ueberflug",
    "typ": "ueberflug",
-   "titel": "Möwe dicht über dem Boot",
+   "titel": "Gull skimming the boat",
    "ziel_lufs": -22,
    "pegel_art": "spitzen",
    "abstand_s": [
@@ -2751,7 +2751,7 @@
      ]
     }
    ],
-   "text": "Etwa alle halbe Minute schießt eine Möwe in 3 bis 5 m Höhe über das Boot – meist mit dem Wind, von vorn links nach hinten rechts, manchmal dagegen. Ein Ruf liegt genau über dem Boot, seine Tonhöhe kippt beim Vorbeiflug (Doppler); im Anflug Flügelschläge.",
+   "text": "About every half minute a gull shoots over the boat 3 to 5 m up – mostly with the wind, from front left to back right, sometimes against it. One call lands right overhead, its pitch dropping as it passes (Doppler); wingbeats as it approaches.",
    "decke_db": -4.0,
    "fluegel": [
     {
@@ -2861,8 +2861,8 @@
   {
    "name": "moewen_weit",
    "typ": "schwarm",
-   "titel": "Möwenkolonie weit weg",
-   "text": "Eine Möwenkolonie auf einem fernen Felsen vorn rechts, 150 bis 370 Meter entfernt – ihre Rufe kommen immer aus dieser Richtung.",
+   "titel": "Gull colony far away",
+   "text": "A gull colony on a distant rock ahead and to the right, 150 to 370 metres away – its calls always come from that direction.",
    "ziel_lufs": -38,
    "pegel_art": "spitzen",
    "anzahl": 6,
@@ -3139,8 +3139,8 @@
   {
    "name": "felsen",
    "typ": "ereignisse",
-   "titel": "Brecher am Felsen",
-   "text": "Ein Felsen ragt rund 20 m entfernt aus dem Wasser. Ab und zu schlägt dort eine Welle mit Wucht auf – ein harter Aufprall, dann fällt die Gischt zurück. Das Boot dreht sich langsam, so wandert der Felsen um dich herum.",
+   "titel": "Breakers on the rock",
+   "text": "A rock juts out of the water about 20 m away. Now and then a wave slams into it – a hard impact, then the spray falls back. The boat slowly swings, so the rock wanders around you.",
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
    "abstand_s": 22,
@@ -3430,8 +3430,8 @@
   {
    "name": "zug",
    "typ": "zug",
-   "titel": "Ein Schwarm zieht vorbei",
-   "text": "Zweimal in zehn Minuten zieht ein Schwarm von acht bis zwölf Möwen in 60 bis 90 m Entfernung vorbei – man hört ihn eine halbe Minute lang kommen, rufend vorüberziehen und sich entfernen: erst mit dem aufkommenden Wind, später zurück.",
+   "titel": "A flock passes",
+   "text": "Twice in ten minutes a flock of eight to twelve gulls passes 60 to 90 m away – for half a minute you hear it approach, go by calling and fade away: first with the rising wind, later back again.",
    "ziel_lufs": -30,
    "pegel_art": "spitzen",
    "zuege": [
@@ -3737,8 +3737,8 @@
   {
    "name": "gaense",
    "typ": "zug",
-   "titel": "Gänse ziehen vorbei",
-   "text": "Zweimal zieht hoch und weit draußen eine Schar Gänse über das Wasser – ihr Rufen ist lange zu hören, zieht langsam vorüber und verliert sich; später kommt die Schar zurück.",
+   "titel": "Geese passing",
+   "text": "Twice, high and far out, a skein of geese crosses the water – their calls carry for a long time, slowly pass and fade; later the skein comes back.",
    "ziel_lufs": -31,
    "pegel_art": "spitzen",
    "zuege": [
@@ -3867,7 +3867,7 @@
    8
   ]
  },
- "text": "Du liegst in einem offenen hölzernen Segelboot, gut sechs Meter lang, hinten auf Polstern, den Kopf hoch auf einem Kissen an der Heckducht, die Füße zum Bug, sicher unter der Bordkante. Möwen kreisen und schießen über dich hinweg, ringsum Wellen, Wasser schlägt hohl gegen die Planken, das Boot knarzt, im schlaffen Segel fängt sich ab und zu der Wind.",
+ "text": "You lie in an open wooden sailing boat, a good six metres long – at the stern on cushions, your head propped up against the aft thwart, feet towards the bow, safely below the gunwale. Gulls circle and dart over you, waves all around, water knocks hollow against the planks, the boat creaks, and now and then the wind catches the slack sail.",
  "weite": {
   "ab_m": 25,
   "voll_m": 150,
@@ -3988,43 +3988,43 @@
   "text": [
    [
     0.0,
-    "Ruhige See, die Möwen kreisen entspannt."
+    "Calm sea; the gulls circle at ease."
    ],
    [
     40,
-    "Weit draußen zieht eine Schar Gänse vorbei; ihr Rufen ist lange zu hören."
+    "Far out, a skein of geese passes; you can hear their calls for a long time."
    ],
    [
     105,
-    "Ein Schwarm Möwen zieht mit dem aufkommenden Wind vorbei."
+    "A flock of gulls passes with the rising wind."
    ],
    [
     135.0,
-    "Der Wind frischt auf, das Segel fängt sich öfter."
+    "The wind freshens; the sail fills more often."
    ],
    [
     240.0,
-    "Die Wellen werden höher, der Rumpf schlägt härter; die Möwen rufen aufgeregter, ihre Schreie klingen verweht."
+    "The waves grow, the hull is hit harder; the gulls call more excitedly, their cries blown about by the wind."
    ],
    [
     336.0,
-    "Schwere See: Brecher schlagen dicht hintereinander an den Felsen."
+    "Heavy sea: breakers crash against the rock one after another."
    ],
    [
     440,
-    "Die Gänse ziehen zurück."
+    "The geese fly back."
    ],
    [
     450.0,
-    "Der Wind flaut ab, die See beruhigt sich."
+    "The wind drops and the sea settles."
    ],
    [
     515,
-    "Der Schwarm kehrt zurück."
+    "The flock returns."
    ],
    [
     534.0,
-    "Ruhe – die Möwen kreisen wieder gelassen."
+    "Calm again – the gulls circle lazily once more."
    ]
   ]
  },
