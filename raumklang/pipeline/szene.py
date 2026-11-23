@@ -1320,10 +1320,28 @@ def gen_schwebung(kx, g, spur, bus):
     fL = fL - rest / kx.dauer if rest < 0.5 else fL + (1 - rest) / kx.dauer
     d = round(d * kx.dauer) / kx.dauer
     phL = 2 * np.pi * np.cumsum(fL) / FS
-    phR = phL + 2 * np.pi * d * t
     atem = 10 ** (g.get('atem_db', 2.0) * _rauschkurve(kx.rng, int(kx.dauer * 4), 4.0, 0.03) / 20)
     atem = np.interp(t, np.arange(len(atem)) / 4.0, atem, period=kx.dauer)
-    y = np.stack([np.sin(phL), np.sin(phR)]) * atem[None, :] * 0.05
+    # Klangfarbe: Teiltöne k·f links, k·f + Δ rechts – jede Verschiebung ist dieselbe, so schweben alle
+    # Teiltöne gemeinsam mit Δ Hz (ein reiner Sinus klingt wie ein Messton). Teiltöne über ~1 kHz tragen
+    # zur Schwebung kaum bei, aber zur Wärme; ein Tiefpass nimmt die Schärfe.
+    klang = g.get('klang', [[1, 1.0]])
+    y = np.zeros((2, n))
+    for k, amp in klang:
+        y[0] += amp * np.sin(k * phL)
+        y[1] += amp * np.sin(k * phL + 2 * np.pi * d * t)
+    if g.get('tiefpass'):
+        y = np.stack([mat.filt(y[j], g['tiefpass'], 'lowpass', 2) for j in range(2)])
+    # Hall je Ohr getrennt (kein Übersprechen zwischen den Ohren, sonst verschmiert die Schwebung)
+    if g.get('hall_s'):
+        hl = int(g['hall_s'] * FS)
+        ir_t = np.arange(hl) / FS
+        for kan in range(2):
+            ir = np.random.default_rng(kan + 11).normal(size=hl) * 10 ** (-3 * ir_t / g.get('hall_t60', 2.5))
+            ir = mat.filt(ir, 2500, 'lowpass', 2)
+            ir /= np.sqrt((ir ** 2).sum())
+            y[kan] = (1 - g.get('hall_anteil', 0.35)) * y[kan] + g.get('hall_anteil', 0.35) * kreisfaltung(y[kan], ir)
+    y = y * atem[None, :] * 0.05
     spur.addiere(y.astype(np.float32), 0)
     if g.get('quelle'):
         kx.bib.benutzt.add(g['quelle'])          # Melodie aus dieser Aufnahme abgeschrieben: Namensnennung

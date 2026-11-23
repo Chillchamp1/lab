@@ -239,7 +239,9 @@ fernen See entfernt, ihre Notenfolge ist mit `pipeline/melodie.py` ausgelesen (t
 > 12 dB über dem Umfeld, auf Halbtöne gerundet) und wird als binaurale Schwebung neu gespielt
 (Gruppe `schwebung`, `gen_schwebung`):
 
-- links ein reiner Sinuston f, rechts f + 10 Hz; nicht räumlich gerendert – HRTF, Hall und
+- links die Teiltöne k·f, rechts k·f + 10 Hz – alle um denselben Betrag verschoben, so schweben
+  alle gemeinsam (ein reiner Sinus klang Benjamin „gar nicht gut“, jetzt eine warme Fläche aus sechs
+  Teiltönen mit Tiefpass 1,6 kHz und Hall je Ohr getrennt); nicht räumlich gerendert – HRTF, Hall und
   Übersprechen würden die Schwebung zerstören; nur mit Kopfhörern wirksam
 - Träger 200–500 Hz (die Noten werden dorthin oktaviert): dort ist die Schwebung am
   deutlichsten, über ~1 kHz verschwindet sie

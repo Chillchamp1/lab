@@ -3841,7 +3841,7 @@
    "name": "schwebung",
    "typ": "schwebung",
    "titel": "Binaural beat melody",
-   "text": "The gentle melody that used to hide in one of the sea recordings, transcribed and played as a binaural beat: your left ear hears a pure tone, your right ear the same tone 10 Hz higher. The 10 Hz pulse you perceive is created by your brain from the difference between the ears (alpha range, associated with relaxed wakefulness). Works only with headphones.",
+   "text": "The gentle melody that used to hide in one of the sea recordings, transcribed and played as a soft pad with a binaural beat: in your right ear every overtone sits exactly 10 Hz above the one in your left ear. The 10 Hz pulse you perceive is created by your brain from that difference (alpha range, associated with relaxed wakefulness). Works only with headphones.",
    "ziel_lufs": -33,
    "pegel_art": "integriert",
    "schwebung_hz": 10.0,
@@ -4625,7 +4625,37 @@
      196.0
     ]
    ],
-   "probe_dauer": 40
+   "probe_dauer": 40,
+   "klang": [
+    [
+     1,
+     1.0
+    ],
+    [
+     2,
+     0.5
+    ],
+    [
+     3,
+     0.28
+    ],
+    [
+     4,
+     0.14
+    ],
+    [
+     5,
+     0.08
+    ],
+    [
+     6,
+     0.04
+    ]
+   ],
+   "tiefpass": 1600,
+   "hall_s": 3.5,
+   "hall_t60": 2.8,
+   "hall_anteil": 0.4
   }
  ],
  "boeen": {
