@@ -70,9 +70,12 @@ andere Haltung: `--blick 90` (flach auf dem Rücken) bis `--blick 0` (aufrecht).
 Das Boot ist ein offenes hölzernes Segelboot, 6,4 m lang und 2 m breit, Bordkante 80 cm
 über dem Wasser. Du liegst hinten auf Polstern, den Kopf hoch auf einem Kissen an der
 Heckducht, die Füße zum Bug: die Ohren 58 cm über dem Wasser und 22 cm unter der Bordkante.
-Der Wind kommt von rechts (`windtragen.wind_von_grad: 270`), so ziehen Schwärme und Überflüge
-mit dem Wind quer vor dir vorbei. Quer liegen ginge auch (`liegt_grad: -90`, dann kommen Bug und
-Heck von der Seite); das war am 23.11. kurz so, für eine 3D-Ansicht, die es nicht mehr gibt. Bis 23.11.2026 war es ein 4,2 m langes Ruderboot, in dem
+Das Boot liegt vor Anker, den Bug im Wind (`windtragen.wind_von_grad: 0`), und schwojt
+langsam (Gieren ±20°); die Wellenkämme laufen quer von vorn heran. Schwärme und Überflüge
+fliegen entlang der Küste quer vor dir vorbei (rechts → links und zurück) – nicht mit dem Wind,
+denn der kommt von vorn, und Bewegung von vorn nach hinten wäre ohne Head-Tracking schlecht zu
+orten. (Wind von der Seite wäre physikalisch falsch: ein ankerndes Boot dreht den Bug in den
+Wind. Quer liegen ginge auch, `liegt_grad: -90`.) Bis 23.11.2026 war es ein 4,2 m langes Ruderboot, in dem
 der Kopf auf den Bodenbrettern lag – bei kräftiger See zu klein und zu nah am Wasser, um
 sich geborgen anzufühlen. Ein größeres Boot rollt auch langsamer und weniger (3,5° statt 5°).
 
