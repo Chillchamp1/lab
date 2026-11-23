@@ -1,7 +1,7 @@
 # Raumklang
 
 Binaurale Ambient-Klangszenen für Kopfhörer, gebaut aus echten Aufnahmen:
-liegend in einem knarzenden Ruderboot auf dem Meer (`szenen/boot.json`) und
+liegend in einem knarzenden Holzboot auf dem Meer (`szenen/boot.json`) und
 angelehnt an einen Baumstamm in einem Dinosaurierwald im Herbstregen
 (`szenen/wald.json`).
 
@@ -44,7 +44,14 @@ andere Haltung: `--blick 90` (flach auf dem Rücken) bis `--blick 0` (aufrecht).
 
 ## Wie ein Klang zum Ohr kommt
 
-Der Kopf liegt fest im Boot, die Ohren 25 cm unter der Bordkante. Jede Quelle
+Das Boot ist ein offenes hölzernes Segelboot, 6,4 m lang und 2 m breit, Bordkante 80 cm
+über dem Wasser. Du liegst hinten auf Polstern, den Kopf hoch auf einem Kissen an der
+Heckducht: die Ohren 58 cm über dem Wasser und 22 cm unter der Bordkante, das Wasser
+beidseitig etwa 70 cm entfernt. Bis 23.11.2026 war es ein 4,2 m langes Ruderboot, in dem
+der Kopf auf den Bodenbrettern lag – bei kräftiger See zu klein und zu nah am Wasser, um
+sich geborgen anzufühlen. Ein größeres Boot rollt auch langsamer und weniger (3,5° statt 5°).
+
+Der Kopf liegt fest im Boot. Jede Quelle
 erreicht ihn auf mehreren Wegen; jeder Weg bekommt je Block von 11,6 ms eine
 Weglänge, eine Einfallsrichtung im Kopfbezug und einen Frequenzgang:
 
@@ -57,6 +64,12 @@ Weglänge, eine Einfallsrichtung im Kopfbezug und einen Frequenzgang:
 - **Wasserspiegel** – das Spiegelbild hoher Quellen liegt unter der Kante und
   kommt nur gebeugt herein.
 - **Rest-Nachhall** – sehr kurz und leise; ohne ihn sitzt der Klang im Kopf.
+- **Körperschall durch die Planken** – Wasser, das gegen den Rumpf schlägt, kommt durch die
+  Luft nur über die Kante gebeugt an (bei 1 kHz rund 18 dB leiser). Hörbar nah wird es durch
+  das Holz: der Schlag regt die Eigenschwingungen der Planken an (95–580 Hz, je Schlag leicht
+  verstimmt), die kurz und hohl nachklingen und als Fläche direkt neben dem Kopf abstrahlen –
+  das „Klock“ eines Holzrumpfs. Harte Schläge werfen manchmal Spritzer über die Bordkante,
+  die neben dir aufs Holz prasseln.
 
 Die HRTF wird über ein Dreiecksnetz auf der Kugel interpoliert: Jede Richtung
 mischt die drei Messrichtungen des umgebenden Dreiecks baryzentrisch, Laufzeit
@@ -159,6 +172,21 @@ Ereignisfolge bleibt dabei gleich, weil jede Wirkung ihre eigene Zufallsquelle h
   fast nur aus Hall (ferne Möwenkolonie: Hall 14 dB über dem Direktschall – klang
   wie vor einer Klippe; jetzt 4,5 dB darunter, kürzer).
 
+## Ausschnitte nach Klang auswählen
+
+Beim Zerlegen einer Aufnahme lassen sich Ausschnitte nach ihrem Klang aussortieren:
+
+- `max_schwerpunkt` / `min_schwerpunkt` (Hz): zu helle oder zu dumpfe Ausschnitte weglassen –
+  beim Knarzen fallen so die quietschenden, spitzen Töne heraus (Schwerpunkt über 1,5 kHz).
+- `einschlag` (`min_sprung_db`, `bis_spitze_s`, `max_unter_spitze_db`, `vorlauf_s`): nur
+  Ausschnitte, die einschlagen statt anzuschwellen – die Hüllkurve muss innerhalb von 40 ms
+  um mindestens `min_sprung_db` steigen und kurz danach die Spitze erreichen. Langes
+  Anschwellen davor wird bis auf `vorlauf_s` abgeschnitten. Die alten Brecher-Ausschnitte
+  schwollen über 0,4–4 s an und klangen deshalb wie Rauschen und Rumpeln.
+
+Die Hörproben der Bausteine schneidet der Renderer dort aus der Einzelspur, wo am meisten
+zu hören ist; auf der Seite steht, aus welcher Stelle der Szene sie stammen.
+
 ## Ordnung in den Richtungen
 
 Tiere werden nicht gleichmäßig um den Hörer gewürfelt; jede Gruppe hat ihren Ort
@@ -171,7 +199,9 @@ und ihre Vorzugsrichtung, je nach Wind und Entfernung:
 - `zug`: ein Schwarm zieht auf geradem Kurs in einiger Entfernung vorbei
   (`zuege: [{t, kurs_grad, seite}]`, dazu `anzahl`, `abstand_m`, `hoehe`, `tempo`).
   Ein einmaliges Ereignis mit klarer Richtung – nicht öfter als ein-, zweimal je
-  Szene.
+  Szene. Mit `teppich` (Aufnahmen eines ganzen rufenden Schwarms) zieht zusätzlich das
+  Stimmengewirr als breite Quelle mit der Mitte des Schwarms: so hört man ihn eine halbe
+  Minute lang kommen, vorüberziehen und gehen, nicht nur einzelne Rufe.
 
 Richtwert für die Dichte: höchstens ein Ruf alle vier bis fünf Sekunden je Gruppe.
 

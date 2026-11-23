@@ -109,7 +109,7 @@ class Bibliothek:
         """Liste von dicts {sig, quelle, dauer, ...}; jedes Ereignis auf gleichen Spitzen-Kurzzeitpegel gebracht."""
         aus = []
         for spez in sammlung:
-            x = self.aufnahme({k: v for k, v in spez.items() if k not in ('zerlegen', 'stuecke', 'blende', 'abklingen', 'max_flach', 'resonanz', 'wucht', 'max_schwerpunkt', 'min_schwerpunkt', 'max_anstieg_ms')})
+            x = self.aufnahme({k: v for k, v in spez.items() if k not in ('zerlegen', 'stuecke', 'blende', 'abklingen', 'max_flach', 'resonanz', 'wucht', 'max_schwerpunkt', 'min_schwerpunkt', 'einschlag')})
             if 'stuecke' in spez:  # ganze Aufnahme in gleich lange Stücke teilen
                 L = int(spez['stuecke'] * FS)
                 stuecke = [(a, min(a + L, len(x))) for a in range(0, len(x) - L // 2, L)]
@@ -142,14 +142,27 @@ class Bibliothek:
                 # zu helle (quietschende) oder zu dumpfe Ausschnitte weglassen
                 if k['schwerpunkt'] > spez.get('max_schwerpunkt', 1e9) or k['schwerpunkt'] < spez.get('min_schwerpunkt', 0):
                     continue
-                # nur Ausschnitte, die einschlagen statt anzuschwellen (Brecher: Aufprall statt Rauschen)
-                if spez.get('max_anstieg_ms'):
+                # nur Ausschnitte, die einschlagen statt anzuschwellen (Brecher: Aufprall statt Rauschen).
+                # Maß: steilster Anstieg der 10-ms-Hüllkurve über 40 ms; kurz danach muss die Spitze kommen.
+                # Langes Anschwellen davor wird abgeschnitten (bis auf `vorlauf_s`).
+                if spez.get('einschlag'):
+                    ek = spez['einschlag']
                     hh = mat.huelle_db(y, 10)
-                    i_sp = int(np.argmax(hh))
-                    unter = np.flatnonzero(hh[:i_sp + 1] < hh[i_sp] - 20)
-                    k['anstieg_ms'] = (i_sp - (unter[-1] if len(unter) else 0)) / FS * 1000
-                    if k['anstieg_ms'] > spez['max_anstieg_ms']:
+                    n40 = int(0.04 * FS)
+                    dh = hh[n40:] - hh[:-n40]
+                    i_s = int(np.argmax(dh))
+                    nach = hh[i_s + n40:i_s + n40 + int(ek.get('bis_spitze_s', 0.3) * FS)]
+                    if dh[i_s] < ek.get('min_sprung_db', 9) or not len(nach) or nach.max() < hh.max() - ek.get('max_unter_spitze_db', 4):
                         continue
+                    a0 = max(0, i_s - int(ek.get('vorlauf_s', 0.25) * FS))
+                    if a0 > 0:
+                        y = y[a0:].copy()
+                        ne = int(0.02 * FS)
+                        y[:ne] *= np.sin(np.linspace(0, np.pi / 2, ne)) ** 2
+                        if tief is not None:
+                            tief = tief[a0:]
+                        k = mat.kennwerte(y)
+                    k['sprung_db'] = float(dh[i_s])
                 # Pegel am lautesten 50-ms-Fenster ausrichten
                 h = mat.huelle_db(y, 50).max()
                 fak = 10 ** ((-20 - h) / 20)
@@ -710,18 +723,55 @@ def gen_fluegel(kx, g, spur, bus, stuecke, ort, t_nah, v, rng):
     rendere_quelle(kx, spur, bus, sig, start, ort, True, g.get('bezug_m', 5.0), g.get('hall', 0.0))
 
 
-def _rumpfpunkt(boot, rng, seite, aussen=True):
-    x = rng.uniform(-1.6, 1.4)
+def _rumpfpunkt(boot, rng, seite, aussen=True, x=None):
+    x = rng.uniform(-0.8 * boot.a, 0.7 * boot.a) if x is None else x
     y = seite * boot.b * np.sqrt(max(1 - (x / boot.a) ** 2, 0.05))
-    return np.array([x, y + seite * (0.04 if aussen else -0.05), 0.02 if aussen else 0.12])
+    return np.array([x, y + seite * (0.04 if aussen else -0.05), 0.02 if aussen else max(boot.boden + 0.12, 0.12)])
+
+
+def _planke(sig, g, rng):
+    """Körperschall: der Schlag regt die Planken an, sie schwingen kurz und hohl nach und strahlen
+    nach innen ab („Klock“). Massegesetz: die Höhen kommen kaum durch das Holz. Die Eigenfrequenzen
+    streuen je Schlag etwas (andere Planke, anderer Spant)."""
+    kern = mat.filt(sig.astype(np.float64), g.get('planke_tiefpass', 450), 'lowpass', 2)
+    moden = g.get('planke_moden')
+    if not moden:
+        return kern.astype(np.float32)
+    t60max = max(m[1] for m in moden)
+    kern = np.r_[kern, np.zeros(int(1.5 * t60max * FS))]
+    verstimmt = [[f * 2 ** (rng.normal(0, 1.2) / 12), t60, anteil] for f, t60, anteil in moden]
+    return mat.resonanz(kern, verstimmt).astype(np.float32)
+
+
+def _spritzer(kx, g, spur, bus, ev_tropfen, t, pa, staerke, rng):
+    """Bei einem harten Schlag fliegt Wasser über die Bordkante: einige Tropfen prasseln kurz danach
+    innen aufs Holz, nah am Kopf, wenn der Schlag nah war."""
+    dauer = rng.uniform(0.5, 1.1)
+    n = int((dauer + 0.6) * FS)
+    sig = np.zeros(n, np.float32)
+    for _ in range(int(rng.integers(*g.get('spritzer_tropfen', [7, 16])))):
+        e = ev_tropfen[int(rng.integers(len(ev_tropfen)))]['sig']
+        # Tropfen fallen zuerst dicht, dann vereinzelt nach
+        a = int(min(rng.exponential(dauer / 3), dauer) * FS)
+        m = min(len(e), n - a)
+        sig[a:a + m] += e[:m] * 10 ** (rng.normal(-3, 4) / 20)
+    p = pa.copy()
+    p[1] -= np.sign(pa[1]) * rng.uniform(0.25, 0.55)       # innen, auf Bank und Bodenbrettern
+    p[2] = max(kx.boot.boden + 0.05, 0.05) + rng.uniform(0, 0.35)
+    rendere_quelle(kx, spur, bus, sig, t + rng.uniform(0.25, 0.45), lambda tt, p=p: np.tile(p, (len(tt), 1)), False,
+                   g.get('spritzer_pegel', 0.5) * staerke, g.get('hall', 0.0), breite=g.get('spritzer_breite_m', 0.6))
 
 
 def gen_rumpf(kx, g, spur, bus):
     """Wasser am Holz. Schläge fallen auf die Umkehrpunkte des Rollens (die eintauchende
     Seite), dazwischen einzelne kleinere Schwapps. Jeder Schlag kommt auf zwei Wegen:
-    als Luftschall über die Bordkante und dumpf durch die Planke (Körperschall)."""
+    als Luftschall über die Bordkante und durch die Planke (Körperschall, hohl nachschwingend).
+    Harte Schläge werfen manchmal Spritzer über die Bordkante."""
     rng = kx.rng
     ev = kx.bib.ereignisse(g['sammlung'])
+    ev_tropfen = kx.bib.ereignisse(g['spritzer']) if g.get('spritzer') else []
+    srng = np.random.default_rng(int(kx.dauer) * 29 + 7)
+    n_spritzer = 0
     ev = sorted(ev, key=lambda e: e['rms_db'] + 10 * np.log10(e['dauer']))
     n3 = max(1, len(ev) // 3)
     klein, gross = ev[:len(ev) - n3], ev[len(ev) - n3:]
@@ -749,6 +799,7 @@ def gen_rumpf(kx, g, spur, bus):
     for t, seite, staerke, wahl in zeiten:
         e = _wahl(rng, wahl)
         staerke = staerke * kx.folge(g, t)[1]
+        staerke_roh = staerke
         sig = kraft(e, staerke / g.get('wucht_bezug', 0.75), g)
         pa = _rumpfpunkt(kx.boot, rng, seite, True)
         pi = pa.copy()
@@ -757,10 +808,13 @@ def gen_rumpf(kx, g, spur, bus):
         staerke *= np.sqrt(np.linalg.norm(pi - kx.boot.kopf))  # Nähe zählt, aber nur halb so stark wie 1/r
         rendere_quelle(kx, spur, bus, sig, t, lambda tt, pa=pa: np.tile(pa, (len(tt), 1)), False,
                        staerke, g.get('hall', 0.0))
-        dumpf = mat.filt(sig.astype(np.float64), g.get('planke_tiefpass', 450), 'lowpass', 2).astype(np.float32)
+        dumpf = _planke(sig, g, rng)
         rendere_quelle(kx, spur, bus, dumpf, t, lambda tt, pi=pi: np.tile(pi, (len(tt), 1)), False,
-                       staerke * g.get('planke_pegel', 0.8), g.get('hall', 0.0))
-    return dict(ereignisse=len(zeiten), nach_welle=n_kette)
+                       staerke * g.get('planke_pegel', 0.8), g.get('hall', 0.0), breite=g.get('planke_breite_m'))
+        if ev_tropfen and staerke_roh >= g.get('spritzer_ab', 0.85) and srng.random() < g.get('spritzer_wahrsch', 0.3):
+            _spritzer(kx, g, spur, bus, ev_tropfen, t, pa, staerke_roh, srng)
+            n_spritzer += 1
+    return dict(ereignisse=len(zeiten), nach_welle=n_kette, spritzer=n_spritzer)
 
 
 def gen_knarzen(kx, g, spur, bus):
