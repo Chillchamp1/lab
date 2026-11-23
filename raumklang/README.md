@@ -51,6 +51,12 @@ die Web-Audio-Schleife, die sample-genau ohne Lücke wiederholt. Bis dahin – o
 Geräten mit wenig Speicher, eine dekodierte 10-Minuten-Szene braucht rund 210 MB –
 wiederholt das Element selbst, was an der Naht kurz aussetzen kann.
 
+Handys und Tablets bleiben immer beim `<audio>`-Element: Web Audio verstummt dort, sobald der
+Bildschirm gesperrt wird, das Element spielt weiter (mit einer winzigen Lücke an der Naht alle
+10 Minuten, im ruhigsten Moment). Am Rechner übergibt die Web-Audio-Schleife an das Element,
+sobald die Seite in den Hintergrund geht. Titel und Knöpfe stehen auf dem Sperrbildschirm
+(Media Session).
+
 Wo Wikimedia oder Freesound den Download sperren (Claude-Cloud-Umgebung), lädt der
 Workflow „Raumklang-Material holen“ (`.github/workflows/raumklang-material.yml`) die
 Dateien auf einem GitHub-Runner und legt sie auf den Zweig `raumklang-material`.

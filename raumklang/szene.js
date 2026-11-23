@@ -14,6 +14,7 @@ const stand = standSuffix(b.stand);
 
 const haupt = window.haupt = spieler($('spieler'), `../audio/${name}.mp3`, b.abtastwerte, `${slug}${stand}.mp3`, {
   beiFehler: () => { $('start').hidden = false; $('start-knopf').focus(); },
+  titel: b.titel,
 });
 $('start-knopf').addEventListener('click', async () => {
   $('start').hidden = true;
