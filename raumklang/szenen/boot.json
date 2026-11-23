@@ -3841,6 +3841,7 @@
    "name": "schwebung",
    "typ": "schwebung",
    "titel": "Binaural beat melody",
+<<<<<<< HEAD
    "text": "The gentle E–G harmony that used to hide in one of the sea recordings, transcribed and played as a soft, dark, slowly changing pad with a binaural beat: every tone in your right ear sits exactly 8 Hz above the one in your left ear. The gentle 8 Hz pulse you perceive is created by your brain from that difference – at the border between theta and alpha, relaxed but not sleepy. Works only with headphones.",
    "ziel_lufs": -35,
    "pegel_art": "integriert",
@@ -3850,6 +3851,18 @@
     360
    ],
    "atem_db": 2.5,
+=======
+   "text": "The gentle melody that used to hide in one of the sea recordings, transcribed and played as a binaural beat: your left ear hears a pure tone, your right ear the same tone 10 Hz higher. The 10 Hz pulse you perceive is created by your brain from the difference between the ears (alpha range, associated with relaxed wakefulness). Works only with headphones.",
+   "ziel_lufs": -33,
+   "pegel_art": "integriert",
+   "schwebung_hz": 10.0,
+   "traeger_hz": [
+    200,
+    500
+   ],
+   "gleiten_s": 0.6,
+   "atem_db": 2.0,
+>>>>>>> origin/main
    "quelle": "wellen_gravity",
    "periode_s": 112.0,
    "noten": [
@@ -4624,6 +4637,7 @@
      196.0
     ]
    ],
+<<<<<<< HEAD
    "probe_dauer": 40,
    "tiefpass": 800,
    "hall_s": 6.0,
@@ -4647,6 +4661,9 @@
      ]
     ]
    }
+=======
+   "probe_dauer": 40
+>>>>>>> origin/main
   }
  ],
  "boeen": {

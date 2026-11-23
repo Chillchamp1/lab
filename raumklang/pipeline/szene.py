@@ -1281,6 +1281,7 @@ def gen_musik(kx, g, spur, bus):
     return dict(akkorde=len(akkorde))
 
 
+<<<<<<< HEAD
 def _schwebung_flaeche(kx, g, spur, n, lo, hi, d, per):
     """Weiche Fläche statt Melodielinie (die gleitende Linie klang wie eine Sirene): die Noten werden zu
     ruhigen Klangblöcken zusammengefasst (vorherrschender Ton je Abschnitt, mindestens `block_s`), jeder
@@ -1362,6 +1363,8 @@ def _schwebung_flaeche(kx, g, spur, n, lo, hi, d, per):
     return dict(schwebung_hz=round(d, 3), bloecke=len(bloecke), traeger_hz=sorted({round(grundton(k), 1) for _, _, k in bloecke}))
 
 
+=======
+>>>>>>> origin/main
 def gen_schwebung(kx, g, spur, bus):
     """Binaurale Schwebung, die eine Melodie spielt: links ein reiner Sinuston f, rechts f + Δ. Das Gehirn
     hört aus dem Unterschied eine langsame Schwebung von Δ Hz, die es im Ohr nicht gibt – sie entsteht erst
@@ -1375,8 +1378,11 @@ def gen_schwebung(kx, g, spur, bus):
     lo, hi = g.get('traeger_hz', [200, 500])
     d = float(g.get('schwebung_hz', 10.0))
     per = float(g['periode_s'])
+<<<<<<< HEAD
     if g.get('flaeche'):
         return _schwebung_flaeche(kx, g, spur, n, lo, hi, d, per)
+=======
+>>>>>>> origin/main
     ziele = []
     for a, b_, f in g['noten']:
         while f >= hi:
@@ -1403,6 +1409,7 @@ def gen_schwebung(kx, g, spur, bus):
     fL = fL - rest / kx.dauer if rest < 0.5 else fL + (1 - rest) / kx.dauer
     d = round(d * kx.dauer) / kx.dauer
     phL = 2 * np.pi * np.cumsum(fL) / FS
+<<<<<<< HEAD
     atem = 10 ** (g.get('atem_db', 2.0) * _rauschkurve(kx.rng, int(kx.dauer * 4), 4.0, 0.03) / 20)
     atem = np.interp(t, np.arange(len(atem)) / 4.0, atem, period=kx.dauer)
     # Klangfarbe: Teiltöne k·f links, k·f + Δ rechts – jede Verschiebung ist dieselbe, so schweben alle
@@ -1425,6 +1432,12 @@ def gen_schwebung(kx, g, spur, bus):
             ir /= np.sqrt((ir ** 2).sum())
             y[kan] = (1 - g.get('hall_anteil', 0.35)) * y[kan] + g.get('hall_anteil', 0.35) * kreisfaltung(y[kan], ir)
     y = y * atem[None, :] * 0.05
+=======
+    phR = phL + 2 * np.pi * d * t
+    atem = 10 ** (g.get('atem_db', 2.0) * _rauschkurve(kx.rng, int(kx.dauer * 4), 4.0, 0.03) / 20)
+    atem = np.interp(t, np.arange(len(atem)) / 4.0, atem, period=kx.dauer)
+    y = np.stack([np.sin(phL), np.sin(phR)]) * atem[None, :] * 0.05
+>>>>>>> origin/main
     spur.addiere(y.astype(np.float32), 0)
     if g.get('quelle'):
         kx.bib.benutzt.add(g['quelle'])          # Melodie aus dieser Aufnahme abgeschrieben: Namensnennung
@@ -1559,6 +1572,7 @@ GENERATOREN = dict(bett=gen_bett, ereignisse=gen_ereignisse, schwarm=gen_schwarm
                    rumpf=gen_rumpf, knarzen=gen_knarzen, segel=gen_segel,
                    vorbeigang=gen_vorbeigang, besuch=gen_besuch, musik=gen_musik, gebruell=gen_gebruell, zug=gen_zug,
                    schwebung=gen_schwebung)
+<<<<<<< HEAD
 
 
 # ---------------------------------------------------------------- Zwischenspeicher je Spur
@@ -1593,6 +1607,8 @@ def gruppen_schluessel(sz, g, i, vorab, weitere):
                  code=hashlib.sha256(_code_ohne_fremde_generatoren(GENERATOREN[g['typ']]).encode()).hexdigest(),
                  quellen=hashlib.sha256((WURZEL / 'quellen.json').read_bytes()).hexdigest())
     return hashlib.sha256(json.dumps(teile, sort_keys=True, ensure_ascii=False, default=str).encode()).hexdigest()
+=======
+>>>>>>> origin/main
 
 
 # ---------------------------------------------------------------- Pegel und Ausgabe

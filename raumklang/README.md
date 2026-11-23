@@ -248,6 +248,7 @@ fernen See entfernt, ihre Notenfolge ist mit `pipeline/melodie.py` ausgelesen (t
 > 12 dB über dem Umfeld, auf Halbtöne gerundet) und wird als binaurale Schwebung neu gespielt
 (Gruppe `schwebung`, `gen_schwebung`):
 
+<<<<<<< HEAD
 - links die Teiltöne k·f, rechts k·f + 10 Hz – alle um denselben Betrag verschoben, so schweben
   alle gemeinsam (ein reiner Sinus klang Benjamin „gar nicht gut“, jetzt eine warme Fläche aus sechs
   Teiltönen mit Tiefpass 1,6 kHz und Hall je Ohr getrennt); nicht räumlich gerendert – HRTF, Hall und
@@ -259,6 +260,14 @@ fernen See entfernt, ihre Notenfolge ist mit `pipeline/melodie.py` ausgelesen (t
   Melodielinie (gleitende Töne klangen wie eine Sirene): Klangblöcke ≥ 6 s aus tiefer Oktave und
   Grundton (Träger 180–360 Hz), 4 s Überblendung, Tiefpass 800 Hz, langer Hall je Ohr; leise
   (−35 LUFS), sanftes Atmen ±2,5 dB
+=======
+- links ein reiner Sinuston f, rechts f + 10 Hz; nicht räumlich gerendert – HRTF, Hall und
+  Übersprechen würden die Schwebung zerstören; nur mit Kopfhörern wirksam
+- Träger 200–500 Hz (die Noten werden dorthin oktaviert): dort ist die Schwebung am
+  deutlichsten, über ~1 kHz verschwindet sie
+- Schwebung 10 Hz (Alpha, entspanntes Wachsein); legato, Wechsel als 0,6-s-Gleiten; Phasen so
+  gestellt, dass die Schleife ohne Naht aufgeht; leise (−33 LUFS), sanftes Atmen ±2 dB
+>>>>>>> origin/main
 - Stand der Forschung, ehrlich: Eine Meta-Analyse (Garcia-Argibay u. a. 2019, 22 Studien) fand
   kleine bis mittlere Wirkungen auf Angst, Aufmerksamkeit und Gedächtnis; ob das Gehirn
   messbar „mitschwingt“ (EEG), ist uneinheitlich belegt. Am besten gestützt: Kopfhörer, Träger
