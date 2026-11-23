@@ -17,6 +17,10 @@ function kontext() {
 }
 // genug Speicher für eine ganz dekodierte Szene (10 min Stereo ≈ 210 MB)?
 const vielSpeicher = () => !navigator.deviceMemory || navigator.deviceMemory >= 4;
+// Handys und Tablets: Web Audio verstummt dort, sobald der Bildschirm gesperrt ist; ein <audio>-Element
+// spielt weiter. Dort bleibt der Spieler deshalb beim Element (mit einer winzigen Lücke an der Naht alle
+// 10 Minuten, die Naht liegt im ruhigsten Moment) und spart sich die 210 MB der dekodierten Datei.
+const mobil = () => matchMedia('(pointer: coarse)').matches || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 /**
  * el: Behälter; src: MP3; soll: Länge in Abtastwerten (44,1 kHz); dateiname: für den Download.
@@ -70,7 +74,7 @@ export function spieler(el, src, soll, dateiname, opt = {}) {
   }
 
   async function laden() {
-    if (puffer || laedt || !vielSpeicher()) return;
+    if (puffer || laedt || !vielSpeicher() || mobil()) return;
     laedt = true;
     try {
       const c = kontext();
@@ -154,6 +158,27 @@ export function spieler(el, src, soll, dateiname, opt = {}) {
     if (modus) spielen(ziel); else { ab = ziel; anzeigen(); }
   });
   if (soll) anz.textContent = `0:00 / ${zeit(soll / FS)}`;
+  // Seite im Hintergrund oder Bildschirm gesperrt: von der Web-Audio-Schleife an derselben Stelle auf
+  // das Element wechseln, das weiterspielen darf
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden || modus !== 'puffer') return;
+    const p = position();
+    audio.loop = true; audio.currentTime = p;
+    audio.play().then(() => {
+      if (quelle) { try { quelle.stop(); } catch (e) {} quelle = null; }
+      modus = 'element'; naht = false;
+    }).catch(() => {});
+  });
+  // Sperrbildschirm und Benachrichtigung: Titel und Knöpfe
+  function mediaSession() {
+    if (!('mediaSession' in navigator) || !opt.titel) return;
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({ title: opt.titel, artist: 'Soundscapes for Headphones' });
+      navigator.mediaSession.setActionHandler('play', () => spielen());
+      navigator.mediaSession.setActionHandler('pause', () => stopp());
+    } catch (e) {}
+  }
+  audio.addEventListener('play', mediaSession);
   const api = { spielen, stopp, laeuft: () => !!modus, modus: () => modus, position, dauer };
   return api;
 }
