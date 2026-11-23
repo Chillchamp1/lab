@@ -16,7 +16,21 @@
   "blaetterdach_hoehe": 9.0,
   "wald_db_m": 0.1,
   "boden_reflexion": 0.55,
-  "wald_max_m": 80
+  "wald_max_m": 80,
+  "staemme": {
+   "anzahl": 36,
+   "abstand_m": [
+    2.5,
+    30.0
+   ],
+   "radius_m": [
+    0.12,
+    0.4
+   ],
+   "hoehe_m": 14.0,
+   "reflexion": 0.6,
+   "pegel_db": 0.0
+  }
  },
  "nachhall": {
   "t60_tief": 1.0,
@@ -123,7 +137,8 @@
      -9,
      3
     ]
-   }
+   },
+   "breite_m": 8
   },
   {
    "name": "wind",
@@ -178,7 +193,8 @@
      -4,
      4
     ]
-   }
+   },
+   "breite_m": 15
   },
   {
    "name": "regen_blaetter",
@@ -243,7 +259,8 @@
      -10,
      3
     ]
-   }
+   },
+   "breite_m": 1.2
   },
   {
    "name": "tropfen_blatt",
@@ -364,7 +381,8 @@
      0.6,
      1.5
     ]
-   }
+   },
+   "streuung": false
   },
   {
    "name": "tropfen_pfuetze",
@@ -539,7 +557,8 @@
      0.3,
      1.6
     ]
-   }
+   },
+   "streuung": false
   },
   {
    "name": "rinnsal",
@@ -605,7 +624,8 @@
      -2,
      2
     ]
-   }
+   },
+   "breite_m": 2.5
   },
   {
    "name": "herde",
@@ -836,6 +856,10 @@
    "radius_streuung": 0.04,
    "pruefung": {
     "tempo_max": 3.0
+   },
+   "richtwirkung": {
+    "db": 8,
+    "streuung_grad": 50
    }
   },
   {
@@ -1086,6 +1110,16 @@
      0
     ],
     "exponent": 4.0
+   },
+   "richtwirkung": {
+    "db": 8,
+    "streuung_grad": 50
+   },
+   "stille_nach": {
+    "auf": [
+     "gebruell"
+    ],
+    "dauer_s": 10
    }
   },
   {
@@ -1693,7 +1727,19 @@
     }
    ],
    "wucht_pegel": 1.5,
-   "wucht_exponent": 1.0
+   "wucht_exponent": 1.0,
+   "richtwirkung": {
+    "db": 6,
+    "streuung_grad": 50
+   },
+   "meldet": "gebruell",
+   "antwort": {
+    "wahrsch": 0.35,
+    "nach_s": [
+     2.5,
+     6.0
+    ]
+   }
   },
   {
    "name": "kammrufe",
@@ -1916,7 +1962,11 @@
      }
     }
    ],
-   "decke_db": -2.0
+   "decke_db": -2.0,
+   "richtwirkung": {
+    "db": 6,
+    "streuung_grad": 50
+   }
   },
   {
    "name": "wummern",
@@ -2161,7 +2211,11 @@
    ],
    "decke_db": -2.0,
    "wucht_pegel": 0.8,
-   "wucht_exponent": 1.0
+   "wucht_exponent": 1.0,
+   "richtwirkung": {
+    "db": 5,
+    "streuung_grad": 50
+   }
   },
   {
    "name": "vorbeigang",
@@ -4260,7 +4314,7 @@
    "name": "voegel_rufe",
    "typ": "schwarm",
    "titel": "Rufe aus der Deckung",
-   "text": "Bei Regen singen Vögel kaum: nur kurze Kontakt- und Warnrufe, gedämpft aus dem Unterholz. Reißt eine Böe an den Kronen, fliegen einige schimpfend auf.",
+   "text": "Bei Regen singen Vögel kaum: Krähen, Häher und ein Specht rufen kurz aus der Deckung. Reißt eine Böe an den Kronen oder bricht ein Ast, fliegen einige schimpfend auf; nach einem Gebrüll verstummen sie.",
    "ziel_lufs": -35,
    "pegel_art": "spitzen",
    "anzahl": 6,
@@ -4280,232 +4334,127 @@
    "abstand_s": 6,
    "antwort_wahrsch": 0.4,
    "bezug_m": 10,
-   "tonhoehe_streuung_ht": 0.3,
+   "tonhoehe_streuung_ht": 0.6,
    "hall": 0.8,
    "sammlung": [
     {
-     "quelle": "esc_1-54918-A",
-     "hochpass": 1200,
-     "entrauschen": 12,
-     "rest_db": -26,
+     "hochpass": 350,
+     "entrauschen": 10,
+     "rest_db": -28,
      "zerlegen": {
       "schwelle_db": 10,
-      "luecke": 0.15,
-      "min_dauer": 0.04,
-      "max_dauer": 0.35,
-      "nachlauf": 0.15
+      "luecke": 0.12,
+      "min_dauer": 0.08,
+      "max_dauer": 1.6,
+      "nachlauf": 0.12
      },
-     "tiefpass": 6000
+     "blende": [
+      8,
+      80
+     ],
+     "quelle": "ruf_kraehen_alarm"
     },
     {
-     "quelle": "esc_1-54918-B",
-     "hochpass": 1200,
-     "entrauschen": 12,
-     "rest_db": -26,
+     "hochpass": 350,
+     "entrauschen": 10,
+     "rest_db": -28,
      "zerlegen": {
       "schwelle_db": 10,
-      "luecke": 0.15,
-      "min_dauer": 0.04,
-      "max_dauer": 0.35,
-      "nachlauf": 0.15
+      "luecke": 0.12,
+      "min_dauer": 0.08,
+      "max_dauer": 1.6,
+      "nachlauf": 0.12
      },
-     "tiefpass": 6000
+     "blende": [
+      8,
+      80
+     ],
+     "quelle": "ruf_haeher"
     },
     {
-     "quelle": "esc_2-122616-A",
-     "hochpass": 1200,
-     "entrauschen": 12,
-     "rest_db": -26,
+     "hochpass": 350,
+     "entrauschen": 10,
+     "rest_db": -28,
      "zerlegen": {
       "schwelle_db": 10,
-      "luecke": 0.15,
-      "min_dauer": 0.04,
-      "max_dauer": 0.35,
-      "nachlauf": 0.15
+      "luecke": 0.12,
+      "min_dauer": 0.08,
+      "max_dauer": 1.6,
+      "nachlauf": 0.12
      },
-     "tiefpass": 6000
+     "blende": [
+      8,
+      80
+     ],
+     "quelle": "ruf_haeher_schrei"
     },
     {
-     "quelle": "esc_3-156581-A",
-     "hochpass": 1200,
-     "entrauschen": 12,
-     "rest_db": -26,
+     "hochpass": 350,
+     "entrauschen": 10,
+     "rest_db": -28,
      "zerlegen": {
       "schwelle_db": 10,
-      "luecke": 0.15,
-      "min_dauer": 0.04,
-      "max_dauer": 0.35,
-      "nachlauf": 0.15
+      "luecke": 0.12,
+      "min_dauer": 0.08,
+      "max_dauer": 1.6,
+      "nachlauf": 0.12
      },
-     "tiefpass": 6000
+     "blende": [
+      8,
+      80
+     ],
+     "quelle": "ruf_kraehen"
     },
     {
-     "quelle": "esc_3-156581-B",
-     "hochpass": 1200,
-     "entrauschen": 12,
-     "rest_db": -26,
+     "hochpass": 350,
+     "entrauschen": 10,
+     "rest_db": -28,
      "zerlegen": {
       "schwelle_db": 10,
-      "luecke": 0.15,
-      "min_dauer": 0.04,
-      "max_dauer": 0.35,
-      "nachlauf": 0.15
+      "luecke": 0.12,
+      "min_dauer": 0.08,
+      "max_dauer": 1.6,
+      "nachlauf": 0.12
      },
-     "tiefpass": 6000
+     "blende": [
+      8,
+      80
+     ],
+     "quelle": "ruf_rabe_flug"
     },
     {
-     "quelle": "esc_4-159609-A",
-     "hochpass": 1200,
-     "entrauschen": 12,
-     "rest_db": -26,
+     "hochpass": 350,
+     "entrauschen": 10,
+     "rest_db": -28,
      "zerlegen": {
       "schwelle_db": 10,
-      "luecke": 0.15,
-      "min_dauer": 0.04,
-      "max_dauer": 0.35,
-      "nachlauf": 0.15
+      "luecke": 0.12,
+      "min_dauer": 0.08,
+      "max_dauer": 1.6,
+      "nachlauf": 0.12
      },
-     "tiefpass": 6000
+     "blende": [
+      8,
+      80
+     ],
+     "quelle": "ruf_gruenspecht"
     },
     {
-     "quelle": "esc_4-159609-B",
-     "hochpass": 1200,
-     "entrauschen": 12,
-     "rest_db": -26,
+     "hochpass": 350,
+     "entrauschen": 10,
+     "rest_db": -28,
      "zerlegen": {
       "schwelle_db": 10,
-      "luecke": 0.15,
-      "min_dauer": 0.04,
-      "max_dauer": 0.35,
-      "nachlauf": 0.15
+      "luecke": 0.12,
+      "min_dauer": 0.08,
+      "max_dauer": 1.6,
+      "nachlauf": 0.12
      },
-     "tiefpass": 6000
-    },
-    {
-     "quelle": "esc_5-242491-A",
-     "hochpass": 1200,
-     "entrauschen": 12,
-     "rest_db": -26,
-     "zerlegen": {
-      "schwelle_db": 10,
-      "luecke": 0.15,
-      "min_dauer": 0.04,
-      "max_dauer": 0.35,
-      "nachlauf": 0.15
-     },
-     "tiefpass": 6000
-    },
-    {
-     "quelle": "esc_2-108760-A",
-     "hochpass": 1200,
-     "entrauschen": 12,
-     "rest_db": -26,
-     "zerlegen": {
-      "schwelle_db": 10,
-      "luecke": 0.15,
-      "min_dauer": 0.04,
-      "max_dauer": 0.35,
-      "nachlauf": 0.15
-     },
-     "tiefpass": 6000
-    },
-    {
-     "quelle": "esc_2-108760-B",
-     "hochpass": 1200,
-     "entrauschen": 12,
-     "rest_db": -26,
-     "zerlegen": {
-      "schwelle_db": 10,
-      "luecke": 0.15,
-      "min_dauer": 0.04,
-      "max_dauer": 0.35,
-      "nachlauf": 0.15
-     },
-     "tiefpass": 6000
-    },
-    {
-     "quelle": "esc_4-223127-A",
-     "hochpass": 1200,
-     "entrauschen": 12,
-     "rest_db": -26,
-     "zerlegen": {
-      "schwelle_db": 10,
-      "luecke": 0.15,
-      "min_dauer": 0.04,
-      "max_dauer": 0.35,
-      "nachlauf": 0.15
-     },
-     "tiefpass": 6000
-    },
-    {
-     "quelle": "esc_3-181132-A",
-     "hochpass": 1200,
-     "entrauschen": 12,
-     "rest_db": -26,
-     "zerlegen": {
-      "schwelle_db": 10,
-      "luecke": 0.15,
-      "min_dauer": 0.04,
-      "max_dauer": 0.35,
-      "nachlauf": 0.15
-     },
-     "tiefpass": 6000
-    },
-    {
-     "quelle": "esc_4-182795-A",
-     "hochpass": 1200,
-     "entrauschen": 12,
-     "rest_db": -26,
-     "zerlegen": {
-      "schwelle_db": 10,
-      "luecke": 0.15,
-      "min_dauer": 0.04,
-      "max_dauer": 0.35,
-      "nachlauf": 0.15
-     },
-     "tiefpass": 6000
-    },
-    {
-     "quelle": "esc_1-38559-A",
-     "hochpass": 1200,
-     "entrauschen": 12,
-     "rest_db": -26,
-     "zerlegen": {
-      "schwelle_db": 10,
-      "luecke": 0.15,
-      "min_dauer": 0.04,
-      "max_dauer": 0.35,
-      "nachlauf": 0.15
-     },
-     "tiefpass": 6000
-    },
-    {
-     "quelle": "esc_1-38560-A",
-     "hochpass": 1200,
-     "entrauschen": 12,
-     "rest_db": -26,
-     "zerlegen": {
-      "schwelle_db": 10,
-      "luecke": 0.15,
-      "min_dauer": 0.04,
-      "max_dauer": 0.35,
-      "nachlauf": 0.15
-     },
-     "tiefpass": 6000
-    },
-    {
-     "quelle": "esc_5-242490-A",
-     "hochpass": 1200,
-     "entrauschen": 12,
-     "rest_db": -26,
-     "zerlegen": {
-      "schwelle_db": 10,
-      "luecke": 0.15,
-      "min_dauer": 0.04,
-      "max_dauer": 0.35,
-      "nachlauf": 0.15
-     },
-     "tiefpass": 6000
+     "blende": [
+      8,
+      80
+     ],
+     "quelle": "ruf_haeher_wald"
     }
    ],
    "folgt": {
@@ -4525,7 +4474,10 @@
     ],
     "pegel": 1.5,
     "flatter_wahrsch": 0.6,
-    "flatter_pegel": 0.5
+    "flatter_pegel": 0.5,
+    "auf": [
+     "astbruch"
+    ]
    },
    "flattern": [
     {
@@ -4579,7 +4531,17 @@
       120
      ]
     }
-   ]
+   ],
+   "richtwirkung": {
+    "db": 8,
+    "streuung_grad": 50
+   },
+   "stille_nach": {
+    "auf": [
+     "gebruell"
+    ],
+    "dauer_s": 6
+   }
   }
  ],
  "drehbuch": {

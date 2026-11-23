@@ -13,8 +13,8 @@ Schallwege zum Kopf:
 """
 import numpy as np
 from scipy.ndimage import uniform_filter1d
-from kern import FREQ, streukern
-from hrtf import hoerer_basis
+from kern import FREQ, FS, NFFT, VORHALT, LUFT_DB_M, _PHASE_VORHALT, streukern
+from hrtf import hoerer_basis, C_SCHALL
 
 
 def _sig(x):
@@ -41,6 +41,19 @@ class Wald:
         self._boden = (r_boden / (1 + (FREQ / 900) ** 1.2)).astype(np.float32)   # nasses Laub: Höhen weg
         self._holz = (self.stamm_r - 0.2 * np.clip(FREQ / 8000, 0, 1)).astype(np.float32)
         self.streu = {n: streukern(saat * 10 + i) for i, n in enumerate(['boden', 'stamm'])}
+        # Stämme ringsum als Streuer (nur wenn die Szene sie angibt): x, y, Radius
+        st = cfg.get('staemme')
+        self._staemme = None
+        if st:
+            srng = np.random.default_rng(saat * 97 + 5)
+            n = st.get('anzahl', 36)
+            r0, r1 = st.get('abstand_m', [2.5, 30.0])
+            rr = np.sqrt(srng.uniform(r0 ** 2, r1 ** 2, n))
+            az = srng.uniform(0, 2 * np.pi, n)
+            self._staemme = np.column_stack([self.kopf[0] + rr * np.cos(az), self.kopf[1] + rr * np.sin(az),
+                                             srng.uniform(*st.get('radius_m', [0.12, 0.4]), n)])
+            self.stamm_hoehe = st.get('hoehe_m', 14.0)
+            self.stamm_streu = st.get('reflexion', 0.6) * 10 ** (st.get('pegel_db', 0.0) / 20)
 
     # Schnittstelle wie Boot: der Hörer sitzt still
     def welt_zu_boot(self, p, t):
@@ -58,6 +71,43 @@ class Wald:
         ueber = _sig((p[:, 2] - self.dach) / 1.5)                          # Quelle über dem Blätterdach
         db = db + ueber[:, None] * self.dach_db * self._dach_gang[None, :]
         return (10 ** (-np.clip(db, 0, 40) / 20)).astype(np.float32)
+
+    def streu_ir(self, hrtf, p):
+        """Impulsantwort (2, L) der Streuung an den Stämmen für eine Quelle am Ort p, und ihr
+        Versatz in Abtastwerten. Jeder Stamm wirft einen kleinen Teil des Schalls zurück: später
+        als der Direktschall (Umweg), aus seiner Richtung, ohne Tiefen (dünner als die Wellenlänge),
+        schwächer je weiter er streut (gewölbte Fläche). Zusammen ergibt das das dichte, frühe
+        Flattern, an dem man einen Wald erkennt."""
+        S = self._staemme
+        if S is None or p[2] > self.dach:
+            return None, 0
+        k = self.kopf
+        d1h = np.linalg.norm(S[:, :2] - p[:2], axis=1)
+        d2h = np.linalg.norm(S[:, :2] - k[:2], axis=1)
+        z = p[2] + (k[2] - p[2]) * d1h / np.maximum(d1h + d2h, 1e-6)       # Höhe des Spiegelpunkts am Stamm
+        s = np.column_stack([S[:, :2], z])
+        d1 = np.linalg.norm(s - p, axis=1)
+        d2 = np.linalg.norm(s - k, axis=1)
+        cos_b = (((s - p) / np.maximum(d1, 1e-6)[:, None]) * ((k - s) / np.maximum(d2, 1e-6)[:, None])).sum(1)
+        seitlich = np.sqrt(np.clip((1 - cos_b) / 2, 0, 1))                 # 0 im Schatten hinter dem Stamm, 1 beim Rückwurf
+        a = S[:, 2]
+        amp = self.stamm_streu * seitlich * np.sqrt(a / (2 * d1 * d2 / (d1 + d2) + a)) / (d1 + d2)
+        amp = amp * (z < self.stamm_hoehe) * (d1h > 0.5)
+        if amp.max() <= 0:
+            return None, 0
+        idx = np.flatnonzero(amp > 0.05 * amp.max())
+        tau = (d1 + d2) / C_SCHALL
+        n0 = int(np.floor(tau[idx].min() * FS))
+        ir = np.zeros((2, int(np.ceil(tau[idx].max() * FS)) - n0 + NFFT + 8), np.float32)
+        ka = 2 * np.pi * FREQ[None, :] * a[idx, None] / C_SCHALL
+        gang = ka ** 2 / (1 + ka ** 2) * 10 ** (-LUFT_DB_M[None, :] * (d1 + d2)[idx, None] / 20)
+        gang = gang * self._direkt_gang(p[None, :], np.array([np.linalg.norm(p - k)]))      # der Wald dämpft wie beim Direktschall
+        C = hrtf.filter(self._kopfbezug(s[idx] - k)) * (gang * amp[idx, None])[:, None, :] * _PHASE_VORHALT
+        h = np.fft.irfft(C, NFFT, axis=-1).astype(np.float32)
+        for j, i in enumerate(idx):
+            n = int(round(tau[i] * FS)) - n0
+            ir[:, n:n + NFFT] += h[j]
+        return ir, n0 - VORHALT
 
     def pfade(self, p, aussen=True, p_wasserbild=None, mit_spiegelungen=True):
         n = len(p)

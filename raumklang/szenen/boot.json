@@ -125,7 +125,8 @@
      -3,
      3
     ]
-   }
+   },
+   "breite_m": 40
   },
   {
    "name": "wind",
@@ -180,7 +181,8 @@
      -3,
      3
     ]
-   }
+   },
+   "breite_m": 15
   },
   {
    "name": "wellen",
@@ -1018,7 +1020,13 @@
      -3,
      3
     ]
-   }
+   },
+   "breite_m": [
+    5,
+    14
+   ],
+   "meldet": "welle",
+   "melde_ab": 1.6
   },
   {
    "name": "rumpf",
@@ -1488,7 +1496,11 @@
      -3,
      3
     ]
-   }
+   },
+   "breite_m": [
+    0.5,
+    1.1
+   ]
   },
   {
    "name": "knarzen",
@@ -1965,7 +1977,10 @@
     ],
     "pegel": 1.4,
     "flatter_wahrsch": 0.5,
-    "flatter_pegel": 0.4
+    "flatter_pegel": 0.4,
+    "auf": [
+     "brecher"
+    ]
    },
    "flattern": [
     {
@@ -2039,6 +2054,10 @@
    ],
    "pruefung": {
     "tempo_max": 20.0
+   },
+   "richtwirkung": {
+    "db": 8,
+    "streuung_grad": 50
    }
   },
   {
@@ -2297,6 +2316,10 @@
    ],
    "pruefung": {
     "tempo_max": 20.0
+   },
+   "richtwirkung": {
+    "db": 8,
+    "streuung_grad": 15
    }
   },
   {
@@ -2465,6 +2488,10 @@
    "radius_streuung": 0.05,
    "pruefung": {
     "tempo_max": 20.0
+   },
+   "richtwirkung": {
+    "db": 8,
+    "streuung_grad": 50
    }
   },
   {
@@ -2579,7 +2606,13 @@
      -4,
      3
     ]
-   }
+   },
+   "breite_m": [
+    5,
+    9
+   ],
+   "meldet": "brecher",
+   "melde_ab": 1.25
   }
  ],
  "boeen": {
@@ -2728,6 +2761,12 @@
     534.0,
     "Ruhe – die Möwen kreisen wieder gelassen."
    ]
+  ]
+ },
+ "orte": {
+  "Felsen": [
+   -28.0,
+   22.0
   ]
  }
 }
