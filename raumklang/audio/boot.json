@@ -1,6 +1,6 @@
 {
  "szene": "boot",
- "stand": "23.11.2026 14:11",
+ "stand": "23.11.2026 15:47",
  "dauer": 600,
  "schleife": true,
  "abtastwerte": 26460000,
@@ -18,7 +18,7 @@
    "pegel_art": "integriert",
    "spitze_db": -12.5,
    "begrenzt_db": 0.0,
-   "sekunden": 663.8,
+   "sekunden": 634.2,
    "probe_abtastwerte": 1323000
   },
   {
@@ -30,7 +30,7 @@
    "pegel_art": "integriert",
    "spitze_db": -10.9,
    "begrenzt_db": 0.0,
-   "sekunden": 564.6,
+   "sekunden": 555.4,
    "probe_abtastwerte": 1323000
   },
   {
@@ -42,7 +42,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
    "begrenzt_db": 0.1,
-   "sekunden": 99.5,
+   "sekunden": 99.0,
    "probe_abtastwerte": 1323000
   },
   {
@@ -54,7 +54,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
    "begrenzt_db": 0.4,
-   "sekunden": 141.2,
+   "sekunden": 130.1,
    "ereignisse": 517,
    "nach_welle": 24,
    "probe_abtastwerte": 1323000
@@ -62,14 +62,14 @@
   {
    "name": "knarzen",
    "titel": "Knarzendes Holz",
-   "text": "Dollen, Duchten und Spanten arbeiten, wenn das Boot sich neigt. Diese Klänge bleiben fest am Boot.",
+   "text": "Dollen, Duchten und Spanten arbeiten, wenn das Boot sich neigt oder eine Welle den Rumpf trifft: langsames, tiefes Knarren, das fest am Boot bleibt.",
    "typ": "knarzen",
-   "ziel_lufs": -32,
+   "ziel_lufs": -34,
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
-   "begrenzt_db": 2.6,
-   "sekunden": 17.3,
-   "ereignisse": 148,
+   "begrenzt_db": 0.2,
+   "sekunden": 19.9,
+   "ereignisse": 120,
    "nach_schlag": 4,
    "probe_abtastwerte": 1323000
   },
@@ -82,91 +82,77 @@
    "pegel_art": "spitzen",
    "spitze_db": -9.2,
    "begrenzt_db": 0.0,
-   "sekunden": 198.4,
+   "sekunden": 189.9,
    "faenge": 27,
    "probe_abtastwerte": 2646000
   },
   {
    "name": "moewen_fern",
    "titel": "Möwen in der Ferne",
-   "text": "Eine Möwenschar weit weg, kaum mehr als eine Färbung des Horizonts.",
+   "text": "Das ferne Stimmengewirr der Kolonie, aus derselben Richtung.",
    "typ": "bett",
    "ziel_lufs": -39,
    "pegel_art": "integriert",
-   "spitze_db": -18.5,
+   "spitze_db": -13.4,
    "begrenzt_db": 0.0,
-   "sekunden": 214.0,
-   "weitenhall_db": -1.4,
+   "sekunden": 120.3,
+   "weitenhall_db": -2.7,
    "probe_abtastwerte": 1323000
   },
   {
    "name": "moewen",
    "titel": "Möwen kreisen",
-   "text": "Sieben Möwen kreisen in 6 bis 26 m Höhe ums Boot, rufen und antworten einander.",
+   "text": "Fünf Möwen halten sich in Luv des Boots, vorn links, kreisen dort im Wind und rufen; ab und zu antwortet eine andere. Frischt der Wind auf oder bricht eine Welle am Felsen, schrecken sie auf.",
    "typ": "schwarm",
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
-   "spitze_db": -9.7,
+   "spitze_db": -7.6,
    "begrenzt_db": 0.0,
-   "sekunden": 44.8,
-   "rufe": 287,
-   "aufgeschreckt": 22,
-   "weitenhall_db": -29.9,
+   "sekunden": 26.1,
+   "rufe": 94,
+   "aufgeschreckt": 20,
+   "weitenhall_db": -31.3,
    "probe_abtastwerte": 1323000
   },
   {
    "name": "ueberflug",
    "titel": "Möwe dicht über dem Boot",
-   "text": "Alle 20 bis 30 Sekunden schießt eine Möwe in 2 bis 4,5 m Höhe über das Boot. Ein Ruf liegt genau über dem Boot, seine Tonhöhe kippt beim Vorbeiflug (Doppler). Im Anflug echte Flügelschläge, darunter Fahrtwind.",
+   "text": "Alle ein bis zwei Minuten schießt eine Möwe in 2 bis 4,5 m Höhe über das Boot – meist mit dem Wind, von vorn links nach hinten rechts, manchmal dagegen. Ein Ruf liegt genau über dem Boot, seine Tonhöhe kippt beim Vorbeiflug (Doppler); im Anflug Flügelschläge.",
    "typ": "ueberflug",
    "ziel_lufs": -22,
    "pegel_art": "spitzen",
    "spitze_db": -4.0,
-   "begrenzt_db": 0.0,
-   "sekunden": 34.8,
+   "begrenzt_db": 1.3,
+   "sekunden": 18.9,
    "zeiten": [
     13.7,
-    39.5,
-    62.9,
-    89.0,
-    110.4,
-    137.3,
-    160.7,
-    185.1,
-    211.4,
-    232.6,
-    251.8,
-    269.8,
-    291.0,
-    318.7,
-    348.5,
-    373.1,
-    401.8,
-    422.2,
-    444.4,
-    466.0,
-    494.5,
-    524.7,
-    546.7,
-    571.2,
-    594.8
+    62.5,
+    103.3,
+    160.9,
+    202.7,
+    263.8,
+    329.7,
+    384.9,
+    441.9,
+    497.1,
+    539.6
    ],
-   "weitenhall_db": -45.0,
+   "weitenhall_db": -44.2,
    "probe_abtastwerte": 1764000
   },
   {
    "name": "moewen_weit",
    "titel": "Möwenkolonie weit weg",
-   "text": "Eine Möwenkolonie in 150 bis 450 Metern, manche hoch oben am Himmel.",
+   "text": "Eine Möwenkolonie auf einem fernen Felsen vorn rechts, 150 bis 370 Meter entfernt – ihre Rufe kommen immer aus dieser Richtung.",
    "typ": "schwarm",
    "ziel_lufs": -38,
    "pegel_art": "spitzen",
-   "spitze_db": -21.6,
+   "spitze_db": -20.8,
    "begrenzt_db": 0.0,
-   "sekunden": 33.6,
-   "rufe": 234,
+   "sekunden": 20.4,
+   "rufe": 106,
    "aufgeschreckt": 0,
-   "weitenhall_db": -1.7,
+   "weitenhall_db": -2.9,
    "probe_abtastwerte": 1323000
   },
   {
@@ -178,11 +164,31 @@
    "pegel_art": "spitzen",
    "spitze_db": -4.0,
    "begrenzt_db": 4.4,
-   "sekunden": 25.1,
+   "sekunden": 21.3,
    "probe_abtastwerte": 1323000
+  },
+  {
+   "name": "zug",
+   "titel": "Ein Schwarm zieht vorbei",
+   "text": "Zweimal in zehn Minuten zieht ein Schwarm von fünf bis acht Möwen geschlossen vorbei: erst mit dem aufkommenden Wind davon, später, wenn die See sich beruhigt, zurück.",
+   "typ": "zug",
+   "ziel_lufs": -30,
+   "pegel_art": "spitzen",
+   "spitze_db": -15.8,
+   "begrenzt_db": 0.0,
+   "sekunden": 10.1,
+   "zuege": [
+    105,
+    515
+   ],
+   "probe_abtastwerte": 1764000
   }
  ],
  "drehbuch": [
+  [
+   9.7,
+   "Ein Schwarm Möwen zieht mit dem aufkommenden Wind vorbei."
+  ],
   [
    39.7,
    "Der Wind frischt auf, das Segel fängt sich öfter."
@@ -200,6 +206,10 @@
    "Der Wind flaut ab, die See beruhigt sich."
   ],
   [
+   419.7,
+   "Der Schwarm kehrt zurück."
+  ],
+  [
    438.7,
    "Ruhe – die Möwen kreisen wieder gelassen."
   ],
@@ -209,14 +219,14 @@
   ]
  ],
  "start_verschoben_s": 95.31,
- "start_abtastwerte": 4203297,
- "begrenzer_max_db": 2.6,
+ "start_abtastwerte": 4203355,
+ "begrenzer_max_db": 2.9,
  "lufs": -21.1,
  "naht": {
-  "sprung_naht": 0.0025,
-  "sprung_typisch_999": 0.0737,
-  "pegelsprung_naht_db": 0.7,
-  "pegelsprung_typisch_95_db": 2.02
+  "sprung_naht": 0.0108,
+  "sprung_typisch_999": 0.0619,
+  "pegelsprung_naht_db": 0.84,
+  "pegelsprung_typisch_95_db": 1.97
  },
  "wiederholung": {
   "wellen": {
@@ -230,29 +240,34 @@
    "haeufigster": 4
   },
   "knarzen": {
-   "ereignisse": 148,
-   "verschiedene": 44,
+   "ereignisse": 120,
+   "verschiedene": 32,
    "haeufigster": 5
   },
   "moewen": {
-   "ereignisse": 412,
-   "verschiedene": 172,
-   "haeufigster": 9
+   "ereignisse": 175,
+   "verschiedene": 125,
+   "haeufigster": 6
   },
   "ueberflug": {
-   "ereignisse": 105,
-   "verschiedene": 60,
-   "haeufigster": 7
+   "ereignisse": 44,
+   "verschiedene": 30,
+   "haeufigster": 3
   },
   "moewen_weit": {
-   "ereignisse": 234,
-   "verschiedene": 147,
-   "haeufigster": 5
+   "ereignisse": 106,
+   "verschiedene": 89,
+   "haeufigster": 3
   },
   "felsen": {
    "ereignisse": 45,
    "verschiedene": 13,
    "haeufigster": 4
+  },
+  "zug": {
+   "ereignisse": 39,
+   "verschiedene": 39,
+   "haeufigster": 1
   }
  },
  "ohne": [],
