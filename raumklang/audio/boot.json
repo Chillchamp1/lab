@@ -1,6 +1,6 @@
 {
  "szene": "boot",
- "stand": "23.11.2026 19:43",
+ "stand": "23.11.2026 21:42",
  "dauer": 600,
  "schleife": true,
  "abtastwerte": 26460000,
@@ -16,10 +16,10 @@
    "typ": "bett",
    "ziel_lufs": -29,
    "pegel_art": "integriert",
-   "spitze_db": -13.3,
+   "spitze_db": -11.6,
    "begrenzt_db": 0.0,
-   "sekunden": 537.7,
-   "probe_ab_s": 374.8,
+   "sekunden": 477.0,
+   "probe_ab_s": 247.0,
    "probe_aktiv": 1.0,
    "probe_abtastwerte": 1323000
   },
@@ -30,10 +30,10 @@
    "typ": "bett",
    "ziel_lufs": -37,
    "pegel_art": "integriert",
-   "spitze_db": -12.5,
+   "spitze_db": -14.1,
    "begrenzt_db": 0.0,
-   "sekunden": 467.9,
-   "probe_ab_s": 320.8,
+   "sekunden": 453.9,
+   "probe_ab_s": 40.0,
    "probe_aktiv": 1.0,
    "probe_abtastwerte": 1323000
   },
@@ -46,8 +46,8 @@
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
    "begrenzt_db": 1.7,
-   "sekunden": 78.1,
-   "probe_ab_s": 359.8,
+   "sekunden": 74.3,
+   "probe_ab_s": 226.0,
    "probe_aktiv": 0.92,
    "probe_abtastwerte": 1323000
   },
@@ -60,11 +60,11 @@
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
    "begrenzt_db": 3.4,
-   "sekunden": 106.8,
+   "sekunden": 103.4,
    "ereignisse": 491,
    "nach_welle": 24,
    "spritzer": 11,
-   "probe_ab_s": 345.3,
+   "probe_ab_s": 211.5,
    "probe_aktiv": 0.38,
    "probe_abtastwerte": 1323000
   },
@@ -77,10 +77,10 @@
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
    "begrenzt_db": 4.5,
-   "sekunden": 17.4,
+   "sekunden": 15.7,
    "ereignisse": 145,
    "nach_schlag": 3,
-   "probe_ab_s": 486.3,
+   "probe_ab_s": 352.5,
    "probe_aktiv": 0.37,
    "probe_abtastwerte": 1323000
   },
@@ -93,9 +93,9 @@
    "pegel_art": "spitzen",
    "spitze_db": -9.6,
    "begrenzt_db": 0.0,
-   "sekunden": 158.5,
+   "sekunden": 157.7,
    "faenge": 27,
-   "probe_ab_s": 320.3,
+   "probe_ab_s": 186.5,
    "probe_aktiv": 0.88,
    "probe_abtastwerte": 2646000
   },
@@ -108,9 +108,9 @@
    "pegel_art": "integriert",
    "spitze_db": -11.4,
    "begrenzt_db": 0.0,
-   "sekunden": 110.0,
+   "sekunden": 115.0,
    "weitenhall_db": -2.2,
-   "probe_ab_s": 367.8,
+   "probe_ab_s": 234.0,
    "probe_aktiv": 1.0,
    "probe_abtastwerte": 1323000
   },
@@ -123,11 +123,11 @@
    "pegel_art": "spitzen",
    "spitze_db": -7.0,
    "begrenzt_db": 0.8,
-   "sekunden": 25.5,
+   "sekunden": 26.6,
    "rufe": 94,
    "aufgeschreckt": 20,
    "weitenhall_db": -34.9,
-   "probe_ab_s": 390.8,
+   "probe_ab_s": 257.0,
    "probe_aktiv": 0.43,
    "probe_abtastwerte": 1323000
   },
@@ -140,7 +140,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -7.2,
    "begrenzt_db": 0.0,
-   "sekunden": 23.5,
+   "sekunden": 23.4,
    "zeiten": [
     13.7,
     39.7,
@@ -162,7 +162,7 @@
     580.0
    ],
    "weitenhall_db": -44.1,
-   "probe_ab_s": 479.8,
+   "probe_ab_s": 346.0,
    "probe_aktiv": 0.16,
    "probe_abtastwerte": 1764000
   },
@@ -175,11 +175,11 @@
    "pegel_art": "spitzen",
    "spitze_db": -20.7,
    "begrenzt_db": 0.0,
-   "sekunden": 20.5,
+   "sekunden": 19.1,
    "rufe": 106,
    "aufgeschreckt": 0,
    "weitenhall_db": -2.9,
-   "probe_ab_s": 407.3,
+   "probe_ab_s": 273.5,
    "probe_aktiv": 0.37,
    "probe_abtastwerte": 1323000
   },
@@ -192,8 +192,8 @@
    "pegel_art": "spitzen",
    "spitze_db": -2.5,
    "begrenzt_db": 0.0,
-   "sekunden": 19.1,
-   "probe_ab_s": 77.3,
+   "sekunden": 18.7,
+   "probe_ab_s": 543.5,
    "probe_aktiv": 0.35,
    "probe_abtastwerte": 1323000
   },
@@ -206,12 +206,12 @@
    "pegel_art": "spitzen",
    "spitze_db": -15.5,
    "begrenzt_db": 0.0,
-   "sekunden": 66.5,
+   "sekunden": 67.7,
    "zuege": [
     105,
     515
    ],
-   "probe_ab_s": 84.3,
+   "probe_ab_s": 550.5,
    "probe_aktiv": 0.9,
    "probe_abtastwerte": 1764000
   },
@@ -224,67 +224,87 @@
    "pegel_art": "spitzen",
    "spitze_db": -16.3,
    "begrenzt_db": 0.0,
-   "sekunden": 75.0,
+   "sekunden": 72.7,
    "zuege": [
     40,
     440
    ],
-   "probe_ab_s": 19.8,
+   "probe_ab_s": 486.0,
    "probe_aktiv": 0.96,
+   "probe_abtastwerte": 1764000
+  },
+  {
+   "name": "schwebung",
+   "titel": "Binaural beat melody",
+   "text": "The gentle melody that used to hide in one of the sea recordings, transcribed and played as a binaural beat: your left ear hears a pure tone, your right ear the same tone 10 Hz higher. The 10 Hz pulse you perceive is created by your brain from the difference between the ears (alpha range, associated with relaxed wakefulness). Works only with headphones.",
+   "typ": "schwebung",
+   "ziel_lufs": -33,
+   "pegel_art": "integriert",
+   "spitze_db": -27.9,
+   "begrenzt_db": 0.0,
+   "sekunden": 140.4,
+   "schwebung_hz": 10.0,
+   "noten": 154,
+   "traeger_hz": [
+    246.9,
+    493.9
+   ],
+   "probe_ab_s": 225.0,
+   "probe_aktiv": 1.0,
    "probe_abtastwerte": 1764000
   }
  ],
  "drehbuch": [
   [
-   39.8,
-   "A skein of geese crosses in front of you; you can hear their calls for a long time."
-  ],
-  [
-   104.8,
-   "A flock of gulls flies past along the coast as the wind rises."
-  ],
-  [
-   134.8,
+   1.0,
    "The wind freshens; the sail fills more often."
   ],
   [
-   239.8,
+   106.0,
    "The waves grow, the hull is hit harder; the gulls call more excitedly, their cries blown about by the wind."
   ],
   [
-   335.8,
+   202.0,
    "Heavy sea: breakers crash against the rock one after another."
   ],
   [
-   439.8,
+   306.0,
    "The geese fly back."
   ],
   [
-   449.8,
+   316.0,
    "The wind drops and the sea settles."
   ],
   [
-   514.8,
+   381.0,
    "The flock returns."
   ],
   [
-   533.8,
+   400.0,
    "Calm again – the gulls circle lazily once more."
   ],
   [
-   599.8,
+   466.0,
    "Calm sea; the gulls circle at ease."
+  ],
+  [
+   506.0,
+   "A skein of geese crosses in front of you; you can hear their calls for a long time."
+  ],
+  [
+   571.0,
+   "A flock of gulls flies past along the coast as the wind rises."
   ]
  ],
- "start_verschoben_s": 0.2,
- "start_abtastwerte": 8998,
- "begrenzer_max_db": 4.2,
+ "start_verschoben_s": 134.04,
+ "start_abtastwerte": 5911336,
+ "begrenzer_max_db": 3.0,
  "lufs": -21.0,
  "naht": {
-  "sprung_naht": 0.0091,
-  "sprung_typisch_999": 0.0772,
-  "pegelsprung_naht_db": 0.45,
-  "pegelsprung_typisch_95_db": 2.18
+  "sprung_naht": 0.004,
+  "sprung_typisch_999": 0.0707,
+  "pegelsprung_naht_db": 0.07,
+  "pegelsprung_typisch_95_db": 1.77
  },
  "wiederholung": {
   "wellen": {
