@@ -2388,7 +2388,7 @@
      ]
     }
    ],
-   "text": "Five gulls keep to windward of the boat, ahead and to the left, circling in the wind and calling; now and then another answers. When the wind freshens or a wave breaks on the rock, they take fright.",
+   "text": "Five gulls keep to windward, ahead of you and to the left, circling there in the wind and calling; now and then another answers. When the wind freshens or a wave breaks on the rock, they take fright.",
    "decke_db": -7.0,
    "folgt": {
     "kurve": "wind",
@@ -2491,8 +2491,8 @@
     "streuung_grad": 50
    },
    "mitte": [
-    14.0,
-    16.0
+    16,
+    -14
    ],
    "mitte_streuung": 6,
    "drehsinn": 1
@@ -2758,7 +2758,7 @@
      ]
     }
    ],
-   "text": "About every half minute a gull shoots over the boat 3 to 5 m up – mostly with the wind, from front left to back right, sometimes against it. One call lands right overhead, its pitch dropping as it passes (Doppler); wingbeats as it approaches.",
+   "text": "About every half minute a gull shoots over the boat 3 to 5 m up – mostly across your view with the wind, from left to right, sometimes back against it, and once in a while one comes in diagonally from behind. One call lands right overhead, its pitch dropping as it passes (Doppler); wingbeats as it approaches.",
    "decke_db": -4.0,
    "fluegel": [
     {
@@ -2861,9 +2861,17 @@
    },
    "kurs_grad": [
     200,
-    30
+    15
    ],
-   "gegen_wahrsch": 0.3
+   "gegen_wahrsch": 0.35,
+   "kurs_ausnahme": {
+    "grad": [
+     225,
+     315
+    ],
+    "wahrsch": 0.15,
+    "streuung": 10
+   }
   },
   {
    "name": "moewen_weit",
@@ -3413,7 +3421,7 @@
    "name": "zug",
    "typ": "zug",
    "titel": "A flock passes",
-   "text": "Twice in ten minutes a flock of eight to twelve gulls passes 60 to 90 m away – for half a minute you hear it approach, go by calling and fade away: first with the rising wind, later back again.",
+   "text": "Twice in ten minutes a flock of eight to twelve gulls crosses in front of you, 45 to 75 m away – from left to right with the rising wind, later back from right to left. For half a minute you hear it come, pass calling and fade; its chatter comes from several places across the flock.",
    "ziel_lufs": -30,
    "pegel_art": "spitzen",
    "zuege": [
@@ -3425,7 +3433,7 @@
     {
      "t": 515,
      "kurs_grad": 20,
-     "seite": 1
+     "seite": -1
     }
    ],
    "tempo": [
@@ -3433,12 +3441,12 @@
     12
    ],
    "abstand_m": [
-    55,
-    90
+    45,
+    75
    ],
    "hoehe": [
-    20,
-    35
+    15,
+    30
    ],
    "anzahl": [
     8,
@@ -3714,24 +3722,25 @@
     }
    ],
    "teppich_bezug_m": 45,
-   "teppich_breite_m": 30
+   "teppich_breite_m": 30,
+   "teppich_teile": 3
   },
   {
    "name": "gaense",
    "typ": "zug",
    "titel": "Geese passing",
-   "text": "Twice, high and far out, a skein of geese crosses the water – their calls carry for a long time, slowly pass and fade; later the skein comes back.",
+   "text": "Twice a skein of geese crosses in front of you, high and 60 to 100 m away – first from left to right, later back. Their calls carry for a long time and come from all along the skein.",
    "ziel_lufs": -31,
    "pegel_art": "spitzen",
    "zuege": [
     {
      "t": 40,
-     "kurs_grad": 290,
+     "kurs_grad": 180,
      "seite": 1
     },
     {
      "t": 440,
-     "kurs_grad": 110,
+     "kurs_grad": 0,
      "seite": -1
     }
    ],
@@ -3740,12 +3749,12 @@
     16
    ],
    "abstand_m": [
-    80,
-    130
+    60,
+    100
    ],
    "hoehe": [
-    40,
-    70
+    25,
+    45
    ],
    "anzahl": [
     10,
@@ -3838,7 +3847,8 @@
     }
    ],
    "teppich_bezug_m": 70,
-   "teppich_breite_m": 40
+   "teppich_breite_m": 40,
+   "teppich_teile": 3
   }
  ],
  "boeen": {
@@ -3974,7 +3984,7 @@
    ],
    [
     40,
-    "Far out, a skein of geese passes; you can hear their calls for a long time."
+    "A skein of geese crosses in front of you; you can hear their calls for a long time."
    ],
    [
     105,
