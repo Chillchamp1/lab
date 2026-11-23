@@ -208,7 +208,11 @@ Ortsdaten der Szenenkarte (`audio/<name>_karte.json`, gezippt 5–70 kB), kein V
   Comic-Schattierung in drei Stufen, Tilt-Shift-Unschärfe oben und unten, warme Tönung.
   Boot mit liegender Figur, Fels, Kolonie-Insel, Möwen und Gänse als kleine flatternde
   Figuren, Wellenkämme, Brecher und Spritzer als Schaumkugeln (eine instanzierte Form).
-  Nah bis 5 m maßstäblich, dahinter logarithmisch gestaucht. Fürs Handy: höchstens 30
+  Maßstäblich (1 Einheit = 1 m, etwa ±20 m im Bild); was weiter als 30 m entfernt ist
+  (Kolonie, Gänse), steht am Bildrand in seiner wahren Richtung. Wellenkämme als Wasserrücken
+  mit Schaumkrone, so breit wie die Quelle im Renderer (Feld `b` der Karte) und quer zur
+  Hörrichtung – entlang dieser Linie verteilt der Renderer die Teilquellen; die Schallringe
+  laufen an mehreren Stellen der Front. Fürs Handy: höchstens 30
   Bilder/s, Auflösung ≤ 1,5-fach, keine Schatten, keine Texturen, pausiert im Hintergrund.
   Möwen erscheinen um ihren Ruf herum (±3 s) auf ihrer Bahn weitergeführt – die Karte kennt
   sie nur, während sie rufen.
