@@ -1981,6 +1981,108 @@
       10,
       90
      ]
+    },
+    {
+     "quelle": "moewe_strand_squashy",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewen_wildtrack",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewen_kurz_lyd",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewen_schwarm_jus",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_nigel",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewen_kolonie_fr",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
     }
    ],
    "text": "Sieben Möwen kreisen in 6 bis 26 m Höhe ums Boot, rufen und antworten einander.",
@@ -2234,6 +2336,108 @@
      "zerlegen": {
       "schwelle_db": 10,
       "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_strand_squashy",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewen_wildtrack",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewen_kurz_lyd",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewen_schwarm_jus",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_nigel",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewen_kolonie_fr",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
       "min_dauer": 0.25,
       "max_dauer": 5.0,
       "nachlauf": 0.15
@@ -2499,6 +2703,108 @@
      "zerlegen": {
       "schwelle_db": 10,
       "luecke": 0.3,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_strand_squashy",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewen_wildtrack",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewen_kurz_lyd",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewen_schwarm_jus",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewe_nigel",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
+      "min_dauer": 0.25,
+      "max_dauer": 5.0,
+      "nachlauf": 0.15
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ]
+    },
+    {
+     "quelle": "moewen_kolonie_fr",
+     "hochpass": 700,
+     "entrauschen": 12,
+     "zerlegen": {
+      "schwelle_db": 7,
+      "luecke": 0.2,
       "min_dauer": 0.25,
       "max_dauer": 5.0,
       "nachlauf": 0.15
