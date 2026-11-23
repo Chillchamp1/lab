@@ -29,6 +29,14 @@ def main():
     sz = json.loads(sz_pfad.read_text()) if sz_pfad.exists() else {}
     grenzen = {g['name']: g.get('pruefung', {}) for g in sz.get('gruppen', [])}
     kopf = np.array(k['kopf'])
+    # liegt der Hörer quer (liegt_grad), Orte in seinen Bezug drehen: x = wohin die Füße zeigen, y = links
+    a = np.radians(k.get('liegt_grad', 0.0))
+    if a:
+        c, s_ = np.cos(a), np.sin(a)
+        for q in k['quellen']:
+            P = np.array(q['p'], float) - kopf
+            P[:, 0], P[:, 1] = P[:, 0] * c + P[:, 1] * s_, -P[:, 0] * s_ + P[:, 1] * c
+            q['p'] = (P + kopf).tolist()
     D = k['dauer']
     aus, warnungen, selten = [], [], []
     for gr in k['gruppen']:

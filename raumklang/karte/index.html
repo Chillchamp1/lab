@@ -74,6 +74,12 @@ async function laden() {
   t = 0; zeichne();
 }
 
+// Bootsbezug → Hörerbezug [vorn, links] (liegt der Hörer quer im Boot, ist vorn nicht der Bug)
+function hoerer(p) {
+  const a = (K.liegt_grad || 0) * Math.PI / 180, rx = p[0] - K.kopf[0], ry = p[1] - K.kopf[1];
+  return [rx * Math.cos(a) + ry * Math.sin(a), -rx * Math.sin(a) + ry * Math.cos(a)];
+}
+
 function ort(q, ts) {        // Ort einer Quelle zur Szenenzeit ts (oder null)
   for (const k of [0, -K.dauer, K.dauer]) {
     const x = ts + k;
@@ -94,7 +100,7 @@ function zeichne() {
   if (!R) {             // automatisch: alle aktiven Quellen außer fernen Flächen
     // Flächen (durchlaufende Quellen) und Echos zählen nicht: sonst schrumpft das Nahe zu Punkten
     const nah = aktiv.filter(([q]) => q.dt < 1 && q.art !== 'echo');
-    const d = (nah.length ? nah : aktiv).map(([q, p]) => Math.hypot(p[0] - K.kopf[0], p[1] - K.kopf[1])).sort((a, b) => a - b);
+    const d = (nah.length ? nah : aktiv).map(([q, p]) => Math.hypot(...hoerer(p))).sort((a, b) => a - b);
     R = Math.max(6, (d[Math.floor(d.length * 0.85)] || 10) * 1.15);
   }
   const s = M / R;
@@ -105,7 +111,7 @@ function zeichne() {
   const stufe = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000].find(x => x * 4 >= R) || 10000;
   for (let r = stufe; r <= R * 1.5; r += stufe) { g.beginPath(); g.arc(M, M, r * s, 0, 7); g.stroke(); g.fillText(r >= 1000 ? `${r / 1000} km` : `${r} m`, M + r * s * 0.71 + 4, M - r * s * 0.71 - 4); }
   // Hörer, Blick nach vorn (x) = oben im Bild; links (y) = links
-  const px = p => M - (p[1] - K.kopf[1]) * s, py = p => M - (p[0] - K.kopf[0]) * s;
+  const px = p => M - hoerer(p)[1] * s, py = p => M - hoerer(p)[0] * s;
   g.fillStyle = dunkel ? '#dfe8ea' : '#17252b'; g.beginPath(); g.arc(M, M, 9, 0, 7); g.fill();
   g.strokeStyle = g.fillStyle; g.lineWidth = 4; g.beginPath(); g.moveTo(M, M - 8); g.lineTo(M, M - 44); g.stroke();
   g.beginPath(); g.moveTo(M - 10, M - 34); g.lineTo(M, M - 48); g.lineTo(M + 10, M - 34); g.stroke();

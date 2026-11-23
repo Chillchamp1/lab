@@ -282,6 +282,11 @@ def rendere_quelle(kx, spur, bus, sig, t0, ort_fn, aussen=True, pegel=1.0, hall=
         br_k = breite if breite is not None else getattr(kx, 'g', {}).get('breite_m')
         if br_k and 'breite' not in getattr(kx, 'ohne', set()):       # Breite der Quelle (wie unten beim Rendern gewürfelt)
             eintrag_k['b'] = round(float(_ereignis_rng(t0, len(sig), 3).uniform(*br_k) if isinstance(br_k, (list, tuple)) else br_k), 1)
+            ach = getattr(kx, 'g', {}).get('breite_achse_grad')
+            if ach is not None and aussen:          # Längsachse (Wellenkamm) im Bootsbezug, zu Beginn
+                pw = ort_fn(ts[:1])
+                d = kx.boot.welt_zu_boot(pw + np.array([[np.cos(np.radians(ach)), np.sin(np.radians(ach)), 0.0]]), ts[:1]) - kx.boot.welt_zu_boot(pw, ts[:1])
+                eintrag_k['a'] = np.round(d[0, :2] / max(np.linalg.norm(d[0, :2]), 1e-9), 3).tolist()
         kx.karte.append(eintrag_k)
         if getattr(kx, 'nur_karte', False):
             return
@@ -382,12 +387,25 @@ def rendere_quelle(kx, spur, bus, sig, t0, ort_fn, aussen=True, pegel=1.0, hall=
             if isinstance(br, (list, tuple)):
                 br = brng.uniform(*br)
             v_q = pb - kopf
-            winkel = 2 * np.arctan(br / (2 * np.maximum(r, 0.3)))
+            ach = g.get('breite_achse_grad')
+            if ach is not None and aussen:
+                # feste Längsachse in der Welt (Wellenkamm quer zur Laufrichtung): die Teilquellen liegen
+                # entlang des Kamms; wie breit er von hier aus erscheint, hängt vom Blickwinkel auf ihn ab
+                a_w = np.array([np.cos(np.radians(ach)), np.sin(np.radians(ach)), 0.0])
+                tang = kx.boot.welt_zu_boot(p + a_w[None, :], t) - pb
+                tang /= np.maximum(np.linalg.norm(tang, axis=1, keepdims=True), 1e-9)
+                e1, e2 = v_q + tang * br / 2, v_q - tang * br / 2
+                cosw = (e1 * e2).sum(1) / np.maximum(np.linalg.norm(e1, axis=1) * np.linalg.norm(e2, axis=1), 1e-9)
+                winkel = np.arccos(np.clip(cosw, -1, 1))
+            else:
+                winkel = 2 * np.arctan(br / (2 * np.maximum(r, 0.3)))
+                tang = None
             n_teile = int(np.clip(round(np.degrees(winkel.max()) / g.get('breite_raster_grad', 12.0)) + 1, 1, 5))
             if n_teile >= 2:
-                dh = np.linalg.norm(v_q[:, :2], axis=1, keepdims=True)
-                tang = np.where(dh > 0.2, np.concatenate([-v_q[:, 1:2], v_q[:, 0:1], np.zeros_like(dh)], 1) / np.maximum(dh, 1e-6),
-                                np.array([[1.0, 0.0, 0.0]]))
+                if tang is None:
+                    dh = np.linalg.norm(v_q[:, :2], axis=1, keepdims=True)
+                    tang = np.where(dh > 0.2, np.concatenate([-v_q[:, 1:2], v_q[:, 0:1], np.zeros_like(dh)], 1) / np.maximum(dh, 1e-6),
+                                    np.array([[1.0, 0.0, 0.0]]))
                 richt_mehr = [kx.boot.pfade(pb + o * tang, aussen, None, False)[0]['richt'] for o in np.linspace(-0.5, 0.5, n_teile) * br]
                 wege[0] = dict(wege[0], richt_mehr=richt_mehr, masken=rwk.breitenmasken(n_teile, brng))
     start = int(round(t0 * FS))
@@ -1604,6 +1622,7 @@ def main():
                  wiederholung=wiederholung(), meldungen=vorab, quellen=karte)
         if type(boot).__name__ == 'Boot':            # Umriss des Boots für die Kartenansicht
             k['boot'] = dict(a=round(float(boot.a), 2), b=round(float(boot.b), 2))
+        k['liegt_grad'] = float(umg_cfg.get('liegt_grad', 0.0))      # Richtung der Füße/des Blicks im Bezug der Karte
         (Path(a.aus) / f'{name}_karte.json').write_text(json.dumps(k, ensure_ascii=False, separators=(',', ':')))
         print('Karte:', len(karte), 'Quellen', flush=True)
 

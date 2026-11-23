@@ -20,6 +20,12 @@ export async function ladeKarte(url) {
   return K;
 }
 
+// Bootsbezug → Hörerbezug: [vorn, links] relativ zum Kopf (liegt der Hörer quer, ist vorn nicht der Bug)
+function hoerer(K, p) {
+  const a = (K.liegt_grad || 0) * Math.PI / 180, rx = p[0] - K.kopf[0], ry = p[1] - K.kopf[1];
+  return [rx * Math.cos(a) + ry * Math.sin(a), -rx * Math.sin(a) + ry * Math.cos(a)];
+}
+
 export function ort(K, q, ts) {        // Ort einer Quelle zur Szenenzeit ts (oder null)
   for (const k of [0, -K.dauer, K.dauer]) {
     const x = ts + k;
@@ -50,7 +56,7 @@ export function zeichneKarte(canvas, K, t, opt = {}) {
   let R = opt.massstab || 0;
   if (!R) {             // automatisch: alle aktiven Quellen außer fernen Flächen und Echos
     const nah = aktiv.filter(([q]) => q.dt < 1 && q.art !== 'echo');
-    const d = (nah.length ? nah : aktiv).map(([, p]) => Math.hypot(p[0] - K.kopf[0], p[1] - K.kopf[1])).sort((a, b) => a - b);
+    const d = (nah.length ? nah : aktiv).map(([, p]) => Math.hypot(...hoerer(K, p))).sort((a, b) => a - b);
     const ziel = Math.max(6, (d[Math.floor(d.length * 0.85)] || 10) * 1.15);
     // weich nachführen: hinaus schnell (nichts fällt aus dem Bild), herein langsam
     K._R = K._R ? K._R * Math.pow(ziel / K._R, ziel > K._R ? 0.15 : 0.02) : ziel;
@@ -68,10 +74,11 @@ export function zeichneKarte(canvas, K, t, opt = {}) {
     g.fillText(r >= 1000 ? `${r / 1000} km` : `${r} m`, M + r * s * 0.71 + 4, M - r * s * 0.71 - 4);
   }
   // Hörer, Blick nach vorn (x) = oben im Bild; links (y) = links
-  const px = p => M - (p[1] - K.kopf[1]) * s, py = p => M - (p[0] - K.kopf[0]) * s;
+  const px = p => M - hoerer(K, p)[1] * s, py = p => M - hoerer(K, p)[0] * s;
   if (K.boot && R < 40) {            // Umriss des Boots (Bootsbezug: Ursprung mittschiffs)
     g.strokeStyle = dunkel ? '#3d5560' : '#b9c9cd'; g.lineWidth = 3; g.beginPath();
-    g.ellipse(M - (0 - K.kopf[1]) * s, M - (0 - K.kopf[0]) * s, K.boot.b * s, K.boot.a * s, 0, 0, 7); g.stroke();
+    for (let i = 0; i <= 72; i++) { const w = i / 72 * 2 * Math.PI, q = [K.boot.a * Math.cos(w), K.boot.b * Math.sin(w)]; i ? g.lineTo(px(q), py(q)) : g.moveTo(px(q), py(q)); }
+    g.stroke();
   }
   g.fillStyle = dunkel ? '#dfe8ea' : '#17252b'; g.beginPath(); g.arc(M, M, W / 130, 0, 7); g.fill();
   g.strokeStyle = g.fillStyle; g.lineWidth = 4; g.beginPath(); g.moveTo(M, M - 8); g.lineTo(M, M - W / 27); g.stroke();
@@ -98,7 +105,7 @@ function zeichneLog(canvas, K, t) {
   const rand = M * 0.94, norm = Math.log(1 + K.rmax / D0);
   const rad = d => rand * Math.log(1 + d / D0) / norm;
   const proj = p => {
-    const dx = p[1] - K.kopf[1], dy = p[0] - K.kopf[0], d = Math.hypot(dx, dy);
+    const [dy, dx] = hoerer(K, p), d = Math.hypot(dx, dy);
     if (d < 1e-6) return [M, M];
     const f = Math.min(rad(d), M * 0.985) / d;
     return [M - dx * f, M - dy * f];

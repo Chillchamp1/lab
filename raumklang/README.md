@@ -69,9 +69,10 @@ andere Haltung: `--blick 90` (flach auf dem Rücken) bis `--blick 0` (aufrecht).
 ## Wie ein Klang zum Ohr kommt
 
 Das Boot ist ein offenes hölzernes Segelboot, 6,4 m lang und 2 m breit, Bordkante 80 cm
-über dem Wasser. Du liegst hinten auf Polstern, den Kopf hoch auf einem Kissen an der
-Heckducht: die Ohren 58 cm über dem Wasser und 22 cm unter der Bordkante, das Wasser
-beidseitig etwa 70 cm entfernt. Bis 23.11.2026 war es ein 4,2 m langes Ruderboot, in dem
+über dem Wasser. Du liegst quer im Boot auf Polstern (`liegt_grad: -90`), den Kopf hoch auf
+einem Kissen an der Backbordwand, die Füße nach Steuerbord, der Bug links von dir: die Ohren
+58 cm über dem Wasser und 22 cm unter der Bordkante, die Planken 30 cm hinter dem Kopf. Quer
+liegend sieht die Ansicht das Boot von der Seite, und Bug und Heck klingen von links und rechts. Bis 23.11.2026 war es ein 4,2 m langes Ruderboot, in dem
 der Kopf auf den Bodenbrettern lag – bei kräftiger See zu klein und zu nah am Wasser, um
 sich geborgen anzufühlen. Ein größeres Boot rollt auch langsamer und weniger (3,5° statt 5°).
 
@@ -204,8 +205,9 @@ Ortsdaten der Szenenkarte (`audio/<name>_karte.json`, gezippt 5–70 kB), kein V
 - **Karte von oben** (`karte.js`, alle Szenen): Hörer in der Mitte, Pfeil = Blickrichtung,
   jede Quelle ein Punkt mit kurzer Spur. Abstand logarithmisch, damit ein Tropfen in 1 m und
   eine Herde in 500 m zugleich zu sehen sind; das Bild zoomt nie.
-- **3D-Diorama** (`diorama.js`, bisher nur das Meer): isometrisch, feste Perspektive,
-  Comic-Schattierung in drei Stufen, Tilt-Shift-Unschärfe oben und unten, warme Tönung.
+- **3D-Diorama** (`diorama.js`, bisher nur das Meer): feste Perspektive von schräg oben in
+  Blickrichtung des Hörers (oben im Bild ist, wohin er schaut), Comic-Schattierung in drei Stufen,
+  keine Unschärfe.
   Boot mit liegender Figur, Fels, Kolonie-Insel, Möwen und Gänse als kleine flatternde
   Figuren, Wellenkämme, Brecher und Spritzer als Schaumkugeln (eine instanzierte Form).
   Maßstäblich (1 Einheit = 1 m, etwa ±20 m im Bild); was weiter als 30 m entfernt ist
@@ -244,6 +246,10 @@ und ihre Vorzugsrichtung, je nach Wind und Entfernung:
   einer Stelle auf (Möwen in Luv) und kreist dort in eine Richtung.
 - `ueberflug` mit `kurs_grad` (`[Mittel, Streuung]`) und `gegen_wahrsch`: nahe
   Überflüge folgen der Windachse, gelegentlich kommt einer aus der Gegenrichtung.
+- `breite_achse_grad` (z. B. Wellen: Windrichtung + 90°): eine breite Quelle liegt entlang einer
+  festen Achse in der Welt – Wellenkämme laufen parallel mit dem Wind, ihre Teilquellen liegen
+  entlang des Kamms (ohne Angabe: quer zur Hörrichtung). Die Karte speichert Breite (`b`) und
+  Achse (`a`, Bootsbezug) jeder Quelle für die Ansicht.
 - `zug`: ein Schwarm zieht auf geradem Kurs in einiger Entfernung vorbei
   (`zuege: [{t, kurs_grad, seite}]`, dazu `anzahl`, `abstand_m`, `hoehe`, `tempo`).
   Ein einmaliges Ereignis mit klarer Richtung – nicht öfter als ein-, zweimal je
