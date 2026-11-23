@@ -1,6 +1,6 @@
 {
  "szene": "boot",
- "stand": "23.11.2026 17:21",
+ "stand": "23.11.2026 18:00",
  "dauer": 600,
  "schleife": true,
  "abtastwerte": 26460000,
@@ -18,7 +18,7 @@
    "pegel_art": "integriert",
    "spitze_db": -13.3,
    "begrenzt_db": 0.0,
-   "sekunden": 571.2,
+   "sekunden": 560.8,
    "probe_ab_s": 377.4,
    "probe_aktiv": 1.0,
    "probe_abtastwerte": 1323000
@@ -32,7 +32,7 @@
    "pegel_art": "integriert",
    "spitze_db": -12.5,
    "begrenzt_db": 0.0,
-   "sekunden": 502.2,
+   "sekunden": 501.0,
    "probe_ab_s": 323.4,
    "probe_aktiv": 1.0,
    "probe_abtastwerte": 1323000
@@ -46,7 +46,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
    "begrenzt_db": 1.9,
-   "sekunden": 89.0,
+   "sekunden": 84.5,
    "probe_ab_s": 362.4,
    "probe_aktiv": 0.88,
    "probe_abtastwerte": 1323000
@@ -60,7 +60,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
    "begrenzt_db": 3.4,
-   "sekunden": 109.0,
+   "sekunden": 105.3,
    "ereignisse": 491,
    "nach_welle": 24,
    "spritzer": 11,
@@ -77,7 +77,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -9.0,
    "begrenzt_db": 4.5,
-   "sekunden": 17.9,
+   "sekunden": 17.4,
    "ereignisse": 145,
    "nach_schlag": 3,
    "probe_ab_s": 488.9,
@@ -93,7 +93,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -9.6,
    "begrenzt_db": 0.0,
-   "sekunden": 172.8,
+   "sekunden": 159.1,
    "faenge": 27,
    "probe_ab_s": 322.9,
    "probe_aktiv": 0.88,
@@ -108,7 +108,7 @@
    "pegel_art": "integriert",
    "spitze_db": -11.7,
    "begrenzt_db": 0.0,
-   "sekunden": 113.5,
+   "sekunden": 110.0,
    "weitenhall_db": -2.0,
    "probe_ab_s": 370.4,
    "probe_aktiv": 1.0,
@@ -123,7 +123,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -7.0,
    "begrenzt_db": 0.2,
-   "sekunden": 25.0,
+   "sekunden": 24.7,
    "rufe": 94,
    "aufgeschreckt": 20,
    "weitenhall_db": -31.7,
@@ -176,7 +176,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -21.1,
    "begrenzt_db": 0.0,
-   "sekunden": 19.1,
+   "sekunden": 19.2,
    "rufe": 106,
    "aufgeschreckt": 0,
    "weitenhall_db": -2.8,
@@ -192,10 +192,10 @@
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
    "spitze_db": -2.5,
-   "begrenzt_db": 1.7,
-   "sekunden": 20.1,
-   "probe_ab_s": 411.9,
-   "probe_aktiv": 0.28,
+   "begrenzt_db": 0.0,
+   "sekunden": 19.8,
+   "probe_ab_s": 79.9,
+   "probe_aktiv": 0.35,
    "probe_abtastwerte": 1323000
   },
   {
@@ -207,7 +207,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -15.8,
    "begrenzt_db": 0.0,
-   "sekunden": 30.7,
+   "sekunden": 29.0,
    "zuege": [
     105,
     515
@@ -225,7 +225,7 @@
    "pegel_art": "spitzen",
    "spitze_db": -14.8,
    "begrenzt_db": 0.0,
-   "sekunden": 34.3,
+   "sekunden": 33.0,
    "zuege": [
     40,
     440
@@ -279,13 +279,13 @@
  ],
  "start_verschoben_s": 597.61,
  "start_abtastwerte": 26354507,
- "begrenzer_max_db": 4.0,
- "lufs": -21.1,
+ "begrenzer_max_db": 3.7,
+ "lufs": -21.0,
  "naht": {
   "sprung_naht": 0.0037,
-  "sprung_typisch_999": 0.0714,
+  "sprung_typisch_999": 0.0723,
   "pegelsprung_naht_db": 0.48,
-  "pegelsprung_typisch_95_db": 1.94
+  "pegelsprung_typisch_95_db": 2.2
  },
  "wiederholung": {
   "wellen": {
@@ -320,8 +320,8 @@
   },
   "felsen": {
    "ereignisse": 45,
-   "verschiedene": 24,
-   "haeufigster": 3
+   "verschiedene": 29,
+   "haeufigster": 2
   },
   "zug": {
    "ereignisse": 108,
