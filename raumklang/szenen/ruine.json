@@ -542,7 +542,6 @@
    "hall": 1.0,
    "vorruf_wahrsch": 0.5,
    "nachruf_wahrsch": 0.3,
-   "probe_ab": 10.0,
    "probe_dauer": 40,
    "sammlung": [
     {
@@ -606,7 +605,6 @@
    "echo_reflexion": 0.6,
    "bezug_m": 600,
    "hall": 1.0,
-   "probe_ab": 65.0,
    "probe_dauer": 40,
    "sammlung": [
     {
@@ -657,7 +655,6 @@
    "echo_reflexion": 0.5,
    "bezug_m": 400,
    "hall": 1.0,
-   "probe_ab": 92.5,
    "probe_dauer": 40,
    "sammlung": [
     {

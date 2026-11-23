@@ -37,6 +37,7 @@
   details { margin-top: 14px; border-top: 1px solid var(--rand); padding-top: 10px; }
   summary { cursor: pointer; color: var(--akzent); font-size: .92rem; }
   .baustein { padding: 12px 0; border-bottom: 1px solid var(--rand); }
+  .baustein .leise { color: var(--leise); font-size: .82rem; margin: 2px 0 6px; }
   .baustein:last-child { border-bottom: 0; }
   .baustein p { color: var(--leise); font-size: .88rem; margin: 0 0 8px; }
   table { border-collapse: collapse; width: 100%; font-size: .82rem; }
@@ -168,7 +169,9 @@ function spieler(el, src, soll, dateiname) {
       ((b.drehbuch && b.drehbuch.length) ? `<details><summary>Drehbuch – was in der Szene passiert</summary><ul>` +
         b.drehbuch.map(([t, x]) => `<li><b>${zeit(t)}</b> ${esc(x)}</li>`).join('') + `</ul></details>` : '') +
       `<details><summary>${esc(b.details_titel || (b.gruppen.length ? 'Bausteine einzeln anhören, Aufnahmen' : 'Verwendete Aufnahmen'))}</summary>` +
-      b.gruppen.map(g => `<div class="baustein"><h3>${esc(g.titel)}</h3><p>${esc(g.text)}</p><div class="spieler" data-name="${esc(g.name)}"></div></div>`).join('') +
+      b.gruppen.map(g => `<div class="baustein"><h3>${esc(g.titel)}</h3><p>${esc(g.text)}</p>` +
+        (g.probe_ab_s != null && g.probe_abtastwerte ? `<p class="leise">Diese Spur allein, ${zeit(g.probe_ab_s)}–${zeit((g.probe_ab_s + g.probe_abtastwerte / 44100) % b.dauer)} der Szene – die Stelle, an der sie am meisten zu hören ist.</p>` : '') +
+        `<div class="spieler" data-name="${esc(g.name)}"></div></div>`).join('') +
       (b.gruppen.length ? `<h4>Verwendete Aufnahmen</h4>` : '') + `<div class="tabelle"><table><thead><tr><th>Aufnahme</th><th>Von</th><th>Lizenz</th></tr></thead><tbody>` +
       (b.quellen || []).map(i => nachId[i]).filter(Boolean).map(e =>
         `<tr><td><a href="${esc(e.seite)}">${esc(e.titel || e.datei)}</a></td><td>${esc(e.urheber || '–')}</td><td>${esc(e.lizenz)}</td></tr>`).join('') +

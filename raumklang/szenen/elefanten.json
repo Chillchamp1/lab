@@ -686,7 +686,6 @@
    "echo_reflexion": 0.4,
    "bezug_m": 30,
    "hall": 0.8,
-   "probe_ab": 35,
    "probe_dauer": 40,
    "sammlung": [
     {
@@ -1328,7 +1327,6 @@
    ],
    "wucht_pegel": 0.5,
    "wucht_exponent": 2.0,
-   "probe_ab": 8,
    "probe_dauer": 40,
    "pruefung": {
     "tempo_max": 2.5
@@ -1969,7 +1967,6 @@
    ],
    "wucht_pegel": 0.4,
    "wucht_exponent": 2.0,
-   "probe_ab": 55,
    "probe_dauer": 40,
    "pruefung": {
     "tempo_max": 2.5

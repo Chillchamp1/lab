@@ -1791,7 +1791,6 @@
    "fang_schwelle": 0.7,
    "knatter_ab": 1.0,
    "ruhe": -0.3,
-   "probe_ab": 0.0,
    "probe_dauer": 60,
    "stoff": [
     {
@@ -2249,7 +2248,6 @@
    ],
    "min_dauer": 0.6,
    "hall": 0.6,
-   "probe_ab": 15.0,
    "probe_dauer": 40,
    "sammlung": [
     {
@@ -3045,7 +3043,6 @@
    "pruefung": {
     "tempo_max": 20.0
    },
-   "probe_ab": 85,
    "probe_dauer": 40,
    "sammlung": [
     {

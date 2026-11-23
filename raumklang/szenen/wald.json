@@ -1264,7 +1264,6 @@
    "echo_reflexion": 0.7,
    "bezug_m": 400,
    "hall": 1.2,
-   "probe_ab": 25.0,
    "probe_dauer": 60,
    "sammlung": [
     {
@@ -2027,7 +2026,6 @@
    "echo_reflexion": 0.65,
    "bezug_m": 250,
    "hall": 1.2,
-   "probe_ab": 0.0,
    "probe_dauer": 60,
    "sammlung": [
     {
@@ -2308,7 +2306,6 @@
    "echo_reflexion": 0.5,
    "bezug_m": 60,
    "hall": 1.0,
-   "probe_ab": 0.0,
    "probe_dauer": 60,
    "sammlung": [
     {
@@ -3519,7 +3516,6 @@
    "matsch_wahrsch": 0.5,
    "knack_wahrsch": 0.1,
    "rascheln_wahrsch": 0.6,
-   "probe_ab": 150.0,
    "probe_dauer": 105,
    "zupfen": [
     {
@@ -4561,7 +4557,6 @@
    "hall": 1.0,
    "vorruf_wahrsch": 0.4,
    "nachruf_wahrsch": 0.3,
-   "probe_ab": 62.5,
    "probe_dauer": 40,
    "sammlung": [
     {

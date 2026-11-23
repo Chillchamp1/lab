@@ -1309,6 +1309,29 @@ def schreibe(pfad, x, bitrate='192k'):
                    input=daten, check=True)
 
 
+def probe_fenster(x, dauer_s, raster_s=0.5):
+    """Start (s) des Hörproben-Fensters: dort, wo die Gruppe am meisten zu hören ist – die meisten
+    Abschnitte, die höchstens 20 dB unter ihren lautesten liegen; bei Gleichstand der lautere.
+    Eine fest eingestellte Stelle trifft bei langen Szenen mit seltenen Ereignissen oft nichts."""
+    r = int(raster_s * FS)
+    n = x.shape[1] // r
+    e = 10 * np.log10((x[:, :n * r].astype(np.float64) ** 2).mean(0).reshape(n, r).mean(1) + 1e-14)
+    aktiv = (e > np.percentile(e, 99.5) - 20).astype(float)
+    L = max(1, int(round(dauer_s / raster_s)))
+    k = np.ones(L)
+    # kreisförmig, die Szene ist eine Schleife; Punkte für Aktivität, Zehntel für den Pegel
+    def kreis(v):
+        return np.real(np.fft.ifft(np.fft.fft(v) * np.conj(np.fft.fft(np.r_[k, np.zeros(n - L)]))))
+    a_w = kreis(aktiv)
+    beste = np.flatnonzero(a_w > a_w.max() - 0.5)
+    # unter den gleich guten Fenstern das mit dem meisten Pegel; liegen mehrere gleichauf, das mittlere
+    # (die Ereignisse sitzen dann nicht am Rand der Probe)
+    p_w = kreis(np.maximum(e + 80, 0))[beste]
+    beste = beste[p_w >= p_w.max() - 0.5 * L]
+    i = int(beste[len(beste) // 2])
+    return float(i * raster_s), float(a_w[i] / L)
+
+
 def schleifenstueck(x, ab_s, dauer_s, ueberblend_s=3.0):
     """Ausschnitt aus der Kreisspur, der selbst nahtlos schleift: das Stück nach dem Ende wird
     gleichstark in den Anfang überblendet."""
@@ -1463,7 +1486,11 @@ def main():
         bericht['gruppen'].append(eintrag)
         print(eintrag, flush=True)
         if a.proben:
-            probe = schleifenstueck(x, g.get('probe_ab', 20), g.get('probe_dauer', 30))
+            ab, anteil = probe_fenster(x, g.get('probe_dauer', 30)) if 'probe_ab' not in g else (g['probe_ab'], None)
+            probe = schleifenstueck(x, ab, g.get('probe_dauer', 30))
+            eintrag['probe_ab_s'] = ab                # Szenenzeit; nach dem Verschieben der Schleife in Dateizeit umgerechnet
+            if anteil is not None:
+                eintrag['probe_aktiv'] = round(anteil, 2)
             probe, _ = begrenzer_kreis(probe * 10 ** (g.get('probe_plus_db', 6) / 20))
             schreibe(Path(a.aus) / f"{name}_{g['name']}.mp3", probe, '160k')
             eintrag['probe_abtastwerte'] = int(probe.shape[1])
@@ -1514,6 +1541,9 @@ def main():
         bericht['start_abtastwerte'] = int(ruhig)          # genau – für Vergleichsfassungen (--drehung) diesen Wert nehmen
         # Drehbuch-Zeiten auf die Datei beziehen (die Schleife beginnt bei `ruhig`)
         bericht['drehbuch'] = sorted([[round((tt - ruhig / FS) % dauer, 1), x] for tt, x in bericht['drehbuch']])
+        for ge in bericht['gruppen']:
+            if 'probe_ab_s' in ge:
+                ge['probe_ab_s'] = round((ge['probe_ab_s'] - ruhig / FS) % dauer, 1)
         bericht['begrenzer_max_db'] = round(weg, 1)
         bericht['lufs'] = round(lautheit(summe), 1)
         bericht['naht'] = nahtpruefung(summe)
