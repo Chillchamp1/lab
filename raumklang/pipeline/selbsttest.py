@@ -79,7 +79,7 @@ def main():
     def lauf(g, ohne, ort):
         k2 = szene.Kontext(hrtf, wald, None, 20.0, rng)
         k2.g, k2.ohne = g, set(ohne)
-        sp = Spur(20.0)
+        sp = szene.Spur(20.0)
         szene.rendere_quelle(k2, sp, Spur(20.0, 1), rausch, 2.0, lambda t: np.tile(ort, (len(t), 1)), True, 10.0, 0.0)
         return sp.x.astype(np.float64)
 
@@ -95,6 +95,22 @@ def main():
     rel = 10 * np.log10((streu ** 2).sum() / (punkt ** 2).sum())
     if not (-30 < rel < -6):
         fehler.append(f'Stamm-Streuung außerhalb des plausiblen Bereichs ({rel:.1f} dB relativ zum Direktschall)')
+
+    # 6) Binaurale Schwebung: links f, rechts f + Δ, nahtlos in der Schleife
+    import types
+
+    kxs = types.SimpleNamespace(dauer=20.0, rng=np.random.default_rng(1), bib=types.SimpleNamespace(benutzt=set()))
+    sp = szene.Spur(20.0)
+    szene.gen_schwebung(kxs, {'noten': [[0, 8, 164.8], [8, 16, 196.0]], 'periode_s': 16, 'schwebung_hz': 10.0}, sp, None)
+    seg = sp.x[:, 2 * FS:6 * FS]
+    spitzen = []
+    for k in range(2):
+        X = np.abs(np.fft.rfft(seg[k] * np.hanning(seg.shape[1]), 8 * seg.shape[1]))
+        spitzen.append(np.fft.rfftfreq(8 * seg.shape[1], 1 / FS)[np.argmax(X)])
+    if abs(spitzen[1] - spitzen[0] - 10.0) > 0.1 or not (200 <= spitzen[0] < 500):
+        fehler.append(f'Schwebung falsch: links {spitzen[0]:.2f} Hz, rechts {spitzen[1]:.2f} Hz')
+    if np.abs(sp.x[:, 0] - sp.x[:, -1]).max() > 2 * np.abs(np.diff(sp.x, axis=1)).max():
+        fehler.append('Schwebung springt an der Naht')
 
     print('Selbsttest:', 'bestanden' if not fehler else 'FEHLER')
     for f in fehler:

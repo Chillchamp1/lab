@@ -1281,6 +1281,55 @@ def gen_musik(kx, g, spur, bus):
     return dict(akkorde=len(akkorde))
 
 
+def gen_schwebung(kx, g, spur, bus):
+    """Binaurale Schwebung, die eine Melodie spielt: links ein reiner Sinuston f, rechts f + Δ. Das Gehirn
+    hört aus dem Unterschied eine langsame Schwebung von Δ Hz, die es im Ohr nicht gibt – sie entsteht erst
+    beim Zusammenführen beider Ohren im Hirnstamm. Deshalb nicht räumlich gerendert (HRTF, Hall und jedes
+    Übersprechen zwischen den Ohren würden sie zerstören) und nur mit Kopfhörern wirksam.
+    Träger 200–500 Hz (dort ist die Schwebung am deutlichsten; über ~1 kHz verschwindet sie), Δ im
+    Alpha-Bereich (Standard 10 Hz). Die Noten (Liste [Beginn, Ende, Hz] über `periode_s`) werden in den
+    Trägerbereich oktaviert und legato gespielt: jede Note klingt bis zur nächsten, Wechsel als weiches
+    Gleiten. Phasen so gestellt, dass die Schleife ohne Naht aufgeht."""
+    n = int(round(kx.dauer * FS))
+    lo, hi = g.get('traeger_hz', [200, 500])
+    d = float(g.get('schwebung_hz', 10.0))
+    per = float(g['periode_s'])
+    ziele = []
+    for a, b_, f in g['noten']:
+        while f >= hi:
+            f /= 2
+        while f < lo:
+            f *= 2
+        ziele.append((a, f))
+    # Notenfolge über die Szene wiederholen
+    zeiten, freq = [], []
+    k = 0
+    while k * per < kx.dauer + per:
+        for a, f in ziele:
+            zeiten.append(k * per + a); freq.append(f)
+        k += 1
+    zeiten, freq = np.array(zeiten), np.array(freq)
+    t = np.arange(n) / FS
+    i = np.clip(np.searchsorted(zeiten, t, side='right') - 1, 0, len(zeiten) - 1)
+    stufen = freq[i]
+    gleit = int(g.get('gleiten_s', 0.6) * FS)
+    k_ = np.hanning(2 * gleit + 1); k_ /= k_.sum()
+    fL = np.convolve(np.r_[stufen[-gleit:], stufen, stufen[:gleit]], k_, mode='valid')[:n]   # kreisförmig geglättet
+    # ganze Zahl von Schwingungen je Durchlauf (links und für die Differenz), damit die Naht nicht knackt
+    rest = (fL.sum() / FS) % 1.0
+    fL = fL - rest / kx.dauer if rest < 0.5 else fL + (1 - rest) / kx.dauer
+    d = round(d * kx.dauer) / kx.dauer
+    phL = 2 * np.pi * np.cumsum(fL) / FS
+    phR = phL + 2 * np.pi * d * t
+    atem = 10 ** (g.get('atem_db', 2.0) * _rauschkurve(kx.rng, int(kx.dauer * 4), 4.0, 0.03) / 20)
+    atem = np.interp(t, np.arange(len(atem)) / 4.0, atem, period=kx.dauer)
+    y = np.stack([np.sin(phL), np.sin(phR)]) * atem[None, :] * 0.05
+    spur.addiere(y.astype(np.float32), 0)
+    if g.get('quelle'):
+        kx.bib.benutzt.add(g['quelle'])          # Melodie aus dieser Aufnahme abgeschrieben: Namensnennung
+    return dict(schwebung_hz=round(d, 3), noten=len(ziele), traeger_hz=[round(min(f for _, f in ziele), 1), round(max(f for _, f in ziele), 1)])
+
+
 def gen_gebruell(kx, g, spur, bus):
     """Ab und zu gröhlt weit weg ein riesiges Tier; der Ruf schallt über das Tal. Die Echos sind
     Spiegelquellen an den Talhängen: dasselbe Signal von weiter weg und aus anderen Richtungen –
@@ -1407,7 +1456,8 @@ def gen_zug(kx, g, spur, bus):
 
 GENERATOREN = dict(bett=gen_bett, ereignisse=gen_ereignisse, schwarm=gen_schwarm, ueberflug=gen_ueberflug,
                    rumpf=gen_rumpf, knarzen=gen_knarzen, segel=gen_segel,
-                   vorbeigang=gen_vorbeigang, besuch=gen_besuch, musik=gen_musik, gebruell=gen_gebruell, zug=gen_zug)
+                   vorbeigang=gen_vorbeigang, besuch=gen_besuch, musik=gen_musik, gebruell=gen_gebruell, zug=gen_zug,
+                   schwebung=gen_schwebung)
 
 
 # ---------------------------------------------------------------- Pegel und Ausgabe
@@ -1570,7 +1620,7 @@ def main():
     vorab = []
     if 'kette' not in ohne:
         for i, g in enumerate(sz['gruppen']):
-            if g['typ'] == 'musik':
+            if g['typ'] in ('musik', 'schwebung'):
                 continue
             kx = kontext(i, g)
             kx.karte, kx.nur_karte, kx.melden = [], True, vorab

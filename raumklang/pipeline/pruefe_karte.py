@@ -41,7 +41,7 @@ def main():
     aus, warnungen, selten = [], [], []
     for gr in k['gruppen']:
         qs = [q for q in k['quellen'] if q['g'] == gr['name'] and q.get('art') != 'echo']
-        if not qs and gr['typ'] == 'musik':
+        if not qs and gr['typ'] in ('musik', 'schwebung'):      # nicht räumlich, liegt über der Szene
             continue
         if not qs:
             warnungen.append(f"{gr['name']}: keine Quelle – Gruppe ist stumm")
