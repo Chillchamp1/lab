@@ -1281,6 +1281,87 @@ def gen_musik(kx, g, spur, bus):
     return dict(akkorde=len(akkorde))
 
 
+def _schwebung_flaeche(kx, g, spur, n, lo, hi, d, per):
+    """Weiche Fläche statt Melodielinie (die gleitende Linie klang wie eine Sirene): die Noten werden zu
+    ruhigen Klangblöcken zusammengefasst (vorherrschender Ton je Abschnitt, mindestens `block_s`), jeder
+    Block ist ein sanfter Klang aus tiefer Oktave, Grundton und Quinte; Blöcke blenden lang ineinander über,
+    nichts gleitet. Jeder Ton links f, rechts f + Δ – so schwebt die ganze Fläche mit Δ Hz."""
+    f = g['flaeche']
+    block = f.get('block_s', 4.0)
+    # vorherrschender Ton (Tonklasse) je Raster von 1 s, dann zu Blöcken zusammenfassen
+    raster = np.zeros(int(np.ceil(per)))
+    klasse = lambda fr: (int(round(12 * np.log2(fr / 440))) + 9) % 12          # C = 0 … H = 11
+    zaehl = [collections.Counter() for _ in raster]
+    for a, b_, fr in g['noten']:
+        for s_ in range(int(a), min(int(np.ceil(b_)), len(raster))):
+            zaehl[s_][klasse(fr)] += min(b_, s_ + 1) - max(a, s_)
+    folge = []
+    letzte = None
+    for s_, z in enumerate(zaehl):
+        k = z.most_common(1)[0][0] if z else letzte
+        folge.append(k if k is not None else 4)
+        letzte = folge[-1]
+    bloecke = []                     # [beginn, ende, tonklasse]
+    for s_, k in enumerate(folge):
+        if bloecke and (bloecke[-1][2] == k or s_ - bloecke[-1][0] < block):
+            bloecke[-1][1] = s_ + 1
+        else:
+            bloecke.append([s_, s_ + 1, k])
+    # Ton der Tonklasse im Trägerbereich (Grundton), dazu tiefe Oktave und Quinte
+    def grundton(k):
+        fr = 440 * 2 ** ((k - 9) / 12)
+        while fr >= hi:
+            fr /= 2
+        while fr < lo:
+            fr *= 2
+        return fr
+    stimmen = f.get('stimmen', [[0.5, 0.45], [1.0, 1.0], [1.5, 0.3]])     # [Faktor, Pegel]
+    ueber = int(f.get('ueberblend_s', 2.5) * FS)
+    y = np.zeros((2, n))
+    k_wdh = 0
+    while k_wdh * per < kx.dauer + per:
+        for a, b_, k in bloecke:
+            t0 = k_wdh * per + a
+            if t0 >= kx.dauer + per:
+                continue
+            L = int((b_ - a) * FS) + 2 * ueber
+            tt = np.arange(L) / FS
+            huelle = np.ones(L)
+            huelle[:2 * ueber] = np.sin(np.linspace(0, np.pi / 2, 2 * ueber)) ** 2
+            huelle[-2 * ueber:] = np.cos(np.linspace(0, np.pi / 2, 2 * ueber)) ** 2
+            f0 = grundton(k)
+            seg = np.zeros((2, L))
+            for fak, amp in stimmen:
+                ph = kx.rng.uniform(0, 2 * np.pi)
+                fr = f0 * fak
+                seg[0] += amp * np.sin(2 * np.pi * fr * tt + ph)
+                # absolute Zeit für die Schwebungsphase: so bleibt das Verhältnis L/R über alle Blöcke stetig
+                seg[1] += amp * np.sin(2 * np.pi * (fr + d) * tt + ph + 2 * np.pi * d * (t0 - ueber / FS))
+            seg *= huelle
+            start = int(round((t0 - ueber / FS) * FS))
+            idx = (start + np.arange(L)) % n
+            for kan in range(2):
+                y[kan] += np.bincount(idx, weights=seg[kan], minlength=n)
+        k_wdh += 1
+    if g.get('tiefpass'):
+        y = np.stack([mat.filt(y[j], g['tiefpass'], 'lowpass', 2) for j in range(2)])
+    if g.get('hall_s'):
+        hl = int(g['hall_s'] * FS)
+        ir_t = np.arange(hl) / FS
+        for kan in range(2):
+            ir = np.random.default_rng(kan + 11).normal(size=hl) * 10 ** (-3 * ir_t / g.get('hall_t60', 2.5))
+            ir = mat.filt(ir, 2000, 'lowpass', 2)
+            ir /= np.sqrt((ir ** 2).sum())
+            y[kan] = (1 - g.get('hall_anteil', 0.35)) * y[kan] + g.get('hall_anteil', 0.35) * kreisfaltung(y[kan], ir)
+    t = np.arange(n) / FS
+    atem = 10 ** (g.get('atem_db', 2.0) * _rauschkurve(kx.rng, int(kx.dauer * 4), 4.0, 0.03) / 20)
+    y *= np.interp(t, np.arange(len(atem)) / 4.0, atem, period=kx.dauer)[None, :] * 0.05
+    spur.addiere(y.astype(np.float32), 0)
+    if g.get('quelle'):
+        kx.bib.benutzt.add(g['quelle'])
+    return dict(schwebung_hz=round(d, 3), bloecke=len(bloecke), traeger_hz=sorted({round(grundton(k), 1) for _, _, k in bloecke}))
+
+
 def gen_schwebung(kx, g, spur, bus):
     """Binaurale Schwebung, die eine Melodie spielt: links ein reiner Sinuston f, rechts f + Δ. Das Gehirn
     hört aus dem Unterschied eine langsame Schwebung von Δ Hz, die es im Ohr nicht gibt – sie entsteht erst
@@ -1294,6 +1375,8 @@ def gen_schwebung(kx, g, spur, bus):
     lo, hi = g.get('traeger_hz', [200, 500])
     d = float(g.get('schwebung_hz', 10.0))
     per = float(g['periode_s'])
+    if g.get('flaeche'):
+        return _schwebung_flaeche(kx, g, spur, n, lo, hi, d, per)
     ziele = []
     for a, b_, f in g['noten']:
         while f >= hi:
@@ -1320,10 +1403,28 @@ def gen_schwebung(kx, g, spur, bus):
     fL = fL - rest / kx.dauer if rest < 0.5 else fL + (1 - rest) / kx.dauer
     d = round(d * kx.dauer) / kx.dauer
     phL = 2 * np.pi * np.cumsum(fL) / FS
-    phR = phL + 2 * np.pi * d * t
     atem = 10 ** (g.get('atem_db', 2.0) * _rauschkurve(kx.rng, int(kx.dauer * 4), 4.0, 0.03) / 20)
     atem = np.interp(t, np.arange(len(atem)) / 4.0, atem, period=kx.dauer)
-    y = np.stack([np.sin(phL), np.sin(phR)]) * atem[None, :] * 0.05
+    # Klangfarbe: Teiltöne k·f links, k·f + Δ rechts – jede Verschiebung ist dieselbe, so schweben alle
+    # Teiltöne gemeinsam mit Δ Hz (ein reiner Sinus klingt wie ein Messton). Teiltöne über ~1 kHz tragen
+    # zur Schwebung kaum bei, aber zur Wärme; ein Tiefpass nimmt die Schärfe.
+    klang = g.get('klang', [[1, 1.0]])
+    y = np.zeros((2, n))
+    for k, amp in klang:
+        y[0] += amp * np.sin(k * phL)
+        y[1] += amp * np.sin(k * phL + 2 * np.pi * d * t)
+    if g.get('tiefpass'):
+        y = np.stack([mat.filt(y[j], g['tiefpass'], 'lowpass', 2) for j in range(2)])
+    # Hall je Ohr getrennt (kein Übersprechen zwischen den Ohren, sonst verschmiert die Schwebung)
+    if g.get('hall_s'):
+        hl = int(g['hall_s'] * FS)
+        ir_t = np.arange(hl) / FS
+        for kan in range(2):
+            ir = np.random.default_rng(kan + 11).normal(size=hl) * 10 ** (-3 * ir_t / g.get('hall_t60', 2.5))
+            ir = mat.filt(ir, 2500, 'lowpass', 2)
+            ir /= np.sqrt((ir ** 2).sum())
+            y[kan] = (1 - g.get('hall_anteil', 0.35)) * y[kan] + g.get('hall_anteil', 0.35) * kreisfaltung(y[kan], ir)
+    y = y * atem[None, :] * 0.05
     spur.addiere(y.astype(np.float32), 0)
     if g.get('quelle'):
         kx.bib.benutzt.add(g['quelle'])          # Melodie aus dieser Aufnahme abgeschrieben: Namensnennung
@@ -1460,6 +1561,40 @@ GENERATOREN = dict(bett=gen_bett, ereignisse=gen_ereignisse, schwarm=gen_schwarm
                    schwebung=gen_schwebung)
 
 
+# ---------------------------------------------------------------- Zwischenspeicher je Spur
+# Jede Klanggruppe wird nach dem Rendern (fertig gepegelt) abgelegt. Beim nächsten Lauf wird nur neu
+# gerechnet, was sich geändert hat: die eigene Beschreibung der Gruppe, die gemeinsamen Szenendaten
+# (Boot, Hall, Drehbuch, Wetter …), die Ereignis-Meldungen, auf die sie reagieren kann, ihr eigener
+# Generator, gemeinsamer Code (alles außer den anderen Generatoren) und die Quellenliste.
+ZWISCHEN_VERSION = 1
+_PIPELINE = Path(__file__).resolve().parent
+
+
+def _code_ohne_fremde_generatoren(eigener):
+    import inspect
+    text = (_PIPELINE / 'szene.py').read_text()
+    for fn in set(GENERATOREN.values()) | {main}:          # Hauptprogramm (Mischen, Proben, Bericht) ändert keine Spur
+        if fn is not eigener:
+            text = text.replace(inspect.getsource(fn), '')
+    for datei in sorted(_PIPELINE.glob('*.py')):
+        if datei.name not in ('szene.py', 'selbsttest.py', 'pruefe_karte.py', 'pruefe_material.py', 'seiten.py', 'melodie.py',
+                              'material_holen.py', 'freesound_suche.py'):
+            text += datei.read_text()
+    return text
+
+
+def gruppen_schluessel(sz, g, i, vorab, weitere):
+    import hashlib
+    ohne_text = lambda d: {k: v for k, v in d.items() if k not in ('titel', 'text', 'gruppen', 'details_titel', 'probe_dauer', 'probe_ab')}
+    szene = ohne_text(sz)
+    if isinstance(szene.get('drehbuch'), dict):           # Drehbuch-Texte ändern keinen Klang, die Kurven schon
+        szene['drehbuch'] = {k: v for k, v in szene['drehbuch'].items() if k != 'text'}
+    teile = dict(v=ZWISCHEN_VERSION, g=ohne_text(g), i=i, szene=szene, vorab=vorab, weitere=weitere,
+                 code=hashlib.sha256(_code_ohne_fremde_generatoren(GENERATOREN[g['typ']]).encode()).hexdigest(),
+                 quellen=hashlib.sha256((WURZEL / 'quellen.json').read_bytes()).hexdigest())
+    return hashlib.sha256(json.dumps(teile, sort_keys=True, ensure_ascii=False, default=str).encode()).hexdigest()
+
+
 # ---------------------------------------------------------------- Pegel und Ausgabe
 def lautheit(x, art='integriert'):
     """LUFS nach ITU-R BS.1770. art='spitzen': 95. Perzentil der 3-s-Kurzzeitlautheit
@@ -1562,6 +1697,8 @@ def main():
     ap.add_argument('--lufs', type=float, help='Ziel-Lautheit der Mischung (überschreibt die Szene)')
     ap.add_argument('--ohne', default='', help='Wirkungen abschalten (für Vergleiche, gleiche Ereignisfolge): breite,richtwirkung,nahfeld,streuung,kette')
     ap.add_argument('--karte', action='store_true', help='nur das Ereignisprotokoll (Szenenkarte) schreiben, ohne Audio – gleiche Ereignisse wie beim Rendern')
+    ap.add_argument('--neu', default='', help='Zwischenspeicher übergehen: alle ("alle") oder diese Gruppen neu rechnen')
+    ap.add_argument('--zwischenspeicher', help='Ordner für die fertigen Spuren (Vorgabe: material/zwischenspeicher/<szene>)')
     ap.add_argument('--drehung', type=float, help='Startpunkt der Schleife in Abtastwerten vorgeben (start_abtastwerte aus dem Bericht der Bezugsfassung; gerundete Sekunden verschieben um Millisekunden)')
     a = ap.parse_args()
 
@@ -1627,10 +1764,49 @@ def main():
             GENERATOREN[g['typ']](kx, g, None, None)
         ZAEHLER.clear()
         print('Vorlauf:', len(vorab), 'Meldungen', dict(collections.Counter(m['art'] for m in vorab)), flush=True)
+    def mache_probe(g, x, eintrag):
+        ab, anteil = probe_fenster(x, g.get('probe_dauer', 30)) if 'probe_ab' not in g else (g['probe_ab'], None)
+        probe = schleifenstueck(x, ab, g.get('probe_dauer', 30))
+        eintrag['probe_ab_s'] = ab                # Szenenzeit; nach dem Verschieben der Schleife in Dateizeit umgerechnet
+        if anteil is not None:
+            eintrag['probe_aktiv'] = round(anteil, 2)
+        probe, _ = begrenzer_kreis(probe * 10 ** (g.get('probe_plus_db', 6) / 20))
+        schreibe(Path(a.aus) / f"{name}_{g['name']}.mp3", probe, '160k')
+        eintrag['probe_abtastwerte'] = int(probe.shape[1])
+
+    zw_ordner = None
+    if not a.karte and not nur:
+        zw_ordner = Path(a.zwischenspeicher) if a.zwischenspeicher else WURZEL / 'material' / 'zwischenspeicher' / name
+        zw_ordner.mkdir(parents=True, exist_ok=True)
+
     for i, g in enumerate(sz['gruppen']):
         if nur and g['name'] not in nur:
             continue
         t0 = time.time()
+        # schon einmal genau so gerechnet? Dann die fertige Spur nehmen (nur überlagern, nicht neu rendern)
+        zw = None
+        if not a.karte and zw_ordner is not None:
+            schl = gruppen_schluessel(sz, g, i, vorab, dict(dauer=dauer, hrtf=Path(a.hrtf).name, ohne=sorted(ohne), stereo=a.stereo))
+            zw = (zw_ordner / f"{g['name']}.npy", zw_ordner / f"{g['name']}.json", schl)
+            neu_alle = a.neu == 'alle' or g['name'] in set(filter(None, a.neu.split(',')))
+            if not neu_alle and zw[0].exists() and zw[1].exists():
+                meta = json.loads(zw[1].read_text())
+                if meta.get('schluessel') == schl:
+                    x = np.load(zw[0]).astype(np.float32)
+                    karte.extend(meta['karte'])
+                    ZAEHLER[g['name']] = collections.Counter(meta['zaehler'])
+                    bib.benutzt.update(meta['benutzt'])
+                    info, weg_g, art = meta['info'], meta['weg_g'], g.get('pegel_art', 'integriert')
+                    summe += x
+                    eintrag = dict(name=g['name'], titel=g.get('titel', g['name']), text=g.get('text', ''), typ=g['typ'], ziel_lufs=g['ziel_lufs'], pegel_art=art,
+                                   spitze_db=round(float(20 * np.log10(np.abs(x).max() + 1e-9)), 1), begrenzt_db=round(weg_g, 1),
+                                   sekunden=round(time.time() - t0, 1), aus_zwischenspeicher=True, **info)
+                    bericht['gruppen'].append(eintrag)
+                    print(eintrag, flush=True)
+                    if a.proben:
+                        mache_probe(g, x, eintrag)
+                    continue
+        n_karte0, benutzt0 = len(karte), set(bib.benutzt)
         kx = kontext(i, g)
         kx.gemeldet = vorab
         spur, bus = Spur(dauer), Spur(dauer, 1)
@@ -1665,15 +1841,13 @@ def main():
                        spitze_db=round(float(20 * np.log10(np.abs(x).max() + 1e-9)), 1), begrenzt_db=round(weg_g, 1), sekunden=round(time.time() - t0, 1), **info)
         bericht['gruppen'].append(eintrag)
         print(eintrag, flush=True)
+        if zw is not None:              # für den nächsten Lauf ablegen
+            np.save(zw[0], x.astype(np.float32))
+            zw[1].write_text(json.dumps(dict(schluessel=zw[2], info=info, weg_g=float(weg_g), karte=karte[n_karte0:],
+                                             zaehler=dict(ZAEHLER.get(g['name'], {})), benutzt=sorted(bib.benutzt - benutzt0)),
+                                        ensure_ascii=False, default=float))
         if a.proben:
-            ab, anteil = probe_fenster(x, g.get('probe_dauer', 30)) if 'probe_ab' not in g else (g['probe_ab'], None)
-            probe = schleifenstueck(x, ab, g.get('probe_dauer', 30))
-            eintrag['probe_ab_s'] = ab                # Szenenzeit; nach dem Verschieben der Schleife in Dateizeit umgerechnet
-            if anteil is not None:
-                eintrag['probe_aktiv'] = round(anteil, 2)
-            probe, _ = begrenzer_kreis(probe * 10 ** (g.get('probe_plus_db', 6) / 20))
-            schreibe(Path(a.aus) / f"{name}_{g['name']}.mp3", probe, '160k')
-            eintrag['probe_abtastwerte'] = int(probe.shape[1])
+            mache_probe(g, x, eintrag)
     def wiederholung():
         """Je Gruppe: wie viele Ereignisse, wie viele verschiedene Ausschnitte, wie oft der häufigste."""
         return {n: dict(ereignisse=int(sum(z.values())), verschiedene=len(z), haeufigster=int(max(z.values())))

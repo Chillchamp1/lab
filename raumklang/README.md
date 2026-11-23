@@ -34,6 +34,15 @@ python3 pipeline/szene.py szenen/boot.json --proben
 python3 pipeline/seiten.py          # Titel und Text der Szenenseiten (für Link-Vorschauen) nachziehen
 ```
 
+Zwischenspeicher: Jede Klanggruppe wird nach dem Rendern fertig gepegelt unter
+`material/zwischenspeicher/<szene>/` abgelegt (32-Bit, gut 200 MB je 10-Minuten-Spur). Beim
+nächsten Lauf wird nur neu gerechnet, was sich geändert hat – die Beschreibung der Gruppe, die
+gemeinsamen Szenendaten (Boot, Hall, Drehbuch-Kurven, Wetter), die Ereignis-Meldungen, ihr eigener
+Generator, gemeinsamer Code (nicht die anderen Generatoren, nicht das Hauptprogramm) oder die
+Quellenliste; Texte zählen nicht. Der Rest wird nur überlagert, die Mischung ist bitgenau gleich.
+Ändert sich nur eine Gruppe, dauert ein Lauf ein, zwei Minuten statt einer halben Stunde.
+`--neu alle` oder `--neu gruppe1,gruppe2` rechnet trotzdem neu.
+
 ## Seite und Spieler
 
 Die Webseite ist englisch (seit 23.11.2026), die Pipeline und diese Beschreibung bleiben deutsch.
@@ -239,12 +248,17 @@ fernen See entfernt, ihre Notenfolge ist mit `pipeline/melodie.py` ausgelesen (t
 > 12 dB über dem Umfeld, auf Halbtöne gerundet) und wird als binaurale Schwebung neu gespielt
 (Gruppe `schwebung`, `gen_schwebung`):
 
-- links ein reiner Sinuston f, rechts f + 10 Hz; nicht räumlich gerendert – HRTF, Hall und
+- links die Teiltöne k·f, rechts k·f + 10 Hz – alle um denselben Betrag verschoben, so schweben
+  alle gemeinsam (ein reiner Sinus klang Benjamin „gar nicht gut“, jetzt eine warme Fläche aus sechs
+  Teiltönen mit Tiefpass 1,6 kHz und Hall je Ohr getrennt); nicht räumlich gerendert – HRTF, Hall und
   Übersprechen würden die Schwebung zerstören; nur mit Kopfhörern wirksam
 - Träger 200–500 Hz (die Noten werden dorthin oktaviert): dort ist die Schwebung am
   deutlichsten, über ~1 kHz verschwindet sie
-- Schwebung 10 Hz (Alpha, entspanntes Wachsein); legato, Wechsel als 0,6-s-Gleiten; Phasen so
-  gestellt, dass die Schleife ohne Naht aufgeht; leise (−33 LUFS), sanftes Atmen ±2 dB
+- Schwebung 8 Hz (Grenze Theta/Alpha: entspannt, aber nicht einschläfernd; 10 Hz klang Benjamin
+  zu hart, 6 Hz zu einschläfernd); weiche Fläche statt
+  Melodielinie (gleitende Töne klangen wie eine Sirene): Klangblöcke ≥ 6 s aus tiefer Oktave und
+  Grundton (Träger 180–360 Hz), 4 s Überblendung, Tiefpass 800 Hz, langer Hall je Ohr; leise
+  (−35 LUFS), sanftes Atmen ±2,5 dB
 - Stand der Forschung, ehrlich: Eine Meta-Analyse (Garcia-Argibay u. a. 2019, 22 Studien) fand
   kleine bis mittlere Wirkungen auf Angst, Aufmerksamkeit und Gedächtnis; ob das Gehirn
   messbar „mitschwingt“ (EEG), ist uneinheitlich belegt. Am besten gestützt: Kopfhörer, Träger
