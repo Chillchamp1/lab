@@ -18,6 +18,7 @@ pipeline/szene.py           Szenenbeschreibung → Klanggruppen → Pegel → Mi
 szenen/boot.json            die Szene als Daten
 quellen.json                jede Aufnahme mit Herkunft, Urheber und Lizenz
 pipeline/seiten.py          schreibt je Szene eine Seite zum Teilen (sea/, forest/, …)
+pipeline/melodie.py         liest die Notenfolge einer Melodie aus einer Aufnahme (für die Schwebung)
 audio/                      Ergebnis: Mischung, eine Hörprobe je Klanggruppe, Bericht (boot.json)
 index.html, stil.css        Übersicht: je Szene eine Karte, ein Klick öffnet die Szenenseite
 spieler.js, szene.js        Spieler (streamt, dann lückenlose Schleife) und Szenenseite
@@ -228,6 +229,27 @@ Ortsdaten der Szenenkarte (`audio/<name>_karte.json`, gezippt 5–70 kB), kein V
   Drehbuch-Kurve und Böen, Gieren des Boots).
 - Eine 3D-Ansicht (three.js, isometrisches Diorama) gab es kurz; Benjamin fand die Karte besser,
   sie ist entfernt (23.11.2026).
+
+## Binaurale Schwebung (Meer, 23.11.2026)
+
+In einer Meeresaufnahme („Wave“, Gravity Sound) lag dauerhaft eine leise Melodie (E- und
+G-Klänge um 165/196/330/392 Hz, in 80–90 % der Zeit). Sauber vom Meer trennen lässt sie sich
+nicht – das Meer behielte Löcher genau bei diesen Frequenzen. Deshalb: die Aufnahme ist aus der
+fernen See entfernt, ihre Notenfolge ist mit `pipeline/melodie.py` ausgelesen (tonale Spitzen
+> 12 dB über dem Umfeld, auf Halbtöne gerundet) und wird als binaurale Schwebung neu gespielt
+(Gruppe `schwebung`, `gen_schwebung`):
+
+- links ein reiner Sinuston f, rechts f + 10 Hz; nicht räumlich gerendert – HRTF, Hall und
+  Übersprechen würden die Schwebung zerstören; nur mit Kopfhörern wirksam
+- Träger 200–500 Hz (die Noten werden dorthin oktaviert): dort ist die Schwebung am
+  deutlichsten, über ~1 kHz verschwindet sie
+- Schwebung 10 Hz (Alpha, entspanntes Wachsein); legato, Wechsel als 0,6-s-Gleiten; Phasen so
+  gestellt, dass die Schleife ohne Naht aufgeht; leise (−33 LUFS), sanftes Atmen ±2 dB
+- Stand der Forschung, ehrlich: Eine Meta-Analyse (Garcia-Argibay u. a. 2019, 22 Studien) fand
+  kleine bis mittlere Wirkungen auf Angst, Aufmerksamkeit und Gedächtnis; ob das Gehirn
+  messbar „mitschwingt“ (EEG), ist uneinheitlich belegt. Am besten gestützt: Kopfhörer, Träger
+  unter 1 kHz, mehrere Minuten am Stück. Die Melodie ist aus der Aufnahme abgeschrieben, die
+  Quelle steht deshalb in der Namensnennung.
 
 ## Ausschnitte nach Klang auswählen
 

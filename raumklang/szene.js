@@ -35,7 +35,9 @@ function malen() {
     $('legende').innerHTML = K.gruppen.map(g => `<span data-g="${esc(g.name)}"><i style="background:${K.farbe[g.name]};color:${K.farbe[g.name]}"></i>${esc(g.titel)}</span>`).join('');
     letzteLegende = 'gebaut';
   }
-  for (const el of $('legende').children) el.classList.toggle('an', aktiv.has(el.dataset.g));
+  // nicht räumliche Schichten (Musik, binaurale Schwebung) liegen über der Szene und klingen immer
+  const immer = new Set(K.gruppen.filter(g => g.typ === 'musik' || g.typ === 'schwebung').map(g => g.name));
+  for (const el of $('legende').children) el.classList.toggle('an', aktiv.has(el.dataset.g) || immer.has(el.dataset.g));
   requestAnimationFrame(malen);
 }
 
