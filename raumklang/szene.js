@@ -37,7 +37,7 @@ ladeKarte(`../audio/${name}_karte.json`).then(async k => {
   }
 }).catch(() => { canvas.closest('.kartenbox').hidden = true; });
 function umschalten(an) {
-  modus3d = an; drei.hidden = !an; canvas.hidden = an; $('legende').classList.toggle('ohne-punkte', an);
+  modus3d = an; drei.hidden = !an; canvas.hidden = an;
   $('ansicht').textContent = an ? 'Map view' : '3D view';
 }
 $('ansicht').addEventListener('click', () => umschalten(!modus3d));
@@ -45,9 +45,12 @@ function malen() {
   const t = haupt.position();
   const aktiv = modus3d ? aktiveGruppen(K, t) : zeichneKarte(canvas, K, t, { log: true });
   $('jetzt').textContent = drehbuchJetzt(K, t);
-  // Legende: nur die Gruppen, die gerade zu hören sind, in fester Reihenfolge
-  const html = K.gruppen.filter(g => aktiv.has(g.name)).map(g => `<span><i style="background:${K.farbe[g.name]}"></i>${esc(g.titel)}</span>`).join('');
-  if (html !== letzteLegende) { $('legende').innerHTML = html; letzteLegende = html; }
+  // Legende: immer alle Gruppen; was gerade zu hören ist, leuchtet auf
+  if (!letzteLegende) {
+    $('legende').innerHTML = K.gruppen.map(g => `<span data-g="${esc(g.name)}"><i style="background:${K.farbe[g.name]};color:${K.farbe[g.name]}"></i>${esc(g.titel)}</span>`).join('');
+    letzteLegende = 'gebaut';
+  }
+  for (const el of $('legende').children) el.classList.toggle('an', aktiv.has(el.dataset.g));
   setTimeout(() => requestAnimationFrame(malen), modus3d ? 250 : 0);
 }
 

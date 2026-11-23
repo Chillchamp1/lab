@@ -67,8 +67,10 @@ main.schlicht h1 { margin-bottom: 16px; }
   background: var(--flaeche); border: 1px solid var(--rand); border-radius: 14px; }
 .jetzt { min-height: 1.5em; margin: 10px 0 4px; color: var(--leise); font-size: .92rem; text-align: center; }
 .legende { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; font-size: .8rem; color: var(--leise); min-height: 1.2em; }
-.legende span { display: inline-flex; align-items: center; gap: 6px; }
-.legende i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.legende span { display: inline-flex; align-items: center; gap: 6px; opacity: .38; transition: opacity .6s, color .6s; }
+.legende span.an { opacity: 1; color: var(--text); }
+.legende i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; transition: box-shadow .6s; }
+.legende span.an i { box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 30%, transparent), 0 0 10px currentColor; }
 details.ueber > p { color: var(--text); font-size: .95rem; }
 details.ueber .leise { color: var(--leise); font-size: .88rem; }
 .knoepfe { justify-content: center; }
@@ -77,4 +79,3 @@ a.szene p { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: ver
 h2.zusatz { margin: 34px 0 12px; font-size: 1.05rem; color: var(--leise); }
 .kartenbox canvas#drei { aspect-ratio: 1 / 1; border: 0; }
 .kartenbox canvas[hidden] { display: none; }
-.legende.ohne-punkte i { display: none; }
