@@ -22,7 +22,6 @@ audio/                      Ergebnis: Mischung, eine Hörprobe je Klanggruppe, B
 index.html, stil.css        Übersicht: je Szene eine Karte, ein Klick öffnet die Szenenseite
 spieler.js, szene.js        Spieler (streamt, dann lückenlose Schleife) und Szenenseite
 karte.js                    Szenenkarte zeichnen (linear oder logarithmisch), auch als Live-Karte
-diorama.js, vendor/         3D-Ansicht der Meer-Szene (three.js r160, MIT, mitgeliefert)
 ```
 
 Rendern (Python 3 mit `numpy scipy h5py pyloudnorm`, dazu `ffmpeg`):
@@ -202,25 +201,23 @@ Ereignisfolge bleibt dabei gleich, weil jede Wirkung ihre eigene Zufallsquelle h
 Unter dem Spieler läuft eine Ansicht mit, die der Abspielzeit folgt – gezeichnet aus den
 Ortsdaten der Szenenkarte (`audio/<name>_karte.json`, gezippt 5–70 kB), kein Video:
 
-- **Karte von oben** (`karte.js`, alle Szenen): Hörer in der Mitte, Pfeil = Blickrichtung,
+- **Karte von oben** (`karte.js`, alle Szenen), im Bezug des Hörers (oben = Blickrichtung): Hörer in der Mitte, Pfeil = Blickrichtung,
   jede Quelle ein Punkt mit kurzer Spur. Abstand logarithmisch, damit ein Tropfen in 1 m und
   eine Herde in 500 m zugleich zu sehen sind; das Bild zoomt nie.
-- **3D-Diorama** (`diorama.js`, bisher nur das Meer): feste Perspektive von schräg oben in
-  Blickrichtung des Hörers (oben im Bild ist, wohin er schaut), Comic-Schattierung in drei Stufen,
-  keine Unschärfe.
-  Boot mit liegender Figur, Fels, Kolonie-Insel, Möwen und Gänse als kleine flatternde
-  Figuren, Wellenkämme, Brecher und Spritzer als Schaumkugeln (eine instanzierte Form).
-  Maßstäblich (1 Einheit = 1 m, etwa ±20 m im Bild); was weiter als 30 m entfernt ist
-  (Kolonie, Gänse), steht am Bildrand in seiner wahren Richtung. Wellenkämme als Wasserrücken
-  mit Schaumkrone, so breit wie die Quelle im Renderer (Feld `b` der Karte) und quer zur
-  Hörrichtung – entlang dieser Linie verteilt der Renderer die Teilquellen; die Schallringe
-  laufen an mehreren Stellen der Front. Fürs Handy: höchstens 30
-  Bilder/s, Auflösung ≤ 1,5-fach, keine Schatten, keine Texturen, pausiert im Hintergrund.
-  Möwen erscheinen um ihren Ruf herum (±3 s) auf ihrer Bahn weitergeführt – die Karte kennt
-  sie nur, während sie rufen.
-- **Schallringe** (beide Ansichten): um jede Quelle, die gerade klingt, laufen zwei Kreise
-  nach außen – so sieht man, woher gerade etwas kommt. Flächen (ferne See, Wind, Segel,
-  Kolonie-Gewirr) klingen immer und bekommen keine Ringe.
+- **Schallringe:** um jede Quelle, die gerade klingt, laufen zwei Kreise nach außen – so sieht
+  man, woher gerade etwas kommt. Flächen (ferne See, Wind, Segel, Kolonie-Gewirr) klingen immer
+  und bekommen keine Ringe.
+- **Breite Quellen als Linie:** Wellenkämme (und der Fels) erscheinen als Strich entlang ihrer
+  Front, so breit und so ausgerichtet wie im Renderer (Felder `b`, `a`); die Ringe laufen an
+  2–5 Stellen der Front.
+- **Flugbahnen:** jede kreisende Möwe, jeder Überflug (±12 s) und jeder Vogel eines Schwarms ist
+  als stumme Bahn (`art: bahn`) in der Karte – sie verschwinden nicht mehr, wenn sie gerade nicht
+  rufen. Ringe gibt es nur, solange gerufen wird.
+- **Windsack** oben rechts: zeigt im Hörerbezug, wohin der Wind weht, und wie stark (Länge,
+  Fülle, Flattern; grob in Beaufort) – aus `wind` der Karte (Richtung, Stärke je Sekunde aus
+  Drehbuch-Kurve und Böen, Gieren des Boots).
+- Eine 3D-Ansicht (three.js, isometrisches Diorama) gab es kurz; Benjamin fand die Karte besser,
+  sie ist entfernt (23.11.2026).
 
 ## Ausschnitte nach Klang auswählen
 
@@ -254,8 +251,12 @@ und ihre Vorzugsrichtung, je nach Wind und Entfernung:
   (`zuege: [{t, kurs_grad, seite}]`, dazu `anzahl`, `abstand_m`, `hoehe`, `tempo`).
   Ein einmaliges Ereignis mit klarer Richtung – nicht öfter als ein-, zweimal je
   Szene. Mit `teppich` (Aufnahmen eines ganzen rufenden Schwarms) zieht zusätzlich das
-  Stimmengewirr als breite Quelle mit der Mitte des Schwarms: so hört man ihn eine halbe
-  Minute lang kommen, vorüberziehen und gehen, nicht nur einzelne Rufe.
+  Stimmengewirr als mehrere breite Quellen über den Schwarm verteilt (`teppich_teile`, Spitze und
+  beide Flügel, je eigener Ausschnitt): so hört man ihn eine halbe Minute lang kommen,
+  vorüberziehen und gehen, breit statt als Punkt. Stimmengewirr und einzelne Rufe teilen Kurs,
+  Abstand und Höhe.
+- `kurs_ausnahme` (Überflug): mit kleiner Wahrscheinlichkeit ein ganz anderer Kurs, z. B. schräg
+  von hinten – damit es nicht eintönig wird.
 
 Richtwert für die Dichte: höchstens ein Ruf alle vier bis fünf Sekunden je Gruppe.
 

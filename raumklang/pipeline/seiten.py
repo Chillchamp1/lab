@@ -38,12 +38,11 @@ VORLAGE = """<!doctype html>
   <h1>{titel}</h1>
   <div class="spieler gross" id="spieler"></div>
   <div class="kartenbox">
-    <canvas id="drei" hidden aria-label="Live 3D view of the scene: every sound appears where and when you hear it"></canvas>
     <canvas id="karte" width="1000" height="1000" aria-label="Live map: you in the middle, every sound as a moving dot"></canvas>
     <p id="jetzt" class="jetzt" aria-live="off"></p>
     <div id="legende" class="legende"></div>
   </div>
-  <div class="knoepfe"><button id="ansicht" type="button" hidden>Map view</button><button id="teilen" type="button">Share</button><span id="teilen-info" aria-live="polite"></span></div>
+  <div class="knoepfe"><button id="teilen" type="button">Share</button><span id="teilen-info" aria-live="polite"></span></div>
   <details class="ueber">
     <summary>About this scene</summary>
     <p>{text}</p>
