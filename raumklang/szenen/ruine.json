@@ -1,7 +1,7 @@
 {
  "name": "ruine",
- "titel": "In der Klosterruine bei Nacht",
- "text": "Du liegst im Mittelschiff einer Klosterruine auf den Steinplatten. Das Gewölbe ist eingestürzt, über dir der Nachthimmel zwischen hohen Mauern. Draußen regnet es leise, Wind pfeift durch ein leeres Fenster, Tropfen fallen auf den Stein, zwei Käuze rufen sich zu. Manchmal fliegen Tauben im Gemäuer auf, fern über dem Tal schlägt eine Glocke – und einmal weht von weit her Gesang herüber.",
+ "titel": "In the Monastery Ruins at Night",
+ "text": "You lie on the flagstones in the nave of a ruined monastery. The vault has collapsed; above you, the night sky between high walls. Outside it rains softly, wind whistles through an empty window, drops fall onto the stone, two owls call to each other. Sometimes pigeons burst up from the masonry, a bell tolls far across the valley – and once, singing drifts over from far away.",
  "dauer": 120,
  "saat": 41,
  "ziel_lufs": -23,
@@ -57,8 +57,8 @@
   {
    "name": "regen",
    "typ": "bett",
-   "titel": "Regen draußen",
-   "text": "Leiser Regen jenseits der Mauern und über der offenen Ruine.",
+   "titel": "Rain outside",
+   "text": "Soft rain beyond the walls and over the open ruin.",
    "ziel_lufs": -31,
    "anzahl": 8,
    "entfernung": [
@@ -148,8 +148,8 @@
   {
    "name": "raum",
    "typ": "bett",
-   "titel": "Der Steinraum",
-   "text": "Die Stille des leeren Raums – ganz leise, man spürt sie mehr, als man sie hört.",
+   "titel": "The stone room",
+   "text": "The silence of the empty space – so quiet you feel it more than hear it.",
    "ziel_lufs": -42,
    "anzahl": 3,
    "punkte": [
@@ -183,8 +183,8 @@
   {
    "name": "wind",
    "typ": "bett",
-   "titel": "Wind über den Mauern",
-   "text": "Wind streicht über die Mauerkronen, in Böen stärker.",
+   "titel": "Wind over the walls",
+   "text": "Wind brushing over the tops of the walls, stronger in gusts.",
    "ziel_lufs": -36,
    "anzahl": 6,
    "entfernung": [
@@ -237,8 +237,8 @@
   {
    "name": "fenster",
    "typ": "bett",
-   "titel": "Wind im leeren Fenster",
-   "text": "In einem Fensterbogen hoch oben links pfeift der Wind, wenn eine Böe kommt.",
+   "titel": "Wind in the empty window",
+   "text": "In a window arch high up on the left, the wind whistles when a gust comes.",
    "ziel_lufs": -37,
    "anzahl": 1,
    "punkte": [
@@ -270,8 +270,8 @@
   {
    "name": "tropfen",
    "typ": "ereignisse",
-   "titel": "Tropfen auf Stein",
-   "text": "Hier und da fällt ein Tropfen von der Mauer auf die Steinplatten – jeder an einer anderen Stelle.",
+   "titel": "Drops on stone",
+   "text": "Here and there a drop falls from the wall onto the flagstones – each in a different place.",
    "ziel_lufs": -35,
    "pegel_art": "spitzen",
    "entfernung": [
@@ -450,8 +450,8 @@
   {
    "name": "kauz",
    "typ": "schwarm",
-   "titel": "Zwei Käuze",
-   "text": "Draußen rufen sich zwei Waldkäuze zu, mal links, mal rechts, mal weiter weg.",
+   "titel": "Two owls",
+   "text": "Outside, two tawny owls call to each other – now left, now right, now further away.",
    "ziel_lufs": -31,
    "pegel_art": "spitzen",
    "anzahl": 2,
@@ -516,8 +516,8 @@
   {
    "name": "tauben",
    "typ": "ueberflug",
-   "titel": "Tauben fliegen auf",
-   "text": "Zweimal pro Durchlauf schrecken Tauben im Gemäuer auf und flattern über dich hinweg zum Himmel.",
+   "titel": "Pigeons take off",
+   "text": "Twice per loop, pigeons start up in the masonry and flutter over you into the sky.",
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
    "erster_s": [
@@ -542,7 +542,6 @@
    "hall": 1.0,
    "vorruf_wahrsch": 0.5,
    "nachruf_wahrsch": 0.3,
-   "probe_ab": 10.0,
    "probe_dauer": 40,
    "sammlung": [
     {
@@ -581,8 +580,8 @@
   {
    "name": "glocke",
    "typ": "gebruell",
-   "titel": "Glocke über dem Tal",
-   "text": "Einmal pro Durchlauf schlägt fern über dem Tal eine Glocke; der Klang kommt von den Hängen mehrfach zurück.",
+   "titel": "Bell across the valley",
+   "text": "Once per loop a bell tolls far across the valley; the sound echoes back from the slopes several times.",
    "ziel_lufs": -30,
    "pegel_art": "spitzen",
    "erster_s": [
@@ -606,7 +605,6 @@
    "echo_reflexion": 0.6,
    "bezug_m": 600,
    "hall": 1.0,
-   "probe_ab": 65.0,
    "probe_dauer": 40,
    "sammlung": [
     {
@@ -632,8 +630,8 @@
   {
    "name": "gesang",
    "typ": "gebruell",
-   "titel": "Gesang von fern",
-   "text": "Genau einmal weht von weit her Gesang herüber, aus einem Kloster jenseits des Tals – so leise, dass man nicht sicher ist, ob man ihn wirklich gehört hat.",
+   "titel": "Distant singing",
+   "text": "Exactly once, singing drifts over from a monastery beyond the valley – so faint you are not sure you really heard it.",
    "ziel_lufs": -36,
    "pegel_art": "spitzen",
    "erster_s": [
@@ -657,7 +655,6 @@
    "echo_reflexion": 0.5,
    "bezug_m": 400,
    "hall": 1.0,
-   "probe_ab": 92.5,
    "probe_dauer": 40,
    "sammlung": [
     {
@@ -747,31 +744,31 @@
   "text": [
    [
     0.0,
-    "Nieselregen, zwei Käuze rufen sich zu."
+    "Drizzle; two owls call to each other."
    ],
    [
     27.5,
-    "Eine Böe – das leere Fenster pfeift, Tauben schrecken im Gemäuer auf."
+    "A gust – the empty window whistles, pigeons start up in the masonry."
    ],
    [
     45.0,
-    "Der Regen wird stärker, mehr Tropfen fallen innen auf den Stein."
+    "The rain gets heavier; more drops fall onto the stone inside."
    ],
    [
     70.0,
-    "Der Wind legt sich, fern über dem Tal schlägt eine Glocke."
+    "The wind dies down; far across the valley a bell tolls."
    ],
    [
     87.5,
-    "Stille, nur noch Tropfen."
+    "Silence, only drops."
    ],
    [
     100.0,
-    "Von weit her weht Gesang herüber."
+    "Singing drifts over from far away."
    ],
    [
     112.5,
-    "Nieselregen setzt wieder ein."
+    "Drizzle sets in again."
    ]
   ]
  }

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>In the Monastery Ruins at Night – soundscape for headphones</title>
+<meta name="description" content="You lie on the flagstones in the nave of a ruined monastery. The vault has collapsed; above you, the night sky between high walls. Outside it rains softly, wind whistles through an empty window, drops fall onto the stone, two owls call to each other. Sometimes pigeons burst up from the masonry, a bell tolls far across the valley – and once, singing drifts over from far away.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="In the Monastery Ruins at Night – soundscape for headphones">
+<meta property="og:description" content="You lie on the flagstones in the nave of a ruined monastery. The vault has collapsed; above you, the night sky between high walls. Outside it rains softly, wind whistles through an empty window, drops fall onto the stone, two owls call to each other. Sometimes pigeons burst up from the masonry, a bell tolls far across the valley – and once, singing drifts over from far away.">
+<meta property="og:url" content="https://chillchamp1.github.io/lab/raumklang/ruins/">
+<meta property="og:audio" content="https://chillchamp1.github.io/lab/raumklang/audio/ruine.mp3">
+<meta property="og:audio:type" content="audio/mpeg">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../stil.css">
+<link rel="preload" href="../audio/ruine.json" as="fetch" crossorigin>
+</head>
+<body data-szene="ruine">
+<main class="schlicht">
+  <p class="zurueck"><a href="../">← All soundscapes</a></p>
+  <h1>In the Monastery Ruins at Night</h1>
+  <div class="spieler gross" id="spieler"></div>
+  <div class="kartenbox">
+    <canvas id="drei" hidden aria-label="Live 3D view of the scene: every sound appears where and when you hear it"></canvas>
+    <canvas id="karte" width="1000" height="1000" aria-label="Live map: you in the middle, every sound as a moving dot"></canvas>
+    <p id="jetzt" class="jetzt" aria-live="off"></p>
+    <div id="legende" class="legende"></div>
+  </div>
+  <div class="knoepfe"><button id="ansicht" type="button" hidden>Map view</button><button id="teilen" type="button">Share</button><span id="teilen-info" aria-live="polite"></span></div>
+  <details class="ueber">
+    <summary>About this scene</summary>
+    <p>You lie on the flagstones in the nave of a ruined monastery. The vault has collapsed; above you, the night sky between high walls. Outside it rains softly, wind whistles through an empty window, drops fall onto the stone, two owls call to each other. Sometimes pigeons burst up from the masonry, a bell tolls far across the valley – and once, singing drifts over from far away.</p>
+    <p class="leise">Best with headphones (left and right the right way round), lying down. The scene loops endlessly without an audible seam.
+    The view shows every sound exactly where and when the renderer placed it; distances further away are squeezed so that everything fits.</p>
+    <div class="werte" id="werte"></div>
+    <div id="mehr"></div>
+  </details>
+</main>
+<div id="start" hidden>
+  <div class="karte">
+    <button id="start-knopf" type="button" aria-label="Play">▶</button>
+    <h2>In the Monastery Ruins at Night</h2>
+    <p>Put your headphones on and tap – your browser only starts sound after a tap.</p>
+  </div>
+</div>
+<script type="module" src="../szene.js"></script>
+</body>
+</html>

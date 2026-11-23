@@ -1,27 +1,27 @@
 {
  "name": "boot",
- "titel": "Im Ruderboot auf dem Meer",
+ "titel": "In a Wooden Boat at Sea",
  "dauer": 600,
  "saat": 11,
  "ziel_lufs": -21,
  "boot": {
   "blick": 55,
-  "halbe_laenge": 2.1,
-  "halbe_breite": 0.62,
-  "bordkante": 0.42,
-  "boden": -0.05,
+  "halbe_laenge": 3.2,
+  "halbe_breite": 1.0,
+  "bordkante": 0.8,
+  "boden": 0.15,
   "kopf": [
-   -0.9,
-   0.08,
-   0.17
+   -2.3,
+   0.0,
+   0.58
   ],
   "bewegung": {
-   "roll_grad": 5.0,
-   "roll_periode": 4.2,
-   "stampf_grad": 2.2,
-   "stampf_periode": 3.3,
-   "hub_m": 0.22,
-   "hub_periode": 5.5,
+   "roll_grad": 3.5,
+   "roll_periode": 5.2,
+   "stampf_grad": 1.6,
+   "stampf_periode": 4.2,
+   "hub_m": 0.18,
+   "hub_periode": 6.0,
    "gier_grad": 20
   }
  },
@@ -35,7 +35,7 @@
   {
    "name": "see_fern",
    "typ": "bett",
-   "titel": "Ferne See",
+   "titel": "Distant sea",
    "ziel_lufs": -29,
    "anzahl": 9,
    "entfernung": [
@@ -118,7 +118,7 @@
      "tiefpass": 3000
     }
    ],
-   "text": "Brandung und Dünung weit draußen, rund um den Horizont. Sie kommt über die Bordkante herein und ist deshalb gedämpft.",
+   "text": "Surf and swell far out, all around the horizon. It reaches you over the gunwale and is softened by it.",
    "folgt": {
     "kurve": "see",
     "db": [
@@ -131,7 +131,7 @@
   {
    "name": "wind",
    "typ": "bett",
-   "titel": "Leiser Wind",
+   "titel": "Gentle wind",
    "ziel_lufs": -37,
    "anzahl": 5,
    "entfernung": [
@@ -173,7 +173,7 @@
      "hochpass": 120
     }
    ],
-   "text": "Ein schwacher Wind, der langsam an- und abschwillt; in den Böen frischt er auf – dieselben Böen, die das Segel füllen.",
+   "text": "A light wind that slowly rises and falls; in the gusts it freshens – the same gusts that fill the sail.",
    "boe_db": 4.0,
    "folgt": {
     "kurve": "wind",
@@ -187,7 +187,7 @@
   {
    "name": "wellen",
    "typ": "ereignisse",
-   "titel": "Wellenkämme ringsum",
+   "titel": "Wave crests all around",
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
    "abstand_s": 2.2,
@@ -1026,7 +1026,7 @@
      }
     }
    ],
-   "text": "Einzelne Wellenkämme in 7 bis 32 m Entfernung, jeder an einer anderen Stelle; sie treiben mit dem Wind. Brechen sie mit viel Kraft, grollt es tief.",
+   "text": "Single wave crests 7 to 32 m away, each in a different place, drifting with the wind. When one breaks with real force, there is a deep rumble.",
    "wucht_pegel": 0.15,
    "wucht_exponent": 2.0,
    "ausreisser_wahrsch": 0.08,
@@ -1056,13 +1056,13 @@
   {
    "name": "rumpf",
    "typ": "rumpf",
-   "titel": "Wasser am Holz",
+   "titel": "Water against the hull",
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
    "schlag_wahrsch": 0.75,
    "schwapp_abstand_s": 1.7,
-   "planke_tiefpass": 450,
-   "planke_pegel": 0.8,
+   "planke_tiefpass": 900,
+   "planke_pegel": 1.0,
    "hall": 1.0,
    "sammlung": [
     {
@@ -1511,7 +1511,7 @@
      "hochpass": 90
     }
    ],
-   "text": "Schwapps und Klatscher gegen die Planken – auf der Seite, die beim Rollen gerade eintaucht. Harte Schläge bringen den Rumpf zum Schwingen: tiefe Eigenschwingungen des Holzes, die man im liegenden Körper spüren würde.",
+   "text": "Slaps and splashes against the planks – on whichever side is dipping as the boat rolls. The wood resonates hollowly and carries every knock right to your ear; hard hits make the whole hull boom, and now and then a little spray flies over the gunwale and patters onto the wood beside you.",
    "wucht_pegel": 0.4,
    "wucht_exponent": 2.0,
    "wucht_bezug": 0.75,
@@ -1525,15 +1525,192 @@
    "breite_m": [
     0.5,
     1.1
-   ]
+   ],
+   "planke_breite_m": 0.9,
+   "planke_moden": [
+    [
+     95,
+     0.18,
+     0.5
+    ],
+    [
+     170,
+     0.12,
+     0.55
+    ],
+    [
+     260,
+     0.09,
+     0.5
+    ],
+    [
+     390,
+     0.07,
+     0.4
+    ],
+    [
+     580,
+     0.05,
+     0.3
+    ]
+   ],
+   "spritzer": [
+    {
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.35,
+      "nachlauf": 0.1
+     },
+     "abklingen": {
+      "ein_ms": 2,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     },
+     "quelle": "esc_4-212604-A"
+    },
+    {
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.35,
+      "nachlauf": 0.1
+     },
+     "abklingen": {
+      "ein_ms": 2,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     },
+     "quelle": "esc_4-212604-B"
+    },
+    {
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.35,
+      "nachlauf": 0.1
+     },
+     "abklingen": {
+      "ein_ms": 2,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     },
+     "quelle": "esc_4-212604-C"
+    },
+    {
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.35,
+      "nachlauf": 0.1
+     },
+     "abklingen": {
+      "ein_ms": 2,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     },
+     "quelle": "esc_5-257349-A"
+    },
+    {
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.35,
+      "nachlauf": 0.1
+     },
+     "abklingen": {
+      "ein_ms": 2,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     },
+     "quelle": "esc_3-156907-A"
+    },
+    {
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.35,
+      "nachlauf": 0.1
+     },
+     "abklingen": {
+      "ein_ms": 2,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     },
+     "quelle": "esc_4-188293-A"
+    },
+    {
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.35,
+      "nachlauf": 0.1
+     },
+     "abklingen": {
+      "ein_ms": 2,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     },
+     "quelle": "esc_4-188293-B"
+    },
+    {
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.35,
+      "nachlauf": 0.1
+     },
+     "abklingen": {
+      "ein_ms": 2,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     },
+     "quelle": "esc_1-90797-A"
+    }
+   ],
+   "spritzer_ab": 0.85,
+   "spritzer_wahrsch": 0.3,
+   "spritzer_pegel": 0.5
   },
   {
    "name": "knarzen",
    "typ": "knarzen",
-   "titel": "Knarzendes Holz",
-   "ziel_lufs": -34,
+   "titel": "Creaking wood",
+   "ziel_lufs": -30,
    "pegel_art": "spitzen",
-   "wahrsch": 0.45,
+   "wahrsch": 0.6,
    "hall": 1.0,
    "sammlung": [
     {
@@ -1541,239 +1718,307 @@
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.3,
-      "max_dauer": 3.5,
+      "min_dauer": 0.2,
+      "max_dauer": 3.0,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 45,
+      "ein_ms": 20,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
      },
-     "tempo_faktor": 0.62,
-     "tiefpass": 2800
+     "tempo_faktor": 0.85,
+     "tiefpass": 4500,
+     "max_schwerpunkt": 1500
     },
     {
      "quelle": "esc_3-101381-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.3,
-      "max_dauer": 3.5,
+      "min_dauer": 0.2,
+      "max_dauer": 3.0,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 45,
+      "ein_ms": 20,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
      },
-     "tempo_faktor": 0.62,
-     "tiefpass": 2800
+     "tempo_faktor": 0.85,
+     "tiefpass": 4500,
+     "max_schwerpunkt": 1500
     },
     {
      "quelle": "esc_3-101381-B",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.3,
-      "max_dauer": 3.5,
+      "min_dauer": 0.2,
+      "max_dauer": 3.0,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 45,
+      "ein_ms": 20,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
      },
-     "tempo_faktor": 0.62,
-     "tiefpass": 2800
+     "tempo_faktor": 0.85,
+     "tiefpass": 4500,
+     "max_schwerpunkt": 1500
     },
     {
      "quelle": "esc_3-103401-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.3,
-      "max_dauer": 3.5,
+      "min_dauer": 0.2,
+      "max_dauer": 3.0,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 45,
+      "ein_ms": 20,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
      },
-     "tempo_faktor": 0.62,
-     "tiefpass": 2800
+     "tempo_faktor": 0.85,
+     "tiefpass": 4500,
+     "max_schwerpunkt": 1500
     },
     {
      "quelle": "esc_3-118194-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.3,
-      "max_dauer": 3.5,
+      "min_dauer": 0.2,
+      "max_dauer": 3.0,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 45,
+      "ein_ms": 20,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
      },
-     "tempo_faktor": 0.62,
-     "tiefpass": 2800
+     "tempo_faktor": 0.85,
+     "tiefpass": 4500,
+     "max_schwerpunkt": 1500
     },
     {
      "quelle": "esc_4-128659-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.3,
-      "max_dauer": 3.5,
+      "min_dauer": 0.2,
+      "max_dauer": 3.0,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 45,
+      "ein_ms": 20,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
      },
-     "tempo_faktor": 0.62,
-     "tiefpass": 2800
+     "tempo_faktor": 0.85,
+     "tiefpass": 4500,
+     "max_schwerpunkt": 1500
     },
     {
      "quelle": "esc_5-177779-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.3,
-      "max_dauer": 3.5,
+      "min_dauer": 0.2,
+      "max_dauer": 3.0,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 45,
+      "ein_ms": 20,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
      },
-     "tempo_faktor": 0.62,
-     "tiefpass": 2800
+     "tempo_faktor": 0.85,
+     "tiefpass": 4500,
+     "max_schwerpunkt": 1500
     },
     {
      "quelle": "esc_5-191497-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.3,
-      "max_dauer": 3.5,
+      "min_dauer": 0.2,
+      "max_dauer": 3.0,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 45,
+      "ein_ms": 20,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
      },
-     "tempo_faktor": 0.62,
-     "tiefpass": 2800
+     "tempo_faktor": 0.85,
+     "tiefpass": 4500,
+     "max_schwerpunkt": 1500
     },
     {
      "quelle": "esc_5-188606-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.3,
-      "max_dauer": 3.5,
+      "min_dauer": 0.2,
+      "max_dauer": 3.0,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 45,
+      "ein_ms": 20,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
      },
-     "tempo_faktor": 0.62,
-     "tiefpass": 2800
+     "tempo_faktor": 0.85,
+     "tiefpass": 4500,
+     "max_schwerpunkt": 1500
     },
     {
      "quelle": "esc_2-70344-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.3,
-      "max_dauer": 3.5,
+      "min_dauer": 0.2,
+      "max_dauer": 3.0,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 45,
+      "ein_ms": 20,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
      },
-     "tempo_faktor": 0.62,
-     "tiefpass": 2800
+     "tempo_faktor": 0.85,
+     "tiefpass": 4500,
+     "max_schwerpunkt": 1500
     },
     {
      "quelle": "esc_2-91912-A",
      "zerlegen": {
       "schwelle_db": 14,
       "luecke": 0.12,
-      "min_dauer": 0.3,
-      "max_dauer": 3.5,
+      "min_dauer": 0.2,
+      "max_dauer": 3.0,
       "nachlauf": 0.12,
       "boden_perzentil": 20
      },
      "abklingen": {
-      "ein_ms": 45,
+      "ein_ms": 20,
       "min_ausklang_s": 0.08,
       "glatt_ms": 15,
       "ziel_db": -40,
       "max_endpegel_db": -3
      },
-     "tempo_faktor": 0.62,
-     "tiefpass": 2800
+     "tempo_faktor": 0.85,
+     "tiefpass": 4500,
+     "max_schwerpunkt": 1500
     }
    ],
-   "text": "Dollen, Duchten und Spanten arbeiten, wenn das Boot sich neigt oder eine Welle den Rumpf trifft: langsames, tiefes Knarren, das fest am Boot bleibt.",
+   "text": "Rowlocks, thwarts and frames work as the boat heels or a wave hits the hull: a calm, warm creaking that stays fixed to the boat – only the deep, woody creaks, no bright squeaks.",
    "folgt": {
     "kurve": "see",
     "rate": [
      0.7,
      1.4
     ]
-   }
+   },
+   "stellen": [
+    [
+     -3.05,
+     0.0,
+     0.62
+    ],
+    [
+     -2.65,
+     0.45,
+     0.48
+    ],
+    [
+     -2.65,
+     -0.45,
+     0.48
+    ],
+    [
+     -1.9,
+     0.78,
+     0.4
+    ],
+    [
+     -1.9,
+     -0.78,
+     0.4
+    ],
+    [
+     -0.7,
+     0.95,
+     0.8
+    ],
+    [
+     -0.7,
+     -0.95,
+     0.8
+    ],
+    [
+     0.5,
+     0.35,
+     0.55
+    ],
+    [
+     0.5,
+     -0.35,
+     0.55
+    ],
+    [
+     0.9,
+     0.0,
+     0.2
+    ],
+    [
+     2.9,
+     0.0,
+     0.7
+    ]
+   ]
   },
   {
    "name": "segel",
    "typ": "segel",
-   "titel": "Schlaffes Segel",
+   "titel": "Slack sail",
    "ziel_lufs": -33,
    "pegel_art": "spitzen",
    "hall": 0.8,
-   "text": "Das Segel hängt schlaff am Mast vor den Knien. In einer Böe fängt sich der Wind: echtes Stoffflattern schwillt an, das Tuch füllt sich mit einem weichen Schlag und fällt wieder ein.",
+   "text": "The sail hangs slack on the mast in front of you, beyond your feet. In a gust it catches the wind: real cloth flutter swells, the canvas fills with a soft thump and collapses again.",
    "sammlung": [
     {
      "quelle": "esc_3-117504-A"
@@ -1791,7 +2036,6 @@
    "fang_schwelle": 0.7,
    "knatter_ab": 1.0,
    "ruhe": -0.3,
-   "probe_ab": 0.0,
    "probe_dauer": 60,
    "stoff": [
     {
@@ -1808,12 +2052,29 @@
     }
    ],
    "stoff_hochpass": 280,
-   "fang_pegel": 0.0
+   "fang_pegel": 0.0,
+   "stellen": [
+    [
+     0.95,
+     0.0,
+     3.0
+    ],
+    [
+     1.4,
+     0.05,
+     1.9
+    ],
+    [
+     1.9,
+     0.1,
+     1.2
+    ]
+   ]
   },
   {
    "name": "moewen_fern",
    "typ": "bett",
-   "titel": "Möwen in der Ferne",
+   "titel": "Gulls in the distance",
    "ziel_lufs": -39,
    "anzahl": 2,
    "entfernung": [
@@ -1843,7 +2104,7 @@
      "entrauschen": 8
     }
    ],
-   "text": "Das ferne Stimmengewirr der Kolonie, aus derselben Richtung.",
+   "text": "The distant chatter of the colony, from the same direction.",
    "punkte": [
     [
      170.0,
@@ -1861,7 +2122,7 @@
   {
    "name": "moewen",
    "typ": "schwarm",
-   "titel": "Möwen kreisen",
+   "titel": "Circling gulls",
    "ziel_lufs": -28,
    "pegel_art": "spitzen",
    "anzahl": 5,
@@ -2120,7 +2381,7 @@
      ]
     }
    ],
-   "text": "Fünf Möwen halten sich in Luv des Boots, vorn links, kreisen dort im Wind und rufen; ab und zu antwortet eine andere. Frischt der Wind auf oder bricht eine Welle am Felsen, schrecken sie auf.",
+   "text": "Five gulls keep to windward of the boat, ahead and to the left, circling in the wind and calling; now and then another answers. When the wind freshens or a wave breaks on the rock, they take fright.",
    "decke_db": -7.0,
    "folgt": {
     "kurve": "wind",
@@ -2232,16 +2493,16 @@
   {
    "name": "ueberflug",
    "typ": "ueberflug",
-   "titel": "Möwe dicht über dem Boot",
+   "titel": "Gull skimming the boat",
    "ziel_lufs": -22,
    "pegel_art": "spitzen",
    "abstand_s": [
-    40,
-    75
+    24,
+    42
    ],
    "hoehe": [
-    2.0,
-    4.5
+    3.2,
+    5.5
    ],
    "tempo": [
     10,
@@ -2249,7 +2510,6 @@
    ],
    "min_dauer": 0.6,
    "hall": 0.6,
-   "probe_ab": 15.0,
    "probe_dauer": 40,
    "sammlung": [
     {
@@ -2491,7 +2751,7 @@
      ]
     }
    ],
-   "text": "Alle ein bis zwei Minuten schießt eine Möwe in 2 bis 4,5 m Höhe über das Boot – meist mit dem Wind, von vorn links nach hinten rechts, manchmal dagegen. Ein Ruf liegt genau über dem Boot, seine Tonhöhe kippt beim Vorbeiflug (Doppler); im Anflug Flügelschläge.",
+   "text": "About every half minute a gull shoots over the boat 3 to 5 m up – mostly with the wind, from front left to back right, sometimes against it. One call lands right overhead, its pitch dropping as it passes (Doppler); wingbeats as it approaches.",
    "decke_db": -4.0,
    "fluegel": [
     {
@@ -2601,8 +2861,8 @@
   {
    "name": "moewen_weit",
    "typ": "schwarm",
-   "titel": "Möwenkolonie weit weg",
-   "text": "Eine Möwenkolonie auf einem fernen Felsen vorn rechts, 150 bis 370 Meter entfernt – ihre Rufe kommen immer aus dieser Richtung.",
+   "titel": "Gull colony far away",
+   "text": "A gull colony on a distant rock ahead and to the right, 150 to 370 metres away – its calls always come from that direction.",
    "ziel_lufs": -38,
    "pegel_art": "spitzen",
    "anzahl": 6,
@@ -2879,17 +3139,17 @@
   {
    "name": "felsen",
    "typ": "ereignisse",
-   "titel": "Brecher am Felsen",
-   "text": "Ein Felsen ragt rund 35 m entfernt aus dem Wasser. Ab und zu bricht dort eine Welle mit Wucht – das Boot dreht sich langsam, so wandert der Felsen um dich herum.",
+   "titel": "Breakers on the rock",
+   "text": "A rock juts out of the water about 20 m away. Now and then a wave slams into it – a hard impact, then the spray falls back. The boat slowly swings, so the rock wanders around you.",
    "ziel_lufs": -27,
    "pegel_art": "spitzen",
    "abstand_s": 22,
    "punkt": [
-    -28.0,
-    22.0,
+    -15.0,
+    12.0,
     0.5
    ],
-   "punkt_streuung_m": 2.5,
+   "punkt_streuung_m": 1.5,
    "treibt_m_s": 0,
    "streuung_db": 3,
    "ausreisser_wahrsch": 0.15,
@@ -2897,84 +3157,230 @@
     3,
     6
    ],
-   "bezug_m": 30,
-   "hall": 0.6,
-   "decke_db": -4.0,
-   "wucht_pegel": 0.35,
+   "bezug_m": 20,
+   "hall": 0.4,
+   "decke_db": -2.5,
+   "wucht_pegel": 0.12,
    "wucht_exponent": 2.5,
    "sammlung": [
     {
-     "quelle": "brecher_felsen",
+     "quelle": "felsen_gischt_trp",
+     "hochpass": 70,
      "zerlegen": {
       "methode": "taeler",
-      "glatt_ms": 150,
-      "prominenz_db": 5,
+      "glatt_ms": 120,
+      "prominenz_db": 6,
       "min_dauer": 1.0,
-      "max_dauer": 8
+      "max_dauer": 6
      },
      "abklingen": {
-      "ein_ms": 300,
-      "min_ausklang_s": 0.9
+      "ein_ms": 12,
+      "min_ausklang_s": 0.8
+     },
+     "einschlag": {
+      "min_sprung_db": 9,
+      "bis_spitze_s": 0.3,
+      "max_unter_spitze_db": 4,
+      "vorlauf_s": 0.3
      },
      "wucht": {
       "grollen": {
        "band": [
-        35,
-        130
+        40,
+        110
        ],
-       "anteil": 0.96,
-       "glatt_ms": 450
+       "anteil": 0.1,
+       "glatt_ms": 80
       },
       "moden": [
        [
-        48,
-        0.6,
+        62,
+        0.18,
         0.5
        ],
        [
-        70,
-        0.4,
+        95,
+        0.12,
         0.35
        ]
       ],
-      "obertoene": 0.35
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "felsen_it",
+     "hochpass": 70,
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 120,
+      "prominenz_db": 6,
+      "min_dauer": 1.0,
+      "max_dauer": 6
+     },
+     "abklingen": {
+      "ein_ms": 12,
+      "min_ausklang_s": 0.8
+     },
+     "einschlag": {
+      "min_sprung_db": 9,
+      "bis_spitze_s": 0.3,
+      "max_unter_spitze_db": 4,
+      "vorlauf_s": 0.3
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        40,
+        110
+       ],
+       "anteil": 0.1,
+       "glatt_ms": 80
+      },
+      "moden": [
+       [
+        62,
+        0.18,
+        0.5
+       ],
+       [
+        95,
+        0.12,
+        0.35
+       ]
+      ],
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "felsen_amholma4",
+     "hochpass": 70,
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 120,
+      "prominenz_db": 6,
+      "min_dauer": 1.0,
+      "max_dauer": 6
+     },
+     "abklingen": {
+      "ein_ms": 12,
+      "min_ausklang_s": 0.8
+     },
+     "einschlag": {
+      "min_sprung_db": 9,
+      "bis_spitze_s": 0.3,
+      "max_unter_spitze_db": 4,
+      "vorlauf_s": 0.3
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        40,
+        110
+       ],
+       "anteil": 0.1,
+       "glatt_ms": 80
+      },
+      "moden": [
+       [
+        62,
+        0.18,
+        0.5
+       ],
+       [
+        95,
+        0.12,
+        0.35
+       ]
+      ],
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "felsen_amholma1",
+     "hochpass": 70,
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 120,
+      "prominenz_db": 6,
+      "min_dauer": 1.0,
+      "max_dauer": 6
+     },
+     "abklingen": {
+      "ein_ms": 12,
+      "min_ausklang_s": 0.8
+     },
+     "einschlag": {
+      "min_sprung_db": 9,
+      "bis_spitze_s": 0.3,
+      "max_unter_spitze_db": 4,
+      "vorlauf_s": 0.3
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        40,
+        110
+       ],
+       "anteil": 0.1,
+       "glatt_ms": 80
+      },
+      "moden": [
+       [
+        62,
+        0.18,
+        0.5
+       ],
+       [
+        95,
+        0.12,
+        0.35
+       ]
+      ],
+      "obertoene": 0.3
      }
     },
     {
      "quelle": "brecher_buhne",
+     "hochpass": 70,
      "zerlegen": {
       "methode": "taeler",
-      "glatt_ms": 150,
-      "prominenz_db": 5,
+      "glatt_ms": 120,
+      "prominenz_db": 6,
       "min_dauer": 1.0,
-      "max_dauer": 8
+      "max_dauer": 6
      },
      "abklingen": {
-      "ein_ms": 300,
-      "min_ausklang_s": 0.9
+      "ein_ms": 12,
+      "min_ausklang_s": 0.8
+     },
+     "einschlag": {
+      "min_sprung_db": 9,
+      "bis_spitze_s": 0.3,
+      "max_unter_spitze_db": 4,
+      "vorlauf_s": 0.3
      },
      "wucht": {
       "grollen": {
        "band": [
-        35,
-        130
+        40,
+        110
        ],
-       "anteil": 0.96,
-       "glatt_ms": 450
+       "anteil": 0.1,
+       "glatt_ms": 80
       },
       "moden": [
        [
-        48,
-        0.6,
+        62,
+        0.18,
         0.5
        ],
        [
-        70,
-        0.4,
+        95,
+        0.12,
         0.35
        ]
       ],
-      "obertoene": 0.35
+      "obertoene": 0.3
      }
     }
    ],
@@ -2990,8 +3396,8 @@
     ]
    },
    "breite_m": [
-    5,
-    9
+    4,
+    7
    ],
    "meldet": "brecher",
    "melde_ab": 1.25
@@ -2999,8 +3405,8 @@
   {
    "name": "zug",
    "typ": "zug",
-   "titel": "Ein Schwarm zieht vorbei",
-   "text": "Zweimal in zehn Minuten zieht ein Schwarm von fünf bis acht Möwen geschlossen vorbei: erst mit dem aufkommenden Wind davon, später, wenn die See sich beruhigt, zurück.",
+   "titel": "A flock passes",
+   "text": "Twice in ten minutes a flock of eight to twelve gulls passes 60 to 90 m away – for half a minute you hear it approach, go by calling and fade away: first with the rising wind, later back again.",
    "ziel_lufs": -30,
    "pegel_art": "spitzen",
    "zuege": [
@@ -3016,26 +3422,26 @@
     }
    ],
    "tempo": [
-    11,
-    14
+    10,
+    12
    ],
    "abstand_m": [
-    35,
-    60
+    55,
+    90
    ],
    "hoehe": [
-    18,
+    20,
     35
    ],
    "anzahl": [
-    5,
-    9
+    8,
+    13
    ],
    "rufe": [
-    2,
-    5
+    3,
+    7
    ],
-   "weglaenge_m": 380,
+   "weglaenge_m": 600,
    "bezug_m": 30,
    "hall": 0.4,
    "richtwirkung": {
@@ -3045,7 +3451,6 @@
    "pruefung": {
     "tempo_max": 20.0
    },
-   "probe_ab": 85,
    "probe_dauer": 40,
    "sammlung": [
     {
@@ -3286,7 +3691,147 @@
       90
      ]
     }
-   ]
+   ],
+   "teppich": [
+    {
+     "quelle": "moewen_schwarm_cell",
+     "hochpass": 500,
+     "entrauschen": 8,
+     "rest_db": -30
+    },
+    {
+     "quelle": "moewen_schwarm_jus",
+     "hochpass": 500,
+     "entrauschen": 8,
+     "rest_db": -30
+    }
+   ],
+   "teppich_bezug_m": 45,
+   "teppich_breite_m": 30
+  },
+  {
+   "name": "gaense",
+   "typ": "zug",
+   "titel": "Geese passing",
+   "text": "Twice, high and far out, a skein of geese crosses the water – their calls carry for a long time, slowly pass and fade; later the skein comes back.",
+   "ziel_lufs": -31,
+   "pegel_art": "spitzen",
+   "zuege": [
+    {
+     "t": 40,
+     "kurs_grad": 290,
+     "seite": 1
+    },
+    {
+     "t": 440,
+     "kurs_grad": 110,
+     "seite": -1
+    }
+   ],
+   "tempo": [
+    14,
+    16
+   ],
+   "abstand_m": [
+    80,
+    130
+   ],
+   "hoehe": [
+    40,
+    70
+   ],
+   "anzahl": [
+    10,
+    16
+   ],
+   "rufe": [
+    3,
+    7
+   ],
+   "weglaenge_m": 1000,
+   "bezug_m": 30,
+   "hall": 0.4,
+   "richtwirkung": {
+    "db": 6,
+    "streuung_grad": 20
+   },
+   "pruefung": {
+    "tempo_max": 20.0
+   },
+   "probe_dauer": 40,
+   "sammlung": [
+    {
+     "zerlegen": {
+      "schwelle_db": 8,
+      "luecke": 0.15,
+      "min_dauer": 0.15,
+      "max_dauer": 1.6,
+      "nachlauf": 0.1
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ],
+     "quelle": "gaense_zug_trp",
+     "von": 85,
+     "bis": 135,
+     "hochpass": 250,
+     "entrauschen": 10
+    },
+    {
+     "zerlegen": {
+      "schwelle_db": 8,
+      "luecke": 0.15,
+      "min_dauer": 0.15,
+      "max_dauer": 1.6,
+      "nachlauf": 0.1
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ],
+     "quelle": "gaense_ueberflug_ds",
+     "hochpass": 250,
+     "entrauschen": 10
+    },
+    {
+     "zerlegen": {
+      "schwelle_db": 8,
+      "luecke": 0.15,
+      "min_dauer": 0.15,
+      "max_dauer": 1.6,
+      "nachlauf": 0.1
+     },
+     "rest_db": -28,
+     "blende": [
+      10,
+      90
+     ],
+     "quelle": "gaense_ys",
+     "hochpass": 250,
+     "entrauschen": 10
+    }
+   ],
+   "teppich": [
+    {
+     "quelle": "gaense_zug_trp",
+     "von": 85,
+     "bis": 135,
+     "hochpass": 250,
+     "entrauschen": 10,
+     "rest_db": -30
+    },
+    {
+     "quelle": "gaense_ueberflug_ds",
+     "hochpass": 250,
+     "entrauschen": 10,
+     "rest_db": -30
+    }
+   ],
+   "teppich_bezug_m": 70,
+   "teppich_breite_m": 40
   }
  ],
  "boeen": {
@@ -3297,7 +3842,7 @@
    8
   ]
  },
- "text": "Du liegst im Ruderboot, Füße zum Bug. Möwen kreisen und schießen dicht über dich hinweg, ringsum Wellen, Wasser schwappt gegen das Holz, das Boot knarzt, im schlaffen Segel fängt sich ab und zu der Wind.",
+ "text": "You lie in an open wooden sailing boat, a good six metres long – at the stern on cushions, your head propped up against the aft thwart, feet towards the bow, safely below the gunwale. Gulls circle and dart over you, waves all around, water knocks hollow against the planks, the boat creaks, and now and then the wind catches the slack sail.",
  "weite": {
   "ab_m": 25,
   "voll_m": 150,
@@ -3329,7 +3874,8 @@
    "moewen_weit",
    "moewen_fern",
    "ueberflug",
-   "zug"
+   "zug",
+   "gaense"
   ]
  },
  "windtragen": {
@@ -3342,7 +3888,8 @@
    "moewen_weit",
    "moewen_fern",
    "ueberflug",
-   "zug"
+   "zug",
+   "gaense"
   ]
  },
  "drehbuch": {
@@ -3416,42 +3963,50 @@
   "text": [
    [
     0.0,
-    "Ruhige See, die Möwen kreisen entspannt."
+    "Calm sea; the gulls circle at ease."
+   ],
+   [
+    40,
+    "Far out, a skein of geese passes; you can hear their calls for a long time."
    ],
    [
     105,
-    "Ein Schwarm Möwen zieht mit dem aufkommenden Wind vorbei."
+    "A flock of gulls passes with the rising wind."
    ],
    [
     135.0,
-    "Der Wind frischt auf, das Segel fängt sich öfter."
+    "The wind freshens; the sail fills more often."
    ],
    [
     240.0,
-    "Die Wellen werden höher, der Rumpf schlägt härter; die Möwen rufen aufgeregter, ihre Schreie klingen verweht."
+    "The waves grow, the hull is hit harder; the gulls call more excitedly, their cries blown about by the wind."
    ],
    [
     336.0,
-    "Schwere See: Brecher schlagen dicht hintereinander an den Felsen."
+    "Heavy sea: breakers crash against the rock one after another."
+   ],
+   [
+    440,
+    "The geese fly back."
    ],
    [
     450.0,
-    "Der Wind flaut ab, die See beruhigt sich."
+    "The wind drops and the sea settles."
    ],
    [
     515,
-    "Der Schwarm kehrt zurück."
+    "The flock returns."
    ],
    [
     534.0,
-    "Ruhe – die Möwen kreisen wieder gelassen."
+    "Calm again – the gulls circle lazily once more."
    ]
   ]
  },
  "orte": {
   "Felsen": [
-   -28.0,
-   22.0
+   -15.0,
+   12.0
   ]
  }
 }

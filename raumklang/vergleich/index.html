@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Blindvergleich Klangszenen</title>
+<title>Blind comparison – soundscapes</title>
 <style>
   :root {
     --grund: #0d1418; --flaeche: #152027; --rand: #24343d; --text: #dfe8ea; --leise: #8fa3ab;
@@ -53,24 +53,24 @@
 </head>
 <body>
 <main>
-  <p class="leise"><a href="../">← Klangszenen</a></p>
-  <h1>Blindvergleich</h1>
-  <p class="leise">Du hörst zwei Fassungen derselben Stelle, ohne zu wissen, welche welche ist, und sagst, welche dir besser gefällt.
-  Erst am Ende siehst du, was hinter X und Y steckte.</p>
+  <p class="leise"><a href="../">← Soundscapes</a></p>
+  <h1>Blind comparison</h1>
+  <p class="leise">You hear two versions of the same passage without knowing which is which, and say which one you prefer.
+  Only at the end do you see what was behind X and Y.</p>
 
   <section class="karte" id="start">
     <p class="leise" id="auswahl"></p>
     <h2 id="v-titel"></h2>
     <p class="leise" id="v-text"></p>
     <ul class="leise">
-      <li>Kopfhörer auf, EQ-Preset für die Szenen an, Crossfeed und Raumeffekte aus.</li>
-      <li>Lautstärke beim ersten Durchgang angenehm einstellen und danach nicht mehr ändern. Beide Fassungen sind gleich laut.</li>
-      <li>Wechsle zwischen <b>X</b> und <b>Y</b> so oft du willst; beide laufen synchron, der Wechsel springt nicht im Stück.
-        Tasten: <kbd>1</kbd>/<kbd>2</kbd> oder <kbd>←</kbd>/<kbd>→</kbd>, Leertaste hält an.</li>
-      <li>Kein Unterschied hörbar? Dann „gleich“ – das ist auch ein Ergebnis.</li>
+      <li>Headphones on, your EQ preset for the scenes on, crossfeed and room effects off.</li>
+      <li>Set a comfortable volume in the first round and leave it there. Both versions are equally loud.</li>
+      <li>Switch between <b>X</b> and <b>Y</b> as often as you like; both run in sync, so switching doesn't jump in the piece.
+        Keys: <kbd>1</kbd>/<kbd>2</kbd> or <kbd>←</kbd>/<kbd>→</kbd>, space pauses.</li>
+      <li>Can't hear a difference? Then choose “same” – that's a result too.</li>
     </ul>
-    <label class="feld">Kopfhörer und EQ-Preset
-      <input type="text" id="kh" value="Grado PS1, Qudelix-Preset „PS1 Szenen“"></label>
+    <label class="feld">Headphones and EQ preset
+      <input type="text" id="kh" value="" placeholder="e.g. Grado PS1, Qudelix preset “PS1 scenes”"></label>
     <div class="reihe">
       <button class="haupt" id="b-start">Start</button>
       <span class="leise" id="laden"></span>
@@ -80,58 +80,51 @@
   <section class="karte versteckt" id="test">
     <div class="reihe" style="justify-content:space-between">
       <span class="fortschritt" id="t-prog"></span>
-      <button class="neben" id="b-halt">Anhalten</button>
+      <button class="neben" id="b-halt">Pause</button>
     </div>
     <div class="xy">
-      <button data-v="x" id="b-x">X<small>Taste 1</small></button>
-      <button data-v="y" id="b-y">Y<small>Taste 2</small></button>
+      <button data-v="x" id="b-x">X<small>key 1</small></button>
+      <button data-v="y" id="b-y">Y<small>key 2</small></button>
     </div>
     <div class="lauf"><span id="t-lauf"></span></div>
-    <p class="leise" id="t-hinweis">Hör dir beide an.</p>
+    <p class="leise" id="t-hinweis">Listen to both.</p>
     <div id="fragen"></div>
-    <label class="feld" style="margin-top:8px">Notiz (optional)
-      <textarea id="notiz" placeholder="z. B. bei Y wummern die Tritte mehr, klingt aber künstlich"></textarea></label>
-    <button class="haupt" id="b-weiter" disabled>Weiter</button>
+    <label class="feld" style="margin-top:8px">Note (optional)
+      <textarea id="notiz" placeholder="e.g. the footsteps boom more in Y, but it sounds artificial"></textarea></label>
+    <button class="haupt" id="b-weiter" disabled>Next</button>
   </section>
 
   <section class="karte versteckt" id="ende">
-    <h2>Ergebnis</h2>
+    <h2>Result</h2>
     <div id="auswertung"></div>
     <div class="reihe">
-      <button class="haupt" id="b-kopie">Ergebnis kopieren</button>
-      <button class="neben" id="b-datei">Als Datei speichern</button>
-      <button class="neben" id="b-neu">Neu beginnen</button>
+      <button class="haupt" id="b-kopie">Copy result</button>
+      <button class="neben" id="b-datei">Save as file</button>
+      <button class="neben" id="b-neu">Start over</button>
     </div>
     <p class="leise" id="kopiert" style="margin-top:10px"></p>
-    <p class="leise">Kopiere das Ergebnis und füge es im Chat mit Claude ein – dann kommen die Messwerte dazu.</p>
+    <p class="leise">Copy the result and paste it wherever you collect feedback (for example in the chat with Claude).</p>
   </section>
 </main>
 <script>
 // Ein Vergleich: zwei Dateien gleicher Länge auf derselben Zeitachse (gleicher Schleifenstart).
 // Neue Vergleiche hier eintragen; die Seite nimmt den ersten (oder ?v=<id>).
-const KRAFT = { id: 'kraft', text: 'Wo hat es mehr <b>Wucht</b> – spürst du die kräftigen Momente (Brecher, Schläge, Tritte) mehr im Körper?' };
-const NATUR = { id: 'natur', text: 'Welche klingt <b>natürlicher</b> – mehr wie wirklich draußen?' };
-const RUHE = { id: 'ruhe', text: 'Bei welcher würdest du dich lieber <b>hinlegen und entspannen</b>?' };
-const RAUM = { id: 'raum', text: 'Welche wirkt <b>räumlicher</b> – breiter, tiefer, mehr um dich herum statt aus einzelnen Punkten?' };
+const KRAFT = { id: 'kraft', text: 'Which has more <b>impact</b> – do you feel the powerful moments (breakers, knocks, footsteps) more in your body?' };
+const NATUR = { id: 'natur', text: 'Which sounds more <b>natural</b> – more like really being outdoors?' };
+const RUHE = { id: 'ruhe', text: 'Which would you rather <b>lie down and relax</b> to?' };
+const RAUM = { id: 'raum', text: 'Which feels more <b>spacious</b> – wider, deeper, more around you rather than from single points?' };
 // „ohne“ = dieselbe Szene mit denselben Ereignissen, aber ohne Quellenbreite, Richtwirkung, Nahfeld und Stamm-Streuung
 const VERGLEICHE = [{
   id: 'wald_raum',
-  titel: 'Wald: mit und ohne die neuen räumlichen Wirkungen',
-  text: 'Gleiche Ereignisse, gleich laut, deckungsgleich. Eine Fassung hat breite Regen-, Wind- und Bachflächen, Tierrufe mit Richtwirkung und frühe Echos von den Baumstämmen; die andere nicht.',
-  a: { name: 'ohne', datei: '../audio/vergleich/wald_ohne.mp3' },
-  b: { name: 'mit', datei: '../audio/wald.mp3' },
-  abtastwerte: 26460000, fs: 44100, durchgaenge: 10, ausschnitt_s: 20, fragen: [RAUM, NATUR, RUHE],
-}, {
-  id: 'meer_raum',
-  titel: 'Meer: mit und ohne die neuen räumlichen Wirkungen',
-  text: 'Gleiche Ereignisse, gleich laut, deckungsgleich. Eine Fassung hat breite Wellenkämme, Brandung und Wind, Möwenrufe mit Richtwirkung und Nahfeld beim Wasser am Rumpf; die andere nicht.',
-  a: { name: 'ohne', datei: '../audio/vergleich/boot_ohne.mp3' },
-  b: { name: 'mit', datei: '../audio/boot.mp3' },
+  titel: 'Forest: with and without the new spatial effects',
+  text: 'Same events, same loudness, perfectly aligned. One version has wide areas of rain, wind and stream, directional animal calls and early echoes from the tree trunks; the other does not.',
+  a: { name: 'without', datei: '../audio/vergleich/wald_ohne.mp3' },
+  b: { name: 'with', datei: '../audio/wald.mp3' },
   abtastwerte: 26460000, fs: 44100, durchgaenge: 10, ausschnitt_s: 20, fragen: [RAUM, NATUR, RUHE],
 }];
 
 if (!VERGLEICHE.length) {
-  document.querySelector('main').insertAdjacentHTML('beforeend', '<section class="karte"><h2>Gerade kein Vergleich</h2><p class="leise">Der nächste Blindvergleich kommt, sobald es zwei Fassungen zum Gegenüberstellen gibt.</p></section>');
+  document.querySelector('main').insertAdjacentHTML('beforeend', '<section class="karte"><h2>No comparison right now</h2><p class="leise">The next blind comparison appears as soon as there are two versions to compare.</p></section>');
   document.getElementById('start').remove();
   throw new Error('kein Vergleich');
 }
@@ -182,7 +175,7 @@ function ausschnitt(puffer, t) {
 function stoppen() {
   if (quellen) { const t = ctx.currentTime; for (const q of Object.values(quellen)) { q.g.gain.setTargetAtTime(0, t, 0.03); q.s.stop(t + 0.2); } }
   quellen = null; laeuft = false; cancelAnimationFrame(tickId);
-  $('b-halt').textContent = 'Abspielen';
+  $('b-halt').textContent = 'Play';
 }
 function abspielen() {
   stoppen();
@@ -196,7 +189,7 @@ function abspielen() {
     s.connect(g).connect(ctx.destination); s.start(t0);
     quellen[seite] = { s, g };
   }
-  startZeit = t0; laeuft = true; $('b-halt').textContent = 'Anhalten';
+  startZeit = t0; laeuft = true; $('b-halt').textContent = 'Pause';
   let letzte = performance.now();
   (function tick() {
     if (!laeuft) return;
@@ -219,10 +212,10 @@ function waehle(seite) {
 // ---------- Ablauf ----------
 function zeigeDurchgang() {
   const d = stand.durchgaenge[stand.i];
-  $('t-prog').textContent = `Durchgang ${stand.i + 1} von ${stand.durchgaenge.length} · Stelle ${Math.floor(d.t / 60)}:${String(Math.floor(d.t % 60)).padStart(2, '0')}`;
+  $('t-prog').textContent = `Round ${stand.i + 1} of ${stand.durchgaenge.length} · at ${Math.floor(d.t / 60)}:${String(Math.floor(d.t % 60)).padStart(2, '0')}`;
   gehoert = { x: 0, y: 0 };
   $('fragen').innerHTML = FRAGEN.map(f => `<div class="frage" data-f="${f.id}"><p>${f.text}</p><div class="wahl">` +
-    ['x', 'gleich', 'y'].map(w => `<button data-w="${w}">${w === 'gleich' ? 'gleich' : w.toUpperCase()}</button>`).join('') + `</div></div>`).join('');
+    ['x', 'gleich', 'y'].map(w => `<button data-w="${w}">${w === 'gleich' ? 'same' : w.toUpperCase()}</button>`).join('') + `</div></div>`).join('');
   for (const el of document.querySelectorAll('.frage')) {
     const f = el.dataset.f;
     for (const b of el.querySelectorAll('button')) {
@@ -238,8 +231,8 @@ function pruefe() {
   const d = stand.durchgaenge[stand.i];
   const beide = gehoert.x >= 3 && gehoert.y >= 3;
   const fertig = FRAGEN.every(f => d.a[f.id]);
-  $('t-hinweis').textContent = beide ? (fertig ? 'Fertig für diesen Durchgang.' : 'Jetzt die drei Fragen beantworten.') :
-    `Hör dir beide an (je mindestens 3 s) – X ${Math.min(3, gehoert.x).toFixed(0)}/3 s, Y ${Math.min(3, gehoert.y).toFixed(0)}/3 s.`;
+  $('t-hinweis').textContent = beide ? (fertig ? 'Done for this round.' : 'Now answer the three questions.') :
+    `Listen to both (at least 3 s each) – X ${Math.min(3, gehoert.x).toFixed(0)}/3 s, Y ${Math.min(3, gehoert.y).toFixed(0)}/3 s.`;
   $('b-weiter').disabled = !(beide && fertig);
 }
 $('notiz').addEventListener('input', e => { stand.durchgaenge[stand.i].notiz = e.target.value; speichern(); });
@@ -257,12 +250,12 @@ $('b-weiter').addEventListener('click', () => {
   if (stand.i >= stand.durchgaenge.length) { stoppen(); zeigeEnde(); } else { zeigeDurchgang(); abspielen(); }
 });
 $('b-start').addEventListener('click', async () => {
-  $('b-start').disabled = true; $('laden').textContent = 'Lade beide Fassungen …';
+  $('b-start').disabled = true; $('laden').textContent = 'Loading both versions …';
   try {
     ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
     await ctx.resume();
     [roh.a, roh.b] = await Promise.all([dekodiere(V.a.datei), dekodiere(V.b.datei)]);
-  } catch (e) { $('laden').textContent = 'Laden fehlgeschlagen: ' + e; $('b-start').disabled = false; return; }
+  } catch (e) { $('laden').textContent = 'Loading failed: ' + e; $('b-start').disabled = false; return; }
   stand.kh = $('kh').value.trim(); stand.begonnen = stand.begonnen || new Date().toISOString(); speichern();
   $('start').classList.add('versteckt'); $('test').classList.remove('versteckt');
   zeigeDurchgang(); abspielen();
@@ -283,8 +276,8 @@ function auswerten() {
       if (w === 'gleich') g++; else if ((w === 'x') === d.xIstA) a++; else b++;
     }
     const p = binomP(Math.min(a, b), a + b);
-    const urteil = a + b === 0 ? 'kein Unterschied gehört' : p < 0.05 ? `klar ${a > b ? V.a.name : V.b.name}` :
-      p < 0.2 ? `Tendenz ${a > b ? V.a.name : V.b.name}` : 'kein klarer Unterschied';
+    const urteil = a + b === 0 ? 'no difference heard' : p < 0.05 ? `clearly ${a > b ? V.a.name : V.b.name}` :
+      p < 0.2 ? `leaning ${a > b ? V.a.name : V.b.name}` : 'no clear difference';
     return { frage: f.id, text: f.text.replace(/<[^>]+>/g, ''), a, b, gleich: g, p: +p.toFixed(3), urteil };
   });
   return { vergleich: V.id, titel: V.titel, a: V.a.name, b: V.b.name, kopfhoerer: stand.kh, begonnen: stand.begonnen,
@@ -296,16 +289,16 @@ function auswerten() {
 function zeigeEnde() {
   $('test').classList.add('versteckt'); $('start').classList.add('versteckt'); $('ende').classList.remove('versteckt');
   const r = auswerten();
-  $('auswertung').innerHTML = `<p class="leise">X/Y war: A = ${V.a.name}, B = ${V.b.name}</p><table><thead><tr><th>Frage</th><th>A</th><th>gleich</th><th>B</th><th>Urteil</th></tr></thead><tbody>` +
+  $('auswertung').innerHTML = `<p class="leise">Behind X/Y: A = ${V.a.name}, B = ${V.b.name}</p><table><thead><tr><th>Question</th><th>A</th><th>same</th><th>B</th><th>Verdict</th></tr></thead><tbody>` +
     r.zeilen.map(z => `<tr><td>${z.text}</td><td class="z">${z.a}</td><td class="z">${z.gleich}</td><td class="z">${z.b}</td><td class="urteil">${z.urteil}</td></tr>`).join('') +
-    `</tbody></table><p class="leise">„klar“ heißt: so eindeutig, dass Zufall unwahrscheinlich ist (p &lt; 0,05 ohne die Gleich-Antworten); „Tendenz“: p &lt; 0,2.</p>` +
-    (stand.durchgaenge.some(d => d.notiz) ? `<p class="leise">Notizen:</p><ul class="leise">` + stand.durchgaenge.filter(d => d.notiz).map(d =>
+    `</tbody></table><p class="leise">“clearly” means so consistent that chance is unlikely (p &lt; 0.05, not counting “same” answers); “leaning”: p &lt; 0.2.</p>` +
+    (stand.durchgaenge.some(d => d.notiz) ? `<p class="leise">Notes:</p><ul class="leise">` + stand.durchgaenge.filter(d => d.notiz).map(d =>
       `<li>${d.xIstA ? 'X=A' : 'X=B'}: ${d.notiz.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]))}</li>`).join('') + `</ul>` : '');
 }
-function ergebnisText() { return 'Blindvergleich Klangszenen\n' + JSON.stringify(auswerten(), null, 1); }
+function ergebnisText() { return 'Blind comparison – soundscapes\n' + JSON.stringify(auswerten(), null, 1); }
 $('b-kopie').addEventListener('click', async () => {
-  try { await navigator.clipboard.writeText(ergebnisText()); $('kopiert').textContent = 'Kopiert.'; }
-  catch { $('kopiert').textContent = 'Kopieren ging nicht – nimm „Als Datei speichern“.'; }
+  try { await navigator.clipboard.writeText(ergebnisText()); $('kopiert').textContent = 'Copied.'; }
+  catch { $('kopiert').textContent = 'Copying failed – use “Save as file”.'; }
 });
 $('b-datei').addEventListener('click', () => {
   const a = document.createElement('a');
@@ -315,7 +308,7 @@ $('b-datei').addEventListener('click', () => {
 $('b-neu').addEventListener('click', () => { stand = neuerStand(); speichern(); location.reload(); });
 
 if (stand.i >= stand.durchgaenge.length) zeigeEnde();
-else if (stand.i > 0) { $('b-start').textContent = `Weiter bei Durchgang ${stand.i + 1}`; if (stand.kh) $('kh').value = stand.kh; }
+else if (stand.i > 0) { $('b-start').textContent = `Continue with round ${stand.i + 1}`; if (stand.kh) $('kh').value = stand.kh; }
 </script>
 </body>
 </html>

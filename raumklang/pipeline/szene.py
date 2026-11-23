@@ -109,7 +109,7 @@ class Bibliothek:
         """Liste von dicts {sig, quelle, dauer, ...}; jedes Ereignis auf gleichen Spitzen-Kurzzeitpegel gebracht."""
         aus = []
         for spez in sammlung:
-            x = self.aufnahme({k: v for k, v in spez.items() if k not in ('zerlegen', 'stuecke', 'blende', 'abklingen', 'max_flach', 'resonanz', 'wucht')})
+            x = self.aufnahme({k: v for k, v in spez.items() if k not in ('zerlegen', 'stuecke', 'blende', 'abklingen', 'max_flach', 'resonanz', 'wucht', 'max_schwerpunkt', 'min_schwerpunkt', 'einschlag')})
             if 'stuecke' in spez:  # ganze Aufnahme in gleich lange Stücke teilen
                 L = int(spez['stuecke'] * FS)
                 stuecke = [(a, min(a + L, len(x))) for a in range(0, len(x) - L // 2, L)]
@@ -139,6 +139,30 @@ class Bibliothek:
                     y = np.r_[y, np.zeros(int(1.0 * nach * FS))]
                     tief = mat.wucht(y, wz.get('moden', []), wz.get('grollen'), wz.get('obertoene', 0.0), saat=len(aus))
                 k = mat.kennwerte(y)
+                # zu helle (quietschende) oder zu dumpfe Ausschnitte weglassen
+                if k['schwerpunkt'] > spez.get('max_schwerpunkt', 1e9) or k['schwerpunkt'] < spez.get('min_schwerpunkt', 0):
+                    continue
+                # nur Ausschnitte, die einschlagen statt anzuschwellen (Brecher: Aufprall statt Rauschen).
+                # Maß: steilster Anstieg der 10-ms-Hüllkurve über 40 ms; kurz danach muss die Spitze kommen.
+                # Langes Anschwellen davor wird abgeschnitten (bis auf `vorlauf_s`).
+                if spez.get('einschlag'):
+                    ek = spez['einschlag']
+                    hh = mat.huelle_db(y, 10)
+                    n40 = int(0.04 * FS)
+                    dh = hh[n40:] - hh[:-n40]
+                    i_s = int(np.argmax(dh))
+                    nach = hh[i_s + n40:i_s + n40 + int(ek.get('bis_spitze_s', 0.3) * FS)]
+                    if dh[i_s] < ek.get('min_sprung_db', 9) or not len(nach) or nach.max() < hh.max() - ek.get('max_unter_spitze_db', 4):
+                        continue
+                    a0 = max(0, i_s - int(ek.get('vorlauf_s', 0.25) * FS))
+                    if a0 > 0:
+                        y = y[a0:].copy()
+                        ne = int(0.02 * FS)
+                        y[:ne] *= np.sin(np.linspace(0, np.pi / 2, ne)) ** 2
+                        if tief is not None:
+                            tief = tief[a0:]
+                        k = mat.kennwerte(y)
+                    k['sprung_db'] = float(dh[i_s])
                 # Pegel am lautesten 50-ms-Fenster ausrichten
                 h = mat.huelle_db(y, 50).max()
                 fak = 10 ** ((-20 - h) / 20)
@@ -699,18 +723,55 @@ def gen_fluegel(kx, g, spur, bus, stuecke, ort, t_nah, v, rng):
     rendere_quelle(kx, spur, bus, sig, start, ort, True, g.get('bezug_m', 5.0), g.get('hall', 0.0))
 
 
-def _rumpfpunkt(boot, rng, seite, aussen=True):
-    x = rng.uniform(-1.6, 1.4)
+def _rumpfpunkt(boot, rng, seite, aussen=True, x=None):
+    x = rng.uniform(-0.8 * boot.a, 0.7 * boot.a) if x is None else x
     y = seite * boot.b * np.sqrt(max(1 - (x / boot.a) ** 2, 0.05))
-    return np.array([x, y + seite * (0.04 if aussen else -0.05), 0.02 if aussen else 0.12])
+    return np.array([x, y + seite * (0.04 if aussen else -0.05), 0.02 if aussen else max(boot.boden + 0.12, 0.12)])
+
+
+def _planke(sig, g, rng):
+    """Körperschall: der Schlag regt die Planken an, sie schwingen kurz und hohl nach und strahlen
+    nach innen ab („Klock“). Massegesetz: die Höhen kommen kaum durch das Holz. Die Eigenfrequenzen
+    streuen je Schlag etwas (andere Planke, anderer Spant)."""
+    kern = mat.filt(sig.astype(np.float64), g.get('planke_tiefpass', 450), 'lowpass', 2)
+    moden = g.get('planke_moden')
+    if not moden:
+        return kern.astype(np.float32)
+    t60max = max(m[1] for m in moden)
+    kern = np.r_[kern, np.zeros(int(1.5 * t60max * FS))]
+    verstimmt = [[f * 2 ** (rng.normal(0, 1.2) / 12), t60, anteil] for f, t60, anteil in moden]
+    return mat.resonanz(kern, verstimmt).astype(np.float32)
+
+
+def _spritzer(kx, g, spur, bus, ev_tropfen, t, pa, staerke, rng):
+    """Bei einem harten Schlag fliegt Wasser über die Bordkante: einige Tropfen prasseln kurz danach
+    innen aufs Holz, nah am Kopf, wenn der Schlag nah war."""
+    dauer = rng.uniform(0.5, 1.1)
+    n = int((dauer + 0.6) * FS)
+    sig = np.zeros(n, np.float32)
+    for _ in range(int(rng.integers(*g.get('spritzer_tropfen', [7, 16])))):
+        e = ev_tropfen[int(rng.integers(len(ev_tropfen)))]['sig']
+        # Tropfen fallen zuerst dicht, dann vereinzelt nach
+        a = int(min(rng.exponential(dauer / 3), dauer) * FS)
+        m = min(len(e), n - a)
+        sig[a:a + m] += e[:m] * 10 ** (rng.normal(-3, 4) / 20)
+    p = pa.copy()
+    p[1] -= np.sign(pa[1]) * rng.uniform(0.25, 0.55)       # innen, auf Bank und Bodenbrettern
+    p[2] = max(kx.boot.boden + 0.05, 0.05) + rng.uniform(0, 0.35)
+    rendere_quelle(kx, spur, bus, sig, t + rng.uniform(0.25, 0.45), lambda tt, p=p: np.tile(p, (len(tt), 1)), False,
+                   g.get('spritzer_pegel', 0.5) * staerke, g.get('hall', 0.0), breite=g.get('spritzer_breite_m', 0.6))
 
 
 def gen_rumpf(kx, g, spur, bus):
     """Wasser am Holz. Schläge fallen auf die Umkehrpunkte des Rollens (die eintauchende
     Seite), dazwischen einzelne kleinere Schwapps. Jeder Schlag kommt auf zwei Wegen:
-    als Luftschall über die Bordkante und dumpf durch die Planke (Körperschall)."""
+    als Luftschall über die Bordkante und durch die Planke (Körperschall, hohl nachschwingend).
+    Harte Schläge werfen manchmal Spritzer über die Bordkante."""
     rng = kx.rng
     ev = kx.bib.ereignisse(g['sammlung'])
+    ev_tropfen = kx.bib.ereignisse(g['spritzer']) if g.get('spritzer') else []
+    srng = np.random.default_rng(int(kx.dauer) * 29 + 7)
+    n_spritzer = 0
     ev = sorted(ev, key=lambda e: e['rms_db'] + 10 * np.log10(e['dauer']))
     n3 = max(1, len(ev) // 3)
     klein, gross = ev[:len(ev) - n3], ev[len(ev) - n3:]
@@ -738,6 +799,7 @@ def gen_rumpf(kx, g, spur, bus):
     for t, seite, staerke, wahl in zeiten:
         e = _wahl(rng, wahl)
         staerke = staerke * kx.folge(g, t)[1]
+        staerke_roh = staerke
         sig = kraft(e, staerke / g.get('wucht_bezug', 0.75), g)
         pa = _rumpfpunkt(kx.boot, rng, seite, True)
         pi = pa.copy()
@@ -746,10 +808,13 @@ def gen_rumpf(kx, g, spur, bus):
         staerke *= np.sqrt(np.linalg.norm(pi - kx.boot.kopf))  # Nähe zählt, aber nur halb so stark wie 1/r
         rendere_quelle(kx, spur, bus, sig, t, lambda tt, pa=pa: np.tile(pa, (len(tt), 1)), False,
                        staerke, g.get('hall', 0.0))
-        dumpf = mat.filt(sig.astype(np.float64), g.get('planke_tiefpass', 450), 'lowpass', 2).astype(np.float32)
+        dumpf = _planke(sig, g, rng)
         rendere_quelle(kx, spur, bus, dumpf, t, lambda tt, pi=pi: np.tile(pi, (len(tt), 1)), False,
-                       staerke * g.get('planke_pegel', 0.8), g.get('hall', 0.0))
-    return dict(ereignisse=len(zeiten), nach_welle=n_kette)
+                       staerke * g.get('planke_pegel', 0.8), g.get('hall', 0.0), breite=g.get('planke_breite_m'))
+        if ev_tropfen and staerke_roh >= g.get('spritzer_ab', 0.85) and srng.random() < g.get('spritzer_wahrsch', 0.3):
+            _spritzer(kx, g, spur, bus, ev_tropfen, t, pa, staerke_roh, srng)
+            n_spritzer += 1
+    return dict(ereignisse=len(zeiten), nach_welle=n_kette, spritzer=n_spritzer)
 
 
 def gen_knarzen(kx, g, spur, bus):
@@ -1245,12 +1310,37 @@ def gen_gebruell(kx, g, spur, bus):
 
 def gen_zug(kx, g, spur, bus):
     """Ein Schwarm zieht vorbei: mehrere Vögel auf gleichem Kurs, locker gestaffelt, jeder ruft ein
-    paar Mal. Anders als die kreisenden Vögel hat der Zug eine klare Richtung (mit dem Wind)."""
+    paar Mal. Anders als die kreisenden Vögel hat der Zug eine klare Richtung (mit dem Wind).
+    Mit `teppich` (Aufnahmen eines ganzen rufenden Schwarms) kommt dazu das Stimmengewirr als
+    breite Quelle, die mit der Mitte des Schwarms zieht – so hört man den Zug durchgehend
+    kommen und gehen, nicht nur einzelne Rufe."""
     rng = kx.rng
     ev = kx.bib.ereignisse(g['sammlung'])
     k = kx.boot.kopf
     liste = []
     for z in g.get('zuege', [{'t': 120, 'kurs_grad': 200}]):
+        if g.get('teppich'):
+            kurs_t = np.radians(z.get('kurs_grad', 200))
+            ri_t = np.array([np.cos(kurs_t), np.sin(kurs_t), 0.0])
+            quer_t = np.array([-ri_t[1], ri_t[0], 0.0])
+            v_t = float(np.mean(g.get('tempo', [11, 14])))
+            d_t = float(np.mean(g.get('abstand_m', [40, 80]))) * z.get('seite', 1)
+            h_t = float(np.mean(g.get('hoehe', [20, 40])))
+            L_t = g.get('weglaenge_m', 400.0)
+            dauer_t = L_t / v_t
+            n_t = int(dauer_t * FS)
+            sig = kx.bib.flickwerk(g['teppich'], n_t, rng).astype(np.float32)
+            rand = int(0.2 * n_t)                     # Anfang und Ende des Wegs weich: dort ist der Schwarm schon weit weg
+            sig[:rand] *= np.sin(np.linspace(0, np.pi / 2, rand)) ** 2
+            sig[-rand:] *= np.cos(np.linspace(0, np.pi / 2, rand)) ** 2
+
+            def ort_t(tt, ri=ri_t, quer=quer_t, d=d_t, v=v_t, h=h_t, tm=z['t']):
+                p = np.array([k[0], k[1], 0.0])[None, :] + d * quer[None, :] + ((tt - tm) * v)[:, None] * ri[None, :]
+                p[:, 2] = h
+                return p
+
+            rendere_quelle(kx, spur, bus, sig, z['t'] - dauer_t / 2, ort_t, True,
+                           g.get('teppich_bezug_m', 60.0), g.get('hall', 0.0), breite=g.get('teppich_breite_m', 25.0))
         kurs = np.radians(z.get('kurs_grad', 200) + rng.normal(0, g.get('kurs_streuung_grad', 8)))
         ri = np.array([np.cos(kurs), np.sin(kurs), 0.0])
         quer = np.array([-ri[1], ri[0], 0.0])
@@ -1307,6 +1397,29 @@ def schreibe(pfad, x, bitrate='192k'):
         args = ['-c:a', 'libmp3lame', '-b:a', bitrate]
     subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 's16le', '-ar', str(FS), '-ac', '2', '-i', '-', *args, str(pfad)],
                    input=daten, check=True)
+
+
+def probe_fenster(x, dauer_s, raster_s=0.5):
+    """Start (s) des Hörproben-Fensters: dort, wo die Gruppe am meisten zu hören ist – die meisten
+    Abschnitte, die höchstens 20 dB unter ihren lautesten liegen; bei Gleichstand der lautere.
+    Eine fest eingestellte Stelle trifft bei langen Szenen mit seltenen Ereignissen oft nichts."""
+    r = int(raster_s * FS)
+    n = x.shape[1] // r
+    e = 10 * np.log10((x[:, :n * r].astype(np.float64) ** 2).mean(0).reshape(n, r).mean(1) + 1e-14)
+    aktiv = (e > np.percentile(e, 99.5) - 20).astype(float)
+    L = max(1, int(round(dauer_s / raster_s)))
+    k = np.ones(L)
+    # kreisförmig, die Szene ist eine Schleife; Punkte für Aktivität, Zehntel für den Pegel
+    def kreis(v):
+        return np.real(np.fft.ifft(np.fft.fft(v) * np.conj(np.fft.fft(np.r_[k, np.zeros(n - L)]))))
+    a_w = kreis(aktiv)
+    beste = np.flatnonzero(a_w > a_w.max() - 0.5)
+    # unter den gleich guten Fenstern das mit dem meisten Pegel; liegen mehrere gleichauf, das mittlere
+    # (die Ereignisse sitzen dann nicht am Rand der Probe)
+    p_w = kreis(np.maximum(e + 80, 0))[beste]
+    beste = beste[p_w >= p_w.max() - 0.5 * L]
+    i = int(beste[len(beste) // 2])
+    return float(i * raster_s), float(a_w[i] / L)
 
 
 def schleifenstueck(x, ab_s, dauer_s, ueberblend_s=3.0):
@@ -1463,7 +1576,11 @@ def main():
         bericht['gruppen'].append(eintrag)
         print(eintrag, flush=True)
         if a.proben:
-            probe = schleifenstueck(x, g.get('probe_ab', 20), g.get('probe_dauer', 30))
+            ab, anteil = probe_fenster(x, g.get('probe_dauer', 30)) if 'probe_ab' not in g else (g['probe_ab'], None)
+            probe = schleifenstueck(x, ab, g.get('probe_dauer', 30))
+            eintrag['probe_ab_s'] = ab                # Szenenzeit; nach dem Verschieben der Schleife in Dateizeit umgerechnet
+            if anteil is not None:
+                eintrag['probe_aktiv'] = round(anteil, 2)
             probe, _ = begrenzer_kreis(probe * 10 ** (g.get('probe_plus_db', 6) / 20))
             schreibe(Path(a.aus) / f"{name}_{g['name']}.mp3", probe, '160k')
             eintrag['probe_abtastwerte'] = int(probe.shape[1])
@@ -1481,6 +1598,8 @@ def main():
                  gruppen=[dict(name=g['name'], titel=g.get('titel', g['name']), typ=g['typ'], ziel_lufs=g.get('ziel_lufs'),
                                pegel_art=g.get('pegel_art', 'integriert')) for g in sz['gruppen']],
                  wiederholung=wiederholung(), meldungen=vorab, quellen=karte)
+        if type(boot).__name__ == 'Boot':            # Umriss des Boots für die Kartenansicht
+            k['boot'] = dict(a=round(float(boot.a), 2), b=round(float(boot.b), 2))
         (Path(a.aus) / f'{name}_karte.json').write_text(json.dumps(k, ensure_ascii=False, separators=(',', ':')))
         print('Karte:', len(karte), 'Quellen', flush=True)
 
@@ -1514,6 +1633,9 @@ def main():
         bericht['start_abtastwerte'] = int(ruhig)          # genau – für Vergleichsfassungen (--drehung) diesen Wert nehmen
         # Drehbuch-Zeiten auf die Datei beziehen (die Schleife beginnt bei `ruhig`)
         bericht['drehbuch'] = sorted([[round((tt - ruhig / FS) % dauer, 1), x] for tt, x in bericht['drehbuch']])
+        for ge in bericht['gruppen']:
+            if 'probe_ab_s' in ge:
+                ge['probe_ab_s'] = round((ge['probe_ab_s'] - ruhig / FS) % dauer, 1)
         bericht['begrenzer_max_db'] = round(weg, 1)
         bericht['lufs'] = round(lautheit(summe), 1)
         bericht['naht'] = nahtpruefung(summe)

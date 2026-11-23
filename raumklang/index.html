@@ -1,186 +1,61 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Klangszenen für Kopfhörer</title>
-<style>
-  :root {
-    --grund: #0d1418; --flaeche: #152027; --rand: #24343d; --text: #dfe8ea; --leise: #8fa3ab;
-    --akzent: #7fc4c9; --warn: #e2b866;
-  }
-  @media (prefers-color-scheme: light) {
-    :root { --grund: #f3f6f6; --flaeche: #ffffff; --rand: #d5dfe1; --text: #17252b; --leise: #5b6f77; --akzent: #1f7f86; --warn: #8a6100; }
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--grund); color: var(--text); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
-  main { max-width: 760px; margin: 0 auto; padding: 28px 16px 64px; }
-  h1 { font-size: 1.7rem; line-height: 1.2; margin: 0 0 6px; }
-  h2 { font-size: 1.25rem; margin: 0 0 6px; line-height: 1.3; }
-  h3 { font-size: 1rem; margin: 0 0 4px; }
-  p { margin: 0 0 12px; }
-  .unter { color: var(--leise); margin-bottom: 22px; }
-  .hinweis { border-left: 3px solid var(--warn); padding: 8px 12px; background: var(--flaeche); border-radius: 0 8px 8px 0; font-size: .95rem; margin-bottom: 28px; }
-  .szene { background: var(--flaeche); border: 1px solid var(--rand); border-radius: 14px; padding: 18px; margin: 0 0 22px; }
-  .szene > p { color: var(--leise); font-size: .95rem; }
-  .spieler { display: flex; align-items: center; gap: 12px; }
-  .spieler button { flex: none; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--akzent); background: transparent;
-    color: var(--akzent); font-size: 17px; cursor: pointer; display: grid; place-items: center; padding: 0; }
-  .spieler.gross button { width: 54px; height: 54px; font-size: 20px; }
-  .spieler button:hover { background: color-mix(in srgb, var(--akzent) 14%, transparent); }
-  .spieler .leiste { flex: 1; height: 6px; background: var(--rand); border-radius: 3px; position: relative; cursor: pointer; }
-  .spieler .leiste span { position: absolute; inset: 0 auto 0 0; background: var(--akzent); border-radius: 3px; width: 0; }
-  .spieler .zeit { flex: none; font-size: .8rem; color: var(--leise); font-variant-numeric: tabular-nums; min-width: 86px; text-align: right; }
-  .spieler a { flex: none; font-size: .8rem; }
-  .werte { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: .82rem; color: var(--leise); margin-top: 10px; }
-  .werte b { color: var(--text); font-weight: 600; }
-  details { margin-top: 14px; border-top: 1px solid var(--rand); padding-top: 10px; }
-  summary { cursor: pointer; color: var(--akzent); font-size: .92rem; }
-  .baustein { padding: 12px 0; border-bottom: 1px solid var(--rand); }
-  .baustein:last-child { border-bottom: 0; }
-  .baustein p { color: var(--leise); font-size: .88rem; margin: 0 0 8px; }
-  table { border-collapse: collapse; width: 100%; font-size: .82rem; }
-  td, th { text-align: left; padding: 5px 8px 5px 0; border-bottom: 1px solid var(--rand); vertical-align: top; }
-  th { color: var(--leise); font-weight: 600; }
-  a { color: var(--akzent); }
-  .tabelle { overflow-x: auto; }
-  ul { padding-left: 20px; margin: 0 0 12px; font-size: .92rem; }
-  li { margin-bottom: 4px; }
-  h4 { font-size: .92rem; margin: 18px 0 6px; }
-  .allgemein { font-size: .92rem; }
-</style>
+<title>Soundscapes for Headphones</title>
+<meta name="description" content="Binaural ambient soundscapes for lying down with headphones, built from real field recordings and placed in 3D space – endless loops without a seam.">
+<meta property="og:title" content="Soundscapes for Headphones">
+<meta property="og:description" content="Binaural ambient soundscapes for lying down with headphones, built from real field recordings and placed in 3D space.">
+<link rel="stylesheet" href="stil.css">
 </head>
 <body>
 <main>
-  <h1>Klangszenen für Kopfhörer</h1>
-  <p class="unter">Binaural gerendert für eine liegende Hörhaltung: auf dem Rücken, Kopf auf einem Kissen, Blick schräg nach oben.</p>
-
-  <p class="hinweis"><b>Welche Ohren passen zu dir?</b> Die Szenen sind mit einem Satz gemessener Ohren (HRTF) gerechnet.
-  Im <a href="hrtf-test/">HRTF-Auswahltest</a> findest du in 6–8 Minuten heraus, welcher am besten zu deinen Ohrmuscheln passt. Mit In-Ear-Mikrofonen geht es genauer: <a href="messung/">Ohrmessung</a>.</p>
-
-    <p class="hinweis"><b>Bringen die räumlichen Wirkungen etwas?</b> Im <a href="vergleich/">Blindvergleich</a> hörst du dieselbe Stelle
-  mit und ohne Quellenbreite, Richtwirkung und Stamm-Echos, ohne zu wissen, welche Fassung welche ist.</p>
-
-  <p class="hinweis"><b>So hören:</b> Kopfhörer auf (links/rechts richtig herum), hinlegen, Augen zu.
-  Jede Szene läuft in Endlosschleife ohne hörbare Naht.</p>
+  <h1>Soundscapes for Headphones</h1>
+  <p class="unter">Real field recordings placed in 3D space, rendered binaurally for headphones. Tap a scene to start.</p>
 
   <div id="szenen"></div>
 
+  <h2 class="zusatz">More</h2>
+  <p class="hinweis"><b>How to listen:</b> headphones on (left and right the right way round), lie down, close your eyes.
+  Every scene loops endlessly without an audible seam. Each scene has its own page with a live map of where every sound is – you can share its link.</p>
+
+
+  <p class="hinweis"><b>Which ears suit you?</b> The scenes are rendered with one set of measured ears (HRTF).
+  The <a href="hrtf-test/">HRTF test</a> finds out in 6–8 minutes which set matches your ears best. With in-ear microphones it gets more precise: <a href="messung/">ear measurement</a>.</p>
+
+  <p class="hinweis"><b>Do the spatial effects make a difference?</b> In the <a href="vergleich/">blind comparison</a> you hear the same passage
+  with and without source width, directivity and tree-trunk echoes, without knowing which version is which.</p>
+
   <details class="allgemein">
-    <summary>Wie die Szenen gebaut sind</summary>
+    <summary>How the scenes are made</summary>
     <ul>
-      <li><b>Echte Aufnahmen</b> (gemeinfrei, CC0 oder CC BY), in einzelne Ereignisse zerlegt – Rufe, Tropfen, Schritte, Schwapps – und in der Szene
-        neu im Raum gesetzt. Tiere, die es nicht mehr gibt, sind aus echten Tierlauten gemacht, langsamer und tiefer abgespielt. Synthetisch sind nur
-        die tiefe Schicht, die kraftvollen Momenten Wucht gibt, und die Musik im Wald.</li>
-      <li><b>Kopfbezug:</b> HRTF CIPIC&nbsp;040 (SOFA), diffusfeld-entzerrt, stetig zwischen den Messrichtungen überblendet; ohne Head-Tracking.</li>
-      <li><b>Raum:</b> Jede Quelle kommt auf mehreren Wegen an – direkt, gespiegelt an Boden, Bordwand oder Baumstamm, gebeugt über eine Kante –
-        dazu ein Nachhall. Ohne Raum klingt alles im Kopf.</li>
-      <li><b>Bewegung:</b> Quellen bewegen sich auf Bahnen; die Laufzeit wird mitgerechnet, daraus entsteht der Doppler-Effekt beim Vorbeiflug.</li>
-      <li><b>Endlosschleife:</b> gerechnet auf einer kreisförmigen Zeitachse; was über das Ende hinausklingt, läuft am Anfang weiter.</li>
-      <li><b>Pegel:</b> Jede Klanggruppe einzeln auf einen Zielwert (LUFS), seltene Spitzen fängt ein Begrenzer mit Vorschau ab.</li>
+      <li><b>Real recordings</b> (public domain, CC0 or CC BY), cut into single events – calls, drops, footsteps, splashes – and placed anew in
+        3D space. Animals that no longer exist are made from real animal sounds, played slower and deeper. The only synthetic parts are the
+        low layer that gives powerful moments their weight, and the music in the forest.</li>
+      <li><b>Head:</b> HRTF CIPIC&nbsp;040 (SOFA), diffuse-field equalised, smoothly interpolated between measured directions; no head tracking.</li>
+      <li><b>Space:</b> every source arrives along several paths – direct, reflected off the ground, the hull or a tree trunk, diffracted over an
+        edge – plus reverberation. Without space, everything sounds inside your head.</li>
+      <li><b>Movement:</b> sources move along paths; the travel time is computed too, which produces the Doppler effect of a fly-by.</li>
+      <li><b>Endless loop:</b> computed on a circular timeline; whatever rings on past the end continues at the start.</li>
+      <li><b>Levels:</b> each sound group is set to its own target loudness (LUFS); rare peaks are caught by a look-ahead limiter.</li>
     </ul>
-    <p>Skripte, Szenenbeschreibungen und Quellenverzeichnis im
-      <a href="https://github.com/chillchamp1/lab/tree/main/raumklang">Projektordner</a>.</p>
+    <p>Scripts, scene descriptions and the list of recordings are in the
+      <a href="https://github.com/chillchamp1/lab/tree/main/raumklang">project folder</a> (documentation in German).</p>
   </details>
 </main>
-<script>
-const SZENEN = ['wald', 'boot', 'ruine', 'elefanten', 'ozean'];
-const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const FS = 44100;
-let ctx = null, aktiv = null;
-const zeit = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
-
-// Spieler mit nahtloser Schleife: die Datei wird dekodiert und über die Web-Audio-Schnittstelle
-// sample-genau wiederholt. Ein <audio loop> setzt an der Naht je nach Browser kurz aus.
-function spieler(el, src, soll, dateiname) {
-  el.innerHTML = `<button aria-label="Abspielen">▶</button><div class="leiste"><span></span></div>` +
-    `<span class="zeit">0:00</span><a href="${src}" download="${esc(dateiname || '')}">MP3</a>`;
-  const knopf = el.querySelector('button'), leiste = el.querySelector('.leiste'), balken = leiste.querySelector('span'), anz = el.querySelector('.zeit');
-  let puffer = null, quelle = null, verst = null, start = 0, ab = 0, laeuft = false;
-  async function laden() {
-    if (puffer) return;
-    knopf.textContent = '…';
-    const roh = await ctx.decodeAudioData(await (await fetch(src)).arrayBuffer());
-    // manche Browser hängen beim Dekodieren die Stille des Kodierers an: auf die Soll-Länge kürzen
-    const n = soll ? Math.round(soll * ctx.sampleRate / FS) : roh.length;
-    if (soll && roh.length > n + 2) {
-      const vor = Math.min(Math.round(1105 * ctx.sampleRate / FS), roh.length - n);
-      const b = ctx.createBuffer(roh.numberOfChannels, n, ctx.sampleRate);
-      for (let k = 0; k < roh.numberOfChannels; k++) b.copyToChannel(roh.getChannelData(k).subarray(vor, vor + n), k);
-      puffer = b;
-    } else puffer = roh;
-  }
-  function position() { return laeuft ? (ctx.currentTime - start) % puffer.duration : ab; }
-  function stopp(sanft = true) {
-    if (!quelle) return;
-    const q = quelle, v = verst, t = ctx.currentTime;
-    v.gain.cancelScheduledValues(t); v.gain.setValueAtTime(v.gain.value, t); v.gain.linearRampToValueAtTime(0, t + (sanft ? 0.25 : 0.02));
-    q.stop(t + 0.3);
-    ab = position(); quelle = null; laeuft = false; knopf.textContent = '▶'; knopf.setAttribute('aria-label', 'Abspielen');
-  }
-  async function spielen(von = ab) {
-    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
-    await ctx.resume();
-    if (aktiv && aktiv !== api) aktiv.stopp();
-    aktiv = api;
-    await laden();
-    if (quelle) stopp(false);
-    quelle = ctx.createBufferSource(); quelle.buffer = puffer; quelle.loop = true;
-    verst = ctx.createGain(); verst.gain.setValueAtTime(0, ctx.currentTime); verst.gain.linearRampToValueAtTime(1, ctx.currentTime + 1.2);
-    quelle.connect(verst).connect(ctx.destination);
-    quelle.start(0, von % puffer.duration);
-    start = ctx.currentTime - von; laeuft = true;
-    knopf.textContent = '❚❚'; knopf.setAttribute('aria-label', 'Anhalten');
-    (function tick() {
-      if (!laeuft) return;
-      const p = position();
-      balken.style.width = (100 * p / puffer.duration) + '%';
-      anz.textContent = `${zeit(p)} / ${zeit(puffer.duration)}`;
-      requestAnimationFrame(tick);
-    })();
-  }
-  knopf.addEventListener('click', () => laeuft ? stopp() : spielen());
-  leiste.addEventListener('click', async e => {
-    const r = leiste.getBoundingClientRect();
-    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
-    await laden();
-    const ziel = (e.clientX - r.left) / r.width * puffer.duration;
-    if (laeuft) spielen(ziel); else { ab = ziel; balken.style.width = (100 * ziel / puffer.duration) + '%'; anz.textContent = `${zeit(ziel)} / ${zeit(puffer.duration)}`; }
-  });
-  const api = { stopp };
-  return api;
-}
-
-(async () => {
-  const quellen = await fetch('quellen.json').then(r => r.json());
-  const nachId = Object.fromEntries(quellen.map(q => [q.id, q]));
-  const box = document.getElementById('szenen');
-  for (const name of SZENEN) {
-    let b;
-    try { b = await fetch(`audio/${name}.json`).then(r => { if (!r.ok) throw 0; return r.json(); }); } catch { continue; }
-    const el = document.createElement('section');
-    el.className = 'szene';
-    el.innerHTML =
-      `<h2>${esc(b.titel || name)}</h2><p>${esc(b.text || '')}</p>` +
-      `<div class="spieler gross" data-haupt></div>` +
-      `<div class="werte"><span><b>${zeit(b.dauer)}</b> in Schleife</span><span>Stand <b>${esc(b.stand)}</b></span>` +
-      `<span>HRTF <b>${esc(b.hrtf.replace('.sofa', ''))}</b></span><span>Blick <b>${b.blick}°</b></span><span><a href="karte/?s=${name}">Szenenkarte</a></span></div>` +
-      ((b.drehbuch && b.drehbuch.length) ? `<details><summary>Drehbuch – was in der Szene passiert</summary><ul>` +
-        b.drehbuch.map(([t, x]) => `<li><b>${zeit(t)}</b> ${esc(x)}</li>`).join('') + `</ul></details>` : '') +
-      `<details><summary>${esc(b.details_titel || (b.gruppen.length ? 'Bausteine einzeln anhören, Aufnahmen' : 'Verwendete Aufnahmen'))}</summary>` +
-      b.gruppen.map(g => `<div class="baustein"><h3>${esc(g.titel)}</h3><p>${esc(g.text)}</p><div class="spieler" data-name="${esc(g.name)}"></div></div>`).join('') +
-      (b.gruppen.length ? `<h4>Verwendete Aufnahmen</h4>` : '') + `<div class="tabelle"><table><thead><tr><th>Aufnahme</th><th>Von</th><th>Lizenz</th></tr></thead><tbody>` +
-      (b.quellen || []).map(i => nachId[i]).filter(Boolean).map(e =>
-        `<tr><td><a href="${esc(e.seite)}">${esc(e.titel || e.datei)}</a></td><td>${esc(e.urheber || '–')}</td><td>${esc(e.lizenz)}</td></tr>`).join('') +
-      `</tbody></table></div></details>`;
-    box.appendChild(el);
-    // Dateiname beim Herunterladen mit dem Stand der Fassung, z. B. wald_2026-11-20_14-05.mp3
-    const m = String(b.stand || '').match(/(\d+)\.(\d+)\.(\d+)\s+(\d+):(\d+)/);
-    const stand = m ? `_${m[3]}-${m[2]}-${m[1]}_${m[4]}-${m[5]}` : '';
-    spieler(el.querySelector('[data-haupt]'), `audio/${name}.mp3`, b.abtastwerte, `${name}${stand}.mp3`);
-    for (const g of b.gruppen) spieler(el.querySelector(`.spieler[data-name="${g.name}"]`), `audio/${name}_${g.name}.mp3`, g.probe_abtastwerte, `${name}_${g.name}${stand}.mp3`);
-  }
-})();
+<script type="module">
+import { zeit, esc, standText } from './spieler.js';
+// page address → name of the rendered file (same as pipeline/seiten.py)
+const SZENEN = [['forest', 'wald'], ['sea', 'boot'], ['ruins', 'ruine'], ['elephants', 'elefanten'], ['sea-creature', 'ozean']];
+const box = document.getElementById('szenen');
+const berichte = await Promise.all(SZENEN.map(([, name]) => fetch(`audio/${name}.json`).then(r => r.ok ? r.json() : null).catch(() => null)));
+SZENEN.forEach(([adresse], i) => {
+  const b = berichte[i];
+  if (!b) return;
+  box.insertAdjacentHTML('beforeend', `<a class="szene" href="${adresse}/"><h2>${esc(b.titel)}</h2><p>${esc(b.text || '')}</p>` +
+    `<div class="werte"><span class="los">▶ Listen</span><span><b>${zeit(b.dauer)}</b> loop</span><span>Version <b>${esc(standText(b.stand))}</b></span></div></a>`);
+});
 </script>
 </body>
 </html>

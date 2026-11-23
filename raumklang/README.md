@@ -1,7 +1,7 @@
 # Raumklang
 
 Binaurale Ambient-Klangszenen für Kopfhörer, gebaut aus echten Aufnahmen:
-liegend in einem knarzenden Ruderboot auf dem Meer (`szenen/boot.json`) und
+liegend in einem knarzenden Holzboot auf dem Meer (`szenen/boot.json`) und
 angelehnt an einen Baumstamm in einem Dinosaurierwald im Herbstregen
 (`szenen/wald.json`).
 
@@ -17,7 +17,12 @@ pipeline/material_holen.py  lädt alles aus quellen.json nach material/roh/
 pipeline/szene.py           Szenenbeschreibung → Klanggruppen → Pegel → Mischung → MP3
 szenen/boot.json            die Szene als Daten
 quellen.json                jede Aufnahme mit Herkunft, Urheber und Lizenz
+pipeline/seiten.py          schreibt je Szene eine Seite zum Teilen (sea/, forest/, …)
 audio/                      Ergebnis: Mischung, eine Hörprobe je Klanggruppe, Bericht (boot.json)
+index.html, stil.css        Übersicht: je Szene eine Karte, ein Klick öffnet die Szenenseite
+spieler.js, szene.js        Spieler (streamt, dann lückenlose Schleife) und Szenenseite
+karte.js                    Szenenkarte zeichnen (linear oder logarithmisch), auch als Live-Karte
+diorama.js, vendor/         3D-Ansicht der Meer-Szene (three.js r160, MIT, mitgeliefert)
 ```
 
 Rendern (Python 3 mit `numpy scipy h5py pyloudnorm`, dazu `ffmpeg`):
@@ -26,7 +31,26 @@ Rendern (Python 3 mit `numpy scipy h5py pyloudnorm`, dazu `ffmpeg`):
 python3 pipeline/material_holen.py
 curl -o material/hrtf/subject_040.sofa https://sofacoustics.org/data/database/cipic/subject_040.sofa
 python3 pipeline/szene.py szenen/boot.json --proben
+python3 pipeline/seiten.py          # Titel und Text der Szenenseiten (für Link-Vorschauen) nachziehen
 ```
+
+## Seite und Spieler
+
+Die Webseite ist englisch (seit 23.11.2026), die Pipeline und diese Beschreibung bleiben deutsch.
+Die sichtbaren Texte der Szenen (`titel`, `text`, Drehbuch, Gruppen) stehen deshalb englisch in
+`szenen/*.json`. Jede Szene hat eine eigene Adresse, z. B. `…/raumklang/sea/`. Beim Öffnen spielt sie
+sofort los, wenn der Browser Ton ohne Tippen erlaubt – das tut er meist nur, wenn man
+vorher auf der Seite geklickt hat (etwa von der Übersicht aus). Kommt man über einen
+geteilten Link, sperren Chrome, Safari und Firefox den Ton bis zum ersten Tipp; dann
+liegt ein großer Startknopf über der Seite. Titel und Text stehen fest im HTML, damit
+Messenger eine Vorschau zeigen; `pipeline/seiten.py` schreibt sie aus `audio/<name>.json`.
+
+Der Spieler startet sofort: ein `<audio>`-Element streamt die MP3 (GitHub Pages liefert
+Teilbereiche aus, Springen lädt nur das Nötige). Ein paar Sekunden später lädt er im
+Hintergrund die ganze Datei und dekodiert sie; an der nächsten Schleifennaht übernimmt
+die Web-Audio-Schleife, die sample-genau ohne Lücke wiederholt. Bis dahin – oder auf
+Geräten mit wenig Speicher, eine dekodierte 10-Minuten-Szene braucht rund 210 MB –
+wiederholt das Element selbst, was an der Naht kurz aussetzen kann.
 
 Wo Wikimedia oder Freesound den Download sperren (Claude-Cloud-Umgebung), lädt der
 Workflow „Raumklang-Material holen“ (`.github/workflows/raumklang-material.yml`) die
@@ -44,7 +68,14 @@ andere Haltung: `--blick 90` (flach auf dem Rücken) bis `--blick 0` (aufrecht).
 
 ## Wie ein Klang zum Ohr kommt
 
-Der Kopf liegt fest im Boot, die Ohren 25 cm unter der Bordkante. Jede Quelle
+Das Boot ist ein offenes hölzernes Segelboot, 6,4 m lang und 2 m breit, Bordkante 80 cm
+über dem Wasser. Du liegst hinten auf Polstern, den Kopf hoch auf einem Kissen an der
+Heckducht: die Ohren 58 cm über dem Wasser und 22 cm unter der Bordkante, das Wasser
+beidseitig etwa 70 cm entfernt. Bis 23.11.2026 war es ein 4,2 m langes Ruderboot, in dem
+der Kopf auf den Bodenbrettern lag – bei kräftiger See zu klein und zu nah am Wasser, um
+sich geborgen anzufühlen. Ein größeres Boot rollt auch langsamer und weniger (3,5° statt 5°).
+
+Der Kopf liegt fest im Boot. Jede Quelle
 erreicht ihn auf mehreren Wegen; jeder Weg bekommt je Block von 11,6 ms eine
 Weglänge, eine Einfallsrichtung im Kopfbezug und einen Frequenzgang:
 
@@ -57,6 +88,12 @@ Weglänge, eine Einfallsrichtung im Kopfbezug und einen Frequenzgang:
 - **Wasserspiegel** – das Spiegelbild hoher Quellen liegt unter der Kante und
   kommt nur gebeugt herein.
 - **Rest-Nachhall** – sehr kurz und leise; ohne ihn sitzt der Klang im Kopf.
+- **Körperschall durch die Planken** – Wasser, das gegen den Rumpf schlägt, kommt durch die
+  Luft nur über die Kante gebeugt an (bei 1 kHz rund 18 dB leiser). Hörbar nah wird es durch
+  das Holz: der Schlag regt die Eigenschwingungen der Planken an (95–580 Hz, je Schlag leicht
+  verstimmt), die kurz und hohl nachklingen und als Fläche direkt neben dem Kopf abstrahlen –
+  das „Klock“ eines Holzrumpfs. Harte Schläge werfen manchmal Spritzer über die Bordkante,
+  die neben dir aufs Holz prasseln.
 
 Die HRTF wird über ein Dreiecksnetz auf der Kugel interpoliert: Jede Richtung
 mischt die drei Messrichtungen des umgebenden Dreiecks baryzentrisch, Laufzeit
@@ -159,6 +196,38 @@ Ereignisfolge bleibt dabei gleich, weil jede Wirkung ihre eigene Zufallsquelle h
   fast nur aus Hall (ferne Möwenkolonie: Hall 14 dB über dem Direktschall – klang
   wie vor einer Klippe; jetzt 4,5 dB darunter, kürzer).
 
+## Live-Ansicht auf der Szenenseite
+
+Unter dem Spieler läuft eine Ansicht mit, die der Abspielzeit folgt – gezeichnet aus den
+Ortsdaten der Szenenkarte (`audio/<name>_karte.json`, gezippt 5–70 kB), kein Video:
+
+- **Karte von oben** (`karte.js`, alle Szenen): Hörer in der Mitte, Pfeil = Blickrichtung,
+  jede Quelle ein Punkt mit kurzer Spur. Abstand logarithmisch, damit ein Tropfen in 1 m und
+  eine Herde in 500 m zugleich zu sehen sind; das Bild zoomt nie.
+- **3D-Diorama** (`diorama.js`, bisher nur das Meer): isometrisch, feste Perspektive,
+  Comic-Schattierung in drei Stufen, Tilt-Shift-Unschärfe oben und unten, warme Tönung.
+  Boot mit liegender Figur, Fels, Kolonie-Insel, Möwen und Gänse als kleine flatternde
+  Figuren, Wellenkämme, Brecher und Spritzer als Schaumkugeln (eine instanzierte Form).
+  Nah bis 5 m maßstäblich, dahinter logarithmisch gestaucht. Fürs Handy: höchstens 30
+  Bilder/s, Auflösung ≤ 1,5-fach, keine Schatten, keine Texturen, pausiert im Hintergrund.
+  Möwen erscheinen um ihren Ruf herum (±3 s) auf ihrer Bahn weitergeführt – die Karte kennt
+  sie nur, während sie rufen.
+
+## Ausschnitte nach Klang auswählen
+
+Beim Zerlegen einer Aufnahme lassen sich Ausschnitte nach ihrem Klang aussortieren:
+
+- `max_schwerpunkt` / `min_schwerpunkt` (Hz): zu helle oder zu dumpfe Ausschnitte weglassen –
+  beim Knarzen fallen so die quietschenden, spitzen Töne heraus (Schwerpunkt über 1,5 kHz).
+- `einschlag` (`min_sprung_db`, `bis_spitze_s`, `max_unter_spitze_db`, `vorlauf_s`): nur
+  Ausschnitte, die einschlagen statt anzuschwellen – die Hüllkurve muss innerhalb von 40 ms
+  um mindestens `min_sprung_db` steigen und kurz danach die Spitze erreichen. Langes
+  Anschwellen davor wird bis auf `vorlauf_s` abgeschnitten. Die alten Brecher-Ausschnitte
+  schwollen über 0,4–4 s an und klangen deshalb wie Rauschen und Rumpeln.
+
+Die Hörproben der Bausteine schneidet der Renderer dort aus der Einzelspur, wo am meisten
+zu hören ist; auf der Seite steht, aus welcher Stelle der Szene sie stammen.
+
 ## Ordnung in den Richtungen
 
 Tiere werden nicht gleichmäßig um den Hörer gewürfelt; jede Gruppe hat ihren Ort
@@ -171,7 +240,9 @@ und ihre Vorzugsrichtung, je nach Wind und Entfernung:
 - `zug`: ein Schwarm zieht auf geradem Kurs in einiger Entfernung vorbei
   (`zuege: [{t, kurs_grad, seite}]`, dazu `anzahl`, `abstand_m`, `hoehe`, `tempo`).
   Ein einmaliges Ereignis mit klarer Richtung – nicht öfter als ein-, zweimal je
-  Szene.
+  Szene. Mit `teppich` (Aufnahmen eines ganzen rufenden Schwarms) zieht zusätzlich das
+  Stimmengewirr als breite Quelle mit der Mitte des Schwarms: so hört man ihn eine halbe
+  Minute lang kommen, vorüberziehen und gehen, nicht nur einzelne Rufe.
 
 Richtwert für die Dichte: höchstens ein Ruf alle vier bis fünf Sekunden je Gruppe.
 
