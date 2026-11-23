@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Im Ruderboot auf dem Meer – Klangszene für Kopfhörer</title>
+<meta name="description" content="Du liegst im Ruderboot, Füße zum Bug. Möwen kreisen und schießen dicht über dich hinweg, ringsum Wellen, Wasser schwappt gegen das Holz, das Boot knarzt, im schlaffen Segel fängt sich ab und zu der Wind.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Im Ruderboot auf dem Meer – Klangszene für Kopfhörer">
+<meta property="og:description" content="Du liegst im Ruderboot, Füße zum Bug. Möwen kreisen und schießen dicht über dich hinweg, ringsum Wellen, Wasser schwappt gegen das Holz, das Boot knarzt, im schlaffen Segel fängt sich ab und zu der Wind.">
+<meta property="og:url" content="https://chillchamp1.github.io/lab/raumklang/meer/">
+<meta property="og:audio" content="https://chillchamp1.github.io/lab/raumklang/audio/boot.mp3">
+<meta property="og:audio:type" content="audio/mpeg">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../stil.css">
+<link rel="preload" href="../audio/boot.json" as="fetch" crossorigin>
+</head>
+<body data-szene="boot">
+<main>
+  <p class="zurueck"><a href="../">← Alle Klangszenen</a></p>
+  <h1>Im Ruderboot auf dem Meer</h1>
+  <p class="unter">Du liegst im Ruderboot, Füße zum Bug. Möwen kreisen und schießen dicht über dich hinweg, ringsum Wellen, Wasser schwappt gegen das Holz, das Boot knarzt, im schlaffen Segel fängt sich ab und zu der Wind.</p>
+  <div class="spieler gross" id="spieler"></div>
+  <div class="knoepfe"><button id="teilen" type="button">Teilen</button><span id="teilen-info" aria-live="polite"></span></div>
+  <div class="werte" id="werte"></div>
+  <p class="hinweis" style="margin-top:18px"><b>So hören:</b> Kopfhörer auf (links/rechts richtig herum), hinlegen, Augen zu.
+  Die Szene läuft in Endlosschleife ohne hörbare Naht.</p>
+  <div id="mehr"></div>
+</main>
+<div id="start" hidden>
+  <div class="karte">
+    <button id="start-knopf" type="button" aria-label="Abspielen">▶</button>
+    <h2>Im Ruderboot auf dem Meer</h2>
+    <p>Kopfhörer auf und tippen – dein Browser startet Ton erst nach einem Tipp.</p>
+  </div>
+</div>
+<script type="module" src="../szene.js"></script>
+</body>
+</html>

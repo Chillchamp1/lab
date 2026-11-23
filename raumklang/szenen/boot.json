@@ -3745,12 +3745,12 @@
     {
      "t": 40,
      "kurs_grad": 290,
-     "seite": -1
+     "seite": 1
     },
     {
      "t": 440,
      "kurs_grad": 110,
-     "seite": 1
+     "seite": -1
     }
    ],
    "tempo": [

@@ -17,7 +17,10 @@ pipeline/material_holen.py  lädt alles aus quellen.json nach material/roh/
 pipeline/szene.py           Szenenbeschreibung → Klanggruppen → Pegel → Mischung → MP3
 szenen/boot.json            die Szene als Daten
 quellen.json                jede Aufnahme mit Herkunft, Urheber und Lizenz
+pipeline/seiten.py          schreibt je Szene eine Seite zum Teilen (meer/, wald/, …)
 audio/                      Ergebnis: Mischung, eine Hörprobe je Klanggruppe, Bericht (boot.json)
+index.html, stil.css        Übersicht: je Szene eine Karte, ein Klick öffnet die Szenenseite
+spieler.js, szene.js        Spieler (streamt, dann lückenlose Schleife) und Szenenseite
 ```
 
 Rendern (Python 3 mit `numpy scipy h5py pyloudnorm`, dazu `ffmpeg`):
@@ -26,7 +29,24 @@ Rendern (Python 3 mit `numpy scipy h5py pyloudnorm`, dazu `ffmpeg`):
 python3 pipeline/material_holen.py
 curl -o material/hrtf/subject_040.sofa https://sofacoustics.org/data/database/cipic/subject_040.sofa
 python3 pipeline/szene.py szenen/boot.json --proben
+python3 pipeline/seiten.py          # Titel und Text der Szenenseiten (für Link-Vorschauen) nachziehen
 ```
+
+## Seite und Spieler
+
+Jede Szene hat eine eigene Adresse, z. B. `…/raumklang/meer/`. Beim Öffnen spielt sie
+sofort los, wenn der Browser Ton ohne Tippen erlaubt – das tut er meist nur, wenn man
+vorher auf der Seite geklickt hat (etwa von der Übersicht aus). Kommt man über einen
+geteilten Link, sperren Chrome, Safari und Firefox den Ton bis zum ersten Tipp; dann
+liegt ein großer Startknopf über der Seite. Titel und Text stehen fest im HTML, damit
+Messenger eine Vorschau zeigen; `pipeline/seiten.py` schreibt sie aus `audio/<name>.json`.
+
+Der Spieler startet sofort: ein `<audio>`-Element streamt die MP3 (GitHub Pages liefert
+Teilbereiche aus, Springen lädt nur das Nötige). Ein paar Sekunden später lädt er im
+Hintergrund die ganze Datei und dekodiert sie; an der nächsten Schleifennaht übernimmt
+die Web-Audio-Schleife, die sample-genau ohne Lücke wiederholt. Bis dahin – oder auf
+Geräten mit wenig Speicher, eine dekodierte 10-Minuten-Szene braucht rund 210 MB –
+wiederholt das Element selbst, was an der Naht kurz aussetzen kann.
 
 Wo Wikimedia oder Freesound den Download sperren (Claude-Cloud-Umgebung), lädt der
 Workflow „Raumklang-Material holen“ (`.github/workflows/raumklang-material.yml`) die
