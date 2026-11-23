@@ -254,8 +254,10 @@ fernen See entfernt, ihre Notenfolge ist mit `pipeline/melodie.py` ausgelesen (t
   Übersprechen würden die Schwebung zerstören; nur mit Kopfhörern wirksam
 - Träger 200–500 Hz (die Noten werden dorthin oktaviert): dort ist die Schwebung am
   deutlichsten, über ~1 kHz verschwindet sie
-- Schwebung 10 Hz (Alpha, entspanntes Wachsein); legato, Wechsel als 0,6-s-Gleiten; Phasen so
-  gestellt, dass die Schleife ohne Naht aufgeht; leise (−33 LUFS), sanftes Atmen ±2 dB
+- Schwebung 6 Hz (Theta, tiefe Entspannung; 10 Hz klang Benjamin zu hart); weiche Fläche statt
+  Melodielinie (gleitende Töne klangen wie eine Sirene): Klangblöcke ≥ 6 s aus tiefer Oktave und
+  Grundton (Träger 180–360 Hz), 4 s Überblendung, Tiefpass 800 Hz, langer Hall je Ohr; leise
+  (−35 LUFS), sanftes Atmen ±2,5 dB
 - Stand der Forschung, ehrlich: Eine Meta-Analyse (Garcia-Argibay u. a. 2019, 22 Studien) fand
   kleine bis mittlere Wirkungen auf Angst, Aufmerksamkeit und Gedächtnis; ob das Gehirn
   messbar „mitschwingt“ (EEG), ist uneinheitlich belegt. Am besten gestützt: Kopfhörer, Träger
