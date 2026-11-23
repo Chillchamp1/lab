@@ -9,7 +9,7 @@ import { ort } from './karte.js';
 THREE.ColorManagement.enabled = false;          // Farben so, wie sie hier stehen (Comic-Palette)
 
 const F = {
-  himmel: 0x5fb9c2, wasser: 0x4fb3bd, wasserHell: 0x8fdccf, schaum: 0xfffaf0,
+  himmel: 0x5fb9c2, wasser: 0x4fb3bd, wasserHell: 0x7fd0cc, schaum: 0xfffaf0,
   holz: 0xd2915a, holzDunkel: 0x9a6640, holzInnen: 0xe7b07a, segel: 0xfff2d8, mast: 0x8a5a36,
   fels: 0x8f8ca6, felsHell: 0xb1aec6, moos: 0x95c47f, linie: 0x3b3550,
   moewe: 0xffffff, fluegel: 0xc7d0d9, spitze: 0x4b4f5c, schnabel: 0xffab4a,
@@ -28,13 +28,13 @@ function umriss(mesh, dicke = 1.06, farbe = F.linie) {   // Comic-Kontur: Rücks
   m.scale.setScalar(dicke); mesh.add(m); return mesh;
 }
 // Karte (Bootsbezug: x Bug, y links, z oben) → three (x Bug, y oben, z rechts), Entfernungen gestaucht
-// nah (bis 5 m) maßstäblich, dahinter logarithmisch: Fels in 18 m bei ~8, Kolonie in 230 m bei ~13 Einheiten
-const R0 = 5;
+// maßstäblich (1 Einheit = 1 m); was weiter als RAND entfernt ist (Kolonie, Gänse), steht am Rand
+// des Bildes in seiner wahren Richtung
+const RAND = 30, HOCH = 16;
 function stauche(p, aus = new THREE.Vector3()) {
   const r = Math.hypot(p[0], p[1]);
-  const rr = r < R0 ? r : R0 + 2.0 * Math.log(1 + (r - R0) / 4);
-  const f = r > 1e-6 ? rr / r : 1;
-  const z = p[2] < 3 ? p[2] : 3 + 1.8 * Math.log(1 + (p[2] - 3) / 4);
+  const f = r > RAND ? RAND / r : 1;
+  const z = Math.min(p[2], HOCH);
   return aus.set(p[0] * f, z, -p[1] * f);
 }
 function zufall(n) { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
@@ -150,20 +150,20 @@ export function starteDiorama(canvas, K, holeZeit) {
   // Kamera: isometrisch von schräg hinten rechts oben, Bug zeigt nach rechts oben
   const kamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 220);
   kamera.position.set(-44, 52, 56); kamera.lookAt(0, 0, 0);
-  const SICHT = 9.2;           // halbe sichtbare Höhe in Einheiten (Hochformat: halbe Breite)
+  const SICHT = 21;           // halbe sichtbare Höhe in Einheiten (Hochformat: halbe Breite)
 
   // Wasser
-  const wg = new THREE.PlaneGeometry(64, 64, 40, 40); wg.rotateX(-Math.PI / 2);
+  const wg = new THREE.PlaneGeometry(150, 150, 56, 56); wg.rotateX(-Math.PI / 2);
   const wasserMat = new THREE.MeshLambertMaterial({ color: F.wasser, flatShading: true });
   const wasser = new THREE.Mesh(wg, wasserMat); szene.add(wasser);
   const wRuhe = Float32Array.from(wg.attributes.position.array);
-  const welle = (x, z, t) => 0.2 * Math.sin(0.45 * x + 1.05 * t) + 0.15 * Math.sin(0.6 * z - 0.8 * t) + 0.08 * Math.sin(1.1 * (x + z) + 1.7 * t);
+  const welle = (x, z, t) => 0.3 * Math.sin(0.22 * x + 1.0 * t) + 0.22 * Math.sin(0.3 * z - 0.75 * t) + 0.1 * Math.sin(0.55 * (x + z) + 1.6 * t);
 
   const b = boot(); szene.add(b);
-  const felsGr = fels(); szene.add(felsGr);
-  const insel = fels(); insel.scale.setScalar(1.6); szene.add(insel);      // Felsen der Möwenkolonie, weit draußen
+  const felsGr = fels(); felsGr.scale.setScalar(2.0); szene.add(felsGr);
+  const insel = fels(); insel.scale.setScalar(2.6); szene.add(insel);      // Felsen der Möwenkolonie, weit draußen
   const rnd = (() => { let s = 7; return () => (s = (s * 16807) % 2147483647) / 2147483647; })();
-  const wolken = [0, 1, 2, 3].map(i => { const w = wolke(rnd); w.position.set(-30 + i * 19, 13 + rnd() * 3, -22 + rnd() * 40); szene.add(w); return w; });
+  const wolken = [0, 1, 2, 3].map(i => { const w = wolke(rnd); w.scale.setScalar(2.2); w.position.set(-50 + i * 30, 18 + rnd() * 4, -40 + rnd() * 70); szene.add(w); return w; });
 
   // ---------- Daten aufbereiten
   const nachGruppe = n => K.quellen.filter(q => q.g === n);
@@ -190,21 +190,33 @@ export function starteDiorama(canvas, K, holeZeit) {
 
   // ---------- Figuren-Vorrat
   const pool = (n, mk) => { const a = []; for (let i = 0; i < n; i++) { const o = mk(i); o.visible = false; szene.add(o); a.push(o); } return a; };
-  const moewen = pool(22, () => vogel(F.moewe, F.fluegel, F.schnabel, 1.6));
-  const gaense = pool(14, () => vogel(F.gans, F.gans, F.gansHals, 1.7));
-  const zugMoewen = pool(14, () => vogel(F.moewe, F.fluegel, F.schnabel, 1.4));
+  const moewen = pool(22, () => vogel(F.moewe, F.fluegel, F.schnabel, 2.2));
+  const gaense = pool(14, () => vogel(F.gans, F.gans, F.gansHals, 2.4));
+  const zugMoewen = pool(14, () => vogel(F.moewe, F.fluegel, F.schnabel, 2.0));
   const kugel = new THREE.IcosahedronGeometry(0.5, 0);
-  const schaum = new THREE.InstancedMesh(kugel, new THREE.MeshLambertMaterial({ color: F.schaum, emissive: 0x6a6a64, flatShading: true }), 220);
+  const MAX_SCHAUM = 400, MAX_RUECKEN = 40, MAX_RINGE = 240;    // feste Obergrenzen (count wird je Bild neu gesetzt)
+  const schaum = new THREE.InstancedMesh(kugel, new THREE.MeshLambertMaterial({ color: F.schaum, emissive: 0x6a6a64, flatShading: true }), MAX_SCHAUM);
   schaum.instanceMatrix.setUsage(THREE.DynamicDrawUsage); szene.add(schaum);
 
+  // Wellenkämme: ein Wasserrücken je Kamm, so breit wie die Quelle im Renderer (Feld b der Karte)
+  const ruecken = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.5, 0.5, 1, 7).rotateZ(Math.PI / 2),
+    new THREE.MeshLambertMaterial({ color: F.wasserHell, flatShading: true }), MAX_RUECKEN);
+  ruecken.instanceMatrix.setUsage(THREE.DynamicDrawUsage); szene.add(ruecken);
+  const KOPF = [-2.3, 0];
+  // Querrichtung zur Hörrichtung: entlang dieser Linie verteilt der Renderer eine breite Quelle
+  function quer(p) { const vx = p[0] - KOPF[0], vy = p[1] - KOPF[1], l = Math.hypot(vx, vy) || 1; return [-vy / l, vx / l]; }
+  const breite = q => q.b || (q.g === 'wellen' ? 5 + 9 * zufall(q.t0) : q.g === 'felsen' ? 4 + 3 * zufall(q.t0) : 0);
+
   // Schallringe: um jede Quelle, die gerade klingt, laufen helle Kreise nach außen (zur Kamera gedreht)
-  const ringe = new THREE.InstancedMesh(new THREE.RingGeometry(0.82, 1, 28),
-    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, side: THREE.DoubleSide }), 160);
+  const ringe = new THREE.InstancedMesh(new THREE.RingGeometry(0.86, 1, 32),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, side: THREE.DoubleSide }), MAX_RINGE);
   ringe.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
   ringe.setColorAt(0, new THREE.Color()); ringe.instanceColor.setUsage(THREE.DynamicDrawUsage);
   ringe.renderOrder = 5; szene.add(ringe);
   const STILL = new Set(['see_fern', 'wind', 'segel', 'moewen_fern']);       // Flächen: klingen immer, kein Ring
-  const RING = { felsen: 2.4, wellen: 1.3, rumpf: 0.55, knarzen: 0.45, zug: 2.6, gaense: 3.0 };
+  const RING = { felsen: 3.2, wellen: 2.2, rumpf: 0.9, knarzen: 0.8, zug: 4.0, gaense: 4.5, moewen: 1.8, ueberflug: 1.8, moewen_weit: 2.4 };
+  const FLACH = new Set(['wellen', 'felsen', 'rumpf']);          // Wasser: Ringe liegen als Kreise auf dem Wasser
+  const qFlach = new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0));
   const ringQ = K.quellen.filter(q => !STILL.has(q.g));
   const ringFarbe = new THREE.Color();
 
@@ -249,7 +261,7 @@ export function starteDiorama(canvas, K, holeZeit) {
   const v3 = new THREE.Vector3(), v4 = new THREE.Vector3(), m4 = new THREE.Matrix4(), qn = new THREE.Quaternion(), sc = new THREE.Vector3(), eul = new THREE.Euler();
   let n_schaum = 0;
   function schaumKugel(pos, groesse) {
-    if (n_schaum >= schaum.count || groesse <= 0.01) return;
+    if (n_schaum >= MAX_SCHAUM || groesse <= 0.01) return;
     m4.compose(pos, qn.identity(), sc.setScalar(groesse)); schaum.setMatrixAt(n_schaum++, m4);
   }
   function setzeVogel(o, pos, richtung, t, phase, schlag) {
@@ -280,7 +292,7 @@ export function starteDiorama(canvas, K, holeZeit) {
       sp.setZ(i, 0.18 * Math.sin(Math.PI * Math.min(x / 1.7, 1)) * (0.6 + 0.4 * Math.sin(uhr * 1.3 + y * 0.8)));
     }
     sp.needsUpdate = true;
-    for (const w of wolken) { w.position.x += dt * 0.35; if (w.position.x > 45) w.position.x = -45; }
+    for (const w of wolken) { w.position.x += dt * 0.6; if (w.position.x > 70) w.position.x = -70; }
 
     // Fels und Kolonie wandern mit der langsamen Drehung des Boots
     const fp = spurBei(felsSpur, ts);
@@ -297,27 +309,35 @@ export function starteDiorama(canvas, K, holeZeit) {
       const a = x - q.t0, k0 = q.t0 * 13.7;
       for (let i = 0; i < 16; i++) {
         const w = zufall(k0 + i) * Math.PI * 2, s = 0.8 + 1.6 * zufall(k0 + i + 50), hoch = 5 + 4 * zufall(k0 + i + 90);
-        v3.set(felsGr.position.x + Math.cos(w) * s * a * 1.4, -0.2 + hoch * a - 4.9 * a * a, felsGr.position.z + Math.sin(w) * s * a * 1.4);
-        if (v3.y > -0.3) schaumKugel(v3, (0.55 + 0.4 * zufall(k0 + i + 7)) * Math.max(0, 1 - a / 3.2));
+        v3.set(felsGr.position.x + Math.cos(w) * s * a * 2.2, -0.2 + 1.4 * hoch * a - 6 * a * a, felsGr.position.z + Math.sin(w) * s * a * 2.2);
+        if (v3.y > -0.3) schaumKugel(v3, (0.8 + 0.5 * zufall(k0 + i + 7)) * Math.max(0, 1 - a / 3.2));
       }
       for (let i = 0; i < 8; i++) {       // Schaumkranz am Fuß
         const w = i / 8 * Math.PI * 2;
-        v3.set(felsGr.position.x + Math.cos(w) * (1.3 + a), 0.05, felsGr.position.z + Math.sin(w) * (1.3 + a));
-        schaumKugel(v3, 0.45 * Math.max(0, 1 - a / 3));
+        v3.set(felsGr.position.x + Math.cos(w) * (2.4 + 1.5 * a), 0.05, felsGr.position.z + Math.sin(w) * (2.4 + 1.5 * a));
+        schaumKugel(v3, 0.7 * Math.max(0, 1 - a / 3));
       }
     }
-    // Wellenkämme: weiße Schaumkrone, die aufsteigt und vergeht
+    // Wellenkämme: ein Wasserrücken quer zur Hörrichtung, so breit wie im Renderer; er hebt sich,
+    // die Schaumkrone bricht entlang der ganzen Front und läuft aus
+    let nr_k = 0;
     for (const q of wellenQ) {
-      const x = imKreis(K, ts, q.t0, q.ende + 0.5); if (x === null) continue;
-      const p = ort(K, q, Math.min(x, q.ende)); if (!p) continue;
-      const u = (x - q.t0) / (q.ende - q.t0 + 0.5), h = Math.sin(Math.PI * u);
+      const x = imKreis(K, ts, q.t0 - 0.8, q.ende + 0.8); if (x === null || nr_k >= MAX_RUECKEN) continue;
+      const p = ort(K, q, Math.min(Math.max(x, q.t0), q.ende)); if (!p) continue;
+      const u = (x - q.t0 + 0.8) / (q.ende - q.t0 + 1.6), h = Math.sin(Math.PI * u);
+      const w = breite(q), [tx, ty] = quer(p);
       stauche([p[0], p[1], 0], v4);
-      for (let i = 0; i < 4; i++) {
-        const k = q.t0 * 7.1 + i;
-        v3.set(v4.x + (zufall(k) - 0.5) * 1.4, welle(v4.x, v4.z, uhr) + 0.15 + 0.25 * h, v4.z + (zufall(k + 3) - 0.5) * 1.4);
-        schaumKugel(v3, 0.5 * h * (0.6 + 0.4 * zufall(k + 5)));
+      const ry = Math.atan2(ty, tx);            // three: Drehung um die Hochachse, damit der Rücken entlang (tx, -ty) liegt
+      m4.compose(v4.clone().setY(welle(v4.x, v4.z, uhr) - 0.4 + 0.3 * h), qn.setFromEuler(eul.set(0, ry, 0)), sc.set(w, 0.7 * h + 0.05, 2.4));
+      ruecken.setMatrixAt(nr_k++, m4);
+      const nk = Math.max(3, Math.round(w / 1.4));
+      for (let i = 0; i < nk; i++) {
+        const s_ = (i / (nk - 1) - 0.5) * w, k = q.t0 * 7.1 + i;
+        v3.set(v4.x + tx * s_, welle(v4.x, v4.z, uhr) + 0.2 + 0.45 * h, v4.z - ty * s_);
+        schaumKugel(v3, (0.55 + 0.3 * zufall(k)) * Math.max(0, Math.sin(Math.PI * Math.min(1, Math.max(0, (u - 0.25) / 0.75)))));
       }
     }
+    ruecken.count = nr_k; ruecken.instanceMatrix.needsUpdate = true;
     // Wasser am Rumpf: kleine Spritzer an der Bordwand
     for (const q of rumpfQ) {
       const x = imKreis(K, ts, q.t0, q.t0 + 0.8); if (x === null) continue;
@@ -343,7 +363,7 @@ export function starteDiorama(canvas, K, holeZeit) {
       const o = moewen[nm++];
       setzeVogel(o, v3, v4.lengthSq() > 1e-6 ? v4 : v4.set(1, 0, 0), uhr, q.t0, false);
       const rand = Math.min(1, (x - q.t0 + 3) / 1.2, (q.ende + 3 - x) / 1.2);
-      o.scale.setScalar(1.6 * gross * Math.max(0.05, rand));
+      o.scale.setScalar(2.2 * gross * Math.max(0.05, rand));
     }
     for (let i = nm; i < moewen.length; i++) moewen[i].visible = false;
     // Züge: Schwarm in lockerer Keilform um die Mitte des Stimmengewirrs
@@ -357,11 +377,11 @@ export function starteDiorama(canvas, K, holeZeit) {
       for (let i = 0; i < anz; i++) {
         const o = liste[gans ? ng++ : nz++]; if (!o) break;
         const reihe = Math.ceil(i / 2), seite = i % 2 ? 1 : -1;
-        const hinten = gans ? reihe * 9 : reihe * 7 + zufall(i) * 6, seitlich = gans ? seite * reihe * 7 : seite * (reihe * 5 + zufall(i + 9) * 6);
+        const hinten = gans ? reihe * 4 : reihe * 3.2 + zufall(i) * 3, seitlich = gans ? seite * reihe * 3.2 : seite * (reihe * 2.4 + zufall(i + 9) * 3);
         const pp = [p[0] - r[0] * hinten + quer[0] * seitlich, p[1] - r[1] * hinten + quer[1] * seitlich, p[2] + (zufall(i + 4) - 0.5) * 4];
         stauche(pp, v3);
         setzeVogel(o, v3, v4.set(r[0], 0, -r[1]), uhr, i * 1.7, gans);
-        o.scale.setScalar((gans ? 1.7 : 1.4) * Math.max(0.05, rand));
+        o.scale.setScalar((gans ? 2.4 : 2.0) * Math.max(0.05, rand));
       }
     }
     for (let i = ng; i < gaense.length; i++) gaense[i].visible = false;
@@ -370,19 +390,25 @@ export function starteDiorama(canvas, K, holeZeit) {
     // Schallringe
     let nr = 0;
     for (const q of ringQ) {
-      const x = imKreis(K, ts, q.t0, q.ende + 0.3); if (x === null || nr >= ringe.count - 1) continue;
+      const x = imKreis(K, ts, q.t0, q.ende + 0.3); if (x === null || nr >= MAX_RINGE - 1) continue;
       const p = ort(K, q, Math.min(x, q.ende)); if (!p) continue;
       stauche(p, v3);
       if (q.g === 'rumpf' || q.g === 'knarzen') { v3.applyEuler(eul.set(b.rotation.x, 0, b.rotation.z)); v3.y += b.position.y + 0.15; }
       else if (q.g === 'wellen' || q.g === 'felsen') v3.y = Math.max(v3.y, 0.4);
-      const gr = RING[q.g] || 1.0, alter = x - q.t0;
+      const gr = RING[q.g] || 1.2, alter = x - q.t0, flach = FLACH.has(q.g);
       const huelle = Math.min(1, alter / 0.15, (q.ende + 0.3 - x) / 0.5);
-      for (let k = 0; k < 2; k++) {
-        const u = (alter * 1.3 + k * 0.5) % 1;
-        m4.compose(v3, kamera.quaternion, sc.setScalar(gr * (0.3 + 0.9 * u)));
-        ringe.setMatrixAt(nr, m4);
-        ringe.setColorAt(nr, ringFarbe.setScalar(0.85 * (1 - u) * huelle));
-        nr++;
+      // breite Quelle: Ringe an mehreren Stellen entlang der Front (wie die Teilquellen im Renderer)
+      const w = breite(q), nt = w > 2 ? Math.min(5, Math.max(2, Math.round(w / 3))) : 1, [tx, ty] = quer(p);
+      for (let j = 0; j < nt && nr < MAX_RINGE - 2; j++) {
+        const s_ = nt > 1 ? (j / (nt - 1) - 0.5) * w : 0;
+        v4.set(v3.x + tx * s_, flach ? Math.max(v3.y, 0.35) : v3.y, v3.z - ty * s_);
+        for (let k = 0; k < 2; k++) {
+          const u = (alter * 1.1 + k * 0.5 + j * 0.17) % 1;
+          m4.compose(v4, flach ? qFlach : kamera.quaternion, sc.setScalar(gr * (0.25 + 1.0 * u)));
+          ringe.setMatrixAt(nr, m4);
+          ringe.setColorAt(nr, ringFarbe.setScalar(0.8 * (1 - u) * huelle));
+          nr++;
+        }
       }
     }
     ringe.count = nr; ringe.instanceMatrix.needsUpdate = true; if (ringe.instanceColor) ringe.instanceColor.needsUpdate = true;

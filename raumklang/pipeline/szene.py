@@ -277,8 +277,12 @@ def rendere_quelle(kx, spur, bus, sig, t0, ort_fn, aussen=True, pegel=1.0, hall=
         pk = ort_fn(ts)
         if aussen:
             pk = kx.boot.welt_zu_boot(pk, ts)
-        kx.karte.append(dict(g=getattr(kx, 'gruppe', ''), art=getattr(kx, 'etikett', None) or 'quelle', t0=round(float(t0), 2), dt=schritt,
-                             p=np.round(pk, 1).tolist(), pegel=round(float(20 * np.log10(max(pegel, 1e-9))), 1)))
+        eintrag_k = dict(g=getattr(kx, 'gruppe', ''), art=getattr(kx, 'etikett', None) or 'quelle', t0=round(float(t0), 2), dt=schritt,
+                         p=np.round(pk, 1).tolist(), pegel=round(float(20 * np.log10(max(pegel, 1e-9))), 1))
+        br_k = breite if breite is not None else getattr(kx, 'g', {}).get('breite_m')
+        if br_k and 'breite' not in getattr(kx, 'ohne', set()):       # Breite der Quelle (wie unten beim Rendern gewürfelt)
+            eintrag_k['b'] = round(float(_ereignis_rng(t0, len(sig), 3).uniform(*br_k) if isinstance(br_k, (list, tuple)) else br_k), 1)
+        kx.karte.append(eintrag_k)
         if getattr(kx, 'nur_karte', False):
             return
     bild = None
