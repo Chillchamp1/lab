@@ -3841,7 +3841,7 @@
    "name": "schwebung",
    "typ": "schwebung",
    "titel": "Binaural beat melody",
-   "text": "The gentle melody that used to hide in one of the sea recordings, transcribed and played as a soft pad with a binaural beat: in your right ear every overtone sits exactly 10 Hz above the one in your left ear. The 10 Hz pulse you perceive is created by your brain from that difference (alpha range, associated with relaxed wakefulness). Works only with headphones.",
+   "text": "The gentle E–G harmony that used to hide in one of the sea recordings, transcribed and played as a soft, slowly changing pad with a binaural beat: every tone in your right ear sits exactly 10 Hz above the one in your left ear. The 10 Hz pulse you perceive is created by your brain from that difference (alpha range, associated with relaxed wakefulness). Works only with headphones.",
    "ziel_lufs": -33,
    "pegel_art": "integriert",
    "schwebung_hz": 10.0,
@@ -3849,7 +3849,6 @@
     200,
     500
    ],
-   "gleiten_s": 0.6,
    "atem_db": 2.0,
    "quelle": "wellen_gravity",
    "periode_s": 112.0,
@@ -4626,36 +4625,28 @@
     ]
    ],
    "probe_dauer": 40,
-   "klang": [
-    [
-     1,
-     1.0
-    ],
-    [
-     2,
-     0.5
-    ],
-    [
-     3,
-     0.28
-    ],
-    [
-     4,
-     0.14
-    ],
-    [
-     5,
-     0.08
-    ],
-    [
-     6,
-     0.04
+   "tiefpass": 1100,
+   "hall_s": 4.5,
+   "hall_t60": 3.5,
+   "hall_anteil": 0.45,
+   "flaeche": {
+    "block_s": 4.0,
+    "ueberblend_s": 2.5,
+    "stimmen": [
+     [
+      0.5,
+      0.45
+     ],
+     [
+      1.0,
+      1.0
+     ],
+     [
+      1.5,
+      0.3
+     ]
     ]
-   ],
-   "tiefpass": 1600,
-   "hall_s": 3.5,
-   "hall_t60": 2.8,
-   "hall_anteil": 0.4
+   }
   }
  ],
  "boeen": {
