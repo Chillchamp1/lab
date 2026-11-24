@@ -1697,6 +1697,8 @@ def main():
     ap.add_argument('--lufs', type=float, help='Ziel-Lautheit der Mischung (überschreibt die Szene)')
     ap.add_argument('--ohne', default='', help='Wirkungen abschalten (für Vergleiche, gleiche Ereignisfolge): breite,richtwirkung,nahfeld,streuung,kette')
     ap.add_argument('--karte', action='store_true', help='nur das Ereignisprotokoll (Szenenkarte) schreiben, ohne Audio – gleiche Ereignisse wie beim Rendern')
+    ap.add_argument('--tiefen_db', type=float, help='Wiedergabe-Ausgleich: Tiefen-Kuhschwanz auf die Mischung (z. B. −6 für In-Ears mit angehobenem Bass)')
+    ap.add_argument('--tiefen_hz', type=float, default=120.0, help='Eckfrequenz des Tiefen-Kuhschwanzes')
     ap.add_argument('--neu', default='', help='Zwischenspeicher übergehen: alle ("alle") oder diese Gruppen neu rechnen')
     ap.add_argument('--zwischenspeicher', help='Ordner für die fertigen Spuren (Vorgabe: material/zwischenspeicher/<szene>)')
     ap.add_argument('--drehung', type=float, help='Startpunkt der Schleife in Abtastwerten vorgeben (start_abtastwerte aus dem Bericht der Bezugsfassung; gerundete Sekunden verschieben um Millisekunden)')
@@ -1885,6 +1887,19 @@ def main():
         start = json.loads(alt.read_text()).get('start_abtastwerte', 0) / FS if alt.exists() else 0.0
         schreibe_karte(start)
         return
+    if not nur and a.tiefen_db:
+        # Ausgleich für den Kopfhörer (z. B. In-Ears mit angehobenem Bass): Kuhschwanzfilter nach RBJ
+        from scipy.signal import lfilter
+        A_, w0 = 10 ** (a.tiefen_db / 40), 2 * np.pi * a.tiefen_hz / FS
+        al = np.sin(w0) / 2 * np.sqrt(2)          # Güte 0,707
+        c = np.cos(w0)
+        bk = [A_ * ((A_ + 1) - (A_ - 1) * c + 2 * np.sqrt(A_) * al), 2 * A_ * ((A_ - 1) - (A_ + 1) * c), A_ * ((A_ + 1) - (A_ - 1) * c - 2 * np.sqrt(A_) * al)]
+        ak = [(A_ + 1) + (A_ - 1) * c + 2 * np.sqrt(A_) * al, -2 * ((A_ - 1) + (A_ + 1) * c), (A_ + 1) + (A_ - 1) * c - 2 * np.sqrt(A_) * al]
+        vor = int(2 * FS)                         # Einschwingen über die Naht (kreisförmig)
+        for k in range(2):
+            ein = np.r_[summe[k, -vor:], summe[k]]
+            summe[k] = lfilter(bk, ak, ein)[vor:].astype(np.float32)
+        bericht['wiedergabe'] = dict(tiefen_db=a.tiefen_db, tiefen_hz=a.tiefen_hz)
     if not nur:
         ist = lautheit(summe)
         summe *= 10 ** ((sz.get('ziel_lufs', -21) - ist) / 20)
