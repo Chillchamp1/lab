@@ -17,15 +17,20 @@ from pyproj import Geod, Transformer
 H = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(H, "data", "borders.json")
 PNG = os.path.join(H, "renders", "borders_preview.png")
-DE_BOX = box(7.0, 48.0, 18.0, 55.5)
-MAP_BOX = (7.5, 48.5, 17.5, 55.0)
+DE_BOX = box(5.5, 47.0, 18.0, 55.5)
+MAP_BOX = (5.5, 47.0, 19.0, 55.5)
 GEOD = Geod(ellps="WGS84")
 NEIGH = {"PL": ("Polen", "Poland"), "CZ": ("Tschechien", "Czechia"), "DK": ("Dänemark", "Denmark"),
          "NL": ("Niederlande", "Netherlands"), "BE": ("Belgien", "Belgium"), "LU": ("Luxemburg", "Luxembourg"),
          "FR": ("Frankreich", "France"), "CH": ("Schweiz", "Switzerland"), "AT": ("Österreich", "Austria")}
 # hand-picked label anchors (lon, lat), ~15-25 km inside the neighbour country, on land, inside MAP_BOX
-LABELS = [("PL", 14.95, 52.40), ("PL", 14.80, 53.22), ("CZ", 13.45, 50.43), ("CZ", 13.27, 49.42),
-          ("DK", 9.10, 54.99), ("FR", 7.64, 48.72), ("AT", 14.08, 48.56)]
+LABELS = [("PL", 14.95, 52.40), ("CZ", 13.45, 50.43),
+          ("DK", 9.10, 54.99), ("FR", 7.64, 48.72), ("AT", 14.08, 48.56),
+          ("NL", 6.55, 52.35), ("BE", 5.80, 50.45), ("LU", 6.10, 49.72), ("CH", 8.25, 47.38)]
+# Hinweis: borders_parts/ deckt nicht alle Grenzregionen ab (u. a. NL/BE/LU). Die ausgelieferte Grenzlinie stammt deshalb
+# aus einer Overpass-Abfrage aller Landgrenz-Wege der Relation 51477, die auch Wege eines Nachbarlands sind
+#   rel(51477);way(r)->.de;rel(id:47796,52411,2171347,16239,51701,2202162,50046,49715,51684);way(r)->.nb;way.de.nb;out geom;
+# (maritime Wege verworfen, linemerge, auf 150 m vereinfacht), ergänzt um die Wege von 51477 im Kondominium mit Luxemburg.
 
 
 def proj(epsg):
