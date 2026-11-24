@@ -27,7 +27,7 @@ const mobil = () => matchMedia('(pointer: coarse)').matches || /iPhone|iPad|iPod
  * opt.beiFehler(grund): wird gerufen, wenn der Browser das Abspielen ohne Tippen verweigert.
  * Rückgabe: { spielen, stopp, laeuft() }
  */
-export function spieler(el, src, soll, dateiname, opt = {}) {
+export function spieler(el, src, soll, dateiname, opt = {}) {   // src kann mit wechsle() getauscht werden
   el.innerHTML = `<button aria-label="Play">▶</button><div class="leiste"><i></i><span></span></div>` +
     `<span class="zeit">0:00</span>` + (dateiname ? `<a href="${src}" download="${esc(dateiname)}">MP3</a>` : '');
   const knopf = el.querySelector('button'), leiste = el.querySelector('.leiste');
@@ -179,7 +179,17 @@ export function spieler(el, src, soll, dateiname, opt = {}) {
     } catch (e) {}
   }
   audio.addEventListener('play', mediaSession);
-  const api = { spielen, stopp, laeuft: () => !!modus, modus: () => modus, position, dauer };
+  // andere Fassung derselben Szene (gleiche Länge, gleicher Schleifenstart), an derselben Stelle weiter
+  async function wechsle(neu, neuerName) {
+    const war = !!modus, p = position();
+    if (modus) stopp();
+    src = neu; audio.src = neu; puffer = null; laedt = false; naht = false;
+    const a_ = el.querySelector('a[download]');
+    if (a_) { a_.href = neu; if (neuerName) a_.download = neuerName; }
+    ab = p; anzeigen();
+    if (war) await spielen(p);
+  }
+  const api = { spielen, stopp, wechsle, laeuft: () => !!modus, modus: () => modus, position, dauer };
   return api;
 }
 

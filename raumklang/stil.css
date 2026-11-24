@@ -78,3 +78,6 @@ details.ueber .leise { color: var(--leise); font-size: .88rem; }
 a.szene p { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 h2.zusatz { margin: 34px 0 12px; font-size: 1.05rem; color: var(--leise); }
 .kartenbox canvas[hidden] { display: none; }
+.fassung-wahl { display: flex; align-items: center; gap: 8px; font-size: .88rem; color: var(--leise); margin: 10px 0 0; }
+.fassung-wahl:has(select[hidden]) { display: none; }
+.fassung-wahl select { font: inherit; border: 1px solid var(--rand); background: var(--flaeche); color: var(--text); border-radius: 8px; padding: 4px 8px; }

@@ -37,6 +37,7 @@ VORLAGE = """<!doctype html>
   <p class="zurueck"><a href="../">← All soundscapes</a></p>
   <h1>{titel}</h1>
   <div class="spieler gross" id="spieler"></div>
+  <label class="fassung-wahl">Listening on <select id="fassung" hidden aria-label="Headphone type"></select></label>
   <div class="kartenbox">
     <canvas id="karte" width="1000" height="1000" aria-label="Live map: you in the middle, every sound as a moving dot"></canvas>
     <p id="jetzt" class="jetzt" aria-live="off"></p>

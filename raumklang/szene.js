@@ -20,6 +20,26 @@ $('start-knopf').addEventListener('click', async () => {
   $('start').hidden = true;
   if (!(await haupt.spielen())) $('start').hidden = false;
 });
+
+// ---------- Kopfhörer-Fassungen: gibt es eine In-Ear-Fassung (eigene HRTF und Klangausgleich), Auswahl zeigen
+const FASSUNGEN = [
+  { id: 'overear', datei: name, text: 'Over-ear headphones' },
+  { id: 'inear', datei: `${name}_inear`, text: 'In-ear earbuds (e.g. EarFun Air Pro 4)' },
+];
+let gewaehlt = 'overear';
+try { gewaehlt = localStorage.getItem('raumklang-kopfhoerer') || 'overear'; } catch (e) {}
+const inear = await fetch(`../audio/${name}_inear.json`).then(r => r.ok ? r.json() : null).catch(() => null);
+if (inear && inear.abtastwerte === b.abtastwerte) {
+  $('fassung').hidden = false;
+  $('fassung').innerHTML = FASSUNGEN.map(f => `<option value="${f.id}">${esc(f.text)}</option>`).join('');
+  const setze = async id => {
+    const f = FASSUNGEN.find(x => x.id === id) || FASSUNGEN[0];
+    $('fassung').value = f.id;
+    await haupt.wechsle(`../audio/${f.datei}.mp3`, `${slug}${f.id === 'inear' ? '_in-ear' : ''}${stand}.mp3`);
+  };
+  $('fassung').addEventListener('change', e => { try { localStorage.setItem('raumklang-kopfhoerer', e.target.value); } catch (x) {} setze(e.target.value); });
+  if (gewaehlt === 'inear') await setze('inear');
+}
 haupt.spielen();          // sofort versuchen – klappt, wenn der Browser Ton ohne Tippen erlaubt
 
 // ---------- Live-Karte: von oben, im Bezug des Hörers
