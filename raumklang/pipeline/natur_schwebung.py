@@ -55,6 +55,9 @@ def main():
     ap.add_argument('--hz', type=float, default=8.0)
     ap.add_argument('--anheben_db', type=float, default=6.0, help='Anhebung des Bereichs 150–900 Hz, der die Schwebung trägt')
     ap.add_argument('--lufs', type=float, default=-23.0)
+    ap.add_argument('--band', type=float, nargs=2, help='nur dieses Band verschieben (Hz), der Rest bleibt in beiden Ohren gleich')
+    ap.add_argument('--tiefe', type=float, default=1.0, help='Anteil des verschobenen Signals im rechten Ohr (1 = volle Drehung; '
+                    '0,2 = sanftes Schimmern: die Phase pendelt nur um ±15° statt sich ganz zu drehen)')
     a = ap.parse_args()
     n = int(round(a.dauer * FS))
     x, bib = mono_schleife(a.art, n, np.random.default_rng(5))
@@ -69,11 +72,19 @@ def main():
     h[1:(n + 1) // 2] = 2
     if n % 2 == 0:
         h[n // 2] = 1
-    analytisch = np.fft.ifft(X * h)
     d = round(a.hz * a.dauer) / a.dauer                     # ganze Zahl von Umläufen je Schleife
     t = np.arange(n) / FS
-    links = analytisch.real
-    rechts = (analytisch * np.exp(2j * np.pi * d * t)).real
+    # Die volle Verschiebung des ganzen Geräuschs lässt sein Klangbild Δ-mal je Sekunde durch den Kopf kreisen
+    # (Benjamin: „wie ein Lasso über dem Kopf“, nicht entspannend). Sanfter: nur ein tiefes Band und nur
+    # anteilig verschieben – dann pendelt die Phase zwischen den Ohren, statt sich zu drehen.
+    if a.band:
+        fenster = 1 / (1 + (a.band[0] / np.maximum(f, 1)) ** 6) / (1 + (f / a.band[1]) ** 6)
+    else:
+        fenster = np.ones(n)
+    tief = np.fft.ifft(X * fenster * h)
+    rest = np.fft.ifft(X * (1 - fenster)).real
+    links = rest + tief.real
+    rechts = rest + ((1 - a.tiefe) * tief + a.tiefe * tief * np.exp(2j * np.pi * d * t)).real
     y = np.stack([links, rechts]).astype(np.float32)
     y *= 10 ** ((a.lufs - szene.lautheit(y)) / 20)
     y, weg = szene.begrenzer_kreis(y, -1.0)
@@ -82,11 +93,13 @@ def main():
     # um einen anderen Betrag zurückverschoben nicht. (Die Phase direkt abzulesen geht bei Rauschen nicht:
     # wo die Hüllkurve einbricht, springt sie.)
     def zurueck(hz):
-        r = (np.fft.ifft(np.fft.fft(y[1]) * h) * np.exp(-2j * np.pi * hz * t)).real
-        return round(float(np.corrcoef(r, y[0])[0, 1]), 3)
-    print(json.dumps(dict(art=a.art, dauer=a.dauer, schwebung_hz=d, gleich_nach_rueckverschiebung=zurueck(d),
-                          gegenprobe_andere_verschiebung=zurueck(d + 3), links_rechts_unverschoben=round(float(np.corrcoef(y[0], y[1])[0, 1]), 3),
-                          begrenzt_db=round(float(weg), 1), quellen=len(bib.benutzt))))
+        r_ = (np.fft.ifft(np.fft.fft(y[1]) * h) * np.exp(-2j * np.pi * hz * t)).real
+        return round(float(np.corrcoef(r_, y[0])[0, 1]), 3)
+    aus = dict(art=a.art, dauer=a.dauer, schwebung_hz=d, tiefe=a.tiefe, band=a.band,
+               links_rechts=round(float(np.corrcoef(y[0], y[1])[0, 1]), 3), begrenzt_db=round(float(weg), 1), quellen=len(bib.benutzt))
+    if a.tiefe == 1.0 and not a.band:
+        aus.update(gleich_nach_rueckverschiebung=zurueck(d), gegenprobe_andere_verschiebung=zurueck(d + 3))
+    print(json.dumps(aus))
 
 
 if __name__ == '__main__':
