@@ -1,0 +1,1002 @@
+{
+ "name": "probe_wellen",
+ "titel": "Waves (binaural sample)",
+ "dauer": 30,
+ "saat": 11,
+ "ziel_lufs": -23,
+ "boot": {
+  "blick": 20,
+  "halbe_laenge": 3.2,
+  "halbe_breite": 1.0,
+  "bordkante": 0.0,
+  "boden": -0.05,
+  "kopf": [
+   0.0,
+   0.0,
+   1.0
+  ],
+  "bewegung": {
+   "roll_grad": 0.0,
+   "roll_periode": 5,
+   "stampf_grad": 0.0,
+   "stampf_periode": 4,
+   "hub_m": 0.0,
+   "hub_periode": 6,
+   "gier_grad": 0
+  },
+  "liegt_grad": 0
+ },
+ "nachhall": {
+  "t60_tief": 0.35,
+  "t60_hoch": 0.18,
+  "dauer": 0.6
+ },
+ "nachhall_pegel_db": -10,
+ "boeen": {
+  "grund_hz": 0.03,
+  "abstand_s": 22,
+  "dauer_s": [
+   3,
+   8
+  ]
+ },
+ "text": "Sitting at the water: wave crests roll in from ahead in long lines, each several metres wide; the open sea far behind them.",
+ "weite": {
+  "ab_m": 25,
+  "voll_m": 150,
+  "exponent": 0.7,
+  "bezug_m": 30,
+  "pegel_db": -18,
+  "nachhall": {
+   "t60_tief": 1.8,
+   "t60_hoch": 0.6,
+   "dauer": 2.6,
+   "verzug": 0.08
+  },
+  "gruppen": [
+   "moewen",
+   "moewen_weit",
+   "moewen_fern",
+   "ueberflug"
+  ],
+  "max_faktor": 2.5
+ },
+ "gruppen": [
+  {
+   "name": "see_fern",
+   "typ": "bett",
+   "titel": "Distant sea",
+   "ziel_lufs": -31,
+   "anzahl": 9,
+   "entfernung": [
+    55,
+    110
+   ],
+   "hoehe": 0.3,
+   "drift_grad": 25,
+   "atem_db": 3.0,
+   "hall": 0.2,
+   "sammlung": [
+    {
+     "quelle": "esc_1-28135-A",
+     "tiefpass": 9000
+    },
+    {
+     "quelle": "esc_1-28135-B",
+     "tiefpass": 9000
+    },
+    {
+     "quelle": "esc_1-91359-A",
+     "tiefpass": 9000
+    },
+    {
+     "quelle": "esc_2-137162-A",
+     "tiefpass": 9000
+    },
+    {
+     "quelle": "esc_3-155642-A",
+     "tiefpass": 9000
+    },
+    {
+     "quelle": "esc_3-155642-B",
+     "tiefpass": 9000
+    },
+    {
+     "quelle": "esc_4-182613-A",
+     "tiefpass": 9000
+    },
+    {
+     "quelle": "esc_4-182613-B",
+     "tiefpass": 9000
+    },
+    {
+     "quelle": "esc_5-208810-A",
+     "tiefpass": 9000
+    },
+    {
+     "quelle": "esc_5-208810-B",
+     "tiefpass": 9000
+    },
+    {
+     "quelle": "esc_5-219379-B",
+     "tiefpass": 9000
+    },
+    {
+     "quelle": "esc_5-219379-C",
+     "tiefpass": 9000
+    },
+    {
+     "quelle": "esc_1-61252-A",
+     "tiefpass": 9000
+    },
+    {
+     "quelle": "esc_3-144827-A",
+     "tiefpass": 9000
+    },
+    {
+     "quelle": "esc_2-155801-A",
+     "tiefpass": 9000
+    }
+   ],
+   "text": "Surf and swell far out, all around the horizon. It reaches you over the gunwale and is softened by it.",
+   "breite_m": 40
+  },
+  {
+   "name": "wellen",
+   "typ": "ereignisse",
+   "titel": "Wave crests all around",
+   "ziel_lufs": -25,
+   "pegel_art": "spitzen",
+   "abstand_s": 1.6,
+   "entfernung": [
+    4,
+    30
+   ],
+   "treibt_m_s": 1.5,
+   "wind_richtung_grad": 180,
+   "streuung_db": 3.0,
+   "hall": 0.4,
+   "sammlung": [
+    {
+     "quelle": "esc_1-28135-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_1-28135-B",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_1-43760-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_1-61252-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_1-91359-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_2-124662-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_2-125966-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_2-132157-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_2-132157-B",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_2-133863-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_2-137162-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_2-155801-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_3-144827-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_3-144827-B",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_3-155642-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_3-155642-B",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_4-167063-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_4-167063-B",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_4-167063-C",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_4-182613-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_4-182613-B",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_4-195497-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_4-195497-B",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_5-200461-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_5-200461-B",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_5-208810-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_5-208810-B",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_5-219379-A",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_5-219379-B",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "esc_5-219379-C",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "wellen_wws_klein",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "wellen_felsstrand",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    },
+    {
+     "quelle": "brecher_ufer",
+     "zerlegen": {
+      "methode": "taeler",
+      "glatt_ms": 150,
+      "prominenz_db": 5,
+      "min_dauer": 1.0,
+      "max_dauer": 8
+     },
+     "abklingen": {
+      "ein_ms": 300,
+      "min_ausklang_s": 0.9
+     },
+     "wucht": {
+      "grollen": {
+       "band": [
+        35,
+        130
+       ],
+       "anteil": 0.96,
+       "glatt_ms": 450
+      },
+      "obertoene": 0.3
+     }
+    }
+   ],
+   "text": "Wave crests 7 to 32 m away, rolling in from ahead with the wind in long lines that stretch from left to right – each crest is several metres wide, and its sound comes from along the whole front. When one breaks with real force, there is a deep rumble.",
+   "wucht_pegel": 0.15,
+   "wucht_exponent": 2.0,
+   "ausreisser_wahrsch": 0.12,
+   "ausreisser_db": [
+    4,
+    8
+   ],
+   "wucht_max": 0.8,
+   "breite_m": [
+    5,
+    14
+   ],
+   "breite_achse_grad": 90
+  }
+ ]
+}

@@ -1,0 +1,480 @@
+{
+ "name": "probe_tropfen",
+ "titel": "Raindrops (binaural sample)",
+ "text": "Light rain under a canopy: single drops on leaves above and around you, drops into puddles beside you.",
+ "dauer": 30,
+ "saat": 21,
+ "ziel_lufs": -23,
+ "wald": {
+  "blick": 55,
+  "kopf": [
+   0.0,
+   0.0,
+   0.85
+  ],
+  "stamm_abstand": -0.28,
+  "blaetterdach_hoehe": 9.0,
+  "wald_db_m": 0.1,
+  "boden_reflexion": 0.55,
+  "wald_max_m": 80,
+  "staemme": {
+   "anzahl": 36,
+   "abstand_m": [
+    2.5,
+    30.0
+   ],
+   "radius_m": [
+    0.12,
+    0.4
+   ],
+   "hoehe_m": 14.0,
+   "reflexion": 0.6,
+   "pegel_db": 5.0
+  }
+ },
+ "nachhall": {
+  "t60_tief": 1.0,
+  "t60_hoch": 0.45,
+  "dauer": 1.4,
+  "verzug": 0.02
+ },
+ "nachhall_pegel_db": -8,
+ "boeen": {
+  "grund_hz": 0.03,
+  "abstand_s": 25,
+  "dauer_s": [
+   4,
+   9
+  ]
+ },
+ "gruppen": [
+  {
+   "name": "regen",
+   "typ": "bett",
+   "titel": "Rain in the canopy",
+   "text": "Soft autumn rain on the leaves above and around you, sometimes denser, sometimes lighter; a little more in the gusts.",
+   "ziel_lufs": -35,
+   "anzahl": 10,
+   "entfernung": [
+    5,
+    16
+   ],
+   "hoehe": [
+    6,
+    11
+   ],
+   "drift_grad": 30,
+   "atem_db": 2.5,
+   "atem_hz": 0.04,
+   "hall": 0.3,
+   "sammlung": [
+    {
+     "quelle": "esc_3-157149-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_4-163264-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_4-181286-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_1-21189-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_5-188655-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_2-87781-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_4-180380-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_5-198321-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_1-54958-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_1-56311-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_5-181766-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_2-101676-A",
+     "tiefpass": 9000,
+     "hochpass": 250
+    }
+   ],
+   "decke_db": -6.0,
+   "breite_m": 8
+  },
+  {
+   "name": "regen_blaetter",
+   "typ": "bett",
+   "titel": "Rain on big leaves",
+   "text": "Rain drums on big leaves right above and beside you – like on a tent roof.",
+   "ziel_lufs": -36,
+   "anzahl": 5,
+   "punkte": [
+    [
+     1.4,
+     1.0,
+     2.4
+    ],
+    [
+     2.2,
+     -1.6,
+     2.9
+    ],
+    [
+     -0.4,
+     1.8,
+     3.3
+    ],
+    [
+     0.9,
+     -0.2,
+     3.6
+    ],
+    [
+     3.2,
+     0.6,
+     1.8
+    ]
+   ],
+   "bezug_m": 2.5,
+   "atem_db": 3,
+   "atem_hz": 0.05,
+   "hall": 0.5,
+   "decke_db": -6.0,
+   "sammlung": [
+    {
+     "quelle": "esc_2-117625-A",
+     "tiefpass": 8000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "esc_2-82367-A",
+     "tiefpass": 8000,
+     "hochpass": 250
+    },
+    {
+     "quelle": "regen_blaetter_gravity",
+     "tiefpass": 8000,
+     "hochpass": 250
+    }
+   ],
+   "breite_m": 1.2
+  },
+  {
+   "name": "tropfen_blatt",
+   "typ": "ereignisse",
+   "titel": "Drops on leaves",
+   "text": "Single fat drops falling from the leaves above you onto lower leaves.",
+   "ziel_lufs": -29,
+   "pegel_art": "spitzen",
+   "entfernung": [
+    0.6,
+    7.0
+   ],
+   "hoehe": [
+    0.4,
+    3.5
+   ],
+   "treibt_m_s": 0,
+   "abstand_s": 0.45,
+   "bezug_m": 2.0,
+   "streuung_db": 5,
+   "hall": 0.6,
+   "sammlung": [
+    {
+     "quelle": "esc_2-139748-A",
+     "hochpass": 200,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.8,
+      "nachlauf": 0.15
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_2-139748-B",
+     "hochpass": 200,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.8,
+      "nachlauf": 0.15
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_1-23094-A",
+     "hochpass": 200,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.8,
+      "nachlauf": 0.15
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_1-23094-B",
+     "hochpass": 200,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.8,
+      "nachlauf": 0.15
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_2-81731-A",
+     "hochpass": 200,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.8,
+      "nachlauf": 0.15
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     }
+    }
+   ],
+   "decke_db": -6.0,
+   "streuung": false,
+   "wiederholung_egal": true
+  },
+  {
+   "name": "tropfen_pfuetze",
+   "typ": "ereignisse",
+   "titel": "Drops in puddles",
+   "text": "Drops falling into little puddles beside you.",
+   "ziel_lufs": -30,
+   "pegel_art": "spitzen",
+   "entfernung": [
+    0.5,
+    4.0
+   ],
+   "hoehe": [
+    0.0,
+    0.05
+   ],
+   "treibt_m_s": 0,
+   "abstand_s": 0.8,
+   "bezug_m": 1.5,
+   "streuung_db": 5,
+   "hall": 0.6,
+   "sammlung": [
+    {
+     "quelle": "esc_4-212604-A",
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.8,
+      "nachlauf": 0.15
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_4-212604-B",
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.8,
+      "nachlauf": 0.15
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_4-212604-C",
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.8,
+      "nachlauf": 0.15
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_3-156907-A",
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.8,
+      "nachlauf": 0.15
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_4-188293-A",
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.8,
+      "nachlauf": 0.15
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_4-188293-B",
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.8,
+      "nachlauf": 0.15
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_4-168155-A",
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.8,
+      "nachlauf": 0.15
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     }
+    },
+    {
+     "quelle": "esc_1-90797-A",
+     "hochpass": 150,
+     "zerlegen": {
+      "schwelle_db": 10,
+      "luecke": 0.05,
+      "min_dauer": 0.03,
+      "max_dauer": 0.8,
+      "nachlauf": 0.15
+     },
+     "abklingen": {
+      "ein_ms": 4,
+      "min_ausklang_s": 0.03,
+      "glatt_ms": 10,
+      "ziel_db": -40,
+      "max_endpegel_db": -3
+     }
+    }
+   ],
+   "decke_db": -6.0,
+   "streuung": false,
+   "wiederholung_egal": true
+  }
+ ]
+}
