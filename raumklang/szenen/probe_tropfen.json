@@ -311,10 +311,10 @@
    "typ": "ereignisse",
    "titel": "Drops in puddles",
    "text": "Drops falling into little puddles beside you.",
-   "ziel_lufs": -30,
+   "ziel_lufs": -34,
    "pegel_art": "spitzen",
    "entfernung": [
-    0.5,
+    0.8,
     4.0
    ],
    "hoehe": [
@@ -324,7 +324,7 @@
    "treibt_m_s": 0,
    "abstand_s": 0.8,
    "bezug_m": 1.5,
-   "streuung_db": 5,
+   "streuung_db": 3,
    "hall": 0.6,
    "sammlung": [
     {
@@ -472,7 +472,7 @@
      }
     }
    ],
-   "decke_db": -6.0,
+   "decke_db": -4.0,
    "streuung": false,
    "wiederholung_egal": true
   }
